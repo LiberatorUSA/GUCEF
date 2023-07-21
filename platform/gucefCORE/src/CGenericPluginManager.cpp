@@ -103,7 +103,7 @@ CGenericPluginManager::RegisterPlugin( void* modulePtr                   ,
 
 /*-------------------------------------------------------------------------*/
 
-void
+bool
 CGenericPluginManager::UnregisterPlugin( TPluginPtr plugin )
 {GUCEF_TRACE;
 
@@ -112,9 +112,11 @@ CGenericPluginManager::UnregisterPlugin( TPluginPtr plugin )
         CGenericPluginPtr ourPlugin = plugin.StaticCast< CGenericPlugin >();
         if ( !ourPlugin.IsNULL() )
         {
-            ourPlugin->Unlink();
+            return ourPlugin->Unlink();
         }
+        return false;
     }
+    return true;
 }
 
 /*-------------------------------------------------------------------------*/

@@ -113,9 +113,14 @@ class GUCEF_CORE_PUBLIC_CPP CPluginControl : public CTSGNotifier          ,
 
     bool UnloadPluginGroup( const CString& groupName );
 
+    bool UnregisterPlugin( const CString& groupName  ,
+                           const CString& moduleName );
+
     bool UnloadPlugin( const CString& groupName  ,
                        const CString& moduleName );
 
+    bool UnregisterAll( void );
+    
     bool UnloadAll( void );
 
     void GetAvailablePluginGroups( TStringSet& groupNames ) const;
@@ -207,7 +212,7 @@ class GUCEF_CORE_PUBLIC_CPP CPluginControl : public CTSGNotifier          ,
      *  @param tree the data tree you wish to store
      *  @return wheter storing the tree was successfull
      */
-    virtual bool SaveConfig( CDataNode& tree ) const;
+    virtual bool SaveConfig( CDataNode& tree ) const GUCEF_VIRTUAL_OVERRIDE;
 
     /**
      *  Attempts to load data from the given file to the
@@ -217,9 +222,9 @@ class GUCEF_CORE_PUBLIC_CPP CPluginControl : public CTSGNotifier          ,
      *  @param treeroot pointer to the node that is to act as root of the data tree
      *  @return whether building the tree from the given file was successfull.
      */
-    virtual bool LoadConfig( const CDataNode& treeroot );
+    virtual bool LoadConfig( const CDataNode& treeroot ) GUCEF_VIRTUAL_OVERRIDE;
 
-    virtual const CString& GetClassTypeName( void ) const;
+    virtual const CString& GetClassTypeName( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
     protected:
 
@@ -239,7 +244,7 @@ class GUCEF_CORE_PUBLIC_CPP CPluginControl : public CTSGNotifier          ,
 
     CPluginControl( void );
 
-    ~CPluginControl();
+    virtual ~CPluginControl() GUCEF_VIRTUAL_OVERRIDE;
 
     private:
 
@@ -258,6 +263,10 @@ class GUCEF_CORE_PUBLIC_CPP CPluginControl : public CTSGNotifier          ,
     bool UnloadPlugin( TPluginPtr& plugin        ,
                        CPluginGroup& pluginGroup ,
                        const CString& groupName  );
+
+    bool UnregisterPlugin( TPluginPtr& pluginPtr     ,
+                           CPluginGroup& pluginGroup ,
+                           const CString& groupName  );
 
     CPluginManager* GetPluginManagerForType( const CString& pluginType );
 

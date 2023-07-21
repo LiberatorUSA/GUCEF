@@ -76,7 +76,7 @@ class GUCEF_CORE_PUBLIC_CPP CDStoreCodecPluginManager : public CPluginManager
     virtual TPluginPtr RegisterPlugin( void* modulePtr                   ,
                                        TPluginMetaDataPtr pluginMetaData ) GUCEF_VIRTUAL_OVERRIDE;
 
-    virtual void UnregisterPlugin( TPluginPtr plugin ) GUCEF_VIRTUAL_OVERRIDE;
+    virtual bool UnregisterPlugin( TPluginPtr plugin ) GUCEF_VIRTUAL_OVERRIDE;
 
     private:
     friend class CCoreGlobal;

@@ -531,6 +531,31 @@ CPluginControl::GetPluginManagerForType( const CString& pluginType )
 /*-------------------------------------------------------------------------*/
 
 bool
+CPluginControl::UnregisterPlugin( const CString& groupName  ,
+                                  const CString& moduleName )
+{GUCEF_TRACE;
+
+    MT::CObjectScopeLock lock( this );
+    TPluginGroupMap::iterator i = m_pluginGroups.find( groupName );
+    if ( i != m_pluginGroups.end() )
+    {
+        CPluginGroup& pluginGroup = (*i).second;
+        TPluginPtr plugin = pluginGroup.FindPluginWithModuleName( moduleName );
+
+        // Is the plugin even loaded in the first place?
+        if ( !plugin.IsNULL() )
+        {
+            // It is, proceed with unregister
+            return UnregisterPlugin( plugin, pluginGroup, groupName );
+        }
+        return true;
+    }
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
 CPluginControl::UnloadPlugin( const CString& groupName  ,
                               const CString& moduleName )
 {GUCEF_TRACE;
@@ -556,9 +581,9 @@ CPluginControl::UnloadPlugin( const CString& groupName  ,
 /*-------------------------------------------------------------------------*/
 
 bool
-CPluginControl::UnloadPlugin( TPluginPtr& pluginPtr     ,
-                              CPluginGroup& pluginGroup ,
-                              const CString& groupName  )
+CPluginControl::UnregisterPlugin( TPluginPtr& pluginPtr     ,
+                                  CPluginGroup& pluginGroup ,
+                                  const CString& groupName  )
 {GUCEF_TRACE;
 
     MT::CObjectScopeLock lock( this );
@@ -582,29 +607,70 @@ CPluginControl::UnloadPlugin( TPluginPtr& pluginPtr     ,
     {
         // This plugin manager can handle a module of this type.
         // We will try to unregister the module here as a plugin
-        pluginManager->UnregisterPlugin( pluginPtr );
+        if ( pluginManager->UnregisterPlugin( pluginPtr ) )
+        {
+            // We unregistered the module
+            GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "PluginControl: Unregistered module with name \"" +
+                                    metaDataCopyPtr->GetModuleFilename() + "\" and group \"" + groupName + "\" and version " +
+                                    VersionToString( metaDataCopyPtr->GetVersion() ) + " with plugin manager of type \"" + pluginType + "\"" );
 
-        // We unregisterd the module
-        GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "PluginControl: Unregistered module with name \"" +
-                                metaDataCopyPtr->GetModuleFilename() + "\" and group \"" + groupName + "\" and version " +
-                                VersionToString( metaDataCopyPtr->GetVersion() ) + " with plugin manager of type \"" + pluginType + "\"" );
-
+        }
+        else
+        {
+            // We unregistered the module
+            GUCEF_ERROR_LOG( LOGLEVEL_CRITICAL, "PluginControl: plugin manager failed to unregistered module with name \"" +
+                                    metaDataCopyPtr->GetModuleFilename() + "\" and group \"" + groupName + "\" and version " +
+                                    VersionToString( metaDataCopyPtr->GetVersion() ) + " with plugin manager of type \"" + pluginType + "\"" );
+            return false;
+        }
     }
     else
     {
         // this should not happen but unload the module anyway
         GUCEF_ERROR_LOG( LOGLEVEL_NORMAL, "PluginControl: Failed to find a plugin manager capable of handling type \"" + pluginType + "\" when unregistering module with name \"" +
                             pluginMetaData->GetModuleFilename() + "\" and group \"" + groupName + "\" and version " + VersionToString( metaDataCopyPtr->GetVersion() ) );
+        return false;
     }
 
     // Remove the plugin entry and instead add a metadata plugin entry
     pluginGroup.GetPlugins().erase( pluginPtr );
     pluginGroup.GetPluginMetaData().insert( metaDataCopyPtr );
 
+    return true;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CPluginControl::UnloadPlugin( TPluginPtr& pluginPtr     ,
+                              CPluginGroup& pluginGroup ,
+                              const CString& groupName  )
+{GUCEF_TRACE;
+
+    if ( pluginPtr.IsNULL() )
+        return true;
+
+    CString moduleFilename = pluginPtr->GetMetaData()->GetModuleFilename();
+    
+    if ( !UnregisterPlugin( pluginPtr   ,
+                            pluginGroup ,
+                            groupName   ) )
+        return false;
+
+    // After unregistering the plugin fetch the meta data again
+    // Without the plugin linked it may not be available in the same form
+    TPluginMetaDataPtr pluginMetaData = pluginGroup.FindPluginMetaDataWithModuleName( moduleFilename );
+    if ( pluginMetaData.IsNULL() )
+    {
+        GUCEF_ERROR_LOG( LOGLEVEL_NORMAL, "PluginControl: Cannot unload plugin. Failed to obtain new plugin metadata reference after unregistering plugin with module filename:" +
+                            moduleFilename );
+        return false;
+    }
+
     // Check to see whether the module has a specific loader logic type defined
     // if not we will use the default.
-    CString pluginLoaderLogicToUse = metaDataCopyPtr->GetLoaderLogicTypeName().IsNULLOrEmpty() ?
-            m_defaultPluginLoadLogicType :  metaDataCopyPtr->GetLoaderLogicTypeName();
+    CString pluginLoaderLogicToUse = pluginMetaData->GetLoaderLogicTypeName().IsNULLOrEmpty() ?
+            m_defaultPluginLoadLogicType :  pluginMetaData->GetLoaderLogicTypeName();
 
     TPluginLoadLogicMap::iterator m = m_pluginLoadLogicProviders.find( pluginLoaderLogicToUse );
     if ( m != m_pluginLoadLogicProviders.end() )
@@ -613,13 +679,14 @@ CPluginControl::UnloadPlugin( TPluginPtr& pluginPtr     ,
 
         // We will unload the module
         GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "PluginControl: Unloaded module with name \"" +
-                                metaDataCopyPtr->GetModuleFilename() + "\" and group \"" + groupName + "\" and version " +
-                                VersionToString( metaDataCopyPtr->GetVersion() ) + " using plugin loader logic of type \"" + pluginLoaderLogicToUse + '\"' );
+                                pluginMetaData->GetModuleFilename() + "\" and group \"" + groupName + "\" and version " +
+                                VersionToString( pluginMetaData->GetVersion() ) + " using plugin loader logic of type \"" + pluginLoaderLogicToUse + '\"' );
         return true;
     }
 
-    GUCEF_ERROR_LOG( LOGLEVEL_NORMAL, "PluginControl: Failed to find plugin loader logic of type \"" + pluginLoaderLogicToUse + "\" for unloading a plugn of type \"" + pluginType + "\" and name \"" +
-                        metaDataCopyPtr->GetModuleFilename() + "\" and group \"" + groupName + "\" and version " + VersionToString( metaDataCopyPtr->GetVersion() ) );
+    GUCEF_ERROR_LOG( LOGLEVEL_NORMAL, "PluginControl: Failed to find plugin loader logic of type \"" + pluginLoaderLogicToUse + 
+            "\" for unloading a plugn of type \"" + pluginMetaData->GetPluginType() + "\" and name \"" +
+            pluginMetaData->GetModuleFilename() + "\" and group \"" + groupName + "\" and version " + VersionToString( pluginMetaData->GetVersion() ) );
     return false;
 }
 
@@ -793,8 +860,53 @@ CPluginControl::GetAvailablePluginsForGroup( const CString& groupName ,
 /*-------------------------------------------------------------------------*/
 
 bool
+CPluginControl::UnregisterAll( void )
+{GUCEF_TRACE;
+
+    MT::CObjectScopeLock lock( this );
+    bool success = true;
+
+    GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "PluginControl: Unregistering all modules" );
+
+    // When we unload all we have to take into account intra-dependencies
+    // as such we unload indirectly via group and module names vs accessing
+    // the modules directly. That administration might get invalided as we
+    // start unloading
+
+    TStringSet groupNames;
+    GetAvailablePluginGroups( groupNames );
+
+    TStringSet::iterator i = groupNames.begin();
+    while ( i != groupNames.end() )
+    {
+        TStringSet modules;
+        GetAvailablePluginsForGroup( (*i), modules );
+
+        TStringSet::iterator n = modules.begin();
+        while ( n != modules.end() )
+        {
+            success = success & UnregisterPlugin( (*i), (*n) );
+            ++n;
+        }
+        ++i;
+    }
+    return success;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
 CPluginControl::UnloadAll( void )
 {GUCEF_TRACE;
+
+    // When we unload all we have to take into account intra-dependencies
+    // as such we explicitly unregister all plugins first before even beginning the unloading of any modules
+    // this causes Unload functions to be called on all the plugins before any module is unloaded
+    if ( !UnregisterAll() )
+    {
+        GUCEF_ERROR_LOG( LOGLEVEL_NORMAL, "PluginControl: Cannot unload all plugins since we failed to unregister all modules" );
+        return false;
+    }
 
     MT::CObjectScopeLock lock( this );
     bool success = true;

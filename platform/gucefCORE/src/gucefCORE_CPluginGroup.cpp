@@ -46,8 +46,8 @@ namespace CORE {
 //-------------------------------------------------------------------------*/
     
 CPluginGroup::CPluginGroup( void )
-    : m_plugins()        ,
-      m_pluginMetaData()
+    : m_plugins()        
+    , m_pluginMetaData()
 {GUCEF_TRACE;
 
 }
@@ -55,8 +55,8 @@ CPluginGroup::CPluginGroup( void )
 /*-------------------------------------------------------------------------*/
 
 CPluginGroup::CPluginGroup( const CPluginGroup& src )
-    : m_plugins( src.m_plugins )                ,
-      m_pluginMetaData( src.m_pluginMetaData )
+    : m_plugins( src.m_plugins )                
+    , m_pluginMetaData( src.m_pluginMetaData )
 {GUCEF_TRACE;
 
 }
@@ -156,7 +156,7 @@ CPluginGroup::HasPluginWithFileName( const CString& moduleFileName ) const
 /*-------------------------------------------------------------------------*/
 
 TPluginPtr 
-CPluginGroup::FindPluginWithModuleName( const CString& moduleName )
+CPluginGroup::FindPluginWithModuleName( const CString& moduleName ) const
 {GUCEF_TRACE;
 
     TPluginSet::const_iterator i = m_plugins.begin();
@@ -175,6 +175,27 @@ CPluginGroup::FindPluginWithModuleName( const CString& moduleName )
     return TPluginPtr();
 }
 
+/*-------------------------------------------------------------------------*/
+
+TPluginMetaDataPtr 
+CPluginGroup::FindPluginMetaDataWithModuleName( const CString& moduleName ) const
+{GUCEF_TRACE;
+
+    TPluginMetaDataSet::const_iterator i = m_pluginMetaData.begin();
+    while ( i != m_pluginMetaData.end() )
+    {
+        TPluginMetaDataPtr metadata = (*i);
+        if ( !metadata.IsNULL() )
+        {
+            if ( moduleName == metadata->GetModuleFilename() )
+            {
+                return (*i);
+            }
+        }
+        ++i;
+    }
+    return TPluginMetaDataPtr();
+}
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //

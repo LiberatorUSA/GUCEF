@@ -112,7 +112,7 @@ CStdCodecPluginManager::RegisterPlugin( void* modulePtr                   ,
 
 /*-------------------------------------------------------------------------*/
 
-void
+bool
 CStdCodecPluginManager::UnregisterPlugin( TPluginPtr plugin )
 {GUCEF_TRACE;
 
@@ -121,9 +121,11 @@ CStdCodecPluginManager::UnregisterPlugin( TPluginPtr plugin )
         CStdCodecPluginPtr stdCodecPlugin = plugin.StaticCast< CStdCodecPlugin >();
         if ( !stdCodecPlugin.IsNULL() )
         {
-            stdCodecPlugin->Unlink();
+            return stdCodecPlugin->Unlink();
         }
+        return false;
     }
+    return true;
 }
 
 /*-------------------------------------------------------------------------//

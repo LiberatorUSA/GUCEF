@@ -77,7 +77,7 @@ class GUCEF_CORE_PUBLIC_CPP CPluginManager : public CTSGNotifier
     virtual TPluginPtr RegisterPlugin( void* modulePtr                   ,
                                        TPluginMetaDataPtr pluginMetaData ) = 0;
 
-    virtual void UnregisterPlugin( TPluginPtr plugin ) = 0;
+    virtual bool UnregisterPlugin( TPluginPtr plugin ) = 0;
 
     private:
 

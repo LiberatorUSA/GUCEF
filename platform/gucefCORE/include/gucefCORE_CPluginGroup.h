@@ -76,7 +76,9 @@ class GUCEF_CORE_PRIVATE_CPP CPluginGroup
 
     const TPluginSet& GetPlugins( void ) const;
 
-    TPluginPtr FindPluginWithModuleName( const CString& moduleName );
+    TPluginPtr FindPluginWithModuleName( const CString& moduleName ) const;
+
+    TPluginMetaDataPtr FindPluginMetaDataWithModuleName( const CString& moduleName ) const;
 
     TPluginMetaDataSet& GetPluginMetaData( void );
 

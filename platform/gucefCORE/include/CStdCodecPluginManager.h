@@ -58,21 +58,21 @@ class GUCEF_CORE_PUBLIC_CPP CStdCodecPluginManager : public CPluginManager
 
     static void RegisterEvents( void );
 
-    virtual CString GetPluginType( void ) const;
+    virtual CString GetPluginType( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
     protected:
 
     virtual TPluginPtr RegisterPlugin( void* modulePtr                   ,
-                                       TPluginMetaDataPtr pluginMetaData );
+                                       TPluginMetaDataPtr pluginMetaData ) GUCEF_VIRTUAL_OVERRIDE;
 
-    virtual void UnregisterPlugin( TPluginPtr plugin );
+    virtual bool UnregisterPlugin( TPluginPtr plugin ) GUCEF_VIRTUAL_OVERRIDE;
 
     private:
     friend class CCoreGlobal;
 
     CStdCodecPluginManager( void );
 
-    virtual ~CStdCodecPluginManager();
+    virtual ~CStdCodecPluginManager() GUCEF_VIRTUAL_OVERRIDE;
 
     private:
 

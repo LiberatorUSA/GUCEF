@@ -156,7 +156,7 @@ CDStoreCodecPluginManager::RegisterPlugin( void* modulePtr                   ,
 
 /*-------------------------------------------------------------------------*/
 
-void
+bool
 CDStoreCodecPluginManager::UnregisterPlugin( TPluginPtr plugin )
 {GUCEF_TRACE;
 
@@ -165,7 +165,7 @@ CDStoreCodecPluginManager::UnregisterPlugin( TPluginPtr plugin )
     CCoreGlobal::Instance()->GetDStoreCodecRegistry().Unregister( pointerToPlugin->GetTypeName() );
 
     // Now unlink the plugin
-    pointerToPlugin->Unlink();
+    return pointerToPlugin->Unlink();
 }
 
 /*-------------------------------------------------------------------------//

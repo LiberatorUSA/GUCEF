@@ -71,21 +71,21 @@ class GUCEF_CORE_PUBLIC_CPP CGenericPluginManager : public CPluginManager
 {
     public:
 
-    virtual CString GetPluginType( void ) const;
+    virtual CString GetPluginType( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
     protected:
 
     virtual TPluginPtr RegisterPlugin( void* modulePtr                   ,
-                                       TPluginMetaDataPtr pluginMetaData );
+                                       TPluginMetaDataPtr pluginMetaData ) GUCEF_VIRTUAL_OVERRIDE;
 
-    virtual void UnregisterPlugin( TPluginPtr plugin );
+    virtual bool UnregisterPlugin( TPluginPtr plugin ) GUCEF_VIRTUAL_OVERRIDE;
 
     private:
     friend class CCoreGlobal;
 
     CGenericPluginManager( void );
 
-    virtual ~CGenericPluginManager();
+    virtual ~CGenericPluginManager() GUCEF_VIRTUAL_OVERRIDE;
 
     private:
     
