@@ -15,12 +15,14 @@ set( HEADER_FILES
   include/comcorepluginDBL.h
   include/comcorepluginDBL_CDBLNetworkInterface.h
   include/comcorepluginDBL_config.h
+  include/comcorepluginDBL_driverapi.h
   include/comcorepluginDBL_macros.h
 )
 
 set( SOURCE_FILES 
   src/comcorepluginDBL.cpp
   src/comcorepluginDBL_CDBLNetworkInterface.cpp
+  src/comcorepluginDBL_driverapi.cpp
 )
 
 # Make sure the PLATFORM_HEADER_FILES variable is always defined

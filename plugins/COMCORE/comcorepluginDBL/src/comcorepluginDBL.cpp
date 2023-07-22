@@ -34,6 +34,11 @@
 
 #include "comcorepluginDBL.h"
 
+#ifndef COMCOREPLUGIN_DBL_DRIVERAPI_H
+#include "comcorepluginDBL_driverapi.h"
+#define COMCOREPLUGIN_DBL_DRIVERAPI_H
+#endif /* COMCOREPLUGIN_DBL_DRIVERAPI_H ? */
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //
@@ -70,11 +75,16 @@ CORE::Int32 GUCEF_PLUGIN_CALLSPEC_PREFIX
 GUCEFPlugin_Load( CORE::UInt32 argc, const char** argv ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
 {GUCEF_TRACE;
 
-    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "GUCEFPlugin_Load: Load called on COMCORE plugin DBL" );
+    GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "GUCEFPlugin_Load: Load called on COMCORE plugin DBL" );
 
-    //COMCORE::CComCoreGlobal::Instance()->GetCom().
+    Int32 wrapperInit = dblwrapper_init( 1 );
+    if ( 0 == wrapperInit )
+    {
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "GUCEFPlugin_Load: DBL API not available, cannot use this plugin" );
+        return 1;
+    }
 
-    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "GUCEFPlugin_Load: Load finished for COMCORE plugin DBL" );
+    GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "GUCEFPlugin_Load: Load finished for COMCORE plugin DBL" );
     return 1;
 }
 
@@ -85,6 +95,8 @@ GUCEFPlugin_Unload( void ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
 {GUCEF_TRACE;
 
     GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "GUCEFPlugin_Unload: Unload called on COMCORE plugin DBL" );
+
+    dblwrapper_shutdown();
 
     //COMCORE::CComCoreGlobal::Instance()->GetCom().
 
