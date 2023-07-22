@@ -28,6 +28,7 @@
 			<RuntimeDependency Name="pubsubpluginSTORAGE" />
 			<RuntimeDependency Name="pubsubpluginKAFKA" />
 			<RuntimeDependency Name="pubsubpluginREDISCLUSTER" />
+			<RuntimeDependency Name="comcorepluginDBL" />
 		</RuntimeDependencies>
 	</Module>
 	<Module Platform="mswin" >

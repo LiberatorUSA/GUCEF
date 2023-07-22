@@ -115,6 +115,7 @@ If you get into trouble for whatever reason with stale/bad output files (disk is
 - pubsubpluginWEB: gucefPUBSUB plugin: Adds a pub-sub concept compatible backend for Web concepts like HTTP/REST/WebSockets
 - ProjectGenDependsFilter: ProjectGen plugin: Allows filtering of libraries in a repo based on a depends.exe tool output report
 - ProjectGenVSImporter: ProjectGen plugin: Imports Visual Studio project files to generate a ModuleInfo.xml starting point for a new repo
+- comcorepluginDBL: gucefCOMCORE plugin which attempts to provide information from the DBL network driver
 
 ## Contained Services
 - UdpViaTCP: Bridge service which funnels UDP traffic over a TCP segment. Will be superseded by pubsub2pubsub.

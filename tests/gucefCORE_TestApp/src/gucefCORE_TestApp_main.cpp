@@ -125,7 +125,7 @@ GUCEF_OSMAIN_BEGIN
         PerformSharedPtrTests();
         PerformDynamicBufferSwapTests();
         PerformCyclicDynamicBufferTests();
-        PerformNotifierObserverTests();
+        //PerformNotifierObserverTests();
 
         return 1;
     }

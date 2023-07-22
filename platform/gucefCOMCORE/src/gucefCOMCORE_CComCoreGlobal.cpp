@@ -37,10 +37,10 @@
 #define GUCEF_CORE_CCOREGLOBAL_H
 #endif /* GUCEF_CORE_CCOREGLOBAL_H ? */
 
-#ifndef CCOM_H
+#ifndef GUCEF_COMCORE_CCOM_H
 #include "CCom.h"      /* header for the main communication manager */
-#define CCOM_H
-#endif /* CCOM_H ? */
+#define GUCEF_COMCORE_CCOM_H
+#endif /* GUCEF_COMCORE_CCOM_H ? */
 
 #ifndef CTCPCLIENTSOCKET_H
 #include "CTCPClientSocket.h"
