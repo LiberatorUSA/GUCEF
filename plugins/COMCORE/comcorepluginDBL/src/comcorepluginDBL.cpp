@@ -81,7 +81,7 @@ GUCEFPlugin_Load( CORE::UInt32 argc, const char** argv ) GUCEF_PLUGIN_CALLSPEC_S
     if ( 0 == wrapperInit )
     {
         GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "GUCEFPlugin_Load: DBL API not available, cannot use this plugin" );
-        return 1;
+        return 0;
     }
 
     GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "GUCEFPlugin_Load: Load finished for COMCORE plugin DBL" );

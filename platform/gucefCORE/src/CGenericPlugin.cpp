@@ -136,7 +136,8 @@ CGenericPlugin::Link( void* modulePtr                   ,
                       TPluginMetaDataPtr pluginMetaData )
 {GUCEF_TRACE;
 
-    if ( IsLoaded() ) return false;
+    if ( IsLoaded() ) 
+        return false;
     
     m_moduleHandle = modulePtr;
     if ( NULL != m_moduleHandle )

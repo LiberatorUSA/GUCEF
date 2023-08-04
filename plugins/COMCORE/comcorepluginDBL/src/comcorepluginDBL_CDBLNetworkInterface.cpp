@@ -355,10 +355,15 @@ CDBLNetworkInterface::GetMetrics( COMCORE::CNetworkInterfaceMetrics& metrics ) c
 		return false;
 	}
 
-	char* counterStrs = (char*) malloc( nrOfCounterStats * 128 );
-	int32_t* counters1 = (int32_t*) malloc( nrOfCounterStats * 4 );
-	int64_t* counters2 = (int64_t*) malloc( nrOfCounterStats * 8 );
-	int32_t* counters3 = (int32_t*) calloc( nrOfCounterStats, 4 );
+	CORE::CDynamicBuffer counterStrsBuffer( nrOfCounterStats * 128, true );
+	char* counterStrs = counterStrsBuffer.AsTypePtr< char >();
+	CORE::CDynamicBuffer counters1Buffer( nrOfCounterStats * sizeof(int32_t), true );
+	int32_t* counters1 = counters1Buffer.AsTypePtr< int32_t >();
+	CORE::CDynamicBuffer counters2Buffer( nrOfCounterStats * sizeof(int64_t), true );
+	int64_t* counters2 = counters2Buffer.AsTypePtr< int64_t >();
+	CORE::CDynamicBuffer counters3Buffer( nrOfCounterStats * sizeof(int32_t), true );
+	counters3Buffer.SetBytes( 0 );
+	int32_t* counters3 = counters3Buffer.AsTypePtr< int32_t >();
 
 	if ( GUCEF_NULL == counterStrs ||
 	     GUCEF_NULL == counters1   ||
@@ -367,20 +372,11 @@ CDBLNetworkInterface::GetMetrics( COMCORE::CNetworkInterfaceMetrics& metrics ) c
 	{
 		GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "DBLNetworkInterface: Failed to allocate memory to store counter stats for board " + CORE::ToString( nicIndex ) );
 		dblwrapper_mal_close( deviceContext );
-
-		if ( GUCEF_NULL != counterStrs )
-			free( counterStrs );
-		if ( GUCEF_NULL != counters1 )
-			free( counters1 );
-		if ( GUCEF_NULL != counters2 )
-			free( counters2 );
-		if ( GUCEF_NULL != counters3 )
-			free( counters3 );
-
 		return false;
 	}
 
  	// Query the counter strings
+	counterStrsBuffer.AsType< int32_t >() = productIdPartB;	// <- on input we need to give the product id for the board we are asking for
 	queryResult = dblwrapper_mal_ioctl( deviceContext, 
 										MAL_IOCTL_INFOTYPEID_COUNTERS_STRINGS, 
 										counterStrs, 
@@ -391,15 +387,112 @@ CDBLNetworkInterface::GetMetrics( COMCORE::CNetworkInterfaceMetrics& metrics ) c
 		dblwrapper_mal_close( deviceContext );
 		return false;
 	}
+	GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "DBLNetworkInterface: Obtained counter strings" );
 
+/*
 
-
+	counters2Buffer.AsType< int32_t >() = productIdPartB;	// <- on input we need to give the product id for the board we are asking for
+    int32_t counterQueryType = 0;
+	queryResult = dblwrapper_mal_ioctl( deviceContext, 2236563, counters2, MAL_IOCTL_PROPERTYID_INT32_COUNT );
+	if( (uint32_t)queryResult == 0 ) 
+	{
+		*v14 = productIdPartB;
+		v18 = 1;
+		v19 = v14;
+		counterQueryType = MAL_IOCTL_INFOTYPEID_COUNTERS;
+	} 
+	else 
+	{
+		GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "DBLNetworkInterface: no classes support" );
+		*v13 = productIdPartB;
+		v18 = 0;
+		v2 = 1;
+		v19 = v13;
+		counterQueryType = MAL_IOCTL_INFOTYPEID_COUNTERS_NOCLASSES;
+	}
 
 
 	// @TODO
 
 
+        queryResult = dblwrapper_mal_ioctl( deviceContext, counterQueryType, v19, MAL_IOCTL_PROPERTYID_INT32_COUNT );
+        if( (uint32_t)queryResult != 0 ) 
+		{
+            _ErrMsg = "Cannot get counters values";
+        } 
+		else 
+		{
+            if( local_0x90 != 0 ) 
+			{
+                v22 = local_0x90;
+                v23 = v13;
+                while( 1 ) 
+				{
+                    if( local_0x74 < 2 ) 
+					{
+                        v25 = strstr( _Str, "(Port 1)" );
+                        if( v25 == 0 ) 
+						{
+                            goto node_244;
+                        }
+                    } 
+					else 
+					{
+                        node_244:
+                        if( (int32_t)v18 == 0 ) 
+						{
+                            if( ((int32_t)v3 == 0 || (int32_t)v18 != *v23) && ((int32_t)v2 != 0 || (uint32_t)*(v15 - v13 + v23) == 0) ) 
+							{
+                                v24 = ntohl( *v23 );
+                                printf( "%34s: %10u\n", _Str, v24 );
+                            }
+                        } 
+						else 
+						if( ((int32_t)v3 == 0 || *v14 != 0) && ((int32_t)v2 != 0 || (uint32_t)*(v15 - v13 + v23) == 0) ) 
+						{
+                            printf( "%34s: %20llu\n", _Str, *v14 );
+                        }
+                    }
+                    if( v22 == 1 ) 
+					{
+                        break;
+                    }
+                    v22 -= 1;
+                    (uint8_t *)v14 += 8;
+                    _Str -= -128;
+                    (uint8_t *)v23 += 4;
+                }
+            }
+            if( local_0x78 != 0 ) 
+			{
+                local_0x70 = local_0x98;
+                queryResult = dblwrapper_mal_ioctl( deviceContext, MAL_IOCTL_INFOTYPEID_IRQ, &local_0x70, 16 );
+                if( (uint32_t)queryResult == 0 ) 
+				{
+                    printf( "Host irq info: %10u intr, %10u events, %10u intr w/o event\n", local_0x6C, local_0x68, local_0x64 );
+                } 
+				else 
+				{
+                    perror( "Cannot get interrupt counters -- try enabling MAL_DEBUG in the kernel?" );
+                }
+            }
+            if( local_0x80 == 0 ) 
+			{
+                dblwrapper_mal_close( deviceContext );
+                __security_check_cookie( local_0x30 ^ &v1 );
+                return 0;
+            }
+            queryResult = dblwrapper_mal_ioctl( deviceContext, MAL_IOCTL_INFOTYPEID_CLEAR_COUNTERS, &local_0x98, 4 );
+            if( (uint32_t)queryResult == 0 ) 
+			{
+                dblwrapper_mal_close( local_0x88 );
+                __security_check_cookie( local_0x30 ^ &v1 );
+                return 0;
+            }
+            _ErrMsg = "Cannot clear counters";
+        }
 
+	*/
 
 	return false;
 }

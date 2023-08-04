@@ -465,7 +465,9 @@ inline CAsciiString ToAsciiString( const CUtf8String& str ) { return CAsciiStrin
 inline CAsciiString ToAsciiString( const CAsciiString& str ) { return str; }
 inline CUtf8String ToUtf8String( const CUtf8String& str ) { return str; }
 inline CUtf8String ToUtf8String( const CAsciiString& str ) { return CUtf8String( str ); }
-inline CUtf8String ToUtf8String( const std::wstring& value ) { std::string out; Utf16toUtf8( value, out ); return out; }
+inline CUtf8String ToUtf8String( const std::wstring& str ) { std::string out; Utf16toUtf8( str, out ); return out; }
+inline std::wstring ToWString( const CUtf8String& str ) { std::wstring out; Utf8toUtf16( str, out ); return out; }
+inline std::wstring ToWString( const CAsciiString& str ) { std::wstring out; Utf8toUtf16( str, out ); return out; }
 
 /*-------------------------------------------------------------------------*/
 

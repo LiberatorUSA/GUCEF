@@ -656,7 +656,7 @@ ProcessMetrics::OnMetricsTimerCycle( CORE::CNotifier* notifier    ,
                 {
                     // check if the O/S was able to provide this value.
                     // If not disable the stat. Unsupported stats return 0
-                    if ( lCpuStats->cpuCurrentFrequencyInMhz > 0.5 )
+                    if ( lCpuStats->cpuSpecMaxFrequencyInMhz > 0.5 )
                     {
                         static const CORE::CString metricName = "CpuSpecMaxFrequencyInMhz";
                         GUCEF_METRIC_GAUGE( lCpuMetricPrefix + metricName, lCpuStats->cpuSpecMaxFrequencyInMhz, 1.0f );

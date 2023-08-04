@@ -36,6 +36,11 @@
 #define GUCEF_CORE_DVCPPSTRINGUTILS_H
 #endif /* GUCEF_CORE_DVCPPSTRINGUTILS_H ? */
 
+#ifndef GUCEF_CORE_DVCPPFILEUTILS_H
+#include "dvcppfileutils.h"
+#define GUCEF_CORE_DVCPPFILEUTILS_H
+#endif /* GUCEF_CORE_DVCPPFILEUTILS_H ? */ 
+
 #include "CFileAccess.h"      /* definition of the class implemented here */
 
 #ifndef GUCEF_CORE_GUCEF_ESSENTIALS_H
@@ -503,7 +508,8 @@ CFileAccess::SetFileToUse( const CString& filename  ,
 
         if ( moveIfCurrentlyOpen )
         {
-            Move_File( filename.C_String(), m_filename.C_String() );
+            if ( !MoveFile( filename, m_filename, true ) )
+                return false;
         }
     }
 

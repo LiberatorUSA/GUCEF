@@ -262,7 +262,48 @@ MoveFile( const CString& oldPath ,
 
     CString actualOldPath = RelativePath( oldPath );
     CString actualNewPath = RelativePath( newPath );
-    return 0 != Move_File( actualNewPath.C_String(), actualOldPath.C_String() );
+
+    if ( !CreatePathDirectories( actualNewPath ) )
+        return false;
+
+    #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
+
+    std::wstring wActualOldPath = ToWString( actualOldPath );
+    std::wstring wActualNewPath = ToWString( actualNewPath );
+
+    DWORD flags = MOVEFILE_WRITE_THROUGH | MOVEFILE_COPY_ALLOWED;
+    if ( overwrite )
+        flags = flags | MOVEFILE_REPLACE_EXISTING;
+
+    BOOL result = ::MoveFileExW( wActualOldPath.c_str(), wActualNewPath.c_str(), flags );
+    return result == TRUE;
+
+    #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
+
+    struct stat originalPermissions;
+    if ( 0 != ::stat( actualOldPath.C_String(), &originalPermissions ) ) 
+        return 0;
+
+    ::chmod( actualOldPath.C_String(), 0777 );
+
+    if ( 0 != ::rename( actualOldPath.C_String(), actualNewPath.C_String() ) )
+    {
+        return 0;
+    }
+
+    ::chmod( dst, originalPermissions.st_mode );
+    return 1;
+
+    #else
+
+    // catch all expensive implementation
+    if ( CopyFile( dst, src, overwrite ) )
+    {
+    	return DeleteFile( src );
+    }
+    return false;
+
+    #endif
 }
 
 /*-------------------------------------------------------------------------*/
@@ -281,6 +322,24 @@ DirExists( const CString& path )
 {GUCEF_TRACE;
 
     return 0 != Dir_Exists( path.C_String() );
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CreatePathDirectories( const CString& path )
+{GUCEF_TRACE;
+
+    Int32 delimIndex = path.HasChar( GUCEF_DIRSEPCHAR, false );
+    if ( delimIndex < 0 )
+        delimIndex = path.HasChar( GUCEF_DIRSEPCHAROPPOSITE, false );
+    
+    if ( delimIndex >= 0 )
+    {
+        CString dirs = path.SubstrToIndex( (UInt32) delimIndex, true );
+        return CreateDirs( dirs );
+    }
+    return true;
 }
 
 /*-------------------------------------------------------------------------*/

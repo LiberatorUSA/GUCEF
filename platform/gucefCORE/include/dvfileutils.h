@@ -46,6 +46,11 @@
 #define GUCEF_CORE_ETYPES_H
 #endif /* GUCEF_CORE_ETYPES_H ? */
 
+#if defined GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN
+    #undef MoveFile
+    #undef CopyFile
+#endif 
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //
@@ -152,7 +157,7 @@ Copy_File( const char *dst, const char *src );
  *      If successful true (1) is returned, otherwise false (0).
  */
 GUCEF_CORE_PUBLIC_C UInt32
-Move_File( const char *dst, const char *src );
+Move_File( const char *dst, const char *src, char overwriteFlag );
 
 /*-------------------------------------------------------------------------*/
 

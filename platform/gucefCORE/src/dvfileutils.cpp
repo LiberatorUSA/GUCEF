@@ -63,6 +63,11 @@
   #include <android/log.h>
 #endif
 
+#ifndef GUCEF_CORE_DVCPPFILEUTILS_H
+#include "dvcppfileutils.h"
+#define GUCEF_CORE_DVCPPFILEUTILS_H
+#endif /* GUCEF_CORE_DVCPPFILEUTILS_H ? */ 
+
 #ifndef GUCEF_CORE_GUCEF_ESSENTIALS_H
 #include "gucef_essentials.h"
 #define GUCEF_CORE_GUCEF_ESSENTIALS_H
@@ -723,29 +728,10 @@ Create_Directory( const char *new_dir )
 
 UInt32
 Create_Path_Directories( const char* path )
-{
-    if ( NULL != path )
-    {
-        int i, pathLength = (int) strlen( path );
-        char* pathBuffer = (char*) malloc( pathLength+1 );
-        UInt32 returnValue = 0;
-        memcpy( pathBuffer, path, pathLength+1 );
+{GUCEF_TRACE;
 
-        i=pathLength;
-        while ( i > 0 )
-        {
-            if ( pathBuffer[ i ] == '/' || pathBuffer[ i ] == '\\' )
-            {
-                pathBuffer[ i ] = '\0';
-                break;
-            }
-            --i;
-        }
-        returnValue = Create_Directory( pathBuffer );
-        free( pathBuffer );
-        return returnValue;
-    }
-    return 0;
+    // map to C++ version
+    return CreatePathDirectories( CString( path ) ) ? 1 : 0;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -992,7 +978,7 @@ Copy_File( const char *dst, const char *src )
 
     #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
 
-    return 0 != CopyFile( src, dst, TRUE ) ? 1 : 0;
+    return 0 != CopyFileA( src, dst, TRUE ) ? 1 : 0;
 
     #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
 
@@ -1076,41 +1062,11 @@ Copy_File( const char *dst, const char *src )
  *	If successfull true (1) is returned, otherwise false (0).
  */
 UInt32
-Move_File( const char *dst, const char *src )
-{
-    UInt32 result = Create_Path_Directories( dst );
-    if ( 0 == result ) 
-        return result;
+Move_File( const char* dst, const char* src, char overwriteFlag )
+{GUCEF_TRACE;
 
-    #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
-
-    result = MoveFile( src, dst );
-    return result;
-
-    #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
-
-    struct stat originalPermissions;
-    if ( 0 != stat( src, &originalPermissions ) ) return 0;
-
-    chmod( src, 0777 );
-
-    if ( 0 != rename( src, dst ) )
-    {
-        return 0;
-    }
-
-    chmod( dst, originalPermissions.st_mode );
-    return 1;
-
-    #else
-
-    if ( 0 != Copy_File( dst, src ) )
-    {
-    	return Delete_File( src );
-    }
-    return 0;
-
-    #endif
+    // map to C++ version
+    return CORE::MoveFile( CString( dst ), CString( src ), 0 != overwriteFlag ) ? 1 : 0;
 }
 
 /*-------------------------------------------------------------------------*/

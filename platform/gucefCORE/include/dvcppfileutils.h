@@ -122,6 +122,11 @@ DirExists( const CString& path );
 
 /*-------------------------------------------------------------------------*/
 
+GUCEF_CORE_PUBLIC_CPP bool
+CreatePathDirectories( const CString& path );
+
+/*-------------------------------------------------------------------------*/
+
 GUCEF_CORE_PUBLIC_CPP UInt64
 FileSize( const CString& filename );
 
