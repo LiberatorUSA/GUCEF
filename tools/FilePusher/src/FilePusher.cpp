@@ -935,9 +935,9 @@ FilePushDestination::OnHttpClientHttpTransferFinished( CORE::CNotifier* notifier
 {GUCEF_TRACE;
 
     GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "FilePushDestination: HTTP Transfer finished" );
-    OnFilePushFinished( notifier  ,
-                        eventId   ,
-                        eventData );
+    OnFilePushOpFinished( notifier  ,
+                          eventId   ,
+                          eventData );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -951,41 +951,33 @@ FilePushDestination::OnAsyncVfsOperationCompleted( CORE::CNotifier* notifier    
     VFS::CAsyncVfsTaskResultData* asyncOpResult = static_cast< VFS::CAsyncVfsTaskResultData* >( eventData );
     if ( GUCEF_NULL != asyncOpResult )
     {
-        if ( asyncOpResult->successState )
-        {
-            GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "FilePushDestination: VFS Async operation of type " +  CORE::ToString( asyncOpResult->operationType ) +  " finished successfully in " +
-                    CORE::ToString( asyncOpResult->durationInMilliSecs ) + " millisecs" );
+        GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "FilePushDestination: VFS Async operation of type " +  CORE::ToString( asyncOpResult->operationType ) +  " finished in " +
+                CORE::ToString( asyncOpResult->durationInMilliSecs ) + " millisecs" );
 
-            switch ( asyncOpResult->operationType )
-            {
-                case VFS::ASYNCVFSOPERATIONTYPE_ENCODEFILE:
-                case VFS::ASYNCVFSOPERATIONTYPE_ENCODEDATAASFILE:
-                {
-                    OnAsyncVfsFileEncodeCompleted( notifier  ,
-                                                   eventId   ,
-                                                   eventData );
-                    break;
-                }
-                case VFS::ASYNCVFSOPERATIONTYPE_STOREDATAASFILE:
-                {
-                    OnFilePushFinished( notifier  ,
-                                        eventId   ,
-                                        eventData );
-                    break;
-                }
-                case VFS::ASYNCVFSOPERATIONTYPE_MOUNTARCHIVE:
-                case VFS::ASYNCVFSOPERATIONTYPE_COPYFILE:
-                case VFS::ASYNCVFSOPERATIONTYPE_DECODEFILE:
-                default:
-                {
-                    break;
-                }
-            }
-        }
-        else
+        switch ( asyncOpResult->operationType )
         {
-            GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "FilePushDestination: VFS Async operation type " +  CORE::ToString( asyncOpResult->operationType ) +  " failed in " +
-                        CORE::UInt32ToString( m_lastPushDurationInMilliSecs ) + " millisecs" );
+            case VFS::ASYNCVFSOPERATIONTYPE_ENCODEFILE:
+            case VFS::ASYNCVFSOPERATIONTYPE_ENCODEDATAASFILE:
+            {
+                OnAsyncVfsFileEncodeOpCompleted( notifier  ,
+                                                  eventId   ,
+                                                  eventData );
+                break;
+            }
+            case VFS::ASYNCVFSOPERATIONTYPE_STOREDATAASFILE:
+            {
+                OnFilePushOpFinished( notifier  ,
+                                      eventId   ,
+                                      eventData );
+                break;
+            }
+            case VFS::ASYNCVFSOPERATIONTYPE_MOUNTARCHIVE:
+            case VFS::ASYNCVFSOPERATIONTYPE_COPYFILE:
+            case VFS::ASYNCVFSOPERATIONTYPE_DECODEFILE:
+            default:
+            {
+                break;
+            }
         }
     }
     else
@@ -997,12 +989,12 @@ FilePushDestination::OnAsyncVfsOperationCompleted( CORE::CNotifier* notifier    
 /*-------------------------------------------------------------------------*/
 
 void
-FilePushDestination::OnAsyncVfsFileEncodeCompleted( CORE::CNotifier* notifier    ,
-                                                    const CORE::CEvent& eventId  ,
-                                                    CORE::CICloneable* eventData )
+FilePushDestination::OnAsyncVfsFileEncodeOpCompleted( CORE::CNotifier* notifier    ,
+                                                      const CORE::CEvent& eventId  ,
+                                                      CORE::CICloneable* eventData )
 {GUCEF_TRACE;
 
-    GUCEF_DEBUG_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "FilePushDestination:OnAsyncVfsFileEncodeCompleted" );
+    GUCEF_DEBUG_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "FilePushDestination:OnAsyncVfsFileEncodeOpCompleted" );
 
     VFS::CAsyncVfsTaskResultData* asyncOpResult = static_cast< VFS::CAsyncVfsTaskResultData* >( eventData );
     if ( GUCEF_NULL != asyncOpResult )
@@ -1029,7 +1021,7 @@ FilePushDestination::OnAsyncVfsFileEncodeCompleted( CORE::CNotifier* notifier   
                         YieldInFlightSlot( slot );
                         m_encodeQueue.erase( pushEntry->filePath );
 
-                        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "FilePushDestination:OnAsyncVfsFileEncodeCompleted: Async encode operation successfull for \"" + 
+                        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "FilePushDestination:OnAsyncVfsFileEncodeOpCompleted: Async encode operation successfull for \"" + 
                             pushEntry->filePath + "\" which was encoded at path \"" + slot->entryInfo->encodedFilepath + "\"" );
 
                         QueueFileForPushing( pushEntry );
@@ -1037,7 +1029,7 @@ FilePushDestination::OnAsyncVfsFileEncodeCompleted( CORE::CNotifier* notifier   
                     }
                     else
                     {
-                        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "FilePushDestination:OnAsyncVfsFileEncodeCompleted: Async encode operation failed for \"" + 
+                        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "FilePushDestination:OnAsyncVfsFileEncodeOpCompleted: Async encode operation failed for \"" + 
                             slot->entryInfo->filePath + "\" to encoded path \"" + slot->entryInfo->encodedFilepath + "\"" );
                         
                         m_encodeQueue[ slot->entryInfo->filePath ] = slot->entryInfo;
@@ -1047,7 +1039,7 @@ FilePushDestination::OnAsyncVfsFileEncodeCompleted( CORE::CNotifier* notifier   
                 }
                 default:
                 {
-                    GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "FilePushDestination:OnAsyncVfsFileEncodeCompleted: Unsupported operation type in handler. This should not happen. Path \"" + 
+                    GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "FilePushDestination:OnAsyncVfsFileEncodeOpCompleted: Unsupported operation type in handler. This should not happen. Path \"" + 
                         slot->entryInfo->filePath + "\"" );
                     YieldInFlightSlot( slot );
                     break;
@@ -1056,7 +1048,7 @@ FilePushDestination::OnAsyncVfsFileEncodeCompleted( CORE::CNotifier* notifier   
         }
         else
         {
-            GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "FilePushDestination:OnAsyncVfsFileEncodeCompleted: No in-flight entry found with path \"" + 
+            GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "FilePushDestination:OnAsyncVfsFileEncodeOpCompleted: No in-flight entry found with path \"" + 
                 originalFilePath + "\". This should not happen" );
         }
     }
@@ -1065,9 +1057,9 @@ FilePushDestination::OnAsyncVfsFileEncodeCompleted( CORE::CNotifier* notifier   
 /*-------------------------------------------------------------------------*/
 
 void
-FilePushDestination::OnFilePushFinished( CORE::CNotifier* notifier    ,
-                                         const CORE::CEvent& eventId  ,
-                                         CORE::CICloneable* eventData )
+FilePushDestination::OnFilePushOpFinished( CORE::CNotifier* notifier    ,
+                                           const CORE::CEvent& eventId  ,
+                                           CORE::CICloneable* eventData )
 {GUCEF_TRACE;
 
     VFS::CAsyncVfsTaskResultData* asyncOpResult = static_cast< VFS::CAsyncVfsTaskResultData* >( eventData );
@@ -1093,7 +1085,7 @@ FilePushDestination::OnFilePushFinished( CORE::CNotifier* notifier    ,
                         {    
                             m_totalBytesPushed += taskData->data.GetDataSize();
                             
-                            GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "FilePushDestination:OnFilePushFinished: Successfully pushed file \"" + 
+                            GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "FilePushDestination:OnFilePushOpFinished: Successfully pushed file \"" + 
                                 originalFilePath + "\" to VFS path \"" + taskData->filepath + "\"" );
 
                             // get rid of our temp helper file
@@ -1101,12 +1093,12 @@ FilePushDestination::OnFilePushFinished( CORE::CNotifier* notifier    ,
                             {
                                 if ( VFS::CVfsGlobal::Instance()->GetVfs().DeleteFile( slot->entryInfo->encodedFilepath, true ) )
                                 {
-                                    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "FilePushDestination:OnFilePushFinished: Successfully deleted temp encoding file \"" + 
+                                    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "FilePushDestination:OnFilePushOpFinished: Successfully deleted temp encoding file \"" + 
                                         slot->entryInfo->encodedFilepath + "\"" );
                                 }
                                 else
                                 {
-                                    GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "FilePushDestination:OnFilePushFinished: Failed to deleted temp encoding file \"" + 
+                                    GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "FilePushDestination:OnFilePushOpFinished: Failed to deleted temp encoding file \"" + 
                                         slot->entryInfo->encodedFilepath + "\"" );
                                 }
                             }
@@ -1129,14 +1121,14 @@ FilePushDestination::OnFilePushFinished( CORE::CNotifier* notifier    ,
 
                                 if ( CORE::MoveFile( slot->entryInfo->filePath, moveDestinationPath, m_settings.overwriteFilesInFileMoveDestination ) )
                                 {
-                                    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "FilePushDestination:OnFilePushFinished: Successfully moved pushed file \"" + 
+                                    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "FilePushDestination:OnFilePushOpFinished: Successfully moved pushed file \"" + 
                                         slot->entryInfo->filePath + "\" to \"" + moveDestinationPath + "\"" );
 
                                     slot->entryInfo->filePath = moveDestinationPath;
                                 }
                                 else
                                 {
-                                    GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "FilePushDestination:OnFilePushFinished: Failed to move pushed file \"" + 
+                                    GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "FilePushDestination:OnFilePushOpFinished: Failed to move pushed file \"" + 
                                         slot->entryInfo->filePath + "\" to \"" + moveDestinationPath + "\"");
                                 }
                             }
@@ -1145,12 +1137,12 @@ FilePushDestination::OnFilePushFinished( CORE::CNotifier* notifier    ,
                             {
                                 if ( CORE::DeleteFile( slot->entryInfo->filePath ) )
                                 {
-                                    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "FilePushDestination:OnFilePushFinished: Successfully deleted pushed file \"" + 
+                                    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "FilePushDestination:OnFilePushOpFinished: Successfully deleted pushed file \"" + 
                                         slot->entryInfo->filePath + "\"" );
                                 }
                                 else
                                 {
-                                    GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "FilePushDestination:OnFilePushFinished: Failed to delete pushed file \"" + 
+                                    GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "FilePushDestination:OnFilePushOpFinished: Failed to delete pushed file \"" + 
                                         slot->entryInfo->filePath + "\"" );
                                 }
                             }
@@ -1160,7 +1152,7 @@ FilePushDestination::OnFilePushFinished( CORE::CNotifier* notifier    ,
                         }
                         else
                         {
-                            GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "FilePushDestination:OnFilePushFinished: Async operation failed to push file \"" +
+                            GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "FilePushDestination:OnFilePushOpFinished: Async operation failed to push file \"" +
                                 slot->entryInfo->filePath + "\" to \"" + taskData->filepath );
                             
                             m_inflight.erase( i );
@@ -1171,7 +1163,7 @@ FilePushDestination::OnFilePushFinished( CORE::CNotifier* notifier    ,
                     }
                     default:
                     {
-                        GUCEF_ERROR_LOG( CORE::LOGLEVEL_CRITICAL, "FilePushDestination:OnFilePushFinished: Unsupported operation type in handler. This should not happen. Path: " + originalFilePath );
+                        GUCEF_ERROR_LOG( CORE::LOGLEVEL_CRITICAL, "FilePushDestination:OnFilePushOpFinished: Unsupported operation type in handler. This should not happen. Path: " + originalFilePath );
                         YieldInFlightSlot( slot );
                         break;
                     }
@@ -1179,7 +1171,7 @@ FilePushDestination::OnFilePushFinished( CORE::CNotifier* notifier    ,
             }
             else
             {
-                GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "FilePushDestination:OnFilePushFinished: Unknown entry, no matching in-flight slot found. This should not happen. Path: " + originalFilePath );
+                GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "FilePushDestination:OnFilePushOpFinished: Unknown entry, no matching in-flight slot found. This should not happen. Path: " + originalFilePath );
             }
         }
     }

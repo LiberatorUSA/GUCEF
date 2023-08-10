@@ -1292,8 +1292,8 @@ CVFS::MountArchive( const CArchiveSettings& settings )
             if ( actualArchivePath != settings.GetActualArchivePath() )
                 updatedSettings.SetActualArchivePath( actualArchivePath );
 
-            // Regardless of how the settings are presented we want to ensure a conistent mounting scheme
-            // As such we enforce having a start '/' and no trailing '/' for mount paths, with the start '/' signaling 'root'
+            // Regardless of how the settings are presented we want to ensure a consistent mounting scheme
+            // As such we enforce having a start '/' and a trailing '/' for mount paths, with the start '/' signaling 'root'
             updatedSettings.SetMountPath( ConformVfsDirPath( updatedSettings.GetMountPath() ) );
 
             if ( archive->LoadArchive( updatedSettings ) )
@@ -1331,6 +1331,15 @@ CVFS::MountArchive( const CArchiveSettings& settings )
                 NotifyObservers( ArchiveMountedEvent, &eData );
                 return true;
             }
+            else
+            {
+                GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "VFS:MountArchive: Failed to load archive of type \"" + 
+                    settings.GetArchiveType() + "\" which was to be mounted at path: " + updatedSettings.GetMountPath() );
+            }
+        }
+        else
+        {
+            GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "VFS:MountArchive: No factory available to handle archive of type: " + settings.GetArchiveType() );
         }
     }
 

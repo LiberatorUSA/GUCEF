@@ -2108,13 +2108,24 @@ CVariant::AsUtf8String( const CUtf8String& defaultIfNeeded, bool resolveVarsIfAp
     if ( GUCEF_DATATYPE_UTF8_STRING == m_variantData.containedType        ||
          GUCEF_DATATYPE_BOOLEAN_UTF8_STRING == m_variantData.containedType )
     {
-        if ( 0 == m_variantData.union_data.heap_data.heap_data_size ||
-             ( 1 == m_variantData.union_data.heap_data.heap_data_size && '\0' == *( (const char*) m_variantData.union_data.heap_data.union_data.char_heap_data ) ) )
-            return defaultIfNeeded;
+        if ( resolveVarsIfApplicable )
+        {
+            if ( 0 == m_variantData.union_data.heap_data.heap_data_size ||
+                 ( 1 == m_variantData.union_data.heap_data.heap_data_size && '\0' == *( (const char*) m_variantData.union_data.heap_data.union_data.char_heap_data ) ) )
+                return ResolveVars( ToString( defaultIfNeeded ) );
 
-        return CUtf8String( (const char*) m_variantData.union_data.heap_data.union_data.char_heap_data, m_variantData.union_data.heap_data.heap_data_size );
+            return ResolveVars( ToString( CUtf8String( (const char*) m_variantData.union_data.heap_data.union_data.char_heap_data, m_variantData.union_data.heap_data.heap_data_size ) ) );
+        }
+        else
+        {
+            if ( 0 == m_variantData.union_data.heap_data.heap_data_size ||
+                 ( 1 == m_variantData.union_data.heap_data.heap_data_size && '\0' == *( (const char*) m_variantData.union_data.heap_data.union_data.char_heap_data ) ) )
+                return defaultIfNeeded;
+
+            return CUtf8String( (const char*) m_variantData.union_data.heap_data.union_data.char_heap_data, m_variantData.union_data.heap_data.heap_data_size );
+        }
     }
-    return ToUtf8String( AsString( defaultIfNeeded ) );
+    return ToUtf8String( AsString( defaultIfNeeded, resolveVarsIfApplicable ) );
 }
 
 /*-------------------------------------------------------------------------*/

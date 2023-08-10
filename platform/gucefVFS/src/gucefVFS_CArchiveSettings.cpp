@@ -351,6 +351,24 @@ CArchiveSettings::GetReadableRequested( void ) const
 
 /*-------------------------------------------------------------------------*/
 
+void 
+CArchiveSettings::SetDirectoryWatchingAbilityRequested( bool canWatch )
+{GUCEF_TRACE;
+
+    m_directoryWatchingAbilityRequested = canWatch;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CArchiveSettings::GetDirectoryWatchingAbilityRequested( void ) const
+{GUCEF_TRACE;
+    
+    return m_directoryWatchingAbilityRequested;
+}
+
+/*-------------------------------------------------------------------------*/
+
 const CORE::CString& 
 CArchiveSettings::GetClassTypeName( void ) const
 {GUCEF_TRACE;

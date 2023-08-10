@@ -320,9 +320,9 @@ class FilePushDestination : public CORE::CObservingNotifier
                                   CORE::CICloneable* eventData );
 
     void
-    OnAsyncVfsFileEncodeCompleted( CORE::CNotifier* notifier    ,
-                                   const CORE::CEvent& eventId  ,
-                                   CORE::CICloneable* eventData );
+    OnAsyncVfsFileEncodeOpCompleted( CORE::CNotifier* notifier    ,
+                                     const CORE::CEvent& eventId  ,
+                                     CORE::CICloneable* eventData );
 
     void
     QueueNewFileForPushingAfterUnmodifiedRestPeriod( const CORE::CString& newFilePath );
@@ -356,9 +356,9 @@ class FilePushDestination : public CORE::CObservingNotifier
     PushFileUsingVfs( PushEntryPtr entry );
 
     void
-    OnFilePushFinished( CORE::CNotifier* notifier    ,
-                        const CORE::CEvent& eventId  ,
-                        CORE::CICloneable* eventData );
+    OnFilePushOpFinished( CORE::CNotifier* notifier    ,
+                          const CORE::CEvent& eventId  ,
+                          CORE::CICloneable* eventData );
 
     static CORE::CDateTime GetLatestTimestampForFile( const CORE::CString& filePath );
 

@@ -116,40 +116,41 @@ CClientConfiguration::SaveConfig( CORE::CDataNode& tree ) const
 /*-------------------------------------------------------------------------*/
 
 bool 
-CClientConfiguration::LoadConfig( const CORE::CDataNode& treeroot )
+CClientConfiguration::LoadConfig( const CORE::CDataNode& cfg )
 {GUCEF_TRACE;
 
-    userAgent = treeroot.GetAttributeValueOrChildValueByName( m_settingsPrefix + "userAgent" ).AsUtf8String( userAgent );
-    scheme = (Aws::Http::Scheme) CORE::StringToInt32( treeroot.GetAttributeValueOrChildValueByName( m_settingsPrefix + "userAgent", CORE::Int32ToString( (CORE::Int32) scheme ) ) );
-    region = treeroot.GetAttributeValueOrChildValueByName( m_settingsPrefix + "region" ).AsUtf8String( region );
-    useDualStack = CORE::StringToBool( treeroot.GetAttributeValueOrChildValueByName( m_settingsPrefix + "useDualStack", CORE::BoolToString( useDualStack ) ) );
-    maxConnections = CORE::StringToUInt32( treeroot.GetAttributeValueOrChildValueByName( m_settingsPrefix + "maxConnections", CORE::UInt32ToString( maxConnections ) ) );
-    httpRequestTimeoutMs = CORE::StringToInt32( treeroot.GetAttributeValueOrChildValueByName( m_settingsPrefix + "httpRequestTimeoutMs", CORE::Int32ToString( httpRequestTimeoutMs ) ) );
-    requestTimeoutMs = CORE::StringToInt32( treeroot.GetAttributeValueOrChildValueByName( m_settingsPrefix + "requestTimeoutMs", CORE::Int32ToString( requestTimeoutMs ) ) );
-    connectTimeoutMs = CORE::StringToInt32( treeroot.GetAttributeValueOrChildValueByName( m_settingsPrefix + "connectTimeoutMs", CORE::Int32ToString( connectTimeoutMs ) ) );
-    enableTcpKeepAlive = CORE::StringToBool( treeroot.GetAttributeValueOrChildValueByName( m_settingsPrefix + "enableTcpKeepAlive", CORE::BoolToString( enableTcpKeepAlive ) ) );
-    tcpKeepAliveIntervalMs = CORE::StringToUInt32( treeroot.GetAttributeValueOrChildValueByName( m_settingsPrefix + "tcpKeepAliveIntervalMs", CORE::UInt32ToString( tcpKeepAliveIntervalMs ) ) );
-    lowSpeedLimit = CORE::StringToUInt32( treeroot.GetAttributeValueOrChildValueByName( m_settingsPrefix + "lowSpeedLimit", CORE::UInt32ToString( lowSpeedLimit ) ) );
-    endpointOverride = treeroot.GetAttributeValueOrChildValueByName( m_settingsPrefix + "endpointOverride", endpointOverride ).AsUtf8String();
-    proxyScheme = (Aws::Http::Scheme) CORE::StringToInt32( treeroot.GetAttributeValueOrChildValueByName( m_settingsPrefix + "proxyScheme",  CORE::Int32ToString( (CORE::Int32) proxyScheme ) ) );
-    proxyHost = treeroot.GetAttributeValueOrChildValueByName( m_settingsPrefix + "proxyHost" ).AsUtf8String( proxyHost );
-    proxyPort = CORE::StringToUInt32( treeroot.GetAttributeValueOrChildValueByName( m_settingsPrefix + "proxyPort", CORE::UInt32ToString( proxyPort ) ) );
-    proxyUserName = treeroot.GetAttributeValueOrChildValueByName( m_settingsPrefix + "proxyUserName" ).AsUtf8String( proxyUserName );
-    proxyPassword = treeroot.GetAttributeValueOrChildValueByName( m_settingsPrefix + "proxyPassword" ).AsUtf8String( proxyPassword );
-    proxySSLCertPath = treeroot.GetAttributeValueOrChildValueByName( m_settingsPrefix + "proxySSLCertPath" ).AsUtf8String( proxySSLCertPath );
-    proxySSLCertType = treeroot.GetAttributeValueOrChildValueByName( m_settingsPrefix + "proxySSLCertType" ).AsUtf8String( proxySSLCertType );
-    proxySSLKeyPath = treeroot.GetAttributeValueOrChildValueByName( m_settingsPrefix + "proxySSLKeyPath" ).AsUtf8String( proxySSLKeyPath );
-    proxySSLKeyType = treeroot.GetAttributeValueOrChildValueByName( m_settingsPrefix + "proxySSLKeyType" ).AsUtf8String( proxySSLKeyType );
-    proxySSLKeyPassword = treeroot.GetAttributeValueOrChildValueByName( m_settingsPrefix + "proxySSLKeyPassword" ).AsUtf8String( proxySSLKeyPassword );
-    verifySSL = CORE::StringToBool( treeroot.GetAttributeValueOrChildValueByName( m_settingsPrefix + "verifySSL", CORE::BoolToString( verifySSL ) ) );
-    caPath = treeroot.GetAttributeValueOrChildValueByName( m_settingsPrefix + "caPath", caPath ).AsUtf8String();
-    caFile = treeroot.GetAttributeValueOrChildValueByName( m_settingsPrefix + "caFile", caFile ).AsUtf8String();
-    followRedirects = (Aws::Client::FollowRedirectsPolicy) CORE::StringToInt32( treeroot.GetAttributeValueOrChildValueByName( m_settingsPrefix + "followRedirects", CORE::Int32ToString( (CORE::Int32) followRedirects ) ) );
-    disableExpectHeader = CORE::StringToBool( treeroot.GetAttributeValueOrChildValueByName( m_settingsPrefix + "disableExpectHeader", CORE::BoolToString( disableExpectHeader ) ) );
-    enableClockSkewAdjustment = CORE::StringToBool( treeroot.GetAttributeValueOrChildValueByName( m_settingsPrefix + "enableClockSkewAdjustment", CORE::BoolToString( enableClockSkewAdjustment ) ) );
-    enableHostPrefixInjection = CORE::StringToBool( treeroot.GetAttributeValueOrChildValueByName( m_settingsPrefix + "enableHostPrefixInjection", CORE::BoolToString( enableHostPrefixInjection ) ) );
-    enableEndpointDiscovery = CORE::StringToBool( treeroot.GetAttributeValueOrChildValueByName( m_settingsPrefix + "enableEndpointDiscovery", CORE::BoolToString( enableEndpointDiscovery.has_value() ? enableEndpointDiscovery.value() : false ) ) ); // Per AWS: "By default, endpoint discovery is off."
-    profileName = treeroot.GetAttributeValueOrChildValueByName( m_settingsPrefix + "profileName", profileName ).AsUtf8String();
+    userAgent = cfg.GetAttributeValueOrChildValueByName( m_settingsPrefix + "userAgent" ).AsUtf8String( userAgent, true );
+    scheme = (Aws::Http::Scheme) CORE::StringToInt32( cfg.GetAttributeValueOrChildValueByName( m_settingsPrefix + "scheme", CORE::Int32ToString( (CORE::Int32) scheme ) ) );
+    region = cfg.GetAttributeValueOrChildValueByName( m_settingsPrefix + "region" ).AsUtf8String( region, true );
+    useDualStack = cfg.GetAttributeValueOrChildValueByName( m_settingsPrefix + "useDualStack", useDualStack ).AsBool( useDualStack, true );
+    maxConnections = cfg.GetAttributeValueOrChildValueByName( m_settingsPrefix + "maxConnections", maxConnections ).AsInt32( maxConnections, true );
+    httpRequestTimeoutMs = cfg.GetAttributeValueOrChildValueByName( m_settingsPrefix + "httpRequestTimeoutMs", httpRequestTimeoutMs ).AsInt32( httpRequestTimeoutMs, true );
+    requestTimeoutMs = cfg.GetAttributeValueOrChildValueByName( m_settingsPrefix + "requestTimeoutMs", requestTimeoutMs ).AsInt32( requestTimeoutMs, true );
+    connectTimeoutMs = cfg.GetAttributeValueOrChildValueByName( m_settingsPrefix + "connectTimeoutMs", connectTimeoutMs ).AsInt32( connectTimeoutMs, true );
+    enableTcpKeepAlive = cfg.GetAttributeValueOrChildValueByName( m_settingsPrefix + "enableTcpKeepAlive", enableTcpKeepAlive ).AsBool( enableTcpKeepAlive, true );
+    tcpKeepAliveIntervalMs = cfg.GetAttributeValueOrChildValueByName( m_settingsPrefix + "tcpKeepAliveIntervalMs", (UInt32) tcpKeepAliveIntervalMs ).AsUInt32( tcpKeepAliveIntervalMs, true );
+    lowSpeedLimit = cfg.GetAttributeValueOrChildValueByName( m_settingsPrefix + "lowSpeedLimit", (UInt32) lowSpeedLimit ).AsUInt32( lowSpeedLimit, true );
+    endpointOverride = cfg.GetAttributeValueOrChildValueByName( m_settingsPrefix + "endpointOverride", endpointOverride ).AsUtf8String( endpointOverride, true );
+    proxyScheme = (Aws::Http::Scheme) CORE::StringToInt32( cfg.GetAttributeValueOrChildValueByName( m_settingsPrefix + "proxyScheme",  CORE::Int32ToString( (CORE::Int32) proxyScheme ) ) );
+    proxyHost = cfg.GetAttributeValueOrChildValueByName( m_settingsPrefix + "proxyHost", proxyHost ).AsUtf8String( proxyHost, true );
+    proxyPort = cfg.GetAttributeValueOrChildValueByName( m_settingsPrefix + "proxyPort", proxyPort ).AsUInt32( proxyPort, true );
+    proxyUserName = cfg.GetAttributeValueOrChildValueByName( m_settingsPrefix + "proxyUserName", proxyUserName ).AsUtf8String( proxyUserName, true );
+    proxyPassword = cfg.GetAttributeValueOrChildValueByName( m_settingsPrefix + "proxyPassword", proxyPassword ).AsUtf8String( proxyPassword, true );
+    proxySSLCertPath = cfg.GetAttributeValueOrChildValueByName( m_settingsPrefix + "proxySSLCertPath", proxySSLCertPath ).AsUtf8String( proxySSLCertPath, true );
+    proxySSLCertType = cfg.GetAttributeValueOrChildValueByName( m_settingsPrefix + "proxySSLCertType", proxySSLCertType ).AsUtf8String( proxySSLCertType, true );
+    proxySSLKeyPath = cfg.GetAttributeValueOrChildValueByName( m_settingsPrefix + "proxySSLKeyPath", proxySSLKeyPath ).AsUtf8String( proxySSLKeyPath, true );
+    proxySSLKeyType = cfg.GetAttributeValueOrChildValueByName( m_settingsPrefix + "proxySSLKeyType", proxySSLKeyType ).AsUtf8String( proxySSLKeyType, true );
+    proxySSLKeyPassword = cfg.GetAttributeValueOrChildValueByName( m_settingsPrefix + "proxySSLKeyPassword", proxySSLKeyPassword ).AsUtf8String( proxySSLKeyPassword, true );
+    verifySSL = cfg.GetAttributeValueOrChildValueByName( m_settingsPrefix + "verifySSL", verifySSL ).AsBool( verifySSL, true );
+    caPath = cfg.GetAttributeValueOrChildValueByName( m_settingsPrefix + "caPath", caPath ).AsUtf8String( caPath, true );
+    caFile = cfg.GetAttributeValueOrChildValueByName( m_settingsPrefix + "caFile", caFile ).AsUtf8String( caFile, true );
+    followRedirects = (Aws::Client::FollowRedirectsPolicy) CORE::StringToInt32( cfg.GetAttributeValueOrChildValueByName( m_settingsPrefix + "followRedirects", CORE::Int32ToString( (CORE::Int32) followRedirects ) ) );
+    disableExpectHeader = cfg.GetAttributeValueOrChildValueByName( m_settingsPrefix + "disableExpectHeader", disableExpectHeader ).AsBool( disableExpectHeader, true );
+    enableClockSkewAdjustment = cfg.GetAttributeValueOrChildValueByName( m_settingsPrefix + "enableClockSkewAdjustment", enableClockSkewAdjustment ).AsBool( enableClockSkewAdjustment, true );
+    enableHostPrefixInjection = cfg.GetAttributeValueOrChildValueByName( m_settingsPrefix + "enableHostPrefixInjection", enableHostPrefixInjection ).AsBool( enableHostPrefixInjection, true );
+    enableEndpointDiscovery = cfg.GetAttributeValueOrChildValueByName( m_settingsPrefix + "enableEndpointDiscovery", enableEndpointDiscovery.has_value() ? (bool) enableEndpointDiscovery.value() : false ).
+        AsBool( enableEndpointDiscovery.has_value() ? (bool) enableEndpointDiscovery.value() : false, true ); // Per AWS: "By default, endpoint discovery is off."
+    profileName = cfg.GetAttributeValueOrChildValueByName( m_settingsPrefix + "profileName", profileName ).AsUtf8String( profileName, true );
     return true;
 }
 
