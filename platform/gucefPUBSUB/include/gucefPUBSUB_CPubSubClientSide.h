@@ -122,9 +122,11 @@ class GUCEF_PUBSUB_EXPORT_CPP CPubSubClientSide : public CORE::CTaskConsumer
     typedef CORE::CTEventHandlerFunctor< CPubSubClientSide >                            TEventCallback;
     typedef std::vector< CPubSubClientSide*, basic_allocator< CPubSubClientSide* > >    TPubSubClientSideVector;
 
-    class CPubSubClientSideMetrics
+    class CPubSubClientSideMetrics : public CORE::CTSharedObjCreator< CPubSubClientSideMetrics, MT::CMutex > 
     {
         public:
+
+        typedef typename CORE::CTSharedObjCreator< CPubSubClientSideMetrics, MT::CMutex >::TSharedPtrType PubSubClientSideMetricsPtr;
 
         CORE::UInt64 publishedMsgsInFlight;
         CORE::UInt64 publishOrAckFailedMsgs;
@@ -136,9 +138,10 @@ class GUCEF_PUBSUB_EXPORT_CPP CPubSubClientSide : public CORE::CTaskConsumer
 
         CPubSubClientSideMetrics( void );
         CPubSubClientSideMetrics( const CPubSubClientSideMetrics& src );
-        ~CPubSubClientSideMetrics();
+        virtual ~CPubSubClientSideMetrics();
     };
-    typedef std::map< CORE::CString, CPubSubClientSideMetrics > StringToPubSubClientSideMetricsMap;
+    typedef CPubSubClientSideMetrics::PubSubClientSideMetricsPtr    PubSubClientSideMetricsPtr;
+    typedef std::map< CORE::CString, PubSubClientSideMetricsPtr >   StringToPubSubClientSideMetricsMap;
 
     CPubSubClientSide( const CORE::CString& sideId                ,
                        CPubSubFlowRouter* flowRouter = GUCEF_NULL );
@@ -164,8 +167,6 @@ class GUCEF_PUBSUB_EXPORT_CPP CPubSubClientSide : public CORE::CTaskConsumer
     const CPubSubSideChannelSettings& GetSideSettings( void ) const;
 
     CORE::CString GetSideId( void ) const;
-
-    const StringToPubSubClientSideMetricsMap& GetSideMetrics( void ) const;
 
     bool PerformPubSubClientSetup( bool hardReset = false );
 
@@ -225,8 +226,6 @@ class GUCEF_PUBSUB_EXPORT_CPP CPubSubClientSide : public CORE::CTaskConsumer
     void RegisterEventHandlers( void );
 
     void RegisterPubSubClientEventHandlers( CPubSubClientPtr& pubsubClient );
-
-    void RegisterTopicEventHandlers( CPubSubClientTopicBasicPtr topic );
 
     void RegisterTopicEventHandlers( CPubSubClientPtr& pubsubClient );
 
@@ -290,6 +289,8 @@ class GUCEF_PUBSUB_EXPORT_CPP CPubSubClientSide : public CORE::CTaskConsumer
     bool GetLatestBookmark( const CPubSubClientTopic& topic ,
                             CPubSubBookmark& bookmark       );
 
+    void DetachFromClient( CPubSubClientPtr pubsubClient );
+
     typedef CORE::CTMailboxForSharedCloneables< CIPubSubMsg, MT::CNoLock > TPubSubMsgMailbox;
 
     class TopicLink : public CORE::CObservingNotifier ,
@@ -297,73 +298,11 @@ class GUCEF_PUBSUB_EXPORT_CPP CPubSubClientSide : public CORE::CTaskConsumer
     {
         public:
 
-        class MsgTrackingEntry
-        {
-            public:
-            CORE::UInt32 retryCount;
-            CORE::CDateTime firstPublishAttempt;
-            CORE::CDateTime lastPublishAttempt;
-            CORE::UInt64 publishActionId;
-            CIPubSubMsg::TNoLockSharedPtr msg;
-            bool isInFlight;
-            bool waitingForInFlightConfirmation;
-            bool readyToAckPublishSuccessButAckFailed;
-
-            MsgTrackingEntry( void );
-            MsgTrackingEntry( const MsgTrackingEntry& src );
-            MsgTrackingEntry( CORE::UInt64 publishActionId, CIPubSubMsg::TNoLockSharedPtr& msg, bool isInFlightState = false );
-            MsgTrackingEntry& operator=( const MsgTrackingEntry& src );
-        };
-
-        typedef MT::CTMailBox< CIPubSubMsg::TNoLockSharedPtr >                      TPubSubMsgPtrMailbox;
-        typedef std::map< CORE::UInt64, MsgTrackingEntry >                          TUInt64ToMsgTrackingEntryMap;
-        typedef std::map< CORE::UInt64, CPubSubBookmark >                           TUInt64ToBookmarkMap;
-        typedef std::set< CORE::UInt64 >                                            TUInt64Set;
-        typedef CORE::CTEventHandlerFunctor< TopicLink >                            TEventCallback;
-
-        CPubSubClientTopicBasicPtr topic;                                       /**< the actual backend topic access object */
-        CPubSubClientTopic::TPublishActionIdVector currentPublishActionIds;     /**< temp placeholder to help prevent allocations per invocation */
-        TUInt64ToMsgTrackingEntryMap inFlightMsgs;
-        TUInt64Set publishFailedMsgs;
-        TPubSubMsgPtrMailbox publishAckdMsgsMailbox;
-        CORE::CString metricFriendlyTopicName;
-        CPubSubClientSideMetrics* metrics;
-        CORE::CDateTime lastBookmarkPersistSuccess;
-        CORE::Int32 msgsSinceLastBookmarkPersist;
-        TUInt64ToBookmarkMap bookmarksOnMsgReceived;
-        TPubSubMsgMailbox msgMailbox;
-        CPubSubFlowRouter* flowRouter;
-        CPubSubClientSide* side;
-        CPubSubClientFeatures clientFeatures;
-        TIPubSubBookmarkPersistenceBasicPtr pubsubBookmarkPersistence;
-        bool awaitingFailureReport;
-        CORE::UInt64 totalMsgsInFlight;
-        CORE::CString bookmarkNamespace;
-        CORE::UInt32 threadIdOfTopicLink;
-        CORE::CTimer timedOutInFlightMessagesCheckTimer;
-        CORE::CTimer metricsTimer;
-        CORE::PulseGeneratorPtr pulseGenerator;
-        MT::CMutex dataLock;
-
         TopicLink( void );
         TopicLink( CPubSubClientTopicBasicPtr t );
         virtual ~TopicLink();
 
-        void AddInFlightMsgs( const CPubSubClientTopic::TPublishActionIdVector& publishActionIds ,
-                              const CPubSubClientTopic::TIPubSubMsgSPtrVector& msgs              ,
-                              bool inFlightDefaultState                                          );
-
-        void AddInFlightMsgs( const CPubSubClientTopic::TPublishActionIdVector& publishActionIds ,
-                              const CPubSubClientTopic::TPubSubMsgsRefVector& msgs               ,
-                              bool inFlightDefaultState                                          );
-
-        void AddInFlightMsg( CORE::UInt64 publishActionId       ,
-                             CIPubSubMsg::TNoLockSharedPtr& msg );
-
-        void RegisterTopicEventHandlers( CPubSubClientTopicBasicPtr topic       ,
-                                         CORE::PulseGeneratorPtr pulseGenerator );
-
-        void UpdateTopicMetrics( void );
+        bool ApplySettings( const CPubSubSideChannelSettings& sideSettings );
 
         void Clear( void );
 
@@ -387,24 +326,67 @@ class GUCEF_PUBSUB_EXPORT_CPP CPubSubClientSide : public CORE::CTaskConsumer
 
         void CleanupMsgBatchBookmarksUpTo( UInt64 msgBatchBookmarkReceiveId );
 
-        bool PublishMsgs( const CPubSubClientTopic::TPubSubMsgsRefVector& msgs );
-
-        bool PublishMsgsASync( const CPubSubClientTopic::TPubSubMsgsRefVector& msgs );
-
         template < typename TMsgCollection >
-        bool PublishMsgsSync( const TMsgCollection& msgs );
+        bool PublishMsgs( const TMsgCollection& msgs );
 
-        bool PublishMailboxMsgs( void );
+        void SetPulseGenerator( CORE::PulseGeneratorPtr newPulseGenerator );
+
+        void SetParentSide( CPubSubClientSide* parentSide );
+
+        void SetFlowRouter( CPubSubFlowRouter* router );
+        
+        CORE::PulseGeneratorPtr GetPulseGenerator( void ) const;
+
+        CORE::UInt64 GetTotalMsgsInFlight( void ) const;
+
+        void SetTopic( CPubSubClientTopicBasicPtr topic );
+        
+        CPubSubClientTopicBasicPtr GetTopic( void ) const;
+
+        /**
+         *  Detaches from the underlying topic implementation without wiping all the logically related topic state
+         *  This allows for subsequent relinking with a replacement topic implementation for the same topic and a 'resume'
+         *  of normal operations.
+         *  Intended for error handling mechanisms where the underlying implementation is 'reset' by wiping it and replacing it with a new one
+         */
+        void DetachFromTopic( void );
+
+        CORE::CString GetMetricFriendlyTopicName( void ) const;
+
+        void SetPubsubBookmarkPersistence( TIPubSubBookmarkPersistenceBasicPtr persistance );
+        
+        TIPubSubBookmarkPersistenceBasicPtr GetPubsubBookmarkPersistence( void ) const;
+
+        void SetPubsubBookmarkNamespace( const CString& bookmarkNamespace );
+
+        void SetClientFeatures( const CPubSubClientFeatures& clientFeatures );
 
         bool AcknowledgeReceipt( CIPubSubMsg::TNoLockSharedPtr& msg );
 
-        bool AcknowledgeReceiptASync( CIPubSubMsg::TNoLockSharedPtr& msg );
+        virtual const CString& GetClassTypeName( void ) const GUCEF_VIRTUAL_OVERRIDE;
+
+        virtual const MT::CILockable* AsLockable( void ) const GUCEF_VIRTUAL_OVERRIDE;  
         
-        bool AcknowledgeReceiptSync( CIPubSubMsg::TNoLockSharedPtr& msg );
+        protected:
 
-        void ProcessAcknowledgeReceiptsMailbox( void );
+        virtual MT::TLockStatus Lock( UInt32 lockWaitTimeoutInMs = GUCEF_MT_DEFAULT_LOCK_TIMEOUT_IN_MS ) const GUCEF_VIRTUAL_OVERRIDE;
 
-        bool RetryPublishFailedMsgs( void );
+        virtual MT::TLockStatus Unlock( void ) const GUCEF_VIRTUAL_OVERRIDE;
+
+        private:
+
+        void UpdateTopicMetrics( void );
+
+        void AddInFlightMsgs( const CPubSubClientTopic::TPublishActionIdVector& publishActionIds ,
+                              const CPubSubClientTopic::TIPubSubMsgSPtrVector& msgs              ,
+                              bool inFlightDefaultState                                          );
+
+        void AddInFlightMsgs( const CPubSubClientTopic::TPublishActionIdVector& publishActionIds ,
+                              const CPubSubClientTopic::TPubSubMsgsRefVector& msgs               ,
+                              bool inFlightDefaultState                                          );
+
+        void AddInFlightMsg( CORE::UInt64 publishActionId       ,
+                             CIPubSubMsg::TNoLockSharedPtr& msg );
 
         void
         OnPulseCycle( CORE::CNotifier* notifier    ,
@@ -441,27 +423,89 @@ class GUCEF_PUBSUB_EXPORT_CPP CPubSubClientSide : public CORE::CTaskConsumer
                                             const CORE::CEvent& eventId  ,
                                             CORE::CICloneable* eventData );
 
-        virtual const CString& GetClassTypeName( void ) const GUCEF_VIRTUAL_OVERRIDE;
+        bool AcknowledgeReceiptASync( CIPubSubMsg::TNoLockSharedPtr& msg );
+        
+        bool AcknowledgeReceiptSync( CIPubSubMsg::TNoLockSharedPtr& msg );
 
-        virtual const MT::CILockable* AsLockable( void ) const GUCEF_VIRTUAL_OVERRIDE;    
+        void ProcessAcknowledgeReceiptsMailbox( void );
 
-        virtual MT::TLockStatus Lock( UInt32 lockWaitTimeoutInMs = GUCEF_MT_DEFAULT_LOCK_TIMEOUT_IN_MS ) const GUCEF_VIRTUAL_OVERRIDE;
+        void RegisterTopicEventHandlers( CPubSubClientTopicBasicPtr topic );
 
-        virtual MT::TLockStatus Unlock( void ) const GUCEF_VIRTUAL_OVERRIDE;
+        template < typename TMsgCollection >
+        bool PublishMsgsASync( const TMsgCollection& msgs );
+
+        template < typename TMsgCollection >
+        bool PublishMsgsSync( const TMsgCollection& msgs );
+
+        bool PublishMailboxMsgs( void );
+
+        bool RetryPublishFailedMsgs( void );
+
+        private:
+
+        class MsgTrackingEntry
+        {
+            public:
+            CORE::UInt32 retryCount;
+            CORE::CDateTime firstPublishAttempt;
+            CORE::CDateTime lastPublishAttempt;
+            CORE::UInt64 publishActionId;
+            CIPubSubMsg::TNoLockSharedPtr msg;
+            bool isInFlight;
+            bool waitingForInFlightConfirmation;
+            bool readyToAckPublishSuccessButAckFailed;
+
+            MsgTrackingEntry( void );
+            MsgTrackingEntry( const MsgTrackingEntry& src );
+            MsgTrackingEntry( CORE::UInt64 publishActionId, CIPubSubMsg::TNoLockSharedPtr& msg, bool isInFlightState = false );
+            MsgTrackingEntry& operator=( const MsgTrackingEntry& src );
+        };
+
+        typedef MT::CTMailBox< CIPubSubMsg::TNoLockSharedPtr >                      TPubSubMsgPtrMailbox;
+        typedef std::map< CORE::UInt64, MsgTrackingEntry >                          TUInt64ToMsgTrackingEntryMap;
+        typedef std::map< CORE::UInt64, CPubSubBookmark >                           TUInt64ToBookmarkMap;
+        typedef std::set< CORE::UInt64 >                                            TUInt64Set;
+        typedef CORE::CTEventHandlerFunctor< TopicLink >                            TEventCallback;
+
+        CPubSubClientTopicBasicPtr topic;                                       /**< the actual backend topic access object */
+        CPubSubClientTopic::TPublishActionIdVector currentPublishActionIds;     /**< temp placeholder to help prevent allocations per invocation */
+        TUInt64ToMsgTrackingEntryMap inFlightMsgs;
+        TUInt64Set publishFailedMsgs;
+        TPubSubMsgPtrMailbox publishAckdMsgsMailbox;
+        CORE::CString metricFriendlyTopicName;
+        CORE::CString metricsPrefix;
+        PubSubClientSideMetricsPtr metrics;
+        CORE::CDateTime lastBookmarkPersistSuccess;
+        CORE::Int32 msgsSinceLastBookmarkPersist;
+        TUInt64ToBookmarkMap bookmarksOnMsgReceived;
+        TPubSubMsgMailbox msgMailbox;
+        CPubSubFlowRouter* flowRouter;
+        CPubSubClientSide* side;
+        CPubSubClientFeatures clientFeatures;
+        TIPubSubBookmarkPersistenceBasicPtr pubsubBookmarkPersistence;
+        bool awaitingFailureReport;
+        CORE::UInt64 totalMsgsInFlight;
+        CORE::CString bookmarkNamespace;
+        CORE::UInt32 threadIdOfTopicLink;
+        CORE::CTimer timedOutInFlightMessagesCheckTimer;
+        CORE::CTimer metricsTimer;
+        CORE::PulseGeneratorPtr pulseGenerator;
+        MT::CMutex dataLock;
     
     };
     typedef TopicLink::TSharedPtrType  TopicLinkPtr;
 
     typedef std::pair< const CPubSubClientTopic*, TopicLinkPtr >   TPubSubClientTopicRawPtrAndTopicLinkPair;
-    typedef std::map< CPubSubClientTopic*, TopicLinkPtr, std::less< CPubSubClientTopic* >, basic_allocator< TPubSubClientTopicRawPtrAndTopicLinkPair > > TopicMap;
+    typedef std::map< CPubSubClientTopic*, TopicLinkPtr, std::less< CPubSubClientTopic* >, basic_allocator< TPubSubClientTopicRawPtrAndTopicLinkPair > > TopicPtrMap;
+    typedef std::map< CORE::CString, TopicLinkPtr, std::less< CORE::CString >, basic_allocator< TPubSubClientTopicRawPtrAndTopicLinkPair > >             TopicNameMap;
     typedef std::set< CPubSubClientTopicBasicPtr, std::less< CPubSubClientTopicBasicPtr >, basic_allocator< CPubSubClientTopicBasicPtr > >               TopicSet;
 
     CPubSubClientPtr m_pubsubClient;
     CPubSubClientFeatures m_clientFeatures;
     TIPubSubBookmarkPersistenceBasicPtr m_pubsubBookmarkPersistence;
     CORE::CString m_bookmarkNamespace;
-    TopicMap m_topics;
-    StringToPubSubClientSideMetricsMap m_metricsMap;
+    TopicPtrMap m_topicPtrs;
+    TopicNameMap m_topics;
     CPubSubSideChannelSettings m_sideSettings;
     TPubSubMsgMailbox m_broadcastMailbox;
     CORE::CTimer m_metricsTimer;

@@ -108,7 +108,7 @@ class GUCEF_PUBSUB_EXPORT_CPP CPubSubSideChannelConfig : public CORE::CIConfigur
     CORE::UInt32 metricsIntervalInMs;
     CORE::CString pubsubIdPrefix;
 
-    CPubSubClientTopicConfigPtr GetTopicConfig( const CORE::CString& topicName );
+    CPubSubClientTopicConfigPtr GetTopicConfig( const CORE::CString& topicName ) const;
 
     virtual bool SaveConfig( CORE::CDataNode& tree ) const GUCEF_VIRTUAL_OVERRIDE;
 

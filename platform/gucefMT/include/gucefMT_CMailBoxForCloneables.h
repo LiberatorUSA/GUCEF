@@ -28,6 +28,11 @@
 #include <deque>
 #include <vector>
 
+#ifndef GUCEF_SFINAE_H
+#include "gucef_SFINAE.h"
+#define GUCEF_SFINAE_H
+#endif /* GUCEF_SFINAE_H ? */
+
 #ifndef GUCEF_MT_CMUTEX_H
 #include "gucefMT_CMutex.h"
 #define GUCEF_MT_CMUTEX_H
@@ -153,16 +158,7 @@ class GUCEF_MT_PUBLIC_CPP CMailboxForCloneables : public MT::CILockable
      *  @return whether mail was successfully added to the mailbox.
      */
     template< typename TContainer >
-    bool AddPtrBulkMail( const TContainer& mailList, UInt32 itemsPerLockCycle = 1000 );
-
-    /**
-     *  Attempts to add mail to the mailbox in bulk
-     *
-     *  @param mailList container from where the mail items will be read
-     *  @return whether mail was successfully added to the mailbox.
-     */
-    template< typename TContainer >
-    bool AddValBulkMail( const TContainer& mailList );
+    bool AddBulkMail( const TContainer& mailList, UInt32 itemsPerLockCycle = 1000 );
 
     void Clear( void );
 
@@ -186,6 +182,12 @@ class GUCEF_MT_PUBLIC_CPP CMailboxForCloneables : public MT::CILockable
 
     private:
 
+    template< typename S >
+    const CICloneable* AsCloneablePtr( typename EnableIf< TypeIsPointerType< S >::value, S >::type& thing );
+
+    template< typename S >
+    const CICloneable* AsCloneablePtr( typename EnableIfNot< TypeIsPointerType< S >::value, S >::type& thing );
+
     CMailboxForCloneables( const CMailboxForCloneables& src );             /**< not implemented */
     CMailboxForCloneables& operator=( const CMailboxForCloneables& src );  /**< not implemented */
 
@@ -200,6 +202,26 @@ class GUCEF_MT_PUBLIC_CPP CMailboxForCloneables : public MT::CILockable
 //      IMPLEMENTATION                                                     //
 //                                                                         //
 //-------------------------------------------------------------------------*/
+
+template< typename S >
+const CICloneable* 
+CMailboxForCloneables::AsCloneablePtr( typename EnableIf< TypeIsPointerType< S >::value, S >::type& thing )
+{GUCEF_TRACE;
+
+    return static_cast< const CICloneable* >( thing );
+}
+
+/*--------------------------------------------------------------------------*/
+
+template< typename S >
+const CICloneable* 
+CMailboxForCloneables::AsCloneablePtr( typename EnableIfNot< TypeIsPointerType< S >::value, S >::type& thing )
+{GUCEF_TRACE;
+
+    return static_cast< const CICloneable* >( &thing );
+}
+
+/*--------------------------------------------------------------------------*/
 
 template< typename T >
 bool
@@ -307,7 +329,7 @@ CMailboxForCloneables::GetValBulkMail( TContainer& mailList ,
 
 template< typename TContainer >
 bool
-CMailboxForCloneables::AddPtrBulkMail( const TContainer& mailList, UInt32 itemsPerLockCycle )
+CMailboxForCloneables::AddBulkMail( const TContainer& mailList, UInt32 itemsPerLockCycle )
 {GUCEF_TRACE;
 
     typename TContainer::const_iterator i = mailList.begin();
@@ -318,32 +340,13 @@ CMailboxForCloneables::AddPtrBulkMail( const TContainer& mailList, UInt32 itemsP
         UInt32 n=0;
         while ( i != mailList.end() && n < itemsPerLockCycle )
         {
-            const CICloneable* origMail = static_cast< const CICloneable* >( (*i) );
+            const CICloneable* origMail = AsCloneablePtr< typename const TContainer::const_iterator::value_type >( (*i) );
             if ( GUCEF_NULL != origMail )
             {
                 m_mailQueue.push_back( origMail->Clone() );
             }
             ++i; ++n;
         }
-    }
-    return true;
-}
-
-/*-------------------------------------------------------------------------*/
-
-template< typename TContainer >
-bool
-CMailboxForCloneables::AddValBulkMail( const TContainer& mailList )
-{GUCEF_TRACE;
-
-    CObjectScopeLock lock( this );
-
-    typename TContainer::const_iterator i = mailList.begin();
-    while ( i != mailList.end() )
-    {
-        const CICloneable& origMail = static_cast< const CICloneable& >( (*i) );
-        m_mailQueue.push_back( origMail.Clone() );
-        ++i;
     }
     return true;
 }

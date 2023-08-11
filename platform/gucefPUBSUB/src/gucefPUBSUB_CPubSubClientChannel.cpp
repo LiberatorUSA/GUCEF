@@ -515,31 +515,6 @@ CPubSubClientChannel::OnMetricsTimerCycle( CORE::CNotifier* notifier    ,
                                            CORE::CICloneable* eventData )
 {GUCEF_TRACE;
 
-    TPubSubClientSidePtrVector::iterator i = m_sides.begin();
-    while ( i != m_sides.end() )
-    {
-        const CPubSubClientSide::StringToPubSubClientSideMetricsMap& sideMetrics = (*i)->GetSideMetrics();
-        CPubSubClientSide::StringToPubSubClientSideMetricsMap::const_iterator n = sideMetrics.begin();
-        while ( n != sideMetrics.end() )
-        {
-            const CORE::CString& metricFriendlyTopicName = (*n).first;
-            const CPubSubClientSide::CPubSubClientSideMetrics& metrics = (*n).second;
-
-            if ( metrics.hasSupportForPublishing )
-            {
-                GUCEF_METRIC_GAUGE( metricFriendlyTopicName + "publishedMsgsInFlight", metrics.publishedMsgsInFlight, 1.0f );
-                GUCEF_METRIC_GAUGE( metricFriendlyTopicName + "publishOrAckFailedMsgs", metrics.publishOrAckFailedMsgs, 1.0f );
-                GUCEF_METRIC_GAUGE( metricFriendlyTopicName + "lastPublishBatchSize", metrics.lastPublishBatchSize, 1.0f );
-            }
-            if ( metrics.hasSupportForSubscribing )
-            {
-                GUCEF_METRIC_GAUGE( metricFriendlyTopicName + "queuedReceiveSuccessAcks", metrics.queuedReceiveSuccessAcks, 1.0f );
-            }
-            ++n;
-        }
-
-        ++i;
-    }
 }
 
 /*-------------------------------------------------------------------------*/
