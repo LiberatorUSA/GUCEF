@@ -2,19 +2,19 @@
  *  FilePusher: service which monitors the file system and pushes files to
  *  a remote repository
  *
- *  This library is free software; you can redistribute it and/or
- *  modify it under the terms of the GNU Lesser General Public
- *  License as published by the Free Software Foundation; either
- *  version 2.1 of the License, or (at your option) any later version.
+ *  Copyright (C) 1998 - 2020.  Dinand Vanvelzen
  *
- *  This library is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- *  Lesser General Public License for more details.
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
  *
- *  You should have received a copy of the GNU Lesser General Public
- *  License along with this library; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+ *    http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
  */
 
 /*-------------------------------------------------------------------------//
@@ -81,7 +81,8 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-const CORE::UInt32 FilePushDestinationSettings::DefaultNewFileRestPeriodInSecs = 60 * 10; // Rest period of 10 minutes
+const CORE::UInt32 FilePushDestinationSettings::DefaultNewFileRestPeriodInSecs              = 60 * 10; // Rest period of 10 minutes
+const CORE::UInt32 FilePushDestinationSettings::DefaultMinAgeOfMovedFilesInSecsBeforePrune  = 60 * 60; // 1 hours, If you use this feature can assume you want some minimal local buffer
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -170,6 +171,8 @@ FilePushDestinationSettings::FilePushDestinationSettings( void )
     , moveFilesAfterSuccessfullPush( true )
     , fileMoveDestination()
     , overwriteFilesInFileMoveDestination( true )
+    , minAgeOfMovedFilesInSecsBeforePrune( DefaultMinAgeOfMovedFilesInSecsBeforePrune )
+    , pruneMovedFiles( false )
     , transmitMetrics( false )
     , compressFilesBeforePush( false )
     , fileCompressionCodecToUse( "gzip" )
@@ -195,6 +198,8 @@ FilePushDestinationSettings::FilePushDestinationSettings( const FilePushDestinat
     , moveFilesAfterSuccessfullPush( src.moveFilesAfterSuccessfullPush )
     , fileMoveDestination( src.fileMoveDestination )
     , overwriteFilesInFileMoveDestination( src.overwriteFilesInFileMoveDestination )
+    , minAgeOfMovedFilesInSecsBeforePrune( src.minAgeOfMovedFilesInSecsBeforePrune )
+    , pruneMovedFiles( src.pruneMovedFiles )
     , transmitMetrics( src.transmitMetrics )
     , compressFilesBeforePush( src.compressFilesBeforePush )
     , fileCompressionCodecToUse( src.fileCompressionCodecToUse )
@@ -232,6 +237,8 @@ FilePushDestinationSettings::operator=( const FilePushDestinationSettings& src )
         moveFilesAfterSuccessfullPush = src.moveFilesAfterSuccessfullPush;
         fileMoveDestination = src.fileMoveDestination;
         overwriteFilesInFileMoveDestination = src.overwriteFilesInFileMoveDestination;
+        minAgeOfMovedFilesInSecsBeforePrune = src.minAgeOfMovedFilesInSecsBeforePrune;
+        pruneMovedFiles = src.pruneMovedFiles;
         transmitMetrics = src.transmitMetrics;
         compressFilesBeforePush = src.compressFilesBeforePush;
         fileCompressionCodecToUse = src.fileCompressionCodecToUse;
@@ -266,6 +273,8 @@ FilePushDestinationSettings::LoadConfig( const CORE::CValueList& appConfig, bool
     maxNrOfFilesToPushInParallel = appConfig.GetValueAlways( "MaxNrOfFilesToPushInParallel" ).AsUInt32( maxNrOfFilesToPushInParallel, true );
     name = appConfig.GetValueAlways( "Name" ).AsString( name, true );
     metricsPrefix = appConfig.GetValueAlways( "MetricsPrefix" ).AsString( metricsPrefix, true );
+    minAgeOfMovedFilesInSecsBeforePrune = appConfig.GetValueAlways( "MinAgeOfMovedFilesInSecsBeforePrune", minAgeOfMovedFilesInSecsBeforePrune ).AsUInt32( minAgeOfMovedFilesInSecsBeforePrune, true );
+    pruneMovedFiles = appConfig.GetValueAlways( "PruneMovedFiles", pruneMovedFiles ).AsBool( pruneMovedFiles, true );
 
     filePushDestinationUri = CORE::ResolveVars( appConfig.GetValueAlways( "FilePushDestinationUri" ) );
     if ( filePushDestinationUri.IsNULLOrEmpty() )
@@ -360,6 +369,8 @@ FilePushDestinationSettings::LoadConfig( const CORE::CDataNode& rootNode )
     maxNrOfFilesToPushInParallel = rootNode.GetAttributeValueOrChildValueByName( "MaxNrOfFilesToPushInParallel" ).AsUInt32( maxNrOfFilesToPushInParallel, true );
     name = rootNode.GetAttributeValueOrChildValueByName( "Name" ).AsString( name, true );
     metricsPrefix = rootNode.GetAttributeValueOrChildValueByName( "MetricsPrefix" ).AsString( metricsPrefix, true ); 
+    minAgeOfMovedFilesInSecsBeforePrune = rootNode.GetAttributeValueOrChildValueByName( "MinAgeOfMovedFilesInSecsBeforePrune", minAgeOfMovedFilesInSecsBeforePrune ).AsUInt32( minAgeOfMovedFilesInSecsBeforePrune, true );
+    pruneMovedFiles = rootNode.GetAttributeValueOrChildValueByName( "PruneMovedFiles", pruneMovedFiles ).AsBool( pruneMovedFiles, true );
 
     filePushDestinationUri = CORE::ResolveVars( rootNode.GetAttributeValueOrChildValueByName( "FilePushDestinationUri" ) );
     if ( filePushDestinationUri.IsNULLOrEmpty() )
@@ -465,6 +476,8 @@ FilePushDestination::FilePushDestination( void )
     , m_inflightFreeSlots()
     , m_pushTimer()
     , m_encodeTimer()
+    , m_prunerTimer()
+    , m_movedFiles()
     , m_lastPushDurationInMilliSecs( 0 )
     , m_lastEncodeDurationInMilliSecs( 0 )
     , m_totalBytesEncoded( 0 )
@@ -490,6 +503,8 @@ FilePushDestination::FilePushDestination( const FilePushDestination& src )
     , m_inflight( src.m_inflight )
     , m_inflightFreeSlots( src.m_inflightFreeSlots )
     , m_encodeTimer( src.m_encodeTimer )
+    , m_prunerTimer( src.m_prunerTimer )
+    , m_movedFiles( src.m_movedFiles )
     , m_lastPushDurationInMilliSecs( src.m_lastPushDurationInMilliSecs )
     , m_lastEncodeDurationInMilliSecs( src.m_lastEncodeDurationInMilliSecs )
     , m_totalBytesEncoded( src.m_totalBytesEncoded )
@@ -518,6 +533,8 @@ FilePushDestination::operator=( const FilePushDestination& src )
         m_inflightFreeSlots = src.m_inflightFreeSlots;
         m_pushTimer = src.m_pushTimer;
         m_encodeTimer = src.m_encodeTimer;
+        m_prunerTimer = src.m_prunerTimer;
+        m_movedFiles = src.m_movedFiles;
         m_lastPushDurationInMilliSecs = src.m_lastPushDurationInMilliSecs;
         m_lastEncodeDurationInMilliSecs = src.m_lastEncodeDurationInMilliSecs;
         m_totalBytesEncoded = src.m_totalBytesEncoded;
@@ -577,6 +594,11 @@ FilePushDestination::RegisterEventHandlers( void )
     SubscribeTo( &m_allFilesDirScanTimer        ,
                  CORE::CTimer::TimerUpdateEvent ,
                  callback7                      );
+
+    TEventCallback callback8( this, &FilePushDestination::OnFilePrunerTimerCycle );
+    SubscribeTo( &m_prunerTimer                 ,
+                 CORE::CTimer::TimerUpdateEvent ,
+                 callback8                      );
 
     RegisterHttpEventHandlers();
 }
@@ -773,10 +795,18 @@ FilePushDestination::Start( void )
         ++i;
     }
 
+    DiscoverAllPreExistingMovedFilesForDirs();
+
     if ( !allFilesPatterns.empty() )
     {
         m_allFilesDirScanTimer.SetEnabled( true );
         m_allFilesDirScanTimer.SetInterval( 10000 );
+    }
+
+    if ( m_settings.moveFilesAfterSuccessfullPush && m_settings.pruneMovedFiles )
+    {
+        m_prunerTimer.SetEnabled( true );
+        m_prunerTimer.SetInterval( 10000 );
     }
 
     return true;
@@ -1125,6 +1155,9 @@ FilePushDestination::OnFilePushOpFinished( CORE::CNotifier* notifier    ,
                                         slot->entryInfo->filePath + "\" to \"" + moveDestinationPath + "\"" );
 
                                     slot->entryInfo->filePath = moveDestinationPath;
+
+                                    if ( m_settings.pruneMovedFiles )
+                                        m_movedFiles[ CORE::CDateTime::NowUTCDateTime() ].insert( moveDestinationPath );
                                 }
                                 else
                                 {
@@ -1361,6 +1394,56 @@ FilePushDestination::PushFileUsingVfs( PushEntryPtr entry )
         m_pushQueue[ entry->filePath ] = entry;
         YieldInFlightSlot( slot );
         return false;
+    }
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+FilePushDestination::OnFilePrunerTimerCycle( CORE::CNotifier* notifier    ,
+                                             const CORE::CEvent& eventId  ,
+                                             CORE::CICloneable* eventData )
+{GUCEF_TRACE;
+    
+    if ( !m_settings.pruneMovedFiles )
+        return;
+
+    TDateTimeStringSetMap::iterator i = m_movedFiles.begin();
+    while ( i != m_movedFiles.end() )
+    {
+        const CORE::CDateTime& fileMoveDt = (*i).first;
+        CORE::Int64 ageInMs = fileMoveDt.GetTimeDifferenceInMillisecondsToNow();
+        if ( ( m_settings.minAgeOfMovedFilesInSecsBeforePrune * 1000 ) < ageInMs )
+        {   
+            // Found an entry that has aged enough and its now eligible for the pruner
+            CORE::CString::StringSet& filePaths = (*i).second;
+            CORE::CString::StringSet::iterator n = filePaths.begin();
+            while ( n != filePaths.end() )
+            {
+                const CORE::CString& filePath = (*n);
+                if ( CORE::DeleteFile( filePath ) )
+                {
+                    GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "FilePushDestination:OnFilePrunerTimerCycle: Pruned " + CORE::ToString( ageInMs ) + 
+                        "ms rested moved file: " + filePath );
+
+                    n = filePaths.erase( n );
+                }
+                else
+                    ++n;
+            }
+
+            if ( filePaths.empty() )
+            {
+                i = m_movedFiles.erase( i );    
+                continue;
+            }
+        }
+        else
+        {
+            // since this is an ordered (old->new) map, no need to check out all the other entries as they will always be newer still
+            return;
+        }
+        ++i;
     }
 }
 
@@ -1843,6 +1926,189 @@ FilePushDestination::DoesFilenameMatchPushAllFilesPattern( const CORE::CString& 
         ++i;
     }
     return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+FilePushDestination::DiscoverSubDirsForRootDirs( const CORE::CString::StringSet& rootDirs , 
+                                                 CORE::CString::StringSet& dirs           ) const
+{GUCEF_TRACE;
+
+    bool totalSuccess = true;
+    CORE::CString::StringSet::iterator r = rootDirs.begin();
+    while ( r != rootDirs.end() )
+    {            
+        const CORE::CString& searchDir = (*r);
+        struct CORE::SDI_Data* did = CORE::DI_First_Dir_Entry( searchDir.C_String() );
+        if ( GUCEF_NULL != did )
+        {
+            do
+            {
+                CORE::CString name = CORE::DI_Name( did );
+                if ( name != '.' && name != ".." )
+                {
+                    if ( 0 == CORE::DI_Is_It_A_File( did ) )
+                    {
+                        CORE::CString subDir = CORE::CombinePath( searchDir, name );
+                        dirs.insert( subDir );
+
+                        if ( m_settings.watchSubDirsOfDirsToWatch )
+                        {
+                            CORE::CString::StringSet subRoots;
+                            subRoots.insert( subDir );
+                            totalSuccess = DiscoverSubDirsForRootDirs( subRoots, dirs ) && totalSuccess;
+                        }
+                    }
+                }
+            }
+            while ( CORE::DI_Next_Dir_Entry( did ) );
+
+            CORE::DI_Cleanup( did );            
+        }        
+        ++r;
+    }
+    return totalSuccess;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+FilePushDestination::DiscoverCurrentFileSourceDirs( CORE::CString::StringSet& dirs )
+{GUCEF_TRACE;
+    
+    // Check files we discovered already and queued for some operation
+    // from that we can derive dirs that are relevant as source dirs
+
+    TStringTimeMap::iterator n = m_newFileRestQueue.begin();
+    while ( n != m_newFileRestQueue.end() )
+    {
+        const CORE::CString& filePath = (*n).first;
+        CORE::CString fileDir = CORE::StripFilename( filePath );
+        dirs.insert( fileDir );
+        ++n;
+    }
+
+    TStringPushEntryPtrMap::iterator i = m_encodeQueue.begin();
+    while ( i != m_encodeQueue.end() )
+    {
+        const CORE::CString& filePath = (*i).first;
+        CORE::CString fileDir = CORE::StripFilename( filePath ); 
+        dirs.insert( fileDir );
+
+        ++i;
+    }
+
+    i = m_pushQueue.begin();
+    while ( i != m_pushQueue.end() )
+    {
+        const CORE::CString& filePath = (*i).first;
+        CORE::CString fileDir = CORE::StripFilename( filePath ); 
+        dirs.insert( fileDir );
+
+        ++i;
+    }
+
+    CORE::CString::StringSet rootDirs;
+    if ( m_dirWatcher.GetAllWatchedDirs( rootDirs ) )
+    {
+        DiscoverSubDirsForRootDirs( rootDirs, dirs );
+    }
+
+    return true;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+FilePushDestination::DiscoverAllPreExistingMovedFilesForDir( const CORE::CString& dir )
+{GUCEF_TRACE;
+
+    CORE::CString searchDir = dir;
+    Int32 filenameMacroIndex = searchDir.HasSubstr( "{filename}" );
+    if ( filenameMacroIndex >= 0 )
+    {
+        searchDir = dir.SubstrToIndex( (UInt32) filenameMacroIndex, true );
+    }    
+    
+    bool totalSuccess = true;
+    struct CORE::SDI_Data* did = CORE::DI_First_Dir_Entry( searchDir.C_String() );
+    if ( GUCEF_NULL != did )
+    {
+        do
+        {
+            CORE::CString name = CORE::DI_Name( did );
+            if ( name != '.' && name != ".." )
+            {
+                if ( 0 != CORE::DI_Is_It_A_File( did ) )
+                {
+                    // Check against the pattern again just in case the move file destination folder also has other stuff in it
+                    if ( DoesFilenameMatchPushAllFilesPattern( name ) )
+                    {
+                        // In this mode treat the pre-existing file as a new file to push
+                        CORE::CString preexistingFilePath = CORE::CombinePath( searchDir, name );
+                        GUCEF_DEBUG_LOG_EVERYTHING( "FilePusher:DiscoverAllPreExistingMovedFilesForDir: Matched file \"" + preexistingFilePath + "\" to 'push all files' pattern" );
+
+                        CORE::CDateTime lastChange = GetLatestTimestampForFile( preexistingFilePath );
+                        m_movedFiles[ lastChange ].insert( preexistingFilePath );
+                    }
+                }
+                else
+                {
+                    if ( m_settings.watchSubDirsOfDirsToWatch )
+                    {
+                        CORE::CString subDir = CORE::CombinePath( searchDir, name );
+                        totalSuccess = totalSuccess && DiscoverAllPreExistingMovedFilesForDir( subDir );
+                    }
+                }
+            }
+        }
+        while ( CORE::DI_Next_Dir_Entry( did ) );
+
+        CORE::DI_Cleanup( did );
+        return totalSuccess;
+    }
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+FilePushDestination::DiscoverAllPreExistingMovedFilesForDirs( void )
+{GUCEF_TRACE;
+
+    if ( m_settings.fileMoveDestination.HasSubstr( "{currentFilePath}" )            ||
+         m_settings.fileMoveDestination.HasSubstr( "{currentFilePathLastSubDir}" )   )
+    {
+        // First lets get dirs we can use to fill in the macros
+        CORE::CString::StringSet dirs;
+        if ( !DiscoverCurrentFileSourceDirs( dirs ) )
+            return false;        
+
+        bool totalSuccess = true;
+        CORE::CString::StringSet::const_iterator i = dirs.begin();
+        while ( i != dirs.end() )
+        {
+            const CORE::CString& currentFileDir = (*i);
+
+            CORE::CString moveDestinationPath = m_settings.fileMoveDestination;
+            moveDestinationPath = moveDestinationPath.ReplaceSubstr( "{currentFilePath}", currentFileDir );
+
+            CORE::CString currentFileDirLastSubDir = CORE::LastSubDir( currentFileDir );
+            moveDestinationPath = moveDestinationPath.ReplaceSubstr( "{currentFilePathLastSubDir}", currentFileDirLastSubDir );
+
+            moveDestinationPath = CORE::RelativePath( moveDestinationPath );
+            totalSuccess = DiscoverAllPreExistingMovedFilesForDir( moveDestinationPath ) && totalSuccess;
+            
+            ++i;
+        }
+
+        return totalSuccess;
+    }
+    else
+    {
+        return DiscoverAllPreExistingMovedFilesForDir( m_settings.fileMoveDestination );
+    }
 }
 
 /*-------------------------------------------------------------------------*/

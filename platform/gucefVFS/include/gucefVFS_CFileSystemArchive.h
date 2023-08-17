@@ -143,6 +143,8 @@ class GUCEF_VFS_PUBLIC_CPP CFileSystemArchive : public CArchive
 
     virtual bool RemoveAllWatches( void ) GUCEF_VIRTUAL_OVERRIDE;
 
+    virtual bool GetAllWatchedDirs( CString::StringSet& dirs ) const GUCEF_VIRTUAL_OVERRIDE;
+
     virtual bool IsHealthy( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
     virtual bool IsConnected( void ) const GUCEF_VIRTUAL_OVERRIDE; 

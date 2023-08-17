@@ -72,6 +72,8 @@ class GUCEF_CORE_PUBLIC_CPP CFileSystemDirectoryWatcher : public CObservingNotif
 
     virtual bool RemoveAllWatches( void ) GUCEF_VIRTUAL_OVERRIDE;
 
+    virtual bool GetAllWatchedDirs( CString::StringSet& dirs ) const GUCEF_VIRTUAL_OVERRIDE;
+
     CFileSystemDirectoryWatcher( void );
 
     CFileSystemDirectoryWatcher( PulseGeneratorPtr pulseGenerator );

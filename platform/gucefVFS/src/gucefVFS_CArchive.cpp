@@ -102,6 +102,15 @@ CArchive::RemoveAllWatches( void )
 /*-------------------------------------------------------------------------*/
 
 bool 
+CArchive::GetAllWatchedDirs( CString::StringSet& dirs ) const
+{GUCEF_TRACE;
+
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool 
 CArchive::IsDirectoryWatchingSupported( void ) const
 {GUCEF_TRACE;
 

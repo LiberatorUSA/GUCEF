@@ -255,6 +255,20 @@ class GUCEF_HIDDEN OSSpecificDirectoryWatcher : public CObserver
         return true;
     }
 
+    bool GetAllWatchedDirs( CString::StringSet& dirs ) const
+    {GUCEF_TRACE;
+
+        OverlappedIOCallbackObjMap::const_iterator i = m_dirsToWatch.begin();
+        while ( i != m_dirsToWatch.end() )
+        {
+            const std::wstring& watchedDir = (*i).first;
+            dirs.insert( ToString( watchedDir ) );
+
+            ++i;
+        }
+        return true;
+    }
+
     void ProcessNotifications( OverlappedIOCallbackObj& watchObj )
     {GUCEF_TRACE;
 
@@ -634,6 +648,17 @@ class GUCEF_HIDDEN OSSpecificDirectoryWatcher : public CObserver
         return 0 == failCount;
     }
 
+    bool GetAllWatchedDirs( CString::StringSet& dirs ) const
+    {GUCEF_TRACE;
+
+        TWatchDescriptorMap::iterator i = m_wdLookupMap.begin();
+        while ( i != m_wdLookupMap.end() )
+        {        
+            const CUtf8String& watchedDir = (*i).first;
+            dirs.insert( ToString( watchedDir ) );
+            ++i;
+        }
+    }
 
     void OnDirWatchPollingCycle( CORE::CNotifier* notifier    ,
                                  const CORE::CEvent& eventId  ,
@@ -1017,6 +1042,24 @@ CFileSystemDirectoryWatcher::RemoveAllWatches( void )
 
     if ( GUCEF_NULL != m_osSpecificImpl )
         return m_osSpecificImpl->RemoveAllWatches();
+    else
+        return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool 
+CFileSystemDirectoryWatcher::GetAllWatchedDirs( CString::StringSet& dirs ) const
+{GUCEF_TRACE;
+
+    if ( GUCEF_NULL != m_osSpecificImpl )
+    {
+        if ( m_osSpecificImpl->GetAllWatchedDirs( dirs ) )
+        {
+            return true;
+        }
+        return false;
+    }
     else
         return false;
 }

@@ -177,7 +177,8 @@ class GUCEF_VFS_PUBLIC_CPP CArchive : public CORE::CObservingNotifier           
 
     /**
      *  Configures the archive to emit DirectoryWatcher events if the given condition occurs
-     *  Not that this is not a mandatory feature for archives to support and the default implementation
+     * 
+     *  Note that it not a mandatory feature for archives to support dir waitching and the default implementation
      *  will always return false to the request.
      */
     virtual bool AddDirToWatch( const CString& dirToWatch       ,
@@ -186,6 +187,12 @@ class GUCEF_VFS_PUBLIC_CPP CArchive : public CORE::CObservingNotifier           
     virtual bool RemoveDirToWatch( const CString& dirToWatch ) GUCEF_VIRTUAL_OVERRIDE;
 
     virtual bool RemoveAllWatches( void ) GUCEF_VIRTUAL_OVERRIDE;
+
+    /**
+     *  Note that it not a mandatory feature for archives to support dir waitching and the default implementation
+     *  will always return false to the request.
+     */
+    virtual bool GetAllWatchedDirs( CString::StringSet& dirs ) const GUCEF_VIRTUAL_OVERRIDE;
 
     virtual bool IsHealthy( void ) const;
 

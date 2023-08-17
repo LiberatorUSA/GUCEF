@@ -2,19 +2,19 @@
  *  FilePusher: service which monitors the file system and pushes files to
  *  a remote repository
  *
- *  This library is free software; you can redistribute it and/or
- *  modify it under the terms of the GNU Lesser General Public
- *  License as published by the Free Software Foundation; either
- *  version 2.1 of the License, or (at your option) any later version.
+ *  Copyright (C) 1998 - 2020.  Dinand Vanvelzen
  *
- *  This library is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- *  Lesser General Public License for more details.
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
  *
- *  You should have received a copy of the GNU Lesser General Public
- *  License along with this library; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+ *    http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
  */
 
 #ifndef GUCEF_APP_FILEPUSHER_H
@@ -139,6 +139,7 @@ class FilePushDestinationSettings
     public:
 
     static const CORE::UInt32 DefaultNewFileRestPeriodInSecs;
+    static const CORE::UInt32 DefaultMinAgeOfMovedFilesInSecsBeforePrune;
 
     enum EPushStyle
     {
@@ -173,6 +174,8 @@ class FilePushDestinationSettings
     bool moveFilesAfterSuccessfullPush;
     CORE::CString fileMoveDestination;
     bool overwriteFilesInFileMoveDestination;
+    UInt32 minAgeOfMovedFilesInSecsBeforePrune;
+    bool pruneMovedFiles;
     bool transmitMetrics;
     bool compressFilesBeforePush;
     CORE::CString fileCompressionCodecToUse;
@@ -266,6 +269,11 @@ class FilePushDestination : public CORE::CObservingNotifier
 
     void
     OnFileEncodeTimerCycle( CORE::CNotifier* notifier    ,
+                            const CORE::CEvent& eventId  ,
+                            CORE::CICloneable* eventData );
+
+    void
+    OnFilePrunerTimerCycle( CORE::CNotifier* notifier    ,
                             const CORE::CEvent& eventId  ,
                             CORE::CICloneable* eventData );
 
@@ -368,6 +376,15 @@ class FilePushDestination : public CORE::CObservingNotifier
     CORE::CString
     DetermineWatchedDirSubPath( const CORE::CString& filePath  ) const;
 
+    bool DiscoverCurrentFileSourceDirs( CORE::CString::StringSet& dirs );
+    
+    bool DiscoverAllPreExistingMovedFilesForDirs( void );
+
+    bool DiscoverAllPreExistingMovedFilesForDir( const CORE::CString& dir );
+
+    bool DiscoverSubDirsForRootDirs( const CORE::CString::StringSet& rootDirs , 
+                                     CORE::CString::StringSet& dirs           ) const;
+
     bool 
     IsFileATempEncodingFile( const CORE::CString& filePath ) const;
 
@@ -382,6 +399,7 @@ class FilePushDestination : public CORE::CObservingNotifier
     typedef std::vector< InFlightEntryPtr > TInFlightEntryPtrVector;
     typedef std::map< CORE::CString, InFlightEntryPtr > TStringInFlightEntryPtrMap;
     typedef std::map< CORE::CDateTime, CORE::CString::StringVector > TDateTimeStringVectorMap;
+    typedef std::map< CORE::CDateTime, CORE::CString::StringSet > TDateTimeStringSetMap;
 
     WEB::CHTTPClient m_httpClient;
     CORE::CFileSystemDirectoryWatcher m_dirWatcher;
@@ -394,6 +412,8 @@ class FilePushDestination : public CORE::CObservingNotifier
     TInFlightEntryPtrVector m_inflightFreeSlots;
     CORE::CTimer m_pushTimer;
     CORE::CTimer m_encodeTimer;
+    CORE::CTimer m_prunerTimer;
+    TDateTimeStringSetMap m_movedFiles;
     CORE::UInt32 m_lastPushDurationInMilliSecs;
     CORE::UInt32 m_lastEncodeDurationInMilliSecs;
     CORE::UInt64 m_totalBytesEncoded;

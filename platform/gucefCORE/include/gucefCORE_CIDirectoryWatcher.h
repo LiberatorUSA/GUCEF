@@ -81,6 +81,8 @@ class GUCEF_CORE_PUBLIC_CPP CIDirectoryWatcher : public CDirectoryWatcherEvents
 
     virtual bool RemoveAllWatches( void ) = 0;
 
+    virtual bool GetAllWatchedDirs( CString::StringSet& dirs ) const = 0;
+
     CIDirectoryWatcher( void );
 
     CIDirectoryWatcher( const CIDirectoryWatcher& src );

@@ -2296,6 +2296,40 @@ CVFS::RemoveAllWatches( void )
 
 /*-------------------------------------------------------------------------*/
 
+bool
+CVFS::GetAllWatchedDirs( CString::StringSet& dirs ) const
+{GUCEF_TRACE;
+
+    MT::CScopeReaderLock lock( m_rwdataLock );
+    
+    bool totalSuccess = true;
+    TMountVector::const_iterator i = m_mountList.begin();
+    while ( i != m_mountList.end() )
+    {
+        const TMountEntry& mountEntry = (*i);
+
+        CString::StringSet archiveDirs;
+        if ( mountEntry.archive->GetAllWatchedDirs( archiveDirs ) )
+        {
+            CString::StringSet::const_iterator n = archiveDirs.begin();
+            while ( n != archiveDirs.end() )
+            {
+                const CString& archiveDir = (*n);
+                CString vfsPath = ConformVfsDirPath( CORE::CombinePath( mountEntry.mountPath, archiveDir ) );
+                dirs.insert( vfsPath );
+                ++n;
+            }
+        }
+        else
+            totalSuccess = false;
+        ++i;
+    }
+    
+    return totalSuccess;
+}
+
+/*-------------------------------------------------------------------------*/
+
 void
 CVFS::RegisterArchiveFactory( const CString& archiveType      ,
                               TArchiveFactory& archiveFactory )

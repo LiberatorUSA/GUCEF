@@ -699,6 +699,29 @@ CFileSystemArchive::RemoveAllWatches( void )
 /*-------------------------------------------------------------------------*/
 
 bool 
+CFileSystemArchive::GetAllWatchedDirs( CString::StringSet& dirs ) const
+{GUCEF_TRACE;
+
+    CString::StringSet internalDirs;
+    if ( m_fsWatcher.GetAllWatchedDirs( internalDirs ) )
+    {
+        CString::StringSet::iterator i = internalDirs.begin();
+        while ( i != internalDirs.end() )
+        {
+            const CORE::CString& internalDir = (*i);
+            CORE::CString archiveDir = internalDir.CutChars( m_rootDir.Length(), true, 0 );
+            dirs.insert( archiveDir );
+            
+            ++i;
+        }
+        return true;
+    }
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool 
 CFileSystemArchive::IsDirectoryWatchingSupported( void ) const
 {GUCEF_TRACE;
 
