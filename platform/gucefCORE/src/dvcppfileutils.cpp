@@ -48,6 +48,7 @@
   /* #include <dir.h>: obsolete *//* needed for MAXFILE define */
   #include <io.h>                 /* Dir itteration: findfirst ect. */
   #include <direct.h>             /* dir tools */
+  #include "Shlwapi.h"
   #define MAX_DIR_LENGTH MAX_PATH
 #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
   #include <dirent.h>             /* needed for dirent strcture */
@@ -68,6 +69,11 @@
 #include "gucef_essentials.h"
 #define GUCEF_CORE_GUCEF_ESSENTIALS_H
 #endif /* GUCEF_CORE_GUCEF_ESSENTIALS_H ? */
+
+#ifndef GUCEF_CORE_CDYNAMICBUFFER_H
+#include "CDynamicBuffer.h"
+#define GUCEF_CORE_CDYNAMICBUFFER_H
+#endif /* GUCEF_CORE_CDYNAMICBUFFER_H ? */
 
 #include "dvcppfileutils.h"
 
@@ -349,6 +355,150 @@ FileSize( const CString& filename )
 {GUCEF_TRACE;
 
     return Filesize( filename.C_String() );
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+GetFileSystemStorageVolumeInformationByDirPath( TStorageVolumeInformation& info, const CString& path )
+{GUCEF_TRACE;
+
+    memset( &info, 0, sizeof( info ) );
+    if ( path.IsNULLOrEmpty() )
+        return false;
+
+    #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
+
+    CString dirPath = RelativePath( path );
+    if ( dirPath.Length() != dirPath.HasChar( '\\', false )+1 )
+    {
+        // A trailing backslash is required for the below Win32 API
+        dirPath += '\\';
+    }
+    
+    std::wstring wActualPath = ToWString( dirPath );
+
+    ULARGE_INTEGER freeBytesAvailableToCaller;
+    ULARGE_INTEGER totalNumberOfBytes;
+    ULARGE_INTEGER totalNumberOfFreeBytes;
+    BOOL result = ::GetDiskFreeSpaceExW( wActualPath.c_str()         , 
+                                         &freeBytesAvailableToCaller , 
+                                         &totalNumberOfBytes         , 
+                                         &totalNumberOfFreeBytes     );
+    if ( TRUE == result )
+    {
+        info.freeBytesAvailableToCaller = freeBytesAvailableToCaller.QuadPart;
+        info.totalNumberOfBytes = totalNumberOfBytes.QuadPart;
+        info.totalNumberOfFreeBytes = totalNumberOfFreeBytes.QuadPart;
+        return true;
+    }
+    return false;
+
+    #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
+
+    return false;
+
+    #else
+
+    return false;
+
+    #endif
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+GetFileSystemStorageVolumeInformationByVolumeId( TStorageVolumeInformation& info, const CString& volumeId )
+{GUCEF_TRACE;
+
+    memset( &info, 0, sizeof( info ) );
+    if ( volumeId.IsNULLOrEmpty() )
+        return false;
+
+    #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
+
+    std::wstring wVolumeId = ToWString( volumeId );
+
+    DWORD listSizeInWChars = 0;
+    BOOL result = ::GetVolumePathNamesForVolumeNameW( wVolumeId.c_str() ,
+                                                      NULL              ,
+                                                      0                 ,
+                                                      &listSizeInWChars );
+
+    // Get a buffer that receives the list of drive letters and mounted folder paths
+    CORE::CDynamicBuffer buffer( (UInt32) listSizeInWChars * sizeof(wchar_t), true );
+    result = ::GetVolumePathNamesForVolumeNameW( wVolumeId.c_str()              ,
+                                                 (LPWCH) buffer.GetBufferPtr()  ,
+                                                 (DWORD) buffer.GetBufferSize() ,
+                                                 &listSizeInWChars              );
+    if ( TRUE != result )
+        return false;
+    buffer.SetDataSize( (UInt32) ( listSizeInWChars * sizeof(wchar_t) ) );
+
+    // The list is an array of null-terminated strings terminated by an additional NULL character
+    // We only need 1 for the volume info function
+    std::wstring wVolumeRootPath = buffer.AsConstTypePtr< wchar_t >();    
+    return GetFileSystemStorageVolumeInformationByDirPath( info, ToString( wVolumeRootPath ) );
+    
+    #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
+
+    return false;
+
+    #else
+
+    return false;
+
+    #endif
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+GetFileSystemStorageVolumeIdByDirPath( CString& volumeId, const CString& path )
+{GUCEF_TRACE;
+
+    volumeId.Clear();
+
+    #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
+
+    CString dirPath = RelativePath( path );
+    if ( dirPath.Length() != dirPath.HasChar( '\\', false )+1 )
+    {
+        // A trailing backslash is required for the below Win32 API
+        dirPath += '\\';
+    }
+
+    std::wstring wActualPath = ToWString( dirPath );
+    if ( TRUE != ::PathIsRootW( wActualPath.c_str() ) )
+    {
+        // the win32 function below only works with roots
+        if ( TRUE != ::PathStripToRootW( (wchar_t*) wActualPath.c_str() ) )
+        {
+            // failed to determine root
+            return false;
+        }
+    }
+
+    wchar_t volumeNameBuffer[ MAX_PATH+1 ];
+    BOOL result = ::GetVolumeNameForVolumeMountPointW( wActualPath.c_str()     , 
+                                                       volumeNameBuffer        ,  
+                                                       MAX_PATH                );
+    if ( TRUE == result )
+    {
+        volumeId = volumeNameBuffer;
+        return true;
+    }
+    return false;
+
+    #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
+
+    return false;
+
+    #else
+
+    return false;
+
+    #endif
 }
 
 /*-------------------------------------------------------------------------//

@@ -83,6 +83,7 @@
 
 const CORE::UInt32 FilePushDestinationSettings::DefaultNewFileRestPeriodInSecs              = 60 * 10; // Rest period of 10 minutes
 const CORE::UInt32 FilePushDestinationSettings::DefaultMinAgeOfMovedFilesInSecsBeforePrune  = 60 * 60; // 1 hours, If you use this feature can assume you want some minimal local buffer
+const CORE::Int8   FilePushDestinationSettings::DefaultMinDiskSpacePercToTriggerPrune       = 10;      // If less then 10% diskspace is available pruning is triggered regardless of min age
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -172,6 +173,7 @@ FilePushDestinationSettings::FilePushDestinationSettings( void )
     , fileMoveDestination()
     , overwriteFilesInFileMoveDestination( true )
     , minAgeOfMovedFilesInSecsBeforePrune( DefaultMinAgeOfMovedFilesInSecsBeforePrune )
+    , minDiskSpacePercToTriggerPrune( DefaultMinDiskSpacePercToTriggerPrune )
     , pruneMovedFiles( false )
     , transmitMetrics( false )
     , compressFilesBeforePush( false )
@@ -199,6 +201,7 @@ FilePushDestinationSettings::FilePushDestinationSettings( const FilePushDestinat
     , fileMoveDestination( src.fileMoveDestination )
     , overwriteFilesInFileMoveDestination( src.overwriteFilesInFileMoveDestination )
     , minAgeOfMovedFilesInSecsBeforePrune( src.minAgeOfMovedFilesInSecsBeforePrune )
+    , minDiskSpacePercToTriggerPrune( src.minDiskSpacePercToTriggerPrune )
     , pruneMovedFiles( src.pruneMovedFiles )
     , transmitMetrics( src.transmitMetrics )
     , compressFilesBeforePush( src.compressFilesBeforePush )
@@ -238,6 +241,7 @@ FilePushDestinationSettings::operator=( const FilePushDestinationSettings& src )
         fileMoveDestination = src.fileMoveDestination;
         overwriteFilesInFileMoveDestination = src.overwriteFilesInFileMoveDestination;
         minAgeOfMovedFilesInSecsBeforePrune = src.minAgeOfMovedFilesInSecsBeforePrune;
+        minDiskSpacePercToTriggerPrune = src.minDiskSpacePercToTriggerPrune;
         pruneMovedFiles = src.pruneMovedFiles;
         transmitMetrics = src.transmitMetrics;
         compressFilesBeforePush = src.compressFilesBeforePush;
@@ -274,6 +278,7 @@ FilePushDestinationSettings::LoadConfig( const CORE::CValueList& appConfig, bool
     name = appConfig.GetValueAlways( "Name" ).AsString( name, true );
     metricsPrefix = appConfig.GetValueAlways( "MetricsPrefix" ).AsString( metricsPrefix, true );
     minAgeOfMovedFilesInSecsBeforePrune = appConfig.GetValueAlways( "MinAgeOfMovedFilesInSecsBeforePrune", minAgeOfMovedFilesInSecsBeforePrune ).AsUInt32( minAgeOfMovedFilesInSecsBeforePrune, true );
+    minDiskSpacePercToTriggerPrune = appConfig.GetValueAlways( "MinDiskSpacePercToTriggerPrune", minDiskSpacePercToTriggerPrune ).AsInt8( minDiskSpacePercToTriggerPrune, true );
     pruneMovedFiles = appConfig.GetValueAlways( "PruneMovedFiles", pruneMovedFiles ).AsBool( pruneMovedFiles, true );
 
     filePushDestinationUri = CORE::ResolveVars( appConfig.GetValueAlways( "FilePushDestinationUri" ) );
@@ -370,6 +375,7 @@ FilePushDestinationSettings::LoadConfig( const CORE::CDataNode& rootNode )
     name = rootNode.GetAttributeValueOrChildValueByName( "Name" ).AsString( name, true );
     metricsPrefix = rootNode.GetAttributeValueOrChildValueByName( "MetricsPrefix" ).AsString( metricsPrefix, true ); 
     minAgeOfMovedFilesInSecsBeforePrune = rootNode.GetAttributeValueOrChildValueByName( "MinAgeOfMovedFilesInSecsBeforePrune", minAgeOfMovedFilesInSecsBeforePrune ).AsUInt32( minAgeOfMovedFilesInSecsBeforePrune, true );
+    minDiskSpacePercToTriggerPrune = rootNode.GetAttributeValueOrChildValueByName( "MinDiskSpacePercToTriggerPrune", minDiskSpacePercToTriggerPrune ).AsInt8( minDiskSpacePercToTriggerPrune, true );
     pruneMovedFiles = rootNode.GetAttributeValueOrChildValueByName( "PruneMovedFiles", pruneMovedFiles ).AsBool( pruneMovedFiles, true );
 
     filePushDestinationUri = CORE::ResolveVars( rootNode.GetAttributeValueOrChildValueByName( "FilePushDestinationUri" ) );
@@ -1399,14 +1405,12 @@ FilePushDestination::PushFileUsingVfs( PushEntryPtr entry )
 
 /*-------------------------------------------------------------------------*/
 
-void
-FilePushDestination::OnFilePrunerTimerCycle( CORE::CNotifier* notifier    ,
-                                             const CORE::CEvent& eventId  ,
-                                             CORE::CICloneable* eventData )
+bool
+FilePushDestination::PruneAgedMovedFiles( void )
 {GUCEF_TRACE;
     
     if ( !m_settings.pruneMovedFiles )
-        return;
+        return false;
 
     TDateTimeStringSetMap::iterator i = m_movedFiles.begin();
     while ( i != m_movedFiles.end() )
@@ -1427,9 +1431,9 @@ FilePushDestination::OnFilePrunerTimerCycle( CORE::CNotifier* notifier    ,
                         "ms rested moved file: " + filePath );
 
                     n = filePaths.erase( n );
+                    continue;
                 }
-                else
-                    ++n;
+                ++n;
             }
 
             if ( filePaths.empty() )
@@ -1441,10 +1445,175 @@ FilePushDestination::OnFilePrunerTimerCycle( CORE::CNotifier* notifier    ,
         else
         {
             // since this is an ordered (old->new) map, no need to check out all the other entries as they will always be newer still
-            return;
+            // no need to iterate the rest of the collection
+            return true;
         }
         ++i;
     }
+
+    return true;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+FilePushDestination::DoesStorageVolumeHaveSufficientSpace( const CORE::CString& volumeId                                   ,
+                                                           const CORE::TStorageVolumeInformation& storageVolumeInformation ) const
+{GUCEF_TRACE;
+    
+    if ( m_settings.minDiskSpacePercToTriggerPrune >= 0 )
+    {
+        CORE::Float64 oneSpacePerc = ( 0.01 * storageVolumeInformation.totalNumberOfBytes );
+        CORE::Float64 freeSpacePerc = storageVolumeInformation.freeBytesAvailableToCaller / oneSpacePerc;
+
+        GUCEF_DEBUG_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "FilePushDestination:OnFilePrunerTimerCycle: Found that filesystem volume \"" + volumeId + 
+            "\" has " + CORE::ToString( freeSpacePerc ) + "% free space left to use by this account" );
+
+        return freeSpacePerc > m_settings.minDiskSpacePercToTriggerPrune;
+    }
+    return true;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+FilePushDestination::PruneMovedFilesIfLowOnVolumeSpace( void )
+{GUCEF_TRACE;
+
+    // is pruning overall enabled?
+    if ( !m_settings.pruneMovedFiles )
+        return false;
+
+    // is this specific type of pruning enabled?
+    if ( m_settings.minDiskSpacePercToTriggerPrune < 0 )
+        return false;
+    
+    bool totalSuccess = true;
+    
+    // get a list of relevant filesystem volumes
+    CORE::CString::StringSet fsVolumes;
+    TDateTimeStringSetMap::iterator i = m_movedFiles.begin();
+    while ( i != m_movedFiles.end() )
+    {
+        const CORE::CString::StringSet& fileSet = (*i).second;
+        CORE::CString::StringSet::const_iterator n = fileSet.begin();
+        while ( n != fileSet.end() )
+        {
+            const CORE::CString& path = (*n);
+            CORE::CString dirPath = CORE::StripFilename( path );
+            CORE::CString volumeId;
+            if ( CORE::GetFileSystemStorageVolumeIdByDirPath( volumeId, dirPath ) )
+            {
+                fsVolumes.insert( volumeId );
+            }
+            else
+                totalSuccess = false;
+            ++n;
+        }
+        ++i;
+    }
+
+    // check filesystem volumes for free disk space requirement
+    CORE::CString::StringSet volumesThatNeedPruning;
+    CORE::CString::StringSet::iterator n = fsVolumes.begin();
+    while ( n != fsVolumes.end() )
+    {
+        const CORE::CString& volumeId = (*n);
+        CORE::TStorageVolumeInformation storageVolumeInformation;
+        if ( CORE::GetFileSystemStorageVolumeInformationByVolumeId( storageVolumeInformation, volumeId ) )
+        {
+            if ( !DoesStorageVolumeHaveSufficientSpace( volumeId, storageVolumeInformation ) )
+            {
+                volumesThatNeedPruning.insert( volumeId );
+            }
+        }
+        else
+            totalSuccess = false;
+        ++n;
+    }
+
+    // Is there anything to do by this pruner?
+    if ( volumesThatNeedPruning.empty() )
+        return true;
+
+    // Prune files matching one of the to-be-pruned volumes
+    i = m_movedFiles.begin();
+    while ( i != m_movedFiles.end() )
+    {
+        CORE::CString::StringSet& fileSet = (*i).second;
+        CORE::CString::StringSet::iterator n = fileSet.begin();
+        while ( n != fileSet.end() )
+        {
+            const CORE::CString& filePath = (*n);
+            CORE::CString dirPath = CORE::StripFilename( filePath );
+            CORE::CString volumeId;
+            if ( CORE::GetFileSystemStorageVolumeIdByDirPath( volumeId, dirPath ) )
+            {
+                // this file is on a volume that needs pruning
+                if ( volumesThatNeedPruning.find( volumeId ) != volumesThatNeedPruning.end() )
+                {
+                    CORE::TStorageVolumeInformation storageVolumeInformation;
+                    if ( CORE::GetFileSystemStorageVolumeInformationByVolumeId( storageVolumeInformation, volumeId ) )
+                    {
+                        // recheck space requirement
+                        if ( !DoesStorageVolumeHaveSufficientSpace( volumeId, storageVolumeInformation ) )
+                        {
+                            const CORE::CDateTime& fileMoveDt = (*i).first;
+                            CORE::Int64 ageInMs = fileMoveDt.GetTimeDifferenceInMillisecondsToNow();
+                            GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "FilePushDestination:OnFilePrunerTimerCycle: Trying to prune " + CORE::ToString( ageInMs ) + 
+                                "ms rested moved file because of free filesystem space requirement. File: " + filePath );
+                                    
+                            if ( CORE::DeleteFile( filePath ) )
+                            {                        
+                                GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "FilePushDestination:OnFilePrunerTimerCycle: Pruned " + CORE::ToString( ageInMs ) + 
+                                    "ms rested moved file: " + filePath );
+
+                                n = fileSet.erase( n );
+                                continue;
+                            }
+                            else
+                                totalSuccess = false;
+                        }
+                        else
+                        {
+                            // lack of sufficient space situation has been resolved
+                            GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "FilePushDestination:OnFilePrunerTimerCycle: Lack of enough space situation resolved for volumeId: " + volumeId );
+                            volumesThatNeedPruning.erase( volumeId );
+                        }
+                    }
+                    else
+                        totalSuccess = false;
+                }
+            }
+            else
+                totalSuccess = false;
+            ++n;
+        }
+
+        if ( fileSet.empty() )
+        {
+            i = m_movedFiles.erase( i );    
+            continue;
+        }
+        ++i;
+    }
+
+    return totalSuccess;
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+FilePushDestination::OnFilePrunerTimerCycle( CORE::CNotifier* notifier    ,
+                                             const CORE::CEvent& eventId  ,
+                                             CORE::CICloneable* eventData )
+{GUCEF_TRACE;
+    
+    if ( !m_settings.pruneMovedFiles )
+        return;
+
+    PruneAgedMovedFiles();
+    PruneMovedFilesIfLowOnVolumeSpace();    
 }
 
 /*-------------------------------------------------------------------------*/

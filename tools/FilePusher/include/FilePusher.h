@@ -140,6 +140,7 @@ class FilePushDestinationSettings
 
     static const CORE::UInt32 DefaultNewFileRestPeriodInSecs;
     static const CORE::UInt32 DefaultMinAgeOfMovedFilesInSecsBeforePrune;
+    static const CORE::Int8   DefaultMinDiskSpacePercToTriggerPrune;
 
     enum EPushStyle
     {
@@ -175,6 +176,7 @@ class FilePushDestinationSettings
     CORE::CString fileMoveDestination;
     bool overwriteFilesInFileMoveDestination;
     UInt32 minAgeOfMovedFilesInSecsBeforePrune;
+    Int8 minDiskSpacePercToTriggerPrune;
     bool pruneMovedFiles;
     bool transmitMetrics;
     bool compressFilesBeforePush;
@@ -376,6 +378,13 @@ class FilePushDestination : public CORE::CObservingNotifier
     CORE::CString
     DetermineWatchedDirSubPath( const CORE::CString& filePath  ) const;
 
+    bool PruneAgedMovedFiles( void );
+
+    bool PruneMovedFilesIfLowOnVolumeSpace( void );
+
+    bool DoesStorageVolumeHaveSufficientSpace( const CORE::CString& volumeId                                   ,
+                                               const CORE::TStorageVolumeInformation& storageVolumeInformation ) const;
+    
     bool DiscoverCurrentFileSourceDirs( CORE::CString::StringSet& dirs );
     
     bool DiscoverAllPreExistingMovedFilesForDirs( void );

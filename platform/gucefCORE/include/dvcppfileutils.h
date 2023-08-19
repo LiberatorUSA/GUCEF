@@ -130,6 +130,31 @@ CreatePathDirectories( const CString& path );
 GUCEF_CORE_PUBLIC_CPP UInt64
 FileSize( const CString& filename );
 
+/*-------------------------------------------------------------------------*/
+
+struct SStorageVolumeInformation
+{
+    UInt64 freeBytesAvailableToCaller;
+    UInt64 totalNumberOfBytes;
+    UInt64 totalNumberOfFreeBytes;
+};
+typedef struct SStorageVolumeInformation TStorageVolumeInformation;
+
+/*-------------------------------------------------------------------------*/
+
+GUCEF_CORE_PUBLIC_CPP bool
+GetFileSystemStorageVolumeInformationByDirPath( TStorageVolumeInformation& info, const CString& path );
+
+/*-------------------------------------------------------------------------*/
+
+GUCEF_CORE_PUBLIC_CPP bool
+GetFileSystemStorageVolumeInformationByVolumeId( TStorageVolumeInformation& info, const CString& volumeId );
+
+/*-------------------------------------------------------------------------*/
+
+GUCEF_CORE_PUBLIC_CPP bool
+GetFileSystemStorageVolumeIdByDirPath( CString& volumeId, const CString& path );
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //
