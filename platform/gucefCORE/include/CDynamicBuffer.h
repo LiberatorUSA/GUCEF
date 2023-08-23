@@ -78,9 +78,13 @@ class GUCEF_CORE_PUBLIC_CPP CDynamicBuffer : public CICloneable
 
     CDynamicBuffer( CIOAccess& ioAccess );
 
-    CDynamicBuffer( void );
+    CDynamicBuffer( void ) GUCEF_NOEXCEPT;
 
     explicit CDynamicBuffer( bool autoenlarge );
+
+    #ifdef GUCEF_RVALUE_REFERENCES_SUPPORTED
+    CDynamicBuffer( CDynamicBuffer&& src ) GUCEF_NOEXCEPT;
+    #endif
 
     CDynamicBuffer( const char* externalBuffer ,
                     const UInt32 bufferSize    ,
@@ -320,8 +324,8 @@ class GUCEF_CORE_PUBLIC_CPP CDynamicBuffer : public CICloneable
      *  Trys to fill the dynamic buffer with the contents of the file given
      */
     bool LoadContentFromFile( const CString& filePath       ,
-                                const UInt32 offsetInFile = 0 ,
-                                const Int32 bytesToRead = -1  );
+                              const UInt32 offsetInFile = 0 ,
+                              const Int32 bytesToRead = -1  );
 
     /**
      *  Tries to write the dynamic buffer content to the file at the file path given

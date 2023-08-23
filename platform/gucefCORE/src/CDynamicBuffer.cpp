@@ -74,7 +74,7 @@ GUCEF_IMPLEMENT_MSGEXCEPTION( CDynamicBuffer, EIllegalCast );
 
 /*-------------------------------------------------------------------------*/
 
-CDynamicBuffer::CDynamicBuffer( void )
+CDynamicBuffer::CDynamicBuffer( void ) GUCEF_NOEXCEPT
     : CICloneable()
     , _buffer( NULL )              
     , _bsize( 0 )                 
@@ -182,6 +182,29 @@ CDynamicBuffer::CDynamicBuffer( const char* externalBuffer    ,
               externalBuffer );
     _autoenlarge = autoenlarge;
 }
+
+/*-------------------------------------------------------------------------*/
+
+#ifdef GUCEF_RVALUE_REFERENCES_SUPPORTED
+
+CDynamicBuffer::CDynamicBuffer( CDynamicBuffer&& src ) GUCEF_NOEXCEPT
+    : CICloneable()
+    , _buffer( src._buffer )      
+    , _bsize( src._bsize )          
+    , m_dataSize( src.m_dataSize )      
+    , _autoenlarge( src._autoenlarge ) 
+    , m_linked( src.m_linked )
+{GUCEF_TRACE;
+
+    // reset source to default constructor values
+    src._buffer = GUCEF_NULL;
+    src._bsize = 0;
+    src.m_dataSize = 0;
+    src._autoenlarge = true;
+    src.m_linked = false;
+}
+
+#endif /* GUCEF_RVALUE_REFERENCES_SUPPORTED ? */
 
 /*-------------------------------------------------------------------------*/
 
