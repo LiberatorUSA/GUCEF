@@ -155,6 +155,11 @@ GetFileSystemStorageVolumeInformationByVolumeId( TStorageVolumeInformation& info
 GUCEF_CORE_PUBLIC_CPP bool
 GetFileSystemStorageVolumeIdByDirPath( CString& volumeId, const CString& path );
 
+/*-------------------------------------------------------------------------*/
+
+GUCEF_CORE_PUBLIC_CPP bool
+GetAllFileSystemStorageVolumes( CString::StringSet& volumeIds );
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //

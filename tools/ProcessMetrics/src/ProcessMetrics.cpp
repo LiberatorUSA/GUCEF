@@ -37,6 +37,11 @@
 #define GUCEF_CORE_DVCPPOSWRAP_H
 #endif /* GUCEF_CORE_DVCPPOSWRAP_H ? */
 
+#ifndef GUCEF_CORE_DVCPPFILEUTILS_H
+#include "dvcppfileutils.h"
+#define GUCEF_CORE_DVCPPFILEUTILS_H
+#endif /* GUCEF_CORE_DVCPPFILEUTILS_H ? */
+
 #ifndef GUCEF_CORE_CCODECREGISTRY_H
 #include "CCodecRegistry.h"
 #define GUCEF_CORE_CCODECREGISTRY_H
@@ -263,6 +268,7 @@ ProcessMetrics::ProcessMetrics( void )
     , m_metricsThresholds()
     , m_procMetricsThresholds()
     , m_globalCpuDataPoint( GUCEF_NULL )
+    , m_storageVolumeIds()
     , m_gatherProcPageFaultCountInBytes( true )
     , m_gatherProcPageFileUsageInBytes( true )
     , m_gatherProcPeakPageFileUsageInBytes( true )
@@ -294,6 +300,12 @@ ProcessMetrics::ProcessMetrics( void )
     , m_gatherGlobalNetworkStatOutboundUnicastPackets( true )
     , m_gatherGlobalNetworkStatOutboundErroredPackets( true )
     , m_gatherGlobalNetworkStatOutboundDiscardedPackets( true )
+    , m_gatherGlobalStorageStats( true )
+    , m_gatherGlobalStorageVolumeBytesAvailableToCaller( true )
+    , m_gatherGlobalStorageVolumeBytesAvailable( true )
+    , m_gatherGlobalStorageVolumeBytes( false )
+    , m_gatherGlobalStorageVolumeAvailableToCallerPercentage( true )
+    , m_gatherGlobalStorageVolumeAvailablePercentage( true )
 {GUCEF_TRACE;
 
     RegisterEventHandlers();
@@ -872,6 +884,92 @@ ProcessMetrics::OnMetricsTimerCycle( CORE::CNotifier* notifier    ,
             }
         }
     }
+
+    if ( m_gatherGlobalStorageStats )
+    {
+        if ( m_storageVolumeIds.empty() )
+        {
+            GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "ProcessMetrics: Fetching storage volume list" );
+            if ( CORE::GetAllFileSystemStorageVolumes( m_storageVolumeIds ) )
+            {
+                GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "ProcessMetrics: Successfully obtained a list of " + CORE::ToString( m_storageVolumeIds.size() ) + " storage volumes" );    
+            }
+            else
+            {
+                GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "ProcessMetrics: Error trying to obtain a list of storage volumes. Obtained " + CORE::ToString( m_storageVolumeIds.size() ) );
+                if ( m_storageVolumeIds.empty() )
+                {
+                    m_gatherGlobalStorageStats = false;
+                }
+            }
+        }
+
+        static const CORE::CString storageMetricNamePrefix = "ProcessMetrics.Storage.";
+        
+        CORE::CString::StringSet::iterator i = m_storageVolumeIds.begin();
+        while ( i != m_storageVolumeIds.end() )
+        {
+            const CORE::CString& storageVolumeId = (*i);
+
+            CORE::TStorageVolumeInformation volumeInfo;
+            if ( CORE::GetFileSystemStorageVolumeInformationByVolumeId( volumeInfo, storageVolumeId ) && 0 < volumeInfo.totalNumberOfBytes )
+            {
+                CORE::CString metricsStorageVolumeId = GenerateMetricsFriendlyString( storageVolumeId );
+                
+                if ( m_gatherGlobalStorageVolumeBytesAvailableToCaller )
+                {
+                    CORE::CString storageMetricName = storageMetricNamePrefix + metricsStorageVolumeId + ".FreeBytesAvailableToCaller";
+                    GUCEF_METRIC_GAUGE( storageMetricName, volumeInfo.freeBytesAvailableToCaller, 1.0f );
+                    ValidateMetricThresholds( CORE::CVariant( volumeInfo.freeBytesAvailableToCaller ), storageMetricName, CORE::CString::Empty );
+                }
+                if ( m_gatherGlobalStorageVolumeBytesAvailable )
+                {
+                    CORE::CString storageMetricName = storageMetricNamePrefix + metricsStorageVolumeId + ".TotalNumberOfFreeBytes";
+                    GUCEF_METRIC_GAUGE( storageMetricName, volumeInfo.totalNumberOfFreeBytes, 1.0f );
+                    ValidateMetricThresholds( CORE::CVariant( volumeInfo.totalNumberOfFreeBytes ), storageMetricName, CORE::CString::Empty );
+                }
+                if ( m_gatherGlobalStorageVolumeBytes )
+                {
+                    CORE::CString storageMetricName = storageMetricNamePrefix + metricsStorageVolumeId + ".TotalNumberOfBytes";
+                    GUCEF_METRIC_GAUGE( storageMetricName, volumeInfo.totalNumberOfBytes, 1.0f );
+                    ValidateMetricThresholds( CORE::CVariant( volumeInfo.totalNumberOfBytes ), storageMetricName, CORE::CString::Empty );
+                }
+                if ( m_gatherGlobalStorageVolumeAvailableToCallerPercentage )
+                {
+                    CORE::Float64 storageVolumeAvailableToCallerPercentage = volumeInfo.freeBytesAvailableToCaller / ( 0.01 * volumeInfo.totalNumberOfBytes );
+                    CORE::CString storageMetricName = storageMetricNamePrefix + metricsStorageVolumeId + ".StorageVolumeAvailableToCallerPercentage";
+                    GUCEF_METRIC_GAUGE( storageMetricName, storageVolumeAvailableToCallerPercentage, 1.0f );
+                    ValidateMetricThresholds( CORE::CVariant( storageVolumeAvailableToCallerPercentage ), storageMetricName, CORE::CString::Empty );
+                }
+                if ( m_gatherGlobalStorageVolumeAvailablePercentage )
+                {
+                    CORE::Float64 storageVolumeAvailablePercentage = volumeInfo.totalNumberOfFreeBytes / ( 0.01 * volumeInfo.totalNumberOfBytes );
+                    CORE::CString storageMetricName = storageMetricNamePrefix + metricsStorageVolumeId + ".StorageVolumeAvailablePercentage";
+                    GUCEF_METRIC_GAUGE( storageMetricName, storageVolumeAvailablePercentage, 1.0f );
+                    ValidateMetricThresholds( CORE::CVariant( storageVolumeAvailablePercentage ), storageMetricName, CORE::CString::Empty );
+                }
+            }
+            ++i;
+        }
+    }
+}
+
+/*-------------------------------------------------------------------------*/
+
+CORE::CString
+ProcessMetrics::GenerateMetricsFriendlyString( const CORE::CString& str )
+{GUCEF_TRACE;
+
+    // Let's avoid non-ASCII stumbling blocks and force the down to ASCII
+    CORE::CAsciiString asciiMetricsFriendlyStr = str.ForceToAscii( '_' );
+
+    // Replace special chars
+    static const char disallowedChars[] = { '!', '@', '#', '$', '%', '^', '&', '*', '(', ')', '=', '+', ',', '.', '<', '>', '/', '?', '`', '~', '\\', '|', '{', '}', '[', ']', ';', ':', '\'', '\"' };
+    asciiMetricsFriendlyStr = asciiMetricsFriendlyStr.ReplaceChars( disallowedChars, sizeof(disallowedChars)/sizeof(char), '_' );
+
+    // Back to the platform wide string convention format
+    CORE::CString metricsFriendlyStr = CORE::ToString( asciiMetricsFriendlyStr );
+    return metricsFriendlyStr;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -975,6 +1073,13 @@ ProcessMetrics::LoadConfig( const CORE::CValueList& appConfig   ,
     m_gatherGlobalCpuCurrentFrequencyInMhz = CORE::StringToBool( appConfig.GetValueAlways( "gatherGlobalCpuCurrentFrequencyInMhz" ), m_gatherGlobalCpuCurrentFrequencyInMhz );
     m_gatherGlobalCpuSpecMaxFrequencyInMhz = CORE::StringToBool( appConfig.GetValueAlways( "gatherGlobalCpuSpecMaxFrequencyInMhz" ), m_gatherGlobalCpuSpecMaxFrequencyInMhz );
     m_gatherGlobalCpuMaxFrequencyInMhz = CORE::StringToBool( appConfig.GetValueAlways( "gatherGlobalCpuMaxFrequencyInMhz" ), m_gatherGlobalCpuMaxFrequencyInMhz );
+
+    m_gatherGlobalStorageStats = appConfig.GetValueAlways( "gatherGlobalStorageStats", m_gatherGlobalStorageStats ).AsBool( m_gatherGlobalStorageStats, true );
+    m_gatherGlobalStorageVolumeBytesAvailableToCaller = appConfig.GetValueAlways( "gatherGlobalStorageVolumeBytesAvailableToCaller", m_gatherGlobalStorageVolumeBytesAvailableToCaller ).AsBool( m_gatherGlobalStorageVolumeBytesAvailableToCaller, true );
+    m_gatherGlobalStorageVolumeBytesAvailable= appConfig.GetValueAlways( "gatherGlobalStorageVolumeBytesAvailable", m_gatherGlobalStorageVolumeBytesAvailable ).AsBool( m_gatherGlobalStorageVolumeBytesAvailable, true );
+    m_gatherGlobalStorageVolumeBytes = appConfig.GetValueAlways( "gatherGlobalStorageVolumeBytes", m_gatherGlobalStorageVolumeBytes ).AsBool( m_gatherGlobalStorageVolumeBytes, true );
+    m_gatherGlobalStorageVolumeAvailableToCallerPercentage = appConfig.GetValueAlways( "gatherGlobalStorageVolumeAvailableToCallerPercentage", m_gatherGlobalStorageVolumeAvailableToCallerPercentage ).AsBool( m_gatherGlobalStorageVolumeAvailableToCallerPercentage, true );
+    m_gatherGlobalStorageVolumeAvailablePercentage = appConfig.GetValueAlways( "gatherGlobalStorageVolumeAvailablePercentage", m_gatherGlobalStorageVolumeAvailablePercentage ).AsBool( m_gatherGlobalStorageVolumeAvailablePercentage, true );
 
     TStringVector exeProcsToWatch = appConfig.GetValueAlways( "exeProcsToWatch" ).AsString().ParseElements( ';', false );
     TStringVector::iterator i = exeProcsToWatch.begin();

@@ -43,6 +43,7 @@
 
 #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
   #include <windows.h>		/* WIN32 API */
+  #include <winioctl.h>
   #undef min
   #undef max
   /* #include <dir.h>: obsolete *//* needed for MAXFILE define */
@@ -425,6 +426,9 @@ GetFileSystemStorageVolumeInformationByVolumeId( TStorageVolumeInformation& info
                                                       0                 ,
                                                       &listSizeInWChars );
 
+    if ( 0 == result && 0 == listSizeInWChars )
+        return false;
+
     // Get a buffer that receives the list of drive letters and mounted folder paths
     CORE::CDynamicBuffer buffer( (UInt32) listSizeInWChars * sizeof(wchar_t), true );
     result = ::GetVolumePathNamesForVolumeNameW( wVolumeId.c_str()              ,
@@ -489,6 +493,52 @@ GetFileSystemStorageVolumeIdByDirPath( CString& volumeId, const CString& path )
         return true;
     }
     return false;
+
+    #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
+
+    return false;
+
+    #else
+
+    return false;
+
+    #endif
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+GetAllFileSystemStorageVolumes( CString::StringSet& volumeIds )
+{GUCEF_TRACE;
+
+    volumeIds.clear();
+
+    #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
+
+    wchar_t volNameBuffer[ MAX_PATH ];
+    DWORD bytes = 0;
+                                                       
+    HANDLE volumeFindHandle = ::FindFirstVolumeW( volNameBuffer, MAX_PATH );
+    if ( NULL == volumeFindHandle )
+    {
+        return false;
+    }
+
+    bool findMoreVolumes = true;
+    do                  
+    {
+        volumeIds.insert( ToString( volNameBuffer ) );
+
+        if ( 0 == ::FindNextVolumeW( volumeFindHandle, volNameBuffer, MAX_PATH ) )
+        {
+            if ( ERROR_NO_MORE_FILES == ::GetLastError() )
+                findMoreVolumes = false;
+        }
+    } 
+    while ( findMoreVolumes );
+    ::FindVolumeClose( volumeFindHandle );
+
+    return true;
 
     #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
 

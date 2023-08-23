@@ -925,7 +925,7 @@ ClusterChannelRedisWriter::GetRedisClusterNodeMap( RedisNodeMap& nodeMap )
                                 node.startSlot = (CORE::UInt32) startSlot;
                                 node.endSlot = (CORE::UInt32) endSlot;
                                 node.nodeId = nodeId;
-                                node.host.SetHostnameAndPort( ip, port );
+                                node.host.SetHostnameAndPort( ip, (UInt16) port );
                             }
                         }
                     }

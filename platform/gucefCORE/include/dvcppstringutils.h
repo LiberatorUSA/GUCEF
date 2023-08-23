@@ -468,6 +468,8 @@ inline CUtf8String ToUtf8String( const CAsciiString& str ) { return CUtf8String(
 inline CUtf8String ToUtf8String( const std::wstring& str ) { std::string out; Utf16toUtf8( str, out ); return out; }
 inline std::wstring ToWString( const CUtf8String& str ) { std::wstring out; Utf8toUtf16( str, out ); return out; }
 inline std::wstring ToWString( const CAsciiString& str ) { std::wstring out; Utf8toUtf16( str, out ); return out; }
+inline std::wstring ToWString( const wchar_t* str ) { return std::wstring( str ); }
+inline std::wstring ToWString( const char* str ) { std::wstring out; Utf8toUtf16( str, out ); return out; }
 
 /*-------------------------------------------------------------------------*/
 
@@ -499,6 +501,7 @@ inline CString ToString( Float32 value ) { return FloatToString( value ); }
 inline CString ToString( Float64 value ) { return DoubleToString( value ); }
 inline CString ToString( bool value ) { return BoolToString( value ); }
 inline CString ToString( const char* value ) { return CString( value ); }
+inline CString ToString( const wchar_t* value ) { return CString( value ); }
 inline CString ToString( const void* value ) { return PointerToString( value ); }
 inline CString ToString( const TVersion& value ) { return VersionToString( value ); }
 inline CString ToString( const std::string& value ) { return CString( value ); }

@@ -218,6 +218,8 @@ class ProcessMetrics : public CORE::CObservingNotifier
                                          const MetricThreshold& threshold  );
     
     bool SetupPubSubClient( const CORE::CDataNode& cfg );
+
+    static CORE::CString GenerateMetricsFriendlyString( const CORE::CString& str );
     
     private:
 
@@ -255,6 +257,7 @@ class ProcessMetrics : public CORE::CObservingNotifier
     TMetricsThresholdMap m_metricsThresholds;
     TMetricsThresholdMapMap m_procMetricsThresholds;
     CORE::TCpuDataPoint* m_globalCpuDataPoint;
+    CORE::CString::StringSet m_storageVolumeIds;
 
     bool m_gatherProcPageFaultCountInBytes;
     bool m_gatherProcPageFileUsageInBytes;
@@ -291,6 +294,13 @@ class ProcessMetrics : public CORE::CObservingNotifier
     bool m_gatherGlobalNetworkStatOutboundUnicastPackets;
     bool m_gatherGlobalNetworkStatOutboundErroredPackets;
     bool m_gatherGlobalNetworkStatOutboundDiscardedPackets;
+
+    bool m_gatherGlobalStorageStats;
+    bool m_gatherGlobalStorageVolumeBytesAvailableToCaller;
+    bool m_gatherGlobalStorageVolumeBytesAvailable;
+    bool m_gatherGlobalStorageVolumeBytes;
+    bool m_gatherGlobalStorageVolumeAvailableToCallerPercentage;
+    bool m_gatherGlobalStorageVolumeAvailablePercentage;
 };
 
 /*-------------------------------------------------------------------------*/
