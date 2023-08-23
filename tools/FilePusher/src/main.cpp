@@ -258,7 +258,12 @@ GUCEF_OSSERVICEMAIN_BEGIN( "FilePusher" )
 
     // Load settings from a config file (if any) and then override with params (if any)
     CORE::CDataNode* globalConfig = new CORE::CDataNode();
-    LoadConfig( bootstrapConfigPathParam, configPathParam, keyValueList, globalConfig );
+    if ( !LoadConfig( bootstrapConfigPathParam, configPathParam, keyValueList, globalConfig ) )
+    {
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_CRITICAL, "Failed to load global config. Exiting" );
+        ::GUCEF::CORE::CCoreGlobal::Instance()->GetApplication().Stop( true );
+        return -1;
+    }
     ParseParams( argc, argv, keyValueList );
 
     CORE::CString outputDir = CORE::RelativePath( keyValueList.GetValueAlways( "outputDir" ) );
