@@ -25,7 +25,7 @@
 
 #include <malloc.h>             /* memory management */
 #include <stdio.h>              /* standard I/O utils */
-#define __STDC_WANT_LIB_EXT1__ 
+#define __STDC_WANT_LIB_EXT1__
 #include <string.h>             /* standard string utils */
 #include <assert.h>
 #include <limits.h>
@@ -55,6 +55,7 @@
   #include <sys/stat.h>           /* needed for stat function */
   #include <errno.h>
   #include <fcntl.h>
+  #include <sys/sendfile.h>
   #define MAX_DIR_LENGTH PATH_MAX
 #else
   #error Unsupported OS
@@ -66,7 +67,7 @@
 #ifndef GUCEF_CORE_DVCPPFILEUTILS_H
 #include "dvcppfileutils.h"
 #define GUCEF_CORE_DVCPPFILEUTILS_H
-#endif /* GUCEF_CORE_DVCPPFILEUTILS_H ? */ 
+#endif /* GUCEF_CORE_DVCPPFILEUTILS_H ? */
 
 #ifndef GUCEF_CORE_GUCEF_ESSENTIALS_H
 #include "gucef_essentials.h"
@@ -142,7 +143,7 @@ DI_First_Dir_Entry( const char* path )
 
     #endif /* GUCEF_PLATFORM_MSWIN ? */
 
-    if ( GUCEF_NULL == path ) 
+    if ( GUCEF_NULL == path )
         return GUCEF_NULL;
     pathStrLen = strlen( path );
 
@@ -756,7 +757,7 @@ Remove_Directory( const char *dir  ,
          */
         struct SDI_Data* ddata = DI_First_Dir_Entry( dir );
         UInt32 more = 1;
-        if ( GUCEF_NULL == ddata ) 
+        if ( GUCEF_NULL == ddata )
             return 0;
 
         while ( more )
@@ -767,7 +768,7 @@ Remove_Directory( const char *dir  ,
                  *      Attempt to delete the file we found in
                  *      the directory.
                  */
-                if ( !Delete_File( DI_Name( ddata ) ) ) 
+                if ( !Delete_File( DI_Name( ddata ) ) )
                     return 0;
             }
             else
@@ -1168,10 +1169,10 @@ Filesize( const char *filename )
 
         #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
 
-        struct stat buf;        
+        struct stat buf;
         int result;
         result = stat( filename, &buf );
-        if ( result == 0 ) 
+        if ( result == 0 )
             return buf.st_size;
         return 0;
 

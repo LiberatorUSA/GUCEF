@@ -288,7 +288,7 @@ MoveFile( const CString& oldPath ,
     #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
 
     struct stat originalPermissions;
-    if ( 0 != ::stat( actualOldPath.C_String(), &originalPermissions ) ) 
+    if ( 0 != ::stat( actualOldPath.C_String(), &originalPermissions ) )
         return 0;
 
     ::chmod( actualOldPath.C_String(), 0777 );
@@ -298,7 +298,7 @@ MoveFile( const CString& oldPath ,
         return 0;
     }
 
-    ::chmod( dst, originalPermissions.st_mode );
+    ::chmod( actualNewPath.C_String(), originalPermissions.st_mode );
     return 1;
 
     #else
@@ -340,7 +340,7 @@ CreatePathDirectories( const CString& path )
     Int32 delimIndex = path.HasChar( GUCEF_DIRSEPCHAR, false );
     if ( delimIndex < 0 )
         delimIndex = path.HasChar( GUCEF_DIRSEPCHAROPPOSITE, false );
-    
+
     if ( delimIndex >= 0 )
     {
         CString dirs = path.SubstrToIndex( (UInt32) delimIndex, true );
@@ -376,15 +376,15 @@ GetFileSystemStorageVolumeInformationByDirPath( TStorageVolumeInformation& info,
         // A trailing backslash is required for the below Win32 API
         dirPath += '\\';
     }
-    
+
     std::wstring wActualPath = ToWString( dirPath );
 
     ULARGE_INTEGER freeBytesAvailableToCaller;
     ULARGE_INTEGER totalNumberOfBytes;
     ULARGE_INTEGER totalNumberOfFreeBytes;
-    BOOL result = ::GetDiskFreeSpaceExW( wActualPath.c_str()         , 
-                                         &freeBytesAvailableToCaller , 
-                                         &totalNumberOfBytes         , 
+    BOOL result = ::GetDiskFreeSpaceExW( wActualPath.c_str()         ,
+                                         &freeBytesAvailableToCaller ,
+                                         &totalNumberOfBytes         ,
                                          &totalNumberOfFreeBytes     );
     if ( TRUE == result )
     {
@@ -441,9 +441,9 @@ GetFileSystemStorageVolumeInformationByVolumeId( TStorageVolumeInformation& info
 
     // The list is an array of null-terminated strings terminated by an additional NULL character
     // We only need 1 for the volume info function
-    std::wstring wVolumeRootPath = buffer.AsConstTypePtr< wchar_t >();    
+    std::wstring wVolumeRootPath = buffer.AsConstTypePtr< wchar_t >();
     return GetFileSystemStorageVolumeInformationByDirPath( info, ToString( wVolumeRootPath ) );
-    
+
     #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
 
     return false;
@@ -484,8 +484,8 @@ GetFileSystemStorageVolumeIdByDirPath( CString& volumeId, const CString& path )
     }
 
     wchar_t volumeNameBuffer[ MAX_PATH+1 ];
-    BOOL result = ::GetVolumeNameForVolumeMountPointW( wActualPath.c_str()     , 
-                                                       volumeNameBuffer        ,  
+    BOOL result = ::GetVolumeNameForVolumeMountPointW( wActualPath.c_str()     ,
+                                                       volumeNameBuffer        ,
                                                        MAX_PATH                );
     if ( TRUE == result )
     {
@@ -517,7 +517,7 @@ GetAllFileSystemStorageVolumes( CString::StringSet& volumeIds )
 
     wchar_t volNameBuffer[ MAX_PATH ];
     DWORD bytes = 0;
-                                                       
+
     HANDLE volumeFindHandle = ::FindFirstVolumeW( volNameBuffer, MAX_PATH );
     if ( NULL == volumeFindHandle )
     {
@@ -525,7 +525,7 @@ GetAllFileSystemStorageVolumes( CString::StringSet& volumeIds )
     }
 
     bool findMoreVolumes = true;
-    do                  
+    do
     {
         volumeIds.insert( ToString( volNameBuffer ) );
 
@@ -534,7 +534,7 @@ GetAllFileSystemStorageVolumes( CString::StringSet& volumeIds )
             if ( ERROR_NO_MORE_FILES == ::GetLastError() )
                 findMoreVolumes = false;
         }
-    } 
+    }
     while ( findMoreVolumes );
     ::FindVolumeClose( volumeFindHandle );
 

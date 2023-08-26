@@ -651,9 +651,9 @@ class GUCEF_HIDDEN OSSpecificDirectoryWatcher : public CObserver
     bool GetAllWatchedDirs( CString::StringSet& dirs ) const
     {GUCEF_TRACE;
 
-        TWatchDescriptorMap::iterator i = m_wdLookupMap.begin();
+        TWatchDescriptorMap::const_iterator i = m_wdLookupMap.begin();
         while ( i != m_wdLookupMap.end() )
-        {        
+        {
             const CUtf8String& watchedDir = (*i).first;
             dirs.insert( ToString( watchedDir ) );
             ++i;
@@ -1048,7 +1048,7 @@ CFileSystemDirectoryWatcher::RemoveAllWatches( void )
 
 /*-------------------------------------------------------------------------*/
 
-bool 
+bool
 CFileSystemDirectoryWatcher::GetAllWatchedDirs( CString::StringSet& dirs ) const
 {GUCEF_TRACE;
 

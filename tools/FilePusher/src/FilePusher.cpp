@@ -373,7 +373,7 @@ FilePushDestinationSettings::LoadConfig( const CORE::CDataNode& rootNode )
     fileTypesToCompress = CORE::ResolveVars( rootNode.GetAttributeValueOrChildValueByName( "FileTypesToCompress" ) ).ParseUniqueElements( ',', false );
     maxNrOfFilesToPushInParallel = rootNode.GetAttributeValueOrChildValueByName( "MaxNrOfFilesToPushInParallel" ).AsUInt32( maxNrOfFilesToPushInParallel, true );
     name = rootNode.GetAttributeValueOrChildValueByName( "Name" ).AsString( name, true );
-    metricsPrefix = rootNode.GetAttributeValueOrChildValueByName( "MetricsPrefix" ).AsString( metricsPrefix, true ); 
+    metricsPrefix = rootNode.GetAttributeValueOrChildValueByName( "MetricsPrefix" ).AsString( metricsPrefix, true );
     minAgeOfMovedFilesInSecsBeforePrune = rootNode.GetAttributeValueOrChildValueByName( "MinAgeOfMovedFilesInSecsBeforePrune", minAgeOfMovedFilesInSecsBeforePrune ).AsUInt32( minAgeOfMovedFilesInSecsBeforePrune, true );
     minDiskSpacePercToTriggerPrune = rootNode.GetAttributeValueOrChildValueByName( "MinDiskSpacePercToTriggerPrune", minDiskSpacePercToTriggerPrune ).AsInt8( minDiskSpacePercToTriggerPrune, true );
     pruneMovedFiles = rootNode.GetAttributeValueOrChildValueByName( "PruneMovedFiles", pruneMovedFiles ).AsBool( pruneMovedFiles, true );
@@ -442,7 +442,7 @@ FilePushDestinationSettings::LoadConfig( const CORE::CDataNode& rootNode )
         if ( !name.IsNULLOrEmpty() )
             metricsPrefix += "." + name;
     }
-    
+
     return true;
 }
 
@@ -663,7 +663,7 @@ FilePushDestination::YieldInFlightSlot( InFlightEntryPtr slot )
     {
         if ( !slot->entryInfo.IsNULL() )
         {
-            GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "FilePushDestination:YieldInFlightSlot: release slot " + 
+            GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "FilePushDestination:YieldInFlightSlot: release slot " +
                 CORE::ToString( slot->id ) + " for: " + slot->entryInfo->filePath );
             m_inflight.erase( slot->entryInfo->filePath );
             slot->entryInfo.Unlink();
@@ -721,7 +721,7 @@ FilePushDestination::LoadConfig( const FilePushDestinationSettings& settings )
     }
     GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "FilePushDestination:LoadConfig: prepared " +
         CORE::ToString( m_settings.maxNrOfFilesToPushInParallel ) + " paralell push slots" );
-    
+
     return true;
 }
 
@@ -836,8 +836,8 @@ FilePushDestination::OnMetricsTimerCycle( CORE::CNotifier* notifier    ,
         GUCEF_METRIC_GAUGE( m_settings.metricsPrefix + ".FilesQueuedToPush", (CORE::UInt32) m_pushQueue.size(), 1.0f );
         GUCEF_METRIC_GAUGE( m_settings.metricsPrefix + ".NewFileRestQueueSize", (CORE::UInt32) m_newFileRestQueue.size(), 1.0f );
         GUCEF_METRIC_GAUGE( m_settings.metricsPrefix + ".LastPushDurationInMilliSecs", m_lastPushDurationInMilliSecs, 1.0f );
-        GUCEF_METRIC_GAUGE( m_settings.metricsPrefix + ".InflightFreeSlots", m_inflightFreeSlots.size(), 1.0f );
-        GUCEF_METRIC_GAUGE( m_settings.metricsPrefix + ".Inflight", m_inflight.size(), 1.0f );
+        GUCEF_METRIC_GAUGE( m_settings.metricsPrefix + ".InflightFreeSlots", (CORE::UInt32) m_inflightFreeSlots.size(), 1.0f );
+        GUCEF_METRIC_GAUGE( m_settings.metricsPrefix + ".Inflight", (CORE::UInt32) m_inflight.size(), 1.0f );
 
         GUCEF_METRIC_COUNT( m_settings.metricsPrefix + ".TotalBytesPushed", m_totalBytesPushed, 1.0f );
         m_totalBytesPushed = 0;
@@ -1036,7 +1036,7 @@ FilePushDestination::OnAsyncVfsFileEncodeOpCompleted( CORE::CNotifier* notifier 
     if ( GUCEF_NULL != asyncOpResult )
     {
         const CORE::CString& originalFilePath = asyncOpResult->asyncRequestId;
-        
+
         TStringInFlightEntryPtrMap::iterator i = m_inflight.find( originalFilePath );
         if ( i != m_inflight.end() )
         {
@@ -1052,12 +1052,12 @@ FilePushDestination::OnAsyncVfsFileEncodeOpCompleted( CORE::CNotifier* notifier 
                     if ( asyncOpResult->successState )
                     {
                         m_totalBytesEncoded += CORE::FileSize( originalFilePath );
-                        
+
                         PushEntryPtr pushEntry = slot->entryInfo;
                         YieldInFlightSlot( slot );
                         m_encodeQueue.erase( pushEntry->filePath );
 
-                        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "FilePushDestination:OnAsyncVfsFileEncodeOpCompleted: Async encode operation successfull for \"" + 
+                        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "FilePushDestination:OnAsyncVfsFileEncodeOpCompleted: Async encode operation successfull for \"" +
                             pushEntry->filePath + "\" which was encoded at path \"" + slot->entryInfo->encodedFilepath + "\"" );
 
                         QueueFileForPushing( pushEntry );
@@ -1065,9 +1065,9 @@ FilePushDestination::OnAsyncVfsFileEncodeOpCompleted( CORE::CNotifier* notifier 
                     }
                     else
                     {
-                        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "FilePushDestination:OnAsyncVfsFileEncodeOpCompleted: Async encode operation failed for \"" + 
+                        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "FilePushDestination:OnAsyncVfsFileEncodeOpCompleted: Async encode operation failed for \"" +
                             slot->entryInfo->filePath + "\" to encoded path \"" + slot->entryInfo->encodedFilepath + "\"" );
-                        
+
                         m_encodeQueue[ slot->entryInfo->filePath ] = slot->entryInfo;
                         YieldInFlightSlot( slot );
                         break;
@@ -1075,7 +1075,7 @@ FilePushDestination::OnAsyncVfsFileEncodeOpCompleted( CORE::CNotifier* notifier 
                 }
                 default:
                 {
-                    GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "FilePushDestination:OnAsyncVfsFileEncodeOpCompleted: Unsupported operation type in handler. This should not happen. Path \"" + 
+                    GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "FilePushDestination:OnAsyncVfsFileEncodeOpCompleted: Unsupported operation type in handler. This should not happen. Path \"" +
                         slot->entryInfo->filePath + "\"" );
                     YieldInFlightSlot( slot );
                     break;
@@ -1084,7 +1084,7 @@ FilePushDestination::OnAsyncVfsFileEncodeOpCompleted( CORE::CNotifier* notifier 
         }
         else
         {
-            GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "FilePushDestination:OnAsyncVfsFileEncodeOpCompleted: No in-flight entry found with path \"" + 
+            GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "FilePushDestination:OnAsyncVfsFileEncodeOpCompleted: No in-flight entry found with path \"" +
                 originalFilePath + "\". This should not happen" );
         }
     }
@@ -1118,10 +1118,10 @@ FilePushDestination::OnFilePushOpFinished( CORE::CNotifier* notifier    ,
                         m_lastPushDurationInMilliSecs = slot->pushDurationInMilliSecs = asyncOpResult->durationInMilliSecs;
 
                         if ( asyncOpResult->successState )
-                        {    
+                        {
                             m_totalBytesPushed += taskData->data.GetDataSize();
-                            
-                            GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "FilePushDestination:OnFilePushOpFinished: Successfully pushed file \"" + 
+
+                            GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "FilePushDestination:OnFilePushOpFinished: Successfully pushed file \"" +
                                 originalFilePath + "\" to VFS path \"" + taskData->filepath + "\"" );
 
                             // get rid of our temp helper file
@@ -1129,12 +1129,12 @@ FilePushDestination::OnFilePushOpFinished( CORE::CNotifier* notifier    ,
                             {
                                 if ( VFS::CVfsGlobal::Instance()->GetVfs().DeleteFile( slot->entryInfo->encodedFilepath, true ) )
                                 {
-                                    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "FilePushDestination:OnFilePushOpFinished: Successfully deleted temp encoding file \"" + 
+                                    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "FilePushDestination:OnFilePushOpFinished: Successfully deleted temp encoding file \"" +
                                         slot->entryInfo->encodedFilepath + "\"" );
                                 }
                                 else
                                 {
-                                    GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "FilePushDestination:OnFilePushOpFinished: Failed to deleted temp encoding file \"" + 
+                                    GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "FilePushDestination:OnFilePushOpFinished: Failed to deleted temp encoding file \"" +
                                         slot->entryInfo->encodedFilepath + "\"" );
                                 }
                             }
@@ -1146,7 +1146,7 @@ FilePushDestination::OnFilePushOpFinished( CORE::CNotifier* notifier    ,
 
                                 CORE::CString currentFileDir = CORE::StripFilename( slot->entryInfo->filePath );
                                 moveDestinationPath = moveDestinationPath.ReplaceSubstr( "{currentFilePath}", currentFileDir );
-                            
+
                                 CORE::CString currentFileDirLastSubDir = CORE::LastSubDir( currentFileDir );
                                 moveDestinationPath = moveDestinationPath.ReplaceSubstr( "{currentFilePathLastSubDir}", currentFileDirLastSubDir );
 
@@ -1157,7 +1157,7 @@ FilePushDestination::OnFilePushOpFinished( CORE::CNotifier* notifier    ,
 
                                 if ( CORE::MoveFile( slot->entryInfo->filePath, moveDestinationPath, m_settings.overwriteFilesInFileMoveDestination ) )
                                 {
-                                    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "FilePushDestination:OnFilePushOpFinished: Successfully moved pushed file \"" + 
+                                    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "FilePushDestination:OnFilePushOpFinished: Successfully moved pushed file \"" +
                                         slot->entryInfo->filePath + "\" to \"" + moveDestinationPath + "\"" );
 
                                     slot->entryInfo->filePath = moveDestinationPath;
@@ -1167,7 +1167,7 @@ FilePushDestination::OnFilePushOpFinished( CORE::CNotifier* notifier    ,
                                 }
                                 else
                                 {
-                                    GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "FilePushDestination:OnFilePushOpFinished: Failed to move pushed file \"" + 
+                                    GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "FilePushDestination:OnFilePushOpFinished: Failed to move pushed file \"" +
                                         slot->entryInfo->filePath + "\" to \"" + moveDestinationPath + "\"");
                                 }
                             }
@@ -1176,12 +1176,12 @@ FilePushDestination::OnFilePushOpFinished( CORE::CNotifier* notifier    ,
                             {
                                 if ( CORE::DeleteFile( slot->entryInfo->filePath ) )
                                 {
-                                    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "FilePushDestination:OnFilePushOpFinished: Successfully deleted pushed file \"" + 
+                                    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "FilePushDestination:OnFilePushOpFinished: Successfully deleted pushed file \"" +
                                         slot->entryInfo->filePath + "\"" );
                                 }
                                 else
                                 {
-                                    GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "FilePushDestination:OnFilePushOpFinished: Failed to delete pushed file \"" + 
+                                    GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "FilePushDestination:OnFilePushOpFinished: Failed to delete pushed file \"" +
                                         slot->entryInfo->filePath + "\"" );
                                 }
                             }
@@ -1193,7 +1193,7 @@ FilePushDestination::OnFilePushOpFinished( CORE::CNotifier* notifier    ,
                         {
                             GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "FilePushDestination:OnFilePushOpFinished: Async operation failed to push file \"" +
                                 slot->entryInfo->filePath + "\" to \"" + taskData->filepath );
-                            
+
                             m_inflight.erase( i );
                             m_pushQueue[ slot->entryInfo->filePath ] = slot->entryInfo;
                             YieldInFlightSlot( slot );
@@ -1263,7 +1263,7 @@ FilePushDestination::PushFileUsingHttp( PushEntryPtr entry )
     InFlightEntryPtr slot = GetFreeInFlightSlot( entry->filePath );
     if ( slot.IsNULL() )
         return false;
-    
+
     slot->entryInfo = entry;
 
     CORE::CString filename;
@@ -1272,7 +1272,7 @@ FilePushDestination::PushFileUsingHttp( PushEntryPtr entry )
         // Load the file content from disk
         if ( !slot->buffer.LoadContentFromFile( entry->filePath, (CORE::UInt32) entry->currentOffsetInFile ) )
         {
-            GUCEF_WARNING_LOG( CORE::LOGLEVEL_NORMAL, "FilePushDestination:PushFileUsingVfs: Unable to load bytes from file \"" + 
+            GUCEF_WARNING_LOG( CORE::LOGLEVEL_NORMAL, "FilePushDestination:PushFileUsingVfs: Unable to load bytes from file \"" +
                 entry->filePath + "\". Is it still in use? Skipping the file for now" );
             YieldInFlightSlot( slot );
             return false;
@@ -1284,7 +1284,7 @@ FilePushDestination::PushFileUsingHttp( PushEntryPtr entry )
         // Load the file content from disk, keeping in mind the encoded file is in the VFS
         if ( !VFS::CVfsGlobal::Instance()->GetVfs().LoadFile( slot->buffer, entry->encodedFilepath, "rb" ) )
         {
-            GUCEF_WARNING_LOG( CORE::LOGLEVEL_NORMAL, "FilePushDestination:PushFileUsingVfs: Unable to load bytes from encoded vfs file \"" + 
+            GUCEF_WARNING_LOG( CORE::LOGLEVEL_NORMAL, "FilePushDestination:PushFileUsingVfs: Unable to load bytes from encoded vfs file \"" +
                 entry->encodedFilepath + "\". Is it still in use? Skipping the file for now" );
             YieldInFlightSlot( slot );
             return false;
@@ -1321,7 +1321,7 @@ FilePushDestination::PushFileUsingHttp( PushEntryPtr entry )
     }
     else
     {
-        GUCEF_WARNING_LOG( CORE::LOGLEVEL_NORMAL, "FilePushDestination: Failed to HTTP POST bytes from file \"" + 
+        GUCEF_WARNING_LOG( CORE::LOGLEVEL_NORMAL, "FilePushDestination: Failed to HTTP POST bytes from file \"" +
             filename + "\". Skipping the file for now" );
         m_pushQueue[ slot->entryInfo->filePath ] = slot->entryInfo;
         m_inflight.erase( slot->entryInfo->filePath );
@@ -1342,16 +1342,16 @@ FilePushDestination::PushFileUsingVfs( PushEntryPtr entry )
     InFlightEntryPtr slot = GetFreeInFlightSlot( entry->filePath );
     if ( slot.IsNULL() )
         return false;
-    
+
     slot->entryInfo = entry;
-    
+
     CORE::CString filename;
     if ( entry->encodedFilepath.IsNULLOrEmpty() )
     {
         // Load the file content from disk
         if ( !slot->buffer.LoadContentFromFile( entry->filePath, (CORE::UInt32) entry->currentOffsetInFile ) )
         {
-            GUCEF_WARNING_LOG( CORE::LOGLEVEL_NORMAL, "FilePushDestination:PushFileUsingVfs: Unable to load bytes from file \"" + 
+            GUCEF_WARNING_LOG( CORE::LOGLEVEL_NORMAL, "FilePushDestination:PushFileUsingVfs: Unable to load bytes from file \"" +
                 entry->filePath + "\". Is it still in use? Skipping the file for now" );
             YieldInFlightSlot( slot );
             return false;
@@ -1363,7 +1363,7 @@ FilePushDestination::PushFileUsingVfs( PushEntryPtr entry )
         // Load the file content from disk, keeping in mind the encoded file is in the VFS
         if ( !VFS::CVfsGlobal::Instance()->GetVfs().LoadFile( slot->buffer, entry->encodedFilepath, "rb" ) )
         {
-            GUCEF_WARNING_LOG( CORE::LOGLEVEL_NORMAL, "FilePushDestination:PushFileUsingVfs: Unable to load bytes from encoded vfs file \"" + 
+            GUCEF_WARNING_LOG( CORE::LOGLEVEL_NORMAL, "FilePushDestination:PushFileUsingVfs: Unable to load bytes from encoded vfs file \"" +
                 entry->encodedFilepath + "\". Is it still in use? Skipping the file for now" );
             YieldInFlightSlot( slot );
             return false;
@@ -1389,13 +1389,13 @@ FilePushDestination::PushFileUsingVfs( PushEntryPtr entry )
     m_pushQueue.erase( entry->filePath );
     if ( VFS::CVfsGlobal::Instance()->GetVfs().StoreAsFileAsync( pushUrlForFile, slot->buffer, 0, true, GUCEF_NULL, entry->filePath ) )
     {
-        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "FilePushDestination:PushFileUsingVfs: Commenced async push of content from file \"" + 
+        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "FilePushDestination:PushFileUsingVfs: Commenced async push of content from file \"" +
             filename + "\" to VFS path \"" + pushUrlForFile + "\"" );
         return true;
     }
     else
     {
-        GUCEF_WARNING_LOG( CORE::LOGLEVEL_NORMAL, "FilePushDestination:PushFileUsingVfs: Failed to request async push of content from file \"" + 
+        GUCEF_WARNING_LOG( CORE::LOGLEVEL_NORMAL, "FilePushDestination:PushFileUsingVfs: Failed to request async push of content from file \"" +
             filename + "\" to VFS path \"" + pushUrlForFile + "\". Skipping the file for now" );
         m_pushQueue[ entry->filePath ] = entry;
         YieldInFlightSlot( slot );
@@ -1408,7 +1408,7 @@ FilePushDestination::PushFileUsingVfs( PushEntryPtr entry )
 bool
 FilePushDestination::PruneAgedMovedFiles( void )
 {GUCEF_TRACE;
-    
+
     if ( !m_settings.pruneMovedFiles )
         return false;
 
@@ -1418,7 +1418,7 @@ FilePushDestination::PruneAgedMovedFiles( void )
         const CORE::CDateTime& fileMoveDt = (*i).first;
         CORE::Int64 ageInMs = fileMoveDt.GetTimeDifferenceInMillisecondsToNow();
         if ( ( m_settings.minAgeOfMovedFilesInSecsBeforePrune * 1000 ) < ageInMs )
-        {   
+        {
             // Found an entry that has aged enough and its now eligible for the pruner
             CORE::CString::StringSet& filePaths = (*i).second;
             CORE::CString::StringSet::iterator n = filePaths.begin();
@@ -1427,7 +1427,7 @@ FilePushDestination::PruneAgedMovedFiles( void )
                 const CORE::CString& filePath = (*n);
                 if ( CORE::DeleteFile( filePath ) )
                 {
-                    GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "FilePushDestination:OnFilePrunerTimerCycle: Pruned " + CORE::ToString( ageInMs ) + 
+                    GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "FilePushDestination:OnFilePrunerTimerCycle: Pruned " + CORE::ToString( ageInMs ) +
                         "ms rested moved file: " + filePath );
 
                     n = filePaths.erase( n );
@@ -1438,7 +1438,7 @@ FilePushDestination::PruneAgedMovedFiles( void )
 
             if ( filePaths.empty() )
             {
-                i = m_movedFiles.erase( i );    
+                i = m_movedFiles.erase( i );
                 continue;
             }
         }
@@ -1460,13 +1460,13 @@ bool
 FilePushDestination::DoesStorageVolumeHaveSufficientSpace( const CORE::CString& volumeId                                   ,
                                                            const CORE::TStorageVolumeInformation& storageVolumeInformation ) const
 {GUCEF_TRACE;
-    
+
     if ( m_settings.minDiskSpacePercToTriggerPrune >= 0 )
     {
         CORE::Float64 oneSpacePerc = ( 0.01 * storageVolumeInformation.totalNumberOfBytes );
         CORE::Float64 freeSpacePerc = storageVolumeInformation.freeBytesAvailableToCaller / oneSpacePerc;
 
-        GUCEF_DEBUG_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "FilePushDestination:OnFilePrunerTimerCycle: Found that filesystem volume \"" + volumeId + 
+        GUCEF_DEBUG_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "FilePushDestination:OnFilePrunerTimerCycle: Found that filesystem volume \"" + volumeId +
             "\" has " + CORE::ToString( freeSpacePerc ) + "% free space left to use by this account" );
 
         return freeSpacePerc > m_settings.minDiskSpacePercToTriggerPrune;
@@ -1487,9 +1487,9 @@ FilePushDestination::PruneMovedFilesIfLowOnVolumeSpace( void )
     // is this specific type of pruning enabled?
     if ( m_settings.minDiskSpacePercToTriggerPrune < 0 )
         return false;
-    
+
     bool totalSuccess = true;
-    
+
     // get a list of relevant filesystem volumes
     CORE::CString::StringSet fsVolumes;
     TDateTimeStringSetMap::iterator i = m_movedFiles.begin();
@@ -1560,12 +1560,12 @@ FilePushDestination::PruneMovedFilesIfLowOnVolumeSpace( void )
                         {
                             const CORE::CDateTime& fileMoveDt = (*i).first;
                             CORE::Int64 ageInMs = fileMoveDt.GetTimeDifferenceInMillisecondsToNow();
-                            GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "FilePushDestination:OnFilePrunerTimerCycle: Trying to prune " + CORE::ToString( ageInMs ) + 
+                            GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "FilePushDestination:OnFilePrunerTimerCycle: Trying to prune " + CORE::ToString( ageInMs ) +
                                 "ms rested moved file because of free filesystem space requirement. File: " + filePath );
-                                    
+
                             if ( CORE::DeleteFile( filePath ) )
-                            {                        
-                                GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "FilePushDestination:OnFilePrunerTimerCycle: Pruned " + CORE::ToString( ageInMs ) + 
+                            {
+                                GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "FilePushDestination:OnFilePrunerTimerCycle: Pruned " + CORE::ToString( ageInMs ) +
                                     "ms rested moved file: " + filePath );
 
                                 n = fileSet.erase( n );
@@ -1592,7 +1592,7 @@ FilePushDestination::PruneMovedFilesIfLowOnVolumeSpace( void )
 
         if ( fileSet.empty() )
         {
-            i = m_movedFiles.erase( i );    
+            i = m_movedFiles.erase( i );
             continue;
         }
         ++i;
@@ -1608,12 +1608,12 @@ FilePushDestination::OnFilePrunerTimerCycle( CORE::CNotifier* notifier    ,
                                              const CORE::CEvent& eventId  ,
                                              CORE::CICloneable* eventData )
 {GUCEF_TRACE;
-    
+
     if ( !m_settings.pruneMovedFiles )
         return;
 
     PruneAgedMovedFiles();
-    PruneMovedFilesIfLowOnVolumeSpace();    
+    PruneMovedFilesIfLowOnVolumeSpace();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -1639,7 +1639,7 @@ FilePushDestination::OnFileEncodeTimerCycle( CORE::CNotifier* notifier    ,
         if ( slot.IsNULL() )
             return;
         slot->entryInfo = pushEntry;
-        
+
         if ( CORE::FileExists( filePath ) )
         {
             CORE::CFileAccess fileAccess;
@@ -1655,13 +1655,13 @@ FilePushDestination::OnFileEncodeTimerCycle( CORE::CNotifier* notifier    ,
                                                                               m_settings.fileCompressionCodecToUse    ,
                                                                               slot->entryInfo->filePath               ) )
                 {
-                    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "FilePushDestination:OnFileEncodeTimerCycle: Commenced async encode of content from file \"" + 
+                    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "FilePushDestination:OnFileEncodeTimerCycle: Commenced async encode of content from file \"" +
                         filePath + "\" to VFS path \"" + slot->entryInfo->encodedFilepath + "\"" );
                     return;
                 }
                 else
                 {
-                    GUCEF_WARNING_LOG( CORE::LOGLEVEL_NORMAL, "FilePushDestination:OnFileEncodeTimerCycle: Failed to request async push of content from file \"" + 
+                    GUCEF_WARNING_LOG( CORE::LOGLEVEL_NORMAL, "FilePushDestination:OnFileEncodeTimerCycle: Failed to request async push of content from file \"" +
                         filePath + "\" to VFS path \"" + slot->entryInfo->encodedFilepath + "\". Skipping the file for now" );
                     m_encodeQueue[ slot->entryInfo->filePath ] = slot->entryInfo;
                     m_inflight.erase( slot->entryInfo->filePath );
@@ -1713,7 +1713,7 @@ FilePushDestination::OnFilePushTimerCycle( CORE::CNotifier* notifier    ,
             {
                 if ( !VFS::CVfsGlobal::Instance()->GetVfs().FileExists( entry->encodedFilepath ) )
                 {
-                    GUCEF_WARNING_LOG( CORE::LOGLEVEL_NORMAL, "FilePushDestination:OnFilePushTimerCycle: Encoded file does not exists when we were about to commence pushing it: \"" + 
+                    GUCEF_WARNING_LOG( CORE::LOGLEVEL_NORMAL, "FilePushDestination:OnFilePushTimerCycle: Encoded file does not exists when we were about to commence pushing it: \"" +
                         entry->encodedFilepath + "\", queuing file again for encoding instead" );
                     m_encodeQueue[ filePath ] = entry;
                     m_pushQueue.erase( i );
@@ -1941,7 +1941,7 @@ FilePushDestination::QueueNewFileForPushingAfterUnmodifiedRestPeriod( const CORE
         // being made to the file aka a resting period.
         CORE::CDateTime latestChange = GetLatestTimestampForFile( newFilePath );
         m_newFileRestQueue[ newFilePath ] = latestChange;
-        GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "FilePushDestination: File with latest timestamp \"" + 
+        GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "FilePushDestination: File with latest timestamp \"" +
             latestChange.ToIso8601DateTimeString( true, true ) + "\" is queued for pushing: \"" + newFilePath + "\"" );
     }
     else
@@ -2100,14 +2100,14 @@ FilePushDestination::DoesFilenameMatchPushAllFilesPattern( const CORE::CString& 
 /*-------------------------------------------------------------------------*/
 
 bool
-FilePushDestination::DiscoverSubDirsForRootDirs( const CORE::CString::StringSet& rootDirs , 
+FilePushDestination::DiscoverSubDirsForRootDirs( const CORE::CString::StringSet& rootDirs ,
                                                  CORE::CString::StringSet& dirs           ) const
 {GUCEF_TRACE;
 
     bool totalSuccess = true;
     CORE::CString::StringSet::iterator r = rootDirs.begin();
     while ( r != rootDirs.end() )
-    {            
+    {
         const CORE::CString& searchDir = (*r);
         struct CORE::SDI_Data* did = CORE::DI_First_Dir_Entry( searchDir.C_String() );
         if ( GUCEF_NULL != did )
@@ -2133,8 +2133,8 @@ FilePushDestination::DiscoverSubDirsForRootDirs( const CORE::CString::StringSet&
             }
             while ( CORE::DI_Next_Dir_Entry( did ) );
 
-            CORE::DI_Cleanup( did );            
-        }        
+            CORE::DI_Cleanup( did );
+        }
         ++r;
     }
     return totalSuccess;
@@ -2145,7 +2145,7 @@ FilePushDestination::DiscoverSubDirsForRootDirs( const CORE::CString::StringSet&
 bool
 FilePushDestination::DiscoverCurrentFileSourceDirs( CORE::CString::StringSet& dirs )
 {GUCEF_TRACE;
-    
+
     // Check files we discovered already and queued for some operation
     // from that we can derive dirs that are relevant as source dirs
 
@@ -2162,7 +2162,7 @@ FilePushDestination::DiscoverCurrentFileSourceDirs( CORE::CString::StringSet& di
     while ( i != m_encodeQueue.end() )
     {
         const CORE::CString& filePath = (*i).first;
-        CORE::CString fileDir = CORE::StripFilename( filePath ); 
+        CORE::CString fileDir = CORE::StripFilename( filePath );
         dirs.insert( fileDir );
 
         ++i;
@@ -2172,7 +2172,7 @@ FilePushDestination::DiscoverCurrentFileSourceDirs( CORE::CString::StringSet& di
     while ( i != m_pushQueue.end() )
     {
         const CORE::CString& filePath = (*i).first;
-        CORE::CString fileDir = CORE::StripFilename( filePath ); 
+        CORE::CString fileDir = CORE::StripFilename( filePath );
         dirs.insert( fileDir );
 
         ++i;
@@ -2198,8 +2198,8 @@ FilePushDestination::DiscoverAllPreExistingMovedFilesForDir( const CORE::CString
     if ( filenameMacroIndex >= 0 )
     {
         searchDir = dir.SubstrToIndex( (UInt32) filenameMacroIndex, true );
-    }    
-    
+    }
+
     bool totalSuccess = true;
     struct CORE::SDI_Data* did = CORE::DI_First_Dir_Entry( searchDir.C_String() );
     if ( GUCEF_NULL != did )
@@ -2252,7 +2252,7 @@ FilePushDestination::DiscoverAllPreExistingMovedFilesForDirs( void )
         // First lets get dirs we can use to fill in the macros
         CORE::CString::StringSet dirs;
         if ( !DiscoverCurrentFileSourceDirs( dirs ) )
-            return false;        
+            return false;
 
         bool totalSuccess = true;
         CORE::CString::StringSet::const_iterator i = dirs.begin();
@@ -2268,7 +2268,7 @@ FilePushDestination::DiscoverAllPreExistingMovedFilesForDirs( void )
 
             moveDestinationPath = CORE::RelativePath( moveDestinationPath );
             totalSuccess = DiscoverAllPreExistingMovedFilesForDir( moveDestinationPath ) && totalSuccess;
-            
+
             ++i;
         }
 
