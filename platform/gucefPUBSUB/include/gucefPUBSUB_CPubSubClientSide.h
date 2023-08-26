@@ -293,7 +293,7 @@ class GUCEF_PUBSUB_EXPORT_CPP CPubSubClientSide : public CORE::CTaskConsumer
 
     typedef CORE::CTMailboxForSharedCloneables< CIPubSubMsg, MT::CNoLock > TPubSubMsgMailbox;
 
-    class TopicLink : public CORE::CObservingNotifier ,
+    class TopicLink : public CORE::CTSGNotifier                                ,
                       public CORE::CTSharedObjCreator< TopicLink, MT::CMutex > 
     {
         public:
@@ -329,13 +329,11 @@ class GUCEF_PUBSUB_EXPORT_CPP CPubSubClientSide : public CORE::CTaskConsumer
         template < typename TMsgCollection >
         bool PublishMsgs( const TMsgCollection& msgs );
 
-        void SetPulseGenerator( CORE::PulseGeneratorPtr newPulseGenerator );
+        virtual void SetPulseGenerator( CORE::PulseGeneratorPtr newPulseGenerator ) GUCEF_VIRTUAL_OVERRIDE;
 
         void SetParentSide( CPubSubClientSide* parentSide );
 
         void SetFlowRouter( CPubSubFlowRouter* router );
-        
-        CORE::PulseGeneratorPtr GetPulseGenerator( void ) const;
 
         CORE::UInt64 GetTotalMsgsInFlight( void ) const;
 
@@ -364,14 +362,6 @@ class GUCEF_PUBSUB_EXPORT_CPP CPubSubClientSide : public CORE::CTaskConsumer
         bool AcknowledgeReceipt( CIPubSubMsg::TNoLockSharedPtr& msg );
 
         virtual const CString& GetClassTypeName( void ) const GUCEF_VIRTUAL_OVERRIDE;
-
-        virtual const MT::CILockable* AsLockable( void ) const GUCEF_VIRTUAL_OVERRIDE;  
-        
-        protected:
-
-        virtual MT::TLockStatus Lock( UInt32 lockWaitTimeoutInMs = GUCEF_MT_DEFAULT_LOCK_TIMEOUT_IN_MS ) const GUCEF_VIRTUAL_OVERRIDE;
-
-        virtual MT::TLockStatus Unlock( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
         private:
 
@@ -489,9 +479,6 @@ class GUCEF_PUBSUB_EXPORT_CPP CPubSubClientSide : public CORE::CTaskConsumer
         CORE::UInt32 threadIdOfTopicLink;
         CORE::CTimer timedOutInFlightMessagesCheckTimer;
         CORE::CTimer metricsTimer;
-        CORE::PulseGeneratorPtr pulseGenerator;
-        MT::CMutex dataLock;
-    
     };
     typedef TopicLink::TSharedPtrType  TopicLinkPtr;
 

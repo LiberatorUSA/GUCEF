@@ -175,6 +175,12 @@ class GUCEF_CORE_PUBLIC_CPP CPumpedObserver : public CObserver
 
     virtual MT::TLockStatus Unlock( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
+    virtual bool PlaceHoldOnNotifications( UInt32 lockWaitTimeoutInMs = GUCEF_MT_DEFAULT_LOCK_TIMEOUT_IN_MS ) const GUCEF_VIRTUAL_OVERRIDE;
+
+    virtual bool ReleaseHoldOnNotifications( UInt32 lockWaitTimeoutInMs = GUCEF_MT_DEFAULT_LOCK_TIMEOUT_IN_MS ) const GUCEF_VIRTUAL_OVERRIDE;
+
+    virtual bool IsHoldingNotifications( void ) const GUCEF_VIRTUAL_OVERRIDE;
+
     virtual void Shutdown( void );
 
     private:
@@ -209,6 +215,7 @@ class GUCEF_CORE_PUBLIC_CPP CPumpedObserver : public CObserver
     bool m_propagatePulseEvent;
     bool m_allowSameThreadEventsToFlowThrough;
     MT::CTMailBox< CEvent > m_mailbox;
+    mutable Int32 m_notificationsHolds;
 };
 
 /*-------------------------------------------------------------------------//

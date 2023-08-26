@@ -50,10 +50,10 @@ namespace CORE {
 CTSGNotifier::CTSGNotifier( bool allowSameThreadEventsToFlowThrough ,
                             bool forwardAllNotifications            )
     : CNotifier()                    
-    , m_tsgObserver( CCoreGlobal::Instance()->GetPulseGenerator(), allowSameThreadEventsToFlowThrough )
-    , m_forwardAllNotifications( forwardAllNotifications )
     , m_dataLock()
     , m_notificationLock()
+    , m_tsgObserver( CCoreGlobal::Instance()->GetPulseGenerator(), allowSameThreadEventsToFlowThrough )
+    , m_forwardAllNotifications( forwardAllNotifications )
 {GUCEF_TRACE;
 
     m_tsgObserver.SetParent( this );
@@ -65,10 +65,10 @@ CTSGNotifier::CTSGNotifier( PulseGeneratorPtr pulsGenerator         ,
                             bool allowSameThreadEventsToFlowThrough ,
                             bool forwardAllNotifications            )
     : CNotifier()                    
-    , m_tsgObserver( pulsGenerator, allowSameThreadEventsToFlowThrough )
-    , m_forwardAllNotifications( forwardAllNotifications )
     , m_dataLock()
     , m_notificationLock()
+    , m_tsgObserver( pulsGenerator, allowSameThreadEventsToFlowThrough )
+    , m_forwardAllNotifications( forwardAllNotifications )
 {GUCEF_TRACE;
 
     m_tsgObserver.SetParent( this );
@@ -78,10 +78,10 @@ CTSGNotifier::CTSGNotifier( PulseGeneratorPtr pulsGenerator         ,
 
 CTSGNotifier::CTSGNotifier( const CTSGNotifier& src )
     : CNotifier( src )                   
-    , m_tsgObserver( src.m_tsgObserver )
-    , m_forwardAllNotifications( src.m_forwardAllNotifications )
     , m_dataLock()
     , m_notificationLock()
+    , m_tsgObserver( src.m_tsgObserver )
+    , m_forwardAllNotifications( src.m_forwardAllNotifications )
 {GUCEF_TRACE;
 
     m_tsgObserver.SetParent( this );
@@ -126,7 +126,8 @@ void
 CTSGNotifier::UnsubscribeFrom( CNotifier* threadedNotifier )
 {GUCEF_TRACE;
 
-    threadedNotifier->Unsubscribe( &m_tsgObserver );
+    if ( GUCEF_NULL != threadedNotifier )
+        threadedNotifier->Unsubscribe( &m_tsgObserver );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -136,8 +137,9 @@ CTSGNotifier::SubscribeTo( CNotifier* threadedNotifier ,
                            const CEvent& eventid       )
 {GUCEF_TRACE;
 
-    threadedNotifier->Subscribe( &m_tsgObserver ,
-                                 eventid        );
+    if ( GUCEF_NULL != threadedNotifier )
+        threadedNotifier->Subscribe( &m_tsgObserver ,
+                                     eventid        );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -147,8 +149,9 @@ CTSGNotifier::UnsubscribeFrom( CNotifier* threadedNotifier ,
                                const CEvent& eventid       )
 {GUCEF_TRACE;
 
-    threadedNotifier->Unsubscribe( &m_tsgObserver ,
-                                   eventid        );
+    if ( GUCEF_NULL != threadedNotifier )
+        threadedNotifier->Unsubscribe( &m_tsgObserver ,
+                                       eventid        );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -219,6 +222,33 @@ CTSGNotifier::NotifyObserversFromThread( const CEvent& eventid               ,
     m_tsgObserver.AddEventToMailbox( this      ,
                                      eventid   ,
                                      eventData );
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CTSGNotifier::PlaceHoldOnNotifications( UInt32 lockWaitTimeoutInMs ) const
+{GUCEF_TRACE;
+
+    return m_tsgObserver.PlaceHoldOnNotifications( lockWaitTimeoutInMs );
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CTSGNotifier::ReleaseHoldOnNotifications( UInt32 lockWaitTimeoutInMs ) const
+{GUCEF_TRACE;
+
+    return m_tsgObserver.ReleaseHoldOnNotifications( lockWaitTimeoutInMs );
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CTSGNotifier::IsHoldingNotifications( void ) const
+{GUCEF_TRACE;
+
+    return m_tsgObserver.IsHoldingNotifications();
 }
 
 /*-------------------------------------------------------------------------*/

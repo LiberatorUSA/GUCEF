@@ -77,6 +77,78 @@ CIObserver::operator=( const CIObserver& src )
 
 /*-------------------------------------------------------------------------*/
 
+bool
+CIObserver::PlaceHoldOnNotifications( UInt32 lockWaitTimeoutInMs ) const
+{GUCEF_TRACE;
+
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CIObserver::ReleaseHoldOnNotifications( UInt32 lockWaitTimeoutInMs ) const
+{GUCEF_TRACE;
+
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CIObserver::IsHoldingNotifications( void ) const
+{GUCEF_TRACE;
+
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
+CObserverNotificationHold::CObserverNotificationHold( const CIObserver* observer, UInt32 lockWaitTimeoutInMs )
+    : m_observer( observer )
+    , m_isHoldingNotifications( false )
+{GUCEF_TRACE;
+
+    if ( GUCEF_NULL != m_observer )
+    {
+        GUCEF_CHECKACCESS( observer, sizeof( CIObserver ) );
+        m_isHoldingNotifications = m_observer->PlaceHoldOnNotifications( lockWaitTimeoutInMs );
+    }
+}
+
+/*--------------------------------------------------------------------------*/
+
+CObserverNotificationHold::CObserverNotificationHold( const CIObserver& observer, UInt32 lockWaitTimeoutInMs )
+    : m_observer( &observer )
+    , m_isHoldingNotifications( false )
+{GUCEF_TRACE;
+
+    assert( 0 != m_observer );        
+    m_isHoldingNotifications = m_observer->PlaceHoldOnNotifications( lockWaitTimeoutInMs );
+}
+
+/*--------------------------------------------------------------------------*/
+
+CObserverNotificationHold::~CObserverNotificationHold()
+{GUCEF_TRACE;
+
+    if ( GUCEF_NULL != m_observer && m_isHoldingNotifications )
+    {
+        m_isHoldingNotifications = !m_observer->ReleaseHoldOnNotifications();
+    }
+}
+
+/*--------------------------------------------------------------------------*/
+
+bool 
+CObserverNotificationHold::IsHoldingNotifications( void ) const
+{GUCEF_TRACE;
+
+    return m_isHoldingNotifications;
+}
+
+/*-------------------------------------------------------------------------*/
+
 CObserverScopeLock::CObserverScopeLock( const CIObserver* lockableObserver, UInt32 lockWaitTimeoutInMs )
     : m_lockableObserver( lockableObserver )
     , m_isLocked( false )

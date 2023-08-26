@@ -90,6 +90,7 @@ class GUCEF_CORE_PUBLIC_CPP CIObserver : public virtual MT::CILockable ,
     friend class CPumpedObserver;
     friend class CObserverScopeLock;
     friend class CObserverScopeReadOnlyLock;
+    friend class CObserverNotificationHold;
 
     /**
      *  Event callback member function.
@@ -140,6 +141,51 @@ class GUCEF_CORE_PUBLIC_CPP CIObserver : public virtual MT::CILockable ,
     virtual MT::TLockStatus NotificationReadOnlyUnlock( void ) const 
         { return ReadOnlyUnlock(); };
 
+
+    virtual bool PlaceHoldOnNotifications( UInt32 lockWaitTimeoutInMs = GUCEF_MT_DEFAULT_LOCK_TIMEOUT_IN_MS ) const;
+
+    virtual bool ReleaseHoldOnNotifications( UInt32 lockWaitTimeoutInMs = GUCEF_MT_DEFAULT_LOCK_TIMEOUT_IN_MS ) const;
+
+    virtual bool IsHoldingNotifications( void ) const;
+};
+
+/*-------------------------------------------------------------------------*/
+
+/**
+ *  Scope class which uses its lifecycle to place and release a notification hold on an observer
+ *  Provided the observer supports it. 
+ */
+class GUCEF_CORE_PUBLIC_CPP CObserverNotificationHold
+{
+    public:
+
+    /**
+     *  Places a hold on notifications if an observer is provided and provided the observer supports such functionality
+     * 
+     *  throws timeout_exception if unable to attain the lock before the specified timeout
+     */
+    CObserverNotificationHold( const CIObserver* observer, UInt32 lockWaitTimeoutInMs = GUCEF_MT_DEFAULT_LOCK_TIMEOUT_IN_MS );
+
+    /**
+     *  Places a hold on notifications and provided the observer supports such functionality
+     * 
+     *  throws timeout_exception if unable to attain the lock before the specified timeout
+     */
+    CObserverNotificationHold( const CIObserver& observer, UInt32 lockWaitTimeoutInMs = GUCEF_MT_DEFAULT_LOCK_TIMEOUT_IN_MS );
+
+    ~CObserverNotificationHold();
+
+    /**
+     *  Returns whether the observer is currently holding notifications
+     */
+    bool IsHoldingNotifications( void ) const;
+
+    private:
+    const CIObserver* m_observer;
+    bool m_isHoldingNotifications;
+
+    CObserverNotificationHold( const CObserverNotificationHold& src );              /* Copying doesnt make sense */
+    CObserverNotificationHold& operator=( const CObserverNotificationHold& src );   /* Copying doesnt make sense */
 };
 
 /*-------------------------------------------------------------------------*/

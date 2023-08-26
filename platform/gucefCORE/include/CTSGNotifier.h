@@ -213,13 +213,22 @@ class GUCEF_CORE_PUBLIC_CPP CTSGNotifier : public CNotifier  ,
                            CICloneable* evenData = GUCEF_NULL );
 
     void SignalUpcomingDestruction( void );
+
+    virtual bool PlaceHoldOnNotifications( UInt32 lockWaitTimeoutInMs = GUCEF_MT_DEFAULT_LOCK_TIMEOUT_IN_MS ) const GUCEF_VIRTUAL_OVERRIDE;
+
+    virtual bool ReleaseHoldOnNotifications( UInt32 lockWaitTimeoutInMs = GUCEF_MT_DEFAULT_LOCK_TIMEOUT_IN_MS ) const GUCEF_VIRTUAL_OVERRIDE;
+
+    virtual bool IsHoldingNotifications( void ) const GUCEF_VIRTUAL_OVERRIDE;
+
+    protected: 
+
+    MT::CMutex m_dataLock;
+    MT::CMutex m_notificationLock;
     
     private:
 
     CTSGObserver m_tsgObserver;
     bool m_forwardAllNotifications;
-    MT::CMutex m_dataLock;
-    MT::CMutex m_notificationLock;
 };
 
 /*-------------------------------------------------------------------------//

@@ -161,6 +161,7 @@ CPumpedObserver::CPumpedObserver( bool allowSameThreadEventsToFlowThrough )
     , m_propagatePulseEvent( false )
     , m_allowSameThreadEventsToFlowThrough( allowSameThreadEventsToFlowThrough )
     , m_mailbox()
+    , m_notificationsHolds( 0 )
 {GUCEF_TRACE;
 
     assert( !m_pulseGenerator.IsNULL() );
@@ -176,6 +177,7 @@ CPumpedObserver::CPumpedObserver( PulseGeneratorPtr pulseGenerator        ,
     , m_propagatePulseEvent( false )
     , m_allowSameThreadEventsToFlowThrough( allowSameThreadEventsToFlowThrough )
     , m_mailbox()
+    , m_notificationsHolds( 0 )
 {GUCEF_TRACE;
 
     RegisterPulseGeneratorEventHandlers();
@@ -189,6 +191,7 @@ CPumpedObserver::CPumpedObserver( const CPumpedObserver& src )
     , m_propagatePulseEvent( src.m_propagatePulseEvent )
     , m_allowSameThreadEventsToFlowThrough( src.m_allowSameThreadEventsToFlowThrough )
     , m_mailbox()
+    , m_notificationsHolds( 0 )
 {GUCEF_TRACE;
 
     m_pulseGenerator = src.m_pulseGenerator;
@@ -333,42 +336,45 @@ CPumpedObserver::OnPulse( CNotifier* notifier                       ,
 
 {GUCEF_TRACE;
 
-    CEvent mailEventID;
-    CICloneable* dataptr( GUCEF_NULL );
-    CMailElement* maildata( GUCEF_NULL );
-    while ( m_mailbox.PeekMail( mailEventID ,
-                                &dataptr    ) )
+    if ( m_notificationsHolds <= 0 )
     {
-        try
+        CEvent mailEventID;
+        CICloneable* dataptr( GUCEF_NULL );
+        CMailElement* maildata( GUCEF_NULL );
+        while ( m_mailbox.PeekMail( mailEventID ,
+                                    &dataptr    ) )
         {
-            maildata = static_cast< CMailElement* >( dataptr );
-            CIEventHandlerFunctorBase* callback = maildata->GetCallback();
-            if ( GUCEF_NULL == callback )
+            try
             {
-                OnPumpedNotify( maildata->GetNotifier() ,
-                                mailEventID             ,
-                                maildata->GetData()     );
+                maildata = static_cast< CMailElement* >( dataptr );
+                CIEventHandlerFunctorBase* callback = maildata->GetCallback();
+                if ( GUCEF_NULL == callback )
+                {
+                    OnPumpedNotify( maildata->GetNotifier() ,
+                                    mailEventID             ,
+                                    maildata->GetData()     );
+                }
+                else
+                {
+                    OnPumpedFunctorNotify( maildata->GetNotifier() ,
+                                           mailEventID             ,
+                                           maildata->GetData()     ,
+                                           callback                );
+
+                    GUCEF_DELETE callback;
+                }
+
+                GUCEF_DELETE maildata->GetData();
             }
-            else
+            catch ( const timeout_exception& )
             {
-                OnPumpedFunctorNotify( maildata->GetNotifier() ,
-                                       mailEventID             ,
-                                       maildata->GetData()     ,
-                                       callback                );
-
-                GUCEF_DELETE callback;
+                // no luck, perhaps better luck next pulse
+                GUCEF_EXCEPTION_LOG( LOGLEVEL_NORMAL, "PumpedObserver: caught timeout_exception while attempting to notify regarding event " + eventid.GetName() );
+                return;
             }
 
-            GUCEF_DELETE maildata->GetData();
+            m_mailbox.PopMail();
         }
-        catch ( const timeout_exception& )
-        {
-            // no luck, perhaps better luck next pulse
-            GUCEF_EXCEPTION_LOG( LOGLEVEL_NORMAL, "PumpedObserver: caught timeout_exception while attempting to notify regarding event " + eventid.GetName() );
-            return;
-        }
-
-        m_mailbox.PopMail();
     }
 
     if ( m_propagatePulseEvent )
@@ -410,9 +416,10 @@ CPumpedObserver::OnNotify( CNotifier* notifier                       ,
     {
         if ( !m_pulseGenerator.IsNULL()                                               &&
              m_allowSameThreadEventsToFlowThrough                                     &&
+             m_notificationsHolds <= 0                                                &&
              ( MT::GetCurrentTaskID() == m_pulseGenerator->GetPulseDriverThreadId() ) )
         {
-            // We are already in the thread that will pump the events
+            // We are already in the thread that will pump the events and there is no hold on notifications
             OnPumpedNotify( notifier  ,
                             eventId   ,
                             eventData );
@@ -456,9 +463,10 @@ CPumpedObserver::OnFunctorNotify( CNotifier* notifier                 ,
     {
         if ( !m_pulseGenerator.IsNULL()                                               &&
              m_allowSameThreadEventsToFlowThrough                                     &&
+             m_notificationsHolds <= 0                                                &&
              ( MT::GetCurrentTaskID() == m_pulseGenerator->GetPulseDriverThreadId() ) )
         {        
-            // We are already in the thread that will pump the events
+            // We are already in the thread that will pump the events and there is no hold on notifications
             OnPumpedFunctorNotify( notifier  ,
                                    eventid   ,
                                    eventdata ,
@@ -564,6 +572,35 @@ CPumpedObserver::Unlock( void ) const
 {GUCEF_TRACE;
 
     return MT::LOCKSTATUS_NOT_APPLICABLE;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CPumpedObserver::PlaceHoldOnNotifications( UInt32 lockWaitTimeoutInMs ) const
+{GUCEF_TRACE;
+
+    ++m_notificationsHolds;
+    return true;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CPumpedObserver::ReleaseHoldOnNotifications( UInt32 lockWaitTimeoutInMs ) const
+{GUCEF_TRACE;
+
+    --m_notificationsHolds;
+    return true;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CPumpedObserver::IsHoldingNotifications( void ) const
+{GUCEF_TRACE;
+
+    return m_notificationsHolds > 0;
 }
 
 /*-------------------------------------------------------------------------*/
