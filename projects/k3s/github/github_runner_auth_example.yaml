@@ -1,0 +1,3 @@
+authSecret:
+  github_token: <CopyYourOwnTokenFromGitHubHere!>
+  create: true

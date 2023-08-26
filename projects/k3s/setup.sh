@@ -12,6 +12,9 @@ sudo /usr/local/bin/k3s-uninstall.sh
 # get a new copy of k3s
 sudo curl -sfL https://get.k3s.io | sh -
 
+#set the location of the kubeconfig
+export KUBECONFIG=/etc/rancher/k3s/k3s.yaml
+
 # check to see if we are back online
 sudo kubectl get nodes -o wide
 
@@ -21,7 +24,7 @@ sudo chmod 700 get_helm.sh
 
 # set up helm
 sudo ./get_helm.sh
-rm ./get_helm.sh
+rm -f ./get_helm.sh
 
 # confirm we are dealing with Helm 3
 sudo helm version
@@ -56,4 +59,10 @@ cd ..
 cd ./metrics
 ./setup.sh
 cd ..
+
+# Make the kubeconfig available for our home kubectrl
+sudo mkdir -p ~/.kube/
+sudo cp -f -r /etc/rancher/k3s/k3s.yaml ~/.kube/
+sudo mv ~/.kube/k3s.yaml ~/.kube/config
+sudo chmod a+rw ~/.kube/config
 
