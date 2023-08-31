@@ -1534,6 +1534,7 @@ CPubSubClientSide::TopicLink::RetryPublishFailedMsgs( void )
     }
 
     MT::CScopeMutex lock( m_dataLock );
+    CORE::CObserverNotificationHold hold( this );
 
     CORE::UInt64 totalMsgsInFlightCount = 0;
     bool publishRetrySuccess = true;

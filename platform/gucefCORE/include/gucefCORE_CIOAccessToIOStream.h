@@ -75,12 +75,12 @@ class TIOAccessToStreambuff : public std::basic_streambuf< char_type, traits_typ
     {
     }
 
-    virtual ~TIOAccessToStreambuff()
+    virtual ~TIOAccessToStreambuff() GUCEF_VIRTUAL_OVERRIDE
     {
         m_access = GUCEF_NULL;
     }
 
-    virtual int_type overflow( int_type c ) override
+    virtual int_type overflow( int_type c ) GUCEF_VIRTUAL_OVERRIDE
     {
         if ( GUCEF_NULL != m_access )
         {
@@ -90,7 +90,7 @@ class TIOAccessToStreambuff : public std::basic_streambuf< char_type, traits_typ
         return traits_type::eof();
     }
 
-    virtual int_type underflow() override
+    virtual int_type underflow() GUCEF_VIRTUAL_OVERRIDE
     {
         if ( GUCEF_NULL != m_access )
         {
@@ -110,7 +110,7 @@ class TIOAccessToStreambuff : public std::basic_streambuf< char_type, traits_typ
         return 0;
     }
 
-    virtual pos_type seekoff( off_type offset, std::ios_base::seekdir origin, std::ios_base::openmode mode = std::ios_base::in | std::ios_base::out ) override
+    virtual pos_type seekoff( off_type offset, std::ios_base::seekdir origin, std::ios_base::openmode mode = std::ios_base::in | std::ios_base::out ) GUCEF_VIRTUAL_OVERRIDE
     {
         // change position by offset, according to way and mode
         if ( GUCEF_NULL != m_access )
@@ -130,7 +130,7 @@ class TIOAccessToStreambuff : public std::basic_streambuf< char_type, traits_typ
         return pos_type(off_type(-1));
     }
 
-    virtual pos_type seekpos( pos_type pos, std::ios_base::openmode mode = std::ios_base::in | std::ios_base::out ) override
+    virtual pos_type seekpos( pos_type pos, std::ios_base::openmode mode = std::ios_base::in | std::ios_base::out ) GUCEF_VIRTUAL_OVERRIDE
     {
         // change to specified position, according to mode
         if ( GUCEF_NULL != m_access )
@@ -141,7 +141,7 @@ class TIOAccessToStreambuff : public std::basic_streambuf< char_type, traits_typ
         return pos_type(off_type(-1));
     }
 
-    virtual streamsize xsgetn( char_type* outBuffer, streamsize charsToRead ) 
+    virtual streamsize xsgetn( char_type* outBuffer, streamsize charsToRead ) GUCEF_VIRTUAL_OVERRIDE
     {
         if ( GUCEF_NULL != m_access )
         {
@@ -165,7 +165,7 @@ class GUCEF_CORE_PUBLIC_CPP CIOAccessToIOStream : public std::iostream
     
     CIOAccessToIOStream( CIOAccess& access );
 
-    virtual ~CIOAccessToIOStream();
+    virtual ~CIOAccessToIOStream() GUCEF_VIRTUAL_OVERRIDE;
 
     private:
 
@@ -191,14 +191,3 @@ class GUCEF_CORE_PUBLIC_CPP CIOAccessToIOStream : public std::iostream
 /*-------------------------------------------------------------------------*/
 
 #endif /* GUCEF_CORE_CIOACCESSTOIOSTREAM_H ? */
-
-/*-------------------------------------------------------------------------//
-//                                                                         //
-//      Info & Changes                                                     //
-//                                                                         //
-//-------------------------------------------------------------------------//
-
-- 26-07-2006 :
-        - Dinand: Designed and implemented this class.
-
------------------------------------------------------------------------------*/
