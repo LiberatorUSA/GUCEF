@@ -72,6 +72,10 @@ struct SSrcFileData
     yaml_event_t event;
     void* privdata;
     TReadHandlers handlers;
+    UInt32 stringEncodingType;
+    UInt8* nestingType;
+    UInt16 nestingTypeBufferSize;
+    UInt16 nestingIndex;
 };
 typedef struct SSrcFileData TSrcFileData;
 
@@ -94,6 +98,192 @@ typedef struct SSrcFileData TSrcFileData;
 //      UTILITIES                                                          //
 //                                                                         //
 //-------------------------------------------------------------------------*/
+
+UInt8
+YamlEncodingToGucefDataType( yaml_encoding_t yamlEncoding )
+{
+    switch ( yamlEncoding )
+    {
+        case YAML_UTF8_ENCODING:
+            return GUCEF_DATATYPE_UTF8_STRING;
+        case YAML_UTF16LE_ENCODING:
+            return GUCEF_DATATYPE_UTF16_LE_STRING;
+        case YAML_UTF16BE_ENCODING:
+            return GUCEF_DATATYPE_UTF16_BE_STRING;
+
+        default:
+            return GUCEF_DATATYPE_UNKNOWN;
+    }
+}
+
+/*---------------------------------------------------------------------------*/
+
+static UInt32
+PushNesting( TSrcFileData* sd, UInt8 nestType )
+{
+    if ( GUCEF_NULL == sd )
+        return 0;
+
+    if ( sd->nestingIndex >= sd->nestingTypeBufferSize )
+    {
+        UInt16 currentBufferSize = sd->nestingTypeBufferSize;
+        UInt16 newBufferSize = 64;
+        if ( 0 != currentBufferSize )
+            newBufferSize = 2 * currentBufferSize;
+        void* newBuffer = realloc( sd->nestingType, newBufferSize );
+        if ( GUCEF_NULL != newBuffer )
+        {
+            sd->nestingType = (UInt8*) newBuffer;
+            sd->nestingTypeBufferSize = newBufferSize;
+            memset( sd->nestingType, 0, sd->nestingTypeBufferSize );
+        }
+        else
+        {
+            return 0;
+        }
+    }
+
+    sd->nestingType[ sd->nestingIndex ] = nestType;
+    ++sd->nestingIndex;
+    return 1;
+}
+
+/*---------------------------------------------------------------------------*/
+
+static UInt8
+PopNesting( TSrcFileData* sd )
+{
+    if ( sd->nestingIndex > 0 )
+    {
+        --sd->nestingIndex;
+        sd->nestingType[ sd->nestingIndex ] = 0;
+        if ( sd->nestingIndex > 0 )
+            return sd->nestingType[ sd->nestingIndex-1 ];
+    }
+    return 0;
+}
+
+/*---------------------------------------------------------------------------*/
+
+static UInt8
+CurrentNesting( TSrcFileData* sd )
+{
+    if ( sd->nestingIndex > 0 )
+        return sd->nestingType[ sd->nestingIndex-1 ];
+    else
+        return 0;
+}
+
+/*---------------------------------------------------------------------------*/
+
+static Float64
+ToFloat64( yaml_event_t* ymlEvent )
+{
+    Float64 val = 0.0;
+    if ( 1 == sscanf( ymlEvent->data.scalar.value, "%lf", &val ) )
+        return val;
+    return 0.0;
+}
+
+/*---------------------------------------------------------------------------*/
+
+static Int64
+ToInt64( yaml_event_t* ymlEvent )
+{
+    Int64 val = 0;
+    #ifdef GUCEF_MSWIN_BUILD
+    if ( 1 == sscanf( ymlEvent->data.scalar.value, "%I64u", &val ) )
+    #else
+    if ( 1 == sscanf( ymlEvent->data.scalar.value, "%llu", &val ) )
+    #endif
+        return val;
+    return 0;
+}
+
+/*---------------------------------------------------------------------------*/
+
+UInt8
+DetectScalarType( yaml_event_t* ymlEvent )
+{
+    if ( GUCEF_NULL == ymlEvent )
+        return GUCEF_DATATYPE_UNKNOWN;
+
+    if ( ymlEvent->data.scalar.style == YAML_PLAIN_SCALAR_STYLE )
+    {
+        /* with a plain scalar we have to consider that we could be dealing with an int or float
+         * look for all digits and a dot
+         */
+        UInt8 allDigits = 1;
+        UInt8 foundDot = 0;
+        size_t scalarSize = ymlEvent->data.scalar.length;
+        yaml_char_t* value = ymlEvent->data.scalar.value;
+        for ( size_t i=0; i<scalarSize; ++i )
+        {
+            yaml_char_t c = value[ i ];
+            if ( c == '.' )
+            {
+                foundDot = 1;
+            }
+            if ( !( c >= '0' && c <= '9' || c == '+' || c == '-' || c == '.' ) )
+            {
+                allDigits = 0;
+                break;
+            }
+
+        }
+
+        if ( 0 == allDigits )
+        {
+            /* check if its a boolean value
+             * yaml supports multiple specific keywords 
+             */
+            switch ( scalarSize )
+            {
+                case 5:
+                {
+                    if ( 0 == memcmp( "false", value, 5 ) )
+                        return GUCEF_DATATYPE_BOOLEAN_ASCII_STRING;
+                    else
+                        return GUCEF_DATATYPE_UTF8_STRING;
+                }
+                case 4:
+                {
+                    if ( 0 == memcmp( "true", value, 4 ) )
+                        return GUCEF_DATATYPE_BOOLEAN_ASCII_STRING;
+                    else
+                        return GUCEF_DATATYPE_UTF8_STRING;
+                }
+                case 3:
+                {
+                    if ( 0 == memcmp( "off", value, 3 ) ||
+                         0 == memcmp( "yes", value, 3 ) )
+                        return GUCEF_DATATYPE_BOOLEAN_ASCII_STRING;
+                    else
+                        return GUCEF_DATATYPE_UTF8_STRING;
+                }
+                case 2:
+                {
+                    if ( 0 == memcmp( "on", value, 2 ) ||
+                         0 == memcmp( "no", value, 2 ) )
+                        return GUCEF_DATATYPE_BOOLEAN_ASCII_STRING;
+                    else
+                        return GUCEF_DATATYPE_UTF8_STRING;
+                }
+                default:
+                    return GUCEF_DATATYPE_UTF8_STRING;    
+                
+            }
+        }
+        else if ( 0 == foundDot )
+            return GUCEF_DATATYPE_INT64;
+        else
+            return GUCEF_DATATYPE_FLOAT64;
+    }
+
+    return GUCEF_DATATYPE_UTF8_STRING;
+}
+
+/*---------------------------------------------------------------------------*/
 
 UInt32 GUCEF_PLUGIN_CALLSPEC_PREFIX
 DSTOREPLUG_Init( void** plugdata ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
@@ -529,6 +719,7 @@ DSTOREPLUG_Src_File_Open( void** plugdata ,
     if ( GUCEF_NULL != sd )
     {
         memset( sd, 0, sizeof( TSrcFileData ) );
+        sd->stringEncodingType = GUCEF_DATATYPE_UTF8_STRING;
         sd->access = file;
         if ( 0 != yaml_parser_initialize( &sd->parser ) )
         {
@@ -731,7 +922,11 @@ DSTOREPLUG_Start_Reading( void** plugdata ,
         TSrcFileData* sd = (TSrcFileData*) *filedata;
         if ( GUCEF_NULL != sd )
         {
+            UInt8 currentNesting = 0;
+            UInt8 nextScalarIsAKey = 1;
+            UInt8 dontDeleteYamlEvent = 0;
             yaml_event_t yamlEvent;
+            yaml_event_t lastYamlEvent;
             do 
             {
                 if (  0 == yaml_parser_parse( &sd->parser, &yamlEvent ) ) 
@@ -746,8 +941,11 @@ DSTOREPLUG_Start_Reading( void** plugdata ,
                         break; 
                     
                     /* Stream start/end */
-                    case YAML_STREAM_START_EVENT: 
+                    case YAML_STREAM_START_EVENT:
+                    {
+                        sd->stringEncodingType = YamlEncodingToGucefDataType( yamlEvent.data.stream_start.encoding );
                         break;
+                    }
                     case YAML_STREAM_END_EVENT: 
                         break;
 
@@ -764,9 +962,18 @@ DSTOREPLUG_Start_Reading( void** plugdata ,
                     }
                     case YAML_SEQUENCE_START_EVENT:  
                     {
-                        const char* name = yamlEvent.data.sequence_start.tag;
+                        const char* name = GUCEF_NULL;
+                        if ( 0 != dontDeleteYamlEvent )
+                            name = lastYamlEvent.data.scalar.value;
                         sd->handlers.OnNodeBegin( sd->privdata, name, GUCEF_DATATYPE_ARRAY );
                         sd->handlers.OnNodeChildrenBegin( sd->privdata, name );
+                        if ( 0 != dontDeleteYamlEvent )
+                        {
+                            dontDeleteYamlEvent = 0;
+                            yaml_event_delete( &lastYamlEvent );
+                        }
+                        currentNesting = (UInt8) YAML_SEQUENCE_START_EVENT;
+                        PushNesting( sd, (UInt8) YAML_SEQUENCE_START_EVENT );
                         break;
                     }
                     case YAML_SEQUENCE_END_EVENT:    
@@ -774,13 +981,28 @@ DSTOREPLUG_Start_Reading( void** plugdata ,
                         const char* name = yamlEvent.data.sequence_start.tag;
                         sd->handlers.OnNodeChildrenEnd( sd->privdata, name );
                         sd->handlers.OnNodeEnd( sd->privdata, name );
+                        currentNesting = PopNesting( sd );
+                        if ( YAML_MAPPING_START_EVENT == currentNesting )
+                            nextScalarIsAKey = 1;
+                        else
+                            nextScalarIsAKey = 0;
                         break;
                     }
                     case YAML_MAPPING_START_EVENT:   
                     {
-                        const char* name = yamlEvent.data.mapping_start.tag;
+                        const char* name = GUCEF_NULL;
+                        if ( 0 != dontDeleteYamlEvent )
+                            name = lastYamlEvent.data.scalar.value;
+                        currentNesting = (UInt8) YAML_MAPPING_START_EVENT;
+                        nextScalarIsAKey = 1;
                         sd->handlers.OnNodeBegin( sd->privdata, name, GUCEF_DATATYPE_OBJECT );
                         sd->handlers.OnNodeChildrenBegin( sd->privdata, name );
+                        if ( 0 != dontDeleteYamlEvent )
+                        {
+                            dontDeleteYamlEvent = 0;
+                            yaml_event_delete( &lastYamlEvent );
+                        }
+                        PushNesting( sd, (UInt8) YAML_MAPPING_START_EVENT );
                         break;
                     }
                     case YAML_MAPPING_END_EVENT:   
@@ -788,28 +1010,81 @@ DSTOREPLUG_Start_Reading( void** plugdata ,
                         const char* name = yamlEvent.data.mapping_start.tag;
                         sd->handlers.OnNodeChildrenEnd( sd->privdata, name );
                         sd->handlers.OnNodeEnd( sd->privdata, name );
+                        currentNesting = PopNesting( sd );
+                        if ( YAML_MAPPING_START_EVENT == currentNesting )
+                            nextScalarIsAKey = 1;
+                        else
+                            nextScalarIsAKey = 0;
                         break;
                     }
 
                     /* Data */
-                    case YAML_ALIAS_EVENT:   break;     // printf("Got alias (anchor %s)\n", yamlEvent.data.alias.anchor);
+
+                    case YAML_ALIAS_EVENT:   
+                        break;
+                        
                     case YAML_SCALAR_EVENT:  
                     {
-                        TVariantData var;
-                        const char* name = yamlEvent.data.scalar.tag;
+                        if ( 0 != nextScalarIsAKey )
+                        {
+                            memcpy( &lastYamlEvent, &yamlEvent, sizeof( yamlEvent ) );
+                            dontDeleteYamlEvent = 1;
+                            nextScalarIsAKey = 0;                         
+                        }
+                        else
+                        {
+                            TVariantData var;
+                            memset( &var, 0, sizeof( var ) );
 
-                        memset( &var, 0, sizeof( var ) );
-                        var.containedType = GUCEF_DATATYPE_UTF8_STRING; 
-                        var.union_data.heap_data.heap_data_is_linked = 1;
-                        var.union_data.heap_data.heap_data_size = (UInt32) yamlEvent.data.scalar.length;
-                        var.union_data.heap_data.union_data.char_heap_data = yamlEvent.data.scalar.value;
+                            UInt8 scalarType = DetectScalarType( &yamlEvent );
+                            switch ( scalarType )
+                            {
+                                case GUCEF_DATATYPE_FLOAT64 :
+                                {
+                                    var.containedType = GUCEF_DATATYPE_FLOAT64;
+                                    var.union_data.float64_data = ToFloat64( &yamlEvent );
+                                    break;
+                                }
+                                case GUCEF_DATATYPE_INT64 :
+                                {
+                                    var.containedType = GUCEF_DATATYPE_INT64;
+                                    var.union_data.int64_data = ToInt64( &yamlEvent );
+                                    break;
+                                }
+                                case GUCEF_DATATYPE_BOOLEAN_ASCII_STRING :
+                                case GUCEF_DATATYPE_UTF8_STRING:
+                                case GUCEF_DATATYPE_UTF16_LE_STRING:
+                                case GUCEF_DATATYPE_UTF16_BE_STRING:
+                                default:
+                                {
+                                    var.containedType = scalarType;
+                                    var.union_data.heap_data.heap_data_is_linked = 1;
+                                    var.union_data.heap_data.heap_data_size = (UInt32) yamlEvent.data.scalar.length+1;
+                                    var.union_data.heap_data.union_data.char_heap_data = yamlEvent.data.scalar.value;
+                                    break;
+                                }
+                            }
 
-                        sd->handlers.OnNodeAtt( sd->privdata, "", name, &var );                        
+                            yaml_char_t* key = GUCEF_NULL;
+                            if ( YAML_MAPPING_START_EVENT == currentNesting )
+                            {
+                                key = lastYamlEvent.data.scalar.value;
+                                nextScalarIsAKey = 1;
+                            }
+
+                            sd->handlers.OnNodeAtt( sd->privdata, "", key, &var );
+
+                            if ( YAML_MAPPING_START_EVENT == currentNesting )
+                            {
+                                yaml_event_delete( &lastYamlEvent );
+                                dontDeleteYamlEvent = 0;
+                            }
+                        }
                         break;
                     }
                 }
 
-                if( yamlEvent.type != YAML_STREAM_END_EVENT )
+                if( yamlEvent.type != YAML_STREAM_END_EVENT && 0 == dontDeleteYamlEvent )
                     yaml_event_delete( &yamlEvent );
 
             } 

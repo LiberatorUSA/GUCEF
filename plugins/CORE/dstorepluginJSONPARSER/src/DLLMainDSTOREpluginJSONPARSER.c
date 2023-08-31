@@ -246,25 +246,31 @@ DSTOREPLUG_Dest_File_Close( void** plugdata ,
 
         size_t measured = json_measure( fd->jsonDoc );
         char* serializationBuffer = (char*) malloc( measured );
-        json_serialize( serializationBuffer, fd->jsonDoc );
-        json_builder_free( fd->jsonDoc );
-        fd->jsonDoc = fd->currentJsonNode = GUCEF_NULL;
+        if ( GUCEF_NULL != serializationBuffer )
+        {
+            json_serialize( serializationBuffer, fd->jsonDoc );
+            json_builder_free( fd->jsonDoc );
+            fd->jsonDoc = fd->currentJsonNode = GUCEF_NULL;
 
-       /*
-        *   the json_measure and json_serialize functions include a null terminator
-        *   When writing to a file type media it is not appropriote to include a null terminator
-        */
-       if ( measured > 0 )
-            --measured;
+           /*
+            *   the json_measure and json_serialize functions include a null terminator
+            *   When writing to a file type media it is not appropriote to include a null terminator
+            */
+           if ( measured > 0 )
+                --measured;
 
-        fd->fptr->write( fd->fptr, serializationBuffer, 1, (UInt32) measured );
-        fd->fptr->close( fd->fptr );
+            fd->fptr->write( fd->fptr, serializationBuffer, 1, (UInt32) measured );
+            fd->fptr->close( fd->fptr );
+        
+            free( serializationBuffer );
+            serializationBuffer = GUCEF_NULL;
+        }
     }
 
-    if ( NULL != fd->base64EncodeBuffer )
+    if ( GUCEF_NULL != fd->base64EncodeBuffer )
     {
         free( fd->base64EncodeBuffer );
-        fd->base64EncodeBuffer = NULL;
+        fd->base64EncodeBuffer = GUCEF_NULL;
     }
     free( *filedata );
     *filedata = GUCEF_NULL;
