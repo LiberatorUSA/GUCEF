@@ -112,10 +112,14 @@ class GUCEF_CORE_PUBLIC_CPP CDataNode : public CIEnumerable
      */
     CDataNode( const CDataNode& src );
 
+    #ifdef GUCEF_RVALUE_REFERENCES_SUPPORTED
+    CDataNode( CDataNode&& src ) GUCEF_NOEXCEPT;
+    #endif
+
     /**
      *      Cleans up all attributes and children
      */
-    virtual ~CDataNode();
+    virtual ~CDataNode() GUCEF_VIRTUAL_OVERRIDE;
 
     /**
      *      Turns the given node and it's sub-tree into an replica

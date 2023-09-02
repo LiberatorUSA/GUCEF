@@ -281,9 +281,12 @@ CPumpedObserver::ClearMailbox( bool acceptNewMail )
                                &dataptr    ) )
     {
         maildata = static_cast< CMailElement* >( dataptr );
-        GUCEF_DELETE maildata->GetCallback();
-        GUCEF_DELETE maildata->GetData();
-        GUCEF_DELETE maildata;
+        if ( GUCEF_NULL != maildata )
+        {
+            GUCEF_DELETE maildata->GetCallback();
+            GUCEF_DELETE maildata->GetData();
+            GUCEF_DELETE maildata;
+        }
     }
 
     if ( acceptNewMail )
@@ -338,33 +341,41 @@ CPumpedObserver::OnPulse( CNotifier* notifier                       ,
 
     if ( m_notificationsHolds <= 0 )
     {
+        MT::CTMailBox< CEvent >::TMailBoxMailRemovalBlock mailRemovalBlock( m_mailbox );
+        
         CEvent mailEventID;
         CICloneable* dataptr( GUCEF_NULL );
         CMailElement* maildata( GUCEF_NULL );
-        while ( m_mailbox.PeekMail( mailEventID ,
-                                    &dataptr    ) )
+        while ( m_mailbox.PeekMail( mailRemovalBlock ,
+                                    mailEventID      ,
+                                    &dataptr         ) )
         {
             try
             {
                 maildata = static_cast< CMailElement* >( dataptr );
-                CIEventHandlerFunctorBase* callback = maildata->GetCallback();
-                if ( GUCEF_NULL == callback )
+                if ( GUCEF_NULL != maildata )
                 {
-                    OnPumpedNotify( maildata->GetNotifier() ,
-                                    mailEventID             ,
-                                    maildata->GetData()     );
-                }
-                else
-                {
-                    OnPumpedFunctorNotify( maildata->GetNotifier() ,
-                                           mailEventID             ,
-                                           maildata->GetData()     ,
-                                           callback                );
+                    CICloneable* eventData = maildata->GetData();
+                    CIEventHandlerFunctorBase* callback = maildata->GetCallback();
+                    CNotifier* eventNotifier = maildata->GetNotifier();
+                    if ( GUCEF_NULL == callback )
+                    {
+                        OnPumpedNotify( eventNotifier ,
+                                        mailEventID   ,
+                                        eventData     );
+                    }
+                    else
+                    {
+                        OnPumpedFunctorNotify( eventNotifier ,
+                                               mailEventID   ,
+                                               eventData     ,
+                                               callback      );
 
-                    GUCEF_DELETE callback;
-                }
+                        GUCEF_DELETE callback;
+                    }
 
-                GUCEF_DELETE maildata->GetData();
+                    GUCEF_DELETE eventData;
+                }
             }
             catch ( const timeout_exception& )
             {
@@ -373,7 +384,7 @@ CPumpedObserver::OnPulse( CNotifier* notifier                       ,
                 return;
             }
 
-            m_mailbox.PopMail();
+            m_mailbox.PopMail( mailRemovalBlock );
         }
     }
 

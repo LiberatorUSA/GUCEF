@@ -63,6 +63,9 @@ namespace MT {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+template < typename T >
+class CTMailBoxMailRemovalBlock;
+
 /**
  *  Basicly a tread-safe stack for passing data event data between
  *  multiple threads
@@ -79,10 +82,12 @@ class CTMailBox : public virtual MT::CILockable
     };
     typedef struct SMailElement TMailElement;
 
+    typedef T                                                            value_type;
     typedef std::vector< TMailElement, basic_allocator< TMailElement > > TMailVector;
     typedef std::deque< TMailElement, basic_allocator< TMailElement > >  TMailQueue;
-    typedef typename std::deque< TMailElement >::iterator iterator;
-    typedef typename std::deque< TMailElement >::const_iterator const_iterator;
+    typedef typename std::deque< TMailElement >::iterator                iterator;
+    typedef typename std::deque< TMailElement >::const_iterator          const_iterator;
+    typedef CTMailBoxMailRemovalBlock< T >                               TMailBoxMailRemovalBlock;
 
     CTMailBox( void );
 
@@ -121,14 +126,15 @@ class CTMailBox : public virtual MT::CILockable
      *  @param data cloneable data container for optional event data.
      *  @return whether mail was successfully retrieved from the mailbox.
      */
-    bool PeekMail( T& eventid         ,
-                   CICloneable** data );
+    bool PeekMail( TMailBoxMailRemovalBlock& removalBlock ,
+                   T& eventid                             ,
+                   CICloneable** data                     );
 
     /**
      *  Removes the first mail item in the mail stack
      *  Intended to be used in combination with PeekMail()
      */
-    bool PopMail( void );
+    bool PopMail( TMailBoxMailRemovalBlock& removalBlock );
 
     /**
      *  Attempts to retrieve mail from the mailbox.
@@ -145,17 +151,21 @@ class CTMailBox : public virtual MT::CILockable
     bool GetMailList( TMailVector& mailList   ,
                       Int32 maxMailItems = -1 );
 
-    void Clear( void );
+    bool Clear( void );
 
-    void ClearAllExcept( const T& eventid );
+    bool ClearAllExcept( const T& eventid );
 
-    void Delete( const T& eventid );
+    bool Delete( const T& eventid );
 
     bool HasMail( void ) const;
 
     UInt32 AmountOfMail( void ) const;
 
     void SetAcceptsNewMail( bool acceptNewMail );
+
+    void SetMailRemovalAllowed( bool allowMailRemoval );
+
+    bool IsMailRemovalAllowed( void ) const;
 
     TLockStatus DoLock( UInt32 lockWaitTimeoutInMs = GUCEF_MT_DEFAULT_LOCK_TIMEOUT_IN_MS ) const;
 
@@ -188,12 +198,58 @@ class CTMailBox : public virtual MT::CILockable
 
     TMailQueue m_mailQueue;
     bool m_acceptsNewMail;
+    bool m_mailRemovalAllowed;
     CMutex m_datalock;
+};
+
+/*--------------------------------------------------------------------------*/
+
+template < typename T >
+class CTMailBoxMailRemovalBlock
+{
+    public:
+
+    typedef T               value_type;
+    typedef CTMailBox< T >  TMailBoxType;
+
+    private:
+
+    TMailBoxType* m_mailbox;
+
+    public:
+    
+    CTMailBoxMailRemovalBlock( TMailBoxType& mailbox )
+        : m_mailbox( &mailbox )
+    {GUCEF_TRACE;
+        
+        GUCEF_ASSERT( GUCEF_NULL != m_mailbox );
+        m_mailbox->SetMailRemovalAllowed( false );
+    }
+
+    ~CTMailBoxMailRemovalBlock()
+    {GUCEF_TRACE;
+        
+        GUCEF_ASSERT( GUCEF_NULL != m_mailbox );
+        m_mailbox->SetMailRemovalAllowed( true );
+    }
+
+    bool EarlyUnblock( void )
+    {GUCEF_TRACE;
+
+        if ( GUCEF_NULL != m_mailbox )
+            m_mailbox->SetMailRemovalAllowed( true );
+        return true;
+    }
+
+    private:
+
+    CTMailBoxMailRemovalBlock( const CTMailBoxMailRemovalBlock& src );             /**< dont use */
+    CTMailBoxMailRemovalBlock& operator=( const CTMailBoxMailRemovalBlock& src );  /**< dont use */
 };
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
-//      UTILITIES                                                          //
+//      IMPLEMENTATION                                                     //
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
@@ -202,6 +258,7 @@ CTMailBox< T >::CTMailBox( void )
     : MT::CILockable()
     , m_mailQueue()
     , m_acceptsNewMail( true )
+    , m_mailRemovalAllowed( true )
     , m_datalock()
 {GUCEF_TRACE;
 
@@ -214,6 +271,7 @@ CTMailBox< T >::~CTMailBox()
 {GUCEF_TRACE;
 
     m_acceptsNewMail = false;
+    m_mailRemovalAllowed = true;
     Clear();
 }
 
@@ -260,6 +318,27 @@ CTMailBox< T >::SetAcceptsNewMail( bool acceptNewMail )
 /*--------------------------------------------------------------------------*/
 
 template< typename T >
+void 
+CTMailBox< T >::SetMailRemovalAllowed( bool allowMailRemoval )
+{GUCEF_TRACE;
+
+    CObjectScopeLock lock( this );
+    m_mailRemovalAllowed = allowMailRemoval;
+}
+
+/*--------------------------------------------------------------------------*/
+
+template< typename T >
+bool 
+CTMailBox< T >::IsMailRemovalAllowed( void ) const
+{GUCEF_TRACE;
+
+    return m_mailRemovalAllowed;
+}
+
+/*--------------------------------------------------------------------------*/
+
+template< typename T >
 bool
 CTMailBox< T >::GetMail( T& eventid         ,
                          CICloneable** data )
@@ -267,7 +346,7 @@ CTMailBox< T >::GetMail( T& eventid         ,
 
     CObjectScopeLock lock( this );
 
-    if ( !m_mailQueue.empty() )
+    if ( !m_mailQueue.empty() && m_mailRemovalAllowed )
     {
         TMailElement& entry = m_mailQueue.front();
         eventid = entry.eventid;
@@ -290,14 +369,17 @@ CTMailBox< T >::GetMail( T& eventid         ,
 
 template< typename T >
 bool
-CTMailBox< T >::PeekMail( T& eventid         ,
-                          CICloneable** data )
+CTMailBox< T >::PeekMail( TMailBoxMailRemovalBlock& removalBlock ,
+                          T& eventid                             ,
+                          CICloneable** data                     )
 {GUCEF_TRACE;
 
     CObjectScopeLock lock( this );
 
     if ( !m_mailQueue.empty() )
     {
+        m_mailRemovalAllowed = false;
+        
         TMailElement& entry = m_mailQueue.front();
         eventid = entry.eventid;
         if ( GUCEF_NULL != data )
@@ -314,12 +396,14 @@ CTMailBox< T >::PeekMail( T& eventid         ,
 
 template< typename T >
 bool
-CTMailBox< T >::PopMail( void )
+CTMailBox< T >::PopMail( TMailBoxMailRemovalBlock& removalBlock )
 {GUCEF_TRACE;
 
     CObjectScopeLock lock( this );
 
-    if ( !m_mailQueue.empty() )
+    removalBlock.EarlyUnblock();
+
+    if ( !m_mailQueue.empty() && m_mailRemovalAllowed )
     {
         TMailElement& entry = m_mailQueue.front();
         GUCEF_DELETE entry.data;
@@ -340,120 +424,142 @@ CTMailBox< T >::GetMailList( TMailVector& mailList ,
     CObjectScopeLock lock( this );
 
     Int32 mailItemsRead = 0;
-    while ( mailItemsRead < maxMailItems || maxMailItems < 0 )
-    {
-        if ( !m_mailQueue.empty() )
+    if ( m_mailRemovalAllowed )
+    {    
+        while ( mailItemsRead < maxMailItems || maxMailItems < 0 )
         {
-            mailList.push_back( m_mailQueue.front() );
-            m_mailQueue.pop_front();
+            if ( !m_mailQueue.empty() )
+            {
+                mailList.push_back( m_mailQueue.front() );
+                m_mailQueue.pop_front();
 
-            ++mailItemsRead;
-        }
-        else
-        {
-            break;
+                ++mailItemsRead;
+            }
+            else
+            {
+                break;
+            }
         }
     }
-
     return mailItemsRead > 0;
 }
 
 /*--------------------------------------------------------------------------*/
 
 template< typename T >
-void
+bool
 CTMailBox< T >::Clear( void )
 {GUCEF_TRACE;
 
     CObjectScopeLock lock( this );
-
-    typename TMailQueue::iterator i( m_mailQueue.begin() );
-    while ( i != m_mailQueue.end() )
+    
+    if ( m_mailRemovalAllowed )
     {
-        GUCEF_DELETE (*i).data;
-        ++i;
+        typename TMailQueue::iterator i( m_mailQueue.begin() );
+        while ( i != m_mailQueue.end() )
+        {
+            GUCEF_DELETE (*i).data;
+            ++i;
+        }
+        m_mailQueue.clear();
+        return true;
     }
-    m_mailQueue.clear();
+    return false;
 }
 
 /*--------------------------------------------------------------------------*/
 
 template< typename T >
-void
+bool
 CTMailBox< T >::ClearAllExcept( const T& eventid )
 {GUCEF_TRACE;
 
     CObjectScopeLock lock( this );
-
-    #if __cplusplus >= 201103L
-
-    // C++11 added the erase()
-    typename TMailQueue::iterator i( m_mailQueue.begin() );
-    while ( i != m_mailQueue.end() )
+    
+    if ( m_mailRemovalAllowed )
     {
-        if ( (*i).eventid != eventid )
+        #if __cplusplus >= 201103L
+
+        // C++11 added the erase()
+        typename TMailQueue::iterator i( m_mailQueue.begin() );
+        while ( i != m_mailQueue.end() )
         {
-            GUCEF_DELETE (*i).data;
-            i = m_mailQueue.erase( i );
-            continue;
+            if ( (*i).eventid != eventid )
+            {
+                GUCEF_DELETE (*i).data;
+                i = m_mailQueue.erase( i );
+                continue;
+            }
+            ++i;
         }
-        ++i;
+
+        #else
+
+        TMailQueue copyQueue;
+        while ( !m_mailQueue.empty() )
+        {
+            if ( m_mailQueue.front().eventid == eventid )
+                copyQueue.push_back( m_mailQueue.front() );
+            else
+                GUCEF_DELETE m_mailQueue.front().data;
+            m_mailQueue.pop_front();
+        }
+        m_mailQueue = copyQueue;
+
+        #endif
+        
+        return true;
     }
 
-    #else
-
-    TMailQueue copyQueue;
-    while ( !m_mailQueue.empty() )
-    {
-        if ( m_mailQueue.front().eventid == eventid )
-            copyQueue.push_back( m_mailQueue.front() );
-        else
-            GUCEF_DELETE m_mailQueue.front().data;
-        m_mailQueue.pop_front();
-    }
-    m_mailQueue = copyQueue;
-
-    #endif
+    return false;
 }
 
 /*--------------------------------------------------------------------------*/
 
 template< typename T >
-void
+bool
 CTMailBox< T >::Delete( const T& eventid )
 {GUCEF_TRACE;
 
     CObjectScopeLock lock( this );
 
-    #if __cplusplus >= 201103L
-
-    // C++11 added the erase()
-    typename TMailQueue::iterator i( m_mailQueue.begin() );
-    while ( i != m_mailQueue.end() )
+    if ( m_mailRemovalAllowed )
     {
-        if ( (*i).eventid == eventid )
+
+        #if __cplusplus >= 201103L
+
+        // C++11 added the erase()
+        typename TMailQueue::iterator i( m_mailQueue.begin() );
+        while ( i != m_mailQueue.end() )
         {
-            GUCEF_DELETE (*i).data;
-            i = m_mailQueue.erase( i );
-            continue;
+            if ( (*i).eventid == eventid )
+            {
+                GUCEF_DELETE (*i).data;
+                i = m_mailQueue.erase( i );
+                continue;
+            }
+            ++i;
         }
-        ++i;
+
+        #else
+
+        TMailQueue copyQueue;
+        while ( !m_mailQueue.empty() )
+        {
+            if ( m_mailQueue.front().eventid != eventid )
+                copyQueue.push_back( m_mailQueue.front() );
+            else
+                GUCEF_DELETE m_mailQueue.front().data;
+            m_mailQueue.pop_front();
+        }
+        m_mailQueue = copyQueue;
+
+        #endif
+    
+        return true;
     }
 
-    #else
-
-    TMailQueue copyQueue;
-    while ( !m_mailQueue.empty() )
-    {
-        if ( m_mailQueue.front().eventid != eventid )
-            copyQueue.push_back( m_mailQueue.front() );
-        else
-            GUCEF_DELETE m_mailQueue.front().data;
-        m_mailQueue.pop_front();
-    }
-    m_mailQueue = copyQueue;
-
-    #endif
+    return false;
 }
 
 /*--------------------------------------------------------------------------*/
@@ -535,7 +641,10 @@ typename CTMailBox< T >::TMailQueue::iterator
 CTMailBox< T >::erase( typename TMailQueue::iterator& index )
 {GUCEF_TRACE;
 
-    return m_mailQueue.erase( index );
+    if ( m_mailRemovalAllowed )
+        return m_mailQueue.erase( index );
+    else
+        return m_mailQueue.end();
 }
 
 /*--------------------------------------------------------------------------*/

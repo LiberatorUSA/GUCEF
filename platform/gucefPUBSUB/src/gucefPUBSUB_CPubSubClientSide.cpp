@@ -2240,14 +2240,16 @@ void
 CPubSubClientSide::TopicLink::ProcessAcknowledgeReceiptsMailbox( void )
 {GUCEF_TRACE;
 
+    TPubSubMsgPtrMailbox::TMailBoxMailRemovalBlock mailRemovalBlock( publishAckdMsgsMailbox );
+    
     CIPubSubMsg::TNoLockSharedPtr msg;
-    while ( publishAckdMsgsMailbox.PeekMail( msg, GUCEF_NULL ) )
+    while ( publishAckdMsgsMailbox.PeekMail( mailRemovalBlock, msg, GUCEF_NULL ) )
     {
         try
         {
             if ( AcknowledgeReceiptSync( msg ) )
             {
-                publishAckdMsgsMailbox.PopMail();
+                publishAckdMsgsMailbox.PopMail( mailRemovalBlock );
             }
             else
             {

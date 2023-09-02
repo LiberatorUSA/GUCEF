@@ -66,6 +66,14 @@
 
 /*-------------------------------------------------------------------------*/
 
+#ifdef GUCEF_RVALUE_REFERENCES_SUPPORTED
+    #define GUCEF_MOVE( m ) std::move( m )
+#else
+    #define GUCEF_MOVE( m ) m
+#endif
+
+/*-------------------------------------------------------------------------*/
+
 #if defined(__cplusplus)
     #undef GUCEF_NOEXCEPT_IS_SUPPORTED
     #if __cplusplus > 201103L /* >= C++ 11 : This is not fullproof since not every compiler truly supports the spec */

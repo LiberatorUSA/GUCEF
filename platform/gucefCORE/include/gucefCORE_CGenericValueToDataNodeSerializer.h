@@ -82,7 +82,7 @@ class GUCEF_CORE_PUBLIC_CPP CGenericValueToDataNodeSerializer : public CIValueTo
 
     CGenericValueToDataNodeSerializer( const CGenericValueToDataNodeSerializer& src );
 
-    virtual ~CGenericValueToDataNodeSerializer();
+    virtual ~CGenericValueToDataNodeSerializer() GUCEF_VIRTUAL_OVERRIDE;
 
     CGenericValueToDataNodeSerializer& operator=( const CGenericValueToDataNodeSerializer& src );
 

@@ -105,6 +105,33 @@ CDataNode::CDataNode( const CDataNode& src )
 }
 
 /*-------------------------------------------------------------------------*/
+
+#ifdef GUCEF_RVALUE_REFERENCES_SUPPORTED
+
+CDataNode::CDataNode( CDataNode&& src ) GUCEF_NOEXCEPT
+    : CIEnumerable()
+    , m_nodeType( src.m_nodeType )
+    , _name( GUCEF_MOVE( src._name ) )
+    , m_value( GUCEF_MOVE( src.m_value ) )
+    , _atts( GUCEF_MOVE( src._atts ) )
+    , _pparent( src._pparent ) 
+    , _pnext( src._pnext )     
+    , _pprev( src._pprev )     
+    , m_children( GUCEF_MOVE( src.m_children ) )
+    , m_associatedData( src.m_associatedData )
+{GUCEF_TRACE;
+
+    // reset source to default constructor values
+    src.m_nodeType = GUCEF_DATATYPE_OBJECT;
+    src._pparent = GUCEF_NULL;
+    src._pnext = GUCEF_NULL;
+    src._pprev = GUCEF_NULL;    
+    src.m_associatedData = GUCEF_NULL;
+}
+
+#endif /* GUCEF_RVALUE_REFERENCES_SUPPORTED ? */
+
+/*-------------------------------------------------------------------------*/
         
 CDataNode::~CDataNode()
 {GUCEF_TRACE;

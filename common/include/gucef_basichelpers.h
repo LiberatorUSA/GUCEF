@@ -39,6 +39,8 @@
 #define GUCEF_PLATFORM_H
 #endif /* GUCEF_PLATFORM_H ? */
 
+#include <assert.h>
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      GENERAL MACROS                                                     //

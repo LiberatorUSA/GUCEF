@@ -64,13 +64,17 @@ class GUCEF_CORE_PUBLIC_CPP CEvent
 {
     public:
 
-    CEvent( void );
+    CEvent( void ) GUCEF_NOEXCEPT;
 
-    CEvent( const CString& eventName );
+    CEvent( const CString& eventName ) GUCEF_NOEXCEPT;
 
-    CEvent( const char* eventName );
+    CEvent( const char* eventName ) GUCEF_NOEXCEPT;
 
-    CEvent( const CEvent& src );
+    CEvent( const CEvent& src ) GUCEF_NOEXCEPT;
+
+    #ifdef GUCEF_RVALUE_REFERENCES_SUPPORTED
+    CEvent( CEvent&& src ) GUCEF_NOEXCEPT;
+    #endif
 
     ~CEvent();
 
@@ -113,7 +117,7 @@ class GUCEF_CORE_PUBLIC_CPP CEvent
     friend class CNotificationIDRegistry;
 
     CEvent( const UInt32 eventID     ,
-            const CString& eventName );
+            const CString& eventName ) GUCEF_NOEXCEPT;
 
     private:
 

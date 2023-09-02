@@ -57,7 +57,7 @@ namespace CORE {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-CEvent::CEvent( void )
+CEvent::CEvent( void ) GUCEF_NOEXCEPT
     : m_eventID( 0 ) ,
       m_eventName()
 {GUCEF_TRACE;
@@ -65,7 +65,7 @@ CEvent::CEvent( void )
 
 /*-------------------------------------------------------------------------*/
 
-CEvent::CEvent( const char* eventName )
+CEvent::CEvent( const char* eventName ) GUCEF_NOEXCEPT
     : m_eventID( 0 )           ,
       m_eventName( eventName )
 {GUCEF_TRACE;
@@ -75,18 +75,33 @@ CEvent::CEvent( const char* eventName )
 
 /*-------------------------------------------------------------------------*/
 
-CEvent::CEvent( const CORE::CString& eventName )
+CEvent::CEvent( const CORE::CString& eventName ) GUCEF_NOEXCEPT
     : m_eventID( 0 )           ,
       m_eventName( eventName )
 {GUCEF_TRACE;
 
     // Wait for delayed initialization
 }
+
+/*-------------------------------------------------------------------------*/
+
+#ifdef GUCEF_RVALUE_REFERENCES_SUPPORTED
+
+CEvent::CEvent( CEvent&& src ) GUCEF_NOEXCEPT
+    : m_eventID( src.m_eventID )     ,
+      m_eventName( GUCEF_MOVE( src.m_eventName ) )
+{GUCEF_TRACE;
+
+    // reset source to default constructor values
+    src.m_eventID = 0;
+}
+
+#endif /* GUCEF_RVALUE_REFERENCES_SUPPORTED ? */
 
 /*-------------------------------------------------------------------------*/
 
 CEvent::CEvent( const UInt32 eventID     ,
-                const CString& eventName )
+                const CString& eventName ) GUCEF_NOEXCEPT
     : m_eventID( eventID )     ,
       m_eventName( eventName )
 {GUCEF_TRACE;
@@ -95,8 +110,8 @@ CEvent::CEvent( const UInt32 eventID     ,
 
 /*-------------------------------------------------------------------------*/
 
-CEvent::CEvent( const CEvent& src )
-    : m_eventID( src.m_eventID )     ,
+CEvent::CEvent( const CEvent& src ) GUCEF_NOEXCEPT
+    : m_eventID( src.m_eventID )   ,
       m_eventName( src.m_eventName )
 {GUCEF_TRACE;
 

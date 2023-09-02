@@ -127,7 +127,10 @@ CDynamicBuffer::CDynamicBuffer( UInt32 initialsize ,
     if ( initialsize > 0 )
     {
         _buffer = (Int8*) malloc( initialsize );
-        _bsize = initialsize;               
+        if ( GUCEF_NULL != _buffer )
+        {
+            _bsize = initialsize;               
+        }
     }
 }
 
@@ -150,8 +153,15 @@ CDynamicBuffer::CDynamicBuffer( const CDynamicBuffer &src ,
         _bsize = src.m_dataSize;
         if ( _bsize > 0 )
         {
-            _buffer = (Int8*) malloc( src.m_dataSize );    
-            memcpy( _buffer, src._buffer, m_dataSize ); 
+            _buffer = (Int8*) malloc( src.m_dataSize );
+            if ( GUCEF_NULL != _buffer )
+            {
+                memcpy( _buffer, src._buffer, m_dataSize ); 
+            }
+            else
+            {
+                _bsize = m_dataSize = 0;
+            }
         }
     }
     else
@@ -160,7 +170,14 @@ CDynamicBuffer::CDynamicBuffer( const CDynamicBuffer &src ,
         if ( _bsize > 0 )
         {
             _buffer = (Int8*) malloc( src._bsize );    
-            memcpy( _buffer, src._buffer, m_dataSize ); 
+            if ( GUCEF_NULL != _buffer )
+            {
+                memcpy( _buffer, src._buffer, m_dataSize ); 
+            }
+            else
+            {
+                _bsize = m_dataSize = 0;
+            }
         }
     }
 }
