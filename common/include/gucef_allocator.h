@@ -49,6 +49,8 @@
 #define GUCEF_MEMORY_H
 #endif /* GUCEF_MEMORY_H ? */
 
+#include <cstddef>
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //
