@@ -1040,7 +1040,7 @@ FilePushDestination::OnAsyncVfsFileEncodeOpCompleted( CORE::CNotifier* notifier 
         TStringInFlightEntryPtrMap::iterator i = m_inflight.find( originalFilePath );
         if ( i != m_inflight.end() )
         {
-            InFlightEntryPtr& slot = (*i).second;
+            InFlightEntryPtr slot = (*i).second;
 
             switch ( asyncOpResult->operationType )
             {
@@ -1058,7 +1058,7 @@ FilePushDestination::OnAsyncVfsFileEncodeOpCompleted( CORE::CNotifier* notifier 
                         m_encodeQueue.erase( pushEntry->filePath );
 
                         GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "FilePushDestination:OnAsyncVfsFileEncodeOpCompleted: Async encode operation successfull for \"" +
-                            pushEntry->filePath + "\" which was encoded at path \"" + slot->entryInfo->encodedFilepath + "\"" );
+                            pushEntry->filePath + "\" which was encoded at path \"" + pushEntry->encodedFilepath + "\"" );
 
                         QueueFileForPushing( pushEntry );
                         break;
@@ -1385,7 +1385,6 @@ FilePushDestination::PushFileUsingVfs( PushEntryPtr entry )
     pushUrlForFile = pushUrlForFile.CompactRepeatingChar( '/' );
 
     // Store the file as an async operation
-    m_inflight[ entry->filePath ] = slot;
     m_pushQueue.erase( entry->filePath );
     if ( VFS::CVfsGlobal::Instance()->GetVfs().StoreAsFileAsync( pushUrlForFile, slot->buffer, 0, true, GUCEF_NULL, entry->filePath ) )
     {
@@ -1401,6 +1400,8 @@ FilePushDestination::PushFileUsingVfs( PushEntryPtr entry )
         YieldInFlightSlot( slot );
         return false;
     }
+
+    return true;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -1631,7 +1632,7 @@ FilePushDestination::OnFileEncodeTimerCycle( CORE::CNotifier* notifier    ,
     TStringPushEntryPtrMap::iterator i = m_encodeQueue.begin();
     while ( i != m_encodeQueue.end() )
     {
-        const CORE::CString& filePath = (*i).first;
+        CORE::CString filePath = (*i).first;
         PushEntryPtr pushEntry = (*i).second;
 
         // We limit the nr of in flight operations to limit system load
@@ -1646,8 +1647,6 @@ FilePushDestination::OnFileEncodeTimerCycle( CORE::CNotifier* notifier    ,
             if ( fileAccess.Open( filePath, "rb" ) )
             {
                 // Encode the file as an async operation
-                m_inflight[ slot->entryInfo->filePath ] = slot;
-                m_encodeQueue.erase( slot->entryInfo->filePath );
                 if ( VFS::CVfsGlobal::Instance()->GetVfs().EncodeAsFileAsync( fileAccess                              ,
                                                                               slot->entryInfo->encodedFilepath        ,
                                                                               true                                    ,
@@ -1655,36 +1654,36 @@ FilePushDestination::OnFileEncodeTimerCycle( CORE::CNotifier* notifier    ,
                                                                               m_settings.fileCompressionCodecToUse    ,
                                                                               slot->entryInfo->filePath               ) )
                 {
+                    
+                    
                     GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "FilePushDestination:OnFileEncodeTimerCycle: Commenced async encode of content from file \"" +
-                        filePath + "\" to VFS path \"" + slot->entryInfo->encodedFilepath + "\"" );
-                    return;
+                         filePath + "\" to VFS path \"" + slot->entryInfo->encodedFilepath + "\"" );
+                    i = m_encodeQueue.erase( i );
                 }
                 else
                 {
                     GUCEF_WARNING_LOG( CORE::LOGLEVEL_NORMAL, "FilePushDestination:OnFileEncodeTimerCycle: Failed to request async push of content from file \"" +
                         filePath + "\" to VFS path \"" + slot->entryInfo->encodedFilepath + "\". Skipping the file for now" );
-                    m_encodeQueue[ slot->entryInfo->filePath ] = slot->entryInfo;
-                    m_inflight.erase( slot->entryInfo->filePath );
                     YieldInFlightSlot( slot );
-                    return;
+                    ++i; 
+                    continue;
                 }
             }
             else
             {
                 GUCEF_WARNING_LOG( CORE::LOGLEVEL_NORMAL, "FilePushDestination:OnFileEncodeTimerCycle: Failed to open file for when we were about to request async encoding it: \"" + filePath + "\", removing it from the queue" );
                 YieldInFlightSlot( slot );
-                m_encodeQueue.erase( i );
-                return;
+                i = m_encodeQueue.erase( i );
+                continue;
             }
         }
         else
         {
             GUCEF_WARNING_LOG( CORE::LOGLEVEL_NORMAL, "FilePushDestination:OnFileEncodeTimerCycle: File no longer exists when we were about to request async encoding it: \"" + filePath + "\", removing it from the queue" );
             YieldInFlightSlot( slot );
-            m_encodeQueue.erase( i );
-            return;
+            i = m_encodeQueue.erase( i );
+            continue;
         }
-        ++i;
     }
 }
 
@@ -1703,7 +1702,7 @@ FilePushDestination::OnFilePushTimerCycle( CORE::CNotifier* notifier    ,
     TStringPushEntryPtrMap::iterator i = m_pushQueue.begin();
     while ( i != m_pushQueue.end() )
     {
-        const CORE::CString& filePath = (*i).first;
+        CORE::CString filePath = (*i).first;
         PushEntryPtr entry = (*i).second;
 
         if ( CORE::FileExists( filePath ) )
@@ -1716,8 +1715,8 @@ FilePushDestination::OnFilePushTimerCycle( CORE::CNotifier* notifier    ,
                     GUCEF_WARNING_LOG( CORE::LOGLEVEL_NORMAL, "FilePushDestination:OnFilePushTimerCycle: Encoded file does not exists when we were about to commence pushing it: \"" +
                         entry->encodedFilepath + "\", queuing file again for encoding instead" );
                     m_encodeQueue[ filePath ] = entry;
-                    m_pushQueue.erase( i );
-                    return;
+                    i = m_pushQueue.erase( i );
+                    continue;
                 }
             }
 
@@ -1726,7 +1725,6 @@ FilePushDestination::OnFilePushTimerCycle( CORE::CNotifier* notifier    ,
                 if ( PushFileUsingHttp( entry ) )
                 {
                     m_pushTimer.RequestImmediateTrigger();
-                    return;
                 }
             }
             if ( 0 == m_settings.filePushDestinationUri.HasSubstr( "vfs://", true ) )
@@ -1734,17 +1732,18 @@ FilePushDestination::OnFilePushTimerCycle( CORE::CNotifier* notifier    ,
                 if ( PushFileUsingVfs( entry ) )
                 {
                     m_pushTimer.RequestImmediateTrigger();
-                    return;
                 }
             }
         }
         else
         {
             GUCEF_WARNING_LOG( CORE::LOGLEVEL_NORMAL, "FilePushDestination:OnFilePushTimerCycle: File no longer exists when we were about to commence pushing it: \"" + filePath + "\", removing it from the queue" );
-            m_pushQueue.erase( i );
-            return;
+            i = m_pushQueue.erase( i );
+            continue;
         }
-        ++i;
+
+        if ( i != m_pushQueue.end() )
+            ++i;
     }
 }
 

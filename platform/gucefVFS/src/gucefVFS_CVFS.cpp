@@ -256,17 +256,31 @@ CVFS::StoreAsFileAsync( const CORE::CString& filepath       ,
                         const CORE::CString& asyncRequestId )
 {GUCEF_TRACE;
 
-    CStoreAsFileTaskData operationData;
-    operationData.operationType = ASYNCVFSOPERATIONTYPE_STOREDATAASFILE;
-    operationData.asyncRequestId = asyncRequestId;
-    operationData.filepath = filepath;
-    operationData.data.LinkTo( data );
-    operationData.offset = offset;
-    operationData.overwrite = overwrite;
-    operationData.SetRequestorData( requestorData );
+    try
+    {
+        CStoreAsFileTaskData operationData;
+        operationData.operationType = ASYNCVFSOPERATIONTYPE_STOREDATAASFILE;
+        operationData.asyncRequestId = asyncRequestId;
+        operationData.filepath = filepath;
+        operationData.data.LinkTo( data );
+        operationData.offset = offset;
+        operationData.overwrite = overwrite;
+        operationData.SetRequestorData( requestorData );
 
-    CORE::ThreadPoolPtr threadPool = CORE::CCoreGlobal::Instance()->GetTaskManager().GetOrCreateThreadPool( m_asyncOpsThreadpool );
-    return !CORE::TaskStatusIsAnError( threadPool->QueueTask( CAsyncVfsOperation::TaskType, &operationData, GUCEF_NULL, &AsObserver() ) );
+        CORE::ThreadPoolPtr threadPool = CORE::CCoreGlobal::Instance()->GetTaskManager().GetOrCreateThreadPool( m_asyncOpsThreadpool );
+        return !CORE::TaskStatusIsAnError( threadPool->QueueTask( CAsyncVfsOperation::TaskType, &operationData, GUCEF_NULL, &AsObserver() ) );
+    }
+    catch ( const timeout_exception& )
+    {
+        GUCEF_WARNING_LOG( CORE::LOGLEVEL_NORMAL, "VFS:StoreAsFileAsync: Failed to queue task due to timeout. asyncRequestId=" +
+            asyncRequestId );
+    }
+    catch ( const std::exception& e )
+    {
+        GUCEF_EXCEPTION_LOG( CORE::LOGLEVEL_IMPORTANT, "VFS:StoreAsFileAsync: Failed to queue task due to exception. asyncRequestId=" +
+            asyncRequestId + " what=" + CORE::ToString( e.what() ) );
+    }
+    return false;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -277,14 +291,28 @@ CVFS::MountArchiveAsync( const CArchiveSettings& settings    ,
                          const CORE::CString& asyncRequestId )
 {GUCEF_TRACE;
 
-    CMountArchiveTaskData operationData;
-    operationData.operationType = ASYNCVFSOPERATIONTYPE_MOUNTARCHIVE;
-    operationData.asyncRequestId = asyncRequestId;
-    operationData.settings = settings;
-    operationData.SetRequestorData( requestorData );
+    try
+    {
+        CMountArchiveTaskData operationData;
+        operationData.operationType = ASYNCVFSOPERATIONTYPE_MOUNTARCHIVE;
+        operationData.asyncRequestId = asyncRequestId;
+        operationData.settings = settings;
+        operationData.SetRequestorData( requestorData );
 
-    CORE::ThreadPoolPtr threadPool = CORE::CCoreGlobal::Instance()->GetTaskManager().GetOrCreateThreadPool( m_asyncOpsThreadpool );
-    return !CORE::TaskStatusIsAnError( threadPool->QueueTask( CAsyncVfsOperation::TaskType, &operationData, GUCEF_NULL, &AsObserver() ) );
+        CORE::ThreadPoolPtr threadPool = CORE::CCoreGlobal::Instance()->GetTaskManager().GetOrCreateThreadPool( m_asyncOpsThreadpool );
+        return !CORE::TaskStatusIsAnError( threadPool->QueueTask( CAsyncVfsOperation::TaskType, &operationData, GUCEF_NULL, &AsObserver() ) );
+    }
+    catch ( const timeout_exception& )
+    {
+        GUCEF_WARNING_LOG( CORE::LOGLEVEL_NORMAL, "VFS:MountArchiveAsync: Failed to queue task due to timeout. asyncRequestId=" +
+            asyncRequestId );
+    }
+    catch ( const std::exception& e )
+    {
+        GUCEF_EXCEPTION_LOG( CORE::LOGLEVEL_IMPORTANT, "VFS:MountArchiveAsync: Failed to queue task due to exception. asyncRequestId=" +
+            asyncRequestId + " what=" + CORE::ToString( e.what() ) );
+    }
+    return false;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -606,15 +634,29 @@ CVFS::MoveFileAsync( const CORE::CString& oldFilePath    ,
                      const CORE::CString& asyncRequestId )
 {GUCEF_TRACE;
 
-    CMoveFileTaskData operationData;
-    operationData.operationType = ASYNCVFSOPERATIONTYPE_MOVEFILE;
-    operationData.asyncRequestId = asyncRequestId;
-    operationData.originalFilepath = oldFilePath;
-    operationData.newFilepath = newFilePath;
-    operationData.overwrite = overwrite;
+    try
+    {
+        CMoveFileTaskData operationData;
+        operationData.operationType = ASYNCVFSOPERATIONTYPE_MOVEFILE;
+        operationData.asyncRequestId = asyncRequestId;
+        operationData.originalFilepath = oldFilePath;
+        operationData.newFilepath = newFilePath;
+        operationData.overwrite = overwrite;
 
-    CORE::ThreadPoolPtr threadPool = CORE::CCoreGlobal::Instance()->GetTaskManager().GetOrCreateThreadPool( m_asyncOpsThreadpool );
-    return !CORE::TaskStatusIsAnError( threadPool->QueueTask( CAsyncVfsOperation::TaskType, &operationData, GUCEF_NULL, &AsObserver() ) );
+        CORE::ThreadPoolPtr threadPool = CORE::CCoreGlobal::Instance()->GetTaskManager().GetOrCreateThreadPool( m_asyncOpsThreadpool );
+        return !CORE::TaskStatusIsAnError( threadPool->QueueTask( CAsyncVfsOperation::TaskType, &operationData, GUCEF_NULL, &AsObserver() ) );
+    }
+    catch ( const timeout_exception& )
+    {
+        GUCEF_WARNING_LOG( CORE::LOGLEVEL_NORMAL, "VFS:MoveFileAsync: Failed to queue task due to timeout. asyncRequestId=" +
+            asyncRequestId );
+    }
+    catch ( const std::exception& e )
+    {
+        GUCEF_EXCEPTION_LOG( CORE::LOGLEVEL_IMPORTANT, "VFS:MoveFileAsync: Failed to queue task due to exception. asyncRequestId=" +
+            asyncRequestId + " what=" + CORE::ToString( e.what() ) );
+    }
+    return false;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -661,15 +703,29 @@ CVFS::CopyFileAsync( const CORE::CString& originalFilepath ,
                      const CORE::CString& asyncRequestId   )
 {GUCEF_TRACE;
 
-    CCopyFileTaskData operationData;
-    operationData.operationType = ASYNCVFSOPERATIONTYPE_COPYFILE;
-    operationData.asyncRequestId = asyncRequestId;
-    operationData.originalFilepath = originalFilepath;
-    operationData.copyFilepath = copyFilepath;
-    operationData.overwrite = overwrite;
+    try
+    {
+        CCopyFileTaskData operationData;
+        operationData.operationType = ASYNCVFSOPERATIONTYPE_COPYFILE;
+        operationData.asyncRequestId = asyncRequestId;
+        operationData.originalFilepath = originalFilepath;
+        operationData.copyFilepath = copyFilepath;
+        operationData.overwrite = overwrite;
 
-    CORE::ThreadPoolPtr threadPool = CORE::CCoreGlobal::Instance()->GetTaskManager().GetOrCreateThreadPool( m_asyncOpsThreadpool );
-    return !CORE::TaskStatusIsAnError( threadPool->QueueTask( CAsyncVfsOperation::TaskType, &operationData, GUCEF_NULL, &AsObserver() ) );
+        CORE::ThreadPoolPtr threadPool = CORE::CCoreGlobal::Instance()->GetTaskManager().GetOrCreateThreadPool( m_asyncOpsThreadpool );
+        return !CORE::TaskStatusIsAnError( threadPool->QueueTask( CAsyncVfsOperation::TaskType, &operationData, GUCEF_NULL, &AsObserver() ) );
+    }
+    catch ( const timeout_exception& )
+    {
+        GUCEF_WARNING_LOG( CORE::LOGLEVEL_NORMAL, "VFS:CopyFileAsync: Failed to queue task due to timeout. asyncRequestId=" +
+            asyncRequestId );
+    }
+    catch ( const std::exception& e )
+    {
+        GUCEF_EXCEPTION_LOG( CORE::LOGLEVEL_IMPORTANT, "VFS:CopyFileAsync: Failed to queue task due to exception. asyncRequestId=" +
+            asyncRequestId + " what=" + CORE::ToString( e.what() ) );
+    }
+    return false;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -734,17 +790,31 @@ CVFS::EncodeFileAsync( const CORE::CString& originalFilepath ,
                        const CORE::CString& asyncRequestId   )
 {GUCEF_TRACE;
 
-    CEncodeFileTaskData operationData;
-    operationData.operationType = ASYNCVFSOPERATIONTYPE_ENCODEFILE;
-    operationData.asyncRequestId = asyncRequestId;
-    operationData.originalFilepath = originalFilepath;
-    operationData.encodedFilepath = encodedFilepath;
-    operationData.overwrite = overwrite;
-    operationData.codecFamily = codecFamily;
-    operationData.encodeCodec = encodeCodec;
+    try
+    {
+        CEncodeFileTaskData operationData;
+        operationData.operationType = ASYNCVFSOPERATIONTYPE_ENCODEFILE;
+        operationData.asyncRequestId = asyncRequestId;
+        operationData.originalFilepath = originalFilepath;
+        operationData.encodedFilepath = encodedFilepath;
+        operationData.overwrite = overwrite;
+        operationData.codecFamily = codecFamily;
+        operationData.encodeCodec = encodeCodec;
 
-    CORE::ThreadPoolPtr threadPool = CORE::CCoreGlobal::Instance()->GetTaskManager().GetOrCreateThreadPool( m_asyncOpsThreadpool );
-    return !CORE::TaskStatusIsAnError( threadPool->QueueTask( CAsyncVfsOperation::TaskType, &operationData, GUCEF_NULL, &AsObserver() ) );
+        CORE::ThreadPoolPtr threadPool = CORE::CCoreGlobal::Instance()->GetTaskManager().GetOrCreateThreadPool( m_asyncOpsThreadpool );
+        return !CORE::TaskStatusIsAnError( threadPool->QueueTask( CAsyncVfsOperation::TaskType, &operationData, GUCEF_NULL, &AsObserver() ) );
+    }
+    catch ( const timeout_exception& )
+    {
+        GUCEF_WARNING_LOG( CORE::LOGLEVEL_NORMAL, "VFS:EncodeFileAsync: Failed to queue task due to timeout. asyncRequestId=" +
+            asyncRequestId );
+    }
+    catch ( const std::exception& e )
+    {
+        GUCEF_EXCEPTION_LOG( CORE::LOGLEVEL_IMPORTANT, "VFS:EncodeFileAsync: Failed to queue task due to exception. asyncRequestId=" +
+            asyncRequestId + " what=" + CORE::ToString( e.what() ) );
+    }
+    return false;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -851,18 +921,32 @@ CVFS::EncodeAsFileAsync( const CORE::CDynamicBuffer& data     ,
                          const CORE::CString& asyncRequestId  )
 {GUCEF_TRACE;
 
-    CEncodeBufferAsFileTaskData operationData;
-    operationData.operationType = ASYNCVFSOPERATIONTYPE_ENCODEDATAASFILE;
-    operationData.asyncRequestId = asyncRequestId;
-    operationData.data = data;
-    operationData.bufferOffset = bufferOffset;
-    operationData.encodedFilepath = encodedFilepath;
-    operationData.overwrite = overwrite;
-    operationData.codecFamily = codecFamily;
-    operationData.encodeCodec = encodeCodec;
+    try
+    {
+        CEncodeBufferAsFileTaskData operationData;
+        operationData.operationType = ASYNCVFSOPERATIONTYPE_ENCODEDATAASFILE;
+        operationData.asyncRequestId = asyncRequestId;
+        operationData.data = data;
+        operationData.bufferOffset = bufferOffset;
+        operationData.encodedFilepath = encodedFilepath;
+        operationData.overwrite = overwrite;
+        operationData.codecFamily = codecFamily;
+        operationData.encodeCodec = encodeCodec;
 
-    CORE::ThreadPoolPtr threadPool = CORE::CCoreGlobal::Instance()->GetTaskManager().GetOrCreateThreadPool( m_asyncOpsThreadpool );
-    return !CORE::TaskStatusIsAnError( threadPool->QueueTask( CAsyncVfsOperation::TaskType, &operationData, GUCEF_NULL, &AsObserver() ) );
+        CORE::ThreadPoolPtr threadPool = CORE::CCoreGlobal::Instance()->GetTaskManager().GetOrCreateThreadPool( m_asyncOpsThreadpool );
+        return !CORE::TaskStatusIsAnError( threadPool->QueueTask( CAsyncVfsOperation::TaskType, &operationData, GUCEF_NULL, &AsObserver() ) );
+    }
+    catch ( const timeout_exception& )
+    {
+        GUCEF_WARNING_LOG( CORE::LOGLEVEL_NORMAL, "VFS:EncodeAsFileAsync: Failed to queue task due to timeout. asyncRequestId=" +
+            asyncRequestId );
+    }
+    catch ( const std::exception& e )
+    {
+        GUCEF_EXCEPTION_LOG( CORE::LOGLEVEL_IMPORTANT, "VFS:EncodeAsFileAsync: Failed to queue task due to exception. asyncRequestId=" +
+            asyncRequestId + " what=" + CORE::ToString( e.what() ) );
+    }
+    return false;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -966,17 +1050,31 @@ CVFS::DecodeFileAsync( const CORE::CString& originalFilepath ,
                        const CORE::CString& asyncRequestId   )
 {GUCEF_TRACE;
 
-    CDecodeFileTaskData operationData;
-    operationData.operationType = ASYNCVFSOPERATIONTYPE_DECODEFILE;
-    operationData.asyncRequestId = asyncRequestId;
-    operationData.originalFilepath = originalFilepath;
-    operationData.decodedFilepath = decodedFilepath;
-    operationData.overwrite = overwrite;
-    operationData.codecFamily = codecFamily;
-    operationData.decodeCodec = decodeCodec;
+    try
+    {
+        CDecodeFileTaskData operationData;
+        operationData.operationType = ASYNCVFSOPERATIONTYPE_DECODEFILE;
+        operationData.asyncRequestId = asyncRequestId;
+        operationData.originalFilepath = originalFilepath;
+        operationData.decodedFilepath = decodedFilepath;
+        operationData.overwrite = overwrite;
+        operationData.codecFamily = codecFamily;
+        operationData.decodeCodec = decodeCodec;
 
-    CORE::ThreadPoolPtr threadPool = CORE::CCoreGlobal::Instance()->GetTaskManager().GetOrCreateThreadPool( m_asyncOpsThreadpool );
-    return !CORE::TaskStatusIsAnError( threadPool->QueueTask( CAsyncVfsOperation::TaskType, &operationData, GUCEF_NULL, &AsObserver() ) );
+        CORE::ThreadPoolPtr threadPool = CORE::CCoreGlobal::Instance()->GetTaskManager().GetOrCreateThreadPool( m_asyncOpsThreadpool );
+        return !CORE::TaskStatusIsAnError( threadPool->QueueTask( CAsyncVfsOperation::TaskType, &operationData, GUCEF_NULL, &AsObserver() ) );
+    }
+    catch ( const timeout_exception& )
+    {
+        GUCEF_WARNING_LOG( CORE::LOGLEVEL_NORMAL, "VFS:DecodeFileAsync: Failed to queue task due to timeout. asyncRequestId=" +
+            asyncRequestId );
+    }
+    catch ( const std::exception& e )
+    {
+        GUCEF_EXCEPTION_LOG( CORE::LOGLEVEL_IMPORTANT, "VFS:DecodeFileAsync: Failed to queue task due to exception. asyncRequestId=" +
+            asyncRequestId + " what=" + CORE::ToString( e.what() ) );
+    }
+    return false;
 }
 
 /*-------------------------------------------------------------------------*/
