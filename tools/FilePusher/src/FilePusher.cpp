@@ -1629,9 +1629,9 @@ FilePushDestination::OnFileEncodeTimerCycle( CORE::CNotifier* notifier    ,
     if ( m_encodeQueue.empty() )
         return;
 
-    TStringPushEntryPtrMap::iterator i = m_encodeQueue.begin();
-    while ( i != m_encodeQueue.end() )
+    while ( !m_encodeQueue.empty() )
     {
+        TStringPushEntryPtrMap::iterator i = m_encodeQueue.begin();
         CORE::CString filePath = (*i).first;
         PushEntryPtr pushEntry = (*i).second;
 
@@ -1658,31 +1658,28 @@ FilePushDestination::OnFileEncodeTimerCycle( CORE::CNotifier* notifier    ,
                     
                     GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "FilePushDestination:OnFileEncodeTimerCycle: Commenced async encode of content from file \"" +
                          filePath + "\" to VFS path \"" + slot->entryInfo->encodedFilepath + "\"" );
-                    i = m_encodeQueue.erase( i );
+                    m_encodeQueue.erase( i );
                 }
                 else
                 {
                     GUCEF_WARNING_LOG( CORE::LOGLEVEL_NORMAL, "FilePushDestination:OnFileEncodeTimerCycle: Failed to request async push of content from file \"" +
                         filePath + "\" to VFS path \"" + slot->entryInfo->encodedFilepath + "\". Skipping the file for now" );
                     YieldInFlightSlot( slot );
-                    ++i; 
-                    continue;
+                    return;
                 }
             }
             else
             {
                 GUCEF_WARNING_LOG( CORE::LOGLEVEL_NORMAL, "FilePushDestination:OnFileEncodeTimerCycle: Failed to open file for when we were about to request async encoding it: \"" + filePath + "\", removing it from the queue" );
                 YieldInFlightSlot( slot );
-                i = m_encodeQueue.erase( i );
-                continue;
+                m_encodeQueue.erase( i );
             }
         }
         else
         {
             GUCEF_WARNING_LOG( CORE::LOGLEVEL_NORMAL, "FilePushDestination:OnFileEncodeTimerCycle: File no longer exists when we were about to request async encoding it: \"" + filePath + "\", removing it from the queue" );
             YieldInFlightSlot( slot );
-            i = m_encodeQueue.erase( i );
-            continue;
+            m_encodeQueue.erase( i );
         }
     }
 }
@@ -1696,12 +1693,9 @@ FilePushDestination::OnFilePushTimerCycle( CORE::CNotifier* notifier    ,
 {GUCEF_TRACE;
 
     // We only allow a limited nr of files to be in flight at the same time
-    if ( m_inflightFreeSlots.empty() )
-        return;
-
-    TStringPushEntryPtrMap::iterator i = m_pushQueue.begin();
-    while ( i != m_pushQueue.end() )
+    while ( !m_pushQueue.empty() && !m_inflightFreeSlots.empty() )
     {
+        TStringPushEntryPtrMap::iterator i = m_pushQueue.begin();
         CORE::CString filePath = (*i).first;
         PushEntryPtr entry = (*i).second;
 
@@ -1726,12 +1720,20 @@ FilePushDestination::OnFilePushTimerCycle( CORE::CNotifier* notifier    ,
                 {
                     m_pushTimer.RequestImmediateTrigger();
                 }
+                else
+                {
+                    return;
+                }
             }
             if ( 0 == m_settings.filePushDestinationUri.HasSubstr( "vfs://", true ) )
             {
                 if ( PushFileUsingVfs( entry ) )
                 {
                     m_pushTimer.RequestImmediateTrigger();
+                }
+                else
+                {
+                    return;
                 }
             }
         }
@@ -1741,9 +1743,6 @@ FilePushDestination::OnFilePushTimerCycle( CORE::CNotifier* notifier    ,
             i = m_pushQueue.erase( i );
             continue;
         }
-
-        if ( i != m_pushQueue.end() )
-            ++i;
     }
 }
 
