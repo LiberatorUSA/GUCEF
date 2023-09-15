@@ -2394,16 +2394,6 @@ FilePusher::LoadConfig( const CORE::CValueList& appConfig   ,
                         const CORE::CDataNode& globalConfig )
 {GUCEF_TRACE;
 
-    // @deprecated: try to load a file push destination from the app config
-    //              this is to be removed in the future, please update your configs
-    FilePushDestinationSettings appConfigSettings;
-    if ( appConfigSettings.LoadConfig( appConfig, false ) )
-    {
-        FilePushDestination appConfigDestination;
-        if ( appConfigDestination.LoadConfig( appConfigSettings ) )
-            m_filePushDestinations.push_back( appConfigDestination );
-    }
-
     CORE::CDataNode::TDataNodeVector destinationNodes = globalConfig.SearchForAll( "FilePusher\\Destination", '\\', true, true );
     CORE::CDataNode::TDataNodeVector::iterator i = destinationNodes.begin();
     while ( i != destinationNodes.end() )
