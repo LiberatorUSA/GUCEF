@@ -238,44 +238,6 @@ CPFileChunkAccess::Opened( void ) const
 
 /*-------------------------------------------------------------------------*/
 
-CString 
-CPFileChunkAccess::ReadLine( void )
-{
-        char* str;
-        UInt32 length = pafreadl( &str    , 
-                                  _pafile );
-        if ( length && str )
-        {
-                CString fstr( str );
-                pafree( str );
-                return fstr;
-        }                 
-        
-        CString emptystr;
-        return emptystr;
-}
-
-/*-------------------------------------------------------------------------*/
-
-CString 
-CPFileChunkAccess::ReadString( void )
-{
-        char* str;
-        UInt32 length = pafreads( &str    , 
-                                  _pafile );
-        if ( length && str )
-        {
-                CString fstr( str );
-                pafree( str );
-                return fstr;
-        }                 
-        
-        CString emptystr;
-        return emptystr;
-}
-
-/*-------------------------------------------------------------------------*/
-
 UInt32 
 CPFileChunkAccess::Read( void *dest      ,
                          UInt32 esize    ,

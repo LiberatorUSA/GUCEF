@@ -57,6 +57,7 @@ namespace CORE {
 //-------------------------------------------------------------------------*/
 
 class CAsciiString;
+class CIOAccess;
 
 /**
  *  UTF8 capable string class
@@ -343,6 +344,8 @@ class GUCEF_CORE_PUBLIC_CPP CUtf8String
 
     void Append( const char* appendstr );
 
+    void Append( const Int32 utf32CodePoint );
+
     void Append( const CUtf8String& appendstr );
 
     CUtf8String Lowercase( void ) const;
@@ -524,6 +527,12 @@ class GUCEF_CORE_PUBLIC_CPP CUtf8String
     static Int32 EncodeUtf8CodePointToUtf32( const char* utf8Buffer        ,
                                              const UInt32 utf8BufferSize   ,
                                              Int32& outUtf32CodePoint      );
+
+    static bool ReadUtf32CodePoint( CIOAccess* io, Int32* utf32CodePoint );
+
+    static CUtf8String ReadLine( CIOAccess* io );
+
+    static CUtf8String ReadString( CIOAccess* io );
 
     private:
 

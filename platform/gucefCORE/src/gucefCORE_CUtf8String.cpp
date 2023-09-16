@@ -834,6 +834,25 @@ CUtf8String::GetCharacterRepeatCount( const Int32 searchChar ) const
 /*-------------------------------------------------------------------------*/
 
 void
+CUtf8String::Append( const Int32 utf32CodePoint )
+{GUCEF_TRACE;
+
+    char utf8CodePointBuffer[ 5 ] = { 0,0,0,0,0 };
+    char* endPtr = (char*) utf8catcodepoint( utf8CodePointBuffer, utf32CodePoint, sizeof( utf8CodePointBuffer ) );
+    if ( GUCEF_NULL == endPtr )
+    {
+        // corrupt codepoint
+        GUCEF_DEBUG_LOG( LOGLEVEL_NORMAL, "CUtf8String:Append: Encountered corrupt codepoint" );
+        return;
+    }
+
+    size_t byteSize = (size_t) ( endPtr - utf8CodePointBuffer );
+    Append( utf8CodePointBuffer, (UInt32) byteSize, 1 );
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
 CUtf8String::Append( const char* appendstr    ,
                      UInt32 byteSize          ,
                      Int32 lengthInCodePoints )
@@ -2535,6 +2554,95 @@ CUtf8String::IsFormattingValid( void ) const
         return GUCEF_NULL == utf8valid( m_string );
     }
     return true;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool 
+CUtf8String::ReadUtf32CodePoint( CIOAccess* io, Int32* utf32CodePoint )
+{GUCEF_TRACE;
+
+    if ( GUCEF_NULL != io && GUCEF_NULL != utf32CodePoint && !io->Eof() )
+    {
+        *utf32CodePoint = 0;
+
+        char currentCodePoint[ 5 ] = {0,0,0,0,0};
+        currentCodePoint[ 0 ] = io->GetChar();
+        size_t codepointSize = utf8codepointcalcsize( currentCodePoint );
+
+        // read the rest of the codepoint, if any
+        if ( codepointSize > 1 )
+        {
+            if ( 1 != io->Read( &currentCodePoint[ 1 ], (UInt32) codepointSize-1, 1 ) )
+            {
+                // corrupt codepoint
+                GUCEF_DEBUG_LOG( LOGLEVEL_NORMAL, "CUtf8String:ReadUtf32CodePoint: Encountered corrupt codepoint" );
+                return false; 
+            }
+        }
+
+        utf8codepoint( currentCodePoint, utf32CodePoint );
+        return true;
+    }             
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
+CUtf8String 
+CUtf8String::ReadLine( CIOAccess* io )
+{GUCEF_TRACE;
+    
+    if ( GUCEF_NULL != io )
+    {
+        CUtf8String resultStr;
+        Int32 utf32CodePoint = 0;
+        while ( ReadUtf32CodePoint( io, &utf32CodePoint ) )
+        {
+            if ( utf32CodePoint == '\0'        ||
+                 utf32CodePoint == '\n'        || 
+                 utf32CodePoint == '\r'        ||
+                 utf32CodePoint == GUCEF_DOS_EOF_CHAR )
+            {
+                break;
+            }
+
+            resultStr.Append( utf32CodePoint );
+        }
+        return resultStr;
+    }     
+        
+    return CUtf8String();
+}
+
+/*-------------------------------------------------------------------------*/
+
+CUtf8String 
+CUtf8String::ReadString( CIOAccess* io )
+{GUCEF_TRACE;
+    
+    if ( GUCEF_NULL != io )
+    {
+        CUtf8String resultStr;
+        Int32 utf32CodePoint = 0;
+        while ( ReadUtf32CodePoint( io, &utf32CodePoint ) )
+        {
+            if ( utf32CodePoint == '\0'               ||
+                 utf32CodePoint == '\n'               || 
+                 utf32CodePoint == '\r'               ||
+                 utf32CodePoint == GUCEF_DOS_EOF_CHAR ||
+                 utf32CodePoint == '\t'               ||
+                 utf32CodePoint == ' '                 )
+            {
+                break;
+            }
+
+            resultStr.Append( utf32CodePoint );
+        }
+        return resultStr;
+    }     
+        
+    return CUtf8String();
 }
 
 /*-------------------------------------------------------------------------*/

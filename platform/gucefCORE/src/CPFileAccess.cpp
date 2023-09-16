@@ -220,44 +220,6 @@ CPFileAccess::Opened( void ) const
 
 /*-------------------------------------------------------------------------*/
 
-CString 
-CPFileAccess::ReadLine( void )
-{
-        char* str;
-        UInt32 length = pafreadl( &str    , 
-                                  _pafile );
-        if ( length && str )
-        {
-                CString fstr( str );
-                pafree( str );
-                return fstr;
-        }                 
-        
-        CString emptystr;
-        return emptystr;
-}
-
-/*-------------------------------------------------------------------------*/
-
-CString 
-CPFileAccess::ReadString( void )
-{
-        char* str;
-        UInt32 length = pafreads( &str    , 
-                                  _pafile );
-        if ( length && str )
-        {
-                CString fstr( str );
-                pafree( str );
-                return fstr;
-        }                 
-        
-        CString emptystr;
-        return emptystr;
-}
-
-/*-------------------------------------------------------------------------*/
-
 UInt32 
 CPFileAccess::Read( void *dest      ,
                     UInt32 esize    ,

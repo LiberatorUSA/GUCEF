@@ -56,6 +56,7 @@ namespace CORE {
 //-------------------------------------------------------------------------*/
 
 class CUtf8String;
+class CIOAccess;
 
 class GUCEF_CORE_PUBLIC_CPP CAsciiString
 {
@@ -329,6 +330,10 @@ class GUCEF_CORE_PUBLIC_CPP CAsciiString
      *  To prevent exploits you should utilize this member function when accepting data from external sources
      */
     bool IsFormattingValid( void ) const;
+
+    static CAsciiString ReadLine( CIOAccess* io );
+
+    static CAsciiString ReadString( CIOAccess* io );
 
     private:
     char* m_string;    /**< our actual null-terminated string */

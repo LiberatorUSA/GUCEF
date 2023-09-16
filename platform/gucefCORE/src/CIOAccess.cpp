@@ -567,6 +567,24 @@ CIOAccess::Setpos( UInt64 position )
     return Seek( position, SEEK_SET );
 }
 
+/*-------------------------------------------------------------------------*/
+
+CString 
+CIOAccess::ReadLine( void )
+{GUCEF_TRACE;
+    
+    return CString::ReadLine( this );
+}
+
+/*-------------------------------------------------------------------------*/
+
+CString 
+CIOAccess::ReadString( void )
+{GUCEF_TRACE;
+
+    return CString::ReadString( this );
+}
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //

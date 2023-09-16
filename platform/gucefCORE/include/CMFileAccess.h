@@ -78,16 +78,6 @@ class GUCEF_CORE_PUBLIC_CPP CMFileAccess : public CROIOAccess
         virtual bool Opened( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
         /**
-         *      read a line of text
-         */
-        virtual CString ReadLine( void ) GUCEF_VIRTUAL_OVERRIDE;
-
-        /**
-         *      Reads a string from the recource
-         */
-        virtual CString ReadString( void ) GUCEF_VIRTUAL_OVERRIDE;
-
-        /**
          *      Attempts to read the specified number of bytes from the recourse
          */
         virtual UInt32 Read( void *dest      ,

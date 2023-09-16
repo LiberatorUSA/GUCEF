@@ -134,30 +134,6 @@ CSubFileAccess::Opened( void ) const
 
 /*-------------------------------------------------------------------------*/
 
-CString 
-CSubFileAccess::ReadLine( void )
-{GUCEF_TRACE;
-
-    // @TODO makeme
-
-    CString emptystr;
-    return emptystr;
-}
-
-/*-------------------------------------------------------------------------*/
-
-CString 
-CSubFileAccess::ReadString( void )
-{GUCEF_TRACE;
-
-    // @TODO makeme
-
-    CString emptystr;
-    return emptystr;
-}
-
-/*-------------------------------------------------------------------------*/
-
 UInt32 
 CSubFileAccess::Read( void *dest      ,
                       UInt32 esize    ,

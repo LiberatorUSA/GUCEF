@@ -36,6 +36,11 @@
 #define GUCEF_CORE_CUTF8STRING_H
 #endif /* GUCEF_CORE_CUTF8STRING_H ? */
 
+#ifndef GUCEF_CORE_CIOACCESS_H
+#include "CIOAccess.h"
+#define GUCEF_CORE_CIOACCESS_H
+#endif /* GUCEF_CORE_CIOACCESS_H ? */
+
 #include "gucefCORE_CAsciiString.h"
 
 #ifndef GUCEF_CORE_GUCEF_ESSENTIALS_H
@@ -1665,6 +1670,78 @@ CAsciiString::IsFormattingValid( void ) const
         }
     }
     return true;
+}
+
+/*-------------------------------------------------------------------------*/
+
+CAsciiString 
+CAsciiString::ReadLine( CIOAccess* io )
+{GUCEF_TRACE;
+    
+    if ( GUCEF_NULL != io )
+    {
+        CAsciiString resultStr;
+        while ( !io->Eof() )
+        {
+            char currentChar = io->GetChar();
+            if ( EOF != currentChar )
+            {
+                if ( currentChar == '\0'        ||
+                     currentChar == '\n'        || 
+                     currentChar == '\r'        ||
+                     currentChar == GUCEF_DOS_EOF_CHAR )
+                {
+                    break;
+                }
+
+                resultStr += currentChar;
+            }
+            else
+            {
+                return resultStr;
+            }
+        }
+        return resultStr;
+    }     
+        
+    return CAsciiString();
+}
+
+/*-------------------------------------------------------------------------*/
+
+CAsciiString 
+CAsciiString::ReadString( CIOAccess* io )
+{GUCEF_TRACE;
+
+    if ( GUCEF_NULL != io )
+    {
+        CAsciiString resultStr;
+        while ( !io->Eof() )
+        {
+            char currentChar = io->GetChar();
+            if ( EOF != currentChar )
+            {
+                if ( currentChar == '\0'          ||
+                     currentChar == '\n'          || 
+                     currentChar == '\r'          ||
+                     currentChar ==  GUCEF_DOS_EOF_CHAR ||
+                     currentChar == '\t'          ||
+                     currentChar == ' '            )
+                {
+                    break;
+                }
+
+                resultStr += currentChar;
+            }
+            else
+            {
+                return resultStr;
+            }
+        }
+        return resultStr;
+    }     
+        
+    return CAsciiString();
 }
 
 /*-------------------------------------------------------------------------*/

@@ -230,44 +230,6 @@ CMFileAccess::Opened( void ) const
 
 /*-------------------------------------------------------------------------*/
 
-CString 
-CMFileAccess::ReadLine( void )
-{
-        char* str;
-        UInt32 length = mfreadl( &str    , 
-                                 &_mfile );
-        if ( length && str )
-        {
-                CString fstr( str );
-                mfree( str );
-                return fstr;
-        }                 
-        
-        CString emptystr;
-        return emptystr;
-}
-
-/*-------------------------------------------------------------------------*/
-
-CString 
-CMFileAccess::ReadString( void )
-{
-        char* str;
-        UInt32 length = mfreads( &str    , 
-                                 &_mfile );
-        if ( length && str )
-        {
-                CString fstr( str );
-                mfree( str );
-                return fstr;
-        }                 
-        
-        CString emptystr;
-        return emptystr;
-}
-
-/*-------------------------------------------------------------------------*/
-
 UInt32 
 CMFileAccess::Read( void *dest      ,
                     UInt32 esize    ,

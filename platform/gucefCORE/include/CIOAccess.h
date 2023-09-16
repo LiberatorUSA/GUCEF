@@ -106,13 +106,6 @@ class GUCEF_CORE_PUBLIC_CPP CIOAccess : public CICloneable
     virtual bool Opened( void ) const = 0;
 
     /**
-     *      read a line of text
-     *      The delimiter is the platform text file line
-     *      delimiter.
-     */
-    virtual CString ReadLine( void ) = 0;
-
-    /**
      *      reads data until the specified delimiter is reached.
      *      The data is written into the destination buffer until the
      *      delimiter is reached or the end of the file is reached.
@@ -142,9 +135,16 @@ class GUCEF_CORE_PUBLIC_CPP CIOAccess : public CICloneable
                        UInt32 delimsize      );
 
     /**
+     *      read a line of text
+     *      The delimiter is the platform text file line
+     *      delimiter.
+     */
+    virtual CString ReadLine( void );
+
+    /**
      *      Reads a string from the resource
      */
-    virtual CString ReadString( void ) = 0;
+    virtual CString ReadString( void );
 
     /**
      *      Attempts to read the specified number of bytes from the resource

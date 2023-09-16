@@ -59,14 +59,6 @@ namespace CORE {
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
-//      CONSTANTS                                                          //
-//                                                                         //
-//-------------------------------------------------------------------------*/
-
-#define DOS_EOF_CHAR (char) 26
-
-/*-------------------------------------------------------------------------//
-//                                                                         //
 //      UTILITIES                                                          //
 //                                                                         //
 //-------------------------------------------------------------------------*/
@@ -211,80 +203,6 @@ CFileAccess::Opened( void ) const
 {GUCEF_TRACE;
 
     return m_file != NULL;
-}
-
-/*-------------------------------------------------------------------------*/
-
-CString 
-CFileAccess::ReadLine( void )
-{GUCEF_TRACE;
-    
-    if ( NULL != m_file )
-    {
-        CString resultStr;
-        while ( feof( m_file ) == 0 )
-        {
-            int currentCharInt = fgetc( m_file );
-            if ( EOF != currentCharInt )
-            {
-                char currentChar = (char) currentCharInt;
-                if ( currentChar == '\0'        ||
-                     currentChar == '\n'        || 
-                     currentChar == '\r'        ||
-                     currentChar == DOS_EOF_CHAR )
-                {
-                    break;
-                }
-
-                resultStr += currentChar;
-            }
-            else
-            {
-                return resultStr;
-            }
-        }
-        return resultStr;
-    }     
-        
-    return CString();
-}
-
-/*-------------------------------------------------------------------------*/
-
-CString 
-CFileAccess::ReadString( void )
-{GUCEF_TRACE;
-
-    if ( NULL != m_file )
-    {
-        CString resultStr;
-        while ( feof( m_file ) != 0 )
-        {
-            int currentCharInt = fgetc( m_file );
-            if ( EOF != currentCharInt )
-            {
-                char currentChar = (char) currentCharInt;
-                if ( currentChar == '\0'          ||
-                     currentChar == '\n'          || 
-                     currentChar == '\r'          ||
-                     currentChar ==  DOS_EOF_CHAR ||
-                     currentChar == '\t'          ||
-                     currentChar == ' '            )
-                {
-                    break;
-                }
-
-                resultStr += currentChar;
-            }
-            else
-            {
-                return resultStr;
-            }
-        }
-        return resultStr;
-    }     
-        
-    return CString();
 }
 
 /*-------------------------------------------------------------------------*/
