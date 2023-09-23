@@ -188,6 +188,7 @@ struct SModuleInfo
     TPreprocessorSettings preprocessorSettings;  // all preprocessor related settings for this module
 
     bool ignoreModule;                           // whether this module should be included in the build
+    CORE::CVersion semver;                       // SemVer at the ModuleInfo level allowing for inheritance/overrides
 };
 typedef struct SModuleInfo TModuleInfo;
 
@@ -206,6 +207,12 @@ struct SModuleInfoEntry
     TModuleInfoMap modulesPerPlatform;     // ModuleInfo per platform
     CORE::CString  rootDir;                // the absolute path to the root of this module's directory tree
     CORE::CString  lastEditBy;             // optional info listing who last updated the information
+    CORE::CString::StringSet authors;
+    CORE::CString::StringSet maintainers;
+    CORE::CVersion semver;
+    CORE::CString descriptionHeadline;
+    CORE::CString descriptionDetails;
+    CORE::CString license;
 };
 typedef struct SModuleInfoEntry TModuleInfoEntry;
 
@@ -453,6 +460,13 @@ MergeAllModuleInfoForPlatform( const TModuleInfoEntryConstPtrSet& allInfo ,
 /*-------------------------------------------------------------------------*/
 
 GUCEF_PROJECTGEN_PUBLIC_CPP
+const TModuleInfo*
+FindModuleByName( const TModuleInfoEntryPairVector& mergeLinks ,
+                  const CORE::CString& moduleName              );
+
+/*-------------------------------------------------------------------------*/
+
+GUCEF_PROJECTGEN_PUBLIC_CPP
 CORE::CString
 ModuleTypeToString( const TModuleType moduleType );
 
@@ -496,7 +510,6 @@ bool
 DeserializeModuleInfo( const TProjectInfo& projectInfo           ,
                        TModuleInfoEntryVector& moduleInfoEntries ,
                        const CORE::CString& inputFilepath        );
-
 
 /*-------------------------------------------------------------------------*/
 
@@ -590,6 +603,14 @@ GetModuleInfoEntry( const TProjectInfo& projectInfo       ,
 
 /*-------------------------------------------------------------------------*/
 
+// Checks if an explicit platform definition exists for the module 
+GUCEF_PROJECTGEN_PUBLIC_CPP
+bool
+HasPlatformDefinition( const TModuleInfoEntry& moduleInfoEntry ,
+                       const CORE::CString& platform           );
+
+/*-------------------------------------------------------------------------*/
+
 GUCEF_PROJECTGEN_PUBLIC_CPP
 CORE::CString
 LocalizeDirSepCharForPlatform( const CORE::CString& path     ,
@@ -678,6 +699,14 @@ bool
 IsModuleTagged( const TModuleInfoEntry& module ,
                 const CORE::CString& tag       ,
                 const CORE::CString& platform  );
+
+/*-------------------------------------------------------------------------*/
+
+GUCEF_PROJECTGEN_PUBLIC_CPP
+bool
+IsModuleTagged( const TModuleInfoEntry& module       ,
+                const CORE::CString::StringSet& tags ,
+                const CORE::CString& platform        );
 
 /*-------------------------------------------------------------------------*/
 
@@ -776,6 +805,64 @@ const TProjectTargetInfo*
 GetPlatformProjectTarget( const TProjectTargetInfoMap& platformTargets ,
                           const CORE::CString& platformName            );
 
+/*-------------------------------------------------------------------------*/
+
+GUCEF_PROJECTGEN_PUBLIC_CPP
+bool
+IsAnyLicenseDefined( const TModuleInfoEntryVector& moduleInfoEntries );
+
+/*-------------------------------------------------------------------------*/
+
+GUCEF_PROJECTGEN_PUBLIC_CPP
+const CORE::CString::StringSet&
+GetKnownLicenseFiles( void );
+
+/*-------------------------------------------------------------------------*/
+
+GUCEF_PROJECTGEN_PUBLIC_CPP
+bool
+DirHasLicenseFile( const CORE::CString& path      ,
+                   CORE::CString& licenceFilePath );
+
+/*-------------------------------------------------------------------------*/
+
+GUCEF_PROJECTGEN_PUBLIC_CPP
+bool
+TryAutoLicenceDetection( const CORE::CString& fileContent ,
+                         CORE::CString& detectedLicense   );
+
+/*-------------------------------------------------------------------------*/
+
+GUCEF_PROJECTGEN_PUBLIC_CPP
+bool
+IsLicenseMIT( const CORE::CString& fileContentUpperCase );
+
+/*-------------------------------------------------------------------------*/
+
+GUCEF_PROJECTGEN_PUBLIC_CPP
+const CORE::CString::StringSet&
+GetKnownSemVerFiles( void );
+
+/*-------------------------------------------------------------------------*/;
+
+GUCEF_PROJECTGEN_PUBLIC_CPP
+bool
+IsAnySemVerDefined( const TModuleInfoEntryVector& moduleInfoEntries );
+
+/*-------------------------------------------------------------------------*/;
+
+GUCEF_PROJECTGEN_PUBLIC_CPP
+bool
+DirHasSemVerFile( const CORE::CString& path     ,
+                  CORE::CString& semverFilePath );
+
+/*-------------------------------------------------------------------------*/;
+
+GUCEF_PROJECTGEN_PUBLIC_CPP
+bool
+TryAutoSemVerDetection( const CORE::CString& fileContent ,
+                        CORE::CVersion& detectedSemVer   );
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //
@@ -788,14 +875,3 @@ GetPlatformProjectTarget( const TProjectTargetInfoMap& platformTargets ,
 /*-------------------------------------------------------------------------*/
 
 #endif /* GUCEF_PROJECTGEN_DATATYPES_H ? */
-
-/*-------------------------------------------------------------------------//
-//                                                                         //
-//      Info & Changes                                                     //
-//                                                                         //
-//-------------------------------------------------------------------------//
-
-- 27-11-2004 :
-        - Dinand: Initial implementation
-
----------------------------------------------------------------------------*/

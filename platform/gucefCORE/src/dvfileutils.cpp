@@ -702,8 +702,11 @@ create_directory( const char *new_dir, UInt32 offset )
 /*-------------------------------------------------------------------------*/
 
 UInt32
-Create_Directory( const char *new_dir )
+Create_Directory( const char* new_dir )
 {
+    if ( GUCEF_NULL == new_dir )
+        return 0;
+
     #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
 
     return create_directory( new_dir, 0 );

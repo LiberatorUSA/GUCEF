@@ -153,6 +153,7 @@ set( HEADER_FILES
   include/gucefCORE_CDate.h
   include/gucefCORE_CDateTime.h
   include/gucefCORE_CDirectoryWatcherEvents.h
+  include/gucefCORE_CDynamicBufferStringStream.h
   include/gucefCORE_CDynamicBufferSwap.h
   include/gucefCORE_CEnumerator.h
   include/gucefCORE_CEventBasedTaskConsumer.h
@@ -175,7 +176,6 @@ set( HEADER_FILES
   include/gucefCORE_CILoggingFormatter.h
   include/gucefCORE_CIMetricsSystemClient.h
   include/gucefCORE_CINotifier.h
-  include/gucefCORE_CIOAccessToIOStream.h
   include/gucefCORE_CIObserver.h
   include/gucefCORE_CIPluginLoadLogic.h
   include/gucefCORE_CIPluginMetaData.h
@@ -215,6 +215,8 @@ set( HEADER_FILES
   include/gucefCORE_CTDataNodeSerializableObj.h
   include/gucefCORE_CTEventHandlerFunctor.h
   include/gucefCORE_CTEventHandlerFunctorProxy.h
+  include/gucefCORE_CTIOAccessToStlStream.h
+  include/gucefCORE_CTIOAccessToStlStreambuff.h
   include/gucefCORE_CTLinkedCloneable.h
   include/gucefCORE_CTMailboxForSharedCloneables.h
   include/gucefCORE_CTMultiRegistry.h
@@ -389,6 +391,7 @@ set( SOURCE_FILES
   src/gucefCORE_CDate.cpp
   src/gucefCORE_CDateTime.cpp
   src/gucefCORE_CDirectoryWatcherEvents.cpp
+  src/gucefCORE_CDynamicBufferStringStream.cpp
   src/gucefCORE_CDynamicBufferSwap.cpp
   src/gucefCORE_CEnumerator.cpp
   src/gucefCORE_CFileSystemDirectoryWatcher.cpp
@@ -410,7 +413,6 @@ set( SOURCE_FILES
   src/gucefCORE_CILoggingFormatter.cpp
   src/gucefCORE_CIMetricsSystemClient.cpp
   src/gucefCORE_CINotifier.cpp
-  src/gucefCORE_CIOAccessToIOStream.cpp
   src/gucefCORE_CIObserver.cpp
   src/gucefCORE_CIPluginLoadLogic.cpp
   src/gucefCORE_CIPluginMetaData.cpp
@@ -447,6 +449,8 @@ set( SOURCE_FILES
   src/gucefCORE_CSubFileAccess.cpp
   src/gucefCORE_CTEventHandlerFunctor.cpp
   src/gucefCORE_CTEventHandlerFunctorProxy.cpp
+  src/gucefCORE_CTIOAccessToStlStream.cpp
+  src/gucefCORE_CTIOAccessToStlStreambuff.cpp
   src/gucefCORE_CTMultiRegistry.cpp
   src/gucefCORE_CTaskDelegator.cpp
   src/gucefCORE_CTaskInfo.cpp

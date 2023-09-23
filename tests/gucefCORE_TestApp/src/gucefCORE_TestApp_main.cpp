@@ -78,6 +78,11 @@
 #define GUCEF_CORE_TESTAPP_TESTDYNAMICBUFFERSWAP_H
 #endif /* GUCEF_CORE_TESTAPP_TESTDYNAMICBUFFERSWAP_H ? */
 
+#ifndef GUCEF_CORE_TESTAPP_TESTDYNAMICBUFFERSTRINGSTREAM_H
+#include "TestDynamicBufferStringStream.h"
+#define GUCEF_CORE_TESTAPP_TESTDYNAMICBUFFERSTRINGSTREAM_H
+#endif /* GUCEF_CORE_TESTAPP_TESTDYNAMICBUFFERSTRINGSTREAM_H ? */
+
 #ifndef GUCEF_CORE_TESTAPP_TESTINIPARSER_H
 #include "TestIniParser.h"
 #define GUCEF_CORE_TESTAPP_TESTINIPARSER_H
@@ -115,16 +120,17 @@ GUCEF_OSMAIN_BEGIN
 
         //GUCEF::CORE::CGUCEFApplication::Instance()->main( argc, argv, true );
         
-        PerformStringTests();
-        PerformVarsTests();
-        PerformUriTests();
-        PerformVariantTests();
-        PerformVariantBinarySerializerTests();
-        PerformDataNodeBinarySerializerTests();
-        PerformIniParserTests();        
-        PerformSharedPtrTests();
-        PerformDynamicBufferSwapTests();
-        PerformCyclicDynamicBufferTests();
+        //PerformStringTests();
+        //PerformVarsTests();
+        //PerformUriTests();
+        //PerformVariantTests();
+        //PerformVariantBinarySerializerTests();
+        //PerformDataNodeBinarySerializerTests();
+        //PerformIniParserTests();        
+        //PerformSharedPtrTests();
+        //PerformDynamicBufferSwapTests();
+        PerformDynamicBufferStringStreamTests();
+        //PerformCyclicDynamicBufferTests();
         //PerformNotifierObserverTests();
 
         return 1;

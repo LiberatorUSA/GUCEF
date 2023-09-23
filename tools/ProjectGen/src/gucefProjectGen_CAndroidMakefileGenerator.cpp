@@ -72,26 +72,6 @@ const char* makefileHeader =
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-const TModuleInfo*
-FindModuleByName( const TModuleInfoEntryPairVector& mergeLinks ,
-                  const CORE::CString& moduleName              )
-{GUCEF_TRACE;
-
-    TModuleInfoEntryPairVector::const_iterator i = mergeLinks.begin();
-    while ( i != mergeLinks.end() )
-    {
-        const TModuleInfo& moduleInfo = (*(*i).second);
-        if ( moduleInfo.name == moduleName )
-        {
-            return (*i).second;
-        }
-        ++i;
-    }
-    return NULL;
-}
-
-/*-------------------------------------------------------------------------*/
-
 CORE::CString
 GenerateContentForAndroidMakefile( const TModuleInfoEntryPairVector& mergeLinks ,
                                    const TModuleInfo& moduleInfo                ,
@@ -903,7 +883,7 @@ CAndroidMakefileGenerator::GenerateProject( TProjectInfo& projectInfo           
     bool treatTagsAsTargets = CORE::StringToBool( params.GetValueAlways( "TreatTagsAsTargets" ), true );
     bool splitTargets = CORE::StringToBool( params.GetValueAlways( "androidmakegen:SplitTargets" ), true );
 
-    CORE::CString targetsOutputDir = params.GetValueAlways( "androidmakegen:TargetsDir" );
+    CORE::CString targetsOutputDir = params.GetValueAlways( "androidmakegen:TargetsDir" ).AsString( CORE::CString::Empty, true );
     if ( targetsOutputDir.IsNULLOrEmpty() )
         targetsOutputDir = outputDir;    
     targetsOutputDir = CORE::RelativePath( targetsOutputDir, true );

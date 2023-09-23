@@ -237,6 +237,14 @@ CVersion::operator=( const TVersion& other )
 
 /*-------------------------------------------------------------------------*/
 
+CVersion::operator CString() const
+{GUCEF_TRACE;
+
+    return VersionToString( m_version );
+}
+
+/*-------------------------------------------------------------------------*/
+
 bool 
 CVersion::FromString( const CString& versionStr )
 {GUCEF_TRACE;
@@ -248,10 +256,24 @@ CVersion::FromString( const CString& versionStr )
 /*-------------------------------------------------------------------------*/
 
 CString
-CVersion::ToString( void ) const
+CVersion::ToString( bool includeMinor   ,
+                    bool includePatch   ,
+                    bool includeRelease ) const
 {GUCEF_TRACE;
 
-    return VersionToString( m_version );    
+    return VersionToString( m_version, includeMinor, includePatch, includeRelease );    
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool 
+CVersion::IsAllZero( void ) const
+{GUCEF_TRACE;
+
+    return 0 == m_version.major &&
+           0 == m_version.minor &&
+           0 == m_version.patch &&
+           0 == m_version.release;
 }
 
 /*-------------------------------------------------------------------------//

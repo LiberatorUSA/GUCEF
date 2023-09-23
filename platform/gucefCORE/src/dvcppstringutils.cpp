@@ -697,11 +697,25 @@ StringToVersion( const CString& versionStr )
 /*-------------------------------------------------------------------------*/
 
 CString
-VersionToString( const TVersion& version )
+VersionToString( const TVersion& version ,
+                 bool includeMinor       ,
+                 bool includePatch       ,
+                 bool includeRelease     )
 {GUCEF_TRACE;
 
     char verstr[ 25 ];
-    snprintf( verstr, 25, "%d.%d.%d.%d", version.major, version.minor, version.patch, version.release );
+
+    if ( includeRelease )
+        snprintf( verstr, 25, "%d.%d.%d.%d", version.major, version.minor, version.patch, version.release );
+    else
+    if ( includePatch )
+        snprintf( verstr, 25, "%d.%d.%d", version.major, version.minor, version.patch );
+    else
+    if ( includeMinor )
+        snprintf( verstr, 25, "%d.%d", version.major, version.minor );
+    else
+        snprintf( verstr, 25, "%d", version.major );
+
     return verstr;
 }
 

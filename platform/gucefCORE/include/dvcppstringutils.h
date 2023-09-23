@@ -141,7 +141,10 @@ StringToVersion( const CString& version );
 /*-------------------------------------------------------------------------*/
 
 GUCEF_CORE_PUBLIC_CPP CString
-VersionToString( const TVersion& version );
+VersionToString( const TVersion& version    ,
+                 bool includeMinor = true   ,
+                 bool includePatch = true   ,
+                 bool includeRelease = true );
 
 /*-------------------------------------------------------------------------*/
 

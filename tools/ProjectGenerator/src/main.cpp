@@ -105,6 +105,11 @@
 #define GUCEF_PROJECTGEN_CPREMAKE5PROJECTGENERATOR_H
 #endif /* GUCEF_PROJECTGEN_CPREMAKE5PROJECTGENERATOR_H ? */
 
+#ifndef GUCEF_PROJECTGEN_CARDUINOCLIGENERATOR_H
+#include "gucefProjectGen_CArduinoCLIGenerator.h"
+#define GUCEF_PROJECTGEN_CARDUINOCLIGENERATOR_H
+#endif /* GUCEF_PROJECTGEN_CARDUINOCLIGENERATOR_H ? */
+
 #ifndef GUCEF_PROJECTGEN_CCHIHELPERGENERATOR_H
 #include "gucefProjectGen_CCIHelperGenerator.h"
 #define GUCEF_PROJECTGEN_CCHIHELPERGENERATOR_H
@@ -459,6 +464,15 @@ GUCEF_OSMAIN_BEGIN
                                       addToolCompileTimeToOutput ,
                                       keyValueList               );
         }
+        else
+        if ( (*i).Lowercase() == "arduinocli" )
+        {
+            CArduinoCLIGenerator cliHelper;
+            cliHelper.GenerateProject( projectInfo                ,
+                                       outputDir                  ,
+                                       addToolCompileTimeToOutput ,
+                                       keyValueList               );
+        }        
         ++i;
     }
 
@@ -470,13 +484,4 @@ GUCEF_OSMAIN_BEGIN
 }
 GUCEF_OSMAIN_END
 
-/*-------------------------------------------------------------------------//
-//                                                                         //
-//      Info & Changes                                                     //
-//                                                                         //
-//-------------------------------------------------------------------------//
-
-- 27-11-2004 :
-        - Dinand: Initial implementation
-
----------------------------------------------------------------------------*/
+/*-------------------------------------------------------------------------*/

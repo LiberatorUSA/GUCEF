@@ -91,7 +91,13 @@ class GUCEF_CORE_PUBLIC_CPP CVersion
 
     bool FromString( const CString& versionStr );
 
-    CString ToString( void ) const;
+    CString ToString( bool includeMinor = true   ,
+                      bool includePatch = true   ,
+                      bool includeRelease = true ) const;
+
+    operator CString() const;
+
+    bool IsAllZero( void ) const;
 
     private:
 
@@ -111,13 +117,3 @@ class GUCEF_CORE_PUBLIC_CPP CVersion
 
 #endif /* GUCEF_CORE_CVERSION_H ? */
 
-/*-------------------------------------------------------------------------//
-//                                                                         //
-//      Info & Changes                                                     //
-//                                                                         //
-//-------------------------------------------------------------------------//
-
-- 20-02-2005 :
-        - Dinand: Added this class
-
-----------------------------------------------------------------------------*/

@@ -2598,10 +2598,81 @@ ProcessProjectDir( TProjectInfo& projectInfo                 ,
 
     if ( CORE::FileExists( pathToModuleInfoFile ) )
     {
+        // load the ModuleInfoEntry entries from the file
+        // typically there is only 1 but its possible to have more
         GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Processing ModuleInfo file " + pathToModuleInfoFile );
         if ( DeserializeModuleInfo( projectInfo, moduleInfoEntries, pathToModuleInfoFile ) )
         {
             // Do some extra processing which does not apply to the legacy cmake files...
+
+            if ( !IsAnyLicenseDefined( moduleInfoEntries ) )
+            {
+                GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "No license information is available in the ModuleInfo" );
+
+                CORE::CString licenceFilePath;
+                if ( DirHasLicenseFile( rootDir, licenceFilePath ) )
+                {
+                    CORE::CString licenceFileContent;
+                    if ( CORE::LoadTextFileAsString( licenceFilePath, licenceFileContent, false ) )
+                    {
+                        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Successfully loaded license file: " + licenceFilePath );
+
+                        CORE::CString detectedLicense;
+                        if ( TryAutoLicenceDetection( licenceFileContent,
+                                                      detectedLicense   ) )
+                        {
+                            GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Auto detected license: " + detectedLicense );
+
+                            TModuleInfoEntryVector::iterator i = moduleInfoEntries.begin();
+                            while ( i != moduleInfoEntries.end() )
+                            {
+                                TModuleInfoEntry& moduleInfoEntry = (*i);
+                                moduleInfoEntry.license = detectedLicense;
+                                ++i;
+                            }
+                        }
+                    }
+                    else
+                    {
+                        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "Failed to load detected license file: " + licenceFilePath );
+                    }
+                }
+            }
+
+            if ( !IsAnySemVerDefined( moduleInfoEntries ) )
+            {
+                GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "No semver information is available in the ModuleInfo" );
+
+                CORE::CString semverFilePath;
+                if ( DirHasSemVerFile( rootDir, semverFilePath ) )
+                {
+                    CORE::CString semverFileContent;
+                    if ( CORE::LoadTextFileAsString( semverFilePath, semverFileContent, false ) )
+                    {
+                        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Successfully loaded semver file: " + semverFilePath );
+
+                        CORE::CVersion detectedSemVer;
+                        if ( TryAutoSemVerDetection( semverFileContent ,
+                                                     detectedSemVer    ) )
+                        {
+                            GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Auto detected semver: " + detectedSemVer.ToString() );
+
+                            TModuleInfoEntryVector::iterator i = moduleInfoEntries.begin();
+                            while ( i != moduleInfoEntries.end() )
+                            {
+                                TModuleInfoEntry& moduleInfoEntry = (*i);
+                                moduleInfoEntry.semver = detectedSemVer;
+                                ++i;
+                            }
+                        }
+                    }
+                    else
+                    {
+                        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "Failed to load detected semver file: " + semverFilePath );
+                    }
+                }
+            }
+
             TModuleInfoEntryVector::iterator i = moduleInfoEntries.begin();
             while ( i != moduleInfoEntries.end() )
             {

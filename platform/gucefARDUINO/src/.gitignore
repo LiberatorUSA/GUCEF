@@ -1,0 +1,10 @@
+*.h
+*.cpp
+!gucefARDUINO.h
+!gucefARDUINO.cpp
+!gucefARDUINO_config.h
+!gucefARDUINO_config.cpp
+!gucefARDUINO_macros.h
+!gucefARDUINO_macros.cpp
+!gucefARDUINO_ETypes.h
+!gucefARDUINO_ETypes.cpp

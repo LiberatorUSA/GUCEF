@@ -37,14 +37,29 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-/* Initial platform/compiler-related stuff to set.
-*/
-#define GUCEF_PLATFORM_MSWIN    1
-#define GUCEF_PLATFORM_LINUX    2
-#define GUCEF_PLATFORM_MACOS    3
-#define GUCEF_PLATFORM_ANDROID  4
-#define GUCEF_PLATFORM_IPHONEOS 5
+/* 
+ *  Platform defines
+ */
+#define GUCEF_PLATFORM_MSWIN            1
+#define GUCEF_PLATFORM_LINUX            2
+#define GUCEF_PLATFORM_APPLE_MACOS      3
+#define GUCEF_PLATFORM_ANDROID          4
+#define GUCEF_PLATFORM_APPLE_IPHONEOS   5
+#define GUCEF_PLATFORM_APPLE_IPADOS     6
+#define GUCEF_PLATFORM_APPLE_TVOS       7
+#define GUCEF_PLATFORM_APPLE_VISIONOS   8
+#define GUCEF_PLATFORM_ARDUINO          9
 
+/*
+ *  Legacy platform define remaps
+ *  These are deprecated
+ */
+#define GUCEF_PLATFORM_MACOS            GUCEF_PLATFORM_APPLE_MACOS      
+#define GUCEF_PLATFORM_IPHONEOS         GUCEF_PLATFORM_APPLE_IPHONEOS   
+
+/*
+ *  Compiler defines
+ */
 #define GUCEF_COMPILER_MSVC 1
 #define GUCEF_COMPILER_GNUC 2
 #define GUCEF_COMPILER_BORL 3
@@ -52,13 +67,32 @@
 #define GUCEF_BYTEORDER_LITTLE_ENDIAN   1
 #define GUCEF_BYTEORDER_BIG_ENDIAN      2
 
-#define GUCEF_ARCHITECTURE_32 1
-#define GUCEF_ARCHITECTURE_64 2
+/*
+ *  CPU bitness defines
+ */
+#define GUCEF_CPU_BITNESS_8     4
+#define GUCEF_CPU_BITNESS_16    3
+#define GUCEF_CPU_BITNESS_32    1
+#define GUCEF_CPU_BITNESS_64    2
 
-#define GUCEF_CPU_ARCHITECTURE_ARM      1
-#define GUCEF_CPU_ARCHITECTURE_ARM64    2
-#define GUCEF_CPU_ARCHITECTURE_X86      3
-#define GUCEF_CPU_ARCHITECTURE_AMD64    4
+/*
+ *  Legacy cpu bitness define remaps
+ *  These are deprecated
+ */
+#define GUCEF_ARCHITECTURE_32       GUCEF_CPU_BITNESS_32
+#define GUCEF_ARCHITECTURE_64       GUCEF_CPU_BITNESS_64
+
+/*
+ *  CPU Architecture defines
+ */
+#define GUCEF_CPU_ARCHITECTURE_ARM          1
+#define GUCEF_CPU_ARCHITECTURE_ARM64        2
+#define GUCEF_CPU_ARCHITECTURE_X86          3
+#define GUCEF_CPU_ARCHITECTURE_AMD64        4
+#define GUCEF_CPU_ARCHITECTURE_ATMEGA328P   5
+#define GUCEF_CPU_ARCHITECTURE_ATMEGA2560   6
+#define GUCEF_CPU_ARCHITECTURE_ATMEGA4809   7
+
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -216,14 +250,3 @@
 /*-------------------------------------------------------------------------*/
 
 #endif /* GUCEF_PLATFORM_H ? */
-
-/*-------------------------------------------------------------------------//
-//                                                                         //
-//      Info & Changes                                                     //
-//                                                                         //
-//-------------------------------------------------------------------------//
-
-- 02-01-2007 :
-       - Initial version of this file.
-
----------------------------------------------------------------------------*/

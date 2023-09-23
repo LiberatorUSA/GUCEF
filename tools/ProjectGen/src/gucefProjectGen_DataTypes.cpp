@@ -582,6 +582,7 @@ SerializeModuleInfo( const TModuleInfoEntry& moduleEntry ,
     {
         moduleInfoNode.SetAttribute( "Name", moduleInfo.name );
     }
+    moduleInfoNode.SetAttribute( "SemVer", moduleEntry.semver.ToString() );
     if ( moduleInfo.buildOrder != -1 )
     {
         moduleInfoNode.SetAttribute( "BuildOrder", CORE::Int32ToString( moduleInfo.buildOrder ) );
@@ -899,6 +900,28 @@ SerializeModuleInfo( const TModuleInfoEntry& moduleEntry ,
     {
         moduleEntryNode.SetAttribute( "LastEditBy", moduleEntry.lastEditBy );
     }
+    if ( !moduleEntry.descriptionHeadline.IsNULLOrEmpty() )
+    {
+        moduleEntryNode.SetAttribute( "DescriptionHeadline", moduleEntry.descriptionHeadline );
+    }
+    if ( !moduleEntry.descriptionDetails.IsNULLOrEmpty() )
+    {
+        moduleEntryNode.SetAttribute( "DescriptionDetails", moduleEntry.descriptionDetails );
+    }
+    if ( !moduleEntry.license.IsNULLOrEmpty() )
+    {
+        moduleEntryNode.SetAttribute( "License", moduleEntry.license );
+    }
+
+    CORE::CDataNode* authorsNode = moduleEntryNode.AddChild( "Authors", GUCEF_DATATYPE_ARRAY );
+    if ( GUCEF_NULL != authorsNode )
+        authorsNode->AddAllValuesAsChildren< CORE::CString::StringSet >( moduleEntry.authors );
+
+    CORE::CDataNode* maintainersNode = moduleEntryNode.AddChild( "Maintainers", GUCEF_DATATYPE_ARRAY );
+    if ( GUCEF_NULL != maintainersNode )
+        maintainersNode->AddAllValuesAsChildren< CORE::CString::StringSet >( moduleEntry.maintainers );
+
+    moduleEntryNode.SetAttribute( "SemVer", moduleEntry.semver.ToString() );
 
     TModuleInfoMap::const_iterator i = moduleEntry.modulesPerPlatform.begin();
     while ( i != moduleEntry.modulesPerPlatform.end() )
@@ -1108,6 +1131,7 @@ DeserializeModuleInfo( TModuleInfo& moduleInfo           ,
     if ( moduleInfoNode == NULL ) return false;
 
     // Find the overall module properties
+    moduleInfo.semver.FromString( moduleInfoNode->GetAttributeValue( "SemVer", moduleInfo.semver.ToString(), false ).AsString( moduleInfo.semver.ToString(), true ) );
     CORE::CString tmpStr = moduleInfoNode->GetAttributeValue( "BuildOrder", "-1" );
     moduleInfo.buildOrder = CORE::StringToInt32( tmpStr );
     tmpStr = moduleInfoNode->GetAttributeValue( "BuildChain", "-1" );
@@ -1353,6 +1377,26 @@ DeserializeModuleInfo( TModuleInfo& moduleInfo           ,
 
 /*-------------------------------------------------------------------------*/
 
+const TModuleInfo*
+FindModuleByName( const TModuleInfoEntryPairVector& mergeLinks ,
+                  const CORE::CString& moduleName              )
+{GUCEF_TRACE;
+
+    TModuleInfoEntryPairVector::const_iterator i = mergeLinks.begin();
+    while ( i != mergeLinks.end() )
+    {
+        const TModuleInfo& moduleInfo = (*(*i).second);
+        if ( moduleInfo.name == moduleName )
+        {
+            return (*i).second;
+        }
+        ++i;
+    }
+    return NULL;
+}
+
+/*-------------------------------------------------------------------------*/
+
 void
 CleanupIncludeDirs( TModuleInfoEntry& moduleInfoEntry )
 {GUCEF_TRACE;
@@ -1444,8 +1488,17 @@ DeserializeModuleInfo( const TProjectInfo& projectInfo   ,
         moduleInfoEntry.rootDir = moduleEntryNode->GetAttributeValue( "RootDir" );
     }
 
+    moduleInfoEntry.license = moduleEntryNode->GetAttributeValue( "License", moduleInfoEntry.license, false ).AsString( moduleInfoEntry.license, true );
+    moduleInfoEntry.descriptionHeadline = moduleEntryNode->GetAttributeValue( "DescriptionHeadline", moduleInfoEntry.descriptionHeadline, false ).AsString( moduleInfoEntry.descriptionHeadline, true );
+    moduleInfoEntry.descriptionDetails = moduleEntryNode->GetAttributeValue( "DescriptionDetails", moduleInfoEntry.descriptionDetails, false ).AsString( moduleInfoEntry.descriptionDetails, true );
+    moduleInfoEntry.semver.FromString( moduleEntryNode->GetAttributeValue( "SemVer", moduleInfoEntry.semver.ToString(), false ).AsString( moduleInfoEntry.semver.ToString(), true ) );
+
+    moduleEntryNode->GetValuesOfChildByName( "Authors", moduleInfoEntry.authors );
+    moduleEntryNode->GetValuesOfChildByName( "Maintainers", moduleInfoEntry.maintainers );
+
     const CORE::CDataNode::TConstDataNodeSet moduleInfoNodes = moduleEntryNode->FindChildrenOfType( "Module" );
-    if ( moduleInfoNodes.size() == 0 ) return false;
+    if ( moduleInfoNodes.size() == 0 ) 
+        return false;
 
     CORE::CDataNode::TConstDataNodeSet::const_iterator n = moduleInfoNodes.begin();
     while ( n != moduleInfoNodes.end() )
@@ -2833,6 +2886,24 @@ IsModuleTagged( const TModuleInfoEntry& module ,
 
 /*---------------------------------------------------------------------------*/
 
+bool
+IsModuleTagged( const TModuleInfoEntry& module       ,
+                const CORE::CString::StringSet& tags ,
+                const CORE::CString& platform        )
+{GUCEF_TRACE;
+
+    CORE::CString::StringSet::const_iterator i = tags.begin();
+    while ( i != tags.end() )
+    {
+        if ( IsModuleTagged( module, (*i), platform ) )
+            return true;
+        ++i;
+    }
+    return false;
+}
+
+/*---------------------------------------------------------------------------*/
+
 void
 GetTaggedModules( const TProjectInfo& projectInfo            ,
                   const CORE::CString& tag                   ,
@@ -3166,6 +3237,369 @@ GetPlatformProjectTarget( const TProjectTargetInfoMap& platformTargets ,
         }
     }
     return GUCEF_NULL;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+HasPlatformDefinition( const TModuleInfoEntry& moduleInfoEntry ,
+                       const CORE::CString& platform           )
+{GUCEF_TRACE;
+
+    TModuleInfoMap::const_iterator i = moduleInfoEntry.modulesPerPlatform.begin();
+    while ( i != moduleInfoEntry.modulesPerPlatform.end() )
+    {
+        if ( (*i).first.Equals( platform, false ) )
+            return true;
+        ++i;
+    }
+    return false;
+}
+
+/*--------------------------------------------------------------------------*/
+
+const CORE::CString::StringSet&
+GetKnownLicenseFiles( void )
+{GUCEF_TRACE;
+
+    static CORE::CString::StringSet licenseFiles;
+
+    if ( licenseFiles.empty() )
+    {
+        licenseFiles.insert( "license" );
+        licenseFiles.insert( "license.txt" );
+        licenseFiles.insert( "copying" );
+        licenseFiles.insert( "copying.lesser" );
+    }
+    return licenseFiles;
+}
+
+/*---------------------------------------------------------------------------*/
+
+bool
+DirHasLicenseFile( const CORE::CString& path      ,
+                   CORE::CString& licenceFilePath )
+{GUCEF_TRACE;
+
+    if ( path.IsNULLOrEmpty() )
+        return false;
+    
+    licenceFilePath.Clear();
+    CORE::CString::StringSet licenseFiles = GetKnownLicenseFiles();
+
+    CORE::SDI_Data* sdiData = CORE::DI_First_Dir_Entry( path.C_String() );
+    if ( GUCEF_NULL != sdiData )
+    {
+        do
+        {
+            // make sure we are dealing with a file
+            if ( 0 != DI_Is_It_A_File( sdiData ) )
+            {
+                CORE::CString filename = DI_Name( sdiData );
+                if ( ( filename != "." ) && ( filename != ".." ) )
+                {
+                    CORE::CString lcFilename = filename.Lowercase();
+
+                    if ( licenseFiles.find( lcFilename ) != licenseFiles.end() )
+                    {
+                        // we found one
+                        licenceFilePath = CORE::CombinePath( path, filename );
+                        break;
+                    }
+                }
+            }
+        }
+        while ( 0 != DI_Next_Dir_Entry( sdiData ) );
+        DI_Cleanup( sdiData );
+    }
+
+    return !licenceFilePath.IsNULLOrEmpty();
+}
+
+/*---------------------------------------------------------------------------*/
+
+bool 
+IsLicenseBsd( const CORE::CString& fileContentUpperCase )
+{GUCEF_TRACE;
+
+    static const char* bsdFragment =
+    "THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS \"AS IS\" AND " 
+    "ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY "
+    "AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE "
+    "LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT "
+    "LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) "
+    "HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING "
+    "NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE";
+
+    static const char* bsdFragment2 =
+    "THE SOFTWARE IS PROVIDED \"AS IS\", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR "
+    "IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, "
+    "FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE "
+    "AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER "
+    "LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, "
+    "OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE "
+    "SOFTWARE.";
+
+    Int32 fragmentIndex = fileContentUpperCase.HasSubstr( bsdFragment, true );
+    Int32 fragment2Index = fileContentUpperCase.HasSubstr( bsdFragment2, true );
+    return fragmentIndex >= 0 || fragment2Index >= 0;
+}
+
+/*---------------------------------------------------------------------------*/
+
+bool 
+IsLicenseLGPLv3( const CORE::CString& fileContentUpperCase )
+{GUCEF_TRACE;
+
+    static const char* gnuFragment = "GNU LESSER GENERAL PUBLIC LICENSE";
+    static const char* gnuFragment2 = "VERSION 3";
+
+    Int32 fragmentIndex = fileContentUpperCase.HasSubstr( gnuFragment, true );
+    Int32 fragment2Index = fileContentUpperCase.HasSubstr( gnuFragment2, true );
+    return fragmentIndex >= 0 && fragment2Index >= 0;
+}
+
+/*---------------------------------------------------------------------------*/
+
+bool 
+IsLicenseLGPLv2( const CORE::CString& fileContentUpperCase )
+{GUCEF_TRACE;
+
+    static const char* gnuFragment = "GNU LESSER GENERAL PUBLIC LICENSE";
+    static const char* gnuFragment2 = "VERSION 2";
+
+    Int32 fragmentIndex = fileContentUpperCase.HasSubstr( gnuFragment, true );
+    Int32 fragment2Index = fileContentUpperCase.HasSubstr( gnuFragment2, true );
+    return fragmentIndex >= 0 && fragment2Index >= 0;
+}
+
+/*---------------------------------------------------------------------------*/
+
+bool
+IsLicenseApachev2( const CORE::CString& fileContentUpperCase )
+
+{GUCEF_TRACE;
+
+    static const char* gnuFragment = "APACHE LICENSE";
+    static const char* gnuFragment2 = "VERSION 2";
+
+    Int32 fragmentIndex = fileContentUpperCase.HasSubstr( gnuFragment, true );
+    Int32 fragment2Index = fileContentUpperCase.HasSubstr( gnuFragment2, true );
+    return fragmentIndex >= 0 && fragment2Index >= 0;
+}
+
+/*---------------------------------------------------------------------------*/
+
+bool
+IsLicenseApachev3( const CORE::CString& fileContentUpperCase )
+
+{GUCEF_TRACE;
+
+    static const char* gnuFragment = "APACHE LICENSE";
+    static const char* gnuFragment2 = "VERSION 3";
+
+    Int32 fragmentIndex = fileContentUpperCase.HasSubstr( gnuFragment, true );
+    Int32 fragment2Index = fileContentUpperCase.HasSubstr( gnuFragment2, true );
+    return fragmentIndex >= 0 && fragment2Index >= 0;
+}
+
+/*---------------------------------------------------------------------------*/
+
+bool
+IsLicensePublicDomain( const CORE::CString& fileContentUpperCase )
+{GUCEF_TRACE;
+
+    static const char* publicDomainFragment = "RELEASED TO THE PUBLIC DOMAIN";
+
+    Int32 fragmentIndex = fileContentUpperCase.HasSubstr( publicDomainFragment, true );
+    return fragmentIndex >= 0;
+}
+
+/*---------------------------------------------------------------------------*/
+
+bool
+IsLicenseZLib( const CORE::CString& fileContentUpperCase )
+{GUCEF_TRACE;
+
+    static const char* zlibFragment = "ZLIB LICENSE";
+
+    Int32 fragmentIndex = fileContentUpperCase.HasSubstr( zlibFragment, true );
+    return fragmentIndex >= 0;
+}
+
+/*---------------------------------------------------------------------------*/
+
+bool
+IsLicenseMIT( const CORE::CString& fileContentUpperCase )
+{GUCEF_TRACE;
+
+    static const char* mitFragment = "MIT LICENSE";
+
+    Int32 fragmentIndex = fileContentUpperCase.HasSubstr( mitFragment, true );
+    return fragmentIndex >= 0;
+}
+
+/*---------------------------------------------------------------------------*/
+
+bool
+TryAutoLicenceDetection( const CORE::CString& fileContent ,
+                         CORE::CString& detectedLicense   )
+{GUCEF_TRACE;
+
+    detectedLicense.Clear();
+    CORE::CString uppercaseContent = fileContent.Uppercase().RemoveChar( '\n' ).RemoveChar( '\r' );
+
+    if ( IsLicenseMIT( uppercaseContent ) )
+    {
+        detectedLicense = "MIT";
+        return true;
+    }
+    if ( IsLicenseZLib( uppercaseContent ) )
+    {
+        detectedLicense = "ZLIB";
+        return true;
+    }
+    if ( IsLicensePublicDomain( uppercaseContent ) )
+    {
+        detectedLicense = "PUBLIC DOMAIN";
+        return true;
+    }
+    if ( IsLicenseApachev3( uppercaseContent ) )
+    {
+        detectedLicense = "APACHEv3";
+        return true;
+    }
+    if ( IsLicenseApachev2( uppercaseContent ) )
+    {
+        detectedLicense = "APACHEv2";
+        return true;
+    }
+    if ( IsLicenseLGPLv2( uppercaseContent ) )
+    {
+        detectedLicense = "LGPLv2";
+        return true;
+    }
+    if ( IsLicenseLGPLv3( uppercaseContent ) )
+    {
+        detectedLicense = "LGPLv3";
+        return true;
+    }    
+    if ( IsLicenseBsd( uppercaseContent ) )
+    {
+        detectedLicense = "BSD";
+        return true;
+    }    
+
+    return false;
+}
+
+/*---------------------------------------------------------------------------*/
+
+bool
+IsAnyLicenseDefined( const TModuleInfoEntryVector& moduleInfoEntries )
+{GUCEF_TRACE;
+
+    TModuleInfoEntryVector::const_iterator i = moduleInfoEntries.begin();
+    while ( i != moduleInfoEntries.end() )
+    {
+        const TModuleInfoEntry& entry = (*i);
+        if ( !entry.license.IsNULLOrEmpty() )
+        {
+            return true;
+        }
+        ++i;
+    }
+    return false;
+}
+
+/*---------------------------------------------------------------------------*/
+
+bool
+IsAnySemVerDefined( const TModuleInfoEntryVector& moduleInfoEntries )
+{GUCEF_TRACE;
+
+    TModuleInfoEntryVector::const_iterator i = moduleInfoEntries.begin();
+    while ( i != moduleInfoEntries.end() )
+    {
+        const TModuleInfoEntry& entry = (*i);
+        if ( !entry.semver.IsAllZero() )
+        {
+            return true;
+        }
+        ++i;
+    }
+    return false;
+}
+
+/*--------------------------------------------------------------------------*/
+
+const CORE::CString::StringSet&
+GetKnownSemVerFiles( void )
+{GUCEF_TRACE;
+
+    static CORE::CString::StringSet semverFiles;
+
+    if ( semverFiles.empty() )
+    {
+        semverFiles.insert( "semver" );
+        semverFiles.insert( "semver.txt" );
+        semverFiles.insert( "version" );
+        semverFiles.insert( "version.txt" );
+    }
+    return semverFiles;
+}
+
+/*---------------------------------------------------------------------------*/
+
+bool
+DirHasSemVerFile( const CORE::CString& path     ,
+                  CORE::CString& semverFilePath )
+{GUCEF_TRACE;
+
+    if ( path.IsNULLOrEmpty() )
+        return false;
+    
+    semverFilePath.Clear();
+    CORE::CString::StringSet semverFiles = GetKnownSemVerFiles();
+
+    CORE::SDI_Data* sdiData = CORE::DI_First_Dir_Entry( path.C_String() );
+    if ( GUCEF_NULL != sdiData )
+    {
+        do
+        {
+            // make sure we are dealing with a file
+            if ( 0 != DI_Is_It_A_File( sdiData ) )
+            {
+                CORE::CString filename = DI_Name( sdiData );
+                if ( ( filename != "." ) && ( filename != ".." ) )
+                {
+                    CORE::CString lcFilename = filename.Lowercase();
+
+                    if ( semverFiles.find( lcFilename ) != semverFiles.end() )
+                    {
+                        // we found one
+                        semverFilePath = CORE::CombinePath( path, filename );
+                        break;
+                    }
+                }
+            }
+        }
+        while ( 0 != DI_Next_Dir_Entry( sdiData ) );
+        DI_Cleanup( sdiData );
+    }
+
+    return !semverFilePath.IsNULLOrEmpty();
+}
+
+/*---------------------------------------------------------------------------*/
+
+bool
+TryAutoSemVerDetection( const CORE::CString& fileContent ,
+                        CORE::CVersion& detectedSemVer   )
+{GUCEF_TRACE;
+
+    // @TODO: Support more variation
+    return detectedSemVer.FromString( fileContent );
 }
 
 /*-------------------------------------------------------------------------//

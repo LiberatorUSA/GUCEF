@@ -1671,7 +1671,7 @@ CCMakeProjectGenerator::GenerateProject( TProjectInfo& projectInfo            ,
 
     // Prepare by loading up templates if any were provided
 
-    CORE::CString templateDir = params.GetValueAlways( "cmakegen:TemplateDir" );
+    CORE::CString templateDir = params.GetValueAlways( "cmakegen:TemplateDir" ).AsString( CORE::CString::Empty, true );
     if ( !templateDir.IsNULLOrEmpty() )
     {
         LoadCMakeFileAdditionTemplates( templateDir );
@@ -1680,16 +1680,16 @@ CCMakeProjectGenerator::GenerateProject( TProjectInfo& projectInfo            ,
     // Gather some settings of relevance to this backend
     
     CORE::CString logfilePath;
-    bool addLogfilePathToOutput = CORE::StringToBool( params.GetValueAlways( "writeLogLocationToOutput" ) );
+    bool addLogfilePathToOutput = params.GetValueAlways( "writeLogLocationToOutput" ).AsBool( false, true );
     if ( addLogfilePathToOutput )
     {
         logfilePath = params.GetValueAlways( "logfile" );
     }
 
-    bool treatTagsAsTargets = CORE::StringToBool( params.GetValueAlways( "TreatTagsAsTargets" ), true );
-    bool treatTagsAsOptions = CORE::StringToBool( params.GetValueAlways( "TreatTagsAsOptions" ), true );
-    bool taggedOptionsEnabledDefault = CORE::StringToBool( params.GetValueAlways( "TaggedOptionsEnabledDefault" ), true );
-    bool splitTargets = CORE::StringToBool( params.GetValueAlways( "cmakegen:SplitTargets" ), true );
+    bool treatTagsAsTargets = params.GetValueAlways( "TreatTagsAsTargets" ).AsBool( true, true );
+    bool treatTagsAsOptions = params.GetValueAlways( "TreatTagsAsOptions" ).AsBool( true, true );
+    bool taggedOptionsEnabledDefault = params.GetValueAlways( "TaggedOptionsEnabledDefault" ).AsBool( true, true );
+    bool splitTargets = params.GetValueAlways( "cmakegen:SplitTargets" ).AsBool( true, true );
 
     // Write the gathered info to disk in CMakeList.txt format per module
 
@@ -1703,7 +1703,7 @@ CCMakeProjectGenerator::GenerateProject( TProjectInfo& projectInfo            ,
     // someone who obtained the code repository might only be interested in a much smaller subset
     // This functionality allows this audiance to only have to deal with the smaller crosssection
 
-    CORE::CString targetsOutputDir = params.GetValueAlways( "cmakegen:TargetsDir" );
+    CORE::CString targetsOutputDir = params.GetValueAlways( "cmakegen:TargetsDir" ).AsString( CORE::CString::Empty, true );
     if ( targetsOutputDir.IsNULLOrEmpty() )
         targetsOutputDir = outputDir;    
     targetsOutputDir = CORE::RelativePath( targetsOutputDir, true );

@@ -800,10 +800,10 @@ CCIHelperGenerator::GenerateProject( TProjectInfo& projectInfo            ,
                                      const CORE::CValueList& params       )
 {GUCEF_TRACE;
 
-    bool treatTagsAsTargets = CORE::StringToBool( params.GetValueAlways( "TreatTagsAsTargets" ), true );  
-    CORE::CString targetsOutputDir = params.GetValueAlways( "cihelpergen:TargetsDir" );
+    bool treatTagsAsTargets = params.GetValueAlways( "TreatTagsAsTargets" ).AsBool( true, true );
+    CORE::CString targetsOutputDir = params.GetValueAlways( "cihelpergen:TargetsDir" ).AsString( CORE::CString::Empty, true );
     
-    CORE::CString::StringSet platformFilter = params.GetValueAlways( "cihelpergen:platformFilter" ).AsString().ParseUniqueElements( ',', false );
+    CORE::CString::StringSet platformFilter = params.GetValueAlways( "cihelpergen:platformFilter" ).AsString( CORE::CString::Empty, true ).ParseUniqueElements( ',', false );
     if ( platformFilter.empty() )
         GetAllPlatformsUsed( projectInfo, platformFilter );
 
