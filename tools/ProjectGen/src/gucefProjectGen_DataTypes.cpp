@@ -1092,7 +1092,6 @@ DeserializeModuleInfo( TModuleInfo& moduleInfo           ,
         return false;
 
     // Find the overall module properties
-    moduleInfo.semver.FromString( moduleInfoNode->GetAttributeValue( "SemVer", moduleInfo.semver.ToString(), false ).AsString( moduleInfo.semver.ToString(), true ) );
     CORE::CString tmpStr = moduleInfoNode->GetAttributeValue( "BuildOrder", "-1" );
     moduleInfo.buildOrder = CORE::StringToInt32( tmpStr );
     tmpStr = moduleInfoNode->GetAttributeValue( "BuildChain", "-1" );
@@ -1676,6 +1675,50 @@ FindModuleInfoForPlatform( const CModuleInfoEntry& moduleInfoEntry ,
 /*-------------------------------------------------------------------------*/
 
 bool
+MergeModuleMetaData( const CModuleMetaData& priorityA ,
+                     const CModuleMetaData& priorityB ,
+                     CModuleMetaData& target          )
+{GUCEF_TRACE;
+
+    MergeStringSet( target.authors, priorityA.authors, false );
+    MergeStringSet( target.authors, priorityB.authors, false );
+    MergeStringSet( target.maintainers, priorityA.maintainers, false );
+    MergeStringSet( target.maintainers, priorityB.maintainers, false );
+
+    target.descriptionDetails = priorityA.descriptionDetails.IsNULLOrEmpty() ? priorityB.descriptionDetails : priorityA.descriptionDetails;
+    target.descriptionHeadline = priorityA.descriptionHeadline.IsNULLOrEmpty() ? priorityB.descriptionHeadline : priorityA.descriptionHeadline;
+    target.license = priorityA.license.IsNULLOrEmpty() ? priorityB.license : priorityA.license;
+    target.lastEditBy = priorityA.lastEditBy.IsNULLOrEmpty() ? priorityB.lastEditBy : priorityA.lastEditBy;
+    target.semver = priorityA.semver.IsAllZero() ? priorityB.semver : priorityA.semver;
+
+    return true;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+MergeModuleMetaData( const CModuleInfoEntry& moduleInfoEntry ,
+                     const CORE::CString& targetPlatform     ,
+                     TModuleInfo& mergedModuleInfo           )
+{GUCEF_TRACE;
+
+    const TModuleInfo* allPlatformsInfo = FindModuleInfoForPlatform( moduleInfoEntry, AllPlatforms );
+    const TModuleInfo* targetPlatformInfo = FindModuleInfoForPlatform( moduleInfoEntry, targetPlatform );
+
+    // an all-platforms module level meta-data overrules overarching meta-data
+    if ( GUCEF_NULL != allPlatformsInfo )
+        MergeModuleMetaData( allPlatformsInfo->metadata, moduleInfoEntry.metadata, mergedModuleInfo.metadata );
+    
+    // a platform specific module level meta-data overrules all-platforms meta-data
+    if ( GUCEF_NULL != targetPlatformInfo )
+        MergeModuleMetaData( targetPlatformInfo->metadata, mergedModuleInfo.metadata, mergedModuleInfo.metadata );
+        
+    return true;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
 MergeModuleInfo( const CModuleInfoEntry& moduleInfoEntry ,
                  const CORE::CString& targetPlatform     ,
                  TModuleInfo& mergedModuleInfo           )
@@ -1702,6 +1745,7 @@ MergeModuleInfo( const CModuleInfoEntry& moduleInfoEntry ,
                     // Now merge in the platform specific info
                     MergeModuleInfo( mergedModuleInfo, *targetPlatformInfo );
 
+                    MergeModuleMetaData( moduleInfoEntry, targetPlatform, mergedModuleInfo );
                     return true;
                 }
             }
@@ -1715,6 +1759,8 @@ MergeModuleInfo( const CModuleInfoEntry& moduleInfoEntry ,
         {
             // We only have the 'all' platform which is fine, we will just use that
             mergedModuleInfo = *allPlatformsInfo;
+            
+            MergeModuleMetaData( moduleInfoEntry, targetPlatform, mergedModuleInfo );
             return true;
         }
         else
@@ -1723,6 +1769,8 @@ MergeModuleInfo( const CModuleInfoEntry& moduleInfoEntry ,
             // We only have the target platform which is fine, we will just use that
             // this module aparently is not available for all platforms even in altered form
             mergedModuleInfo = *targetPlatformInfo;
+            
+            MergeModuleMetaData( moduleInfoEntry, targetPlatform, mergedModuleInfo );
             return true;
         }
     }

@@ -165,43 +165,6 @@ typedef struct SPreprocessorSettings TPreprocessorSettings;
 
 /*---------------------------------------------------------------------------*/
 
-struct SModuleInfo
-{
-    CORE::CString name;                          // the name of the module
-    TModuleType moduleType;                      // The type of module we are dealing with
-    TStringSet tags;                             // optional tags that can be associated which allows filtering of modules
-    
-    TStringSet dependencies;                     // list of module names of all modules this module depends on
-    TStringSet dependencyIncludeDirs;            // include directories needed for the headers of the dependencies, paths only no files
-    TStringSet runtimeDependencies;              // dependencies not relative for builds but desired to be easily accessable due to runtime dependency, typically plugins
-       
-    TStringSetMap includeDirs;                   // include directories of this module's own headers
-    TStringSetMap sourceDirs;                    // source directories of this module's own source
-
-    int buildOrder;                              // order number of this module in the build dependency chain
-    int buildChain;                              // index of the build chain, different build chains can be build independently but may depend on other chains
-    TInt32Set buildChainDependencies;            // other build chains this build chain is dependent on, if any
-    bool considerSubDirs;                        // Whether only the dir with the ModuleInfo is to be considered or whether subdirs are recursively considered
-
-    TLinkerSettings linkerSettings;              // all linker related settings for this module
-    TCompilerSettings compilerSettings;          // all compiler related settings for this module
-    TPreprocessorSettings preprocessorSettings;  // all preprocessor related settings for this module
-
-    bool ignoreModule;                           // whether this module should be included in the build
-    CORE::CVersion semver;                       // SemVer at the ModuleInfo level allowing for inheritance/overrides
-};
-typedef struct SModuleInfo TModuleInfo;
-
-/*---------------------------------------------------------------------------*/
-
-typedef std::vector< TModuleInfo > TModuleInfoVector;
-typedef std::map< CORE::CString, TModuleInfoVector > TModuleInfoVectorMap;
-typedef std::map< CORE::CString, TModuleInfo > TModuleInfoMap;
-typedef std::vector< TModuleInfo* > TModuleInfoPtrVector;
-typedef std::map< CORE::CString, const TModuleInfo* > TConstModuleInfoPtrMap;
-
-/*---------------------------------------------------------------------------*/
-
 class GUCEF_PROJECTGEN_PUBLIC_CPP CModuleMetaData : public CORE::CIDataNodeSerializable
 {
     public:
@@ -245,6 +208,43 @@ class GUCEF_PROJECTGEN_PUBLIC_CPP CModuleMetaData : public CORE::CIDataNodeSeria
 
     virtual const CORE::CString& GetClassTypeName( void ) const GUCEF_VIRTUAL_OVERRIDE;
 };
+
+/*---------------------------------------------------------------------------*/
+
+struct SModuleInfo
+{
+    CORE::CString name;                          // the name of the module
+    TModuleType moduleType;                      // The type of module we are dealing with
+    TStringSet tags;                             // optional tags that can be associated which allows filtering of modules
+    
+    TStringSet dependencies;                     // list of module names of all modules this module depends on
+    TStringSet dependencyIncludeDirs;            // include directories needed for the headers of the dependencies, paths only no files
+    TStringSet runtimeDependencies;              // dependencies not relative for builds but desired to be easily accessable due to runtime dependency, typically plugins
+       
+    TStringSetMap includeDirs;                   // include directories of this module's own headers
+    TStringSetMap sourceDirs;                    // source directories of this module's own source
+
+    int buildOrder;                              // order number of this module in the build dependency chain
+    int buildChain;                              // index of the build chain, different build chains can be build independently but may depend on other chains
+    TInt32Set buildChainDependencies;            // other build chains this build chain is dependent on, if any
+    bool considerSubDirs;                        // Whether only the dir with the ModuleInfo is to be considered or whether subdirs are recursively considered
+
+    TLinkerSettings linkerSettings;              // all linker related settings for this module
+    TCompilerSettings compilerSettings;          // all compiler related settings for this module
+    TPreprocessorSettings preprocessorSettings;  // all preprocessor related settings for this module
+
+    bool ignoreModule;                           // whether this module should be included in the build
+    CModuleMetaData metadata;                    // module metadata
+};
+typedef struct SModuleInfo TModuleInfo;
+
+/*---------------------------------------------------------------------------*/
+
+typedef std::vector< TModuleInfo > TModuleInfoVector;
+typedef std::map< CORE::CString, TModuleInfoVector > TModuleInfoVectorMap;
+typedef std::map< CORE::CString, TModuleInfo > TModuleInfoMap;
+typedef std::vector< TModuleInfo* > TModuleInfoPtrVector;
+typedef std::map< CORE::CString, const TModuleInfo* > TConstModuleInfoPtrMap;
 
 /*---------------------------------------------------------------------------*/
 

@@ -360,12 +360,12 @@ CreateArduinoCLILibraryPropertiesFiles( const TModuleInfoEntryPairVector& mergeL
                     GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Generating library.properties for module \"" + mergedModule->name + "\" at: " + libPropsPath );
 
                     CORE::CString content = "name=" + mergedModule->name + "\n";
-                                 content += "version=" + mergedModule->semver.ToString( true, true, false ) + "\n";
-                                 content += "author=" + CORE::StringSetToString( originalModule->metadata.authors, CORE::CString::Empty, ',' ) + "\n";
-                                 content += "maintainer=" + CORE::StringSetToString( originalModule->metadata.maintainers, CORE::CString::Empty, ',' ) + "\n";
-                                 content += "sentence=" + originalModule->metadata.descriptionHeadline + "\n";
-                                 content += "paragraph=" + originalModule->metadata.descriptionDetails + "\n";
-                                 content += "license=" + originalModule->metadata.license + "\n";
+                                 content += "version=" + mergedModule->metadata.semver.ToString( true, true, false ) + "\n";
+                                 content += "author=" + CORE::StringSetToString( mergedModule->metadata.authors, CORE::CString::Empty, ',' ) + "\n";
+                                 content += "maintainer=" + CORE::StringSetToString( mergedModule->metadata.maintainers, CORE::CString::Empty, ',' ) + "\n";
+                                 content += "sentence=" + mergedModule->metadata.descriptionHeadline + "\n";
+                                 content += "paragraph=" + mergedModule->metadata.descriptionDetails + "\n";
+                                 content += "license=" + mergedModule->metadata.license + "\n";
 
                     //architectures=avr,megaavr  ?
                     //includes=src/common/include/gucef.h   ?
