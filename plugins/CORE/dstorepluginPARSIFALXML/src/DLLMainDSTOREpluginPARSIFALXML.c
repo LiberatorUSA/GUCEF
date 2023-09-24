@@ -80,6 +80,8 @@ struct SDestFileData
 
     char* buffer;
     UInt32 bufferSize;
+
+    Int32 currentNodeType;
 };
 
 typedef struct SDestFileData TDestFileData;
@@ -477,29 +479,35 @@ DSTOREPLUG_Dest_File_Open( void** plugdata    ,
                            void** filedata    ,
                            TIOAccess* outFile ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
 {
-        *filedata = NULL;
-        if ( outFile != NULL )
-        {
-                char outBuffer[ 275 ];
-                TDestFileData* fd = (TDestFileData*) malloc( sizeof( TDestFileData ) );
-                fd->fptr = outFile;
-                fd->indent = 0;
-                fd->line = NULL;
-                fd->linelen = 0;
-                fd->buffer = NULL;
-                fd->bufferSize = 0;
-                *filedata = fd;
+    if ( GUCEF_NULL == filedata )
+        return 0;    
+    *filedata = GUCEF_NULL;
 
-                /* start with a buffer large enough to hold 64 bit numbers when printed */
-                GuaranteeMinBufferSize( &fd->line, &fd->linelen, 21 );
+    if ( outFile != GUCEF_NULL )
+    {
+        char outBuffer[ 275 ];
+        TDestFileData* fd = (TDestFileData*) malloc( sizeof( TDestFileData ) );
+        if ( GUCEF_NULL == fd )
+            return 0;
+        fd->fptr = outFile;
+        fd->indent = 0;
+        fd->line = GUCEF_NULL;
+        fd->linelen = 0;
+        fd->buffer = GUCEF_NULL;
+        fd->bufferSize = 0;
+        fd->currentNodeType = GUCEF_DATATYPE_UNKNOWN;
+        *filedata = fd;
+
+        /* start with a buffer large enough to hold 64 bit numbers when printed */
+        GuaranteeMinBufferSize( &fd->line, &fd->linelen, 21 );
                 
-                sprintf( outBuffer, "<?xml version=\"1.0\" encoding=\"ISO-8859-1\" ?>\r\n" );
-                outFile->write( outFile, outBuffer, (UInt32)strlen( outBuffer ), 1 );
-                sprintf( outBuffer, "<!-- Generated using dstorepluginXMLPARSIFAL (v%d.%d.%d.%d) for the GUCEF platform - Copyright (C) Dinand Vanvelzen. LPGLv3 -->\r\n", VERSION_MAJOR_FIELD, VERSION_MINOR_FIELD, VERSION_PATCH_FIELD, VERSION_RELEASE_FIELD );
-                outFile->write( outFile, outBuffer, (UInt32)strlen( outBuffer ), 1 );
-                return 1;
-        }
-        return 0;
+        sprintf( outBuffer, "<?xml version=\"1.0\" encoding=\"ISO-8859-1\" ?>\r\n" );
+        outFile->write( outFile, outBuffer, (UInt32)strlen( outBuffer ), 1 );
+        sprintf( outBuffer, "<!-- Generated using dstorepluginXMLPARSIFAL (v%d.%d.%d.%d) for the GUCEF platform - Copyright (C) Dinand Vanvelzen. LPGLv3 -->\r\n", VERSION_MAJOR_FIELD, VERSION_MINOR_FIELD, VERSION_PATCH_FIELD, VERSION_RELEASE_FIELD );
+        outFile->write( outFile, outBuffer, (UInt32)strlen( outBuffer ), 1 );
+        return 1;
+    }
+    return 0;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -531,6 +539,114 @@ DSTOREPLUG_Dest_File_Close( void** plugdata ,
 
 /*---------------------------------------------------------------------------*/
 
+const char* 
+NodeNameFromType( Int32 type )
+{
+    switch ( type )
+    {
+        case GUCEF_DATATYPE_UINT8:
+            return GUCEF_DATATYPE_NAME_UINT8;
+        case GUCEF_DATATYPE_INT8:
+            return GUCEF_DATATYPE_NAME_INT8;
+        case GUCEF_DATATYPE_LE_UINT16:
+            return GUCEF_DATATYPE_NAME_LE_UINT16;
+        case GUCEF_DATATYPE_BE_UINT16:
+            return GUCEF_DATATYPE_NAME_BE_UINT16;
+        case GUCEF_DATATYPE_LE_INT16:
+            return GUCEF_DATATYPE_NAME_LE_INT16;
+        case GUCEF_DATATYPE_BE_INT16:
+            return GUCEF_DATATYPE_NAME_BE_INT16;
+        case GUCEF_DATATYPE_LE_UINT32:
+            return GUCEF_DATATYPE_NAME_LE_UINT32;
+        case GUCEF_DATATYPE_BE_UINT32:
+            return GUCEF_DATATYPE_NAME_BE_UINT32;
+        case GUCEF_DATATYPE_LE_INT32:
+            return GUCEF_DATATYPE_NAME_LE_INT32;
+        case GUCEF_DATATYPE_BE_INT32:
+            return GUCEF_DATATYPE_NAME_BE_INT32;
+        case GUCEF_DATATYPE_LE_UINT64:
+            return GUCEF_DATATYPE_NAME_LE_UINT64;
+        case GUCEF_DATATYPE_BE_UINT64:
+            return GUCEF_DATATYPE_NAME_BE_UINT64;
+        case GUCEF_DATATYPE_LE_INT64:
+            return GUCEF_DATATYPE_NAME_LE_INT64;
+        case GUCEF_DATATYPE_BE_INT64:
+            return GUCEF_DATATYPE_NAME_BE_INT64;
+        case GUCEF_DATATYPE_LE_FLOAT32:
+            return GUCEF_DATATYPE_NAME_LE_FLOAT32;
+        case GUCEF_DATATYPE_BE_FLOAT32:
+            return GUCEF_DATATYPE_NAME_BE_FLOAT32;
+        case GUCEF_DATATYPE_LE_FLOAT64:
+            return GUCEF_DATATYPE_NAME_LE_FLOAT64;
+        case GUCEF_DATATYPE_BE_FLOAT64:
+            return GUCEF_DATATYPE_NAME_BE_FLOAT64;
+
+        case GUCEF_DATATYPE_NUMERIC:
+            return GUCEF_DATATYPE_NAME_NUMERIC; 
+        case GUCEF_DATATYPE_ASCII_STRING:
+            return GUCEF_DATATYPE_NAME_ASCII_STRING;
+        case GUCEF_DATATYPE_UTF8_STRING:
+            return GUCEF_DATATYPE_NAME_UTF8_STRING;
+        case GUCEF_DATATYPE_UTF16_LE_STRING:
+            return GUCEF_DATATYPE_NAME_UTF16_LE_STRING;
+        case GUCEF_DATATYPE_UTF16_BE_STRING:
+            return GUCEF_DATATYPE_NAME_UTF16_BE_STRING;
+        case GUCEF_DATATYPE_UTF32_LE_STRING:
+            return GUCEF_DATATYPE_NAME_UTF32_LE_STRING;
+        case GUCEF_DATATYPE_UTF32_BE_STRING:
+            return GUCEF_DATATYPE_NAME_UTF32_BE_STRING;
+
+        case GUCEF_DATATYPE_BOOLEAN_INT32:
+            return GUCEF_DATATYPE_NAME_BOOLEAN_INT32;
+        case GUCEF_DATATYPE_BOOLEAN_ASCII_STRING:
+            return GUCEF_DATATYPE_NAME_BOOLEAN_ASCII_STRING;
+        case GUCEF_DATATYPE_BOOLEAN_UTF8_STRING:
+            return GUCEF_DATATYPE_NAME_BOOLEAN_UTF8_STRING;
+        case GUCEF_DATATYPE_BOOLEAN_UTF16_LE_STRING:
+            return GUCEF_DATATYPE_NAME_BOOLEAN_UTF16_LE_STRING;
+        case GUCEF_DATATYPE_BOOLEAN_UTF16_BE_STRING:
+            return GUCEF_DATATYPE_NAME_BOOLEAN_UTF16_BE_STRING;
+        case GUCEF_DATATYPE_BOOLEAN_UTF32_LE_STRING:
+            return GUCEF_DATATYPE_NAME_BOOLEAN_UTF32_LE_STRING;
+        case GUCEF_DATATYPE_BOOLEAN_UTF32_BE_STRING:
+            return GUCEF_DATATYPE_NAME_BOOLEAN_UTF32_BE_STRING;
+
+        case GUCEF_DATATYPE_BINARY_BLOB:
+            return GUCEF_DATATYPE_NAME_BINARY_BLOB;
+        case GUCEF_DATATYPE_BINARY_BSOB:
+            return GUCEF_DATATYPE_NAME_BINARY_BSOB;
+
+        case GUCEF_DATATYPE_DATETIME_ISO8601_ASCII_STRING:
+            return GUCEF_DATATYPE_NAME_DATETIME_ISO8601_ASCII_STRING;
+        case GUCEF_DATATYPE_DATETIME_ISO8601_UTF8_STRING:
+            return GUCEF_DATATYPE_NAME_DATETIME_ISO8601_UTF8_STRING;
+
+        case GUCEF_DATATYPE_LE_TIMESTAMP_IN_SECS_SINCE_UNIX_EPOCH:
+            return GUCEF_DATATYPE_NAME_LE_TIMESTAMP_IN_SECS_SINCE_UNIX_EPOCH;
+        case GUCEF_DATATYPE_BE_TIMESTAMP_IN_SECS_SINCE_UNIX_EPOCH:
+            return GUCEF_DATATYPE_NAME_BE_TIMESTAMP_IN_SECS_SINCE_UNIX_EPOCH;
+        case GUCEF_DATATYPE_LE_TIMESTAMP_IN_MS_SINCE_UNIX_EPOCH:
+            return GUCEF_DATATYPE_NAME_LE_TIMESTAMP_IN_MS_SINCE_UNIX_EPOCH;
+        case GUCEF_DATATYPE_BE_TIMESTAMP_IN_MS_SINCE_UNIX_EPOCH:
+            return GUCEF_DATATYPE_NAME_BE_TIMESTAMP_IN_MS_SINCE_UNIX_EPOCH;
+
+        case GUCEF_DATATYPE_NIL: 
+            return GUCEF_DATATYPE_NAME_NIL;
+        case GUCEF_DATATYPE_NULL: 
+            return GUCEF_DATATYPE_NAME_NULL;
+        case GUCEF_DATATYPE_SET: 
+            return GUCEF_DATATYPE_NAME_SET;
+        case GUCEF_DATATYPE_ARRAY: 
+            return GUCEF_DATATYPE_NAME_ARRAY;
+
+        case GUCEF_DATATYPE_OBJECT:
+        default:
+            return "noname";
+    }
+}
+
+/*---------------------------------------------------------------------------*/
+
 void GUCEF_PLUGIN_CALLSPEC_PREFIX
 DSTOREPLUG_Begin_Node_Store( void** plugdata      ,
                              void** filedata      ,
@@ -541,17 +657,21 @@ DSTOREPLUG_Begin_Node_Store( void** plugdata      ,
 {
     TDestFileData* fd = (TDestFileData*)*filedata;
     UInt32 max, len, strLen=0;
-    char* escNodeName = NULL;
+    char* escNodeName = GUCEF_NULL;
 
-    if ( !fd ) return;
+    if ( GUCEF_NULL == fd ) 
+        return;
+    fd->currentNodeType = nodeType;
 
-    if ( !nodename )
-    {
-        nodename = "noname";
-    }
+    if ( GUCEF_NULL == nodename )
+        nodename = NodeNameFromType( fd->currentNodeType );         
+    if ( *nodename == '\0' )
+        nodename = NodeNameFromType( fd->currentNodeType );
 
     HandleEscapeCharacters( nodename, &fd->buffer, &fd->bufferSize, &strLen );
     escNodeName = (char*) malloc( strLen+1 );
+    if ( GUCEF_NULL == escNodeName )
+        return;
     memcpy( escNodeName, fd->buffer, strLen+1 );
 
     len = (UInt32)strlen( escNodeName );
@@ -589,18 +709,24 @@ DSTOREPLUG_End_Node_Store( void** plugdata      ,
                            UInt32 attscount     ,
                            UInt32 haschildren   ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
 {
-    if ( !nodename )
-    {
-        nodename = "noname";
-    }
+    TDestFileData* fd = (TDestFileData*) *filedata;
+
+    if ( GUCEF_NULL == fd ) 
+        return;
+    if ( GUCEF_NULL == nodename )
+        nodename = NodeNameFromType( fd->currentNodeType );         
+    if ( *nodename == '\0' )
+        nodename = NodeNameFromType( fd->currentNodeType );
+
     if ( haschildren )
-    {
-        TDestFileData* fd = (TDestFileData*)*filedata;
+    {        
         UInt32 strLen = 0;
         char* escNodeName = NULL;
 
         HandleEscapeCharacters( nodename, &fd->buffer, &fd->bufferSize, &strLen );
         escNodeName = (char*) malloc( strLen+1 );
+        if ( GUCEF_NULL == escNodeName )
+            return;
         memcpy( escNodeName, fd->buffer, strLen+1 );
 
         memset( fd->line, INDENT_CHAR, fd->indent );
@@ -630,6 +756,13 @@ DSTOREPLUG_Store_Node_Att( void** plugdata              ,
     char* escAttName = GUCEF_NULL;
     char* escAttValue = GUCEF_NULL;
 
+    if ( GUCEF_NULL == fd ) 
+        return;
+    if ( GUCEF_NULL == nodename )
+        nodename = NodeNameFromType( fd->currentNodeType );         
+    if ( *nodename == '\0' )
+        nodename = NodeNameFromType( fd->currentNodeType );
+
     if ( 0 == attscount ) 
         return;
 
@@ -639,26 +772,28 @@ DSTOREPLUG_Store_Node_Att( void** plugdata              ,
         memset( &dummy, 0, sizeof dummy );
         attvalue = &dummy;
     }
-    if ( GUCEF_NULL == nodename )
-    {
-        nodename = "noname";
-    }
 
     HandleEscapeCharactersInVariant( attvalue, &fd->buffer, &fd->bufferSize, &strLen );
     escAttValue = (char*) malloc( strLen+1 );
+    if ( GUCEF_NULL == escAttValue )
+        return;
     memcpy( escAttValue, fd->buffer, strLen+1 );
 
     if ( GUCEF_NULL != attname )
     {
         HandleEscapeCharacters( attname, &fd->buffer, &fd->bufferSize, &strLen );
         escAttName = (char*) malloc( strLen+1 );
+        if ( GUCEF_NULL == escAttName )
+        {
+            free( escAttValue );
+            return;
+        }
         memcpy( escAttName, fd->buffer, strLen+1 );
 
         len = (UInt32)strlen( escAttName )+(UInt32)strlen( escAttValue )+2;
         if ( fd->linelen < linelen+10+len )
         {
-            fd->line = realloc( fd->line, linelen+11+len );
-            fd->linelen = linelen+11+len;
+            GuaranteeMinBufferSize( &fd->line, &fd->linelen, linelen+11+len ); 
         }
         if ( attindex+1 < attscount )
         {
@@ -683,8 +818,7 @@ DSTOREPLUG_Store_Node_Att( void** plugdata              ,
         len = (UInt32)strlen( escAttValue )+(UInt32)strlen( nodename );
         if ( fd->linelen < linelen+10+len )
         {
-            fd->line = realloc( fd->line, linelen+11+len );
-            fd->linelen = linelen+11+len;
+            GuaranteeMinBufferSize( &fd->line, &fd->linelen, linelen+11+len );
         }
         sprintf( fd->line+linelen-1, ">%s</%s>\r\n", escAttValue, nodename );
         fd->fptr->write( fd->fptr, fd->line, (UInt32)strlen( fd->line ), 1 );
@@ -700,8 +834,8 @@ DSTOREPLUG_Begin_Node_Children( void** plugdata      ,
                                 void** filedata      ,
                                 const char* nodename ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
 {
-        TDestFileData* fd = (TDestFileData*)*filedata;
-        fd->indent += NODE_STORE_INDENT;
+    TDestFileData* fd = (TDestFileData*)*filedata;
+    fd->indent += NODE_STORE_INDENT;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -711,8 +845,8 @@ DSTOREPLUG_End_Node_Children( void** plugdata      ,
                               void** filedata      ,
                               const char* nodename ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
 {
-        TDestFileData* fd = (TDestFileData*)*filedata;
-        fd->indent -= NODE_STORE_INDENT;
+    TDestFileData* fd = (TDestFileData*)*filedata;
+    fd->indent -= NODE_STORE_INDENT;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -726,6 +860,8 @@ DSTOREPLUG_Src_File_Open( void** plugdata      ,
     *plugdata = NULL;
 
     sd = (TSrcFileData*) malloc( sizeof(TSrcFileData) );
+    if ( GUCEF_NULL == sd )
+        return 0;
     sd->access = file;
 
     if ( XMLParser_Create( &sd->parser ) )
@@ -805,7 +941,7 @@ DSTOREPLUG_Start_Reading( void** plugdata ,
 const char* GUCEF_PLUGIN_CALLSPEC_PREFIX
 DSTOREPLUG_Type( const void* plugdata ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
 {
-        return "xml";
+    return "xml";
 }
 
 /*---------------------------------------------------------------------------*/
@@ -813,8 +949,8 @@ DSTOREPLUG_Type( const void* plugdata ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
 const char* GUCEF_PLUGIN_CALLSPEC_PREFIX
 DSTOREPLUG_Name( const void* plugdata ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
 {
-        static char buffer[ 128 ];
-        sprintf( buffer, "gucefCORE DSTORE codec plugin utilizing the Parsifal XML parser %s", XMLParser_GetVersionString() );
+        static char buffer[ 164 ];
+        sprintf( buffer, "gucefCORE DSTORE codec plugin with XML writing code and utilizing the Parsifal XML parser %s for reading", XMLParser_GetVersionString() );
         return buffer;
 }
 
