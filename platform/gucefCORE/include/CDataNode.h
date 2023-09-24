@@ -490,10 +490,10 @@ class GUCEF_CORE_PUBLIC_CPP CDataNode : public CIEnumerable
     CDataNode* AddValueAsChild( const char* nodeValue, int valueType = GUCEF_DATATYPE_STRING );
 
     template < class ChildValueTypeCollection >
-    bool AddAllValuesAsChildren( const ChildValueTypeCollection& collection );
+    bool AddAllValuesAsChildren( const ChildValueTypeCollection& collection, const CString& childNodeName = CString::Empty );
 
     template < class ChildValueTypeCollection >
-    bool AddAllValuesAsChildrenOfChild( const CString& nodeName, const ChildValueTypeCollection& collection, int nodeType = GUCEF_DATATYPE_ARRAY );
+    bool AddAllValuesAsChildrenOfChild( const CString& nodeName, const ChildValueTypeCollection& collection, int nodeType = GUCEF_DATATYPE_ARRAY, const CString& childNodeName = CString::Empty );
 
     bool DelChild( const CString& name );
 
@@ -724,7 +724,8 @@ class GUCEF_CORE_PUBLIC_CPP CDataNode : public CIEnumerable
 
 template < class ChildValueTypeCollection >
 bool
-CDataNode::AddAllValuesAsChildren( const ChildValueTypeCollection& collection )
+CDataNode::AddAllValuesAsChildren( const ChildValueTypeCollection& collection ,
+                                   const CString& childNodeName               )
 {GUCEF_TRACE;
 
     bool totalSuccess = true;
@@ -734,6 +735,8 @@ CDataNode::AddAllValuesAsChildren( const ChildValueTypeCollection& collection )
         CDataNode* newValueChild = AddValueAsChild( (*i) );
         if ( GUCEF_NULL == newValueChild )
             totalSuccess = false;
+        if ( !childNodeName.IsNULLOrEmpty() )
+            newValueChild->SetName( childNodeName );
         ++i;
     }
     return totalSuccess;
@@ -745,13 +748,14 @@ template < class ChildValueTypeCollection >
 bool
 CDataNode::AddAllValuesAsChildrenOfChild( const CString& nodeName                    ,
                                           const ChildValueTypeCollection& collection ,
-                                          int nodeType                               )
+                                          int nodeType                               ,
+                                          const CString& childNodeName               )
 {GUCEF_TRACE;
 
     CDataNode* collectionNode = AddChild( nodeName, nodeType );
     if ( GUCEF_NULL != collectionNode )
     {
-        return collectionNode->AddAllValuesAsChildren< ChildValueTypeCollection >( collection );
+        return collectionNode->AddAllValuesAsChildren< ChildValueTypeCollection >( collection, childNodeName );
     }
     return false;
 }

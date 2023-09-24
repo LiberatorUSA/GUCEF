@@ -3625,8 +3625,8 @@ CModuleMetaData::Serialize( CORE::CDataNode& domRootNode                        
         domRootNode.AddChildWithValue( "SemVer", semver.ToString(), GUCEF_DATATYPE_STRING );
     }
 
-    domRootNode.AddAllValuesAsChildrenOfChild< CORE::CString::StringSet >( "Authors", authors, GUCEF_DATATYPE_ARRAY );
-    domRootNode.AddAllValuesAsChildrenOfChild< CORE::CString::StringSet >( "Maintainers", maintainers, GUCEF_DATATYPE_ARRAY );
+    domRootNode.AddAllValuesAsChildrenOfChild< CORE::CString::StringSet >( "Authors", authors, GUCEF_DATATYPE_ARRAY, "Author" );
+    domRootNode.AddAllValuesAsChildrenOfChild< CORE::CString::StringSet >( "Maintainers", maintainers, GUCEF_DATATYPE_ARRAY, "Maintainer" );
 
     return true;
 }
