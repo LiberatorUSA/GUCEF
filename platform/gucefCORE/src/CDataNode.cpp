@@ -1636,7 +1636,7 @@ CDataNode::AddChildWithValue( const CString& nodeName   ,
                               int nodeType              )
 {GUCEF_TRACE;
 
-    CDataNode newNode( nodeName, nodeType );
+    CDataNode newNode( nodeName, nodeType == GUCEF_DATATYPE_UNKNOWN ? nodeValue.GetTypeId() : nodeType );
     newNode.SetValue( nodeValue );
     return AddChild( newNode );
 }
@@ -1649,7 +1649,7 @@ CDataNode::AddChildWithValue( const CString& nodeName       ,
                               int nodeType                  )
 {GUCEF_TRACE;
 
-    CDataNode newNode( nodeName, nodeType );
+    CDataNode newNode( nodeName, nodeType == GUCEF_DATATYPE_UNKNOWN ? nodeValue.containedType : nodeType );
     newNode.SetValue( nodeValue );
     return AddChild( newNode );
 }
@@ -1676,6 +1676,7 @@ CDataNode::AddValueAsChild( const TVariantData& nodeValue )
     newNode.SetValue( nodeValue );
     return AddChild( newNode );
 }
+
 /*-------------------------------------------------------------------------*/
 
 CDataNode*
@@ -1683,6 +1684,17 @@ CDataNode::AddValueAsChild( const CString& nodeValue )
 {GUCEF_TRACE;
 
     CDataNode newNode( CString::Empty, GUCEF_DATATYPE_STRING );
+    newNode.SetValue( nodeValue );
+    return AddChild( newNode );
+}
+
+/*-------------------------------------------------------------------------*/
+
+CDataNode*
+CDataNode::AddValueAsChild( const char* nodeValue, int valueType )
+{GUCEF_TRACE;
+
+    CDataNode newNode( CString::Empty, valueType );
     newNode.SetValue( nodeValue );
     return AddChild( newNode );
 }
@@ -1826,7 +1838,6 @@ CDataNode::GetValuesOfChildByName( const CString& name                  ,
         {
             switch ( (*i)->GetNodeType() )
             {
-                case GUCEF_DATATYPE_OBJECT:
                 case GUCEF_DATATYPE_ARRAY:
                 {
                     // Complex types cannot be obtained this way, skip

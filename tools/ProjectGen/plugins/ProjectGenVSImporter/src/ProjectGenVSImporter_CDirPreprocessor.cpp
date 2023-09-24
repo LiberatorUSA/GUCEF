@@ -306,8 +306,7 @@ CDirPreprocessor::ProccessProjectFiles( const CORE::CString& path             ,
 
         GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Loaded project file from: " + projectFilePath );
         
-        PROJECTGEN::TModuleInfoEntry moduleEntry;
-        InitializeModuleInfoEntry( moduleEntry );
+        PROJECTGEN::CModuleInfoEntry moduleEntry;
         moduleEntry.rootDir = path;
 
         PROJECTGEN::TModuleInfo& moduleInfo = moduleEntry.modulesPerPlatform[ "all" ];
@@ -556,7 +555,7 @@ CDirPreprocessor::ProccessProjectFiles( const CORE::CString& path             ,
 
         CORE::CString moduleInfoFilePath = CORE::CombinePath( path, "ModuleInfo.xml" );
 
-        moduleEntry.lastEditBy = "ProjectGenVSImporter";
+        moduleEntry.metadata.lastEditBy = "ProjectGenVSImporter";
         PROJECTGEN::SerializeModuleInfo( moduleEntry, moduleInfoFilePath );
 
         ++i;

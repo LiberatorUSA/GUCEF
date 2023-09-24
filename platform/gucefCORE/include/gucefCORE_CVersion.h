@@ -82,6 +82,8 @@ class GUCEF_CORE_PUBLIC_CPP CVersion
 
     virtual ~CVersion();
 
+    void Clear( void );
+
     bool operator<( const CVersion& other ) const;
     bool operator>( const CVersion& other ) const;
     bool operator==( const CVersion& other ) const;

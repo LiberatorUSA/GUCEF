@@ -240,7 +240,7 @@ LoadPremake5FileAdditionTemplates( const CORE::CString& templateDir )
 /*---------------------------------------------------------------------------*/
 
 CORE::CString
-GeneratePremake5TemplatedAdditionSection( const TModuleInfoEntry& moduleInfoEntry ,
+GeneratePremake5TemplatedAdditionSection( const CModuleInfoEntry& moduleInfoEntry ,
                                           const CORE::CString& platformName       )
 {GUCEF_TRACE;
 
@@ -275,7 +275,7 @@ GeneratePremake5TemplatedAdditionSection( const TModuleInfoEntry& moduleInfoEntr
 /*---------------------------------------------------------------------------*/
 
 CORE::CString
-GeneratePremake5TemplatedAdditionSection( const TModuleInfoEntry& moduleInfoEntry )
+GeneratePremake5TemplatedAdditionSection( const CModuleInfoEntry& moduleInfoEntry )
 
 {GUCEF_TRACE;
 
@@ -386,7 +386,7 @@ GeneratePremake5FileSection( const CORE::CString& sectionContent ,
 /*---------------------------------------------------------------------------*/
 
 CORE::CString
-GeneratePremake5FileIncludeSection( const TModuleInfoEntry& moduleInfoEntry  ,
+GeneratePremake5FileIncludeSection( const CModuleInfoEntry& moduleInfoEntry  ,
                                     const CORE::CString& consensusModuleName )
 {GUCEF_TRACE;
 
@@ -415,7 +415,7 @@ GeneratePremake5FileIncludeSection( const TModuleInfoEntry& moduleInfoEntry  ,
 /*---------------------------------------------------------------------------*/
 
 CORE::CString
-GeneratePremake5FileSrcSection( const TModuleInfoEntry& moduleInfoEntry  ,
+GeneratePremake5FileSrcSection( const CModuleInfoEntry& moduleInfoEntry  ,
                                 const CORE::CString& consensusModuleName )
 {GUCEF_TRACE;
 
@@ -443,7 +443,7 @@ GeneratePremake5FileSrcSection( const TModuleInfoEntry& moduleInfoEntry  ,
 /*---------------------------------------------------------------------------*/
 
 void
-GeneratePremake5FilePlatformFilesSection( const TModuleInfoEntry& moduleInfoEntry ,
+GeneratePremake5FilePlatformFilesSection( const CModuleInfoEntry& moduleInfoEntry ,
                                           const CORE::CString& platformName       ,
                                           CORE::CString& headerSection            ,
                                           CORE::CString& sourceSection            ,
@@ -528,7 +528,7 @@ GeneratePremake5FilePlatformFilesSection( const TModuleInfoEntry& moduleInfoEntr
 /*---------------------------------------------------------------------------*/
 
 CORE::CString
-GeneratePremake5FilePlatformFilesSection( const TModuleInfoEntry& moduleInfoEntry )
+GeneratePremake5FilePlatformFilesSection( const CModuleInfoEntry& moduleInfoEntry )
 {GUCEF_TRACE;
 
     bool hasPlatformHeaderFiles = false;
@@ -638,7 +638,7 @@ GeneratePremake5ModuleIncludesSection( const TModuleInfo& moduleInfo ,
 /*---------------------------------------------------------------------------*/
 
 CORE::CString
-GeneratePremake5ModuleIncludesSection( const TModuleInfoEntry& moduleInfoEntry )
+GeneratePremake5ModuleIncludesSection( const CModuleInfoEntry& moduleInfoEntry )
 {GUCEF_TRACE;
 
     CORE::CString sectionContent;
@@ -759,7 +759,7 @@ GeneratePremake5ModuleDependenciesLine( const TProjectInfo& projectInfo   ,
         {
             // We add all dependencies except for header include locations which are not real modules
             // and Premake5 will not be using a make file for those.
-            const TModuleInfoEntry* dependencyModule = GetModuleInfoEntry( projectInfo, (*i), AllPlatforms );
+            const CModuleInfoEntry* dependencyModule = GetModuleInfoEntry( projectInfo, (*i), AllPlatforms );
             if ( NULL != dependencyModule )
             {
                 TModuleType moduleType = GetModuleType( *dependencyModule, AllPlatforms );
@@ -896,7 +896,7 @@ GeneratePremake5ModuleDefinesLine( const TModuleInfo& moduleInfo     ,
 /*---------------------------------------------------------------------------*/
 
 CORE::CString
-GeneratePremake5ModuleNameSection( const TModuleInfoEntry& moduleInfoEntry )
+GeneratePremake5ModuleNameSection( const CModuleInfoEntry& moduleInfoEntry )
 {GUCEF_TRACE;
 
     GUCEF_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "Generating Premake5 section which defines the module name depending on the platform flags" );
@@ -948,7 +948,7 @@ GeneratePremake5ModuleNameSection( const TModuleInfoEntry& moduleInfoEntry )
 /*---------------------------------------------------------------------------*/
 
 CORE::CString
-GeneratePremake5ModuleDescriptionSection( const TModuleInfoEntry& moduleInfoEntry  ,
+GeneratePremake5ModuleDescriptionSection( const CModuleInfoEntry& moduleInfoEntry  ,
                                           const CORE::CString& consensusModuleName )
 {GUCEF_TRACE;
 
@@ -1006,7 +1006,7 @@ GeneratePremake5ModuleDescriptionSection( const TModuleInfoEntry& moduleInfoEntr
 /*---------------------------------------------------------------------------*/
 
 CORE::CString
-GeneratePremake5ModuleLanguageSection( const TModuleInfoEntry& moduleInfoEntry ,
+GeneratePremake5ModuleLanguageSection( const CModuleInfoEntry& moduleInfoEntry ,
                                        const CORE::CString& consensusName      )
 {GUCEF_TRACE;
 
@@ -1095,7 +1095,7 @@ GeneratePremake5ModuleTargetNameLine( const TModuleInfo& moduleInfo     ,
 
 CORE::CString
 GeneratePremake5ModuleInfoSection( const TProjectInfo& projectInfo         ,
-                                   const TModuleInfoEntry& moduleInfoEntry ,
+                                   const CModuleInfoEntry& moduleInfoEntry ,
                                    const CORE::CString& premakeOutputDir   ,
                                    const CORE::CString&  premakeTargetDir  )
 {GUCEF_TRACE;
@@ -1228,7 +1228,7 @@ CORE::CString
 GeneratePremake5ModuleFileContent( const TProjectInfo& projectInfo         ,
                                    const CORE::CString& premakeOutputDir   ,
                                    const CORE::CString& premakeTargetDir   ,
-                                   const TModuleInfoEntry& moduleInfoEntry ,
+                                   const CModuleInfoEntry& moduleInfoEntry ,
                                    bool addCompileDate = false             )
 {GUCEF_TRACE;
 
@@ -1288,7 +1288,7 @@ WritePremake5ModuleFilesToDisk( const TProjectInfo& projectInfo       ,
     TModuleInfoEntryVector::const_iterator i = projectInfo.modules.begin();
     while ( i != projectInfo.modules.end() )
     {
-        const TModuleInfoEntry& moduleInfoEntry = (*i);
+        const CModuleInfoEntry& moduleInfoEntry = (*i);
         TModuleType allPlatformsType = GetModuleType( moduleInfoEntry, AllPlatforms );
         if ( ( MODULETYPE_HEADER_INCLUDE_LOCATION != allPlatformsType )    &&
              ( MODULETYPE_HEADER_INTEGRATE_LOCATION != allPlatformsType )  &&
@@ -1387,7 +1387,7 @@ GeneratePremake5ProjectFileContent( const TProjectInfo& projectInfo             
         TModuleInfoEntryConstPtrSet::const_iterator n = targetInfo.modules.begin();
         while ( n != targetInfo.modules.end() )
         {
-            const TModuleInfoEntry& moduleInfo = *(*n);
+            const CModuleInfoEntry& moduleInfo = *(*n);
             if ( HasIndependentModuleType( moduleInfo.modulesPerPlatform ) )
             {
                 CORE::CString pathToModuleDir = CORE::GetRelativePathToOtherPathRoot( outputDir, moduleInfo.rootDir );

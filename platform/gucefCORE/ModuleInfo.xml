@@ -1,5 +1,17 @@
 <ModuleInfoEntries>
 <ModuleInfoEntry>
+    <ModuleMetaData>
+        <License>APACHEv2</License>
+        <SemVer>0.1.0.0</SemVer>
+        <DescriptionHeadline>GUCEF module providing O/S abstraction and generic solutions</DescriptionHeadline>
+        <DescriptionDetails></DescriptionDetails>
+        <Authors>
+            <Author>Dinand Vanvelzen</Author>
+        </Authors>
+        <Maintainers>
+            <Maintainer>Dinand Vanvelzen</Maintainer>
+        </Maintainers>
+    </ModuleMetaData>
     <Module Name="gucefCORE" Type="SharedLibrary" Platform="All" Tags="platform">
         <Dependencies>
             <Dependency Name="gucefMT" />
@@ -31,6 +43,18 @@
     </Module>
 </ModuleInfoEntry>
 <ModuleInfoEntry>
+    <ModuleMetaData>
+        <License>APACHEv2</License>
+        <SemVer>0.1.0.0</SemVer>
+        <DescriptionHeadline>GUCEF module providing O/S abstraction and generic solutions</DescriptionHeadline>
+        <DescriptionDetails></DescriptionDetails>
+        <Authors>
+            <Author>Dinand Vanvelzen</Author>
+        </Authors>
+        <Maintainers>
+            <Maintainer>Dinand Vanvelzen</Maintainer>
+        </Maintainers>
+    </ModuleMetaData>
     <Module Name="gucefCORE_Integrated" Type="CodeIntegrateLocation" Platform="All" >
         <Dependencies>
             <Dependency Name="gucefMT" />

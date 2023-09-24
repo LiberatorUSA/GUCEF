@@ -56,6 +56,7 @@ const CString CDataNodeSerializableSettings::ClassTypeName = "GUCEF::CORE::CData
 CDataNodeSerializableSettings::CDataNodeSerializableSettings( void )
     : CIConfigurable()
     , levelOfDetail( DataNodeSerializableLod_MaximumDetails )
+    , m_userData( GUCEF_NULL )
 {GUCEF_TRACE;
 
 }
@@ -65,6 +66,7 @@ CDataNodeSerializableSettings::CDataNodeSerializableSettings( void )
 CDataNodeSerializableSettings::CDataNodeSerializableSettings( const CDataNodeSerializableSettings& src )
     : CIConfigurable( src )
     , levelOfDetail( src.levelOfDetail )
+    , m_userData( src.m_userData )
 {GUCEF_TRACE;
 
 }
@@ -74,6 +76,7 @@ CDataNodeSerializableSettings::CDataNodeSerializableSettings( const CDataNodeSer
 CDataNodeSerializableSettings::~CDataNodeSerializableSettings()
 {GUCEF_TRACE;
 
+    m_userData = GUCEF_NULL;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -82,8 +85,12 @@ CDataNodeSerializableSettings&
 CDataNodeSerializableSettings::operator=( const CDataNodeSerializableSettings& src )
 {GUCEF_TRACE;
 
-    CIConfigurable::operator=( src );
-    levelOfDetail = src.levelOfDetail;
+    if ( this != &src )
+    {
+        CIConfigurable::operator=( src );
+        levelOfDetail = src.levelOfDetail;
+        m_userData = src.m_userData;
+    }
     return *this;
 }
 
@@ -124,6 +131,24 @@ CDataNodeSerializableSettings::Clone( void ) const
 {GUCEF_TRACE;
 
     return GUCEF_NEW CDataNodeSerializableSettings( *this );
+}
+
+/*-------------------------------------------------------------------------*/
+
+void 
+CDataNodeSerializableSettings::SetUserData( void* userData )
+{GUCEF_TRACE;
+
+    m_userData = userData;
+}
+
+/*-------------------------------------------------------------------------*/
+
+void* 
+CDataNodeSerializableSettings::GetUserData( void ) const
+{GUCEF_TRACE;
+
+    return m_userData;
 }
 
 /*-------------------------------------------------------------------------//

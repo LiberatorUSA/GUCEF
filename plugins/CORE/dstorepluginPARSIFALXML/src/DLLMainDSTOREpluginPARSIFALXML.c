@@ -624,12 +624,13 @@ DSTOREPLUG_Store_Node_Att( void** plugdata              ,
                            UInt32 haschildren           ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
 {
     TDestFileData* fd = (TDestFileData*)*filedata;
-    UInt32 linelen, len;
+    UInt32 linelen = (UInt32)strlen( fd->line ); 
+    UInt32 len = 0;
     UInt32 strLen = 0;
-    char* escAttName = NULL;
-    char* escAttValue = NULL;
+    char* escAttName = GUCEF_NULL;
+    char* escAttValue = GUCEF_NULL;
 
-    if ( GUCEF_NULL == attname || 0 == attscount ) 
+    if ( 0 == attscount ) 
         return;
 
     if ( GUCEF_NULL == attvalue )
@@ -643,35 +644,52 @@ DSTOREPLUG_Store_Node_Att( void** plugdata              ,
         nodename = "noname";
     }
 
-    HandleEscapeCharacters( attname, &fd->buffer, &fd->bufferSize, &strLen );
-    escAttName = (char*) malloc( strLen+1 );
-    memcpy( escAttName, fd->buffer, strLen+1 );
     HandleEscapeCharactersInVariant( attvalue, &fd->buffer, &fd->bufferSize, &strLen );
     escAttValue = (char*) malloc( strLen+1 );
     memcpy( escAttValue, fd->buffer, strLen+1 );
 
-    linelen = (UInt32)strlen( fd->line );
-    len = (UInt32)strlen( escAttName )+(UInt32)strlen( escAttValue )+2;
-    if ( fd->linelen < linelen+10+len )
+    if ( GUCEF_NULL != attname )
     {
-        fd->line = realloc( fd->line, linelen+11+len );
-    }
-    if ( attindex+1 < attscount )
-    {
-        sprintf( fd->line+linelen, "%s=\"%s\" ", escAttName, escAttValue );
-        return;
-    }
-    if ( haschildren )
-    {
-        sprintf( fd->line+linelen, "%s=\"%s\" >\r\n", escAttName, escAttValue );
+        HandleEscapeCharacters( attname, &fd->buffer, &fd->bufferSize, &strLen );
+        escAttName = (char*) malloc( strLen+1 );
+        memcpy( escAttName, fd->buffer, strLen+1 );
+
+        len = (UInt32)strlen( escAttName )+(UInt32)strlen( escAttValue )+2;
+        if ( fd->linelen < linelen+10+len )
+        {
+            fd->line = realloc( fd->line, linelen+11+len );
+            fd->linelen = linelen+11+len;
+        }
+        if ( attindex+1 < attscount )
+        {
+            sprintf( fd->line+linelen, "%s=\"%s\" ", escAttName, escAttValue );
+            return;
+        }
+        if ( haschildren )
+        {
+            sprintf( fd->line+linelen, "%s=\"%s\" >\r\n", escAttName, escAttValue );
+        }
+        else
+        {
+            sprintf( fd->line+linelen, "%s=\"%s\" />\r\n", escAttName, escAttValue );
+        }
+        fd->fptr->write( fd->fptr, fd->line, (UInt32)strlen( fd->line ), 1 );
+
+        free( escAttName );
+        
     }
     else
     {
-        sprintf( fd->line+linelen, "%s=\"%s\" />\r\n", escAttName, escAttValue );
+        len = (UInt32)strlen( escAttValue )+(UInt32)strlen( nodename );
+        if ( fd->linelen < linelen+10+len )
+        {
+            fd->line = realloc( fd->line, linelen+11+len );
+            fd->linelen = linelen+11+len;
+        }
+        sprintf( fd->line+linelen-1, ">%s</%s>\r\n", escAttValue, nodename );
+        fd->fptr->write( fd->fptr, fd->line, (UInt32)strlen( fd->line ), 1 );
     }
-    fd->fptr->write( fd->fptr, fd->line, (UInt32)strlen( fd->line ), 1 );
 
-    free( escAttName );
     free( escAttValue );
 }
 

@@ -173,6 +173,16 @@ CVersion::CVersion( const TVersion& version )
 CVersion::~CVersion()
 {GUCEF_TRACE;
 
+    Clear();
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CVersion::Clear( void )
+{GUCEF_TRACE;
+
+    memset( &m_version, 0, sizeof( m_version ) ); 
 }
 
 /*-------------------------------------------------------------------------*/

@@ -549,7 +549,7 @@ CreateAndroidMakefileOnDiskForEachModule( const TModuleInfoEntryPairVector& merg
     TModuleInfoEntryPairVector::const_iterator i = mergeLinks.begin();
     while ( i != mergeLinks.end() )
     {
-        const TModuleInfoEntry& moduleInfoEntry = (*(*i).first);
+        const CModuleInfoEntry& moduleInfoEntry = (*(*i).first);
         const TModuleInfo& moduleInfo = (*(*i).second);
 
         if ( !CreateAndroidMakefileOnDiskForModule( mergeLinks                      ,
@@ -618,7 +618,7 @@ FindNextModuleAccordingToBuildOrder( const TModuleInfoEntryPairVector& mergeLink
 
 /*-------------------------------------------------------------------------*/
 
-const TModuleInfoEntry*
+const CModuleInfoEntry*
 FindModuleInfoEntryForMergedInfo( const TModuleInfoEntryPairVector& mergeLinks ,
                                   const TModuleInfo& mergedModule              )
 {
@@ -699,7 +699,7 @@ GenerateContentForAndroidProjectMakefile( const CORE::CString& projectName      
              ( MODULETYPE_CODE_INTEGRATE_LOCATION != currentModule->moduleType )    )
         {
             // Get relative path from the outputDir to the other module
-            const TModuleInfoEntry* fullModuleInfo = FindModuleInfoEntryForMergedInfo( mergeLinks, *currentModule );
+            const CModuleInfoEntry* fullModuleInfo = FindModuleInfoEntryForMergedInfo( mergeLinks, *currentModule );
             CORE::CString relativePathToModule = CORE::GetRelativePathToOtherPathRoot( outputDir, fullModuleInfo->rootDir );
             relativePathToModule = relativePathToModule.ReplaceChar( '\\', '/' );
 

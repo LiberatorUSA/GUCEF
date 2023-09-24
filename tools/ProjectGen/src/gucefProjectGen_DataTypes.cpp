@@ -568,7 +568,7 @@ ResolveMultiPlatformName( const CORE::CString& platformName          ,
 // the given entry. The given moduleInfo can be an independent platform
 // moduleInfo or a merged moduleInfo
 bool
-SerializeModuleInfo( const TModuleInfoEntry& moduleEntry ,
+SerializeModuleInfo( const CModuleInfoEntry& moduleEntry ,
                      const TModuleInfo& moduleInfo       ,
                      const CORE::CString& platform       ,
                      CORE::CDataNode& parentNode         )
@@ -582,7 +582,7 @@ SerializeModuleInfo( const TModuleInfoEntry& moduleEntry ,
     {
         moduleInfoNode.SetAttribute( "Name", moduleInfo.name );
     }
-    moduleInfoNode.SetAttribute( "SemVer", moduleEntry.semver.ToString() );
+    moduleInfoNode.SetAttribute( "SemVer", moduleEntry.metadata.semver.ToString() );
     if ( moduleInfo.buildOrder != -1 )
     {
         moduleInfoNode.SetAttribute( "BuildOrder", CORE::Int32ToString( moduleInfo.buildOrder ) );
@@ -889,65 +889,26 @@ SerializeModuleInfo( const TModuleInfoEntry& moduleEntry ,
 /*-------------------------------------------------------------------------*/
 
 bool
-SerializeModuleInfo( const TModuleInfoEntry& moduleEntry ,
+SerializeModuleInfo( const CModuleInfoEntry& moduleEntry ,
                      CORE::CDataNode& parentNode         )
 {GUCEF_TRACE;
 
-    CORE::CDataNode moduleEntryNode( "ModuleInfoEntry" );
-    moduleEntryNode.SetAttribute( "RootDir", moduleEntry.rootDir );
-
-    if ( !moduleEntry.lastEditBy.IsNULLOrEmpty() )
-    {
-        moduleEntryNode.SetAttribute( "LastEditBy", moduleEntry.lastEditBy );
-    }
-    if ( !moduleEntry.descriptionHeadline.IsNULLOrEmpty() )
-    {
-        moduleEntryNode.SetAttribute( "DescriptionHeadline", moduleEntry.descriptionHeadline );
-    }
-    if ( !moduleEntry.descriptionDetails.IsNULLOrEmpty() )
-    {
-        moduleEntryNode.SetAttribute( "DescriptionDetails", moduleEntry.descriptionDetails );
-    }
-    if ( !moduleEntry.license.IsNULLOrEmpty() )
-    {
-        moduleEntryNode.SetAttribute( "License", moduleEntry.license );
-    }
-
-    CORE::CDataNode* authorsNode = moduleEntryNode.AddChild( "Authors", GUCEF_DATATYPE_ARRAY );
-    if ( GUCEF_NULL != authorsNode )
-        authorsNode->AddAllValuesAsChildren< CORE::CString::StringSet >( moduleEntry.authors );
-
-    CORE::CDataNode* maintainersNode = moduleEntryNode.AddChild( "Maintainers", GUCEF_DATATYPE_ARRAY );
-    if ( GUCEF_NULL != maintainersNode )
-        maintainersNode->AddAllValuesAsChildren< CORE::CString::StringSet >( moduleEntry.maintainers );
-
-    moduleEntryNode.SetAttribute( "SemVer", moduleEntry.semver.ToString() );
-
-    TModuleInfoMap::const_iterator i = moduleEntry.modulesPerPlatform.begin();
-    while ( i != moduleEntry.modulesPerPlatform.end() )
-    {
-        const CORE::CString& platform = (*i).first;
-        const TModuleInfo& moduleInfo = (*i).second;
-
-        if ( !SerializeModuleInfo( moduleEntry     ,
-                                   moduleInfo      ,
-                                   platform        ,
-                                   moduleEntryNode ) )
+    CORE::CDataNode* node = parentNode.AddChild( "ModuleInfoEntry" );
+    if ( GUCEF_NULL != node )
+    {       
+        CORE::CDataNodeSerializableSettings defaultSerializableSettings;
+        if ( moduleEntry.Serialize( *node, defaultSerializableSettings ) )
         {
-            GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "SerializeModuleInfo: Failed to serialize moduleInfo of module " + moduleInfo.name + " for platform " + platform );
-            return false;
+            return true;
         }
-
-        ++i;
     }
-    parentNode.AddChild( moduleEntryNode );
-    return true;
+    return false;
 }
 
 /*-------------------------------------------------------------------------*/
 
 bool
-SerializeModuleInfo( const TModuleInfoEntry& moduleEntry ,
+SerializeModuleInfo( const CModuleInfoEntry& moduleEntry ,
                      const CORE::CString& outputFilepath )
 {GUCEF_TRACE;
 
@@ -1031,10 +992,9 @@ DeserializeProjectInfo( TProjectInfo& projectInfo       ,
     CORE::CDataNode::TConstDataNodeSet::const_iterator i = nodeSet.begin();
     while ( i != nodeSet.end() )
     {
-        TModuleInfoEntry newModuleInfo;
-        InitializeModuleInfoEntry( newModuleInfo );
+        CModuleInfoEntry newModuleInfo;
         projectInfo.modules.push_back( newModuleInfo );
-        TModuleInfoEntry& moduleInfoEntry = projectInfo.modules.back();
+        CModuleInfoEntry& moduleInfoEntry = projectInfo.modules.back();
 
         if ( !DeserializeModuleInfo( projectInfo, moduleInfoEntry, *(*i) ) )
         {
@@ -1128,7 +1088,8 @@ DeserializeModuleInfo( TModuleInfo& moduleInfo           ,
 {GUCEF_TRACE;
 
     const CORE::CDataNode* moduleInfoNode = parentNode.Find( "Module" );
-    if ( moduleInfoNode == NULL ) return false;
+    if ( GUCEF_NULL == moduleInfoNode ) 
+        return false;
 
     // Find the overall module properties
     moduleInfo.semver.FromString( moduleInfoNode->GetAttributeValue( "SemVer", moduleInfo.semver.ToString(), false ).AsString( moduleInfo.semver.ToString(), true ) );
@@ -1398,7 +1359,7 @@ FindModuleByName( const TModuleInfoEntryPairVector& mergeLinks ,
 /*-------------------------------------------------------------------------*/
 
 void
-CleanupIncludeDirs( TModuleInfoEntry& moduleInfoEntry )
+CleanupIncludeDirs( CModuleInfoEntry& moduleInfoEntry )
 {GUCEF_TRACE;
 
     TModuleInfoMap::iterator i = moduleInfoEntry.modulesPerPlatform.begin();
@@ -1453,106 +1414,22 @@ CleanupIncludeDirs( TModuleInfoEntry& moduleInfoEntry )
 
 /*-------------------------------------------------------------------------*/
 
-void
-SetModuleInfo( TModuleInfoEntry& moduleInfoEntry ,
-               TModuleInfo& moduleInfo           ,
-               const CORE::CString& platform     )
-{GUCEF_TRACE;
-
-    // First check if we already have a entry for this platform
-    TModuleInfoMap::iterator i = moduleInfoEntry.modulesPerPlatform.find( platform );
-    if ( i != moduleInfoEntry.modulesPerPlatform.end() )
-    {
-        // Since we already have an entry for this platform we will merge the two
-        MergeModuleInfo( (*i).second, moduleInfo );
-    }
-    else
-    {
-        moduleInfoEntry.modulesPerPlatform[ platform ] = moduleInfo;
-    }
-}
-
-/*-------------------------------------------------------------------------*/
-
 bool
 DeserializeModuleInfo( const TProjectInfo& projectInfo   ,
-                       TModuleInfoEntry& moduleInfoEntry ,
+                       CModuleInfoEntry& moduleInfoEntry ,
                        const CORE::CDataNode& parentNode )
 {GUCEF_TRACE;
 
     const CORE::CDataNode* moduleEntryNode = parentNode.Find( "ModuleInfoEntry" );
-    if ( NULL == moduleEntryNode ) return false;
-
-    if ( moduleInfoEntry.rootDir.IsNULLOrEmpty() )
-    {
-        moduleInfoEntry.rootDir = moduleEntryNode->GetAttributeValue( "RootDir" );
-    }
-
-    moduleInfoEntry.license = moduleEntryNode->GetAttributeValue( "License", moduleInfoEntry.license, false ).AsString( moduleInfoEntry.license, true );
-    moduleInfoEntry.descriptionHeadline = moduleEntryNode->GetAttributeValue( "DescriptionHeadline", moduleInfoEntry.descriptionHeadline, false ).AsString( moduleInfoEntry.descriptionHeadline, true );
-    moduleInfoEntry.descriptionDetails = moduleEntryNode->GetAttributeValue( "DescriptionDetails", moduleInfoEntry.descriptionDetails, false ).AsString( moduleInfoEntry.descriptionDetails, true );
-    moduleInfoEntry.semver.FromString( moduleEntryNode->GetAttributeValue( "SemVer", moduleInfoEntry.semver.ToString(), false ).AsString( moduleInfoEntry.semver.ToString(), true ) );
-
-    moduleEntryNode->GetValuesOfChildByName( "Authors", moduleInfoEntry.authors );
-    moduleEntryNode->GetValuesOfChildByName( "Maintainers", moduleInfoEntry.maintainers );
-
-    const CORE::CDataNode::TConstDataNodeSet moduleInfoNodes = moduleEntryNode->FindChildrenOfType( "Module" );
-    if ( moduleInfoNodes.size() == 0 ) 
+    if ( GUCEF_NULL == moduleEntryNode ) 
         return false;
 
-    CORE::CDataNode::TConstDataNodeSet::const_iterator n = moduleInfoNodes.begin();
-    while ( n != moduleInfoNodes.end() )
-    {
-        TModuleInfo moduleInfoForPlatform;
-        InitializeModuleInfo( moduleInfoForPlatform );
+    CORE::CDataNodeSerializableSettings defaultSerializableSettings;
+    
+    // @TODO: temp hack to get ProjectInfo into the deserializer which is needed for normalization
+    defaultSerializableSettings.SetUserData( const_cast< TProjectInfo* >( &projectInfo ) );
 
-        const CORE::CDataNode* moduleNode = (*n);
-
-        // Get all platforms for which this info applies.
-        // Keep in mind that multiple platforms can be specified for ease of use.
-        // This feature requires platform entries to be seperated by a ';'
-        TStringVector platforms = moduleNode->GetAttributeValue( "Platform" ).AsString().Lowercase().ParseElements( ';', false);
-
-        if ( platforms.empty() )
-        {
-            GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "Failed to locate a Platform value for a module, will default to all platforms but this may not be correct" );
-            platforms.push_back( AllPlatforms );
-        }
-
-        if ( DeserializeModuleInfo( moduleInfoForPlatform ,
-                                    *moduleNode           ) )
-        {
-            if ( moduleInfoForPlatform.name.IsNULLOrEmpty() )
-            {
-                GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Successfully deserialized module definition for module with no name specified for the applicable platforms" );
-            }
-            else
-            {
-                GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Successfully deserialized module definition for module with name " + moduleInfoForPlatform.name );
-            }
-
-            TStringVector::iterator i = platforms.begin();
-            while ( i != platforms.end() )
-            {
-                TStringSet actualPlatforms = ResolveMultiPlatformName( (*i), &projectInfo.platforms );
-                TStringSet::iterator n = actualPlatforms.begin();
-                while ( n != actualPlatforms.end() )
-                {
-                    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Adding module definition for platform " + (*n) );
-                    SetModuleInfo( moduleInfoEntry, moduleInfoForPlatform, (*n) );
-                    ++n;
-                }                
-
-                ++i;
-            }
-        }
-        else
-        {
-            return false;
-        }
-        ++n;
-    }
-    return true;
+    return moduleInfoEntry.Deserialize( *moduleEntryNode, defaultSerializableSettings );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -1582,9 +1459,7 @@ DeserializeModuleInfo( const TProjectInfo& projectInfo           ,
             CORE::CDataNode::TDataNodeSet::iterator i = moduleEntryNodes.begin();
             while ( i != moduleEntryNodes.end() )
             {
-                TModuleInfoEntry entry;
-                InitializeModuleInfoEntry( entry );
-                
+                CModuleInfoEntry entry;                
                 if ( !DeserializeModuleInfo( projectInfo, entry, *(*i) ) )
                     ++errorCount;
                 
@@ -1628,16 +1503,6 @@ InitializeModuleInfo( TModuleInfo& moduleInfo )
     moduleInfo.considerSubDirs = true;
     moduleInfo.ignoreModule = false;
     moduleInfo.moduleType = MODULETYPE_UNDEFINED;
-}
-
-/*-------------------------------------------------------------------------*/
-
-void
-InitializeModuleInfoEntry( TModuleInfoEntry& moduleEntry )
-{GUCEF_TRACE;
-
-    moduleEntry.modulesPerPlatform.clear();
-    moduleEntry.rootDir.Clear();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -1772,7 +1637,7 @@ MergeModuleInfo( TModuleInfo& targetModuleInfo          ,
 /*-------------------------------------------------------------------------*/
 
 TModuleInfo*
-FindModuleInfoForPlatform( TModuleInfoEntry& moduleInfoEntry ,
+FindModuleInfoForPlatform( CModuleInfoEntry& moduleInfoEntry ,
                            const CORE::CString& platform     ,
                            bool createNewIfNoneExists        )
 {GUCEF_TRACE;
@@ -1796,7 +1661,7 @@ FindModuleInfoForPlatform( TModuleInfoEntry& moduleInfoEntry ,
 /*-------------------------------------------------------------------------*/
 
 const TModuleInfo*
-FindModuleInfoForPlatform( const TModuleInfoEntry& moduleInfoEntry ,
+FindModuleInfoForPlatform( const CModuleInfoEntry& moduleInfoEntry ,
                            const CORE::CString& platform           )
 {GUCEF_TRACE;
 
@@ -1811,7 +1676,7 @@ FindModuleInfoForPlatform( const TModuleInfoEntry& moduleInfoEntry ,
 /*-------------------------------------------------------------------------*/
 
 bool
-MergeModuleInfo( const TModuleInfoEntry& moduleInfoEntry ,
+MergeModuleInfo( const CModuleInfoEntry& moduleInfoEntry ,
                  const CORE::CString& targetPlatform     ,
                  TModuleInfo& mergedModuleInfo           )
 {GUCEF_TRACE;
@@ -1876,7 +1741,7 @@ MergeAllModuleInfoForPlatform( const TModuleInfoEntryConstPtrSet& allInfo ,
                                TModuleInfoEntryPairVector& mergeLinks     )
 {GUCEF_TRACE;
 
-    typedef std::vector< const TModuleInfoEntry* > TModuleInfoEntryPtrVector;
+    typedef std::vector< const CModuleInfoEntry* > TModuleInfoEntryPtrVector;
 
     allMergedInfo.clear();
 
@@ -1935,7 +1800,7 @@ MergeAllModuleInfoForPlatform( const TModuleInfoEntryVector& allInfo  ,
 /*---------------------------------------------------------------------------*/
 
 const CORE::CString*
-GetModuleName( const TModuleInfoEntry& moduleInfoEntry ,
+GetModuleName( const CModuleInfoEntry& moduleInfoEntry ,
                const CORE::CString& targetPlatform     ,
                const TModuleInfo** outModuleInfo       )
 {GUCEF_TRACE;
@@ -1991,7 +1856,7 @@ GetModuleName( const TProjectTargetInfoMap& targetPlatforms ,
     TProjectTargetInfoMap::const_iterator i = targetPlatforms.find( targetPlatform );
     if ( i != targetPlatforms.end() )
     {
-        const TModuleInfoEntry* mainModule = (*i).second.mainModule;
+        const CModuleInfoEntry* mainModule = (*i).second.mainModule;
         if ( GUCEF_NULL != mainModule )
         {
             return GetModuleName( *mainModule, targetPlatform, outModuleInfo );
@@ -2005,7 +1870,7 @@ GetModuleName( const TProjectTargetInfoMap& targetPlatforms ,
         i = targetPlatforms.find( AllPlatforms );
         if ( i != targetPlatforms.end() )
         {
-            const TModuleInfoEntry* mainModule = (*i).second.mainModule;
+            const CModuleInfoEntry* mainModule = (*i).second.mainModule;
             if ( GUCEF_NULL != mainModule )
             {
                 return GetModuleName( *mainModule, AllPlatforms, outModuleInfo );
@@ -2019,7 +1884,7 @@ GetModuleName( const TProjectTargetInfoMap& targetPlatforms ,
 /*---------------------------------------------------------------------------*/
 
 CORE::CString
-GetConsensusModuleName( const TModuleInfoEntry& moduleInfoEntry ,
+GetConsensusModuleName( const CModuleInfoEntry& moduleInfoEntry ,
                         const TModuleInfo** moduleInfo          )
 {GUCEF_TRACE;
 
@@ -2222,7 +2087,7 @@ GetConsensusTargetName( const TProjectTargetInfoMap& targetPlatforms )
 /*---------------------------------------------------------------------------*/
 
 CORE::CString
-GetModuleNameAlways( const TModuleInfoEntry& moduleInfoEntry ,
+GetModuleNameAlways( const CModuleInfoEntry& moduleInfoEntry ,
                      const CORE::CString& targetPlatform     ,
                      const TModuleInfo** moduleInfo          )
 {GUCEF_TRACE;
@@ -2238,7 +2103,7 @@ GetModuleNameAlways( const TModuleInfoEntry& moduleInfoEntry ,
 /*---------------------------------------------------------------------------*/
 
 CORE::CString
-GetModuleTargetName( const TModuleInfoEntry& moduleInfoEntry ,
+GetModuleTargetName( const CModuleInfoEntry& moduleInfoEntry ,
                      const CORE::CString& targetPlatform     ,
                      bool useModuleNameIfNoTargetName        )
 {GUCEF_TRACE;
@@ -2273,13 +2138,13 @@ GetModuleTargetName( const TModuleInfoEntry& moduleInfoEntry ,
 /*---------------------------------------------------------------------------*/
 
 void
-GetModuleDependencies( const TModuleInfoEntry& moduleInfoEntry ,
+GetModuleDependencies( const CModuleInfoEntry& moduleInfoEntry ,
                        const CORE::CString& targetPlatform     ,
                        TStringSet& dependencies                ,
                        bool includeRuntimeDependencies         )
 {GUCEF_TRACE;
 
-    TModuleInfoEntry& mutableModuleInfoEntry = const_cast< TModuleInfoEntry& >( moduleInfoEntry );
+    CModuleInfoEntry& mutableModuleInfoEntry = const_cast< CModuleInfoEntry& >( moduleInfoEntry );
     TModuleInfo* moduleInfo = FindModuleInfoForPlatform( mutableModuleInfoEntry, targetPlatform, false );
     if ( NULL != moduleInfo )
     {
@@ -2303,7 +2168,7 @@ GetModuleDependencies( const TModuleInfoEntry& moduleInfoEntry ,
 
 bool
 GetModuleDependencies( const TProjectInfo& projectInfo           ,
-                       const TModuleInfoEntry& moduleInfoEntry   ,
+                       const CModuleInfoEntry& moduleInfoEntry   ,
                        const CORE::CString& targetPlatform       ,
                        TModuleInfoEntryConstPtrSet& dependencies ,
                        bool includeDependenciesOfDependencies    ,
@@ -2321,7 +2186,7 @@ GetModuleDependencies( const TProjectInfo& projectInfo           ,
     TStringSet::iterator m = deps.begin();
     while ( m != deps.end() )
     {
-        const TModuleInfoEntry* dependency = GetModuleInfoEntry( projectInfo, (*m), targetPlatform );
+        const CModuleInfoEntry* dependency = GetModuleInfoEntry( projectInfo, (*m), targetPlatform );
         if ( GUCEF_NULL != dependency )
             depsPtrs.insert( dependency );
         else
@@ -2338,7 +2203,7 @@ GetModuleDependencies( const TProjectInfo& projectInfo           ,
         TModuleInfoEntryConstPtrSet::iterator i = depsPtrs.begin();
         while ( i != depsPtrs.end() )
         {
-            const TModuleInfoEntry* entry = (*i);            
+            const CModuleInfoEntry* entry = (*i);            
             CORE::CString depModuleName = GetConsensusModuleName( *entry );
 
             GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "GetModuleDependencies: For module " + moduleName + ": Recursively looking for dependencies of dependency \"" + depModuleName + "\" for platform " + targetPlatform );
@@ -2372,7 +2237,7 @@ GetModuleDependencies( const TProjectInfo& projectInfo           ,
 /*---------------------------------------------------------------------------*/
 
 TModuleType
-GetModuleType( const TModuleInfoEntry& moduleInfoEntry ,
+GetModuleType( const CModuleInfoEntry& moduleInfoEntry ,
                const CORE::CString& targetPlatform     )
 {GUCEF_TRACE;
 
@@ -2415,7 +2280,7 @@ GetModuleType( const TModuleInfoEntry& moduleInfoEntry ,
 /*---------------------------------------------------------------------------*/
 
 void
-GetModuleInfoWithUniqueModulesTypes( const TModuleInfoEntry& moduleInfoEntry ,
+GetModuleInfoWithUniqueModulesTypes( const CModuleInfoEntry& moduleInfoEntry ,
                                      TConstModuleInfoPtrMap& moduleMap       )
 {GUCEF_TRACE;
 
@@ -2461,7 +2326,7 @@ GetModuleInfoWithUniqueModulesTypes( const TModuleInfoEntry& moduleInfoEntry ,
 /*---------------------------------------------------------------------------*/
 
 void
-GetModuleInfoWithUniqueModuleNames( const TModuleInfoEntry& moduleInfoEntry ,
+GetModuleInfoWithUniqueModuleNames( const CModuleInfoEntry& moduleInfoEntry ,
                                     TConstModuleInfoPtrMap& moduleMap       )
 {GUCEF_TRACE;
 
@@ -2528,7 +2393,7 @@ LocalizeDirSepCharForPlatform( const CORE::CString& path     ,
 /*---------------------------------------------------------------------------*/
 
 void
-GetAllModuleInfoPaths( const TModuleInfoEntry& moduleInfoEntry ,
+GetAllModuleInfoPaths( const CModuleInfoEntry& moduleInfoEntry ,
                        const CORE::CString& platform           ,
                        CORE::CString::StringSet& allPaths      ,
                        bool includeModuleRootPath              ,
@@ -2622,7 +2487,7 @@ GetAllModuleInfoPaths( const TModuleInfoEntry& moduleInfoEntry ,
 /*---------------------------------------------------------------------------*/
 
 void
-GetAllModuleInfoFilePaths( const TModuleInfoEntry& moduleInfoEntry ,
+GetAllModuleInfoFilePaths( const CModuleInfoEntry& moduleInfoEntry ,
                            const CORE::CString& platform           ,
                            CORE::CString::StringSet& allPaths      ,
                            bool includeModuleRootPath              )
@@ -2719,7 +2584,7 @@ GetShortestRelativePathFromAbsPathToProjectRoot( const TProjectInfo& projectInfo
 
 CORE::CString
 GetShortestRelativePathFromModuleToProjectRoot( const TProjectInfo& projectInfo         ,
-                                                const TModuleInfoEntry& moduleInfoEntry )
+                                                const CModuleInfoEntry& moduleInfoEntry )
 {GUCEF_TRACE;
 
     return GetShortestRelativePathFromAbsPathToProjectRoot( projectInfo, moduleInfoEntry.rootDir );
@@ -2729,7 +2594,7 @@ GetShortestRelativePathFromModuleToProjectRoot( const TProjectInfo& projectInfo 
 
 void
 GetAllModuleInfoFilePaths( const TProjectInfo& projectInfo         ,
-                           const TModuleInfoEntry& moduleInfoEntry ,
+                           const CModuleInfoEntry& moduleInfoEntry ,
                            const CORE::CString& platform           ,
                            CORE::CString::StringSet& allPaths      ,
                            bool includeModuleRootPath              ,
@@ -2764,7 +2629,7 @@ GetAllModuleInfoFilePaths( const TProjectInfo& projectInfo         ,
 
 void
 GetAllModuleInfoPaths( const TProjectInfo& projectInfo         ,
-                       const TModuleInfoEntry& moduleInfoEntry ,
+                       const CModuleInfoEntry& moduleInfoEntry ,
                        const CORE::CString& platform           ,
                        CORE::CString::StringSet& allPaths      ,
                        bool includeModuleRootPath              ,
@@ -2799,7 +2664,7 @@ GetAllModuleInfoPaths( const TProjectInfo& projectInfo         ,
 
 /*---------------------------------------------------------------------------*/
 
-const TModuleInfoEntry*
+const CModuleInfoEntry*
 GetModuleInfoEntry( const TProjectInfo& projectInfo ,
                     const CORE::CString& moduleName ,
                     const CORE::CString& platform   ,
@@ -2864,7 +2729,7 @@ GetAllTagsUsed( const TProjectInfo& projectInfo ,
 /*---------------------------------------------------------------------------*/
 
 bool
-IsModuleTagged( const TModuleInfoEntry& module ,
+IsModuleTagged( const CModuleInfoEntry& module ,
                 const CORE::CString& tag       ,
                 const CORE::CString& platform  )
 {GUCEF_TRACE;
@@ -2887,7 +2752,7 @@ IsModuleTagged( const TModuleInfoEntry& module ,
 /*---------------------------------------------------------------------------*/
 
 bool
-IsModuleTagged( const TModuleInfoEntry& module       ,
+IsModuleTagged( const CModuleInfoEntry& module       ,
                 const CORE::CString::StringSet& tags ,
                 const CORE::CString& platform        )
 {GUCEF_TRACE;
@@ -2923,7 +2788,7 @@ GetTaggedModules( const TProjectInfo& projectInfo            ,
 /*---------------------------------------------------------------------------*/
 
 bool
-ShouldModuleBeIgnored( const TModuleInfoEntry& moduleInfo ,
+ShouldModuleBeIgnored( const CModuleInfoEntry& moduleInfo ,
                        const CORE::CString& platformName  )
 {GUCEF_TRACE;
 
@@ -2944,7 +2809,7 @@ ShouldModuleBeIgnored( const TModuleInfoEntry& moduleInfo ,
 /*---------------------------------------------------------------------------*/
 
 bool
-IsModuleTaggedWith( const TModuleInfoEntry& moduleInfo ,
+IsModuleTaggedWith( const CModuleInfoEntry& moduleInfo ,
                     const CORE::CString& platformName  ,
                     const CORE::CString& tag           )
 {GUCEF_TRACE;
@@ -3033,7 +2898,7 @@ SplitProjectPerTarget( const TProjectInfo& projectInfo    ,
         TModuleInfoEntryConstPtrSet::iterator i = executables.begin();
         while ( i != executables.end() )
         {
-            const TModuleInfoEntry& executable = *(*i);
+            const CModuleInfoEntry& executable = *(*i);
             CORE::CString targetName = GetModuleNameAlways( executable, (*p) );
 
             // Don't bother if the executable itself doesnt have a platform definition for the current platform            
@@ -3101,7 +2966,7 @@ SplitProjectPerTarget( const TProjectInfo& projectInfo    ,
                 TModuleInfoEntryConstPtrSet::iterator m = taggedModules.begin();
                 while ( m != taggedModules.end() )
                 {
-                    const TModuleInfoEntry& taggedModule = *(*m);
+                    const CModuleInfoEntry& taggedModule = *(*m);
                                             
                     // Don't include this module if it doesnt have a definition for the current platform
                     if ( taggedModule.modulesPerPlatform.find( (*p) ) != taggedModule.modulesPerPlatform.end() )
@@ -3242,7 +3107,7 @@ GetPlatformProjectTarget( const TProjectTargetInfoMap& platformTargets ,
 /*-------------------------------------------------------------------------*/
 
 bool
-HasPlatformDefinition( const TModuleInfoEntry& moduleInfoEntry ,
+HasPlatformDefinition( const CModuleInfoEntry& moduleInfoEntry ,
                        const CORE::CString& platform           )
 {GUCEF_TRACE;
 
@@ -3340,9 +3205,13 @@ IsLicenseBsd( const CORE::CString& fileContentUpperCase )
     "OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE "
     "SOFTWARE.";
 
+    static const char* bsdFragment3 = 
+    "THE \"BSD\" LICENCE";
+
     Int32 fragmentIndex = fileContentUpperCase.HasSubstr( bsdFragment, true );
     Int32 fragment2Index = fileContentUpperCase.HasSubstr( bsdFragment2, true );
-    return fragmentIndex >= 0 || fragment2Index >= 0;
+    Int32 fragment3Index = fileContentUpperCase.HasSubstr( bsdFragment3, true );
+    return fragmentIndex >= 0 || fragment2Index >= 0 || fragment3Index >= 0;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -3502,8 +3371,8 @@ IsAnyLicenseDefined( const TModuleInfoEntryVector& moduleInfoEntries )
     TModuleInfoEntryVector::const_iterator i = moduleInfoEntries.begin();
     while ( i != moduleInfoEntries.end() )
     {
-        const TModuleInfoEntry& entry = (*i);
-        if ( !entry.license.IsNULLOrEmpty() )
+        const CModuleInfoEntry& entry = (*i);
+        if ( !entry.metadata.license.IsNULLOrEmpty() )
         {
             return true;
         }
@@ -3521,8 +3390,8 @@ IsAnySemVerDefined( const TModuleInfoEntryVector& moduleInfoEntries )
     TModuleInfoEntryVector::const_iterator i = moduleInfoEntries.begin();
     while ( i != moduleInfoEntries.end() )
     {
-        const TModuleInfoEntry& entry = (*i);
-        if ( !entry.semver.IsAllZero() )
+        const CModuleInfoEntry& entry = (*i);
+        if ( !entry.metadata.semver.IsAllZero() )
         {
             return true;
         }
@@ -3545,6 +3414,8 @@ GetKnownSemVerFiles( void )
         semverFiles.insert( "semver.txt" );
         semverFiles.insert( "version" );
         semverFiles.insert( "version.txt" );
+        semverFiles.insert( "version-semver" );
+        semverFiles.insert( "version-semver.txt" );
     }
     return semverFiles;
 }
@@ -3600,6 +3471,375 @@ TryAutoSemVerDetection( const CORE::CString& fileContent ,
 
     // @TODO: Support more variation
     return detectedSemVer.FromString( fileContent );
+}
+
+/*---------------------------------------------------------------------------*/
+
+const CORE::CString CModuleMetaData::ClassTypeName = "GUCEF::PROJECTGEN::CModuleMetaData";
+
+/*---------------------------------------------------------------------------*/
+
+CModuleMetaData::CModuleMetaData( void ) 
+    : CORE::CIDataNodeSerializable()
+    , lastEditBy()
+    , authors()
+    , maintainers()
+    , semver()
+    , descriptionHeadline()
+    , descriptionDetails()
+    , license()
+{GUCEF_TRACE;
+
+}
+
+/*---------------------------------------------------------------------------*/
+
+CModuleMetaData::CModuleMetaData( const CModuleMetaData& src ) 
+    : CORE::CIDataNodeSerializable( src )
+    , lastEditBy( src.lastEditBy )
+    , authors( src.authors )
+    , maintainers( src.maintainers )
+    , semver( src.semver )
+    , descriptionHeadline( src.descriptionHeadline )
+    , descriptionDetails( src.descriptionDetails )
+    , license( src.license )
+{GUCEF_TRACE;
+
+}
+
+/*---------------------------------------------------------------------------*/
+
+CModuleMetaData::~CModuleMetaData() 
+{GUCEF_TRACE;
+
+    Clear();
+}
+
+/*---------------------------------------------------------------------------*/
+
+void
+CModuleMetaData::Clear( void ) 
+{GUCEF_TRACE;
+
+    lastEditBy.Clear();
+    authors.clear();
+    maintainers.clear();
+    semver.Clear();
+    descriptionHeadline.Clear();
+    descriptionDetails.Clear();
+    license.Clear();
+}
+
+/*---------------------------------------------------------------------------*/
+
+CModuleMetaData&
+CModuleMetaData::operator=( const CModuleMetaData& src ) 
+{GUCEF_TRACE;
+
+    if ( &src != this )
+    {
+        lastEditBy = src.lastEditBy;
+        authors = src.authors;
+        maintainers = src.maintainers;
+        semver = src.semver;
+        descriptionHeadline = src.descriptionHeadline;
+        descriptionDetails = src.descriptionDetails;
+        license = src.license;
+    }
+    return *this;
+}
+
+/*---------------------------------------------------------------------------*/
+
+bool 
+CModuleMetaData::Serialize( CORE::CDataNode& domRootNode                        ,
+                            const CORE::CDataNodeSerializableSettings& settings ) const
+{GUCEF_TRACE;
+
+    if ( !lastEditBy.IsNULLOrEmpty() )
+    {
+        domRootNode.AddChildWithValue( "LastEditBy", lastEditBy, GUCEF_DATATYPE_STRING );
+    }
+    if ( !descriptionHeadline.IsNULLOrEmpty() )
+    {
+        domRootNode.AddChildWithValue( "DescriptionHeadline", descriptionHeadline, GUCEF_DATATYPE_STRING );
+    }
+    if ( !descriptionDetails.IsNULLOrEmpty() )
+    {
+        domRootNode.AddChildWithValue( "DescriptionDetails", descriptionDetails, GUCEF_DATATYPE_STRING );
+    }
+    if ( !license.IsNULLOrEmpty() )
+    {
+        domRootNode.AddChildWithValue( "License", license, GUCEF_DATATYPE_STRING );
+    }
+    if ( !semver.IsAllZero() )
+    {
+        domRootNode.AddChildWithValue( "SemVer", semver.ToString(), GUCEF_DATATYPE_STRING );
+    }
+
+    domRootNode.AddAllValuesAsChildrenOfChild< CORE::CString::StringSet >( "Authors", authors, GUCEF_DATATYPE_ARRAY );
+    domRootNode.AddAllValuesAsChildrenOfChild< CORE::CString::StringSet >( "Maintainers", maintainers, GUCEF_DATATYPE_ARRAY );
+
+    return true;
+}
+
+/*---------------------------------------------------------------------------*/
+
+bool
+CModuleMetaData::Deserialize( const CORE::CDataNode& domRootNode                  ,
+                              const CORE::CDataNodeSerializableSettings& settings )
+{GUCEF_TRACE;
+
+    license = domRootNode.GetAttributeValueOrChildValueByName( "License", license, false ).AsString( license, true );
+    descriptionHeadline = domRootNode.GetAttributeValueOrChildValueByName( "DescriptionHeadline", descriptionHeadline, false ).AsString( descriptionHeadline, true );
+    descriptionDetails = domRootNode.GetAttributeValueOrChildValueByName( "DescriptionDetails", descriptionDetails, false ).AsString( descriptionDetails, true );
+    semver.FromString( domRootNode.GetAttributeValueOrChildValueByName( "SemVer", semver.ToString(), false ).AsString( semver.ToString(), true ) );
+
+    domRootNode.GetValuesOfChildByName( "Authors", authors );
+    domRootNode.GetValuesOfChildByName( "Maintainers", maintainers );
+
+    return true;
+}
+
+/*---------------------------------------------------------------------------*/
+
+CORE::CICloneable* 
+CModuleMetaData::Clone( void ) const 
+{GUCEF_TRACE;
+
+    return new CModuleMetaData( *this );
+}
+
+/*---------------------------------------------------------------------------*/
+
+const CORE::CString& 
+CModuleMetaData::GetClassTypeName( void ) const 
+{GUCEF_TRACE;
+
+    return ClassTypeName;
+}
+
+/*---------------------------------------------------------------------------*/
+
+const CORE::CString CModuleInfoEntry::ClassTypeName = "GUCEF::PROJECTGEN::CModuleInfoEntry";
+
+/*---------------------------------------------------------------------------*/
+
+CModuleInfoEntry::CModuleInfoEntry( void ) 
+    : CORE::CIDataNodeSerializable()
+    , modulesPerPlatform()
+    , rootDir()
+    , metadata()
+{GUCEF_TRACE;
+
+}
+
+/*---------------------------------------------------------------------------*/
+
+CModuleInfoEntry::CModuleInfoEntry( const CModuleInfoEntry& src ) 
+    : CORE::CIDataNodeSerializable( src )
+    , modulesPerPlatform( src.modulesPerPlatform )
+    , rootDir( src.rootDir )
+    , metadata( src.metadata )
+{GUCEF_TRACE;
+
+}
+
+/*---------------------------------------------------------------------------*/
+
+CModuleInfoEntry::~CModuleInfoEntry() 
+{GUCEF_TRACE;
+
+    Clear();
+}
+
+/*---------------------------------------------------------------------------*/
+
+void
+CModuleInfoEntry::Clear( void ) 
+{GUCEF_TRACE;
+
+    modulesPerPlatform.clear();
+    rootDir.Clear();
+    metadata.Clear();
+}
+
+/*---------------------------------------------------------------------------*/
+
+CModuleInfoEntry&
+CModuleInfoEntry::operator=( const CModuleInfoEntry& src ) 
+{GUCEF_TRACE;
+
+    if ( &src != this )
+    {
+        modulesPerPlatform = src.modulesPerPlatform;
+        rootDir = src.rootDir;
+        metadata = src.metadata;
+    }
+    return *this;
+}
+
+/*---------------------------------------------------------------------------*/
+               
+bool 
+CModuleInfoEntry::Serialize( CORE::CDataNode& domRootNode                        ,
+                             const CORE::CDataNodeSerializableSettings& settings ) const
+{GUCEF_TRACE;
+
+    bool totalSuccess = true;
+    
+    domRootNode.SetAttribute( "RootDir", rootDir );
+
+    CORE::CDataNode* metaDataNode = domRootNode.AddChild( "ModuleMetaData" );
+    if ( GUCEF_NULL != metaDataNode )
+    {
+        totalSuccess = metadata.Serialize( *metaDataNode, settings ) && totalSuccess;
+    }
+
+    TModuleInfoMap::const_iterator i = modulesPerPlatform.begin();
+    while ( i != modulesPerPlatform.end() )
+    {
+        const CORE::CString& platform = (*i).first;
+        const TModuleInfo& moduleInfo = (*i).second;
+
+        if ( !SerializeModuleInfo( *this           ,
+                                   moduleInfo      ,
+                                   platform        ,
+                                   domRootNode     ) )
+        {
+            GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "SerializeModuleInfo: Failed to serialize moduleInfo of module " + moduleInfo.name + " for platform " + platform );
+            totalSuccess = false;
+        }
+
+        ++i;
+    }
+    
+    return totalSuccess;
+}
+
+/*---------------------------------------------------------------------------*/
+
+void
+CModuleInfoEntry::SetModuleInfo( TModuleInfo& moduleInfo       ,
+                                 const CORE::CString& platform )
+{GUCEF_TRACE;
+
+    // First check if we already have a entry for this platform
+    TModuleInfoMap::iterator i = modulesPerPlatform.find( platform );
+    if ( i != modulesPerPlatform.end() )
+    {
+        // Since we already have an entry for this platform we will merge the two
+        MergeModuleInfo( (*i).second, moduleInfo );
+    }
+    else
+    {
+        modulesPerPlatform[ platform ] = moduleInfo;
+    }
+}
+
+/*---------------------------------------------------------------------------*/
+
+bool
+CModuleInfoEntry::Deserialize( const CORE::CDataNode& domRootNode                  ,
+                               const CORE::CDataNodeSerializableSettings& settings )
+{GUCEF_TRACE;
+
+    if ( rootDir.IsNULLOrEmpty() )
+    {
+        rootDir = domRootNode.GetAttributeValue( "RootDir" );
+    }
+
+    const CORE::CDataNode* metaDataNode = domRootNode.FindChild( "ModuleMetaData", false );
+    if ( GUCEF_NULL != metaDataNode )
+    {
+        if ( !metadata.Deserialize( *metaDataNode, settings ) )
+        {
+            GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "CModuleInfoEntry:Deserialize: Failed to deserialize metadata" );
+            return false;
+        }
+    }
+
+    const CORE::CDataNode::TConstDataNodeSet moduleInfoNodes = domRootNode.FindChildrenOfType( "Module" );
+    if ( moduleInfoNodes.size() == 0 ) 
+        return false;
+
+    CORE::CDataNode::TConstDataNodeSet::const_iterator n = moduleInfoNodes.begin();
+    while ( n != moduleInfoNodes.end() )
+    {
+        TModuleInfo moduleInfoForPlatform;
+        InitializeModuleInfo( moduleInfoForPlatform );
+
+        const CORE::CDataNode* moduleNode = (*n);
+
+        if ( DeserializeModuleInfo( moduleInfoForPlatform ,
+                                    *moduleNode           ) )
+        {
+            if ( moduleInfoForPlatform.name.IsNULLOrEmpty() )
+            {
+                GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Successfully deserialized module definition for module with no name specified for the applicable platforms" );
+            }
+            else
+            {
+                GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Successfully deserialized module definition for module with name " + moduleInfoForPlatform.name );
+            }
+
+            // Get all platforms for which this info applies.
+            // Keep in mind that multiple platforms can be specified for ease of use.
+            // This feature requires platform entries to be seperated by a ';'
+            TStringVector platforms = moduleNode->GetAttributeValue( "Platform" ).AsString().Lowercase().ParseElements( ';', false);
+
+            if ( platforms.empty() )
+            {
+                GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "Failed to locate a Platform value for a module, will default to all platforms but this may not be correct" );
+                platforms.push_back( AllPlatforms );
+            }
+
+            TStringVector::iterator i = platforms.begin();
+            while ( i != platforms.end() )
+            {
+                // @TODO: find a cleaner way to resolve this vs userdata
+                TProjectInfo* projectInfo = static_cast<TProjectInfo*>( settings.GetUserData() );  
+                if ( GUCEF_NULL == projectInfo )
+                    return false;
+
+                TStringSet actualPlatforms = ResolveMultiPlatformName( (*i), &projectInfo->platforms );
+                TStringSet::iterator n = actualPlatforms.begin();
+                while ( n != actualPlatforms.end() )
+                {
+                    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Adding module definition for platform " + (*n) );
+                    SetModuleInfo( moduleInfoForPlatform, (*n) );
+                    ++n;
+                }                
+
+                ++i;
+            }
+        }
+        else
+        {
+            return false;
+        }
+        ++n;
+    }
+
+    return true;
+}
+
+/*---------------------------------------------------------------------------*/
+
+CORE::CICloneable* 
+CModuleInfoEntry::Clone( void ) const 
+{GUCEF_TRACE;
+
+    return new CModuleInfoEntry( *this );
+}
+
+/*---------------------------------------------------------------------------*/
+
+const CORE::CString& 
+CModuleInfoEntry::GetClassTypeName( void ) const 
+{GUCEF_TRACE;
+
+    return ClassTypeName;
 }
 
 /*-------------------------------------------------------------------------//

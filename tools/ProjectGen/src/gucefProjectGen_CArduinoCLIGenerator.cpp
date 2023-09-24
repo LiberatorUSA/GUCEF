@@ -195,7 +195,7 @@ CreateArduinoCLIOutputFolderStructure( const CORE::CString& outputDir  ,
 /*-------------------------------------------------------------------------*/
 
 bool
-IsArduinoCompilationTarget( const TModuleInfoEntry& moduleInfoEntry   ,
+IsArduinoCompilationTarget( const CModuleInfoEntry& moduleInfoEntry   ,
                             const TModuleInfo& moduleInfo             ,
                             bool onlyConsiderSpecificTags             ,
                             const CORE::CString::StringSet& validTags )
@@ -205,7 +205,6 @@ IsArduinoCompilationTarget( const TModuleInfoEntry& moduleInfoEntry   ,
             ( onlyConsiderSpecificTags && IsModuleTagged( moduleInfoEntry, validTags, ArduinoPlatformName ) ) )
     {
         if ( !moduleInfo.ignoreModule                                          &&
-            ( MODULETYPE_HEADER_INCLUDE_LOCATION != moduleInfo.moduleType )   &&
             ( MODULETYPE_HEADER_INTEGRATE_LOCATION != moduleInfo.moduleType ) &&
             ( MODULETYPE_CODE_INTEGRATE_LOCATION != moduleInfo.moduleType )   &&
             ( MODULETYPE_REFERENCE_LIBRARY != moduleInfo.moduleType )         &&
@@ -240,7 +239,7 @@ CreateArduinoCLIWindowsSymlinkBatchfiles( const TModuleInfoEntryPairVector& merg
     TModuleInfoEntryPairVector::const_iterator i = mergeLinks.begin();
     while ( i != mergeLinks.end() )
     {
-        const TModuleInfoEntry* originalModule = (*i).first;
+        const CModuleInfoEntry* originalModule = (*i).first;
         const TModuleInfo* mergedModule = (*i).second;
 
         if ( IsArduinoCompilationTarget( *originalModule          ,
@@ -289,7 +288,7 @@ CreateArduinoCLIWindowsSymlinkBatchfiles( const TModuleInfoEntryPairVector& merg
     i = mergeLinks.begin();
     while ( i != mergeLinks.end() )
     {
-        const TModuleInfoEntry* originalModule = (*i).first;
+        const CModuleInfoEntry* originalModule = (*i).first;
         const TModuleInfo* mergedModule = (*i).second;
 
         if ( IsArduinoCompilationTarget( *originalModule          ,
@@ -340,7 +339,7 @@ CreateArduinoCLILibraryPropertiesFiles( const TModuleInfoEntryPairVector& mergeL
     TModuleInfoEntryPairVector::const_iterator i = mergeLinks.begin();
     while ( i != mergeLinks.end() )
     {
-        const TModuleInfoEntry* originalModule = (*i).first;
+        const CModuleInfoEntry* originalModule = (*i).first;
         const TModuleInfo* mergedModule = (*i).second;
 
         if ( IsArduinoCompilationTarget( *originalModule          ,
@@ -349,43 +348,52 @@ CreateArduinoCLILibraryPropertiesFiles( const TModuleInfoEntryPairVector& mergeL
                                          validTags                ) )
         {
             // All libraries are essentially 'static' libraries for an Arduino since it all gets compiled into a singular sketch
-            if ( MODULETYPE_SHARED_LIBRARY == mergedModule->moduleType ||       
-                 MODULETYPE_STATIC_LIBRARY == mergedModule->moduleType )
+            if ( MODULETYPE_HEADER_INCLUDE_LOCATION == mergedModule->moduleType ||
+                 MODULETYPE_SHARED_LIBRARY          == mergedModule->moduleType ||       
+                 MODULETYPE_STATIC_LIBRARY          == mergedModule->moduleType )
             {
                 CORE::CString moduleOutputDir = CORE::RelativePath( CORE::CombinePath( libraryOutputDir, mergedModule->name ) );
-                CORE::CString libPropsPath = CORE::RelativePath( CORE::CombinePath( moduleOutputDir, "library.properties" ) );
-
-                GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Generating library.properties for module \"" + mergedModule->name + "\" at: " + libPropsPath );
-
-                CORE::CString content = "name=" + mergedModule->name + "\n";
-                             content += "version=" + mergedModule->semver.ToString( true, true, false ) + "\n";
-                             content += "author=" + CORE::StringSetToString( originalModule->authors, CORE::CString::Empty, ',' ) + "\n";
-                             content += "maintainer=" + CORE::StringSetToString( originalModule->maintainers, CORE::CString::Empty, ',' ) + "\n";
-                             content += "sentence=" + originalModule->descriptionHeadline + "\n";
-                             content += "paragraph=" + originalModule->descriptionDetails + "\n";
-                             content += "license=" + originalModule->license + "\n";
-
-                //architectures=avr,megaavr  ?
-                //includes=src/common/include/gucef.h   ?
-                
-                CORE::CString::StringSet dependencies;
-                GetModuleDependencies( *originalModule     ,
-                                       ArduinoPlatformName ,
-                                       dependencies        ,
-                                       false               );                
-                content += "depends=" + CORE::StringSetToString( dependencies, CORE::CString::Empty, ',' ) + "\n";
-                
-                if ( CORE::WriteStringAsTextFile( libPropsPath ,
-                                                  content      ,
-                                                  true         ,
-                                                  GUCEF_EOL    ) )
+                if ( CORE::CreateDirs( moduleOutputDir ) )
                 {
-                    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Successfully created Arduino library.propertie file at " + libPropsPath );
+                    CORE::CString libPropsPath = CORE::RelativePath( CORE::CombinePath( moduleOutputDir, "library.properties" ) );
+
+                    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Generating library.properties for module \"" + mergedModule->name + "\" at: " + libPropsPath );
+
+                    CORE::CString content = "name=" + mergedModule->name + "\n";
+                                 content += "version=" + mergedModule->semver.ToString( true, true, false ) + "\n";
+                                 content += "author=" + CORE::StringSetToString( originalModule->metadata.authors, CORE::CString::Empty, ',' ) + "\n";
+                                 content += "maintainer=" + CORE::StringSetToString( originalModule->metadata.maintainers, CORE::CString::Empty, ',' ) + "\n";
+                                 content += "sentence=" + originalModule->metadata.descriptionHeadline + "\n";
+                                 content += "paragraph=" + originalModule->metadata.descriptionDetails + "\n";
+                                 content += "license=" + originalModule->metadata.license + "\n";
+
+                    //architectures=avr,megaavr  ?
+                    //includes=src/common/include/gucef.h   ?
+                
+                    CORE::CString::StringSet dependencies;
+                    GetModuleDependencies( *originalModule     ,
+                                           ArduinoPlatformName ,
+                                           dependencies        ,
+                                           false               );                
+                    content += "depends=" + CORE::StringSetToString( dependencies, CORE::CString::Empty, ',' ) + "\n";
+                
+                    if ( CORE::WriteStringAsTextFile( libPropsPath ,
+                                                      content      ,
+                                                      true         ,
+                                                      GUCEF_EOL    ) )
+                    {
+                        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Successfully created Arduino library.propertie file at " + libPropsPath );
+                    }
+                    else
+                    {
+                        totalSuccess = false;
+                        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "Failed to write Arduino library.propertie file at " + libPropsPath );
+                    }
                 }
                 else
                 {
+                    GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "Failed to create Arduino library directory at " + moduleOutputDir );    
                     totalSuccess = false;
-                    GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "Failed to write Arduino library.propertie file at " + libPropsPath );
                 }
             }
         }

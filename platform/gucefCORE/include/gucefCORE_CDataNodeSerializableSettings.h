@@ -91,7 +91,12 @@ class GUCEF_CORE_PUBLIC_CPP CDataNodeSerializableSettings : public CIConfigurabl
 
     virtual CICloneable* Clone( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
+    void SetUserData( void* userData );
+
+    void* GetUserData( void ) const;
+
     UInt32 levelOfDetail;
+    void* m_userData;
 };
 
 /*-------------------------------------------------------------------------//

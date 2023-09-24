@@ -247,7 +247,7 @@ LoadCMakeFileAdditionTemplates( const CORE::CString& templateDir )
 /*---------------------------------------------------------------------------*/
 
 CORE::CString
-GenerateCMakeTemplatedAdditionSection( const TModuleInfoEntry& moduleInfoEntry ,
+GenerateCMakeTemplatedAdditionSection( const CModuleInfoEntry& moduleInfoEntry ,
                                        const CORE::CString& platformName       )
 {GUCEF_TRACE;
 
@@ -282,7 +282,7 @@ GenerateCMakeTemplatedAdditionSection( const TModuleInfoEntry& moduleInfoEntry ,
 /*---------------------------------------------------------------------------*/
 
 CORE::CString
-GenerateCMakeTemplatedAdditionSection( const TModuleInfoEntry& moduleInfoEntry )
+GenerateCMakeTemplatedAdditionSection( const CModuleInfoEntry& moduleInfoEntry )
 
 {GUCEF_TRACE;
 
@@ -384,7 +384,7 @@ GenerateCMakeListsFileSection( const CORE::CString& sectionContent ,
 /*---------------------------------------------------------------------------*/
 
 CORE::CString
-GenerateCMakeListsFileIncludeSection( const TModuleInfoEntry& moduleInfoEntry  ,
+GenerateCMakeListsFileIncludeSection( const CModuleInfoEntry& moduleInfoEntry  ,
                                       const CORE::CString& consensusModuleName )
 {GUCEF_TRACE;
 
@@ -410,7 +410,7 @@ GenerateCMakeListsFileIncludeSection( const TModuleInfoEntry& moduleInfoEntry  ,
 /*---------------------------------------------------------------------------*/
 
 CORE::CString
-GenerateCMakeListsFileSrcSection( const TModuleInfoEntry& moduleInfoEntry  ,
+GenerateCMakeListsFileSrcSection( const CModuleInfoEntry& moduleInfoEntry  ,
                                   const CORE::CString& consensusModuleName )
 {GUCEF_TRACE;
 
@@ -436,7 +436,7 @@ GenerateCMakeListsFileSrcSection( const TModuleInfoEntry& moduleInfoEntry  ,
 /*---------------------------------------------------------------------------*/
 
 void
-GenerateCMakeListsFilePlatformFilesSection( const TModuleInfoEntry& moduleInfoEntry ,
+GenerateCMakeListsFilePlatformFilesSection( const CModuleInfoEntry& moduleInfoEntry ,
                                             const CORE::CString& platformName       ,
                                             CORE::CString& headerSection            ,
                                             CORE::CString& sourceSection            ,
@@ -523,7 +523,7 @@ GenerateCMakeListsFilePlatformFilesSection( const TModuleInfoEntry& moduleInfoEn
 /*---------------------------------------------------------------------------*/
 
 CORE::CString
-GenerateCMakeListsFilePlatformFilesSection( const TModuleInfoEntry& moduleInfoEntry )
+GenerateCMakeListsFilePlatformFilesSection( const CModuleInfoEntry& moduleInfoEntry )
 {GUCEF_TRACE;
 
     bool hasPlatformHeaderFiles = false;
@@ -644,7 +644,7 @@ GenerateCMakeModuleIncludesSection( const TModuleInfo& moduleInfo ,
 /*---------------------------------------------------------------------------*/
 
 CORE::CString
-GenerateCMakeModuleIncludesSection( const TModuleInfoEntry& moduleInfoEntry )
+GenerateCMakeModuleIncludesSection( const CModuleInfoEntry& moduleInfoEntry )
 {GUCEF_TRACE;
 
     CORE::CString sectionContent;
@@ -701,7 +701,7 @@ GenerateAutoGenertedSeperator( bool end )
 /*---------------------------------------------------------------------------*/
 
 CORE::CString
-LoadLegacyCMakeListsSuffixFileFromDisk( const TModuleInfoEntry& moduleInfoEntry )
+LoadLegacyCMakeListsSuffixFileFromDisk( const CModuleInfoEntry& moduleInfoEntry )
 {GUCEF_TRACE;
 
     // Mainly meant to support backwards compatibility with the old way this tool
@@ -720,7 +720,7 @@ LoadLegacyCMakeListsSuffixFileFromDisk( const TModuleInfoEntry& moduleInfoEntry 
 /*---------------------------------------------------------------------------*/
 
 CORE::CString
-LoadCMakeListsAdditionFileFromDisk( const TModuleInfoEntry& moduleInfoEntry )
+LoadCMakeListsAdditionFileFromDisk( const CModuleInfoEntry& moduleInfoEntry )
 {GUCEF_TRACE;
 
     CORE::CString additionFilePath = moduleInfoEntry.rootDir;
@@ -792,7 +792,7 @@ GenerateCMakeModuleDependenciesLine( const TProjectInfo& projectInfo   ,
         {
             // We add all dependencies except for header include locations which are not real modules
             // and CMake will not be using a make file for those.
-            const TModuleInfoEntry* dependencyModule = GetModuleInfoEntry( projectInfo, (*i), platformName );
+            const CModuleInfoEntry* dependencyModule = GetModuleInfoEntry( projectInfo, (*i), platformName );
             if ( NULL != dependencyModule )
             {
                 TModuleType moduleType = GetModuleType( *dependencyModule, platformName );
@@ -893,7 +893,7 @@ GenerateCMakeModuleLinkerDirsLine( const TProjectInfo& projectInfo ,
 
 CORE::CString
 GenerateCMakeModuleLinkerDirsLines( const TProjectInfo& projectInfo         ,
-                                    const TModuleInfoEntry& moduleInfoEntry ,
+                                    const CModuleInfoEntry& moduleInfoEntry ,
                                     const CORE::CString& moduleName         )
 {GUCEF_TRACE;
 
@@ -957,7 +957,7 @@ GenerateCMakeModuleLinkerLine( const TProjectInfo& projectInfo   ,
         {
             // We add all dependencies except for header include locations which are not real modules
             // and CMake will not be using a make file for those.
-            const TModuleInfoEntry* dependencyModule = GetModuleInfoEntry( projectInfo, (*i).first, platformName );
+            const CModuleInfoEntry* dependencyModule = GetModuleInfoEntry( projectInfo, (*i).first, platformName );
             if ( NULL != dependencyModule )
             {
                 TModuleType moduleType = GetModuleType( *dependencyModule, platformName );
@@ -1020,7 +1020,39 @@ GenerateCMakeModuleDefinesLine( const TModuleInfo& moduleInfo     ,
 /*---------------------------------------------------------------------------*/          
 
 CORE::CString
-GenerateCMakeListsModuleNameSection( const TModuleInfoEntry& moduleInfoEntry )
+GenerateCMakeModuleVersionLine( const CModuleInfoEntry& moduleInfoEntry ,
+                                const TModuleInfo& moduleInfo           ,
+                                const CORE::CString& moduleName         ,
+                                const CORE::CString& platformName       )
+{GUCEF_TRACE;
+
+    GUCEF_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "Generating CMake section which defines the module version variable ${MODULE_VERSION} depending on the platform flags" );
+
+    CORE::CString sectionContent;
+
+    if ( !moduleInfoEntry.metadata.semver.IsAllZero() )
+    {
+        GUCEF_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "Generating CMake module preprocessor defines for module " + moduleName + " and platform " + platformName );
+
+        CORE::CString semverStr = moduleInfoEntry.metadata.semver.ToString();
+        CORE::CString sectionContent = ConvertEnvVarStrings( "set_property( TARGET ${MODULE_NAME} APPEND_STRING PROPERTY VERSION " + semverStr + " )\n" );
+
+        TModuleType moduleType = GetModuleType( moduleInfoEntry, platformName );
+        if ( MODULETYPE_SHARED_LIBRARY == moduleInfo.moduleType ||
+             MODULETYPE_STATIC_LIBRARY == moduleInfo.moduleType )
+        {
+            sectionContent += ConvertEnvVarStrings( "set_property( TARGET ${MODULE_NAME} APPEND_STRING PROPERTY SOVERSION " + semverStr + " )\n" );
+        }
+        return sectionContent;
+    }
+
+    return CORE::CString::Empty;
+}
+
+/*---------------------------------------------------------------------------*/          
+
+CORE::CString
+GenerateCMakeListsModuleNameSection( const CModuleInfoEntry& moduleInfoEntry )
 {GUCEF_TRACE;
 
     GUCEF_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "Generating CMake section which defines the module name variable ${MODULE_NAME} depending on the platform flags" );
@@ -1085,7 +1117,7 @@ GenerateCMakeListsModuleNameSection( const TModuleInfoEntry& moduleInfoEntry )
 /*---------------------------------------------------------------------------*/
 
 CORE::CString
-GenerateCMakeModuleDescriptionSection( const TModuleInfoEntry& moduleInfoEntry  ,
+GenerateCMakeModuleDescriptionSection( const CModuleInfoEntry& moduleInfoEntry  ,
                                        const CORE::CString& consensusModuleName )
 {GUCEF_TRACE;
 
@@ -1161,7 +1193,7 @@ GenerateCMakeModuleDescriptionSection( const TModuleInfoEntry& moduleInfoEntry  
 
 CORE::CString
 GenerateCMakeListsModuleInfoSection( const TProjectInfo& projectInfo         ,
-                                     const TModuleInfoEntry& moduleInfoEntry )
+                                     const CModuleInfoEntry& moduleInfoEntry )
 {GUCEF_TRACE;
 
     CORE::CString consensusName = GetConsensusModuleName( moduleInfoEntry );
@@ -1188,13 +1220,15 @@ GenerateCMakeListsModuleInfoSection( const TProjectInfo& projectInfo         ,
         CORE::CString moduleDependenciesStr = GenerateCMakeModuleDependenciesLine( projectInfo, moduleInfo, consensusName, platformName );
         CORE::CString moduleLinkingStr = GenerateCMakeModuleLinkerLine( projectInfo, moduleInfo, consensusName, platformName );
         CORE::CString moduleDefinesStr = GenerateCMakeModuleDefinesLine( moduleInfo, consensusName, platformName );
+        CORE::CString moduleVersionStr = GenerateCMakeModuleVersionLine( moduleInfoEntry, moduleInfo, consensusName, platformName );
 
         // make sure we actually have any instructions
         if ( !moduleDependenciesStr.IsNULLOrEmpty() ||
              !moduleLinkingStr.IsNULLOrEmpty()      ||
-             !moduleDefinesStr.IsNULLOrEmpty()       )
+             !moduleDefinesStr.IsNULLOrEmpty()      ||
+             !moduleVersionStr.IsNULLOrEmpty()       )
         {
-            sectionContent += ( moduleDependenciesStr + moduleLinkingStr + moduleDefinesStr );
+            sectionContent += ( moduleDependenciesStr + moduleLinkingStr + moduleDefinesStr + moduleVersionStr );
         }
     }
 
@@ -1250,7 +1284,7 @@ GenerateCMakeListsModuleInfoSection( const TProjectInfo& projectInfo         ,
 
 CORE::CString
 GenerateCMakeListsFileContent( const TProjectInfo& projectInfo         ,
-                               const TModuleInfoEntry& moduleInfoEntry ,
+                               const CModuleInfoEntry& moduleInfoEntry ,
                                bool treatTagsAsOptions                 ,
                                bool addCompileDate = false             )
 {GUCEF_TRACE;
@@ -1327,7 +1361,7 @@ WriteCMakeListsFilesToDisk( const TProjectInfo& projectInfo  ,
     TModuleInfoEntryVector::const_iterator i = projectInfo.modules.begin();
     while ( i != projectInfo.modules.end() )
     {
-        const TModuleInfoEntry& moduleInfoEntry = (*i);
+        const CModuleInfoEntry& moduleInfoEntry = (*i);
         TModuleType allPlatformsType = GetModuleType( moduleInfoEntry, AllPlatforms );
         if ( ( MODULETYPE_HEADER_INCLUDE_LOCATION != allPlatformsType )   &&
              ( MODULETYPE_HEADER_INTEGRATE_LOCATION != allPlatformsType ) &&
@@ -1450,7 +1484,7 @@ WriteCMakeTargetsToDisk( const TProjectInfo& projectInfo              ,
         TModuleInfoEntryConstPtrSet::const_iterator i = targetProjectInfo.modules.begin();
         while ( i != targetProjectInfo.modules.end() )
         {
-            const TModuleInfoEntry& moduleInfoEntry = *(*i);
+            const CModuleInfoEntry& moduleInfoEntry = *(*i);
 
             TModuleType moduleType = GetModuleType( moduleInfoEntry, targetPlatform );
             if ( ( MODULETYPE_HEADER_INCLUDE_LOCATION != moduleType )   &&
