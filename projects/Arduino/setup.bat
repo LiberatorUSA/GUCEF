@@ -17,7 +17,14 @@ arduino-cli lib install "Arduino_BuiltIn"
 arduino-cli lib install "ArduinoSTL"
 echo ---
 
-call "%GUCEF_THEBATCHDIR%setup_symlinks.bat"
+echo --- Generating Arduino supporting scripts
+echo ---
+SET NOPAUSE=1
+call "%GUCEF_THEBATCHDIR%GenerateArduinoSetup.bat"
+
+echo --- Executing Arduino supporting scripts
+echo ---
+call "%GUCEF_THEBATCHDIR%..\..\common\bin\Arduino\scripts\symlinks\create_symlinks.bat"
 
 echo --- Listing all installed libaries
 echo ---

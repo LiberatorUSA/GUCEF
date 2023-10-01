@@ -95,67 +95,75 @@ GenerateContentForArduinoCLIWindowsSymlinkBatchfile( const TModuleInfoEntryPairV
           "echo #\n\n";
     }
 
-    CORE::CString content = contentPrefix + "cmd /c mkdir \"" + CORE::RelativePath( outputDir ) + "\"\n\n";
+    CORE::CString scriptOutDir = CORE::RelativePath( outputDir );
+    CORE::CString content = contentPrefix + "IF NOT EXIST \"" + scriptOutDir + "\" mkdir \"" + scriptOutDir + "\"\n\n";
 
     if ( MODULETYPE_EXECUTABLE != moduleInfo.moduleType )
     {
         CORE::CString arduinoLibPath = "\"%UserProfile%\\Documents\\Arduino\\libraries\\" + moduleInfo.name + "\"";
         GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Generating symlink script from system Arduino libraries folder to module dir for module \"" + moduleInfo.name + "\" at: " + arduinoLibPath );
         content += "\necho Setting up \""+ moduleInfo.name + "\" library symlink at " + arduinoLibPath + "\n";
-        content += "cmd IF EXIST " + arduinoLibPath + " DEL /F " + arduinoLibPath + "\n";
-        content += "cmd /c mklink /d /J " + arduinoLibPath + " \"" + outputDir + "\"\n";
+        content += "IF EXIST " + arduinoLibPath + " DEL /F /Q " + arduinoLibPath + "\n";
+        content += "mklink /d /J " + arduinoLibPath + " \"" + outputDir + "\"\n";
     }
     
-    CORE::CString outputSrcDir = CORE::RelativePath( CORE::CombinePath( outputDir, "src" ) );
-    
-    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Generating symlinks script for all headers for module: " + moduleInfo.name );
-    content += "\necho Generating symlinks for all headers for module: " + moduleInfo.name + "\n";
-    
-    TStringSetMap::const_iterator i = moduleInfo.includeDirs.begin();
-    while ( i != moduleInfo.includeDirs.end() )
+    CORE::CString outputSrcDir = CORE::RelativePath( CORE::CombinePath( scriptOutDir, "src" ) );
+    content += "\n\nIF NOT EXIST \"" + outputSrcDir + "\" mkdir \"" + outputSrcDir + "\"\n";
+
+    if ( !moduleInfo.includeDirs.empty() )
     {
-        const CORE::CString& includeDir = (*i).first;
-        const CORE::CString::StringSet& includes = (*i).second;
-        
-        CORE::CString fullAbsIncludeDirPath = CORE::RelativePath( CORE::CombinePath( moduleRoot, includeDir ) );
-        
-        CORE::CString::StringSet::const_iterator n = includes.begin();
-        while ( n != includes.end() )
+        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Generating symlinks script for all headers for module: " + moduleInfo.name );
+        content += "\necho Generating symlinks for all headers for module: " + moduleInfo.name + "\n";
+    
+        TStringSetMap::const_iterator i = moduleInfo.includeDirs.begin();
+        while ( i != moduleInfo.includeDirs.end() )
         {
-            const CORE::CString& headerFilename = (*n);
-            CORE::CString fullAbsHeaderPath = CORE::RelativePath( CORE::CombinePath( fullAbsIncludeDirPath, headerFilename ) );
-            CORE::CString fullAbsSymLinkHeaderPath = CORE::RelativePath( CORE::CombinePath( outputSrcDir, headerFilename ) );
+            const CORE::CString& includeDir = (*i).first;
+            const CORE::CString::StringSet& includes = (*i).second;
+        
+            CORE::CString fullAbsIncludeDirPath = CORE::RelativePath( CORE::CombinePath( moduleRoot, includeDir ) );
+        
+            CORE::CString::StringSet::const_iterator n = includes.begin();
+            while ( n != includes.end() )
+            {
+                const CORE::CString& headerFilename = (*n);
+                CORE::CString fullAbsHeaderPath = CORE::RelativePath( CORE::CombinePath( fullAbsIncludeDirPath, headerFilename ) );
+                CORE::CString fullAbsSymLinkHeaderPath = CORE::RelativePath( CORE::CombinePath( outputSrcDir, headerFilename ) );
 
-            content += "cmd /c IF EXIST \"" + fullAbsSymLinkHeaderPath + "\" DEL /F \"" + fullAbsSymLinkHeaderPath + "\"\n";
-            content += "cmd /c mklink \"" + fullAbsSymLinkHeaderPath + "\" \"" + fullAbsHeaderPath + "\"\n";
-            ++n;
-        }
-        ++i;
-    }    
+                content += "IF EXIST \"" + fullAbsSymLinkHeaderPath + "\" DEL /F /Q \"" + fullAbsSymLinkHeaderPath + "\"\n";
+                content += "mklink \"" + fullAbsSymLinkHeaderPath + "\" \"" + fullAbsHeaderPath + "\"\n";
+                ++n;
+            }
+            ++i;
+        }    
+    }
 
-    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Generating symlinks script for all source files for module: " + moduleInfo.name );
-    content += "\necho Generating symlinks for all source files for module: " + moduleInfo.name + "\n";
-
-    i = moduleInfo.sourceDirs.begin();
-    while ( i != moduleInfo.sourceDirs.end() )
+    if ( !moduleInfo.sourceDirs.empty() )
     {
-        const CORE::CString& sourceDir = (*i).first;
-        const CORE::CString::StringSet& sources = (*i).second;
-        
-        CORE::CString fullAbsSourceDirPath = CORE::RelativePath( CORE::CombinePath( moduleRoot, sourceDir ) );
-        
-        CORE::CString::StringSet::const_iterator n = sources.begin();
-        while ( n != sources.end() )
-        {
-            const CORE::CString& sourceFilename = (*n);
-            CORE::CString fullAbsSourcePath = CORE::RelativePath( CORE::CombinePath( fullAbsSourceDirPath, sourceFilename ) );
-            CORE::CString fullAbsSymLinkSourcePath = CORE::RelativePath( CORE::CombinePath( outputSrcDir, sourceFilename ) );
+        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Generating symlinks script for all source files for module: " + moduleInfo.name );
+        content += "\necho Generating symlinks for all source files for module: " + moduleInfo.name + "\n";
 
-            content += "cmd /c IF EXIST \"" + fullAbsSymLinkSourcePath + "\" DEL /F \"" + fullAbsSymLinkSourcePath + "\"\n";
-            content += "cmd /c mklink \"" + fullAbsSymLinkSourcePath + "\" \"" + fullAbsSourcePath + "\"\n";
-            ++n;
+        TStringSetMap::const_iterator i = moduleInfo.sourceDirs.begin();
+        while ( i != moduleInfo.sourceDirs.end() )
+        {
+            const CORE::CString& sourceDir = (*i).first;
+            const CORE::CString::StringSet& sources = (*i).second;
+        
+            CORE::CString fullAbsSourceDirPath = CORE::RelativePath( CORE::CombinePath( moduleRoot, sourceDir ) );
+        
+            CORE::CString::StringSet::const_iterator n = sources.begin();
+            while ( n != sources.end() )
+            {
+                const CORE::CString& sourceFilename = (*n);
+                CORE::CString fullAbsSourcePath = CORE::RelativePath( CORE::CombinePath( fullAbsSourceDirPath, sourceFilename ) );
+                CORE::CString fullAbsSymLinkSourcePath = CORE::RelativePath( CORE::CombinePath( outputSrcDir, sourceFilename ) );
+
+                content += "IF EXIST \"" + fullAbsSymLinkSourcePath + "\" DEL /F /Q \"" + fullAbsSymLinkSourcePath + "\"\n";
+                content += "mklink \"" + fullAbsSymLinkSourcePath + "\" \"" + fullAbsSourcePath + "\"\n";
+                ++n;
+            }
+            ++i;
         }
-        ++i;
     }
 
     return content;
