@@ -45,9 +45,24 @@
 #define GUCEF_CORE_DVCPPOSWRAP_H
 #endif /* GUCEF_CORE_DVCPPOSWRAP_H ? */
 
+#ifndef GUCEF_CORE_CDYNAMICBUFFER_H
+#include "CDynamicBuffer.h"
+#define GUCEF_CORE_CDYNAMICBUFFER_H
+#endif /* GUCEF_CORE_CDYNAMICBUFFER_H ? */
+
+#ifndef GUCEF_CORE_CVARIANT_H
+#include "gucefCORE_CVariant.h"
+#define GUCEF_CORE_CVARIANT_H
+#endif /* GUCEF_CORE_CVARIANT_H ? */
+
 #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
 
   #include <WinSock2.h>
+
+  #ifndef GUCEF_CORE_MSWINUTILS_H
+  #include "gucefCORE_mswinutils.h"
+  #define GUCEF_CORE_MSWINUTILS_H
+  #endif /* GUCEF_CORE_MSWINUTILS_H? */
 
 #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
 
@@ -307,6 +322,225 @@ CommandLineExecute( const CString& command ,
     return true;
 
     #endif
+}
+
+/*--------------------------------------------------------------------------*/
+
+CProcessInformation::CProcessInformation( void )
+    : m_commandLineArgs()
+    , m_imagePath()
+    , m_cStyleAccess()
+{GUCEF_TRACE;
+
+    memset( &m_cStyleAccess, 0, sizeof( m_cStyleAccess ) );
+    m_cStyleAccess.commandLineArgs = m_commandLineArgs.C_String();
+    m_cStyleAccess.commandLineArgsByteSize = 0;
+}
+
+/*--------------------------------------------------------------------------*/
+
+CProcessInformation::~CProcessInformation()
+{GUCEF_TRACE;
+
+    Clear();
+}
+
+/*--------------------------------------------------------------------------*/
+
+void
+CProcessInformation::Clear( void )
+{GUCEF_TRACE;
+
+    memset( &m_cStyleAccess, 0, sizeof( m_cStyleAccess ) );
+    m_commandLineArgs.Clear();
+    m_imagePath.Clear();
+}
+
+/*--------------------------------------------------------------------------*/
+
+void
+CProcessInformation::SetImagePath( const CString& str )
+{GUCEF_TRACE;
+
+    m_imagePath = str;
+    m_cStyleAccess.imagePath = m_imagePath.C_String();
+    m_cStyleAccess.imagePathByteSize = m_imagePath.ByteSize();
+}
+
+/*--------------------------------------------------------------------------*/
+
+CString& 
+CProcessInformation::GetImagePath( void )
+{GUCEF_TRACE;
+
+    return m_imagePath;
+}
+
+/*--------------------------------------------------------------------------*/
+
+void
+CProcessInformation::SetCommandLineArgs( const CString& str )
+{GUCEF_TRACE;
+
+    m_commandLineArgs = str;
+    m_cStyleAccess.commandLineArgs = m_commandLineArgs.C_String();
+    m_cStyleAccess.commandLineArgsByteSize = m_commandLineArgs.ByteSize();
+}
+
+/*--------------------------------------------------------------------------*/
+
+CString& 
+CProcessInformation::GetCommandLineArgs( void )
+{GUCEF_TRACE;
+
+    return m_commandLineArgs;
+}
+
+/*--------------------------------------------------------------------------*/
+
+const TProcessInformation& 
+CProcessInformation::GetCStyleAccess( void ) const
+{GUCEF_TRACE;
+    
+    return m_cStyleAccess;
+}
+
+/*--------------------------------------------------------------------------*/
+
+bool
+CProcessInformation::TryGetProcessInformation( TProcessId* pid           ,
+                                               CProcessInformation& info )
+{GUCEF_TRACE;
+
+    if ( GUCEF_NULL != pid )
+    {                                                                 
+        #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
+
+        // First open a handle to the other process
+
+        CLIENT_ID clientId;
+        clientId.UniqueThread = NULL;
+        clientId.UniqueProcess = UlongToHandle( pid->pid );
+        
+        OBJECT_ATTRIBUTES objAttribs;
+        InitializeObjectAttributes( &objAttribs, NULL, 0, NULL, NULL );
+        
+        HANDLE hProcess = 0;        
+        ::NTSTATUS status = TryNtOpenProcess( &hProcess,
+                                              (ACCESS_MASK) (PROCESS_VM_READ|PROCESS_QUERY_INFORMATION),
+                                              &objAttribs,
+                                              &clientId );
+        if ( !WIN32_NT_SUCCESS( status ) || GUCEF_NULL == hProcess )
+        {
+            GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "ProcessInformation:TryGetProcessInformation: Failed to open handle to process" );
+            return false;
+        }
+        
+        // Now obtain basic starting off info about the process
+        
+        bool totalSuccess = true;
+
+        PROCESS_BASIC_INFORMATION pbi;                
+        _RTL_USER_PROCESS_PARAMETERS* pv = NULL;
+        _RTL_USER_PROCESS_PARAMETERS procParameters;
+        memset( &procParameters, 0, sizeof( procParameters ) );
+        
+        ::NTSTATUS status2 = 0;
+        PROCESSINFOCLASS procBasicInformation = PROCESSINFOCLASS::ProcessBasicInformation;
+        status = TryNtQueryInformationProcess( hProcess, procBasicInformation, &pbi, sizeof(pbi), 0 );
+        if ( WIN32_NT_SUCCESS( status ) )
+        {
+            // Now get the information we are after
+            
+            status = TryNtReadVirtualMemory( hProcess, (_PEB*)&pbi.PebBaseAddress->ProcessParameters, &pv, sizeof(pv), 0 );
+            status2 = TryNtReadVirtualMemory( hProcess, pv, &procParameters, sizeof(procParameters), 0 );
+            if ( WIN32_NT_SUCCESS( status ) && WIN32_NT_SUCCESS( status2 ) )
+            {
+                CDynamicBuffer buffer;
+                if ( procParameters.CommandLine.Length > 0 )
+                {                                         
+                    UInt32 strByteSize = ( procParameters.CommandLine.Length * sizeof(WCHAR) ) + sizeof(WCHAR);
+                    if ( buffer.SetBufferSize( strByteSize, false, true ) )
+                    {
+                        buffer.SetDataSize( strByteSize );
+                        wchar_t* cmdLineBuffer = buffer.AsTypePtr< wchar_t >();
+                        status = TryNtReadVirtualMemory( hProcess, procParameters.CommandLine.Buffer, cmdLineBuffer, procParameters.CommandLine.Length, 0 );
+                        if ( WIN32_NT_SUCCESS( status ) )
+                        {
+                            // set the null terminator
+                            *(PWSTR)RtlOffsetToPointer( cmdLineBuffer, procParameters.CommandLine.Length ) = 0;
+                            
+                            CVariant convertor;
+                            convertor.LinkTo( cmdLineBuffer, buffer.GetDataSize(), GUCEF_DATATYPE_UTF16_STRING );
+                            info.SetCommandLineArgs( convertor.AsString() ); 
+                            
+                            //MaximumLength = (CommandLine->Length = ProcessParameters.CommandLine.Length) + sizeof(WCHAR);
+                        }
+                        else
+                        {
+                            totalSuccess = false;
+                        }
+                    }
+                    else
+                    {
+                        totalSuccess = false;
+                    }
+                }
+                if ( procParameters.ImagePathName.Length > 0 )
+                {
+                    UInt32 strByteSize = ( procParameters.ImagePathName.Length * sizeof(WCHAR) ) + sizeof(WCHAR);
+                    if ( buffer.SetBufferSize( strByteSize, false, true ) )
+                    {
+                        buffer.SetDataSize( strByteSize );
+                        wchar_t* imgPathBuffer = buffer.AsTypePtr< wchar_t >();
+                        status = TryNtReadVirtualMemory( hProcess, procParameters.ImagePathName.Buffer, imgPathBuffer, procParameters.ImagePathName.Length, 0 );
+                        if ( WIN32_NT_SUCCESS( status ) )
+                        {
+                            // set the null terminator
+                            *(PWSTR)RtlOffsetToPointer( imgPathBuffer, procParameters.ImagePathName.Length ) = 0;
+                            
+                            CVariant convertor;
+                            convertor.LinkTo( imgPathBuffer, buffer.GetDataSize(), GUCEF_DATATYPE_UTF16_STRING );
+                            info.SetImagePath( convertor.AsString() ); 
+                            
+                            //MaximumLength = (CommandLine->Length = ProcessParameters.CommandLine.Length) + sizeof(WCHAR);
+                        }
+                        else
+                        {
+                            totalSuccess = false;
+                        }
+                    }
+                    else
+                    {
+                        totalSuccess = false;
+                    }
+                }
+            }
+            else
+            {
+                GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "ProcessInformation:TryGetProcessInformation: Failed TryNtReadVirtualMemory" );
+            }
+        }
+        else
+        {
+            GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "ProcessInformation:TryGetProcessInformation: Failed TryNtQueryInformationProcess" );
+        }
+
+        ::CloseHandle( hProcess );
+
+        return totalSuccess;
+        
+        #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
+
+        // @TODO: Make the Linux variant
+        
+        #else
+
+        return OSWRAP_FALSE;
+
+        #endif
+    }
+    return OSWRAP_FALSE;
 }
 
 /*-------------------------------------------------------------------------//

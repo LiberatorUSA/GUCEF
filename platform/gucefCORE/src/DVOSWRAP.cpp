@@ -49,6 +49,11 @@
   #undef max
   #define MAX_DIR_LENGTH MAX_PATH
 
+  #ifndef GUCEF_CORE_MSWINUTILS_H
+  #include "gucefCORE_mswinutils.h"
+  #define GUCEF_CORE_MSWINUTILS_H
+  #endif /* GUCEF_CORE_MSWINUTILS_H? */
+
 #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
 
   #include <sys/times.h>
@@ -68,6 +73,11 @@
 #endif /* GUCEF_CORE_DVSTRUTILS_H ? */
 
 #include "DVOSWRAP.h"               /* O/S Wrapping function prototypes*/
+
+#ifndef GUCEF_CORE_DVCPPOSWRAP_H
+#include "DVCPPOSWRAP.h"
+#define GUCEF_CORE_DVCPPOSWRAP_H
+#endif /* GUCEF_CORE_DVCPPOSWRAP_H ? */
 
 #ifndef GUCEF_CORE_GUCEF_ESSENTIALS_H
 #include "gucef_essentials.h"
@@ -95,6 +105,19 @@ namespace CORE {
 //      TYPES                                                              //
 //                                                                         //
 //-------------------------------------------------------------------------*/
+
+#if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
+ // defined elsewhere right now
+#else
+struct SProcessId
+{    
+    #if ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
+    pid_t pid;
+    #else
+    int foobar_NotSupported;
+    #endif
+};
+#endif
 
 /*--------------------------------------------------------------------------*/
 
@@ -410,17 +433,6 @@ struct SProcCpuDataPoint
     #endif
 };
 
-struct SProcessId
-{
-    #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
-    DWORD pid;
-    #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
-    pid_t pid;
-    #else
-    int foobar_NotSupported;
-    #endif
-};
-
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      IMPLEMENTATION                                                     //
@@ -707,7 +719,7 @@ GetCurrentHWND( void )
 
 /*--------------------------------------------------------------------------*/
 
-UInt32
+OSWRAP_BOOLINT
 StringToClipboard( const char *str )
 {
     #ifdef GUCEF_MSWIN_BUILD
@@ -795,7 +807,7 @@ StringToClipboard( const char *str )
  *      equals size. Do note that any other proccess can empty the clipboard
  *      in between calls.
  */
-UInt32
+OSWRAP_BOOLINT
 StringFromClipboard( char *dest     ,
                      UInt32 size    ,
                      UInt32 *wbytes )
@@ -867,7 +879,7 @@ StringFromClipboard( char *dest     ,
 
 /*--------------------------------------------------------------------------*/
 
-UInt32
+OSWRAP_BOOLINT
 GUCEFSetEnv( const char* key   ,
              const char* value )
 {GUCEF_TRACE;
@@ -1006,7 +1018,7 @@ GetLogicalCPUCount( void )
 
 /*--------------------------------------------------------------------------*/
 
-UInt32
+OSWRAP_BOOLINT
 GetProcessList( struct SProcessId** processList ,
                 UInt32* processCount            )
 {GUCEF_TRACE;
@@ -1087,9 +1099,12 @@ GetProcessList( struct SProcessId** processList ,
     if ( i > 0 )
     {
         *processList = (struct SProcessId*) malloc( i * sizeof(struct SProcessId) );
-        for ( UInt32 n=0; n<i; ++n )
+        if ( GUCEF_NULL != (*processList) )
         {
-            (*processList)[ n ].pid = linuxProcessList[ n ];
+            for ( UInt32 n=0; n<i; ++n )
+            {
+                (*processList)[ n ].pid = linuxProcessList[ n ];
+            }
         }
     }
     else
@@ -1133,6 +1148,44 @@ GetProcessIdAtIndex( TProcessId* processList ,
 
 /*--------------------------------------------------------------------------*/
 
+OSWRAP_BOOLINT
+IsProcessStillActive( TProcessId* pid, OSWRAP_BOOLINT* status )
+{GUCEF_TRACE;
+
+    if ( GUCEF_NULL != pid && GUCEF_NULL != status )
+    {
+        #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
+
+        // To get the alive status of another proc we need a handle to it
+        HANDLE hProcess = ::OpenProcess( PROCESS_QUERY_INFORMATION,
+                                         FALSE,
+                                         pid->pid );
+        if ( GUCEF_NULL == hProcess )
+            return OSWRAP_FALSE;
+
+        *status = OSWRAP_TRUE;                         
+        DWORD exitCode = 0;
+        if ( ( ::GetExitCodeProcess( hProcess, &exitCode ) == FALSE ) || exitCode != STILL_ACTIVE )
+        {
+            *status = OSWRAP_FALSE;
+        }
+        
+        ::CloseHandle( hProcess );
+        return OSWRAP_TRUE;
+
+        #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
+
+        #else
+
+        return OSWRAP_FALSE;
+
+        #endif
+    }
+    return OSWRAP_FALSE;
+}
+
+/*--------------------------------------------------------------------------*/
+
 TProcessId*
 CopyProcessId( TProcessId* pid )
 {GUCEF_TRACE;
@@ -1140,7 +1193,8 @@ CopyProcessId( TProcessId* pid )
     if ( GUCEF_NULL != pid )
     {
         TProcessId* pidCopy = (TProcessId*) malloc( sizeof(TProcessId) );
-        memcpy( pidCopy, pid, sizeof(TProcessId) );
+        if ( GUCEF_NULL != pidCopy )
+            memcpy( pidCopy, pid, sizeof(TProcessId) );
         return pidCopy;
     }
     return GUCEF_NULL;
@@ -1602,6 +1656,59 @@ CreateProcCpuDataPoint( TProcessId* pid )
     dataPoint->pid = pid->pid;
     GetGlobalJiffies( &dataPoint->globalJiffies );
     GetProcJiffies( pid->pid, &dataPoint->procUserModeJiffies, &dataPoint->procKernelModeJiffies );
+    #endif
+
+    return dataPoint;
+}
+
+/*--------------------------------------------------------------------------*/
+
+GUCEF_CORE_PUBLIC_C TProcCpuDataPoint*
+CopyProcCpuDataPoint( TProcCpuDataPoint* srcCpuDataDataPoint ,
+                      TProcessId* newProcId                  )
+{GUCEF_TRACE;
+
+    if ( GUCEF_NULL == srcCpuDataDataPoint )
+        return GUCEF_NULL;
+
+    TProcCpuDataPoint* dataPoint = (TProcCpuDataPoint*) malloc( sizeof( TProcCpuDataPoint ) );
+    if ( GUCEF_NULL == dataPoint )
+        return GUCEF_NULL;
+    memset( dataPoint, 0, sizeof( TProcCpuDataPoint ) );
+
+    #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
+
+    if ( GUCEF_NULL == newProcId )
+        dataPoint->pid = srcCpuDataDataPoint->pid;
+    else
+        dataPoint->pid = newProcId->pid;
+        
+    dataPoint->hProcess = ::OpenProcess( PROCESS_QUERY_INFORMATION,
+                                         FALSE,
+                                         dataPoint->pid );
+    if ( GUCEF_NULL == dataPoint->hProcess )
+    {
+        free( dataPoint );
+        return GUCEF_NULL;
+    }
+
+    dataPoint->globalIdleTime = srcCpuDataDataPoint->globalIdleTime;
+    dataPoint->globalKernelTime = srcCpuDataDataPoint->globalKernelTime;
+    dataPoint->globalUserTime = srcCpuDataDataPoint->globalUserTime;
+    dataPoint->procKernelTime = srcCpuDataDataPoint->procKernelTime;
+    dataPoint->procUserTime = srcCpuDataDataPoint->procUserTime;
+    
+    #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
+
+    if ( GUCEF_NULL == newProcId )
+        dataPoint->pid = srcCpuDataDataPoint->pid;
+    else
+        dataPoint->pid = newProcId->pid;
+
+    dataPoint->globalJiffies = srcCpuDataDataPoint->globalJiffies;
+    dataPoint->procUserModeJiffies = srcCpuDataDataPoint->procUserModeJiffies;
+    dataPoint->procKernelModeJiffies = srcCpuDataDataPoint->procKernelModeJiffies;
+    
     #endif
 
     return dataPoint;

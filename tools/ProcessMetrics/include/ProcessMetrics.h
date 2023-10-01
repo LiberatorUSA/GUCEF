@@ -201,12 +201,19 @@ class ProcessMetrics : public CORE::CObservingNotifier
 
     void RegisterEventHandlers( void );
 
+    void RefreshPIDs( const CORE::CString::StringSet& exeNames );
+
     void RefreshPIDs( void );
 
     void
     OnMetricsTimerCycle( CORE::CNotifier* notifier    ,
                          const CORE::CEvent& eventId  ,
                          CORE::CICloneable* eventData );
+
+    void
+    OnProcScanTimerCycle( CORE::CNotifier* notifier    ,
+                          const CORE::CEvent& eventId  ,
+                          CORE::CICloneable* eventData );
 
     void ValidateMetricThresholds( const CORE::CVariant& metricValue ,
                                    const CORE::CString& metricName   ,
@@ -223,15 +230,39 @@ class ProcessMetrics : public CORE::CObservingNotifier
     
     private:
 
-    struct SProcInfo
+    class CProcInfo : public CORE::CObservingNotifier
     {
+        public:
+
+        static const CORE::CEvent PidChangedEvent;
+
         CORE::TProcessId* pid;
         CORE::TProcCpuDataPoint* previousProcCpuDataDataPoint;
+        CORE::CProcessInformation processInformation;
+        UInt64 lastUptimeInMs;
+        CORE::CString exeName;
+        bool startIfNotRunning;
+        bool restartIfStopsRunning;
+
+        CProcInfo( void );
+
+        ~CProcInfo();      
+
+        CProcInfo& operator=( const CProcInfo& src );
+
+        void Clear( void );
+
+        bool RefreshPID( void );
+
+        bool RefreshPID( CORE::TProcessId* allProcIds, CORE::UInt32 procIdCount );
+
+        bool RefreshPID( CORE::TProcessId* newProcId );
+
+        bool IsProcessStillActive( void );
     };
-    typedef struct SProcInfo TProcInfo;
 
     typedef CORE::CTEventHandlerFunctor< ProcessMetrics > TEventCallback;
-    typedef std::map< CORE::CString, TProcInfo > TProcessIdMap;
+    typedef std::map< CORE::CString, CProcInfo > TProcessIdMap;
     typedef CORE::CString::StringSet TStringSet;
     typedef CORE::CString::StringVector TStringVector;
     typedef std::map< CORE::CString, MetricThreshold >  TMetricsThresholdMap;
@@ -243,6 +274,7 @@ class ProcessMetrics : public CORE::CObservingNotifier
     CORE::CValueList m_appConfig;
     CORE::CDataNode m_globalConfig;
     CORE::CTimer m_metricsTimer;
+    CORE::CTimer m_procIndexTimer;
     PUBSUB::CPubSubClientFactory::TProductPtr m_pubSubClient;
     PUBSUB::CPubSubClientTopicPtr m_thresholdNotificationPublishTopic;
     PUBSUB::CPubSubClientFeatures m_pubSubFeatures;
@@ -251,8 +283,7 @@ class ProcessMetrics : public CORE::CObservingNotifier
     bool m_gatherCpuStats;
     bool m_enableRestApi;
     bool m_enableEventMsgPublishing;
-    TProcessIdMap m_exeProcIdMap;
-    TStringSet m_exeProcsToWatch;
+    TProcessIdMap m_exeProcsToWatch;
     CORE::UInt32 m_exeMatchPidMatchThreshold;
     TMetricsThresholdMap m_metricsThresholds;
     TMetricsThresholdMapMap m_procMetricsThresholds;

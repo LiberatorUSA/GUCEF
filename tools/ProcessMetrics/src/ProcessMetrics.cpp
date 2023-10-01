@@ -246,6 +246,200 @@ MetricThreshold::GetClassTypeName( void ) const
 
 /*-------------------------------------------------------------------------*/
 
+const CORE::CEvent ProcessMetrics::CProcInfo::PidChangedEvent = "GUCEF::CORE::ProcessMetrics::CProcInfo::PidChangedEvent";
+
+/*-------------------------------------------------------------------------*/
+
+ProcessMetrics::CProcInfo::CProcInfo( void )
+    : pid( GUCEF_NULL )
+    , previousProcCpuDataDataPoint( GUCEF_NULL )
+    , processInformation()
+    , lastUptimeInMs( 0 )
+    , exeName()
+    , startIfNotRunning( false )
+    , restartIfStopsRunning( false )
+{GUCEF_TRACE;
+
+}
+
+/*-------------------------------------------------------------------------*/
+
+ProcessMetrics::CProcInfo::~CProcInfo()
+{GUCEF_TRACE;
+
+    Clear();
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+ProcessMetrics::CProcInfo::Clear( void )
+{GUCEF_TRACE;
+
+    CORE::FreeProcCpuDataPoint( previousProcCpuDataDataPoint );
+    CORE::FreeProcessId( pid );
+    processInformation.Clear();
+    lastUptimeInMs = 0;
+    exeName.Clear();
+    startIfNotRunning = false;
+    restartIfStopsRunning = false;
+}
+
+/*-------------------------------------------------------------------------*/
+
+ProcessMetrics::CProcInfo& 
+ProcessMetrics::CProcInfo::operator=( const CProcInfo& src )
+{GUCEF_TRACE;
+
+    if ( this != &src )
+    {
+        Clear();
+        
+        pid = CORE::CopyProcessId( src.pid );
+        previousProcCpuDataDataPoint = CORE::CopyProcCpuDataPoint( previousProcCpuDataDataPoint, pid );
+        processInformation = src.processInformation;
+        lastUptimeInMs = src.lastUptimeInMs;
+        exeName = src.exeName;
+        startIfNotRunning = src.startIfNotRunning;
+        restartIfStopsRunning = src.restartIfStopsRunning;
+    }
+    return *this;
+}    
+
+/*-------------------------------------------------------------------------*/
+
+bool 
+ProcessMetrics::CProcInfo::IsProcessStillActive( void )
+{GUCEF_TRACE;
+
+    if ( GUCEF_NULL != pid )
+    {
+        OSWRAP_BOOLINT status = OSWRAP_TRUE;
+        if ( OSWRAP_TRUE == CORE::IsProcessStillActive( pid, &status ) && status == OSWRAP_TRUE )
+        {
+            if ( GUCEF_NULL != previousProcCpuDataDataPoint )
+            {
+                // If we are gathering CPU data points we will perform an additional sanity check
+                CORE::TProcessCpuUsageInfo cpuUseInfo;
+                if ( OSWRAP_TRUE == CORE::GetProcessCpuUsage( pid, previousProcCpuDataDataPoint, &cpuUseInfo ) )
+                {
+                    if ( lastUptimeInMs > cpuUseInfo.uptimeInMs )
+                    {
+                        GUCEF_WARNING_LOG( CORE::LOGLEVEL_NORMAL, "ProcessMetrics: Proc \"" + exeName + "\" : Uptime went down even though the OS claims the proc is still alive. lastUptime=" + 
+                            CORE::ToString( lastUptimeInMs ) + " -> uptime=" + CORE::ToString( cpuUseInfo.uptimeInMs ) );
+                        
+                        lastUptimeInMs = cpuUseInfo.uptimeInMs;
+
+                        // If the up time went down then the process cannot possibly have been the same one that persisted
+                        // Since things don't add up we will report this proc as dead since the context is that in this app it will cause
+                        // us to refresh all relevant information                        
+                        return false;
+                    }
+                    lastUptimeInMs = cpuUseInfo.uptimeInMs;
+                }
+            }
+            
+            GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "ProcessMetrics: Proc \"" + exeName + "\" is still alive" );
+            return true;
+        }
+    }
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool 
+ProcessMetrics::CProcInfo::RefreshPID( void )
+{GUCEF_TRACE;
+
+    bool success = false;
+    CORE::UInt32 procIdCount = 0;
+    CORE::TProcessId* procIds = GUCEF_NULL;
+    CORE::UInt32 retVal = CORE::GetProcessList( &procIds, &procIdCount );
+    if ( OSWRAP_TRUE == retVal )
+    {
+        success = RefreshPID( procIds, procIdCount );
+    }
+    CORE::FreeProcessList( procIds );
+    return success;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool 
+ProcessMetrics::CProcInfo::RefreshPID( CORE::TProcessId* procIds, CORE::UInt32 procIdCount )
+{GUCEF_TRACE;
+
+    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "ProcessMetrics: Refresing PID administration for " + exeName );
+
+    bool success = false;
+    for ( CORE::UInt32 i=0; i<procIdCount; ++i )
+    {
+        CORE::TProcessId* searchPid = CORE::GetProcessIdAtIndex( procIds, i );
+
+        CORE::CString searchExeName;
+        if ( GUCEF_NULL != searchPid && CORE::GetExeNameForProcessId( searchPid, searchExeName ) )
+        {
+            searchExeName = CORE::ExtractFilename( searchExeName );
+            CORE::Int32 dotIndex = searchExeName.HasChar( '.', false );
+            if ( dotIndex >= 0 )
+                searchExeName = searchExeName.SubstrToIndex( (CORE::UInt32) dotIndex, true );
+
+            if ( searchExeName == exeName )
+            {
+                return RefreshPID( searchPid );
+            }
+        }
+    }
+    
+    GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "ProcessMetrics: No running proc match found for \"" + exeName + "\"" );
+    return success;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool 
+ProcessMetrics::CProcInfo::RefreshPID( CORE::TProcessId* newProcId )
+{GUCEF_TRACE;
+
+    if ( GUCEF_NULL != pid )
+    {
+        CORE::FreeProcessId( pid );
+        pid = GUCEF_NULL;
+        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "ProcessMetrics: Refreshing pre-existing PID for \"" + exeName + "\"" );
+    }            
+    else
+    {
+        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "ProcessMetrics: Applying PID for \"" + exeName + "\"" );
+    }
+                
+    pid = CORE::CopyProcessId( newProcId );
+    
+    if ( CORE::CProcessInformation::TryGetProcessInformation( pid, processInformation ) )
+    {
+        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "ProcessMetrics: Obtained process information for \"" + exeName + "\"" );
+    }
+    else
+    {
+        GUCEF_WARNING_LOG( CORE::LOGLEVEL_NORMAL, "ProcessMetrics: Failed to obtain process information for \"" + exeName + "\"" );
+    }
+
+    if ( GUCEF_NULL != previousProcCpuDataDataPoint )
+    {
+        CORE::TProcCpuDataPoint* refreshedPidDatapoint = CORE::CopyProcCpuDataPoint( previousProcCpuDataDataPoint, pid );
+        CORE::FreeProcCpuDataPoint( previousProcCpuDataDataPoint );
+        previousProcCpuDataDataPoint = refreshedPidDatapoint;
+    }
+    else
+    {
+        previousProcCpuDataDataPoint = CORE::CreateProcCpuDataPoint( pid ); 
+    }
+
+    return true;
+}
+
+/*-------------------------------------------------------------------------*/
+
 ProcessMetrics::ProcessMetrics( void )
     : CORE::CObservingNotifier()
     , m_httpServer()
@@ -254,6 +448,7 @@ ProcessMetrics::ProcessMetrics( void )
     , m_appConfig()
     , m_globalConfig()
     , m_metricsTimer()
+    , m_procIndexTimer()
     , m_pubSubClient()
     , m_thresholdNotificationPublishTopic( GUCEF_NULL )
     , m_pubSubFeatures()
@@ -262,7 +457,6 @@ ProcessMetrics::ProcessMetrics( void )
     , m_gatherCpuStats( true )
     , m_enableRestApi( true )
     , m_enableEventMsgPublishing( true )
-    , m_exeProcIdMap()
     , m_exeProcsToWatch()
     , m_exeMatchPidMatchThreshold( 0 )
     , m_metricsThresholds()
@@ -332,20 +526,23 @@ ProcessMetrics::RegisterEventHandlers( void )
     SubscribeTo( &m_metricsTimer                ,
                  CORE::CTimer::TimerUpdateEvent ,
                  callback                       );
-
+    
+    TEventCallback callback2( this, &ProcessMetrics::OnProcScanTimerCycle );
+    SubscribeTo( &m_procIndexTimer              ,
+                 CORE::CTimer::TimerUpdateEvent ,
+                 callback2                      );    
 }
 
 /*-------------------------------------------------------------------------*/
 
 void
-ProcessMetrics::RefreshPIDs( void )
+ProcessMetrics::RefreshPIDs( const CORE::CString::StringSet& refreshExeNames )
 {GUCEF_TRACE;
 
-    if ( m_exeProcsToWatch.size() == m_exeProcIdMap.size() ||
-         ( m_exeMatchPidMatchThreshold > 0 && m_exeProcIdMap.size() >= (size_t) m_exeMatchPidMatchThreshold ) )
+    if ( refreshExeNames.empty() )
         return;
-
-    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "ProcessMetrics: Refresing PID administration" );
+    
+    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "ProcessMetrics: Refresing PID administration for " + CORE::ToString( refreshExeNames.size() ) + " items" );
 
     CORE::UInt32 procIdCount = 0;
     CORE::TProcessId* procIds = GUCEF_NULL;
@@ -364,26 +561,17 @@ ProcessMetrics::RefreshPIDs( void )
                 if ( dotIndex >= 0 )
                     exeName = exeName.SubstrToIndex( (CORE::UInt32) dotIndex, true );
 
-                TStringSet::iterator n = m_exeProcsToWatch.find( exeName );
-                if ( n != m_exeProcsToWatch.end() )
+                TStringSet::iterator n = refreshExeNames.find( exeName );
+                if ( n != refreshExeNames.end() )
                 {
-                    TProcessIdMap::iterator m = m_exeProcIdMap.find( exeName );
-                    if ( m != m_exeProcIdMap.end() )
+                    TProcessIdMap::iterator m = m_exeProcsToWatch.find( exeName );
+                    if ( m != m_exeProcsToWatch.end() )
                     {
-                        TProcInfo& procInfo = (*m).second;
-                        TProcInfo prevProcInfo = procInfo;
-                        procInfo.pid = CORE::CopyProcessId( pid );
-                        procInfo.previousProcCpuDataDataPoint = CORE::CreateProcCpuDataPoint( procInfo.pid );
-                        CORE::FreeProcCpuDataPoint( prevProcInfo.previousProcCpuDataDataPoint );
-                        CORE::FreeProcessId( prevProcInfo.pid );
-                        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "ProcessMetrics: Refreshed pre-existing PID for \"" + exeName + "\"" );
-                    }
-                    else
-                    {
-                        TProcInfo& procInfo = m_exeProcIdMap[ exeName ];
-                        procInfo.pid = CORE::CopyProcessId( pid );
-                        procInfo.previousProcCpuDataDataPoint = CORE::CreateProcCpuDataPoint( procInfo.pid );
-                        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "ProcessMetrics: Found PID for \"" + exeName + "\"" );
+                        CProcInfo& procInfo = (*m).second;
+                        if ( procInfo.RefreshPID( pid ) )
+                        {
+                            GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "ProcessMetrics: Refreshed PID for \"" + procInfo.exeName + "\"" );
+                        }
                     }
                 }
             }
@@ -568,18 +756,84 @@ ProcessMetrics::ValidateMetricThresholds( const CORE::CVariant& metricValue ,
 /*-------------------------------------------------------------------------*/
 
 void
+ProcessMetrics::OnProcScanTimerCycle( CORE::CNotifier* notifier    ,
+                                      const CORE::CEvent& eventId  ,
+                                      CORE::CICloneable* eventData )
+{GUCEF_TRACE;
+
+    // First get the count of how many procs we are locked on to out of the specified ones
+    CORE::CString::StringSet nonLockedOnProcs;
+    UInt32 lockedOnProcs = 0;
+    TProcessIdMap::iterator m = m_exeProcsToWatch.begin();
+    while ( m != m_exeProcsToWatch.end() )
+    {        
+        // We don't just check that we found the proc, we also revalidate that its still alive
+        CProcInfo& procInfo = (*m).second;
+        if ( procInfo.IsProcessStillActive() )
+        {
+            ++lockedOnProcs;
+        }
+        else
+        {
+            nonLockedOnProcs.insert( procInfo.exeName );
+        }
+        ++m;
+    }
+
+    // Are we locked onto a sufficient nr of procs per the config?
+    // negative number means always match everything
+    if ( m_exeMatchPidMatchThreshold > 0 && lockedOnProcs >= (UInt32) m_exeMatchPidMatchThreshold )
+    {
+        GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "ProcessMetrics: Locked onto " + CORE::ToString( lockedOnProcs ) + 
+            " procs out of a minimum match total of " + CORE::ToString( m_exeMatchPidMatchThreshold ) + ", skipping proc scan" );
+        return;
+    }
+
+    RefreshPIDs( nonLockedOnProcs );
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+ProcessMetrics::RefreshPIDs( void )
+{GUCEF_TRACE;
+
+    // First get a flat list of the procs
+    CORE::CString::StringSet nonLockedOnProcs;
+    UInt32 lockedOnProcs = 0;
+    TProcessIdMap::iterator m = m_exeProcsToWatch.begin();
+    while ( m != m_exeProcsToWatch.end() )
+    {        
+        // We don't just check that we found the proc, we also revalidate that its still alive
+        CProcInfo& procInfo = (*m).second;
+        if ( procInfo.IsProcessStillActive() )
+        {
+            ++lockedOnProcs;
+        }
+        else
+        {
+            nonLockedOnProcs.insert( procInfo.exeName );
+        }
+        ++m;
+    }
+
+    RefreshPIDs( nonLockedOnProcs );
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
 ProcessMetrics::OnMetricsTimerCycle( CORE::CNotifier* notifier    ,
                                      const CORE::CEvent& eventId  ,
                                      CORE::CICloneable* eventData )
 {GUCEF_TRACE;
 
-    RefreshPIDs();
+    TStringSet failedProcs;
 
     if ( m_gatherMemStats )
-    {
-        TStringSet failedProcs;
-        TProcessIdMap::iterator m = m_exeProcIdMap.begin();
-        while ( m != m_exeProcIdMap.end() )
+    {        
+        TProcessIdMap::iterator m = m_exeProcsToWatch.begin();
+        while ( m != m_exeProcsToWatch.end() )
         {
             CORE::TProcessMemoryUsageInfo memUseInfo;
             if ( OSWRAP_TRUE == CORE::GetProcessMemoryUsage( (*m).second.pid, &memUseInfo ) )
@@ -624,18 +878,6 @@ ProcessMetrics::OnMetricsTimerCycle( CORE::CNotifier* notifier    ,
                 GUCEF_WARNING_LOG( CORE::LOGLEVEL_NORMAL, "ProcessMetrics: Failed to obtain memory stats for \"" + (*m).first + "\"" );
             }
             ++m;
-        }
-
-        TStringSet::iterator i = failedProcs.begin();
-        while ( i != failedProcs.end() )
-        {
-            m = m_exeProcIdMap.find( (*i) );
-            CORE::FreeProcCpuDataPoint( (*m).second.previousProcCpuDataDataPoint );
-            CORE::FreeProcessId( (*m).second.pid );
-            m_exeProcIdMap.erase( m );
-
-            GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "ProcessMetrics: Erased problematic PID for \"" + (*i) + "\"" );
-            ++i;
         }
     }
 
@@ -700,12 +942,13 @@ ProcessMetrics::OnMetricsTimerCycle( CORE::CNotifier* notifier    ,
 
     if ( m_gatherCpuStats )
     {
-        TStringSet failedProcs;
-        TProcessIdMap::iterator m = m_exeProcIdMap.begin();
-        while ( m != m_exeProcIdMap.end() )
+        TProcessIdMap::iterator m = m_exeProcsToWatch.begin();
+        while ( m != m_exeProcsToWatch.end() )
         {
+            CProcInfo& procInfo = (*m).second;
+
             CORE::TProcessCpuUsageInfo cpuUseInfo;
-            if ( OSWRAP_TRUE == CORE::GetProcessCpuUsage( (*m).second.pid, (*m).second.previousProcCpuDataDataPoint, &cpuUseInfo ) )
+            if ( OSWRAP_TRUE == CORE::GetProcessCpuUsage( procInfo.pid, procInfo.previousProcCpuDataDataPoint, &cpuUseInfo ) )
             {
                 const CORE::CString& procName = (*m).first;
                 CORE::CString metricPrefix = "ProcessMetrics." + procName + '.';
@@ -729,18 +972,6 @@ ProcessMetrics::OnMetricsTimerCycle( CORE::CNotifier* notifier    ,
                 GUCEF_WARNING_LOG( CORE::LOGLEVEL_NORMAL, "ProcessMetrics: Failed to obtain cpu stats for \"" + (*m).first + "\"" );
             }
             ++m;
-        }
-
-        TStringSet::iterator i = failedProcs.begin();
-        while ( i != failedProcs.end() )
-        {
-            m = m_exeProcIdMap.find( (*i) );
-            CORE::FreeProcCpuDataPoint( (*m).second.previousProcCpuDataDataPoint );
-            CORE::FreeProcessId( (*m).second.pid );
-            m_exeProcIdMap.erase( m );
-
-            GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "ProcessMetrics: Erased problematic PID for \"" + (*i) + "\"" );
-            ++i;
         }
     }
 
@@ -952,6 +1183,8 @@ ProcessMetrics::OnMetricsTimerCycle( CORE::CNotifier* notifier    ,
             ++i;
         }
     }
+
+    RefreshPIDs( failedProcs );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -1007,22 +1240,24 @@ ProcessMetrics::SetStandbyMode( bool newModeIsStandby )
 {GUCEF_TRACE;
 
     m_metricsTimer.SetEnabled( !newModeIsStandby );
+    m_procIndexTimer.SetEnabled( !newModeIsStandby );
 
     if ( newModeIsStandby )
     {
-        if ( !m_exeProcIdMap.empty() )
+        if ( !m_exeProcsToWatch.empty() )
         {
             GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "ProcessMetrics:SetStandbyMode: Cleaning up process information" );
-            TProcessIdMap::iterator m = m_exeProcIdMap.begin();
-            while ( !m_exeProcIdMap.empty() )
+            TProcessIdMap::iterator m = m_exeProcsToWatch.begin();
+            while ( !m_exeProcsToWatch.empty() )
             {
-                GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "ProcessMetrics: Erasing info for \"" + (*m).first + "\"" );
-
-                CORE::FreeProcCpuDataPoint( (*m).second.previousProcCpuDataDataPoint );
-                CORE::FreeProcessId( (*m).second.pid );
-                m_exeProcIdMap.erase( m );
+                GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "ProcessMetrics: Erasing proc entry for \"" + (*m).first + "\"" );
+                m_exeProcsToWatch.erase( m );
             }
         }
+    }
+    else
+    {
+        RefreshPIDs();
     }
     return true;
 }
@@ -1048,6 +1283,7 @@ ProcessMetrics::LoadConfig( const CORE::CValueList& appConfig   ,
     m_enableEventMsgPublishing = CORE::StringToBool( appConfig.GetValueAlways( "enableEventMsgPublishing" ), m_enableEventMsgPublishing );
     m_metricsTimer.SetInterval( CORE::StringToUInt32( appConfig.GetValueAlways( "metricsGatheringIntervalInMs" ), 1000 ) );
     m_exeMatchPidMatchThreshold = CORE::StringToUInt32( appConfig.GetValueAlways( "exeMatchPidMatchThreshold" ), m_exeMatchPidMatchThreshold );
+    m_procIndexTimer.SetInterval( appConfig.GetValueAlways( "procScanIntervalInMs", 5000 ).AsUInt32( 5000, true ) );
 
     m_gatherMemStats = CORE::StringToBool( appConfig.GetValueAlways( "gatherProcMemStats" ), m_gatherMemStats );
     m_gatherProcPageFaultCountInBytes = CORE::StringToBool( appConfig.GetValueAlways( "gatherProcPageFaultCountInBytes" ), m_gatherProcPageFaultCountInBytes );
@@ -1081,11 +1317,30 @@ ProcessMetrics::LoadConfig( const CORE::CValueList& appConfig   ,
     m_gatherGlobalStorageVolumeAvailableToCallerPercentage = appConfig.GetValueAlways( "gatherGlobalStorageVolumeAvailableToCallerPercentage", m_gatherGlobalStorageVolumeAvailableToCallerPercentage ).AsBool( m_gatherGlobalStorageVolumeAvailableToCallerPercentage, true );
     m_gatherGlobalStorageVolumeAvailablePercentage = appConfig.GetValueAlways( "gatherGlobalStorageVolumeAvailablePercentage", m_gatherGlobalStorageVolumeAvailablePercentage ).AsBool( m_gatherGlobalStorageVolumeAvailablePercentage, true );
 
-    TStringVector exeProcsToWatch = appConfig.GetValueAlways( "exeProcsToWatch" ).AsString().ParseElements( ';', false );
-    TStringVector::iterator i = exeProcsToWatch.begin();
+    TStringSet exeProcsToWatch = appConfig.GetValueAlways( "exeProcsToWatch" ).AsString().ParseUniqueElements( ';', false );
+    TStringSet::iterator i = exeProcsToWatch.begin();
     while ( i != exeProcsToWatch.end() )
     {
-        m_exeProcsToWatch.insert( (*i) );
+        CProcInfo& procInfo = m_exeProcsToWatch[ (*i) ];
+        procInfo.exeName = (*i);
+        ++i;
+    }
+    TStringSet exeProcsToStart = appConfig.GetValueAlways( "exeProcsToStart" ).AsString().ParseUniqueElements( ';', false );
+    i = exeProcsToStart.begin();
+    while ( i != exeProcsToStart.end() )
+    {
+        CProcInfo& procInfo = m_exeProcsToWatch[ (*i) ];
+        procInfo.exeName = (*i);
+        procInfo.startIfNotRunning = true;
+        ++i;
+    }
+    TStringSet exeProcsToRestart = appConfig.GetValueAlways( "exeProcsToRestart" ).AsString().ParseUniqueElements( ';', false );
+    i = exeProcsToRestart.begin();
+    while ( i != exeProcsToRestart.end() )
+    {
+        CProcInfo& procInfo = m_exeProcsToWatch[ (*i) ];
+        procInfo.exeName = (*i);
+        procInfo.restartIfStopsRunning = true;
         ++i;
     }
 

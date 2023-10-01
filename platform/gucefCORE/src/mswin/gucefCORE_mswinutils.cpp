@@ -25,7 +25,18 @@
 
 #include "gucefCORE_mswinutils.h"
 
-#ifdef GUCEF_MSWIN_BUILD
+#if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
+
+/*-------------------------------------------------------------------------//
+//                                                                         //
+//      NAMESPACE                                                          //
+//                                                                         //
+//-------------------------------------------------------------------------*/
+
+#ifdef __cplusplus
+namespace GUCEF {
+namespace CORE {
+#endif   /* __cplusplus */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -39,6 +50,16 @@
   extern "C" IMAGE_DOS_HEADER __ImageBase;
   #endif
 #endif
+
+/*-------------------------------------------------------------------------//
+//                                                                         //
+//      TYPES                                                              //
+//                                                                         //
+//-------------------------------------------------------------------------*/
+
+typedef NTSTATUS ( WINAPI *pNtOP )( PHANDLE, ACCESS_MASK, POBJECT_ATTRIBUTES, PCLIENT_ID );
+typedef NTSTATUS ( WINAPI *pNtRVM )( HANDLE, PVOID, PVOID, SIZE_T, PSIZE_T );
+typedef NTSTATUS ( WINAPI *pNtQIP )( HANDLE, PROCESSINFOCLASS, PVOID, ULONG, PULONG );
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -105,4 +126,65 @@ cls( void )
 
 /*-------------------------------------------------------------------------*/
 
-#endif /* GUCEF_MSWIN_BUILD ? */
+NTSTATUS
+TryNtOpenProcess( PHANDLE ProcessHandle               ,
+                  ACCESS_MASK DesiredAccess           ,
+                  POBJECT_ATTRIBUTES ObjectAttributes ,
+                  PCLIENT_ID ClientId                 )
+{GUCEF_TRACE;
+
+    static pNtOP NtOpenProcess = (pNtOP) GetProcAddress( GetModuleHandle("ntdll.dll"), "NtOpenProcess" );
+	if ( NULL == NtOpenProcess ) 
+        return NTSTATUS_NOT_SUPPORTED;
+
+    return NtOpenProcess( ProcessHandle, DesiredAccess, ObjectAttributes, ClientId );
+}
+
+/*-------------------------------------------------------------------------*/
+
+NTSTATUS
+TryNtQueryInformationProcess ( HANDLE ProcessHandle                     ,
+                               PROCESSINFOCLASS ProcessInformationClass ,
+                               PVOID ProcessInformation                 ,
+                               ULONG ProcessInformationLength           ,
+                               PULONG ReturnLength                      )
+{GUCEF_TRACE;
+
+    static pNtQIP NtQueryInformationProcess = (pNtQIP) GetProcAddress( GetModuleHandle("ntdll.dll"), "NtQueryInformationProcess" );
+	if ( NULL == NtQueryInformationProcess ) 
+        return NTSTATUS_NOT_SUPPORTED;
+
+    return NtQueryInformationProcess( ProcessHandle, ProcessInformationClass, ProcessInformation, ProcessInformationLength, ReturnLength );
+}
+
+/*-------------------------------------------------------------------------*/
+
+LONG 
+TryNtReadVirtualMemory( HANDLE ThreadHandle        ,
+                        PVOID BaseAddress          ,
+                        PVOID Buffer               ,
+                        SIZE_T NumberOfBytesToRead ,
+                        PSIZE_T NumberOfBytesRead  )
+{GUCEF_TRACE;
+
+    static pNtRVM NtReadVirtualMemory = (pNtRVM) GetProcAddress( GetModuleHandle("ntdll.dll"), "NtReadVirtualMemory" );
+	if ( NULL == NtReadVirtualMemory ) 
+        return NTSTATUS_NOT_SUPPORTED;
+
+    return NtReadVirtualMemory( ThreadHandle, BaseAddress, Buffer, NumberOfBytesToRead, NumberOfBytesRead );
+}
+
+/*-------------------------------------------------------------------------//
+//                                                                         //
+//      NAMESPACE                                                          //
+//                                                                         //
+//-------------------------------------------------------------------------*/
+
+#ifdef __cplusplus
+}; /* namespace CORE */
+}; /* namespace GUCEF */
+#endif /* __cplusplus */
+
+/*-------------------------------------------------------------------------*/
+
+#endif /* GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN ? */

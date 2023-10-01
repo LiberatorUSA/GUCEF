@@ -95,6 +95,38 @@ GetHostname( void );
 GUCEF_CORE_PUBLIC_CPP bool
 CommandLineExecute( const CString& command, CString& result, bool waitForExit );
 
+/*--------------------------------------------------------------------------*/
+
+class GUCEF_CORE_PUBLIC_CPP CProcessInformation
+{
+    public:
+
+    CProcessInformation( void );
+
+    ~CProcessInformation();
+
+    void SetImagePath( const CString& str );
+
+    CString& GetImagePath( void );
+
+    void SetCommandLineArgs( const CString& str );
+    
+    CString& GetCommandLineArgs( void );
+    
+    const TProcessInformation& GetCStyleAccess( void ) const;
+
+    void Clear( void );
+
+    static bool TryGetProcessInformation( TProcessId* pid           ,
+                                          CProcessInformation& info );
+
+    private:
+
+    CString m_commandLineArgs;
+    CString m_imagePath;
+    TProcessInformation m_cStyleAccess;
+};
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //
@@ -107,18 +139,3 @@ CommandLineExecute( const CString& command, CString& result, bool waitForExit );
 /*--------------------------------------------------------------------------*/
 
 #endif /* GUCEF_CORE_DVCPPOSWRAP_H ? */
-
-/*--------------------------------------------------------------------------//
-//                                                                          //
-//      Info & Changes                                                      //
-//                                                                          //
-//--------------------------------------------------------------------------//
-
-- 29-05-2005 :
-        - Debugged StringToClipboard(): it is now operational.
-        - Debugged StringFromClipboard(): it is now operational.
-- 02-02-2004 :
-        - Created this set of functions.
-
-----------------------------------------------------------------------------*/
-

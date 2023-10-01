@@ -30,7 +30,7 @@
 #define GUCEF_MT_MACROS_H
 #endif /* GUCEF_MT_MACROS_H ? */
 
-#ifdef GUCEF_MSWIN_BUILD
+#if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -114,6 +114,7 @@ struct WIN32_THREAD_BASIC_INFORMATION
  *  which will attempt to use said function if it exists / can be accessed.
  *  
  *  Use WIN32_NT_SUCCESS to evaluate the return value
+ *  Returns NTSTATUS_NOT_SUPPORTED if the function could not be dynamicallly linked and is thus unsupported
  */
 GUCEF_MT_PUBLIC_C LONG 
 TryNtQueryInformationThread( HANDLE ThreadHandle                                   ,
@@ -130,7 +131,7 @@ TryNtQueryInformationThread( HANDLE ThreadHandle                                
 
 /*-------------------------------------------------------------------------*/
 
-#endif /* GUCEF_MSWIN_BUILD ? */
+#endif /* GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN ? */
 
 #endif /* GUCEF_MT_MSWINUTILS_H ? */
 

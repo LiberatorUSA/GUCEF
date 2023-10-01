@@ -65,6 +65,7 @@ namespace CORE {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+#define OSWRAP_BOOLINT  UInt32
 #define OSWRAP_TRUE     1UL
 #define OSWRAP_FALSE    0UL
 
@@ -97,6 +98,17 @@ typedef union anyPointer TAnyPointer;
 
 struct SProcessId;
 typedef struct SProcessId TProcessId;
+
+/*-------------------------------------------------------------------------*/
+
+struct SProcessInformation
+{
+    const char* commandLineArgs;
+    UInt32 commandLineArgsByteSize;
+    const char* imagePath;
+    UInt32 imagePathByteSize;
+};
+typedef struct SProcessInformation TProcessInformation;
 
 /*-------------------------------------------------------------------------*/
 
@@ -250,7 +262,7 @@ GetFunctionAddress( void *sohandle           ,
  *              "HWND" environment setting after creating your primary window using
  *              the GUCEFSetEnv() function.
  */
-GUCEF_CORE_PUBLIC_C UInt32
+GUCEF_CORE_PUBLIC_C OSWRAP_BOOLINT
 StringToClipboard( const char *str );
 
 /*--------------------------------------------------------------------------*/
@@ -276,14 +288,14 @@ StringToClipboard( const char *str );
  *              "HWND" environment setting after creating your primary window using
  *              the GUCEFSetEnv() function.
  */
-GUCEF_CORE_PUBLIC_C UInt32
+GUCEF_CORE_PUBLIC_C OSWRAP_BOOLINT
 StringFromClipboard( char *dest     ,
                      UInt32 size    ,
                      UInt32 *wbytes );
 
 /*--------------------------------------------------------------------------*/
 
-GUCEF_CORE_PUBLIC_C UInt32
+GUCEF_CORE_PUBLIC_C OSWRAP_BOOLINT
 GUCEFSetEnv( const char* key   ,
              const char* value );
 
@@ -325,7 +337,7 @@ GetLogicalCPUCount( void );
  *  Obtains a list of Process IDs for all the processes running on the system as visible to the
  *  account under which the software is executing
  */
-GUCEF_CORE_PUBLIC_C UInt32
+GUCEF_CORE_PUBLIC_C OSWRAP_BOOLINT
 GetProcessList( TProcessId** processList ,
                 UInt32* processCount     );
 
@@ -345,6 +357,17 @@ FreeProcessList( TProcessId* processList );
 
 /*--------------------------------------------------------------------------*/
 
+GUCEF_CORE_PUBLIC_C OSWRAP_BOOLINT
+IsProcessStillActive( TProcessId* pid, OSWRAP_BOOLINT* status );
+
+/*--------------------------------------------------------------------------*/
+
+GUCEF_CORE_PUBLIC_C OSWRAP_BOOLINT
+GetProcessInformation( TProcessId* pid,
+                       TProcessInformation* info );
+
+/*--------------------------------------------------------------------------*/
+
 /**
  *  Copies a PID structure.
  *  This allocated memory that needs to be freed with FreeProcessId()
@@ -359,13 +382,13 @@ FreeProcessId( TProcessId* processList );
 
 /*--------------------------------------------------------------------------*/
 
-GUCEF_CORE_PUBLIC_C UInt32
+GUCEF_CORE_PUBLIC_C OSWRAP_BOOLINT
 GetProcessMemoryUsage( TProcessId* pid                     ,
                        TProcessMemoryUsageInfo* memUseInfo );
 
 /*--------------------------------------------------------------------------*/
 
-GUCEF_CORE_PUBLIC_C UInt32
+GUCEF_CORE_PUBLIC_C OSWRAP_BOOLINT
 GetExeNameForProcessId( TProcessId* pid        ,
                         char* outNameBuffer    ,
                         UInt32 nameBufferSize  ,
@@ -374,13 +397,19 @@ GetExeNameForProcessId( TProcessId* pid        ,
 
 /*--------------------------------------------------------------------------*/
 
-GUCEF_CORE_PUBLIC_C UInt32
+GUCEF_CORE_PUBLIC_C OSWRAP_BOOLINT
 GetGlobalMemoryUsage( TGlobalMemoryUsageInfo* memUseInfo );
 
 /*--------------------------------------------------------------------------*/
 
 GUCEF_CORE_PUBLIC_C TProcCpuDataPoint*
 CreateProcCpuDataPoint( TProcessId* pid );
+
+/*--------------------------------------------------------------------------*/
+
+GUCEF_CORE_PUBLIC_C TProcCpuDataPoint*
+CopyProcCpuDataPoint( TProcCpuDataPoint* srcCpuDataDataPoint ,
+                      TProcessId* newProcId                  );
 
 /*--------------------------------------------------------------------------*/
 
@@ -401,7 +430,7 @@ CreateCpuDataPoint( void );
 
 /*--------------------------------------------------------------------------*/
 
-GUCEF_CORE_PUBLIC_C UInt32
+GUCEF_CORE_PUBLIC_C OSWRAP_BOOLINT
 GetCpuStats( TCpuDataPoint* previousCpuDataDataPoint ,
              TCpuStats** cpuStats                    );
 
