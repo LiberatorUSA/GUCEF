@@ -2,7 +2,7 @@
 
 #include <Arduino.h>
 #include <ArduinoSTL.h>
-#include <gucefARDUINO.h>
+#include <gucefCORE.h>
 
 
 void setup() {

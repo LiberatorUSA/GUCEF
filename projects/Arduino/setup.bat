@@ -24,7 +24,9 @@ call "%GUCEF_THEBATCHDIR%GenerateArduinoSetup.bat"
 
 echo --- Executing Arduino supporting scripts
 echo ---
+cd "%GUCEF_THEBATCHDIR%..\..\common\bin\Arduino\scripts\symlinks
 call "%GUCEF_THEBATCHDIR%..\..\common\bin\Arduino\scripts\symlinks\create_symlinks.bat"
+cd "%GUCEF_THEBATCHDIR%
 
 echo --- Listing all installed libaries
 echo ---
