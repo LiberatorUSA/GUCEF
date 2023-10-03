@@ -229,6 +229,10 @@ class GUCEF_CORE_PUBLIC_CPP CAsciiString
                                           const CAsciiString& newEnvelopPrefix  ,
                                           const CAsciiString& newEnvelopPostfix ) const;
 
+    CAsciiString CutEnvelopedSubstr( const CUtf8String& envelopPrefix  ,
+                                     const CUtf8String& envelopPostfix ,
+                                     UInt32 envelopedStrIndex          ) const;
+
     CAsciiString ReplaceSubStr( UInt32 startIndex        ,
                                 UInt32 length            ,
                                 const CAsciiString& newSubstr ) const;

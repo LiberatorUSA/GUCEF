@@ -1275,6 +1275,39 @@ CUtf8String::ReplaceEnvelopingSubstr( const CUtf8String& envelopPrefix     ,
 /*-------------------------------------------------------------------------*/
 
 CUtf8String
+CUtf8String::CutEnvelopedSubstr( const CUtf8String& envelopPrefix  ,
+                                 const CUtf8String& envelopPostfix ,
+                                 UInt32 envelopedStrIndex          ) const
+{GUCEF_TRACE;
+
+    UInt32 currentEnvelopedStrIndex = 0;
+    Int32 startIndex = 0;
+    Int32 envSegIndex = HasSubstr( envelopPrefix, startIndex, true );
+    while ( envSegIndex >= 0 )
+    {
+        envSegIndex += envelopPrefix.Length();
+        envSegIndex = HasSubstr( envelopPostfix, envSegIndex, true );
+        if ( envSegIndex >= 0 )
+        {
+            if ( currentEnvelopedStrIndex == envelopedStrIndex )
+            {
+                // This is the enveloped string we are looking to cut
+                Int32 charCount = ( envSegIndex + envelopPostfix.Length() ) - startIndex;
+                return CutChars( charCount, true, startIndex );
+            }
+            ++currentEnvelopedStrIndex;
+            
+            startIndex = envSegIndex + envelopPostfix.Length();
+            envSegIndex = HasSubstr( envelopPrefix, startIndex, true );
+        }
+    }
+
+    return *this;
+}
+
+/*-------------------------------------------------------------------------*/
+
+CUtf8String
 CUtf8String::ReplaceSubStr( UInt32 startIndex            ,
                             UInt32 length                ,
                             const CUtf8String& newSubstr ) const

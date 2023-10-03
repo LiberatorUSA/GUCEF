@@ -851,6 +851,39 @@ CAsciiString::ReplaceEnvelopingSubstr( const CAsciiString& envelopPrefix     ,
 /*-------------------------------------------------------------------------*/
 
 CAsciiString
+CAsciiString::CutEnvelopedSubstr( const CUtf8String& envelopPrefix  ,
+                                  const CUtf8String& envelopPostfix ,
+                                  UInt32 envelopedStrIndex          ) const
+{GUCEF_TRACE;
+
+    UInt32 currentEnvelopedStrIndex = 0;
+    Int32 startIndex = 0;
+    Int32 envSegIndex = HasSubstr( envelopPrefix, startIndex, true );
+    while ( envSegIndex >= 0 )
+    {
+        envSegIndex += envelopPrefix.Length();
+        envSegIndex = HasSubstr( envelopPostfix, envSegIndex, true );
+        if ( envSegIndex >= 0 )
+        {
+            if ( currentEnvelopedStrIndex == envelopedStrIndex )
+            {
+                // This is the enveloped string we are looking to cut
+                Int32 charCount = ( envSegIndex + envelopPostfix.Length() ) - startIndex;
+                return CutChars( charCount, true, startIndex );
+            }
+            ++currentEnvelopedStrIndex;
+            
+            startIndex = envSegIndex + envelopPostfix.Length();
+            envSegIndex = HasSubstr( envelopPrefix, startIndex, true );
+        }
+    }
+
+    return *this;
+}
+
+/*-------------------------------------------------------------------------*/
+
+CAsciiString
 CAsciiString::ReplaceSubStr( UInt32 startIndex            ,
                              UInt32 length                ,
                              const CAsciiString& newSubstr ) const

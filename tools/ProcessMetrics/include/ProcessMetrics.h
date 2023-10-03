@@ -205,6 +205,8 @@ class ProcessMetrics : public CORE::CObservingNotifier
 
     void RefreshPIDs( void );
 
+    bool LaunchProcs( const CORE::CString::StringSet& procsToLaunch );
+
     void
     OnMetricsTimerCycle( CORE::CNotifier* notifier    ,
                          const CORE::CEvent& eventId  ,
@@ -241,6 +243,7 @@ class ProcessMetrics : public CORE::CObservingNotifier
         CORE::CProcessInformation processInformation;
         UInt64 lastUptimeInMs;
         CORE::CString exeName;
+        bool gatherMetrics;
         bool startIfNotRunning;
         bool restartIfStopsRunning;
 
@@ -259,6 +262,8 @@ class ProcessMetrics : public CORE::CObservingNotifier
         bool RefreshPID( CORE::TProcessId* newProcId );
 
         bool IsProcessStillActive( void );
+
+        void Unlink( void );
     };
 
     typedef CORE::CTEventHandlerFunctor< ProcessMetrics > TEventCallback;

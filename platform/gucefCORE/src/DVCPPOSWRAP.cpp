@@ -471,10 +471,20 @@ CProcessInformation::TryGetProcessInformation( TProcessId* pid           ,
                             *(PWSTR)RtlOffsetToPointer( cmdLineBuffer, procParameters.CommandLine.Length ) = 0;
                             
                             CVariant convertor;
-                            convertor.LinkTo( cmdLineBuffer, buffer.GetDataSize(), GUCEF_DATATYPE_UTF16_STRING );
-                            info.SetCommandLineArgs( convertor.AsString() ); 
-                            
-                            //MaximumLength = (CommandLine->Length = ProcessParameters.CommandLine.Length) + sizeof(WCHAR);
+                            convertor.LinkTo( cmdLineBuffer, buffer.GetDataSize(), GUCEF_DATATYPE_UTF16_STRING );                            
+                            CString cmdLine = convertor.AsString();
+
+                            // We only care about 'extra' params passed to a program not the default first argument on Windows which is automatically added
+                            // this creates a asymmetrical relationship between setting and getting the command line which is platform specific, so we remove it
+                            // we are already obtaining the image path anyway so that can be used to find the exe location
+                            if ( !cmdLine.IsNULLOrEmpty() && cmdLine[ 0 ] == '"' )
+                            {
+                                cmdLine = cmdLine.CutEnvelopedSubstr( "\"", "\"", 0 );
+                                if ( !cmdLine.IsNULLOrEmpty() && cmdLine[ 0 ] == ' ' )
+                                    cmdLine = cmdLine.CutChars( 1, true, 0 );    
+                            }
+
+                            info.SetCommandLineArgs( cmdLine ); 
                         }
                         else
                         {
@@ -502,8 +512,6 @@ CProcessInformation::TryGetProcessInformation( TProcessId* pid           ,
                             CVariant convertor;
                             convertor.LinkTo( imgPathBuffer, buffer.GetDataSize(), GUCEF_DATATYPE_UTF16_STRING );
                             info.SetImagePath( convertor.AsString() ); 
-                            
-                            //MaximumLength = (CommandLine->Length = ProcessParameters.CommandLine.Length) + sizeof(WCHAR);
                         }
                         else
                         {

@@ -371,6 +371,10 @@ class GUCEF_CORE_PUBLIC_CPP CUtf8String
                                          const CUtf8String& newEnvelopPrefix  ,
                                          const CUtf8String& newEnvelopPostfix ) const;
 
+    CUtf8String CutEnvelopedSubstr( const CUtf8String& envelopPrefix  ,
+                                    const CUtf8String& envelopPostfix ,
+                                    UInt32 envelopedStrIndex          ) const;
+
     CUtf8String ReplaceSubStr( UInt32 startIndex        ,
                                UInt32 length            ,
                                const CUtf8String& newSubstr ) const;
