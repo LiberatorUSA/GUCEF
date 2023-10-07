@@ -171,6 +171,14 @@ CComCoreGlobal::Initialize( void )
 CComCoreGlobal::~CComCoreGlobal()
 {GUCEF_TRACE;
 
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CComCoreGlobal::Shutdown( void )
+{GUCEF_TRACE;
+
     GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "gucefCOMCORE Global systems shutting down" );
 
     CORE::CTaskManager& taskManager = CORE::CCoreGlobal::Instance()->GetTaskManager();
@@ -218,8 +226,12 @@ CComCoreGlobal::Deinstance( void )
 {GUCEF_TRACE;
 
     MT::CScopeMutex lock( g_dataLock );
-    GUCEF_DELETE g_instance;
-    g_instance = NULL;
+    if ( GUCEF_NULL != g_instance )
+    {
+        g_instance->Shutdown();
+        GUCEF_DELETE g_instance;
+        g_instance = GUCEF_NULL;
+    }
 }
 
 /*-------------------------------------------------------------------------*/

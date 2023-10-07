@@ -80,6 +80,8 @@ class GUCEF_COMCORE_EXPORT_CPP CComCoreGlobal
 
     void Initialize( void );
 
+    void Shutdown( void );
+
     CComCoreGlobal( void );
     CComCoreGlobal( const CComCoreGlobal& src );
     ~CComCoreGlobal();

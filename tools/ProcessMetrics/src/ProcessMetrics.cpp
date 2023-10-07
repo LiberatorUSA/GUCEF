@@ -641,14 +641,41 @@ ProcessMetrics::LaunchProcs( const CORE::CString::StringSet& procsToLaunch )
             {
                 const CORE::CString& exePath = procInfo.processInformation.GetImagePath();
                 const CORE::CString& cmdLine = procInfo.processInformation.GetCommandLineArgs();
-                if ( CORE::Execute_Program( exePath.C_String(), cmdLine.C_String() ) > 0 )
+                if ( !exePath.IsNULLOrEmpty() )
                 {
-                    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "ProcessMetrics: Launched process \"" + procInfo.exeName + "\" using image \"" + exePath + "\" and command line \"" + cmdLine + "\"" );
+                    if ( CORE::Execute_Program( exePath.C_String(), cmdLine.C_String() ) > 0 )
+                    {
+                        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "ProcessMetrics: Launched process \"" + procInfo.exeName + "\" using image \"" + exePath + "\" and command line \"" + cmdLine + "\"" );
+                    }
+                    else
+                    {
+                        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "ProcessMetrics: Failed to launch process \"" + procInfo.exeName + "\" using image \"" + exePath + "\" and command line \"" + cmdLine + "\"" );
+                        totalSuccess = false;
+                    }
                 }
                 else
                 {
-                    GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "ProcessMetrics: Failed to launch process \"" + procInfo.exeName + "\" using image \"" + exePath + "\" and command line \"" + cmdLine + "\"" );
-                    totalSuccess = false;
+                    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "ProcessMetrics: Don't have an executable image path from where to launch process \"" + procInfo.exeName + "\" hence will rely on the proc perhaps being in a known system path" );
+
+                    if ( CORE::Execute_Program( procInfo.exeName.C_String(), cmdLine.C_String() ) > 0 )
+                    {
+                        // right away refresh the PID with a scan to obtain better path info
+                        if ( procInfo.RefreshPID() )
+                        {
+                            const CORE::CString& actualExePath = procInfo.processInformation.GetImagePath();
+                            GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "ProcessMetrics: Launched process \"" + procInfo.exeName + "\" using image \"" + actualExePath + "\" and command line \"" + cmdLine + "\"" );
+                        }
+                        else
+                        {
+                            GUCEF_WARNING_LOG( CORE::LOGLEVEL_NORMAL, "ProcessMetrics: Launched process \"" + procInfo.exeName + 
+                                "\" using only its name and command line \"" + cmdLine + "\" but unable to get its meta-data" );
+                        }
+                    }
+                    else
+                    {
+                        GUCEF_WARNING_LOG( CORE::LOGLEVEL_NORMAL, "ProcessMetrics: Failed to launch process \"" + procInfo.exeName + "\" using only its name. Try adding the process to known standard system search paths" );
+                        totalSuccess = false;
+                    }
                 }
             }
         }
@@ -1356,10 +1383,11 @@ ProcessMetrics::SetStandbyMode( bool newModeIsStandby )
         {
             GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "ProcessMetrics:SetStandbyMode: Cleaning up process information" );
             TProcessIdMap::iterator m = m_exeProcsToWatch.begin();
-            while ( !m_exeProcsToWatch.empty() )
+            while ( m != m_exeProcsToWatch.end() )
             {
                 CProcInfo& procInfo = (*m).second;                
                 procInfo.Unlink();
+                ++m;
             }
         }
     }

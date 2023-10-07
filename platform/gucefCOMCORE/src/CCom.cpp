@@ -183,7 +183,14 @@ CCom::CCom()
 
 CCom::~CCom()
 {GUCEF_TRACE;
-
+    
+    MT::CScopeMutex lock( _mutex );
+    m_sockets.clear();
+    memset( &_stats, 0, sizeof(_stats) );
+    _scount = 0;
+    m_proxyList.clear();
+    m_portObjs.clear();
+    m_nics.clear();
 }
 
 /*-------------------------------------------------------------------------*/
