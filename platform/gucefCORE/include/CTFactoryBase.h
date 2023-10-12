@@ -36,6 +36,11 @@
 #define GUCEF_CORE_CSTRING_H
 #endif /* GUCEF_CORE_CSTRING_H ? */
 
+#ifndef GUCEF_CORE_CTSHAREDPTR_H
+#include "CTSharedPtr.h"
+#define GUCEF_CORE_CTSHAREDPTR_H
+#endif /* GUCEF_CORE_CTSHAREDPTR_H ? */
+
 /*-------------------------------------------------------------------------*/
 
 #ifndef GUCEF_CORE_CTFACTORYBASE_CPP
@@ -66,10 +71,14 @@ namespace CORE {
  *  Template for creating an abstract interface for creation and destruction of 
  *  objects without specifieing the concrete type
  */
-template< class BaseClassType >
+template< class BaseClassType, class LockType >
 class CTFactoryBase : public CICloneable
 {
     public:
+
+    typedef LockType                                            TLockType;
+    typedef BaseClassType                                       TProductType;
+    typedef CTBasicSharedPtr< BaseClassType, LockType >         TProductPtr;
     
     /**
      *  Default contructor which acts as a no-op since factories are
@@ -100,14 +109,7 @@ class CTFactoryBase : public CICloneable
      *
      *  @return pointer to the base class of the constructed factory product
      */
-    virtual BaseClassType* Create( void ) = 0;
-    
-    /**
-     *  Destroys the concrete factory product
-     *
-     *  @param factoryProduct pointer to the base class of the constructed factory product
-     */
-    virtual void Destroy( BaseClassType* factoryProduct ) = 0;
+    virtual TProductPtr Create( void ) = 0;
 
     /**
      *  Returns a string representing the name of concrete class that can be created
@@ -122,8 +124,8 @@ class CTFactoryBase : public CICloneable
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-template< class BaseClassType >
-CTFactoryBase< BaseClassType >::CTFactoryBase( void )
+template< class BaseClassType, class LockType >
+CTFactoryBase< BaseClassType, LockType >::CTFactoryBase( void )
     : CICloneable()
 {GUCEF_TRACE;
 
@@ -131,8 +133,8 @@ CTFactoryBase< BaseClassType >::CTFactoryBase( void )
 
 /*-------------------------------------------------------------------------*/
 
-template< class BaseClassType >
-CTFactoryBase< BaseClassType >::CTFactoryBase( const CTFactoryBase& src )
+template< class BaseClassType, class LockType >
+CTFactoryBase< BaseClassType, LockType >::CTFactoryBase( const CTFactoryBase& src )
     : CICloneable( src )
 {GUCEF_TRACE;
 
@@ -140,17 +142,17 @@ CTFactoryBase< BaseClassType >::CTFactoryBase( const CTFactoryBase& src )
 
 /*-------------------------------------------------------------------------*/
 
-template< class BaseClassType >
-CTFactoryBase< BaseClassType >::~CTFactoryBase()
+template< class BaseClassType, class LockType >
+CTFactoryBase< BaseClassType, LockType >::~CTFactoryBase()
 {GUCEF_TRACE;
 
 }
 
 /*-------------------------------------------------------------------------*/
 
-template< class BaseClassType >
-CTFactoryBase< BaseClassType >&
-CTFactoryBase< BaseClassType >::operator=( const CTFactoryBase& src )
+template< class BaseClassType, class LockType >
+CTFactoryBase< BaseClassType, LockType >&
+CTFactoryBase< BaseClassType, LockType >::operator=( const CTFactoryBase& src )
 {GUCEF_TRACE;
 
     if ( &src != this )

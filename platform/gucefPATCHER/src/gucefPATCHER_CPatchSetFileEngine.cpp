@@ -540,7 +540,7 @@ CPatchSetFileEngine::OnNotify( CORE::CNotifier* notifier                 ,
                         }
                         
                         // Move the new file to the desired final location
-                        if ( 0 == CORE::Move_File( destPath.C_String(), m_fileAccess->GetFilename().C_String() ) )
+                        if ( 0 == CORE::Move_File( destPath.C_String(), m_fileAccess->GetFilename().C_String(), 1 ) )
                         {
                             GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "CPatchSetFileEngine(" + CORE::PointerToString( this ) + "): Failed to move the new file to the location of the old file!" );
                             

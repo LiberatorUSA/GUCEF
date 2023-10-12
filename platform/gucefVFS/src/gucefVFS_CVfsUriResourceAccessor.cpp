@@ -124,7 +124,7 @@ CVfsUriResourceAccessor::CreateResource( const CORE::CUri& uri ,
     }
 
     CString fsPath = uri.GetAuthorityAndPath();
-    CVFS::CVFSHandlePtr file = CVfsGlobal::Instance()->GetVfs().GetFile( fsPath, "wb", true );
+    TBasicVfsResourcePtr file = CVfsGlobal::Instance()->GetVfs().GetFile( fsPath, "wb", true );
     if ( !file.IsNULL() )
     {
         CORE::CIOAccess* fileAccess = file->GetAccess();
@@ -180,7 +180,7 @@ CVfsUriResourceAccessor::GetResource( const CORE::CUri& uri        ,
     }
 
     CString fsPath = uri.GetAuthorityAndPath();
-    CVFS::CVFSHandlePtr file = CVfsGlobal::Instance()->GetVfs().GetFile( fsPath, "rb", false );
+    TBasicVfsResourcePtr file = CVfsGlobal::Instance()->GetVfs().GetFile( fsPath, "rb", false );
     if ( !file.IsNULL() )
     {
         CORE::CIOAccess* fileAccess = file->GetAccess();
@@ -216,7 +216,7 @@ CVfsUriResourceAccessor::GetPartialResource( const CORE::CUri& uri        ,
     }
 
     CString fsPath = uri.GetAuthorityAndPath();
-    CVFS::CVFSHandlePtr file = CVfsGlobal::Instance()->GetVfs().GetFile( fsPath, "rb", false );
+    TBasicVfsResourcePtr file = CVfsGlobal::Instance()->GetVfs().GetFile( fsPath, "rb", false );
     if ( !file.IsNULL() )
     {
         CORE::CIOAccess* fileAccess = file->GetAccess();
@@ -287,7 +287,7 @@ CVfsUriResourceAccessor::UpdateResource( const CORE::CUri& uri ,
     }
 
     CString fsPath = uri.GetAuthorityAndPath();
-    CVFS::CVFSHandlePtr file = CVfsGlobal::Instance()->GetVfs().GetFile( fsPath, "wb", true );
+    TBasicVfsResourcePtr file = CVfsGlobal::Instance()->GetVfs().GetFile( fsPath, "wb", true );
     if ( !file.IsNULL() )
     {
         CORE::CIOAccess* fileAccess = file->GetAccess();
@@ -321,7 +321,7 @@ CVfsUriResourceAccessor::UpdatePartialResource( const CORE::CUri& uri ,
     }
 
     CString fsPath = uri.GetAuthorityAndPath();
-    CVFS::CVFSHandlePtr file = CVfsGlobal::Instance()->GetVfs().GetFile( fsPath, "rb+", false );
+    TBasicVfsResourcePtr file = CVfsGlobal::Instance()->GetVfs().GetFile( fsPath, "rb+", false );
     if ( !file.IsNULL() )
     {
         CORE::CIOAccess* fileAccess = file->GetAccess();
@@ -358,7 +358,7 @@ CVfsUriResourceAccessor::UpdatePartialResource( const CORE::CUri& uri    ,
     }
 
     CString fsPath = uri.GetAuthorityAndPath();
-    CVFS::CVFSHandlePtr file = CVfsGlobal::Instance()->GetVfs().GetFile( fsPath, "wb+", true ); // we will use append mode
+    TBasicVfsResourcePtr file = CVfsGlobal::Instance()->GetVfs().GetFile( fsPath, "wb+", true ); // we will use append mode
     if ( !file.IsNULL() )
     {
         CORE::CIOAccess* fileAccess = file->GetAccess();

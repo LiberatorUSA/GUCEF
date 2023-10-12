@@ -544,7 +544,7 @@ CRedisClusterKeyCache::SaveDocTo( const CORE::CDataNode& doc     ,
         return false;    
     }
 
-    VFS::CVFS::CVFSHandlePtr file = vfs.GetFile( vfsPath, "wb", true );
+    VFS::TBasicVfsResourcePtr file = vfs.GetFile( vfsPath, "wb", true );
     if ( file.IsNULL() || GUCEF_NULL == file->GetAccess() )
     {
         GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "RedisClusterKeyCache:SaveDocTo: VFS could not provide access to file at path: " + vfsPath );

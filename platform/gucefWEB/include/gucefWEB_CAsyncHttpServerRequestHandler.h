@@ -88,12 +88,12 @@ class GUCEF_HIDDEN CAsyncHttpServerRequestHandler : public CORE::CTaskConsumer
 
     private:
 
-    CIHttpServerRequestHandler* m_requestHandler;
+    THttpServerRequestHandlerFactory::TProductPtr m_requestHandler;
 };
 
 /*-------------------------------------------------------------------------*/
 
-typedef CORE::CTFactory< CORE::CTaskConsumer, CAsyncHttpServerRequestHandler > TAsyncHttpServerRequestHandlerFactory;
+typedef CORE::CTFactory< CORE::CTaskConsumer, CAsyncHttpServerRequestHandler, MT::CMutex > TAsyncHttpServerRequestHandlerFactory;
 
 /*-------------------------------------------------------------------------*/
 

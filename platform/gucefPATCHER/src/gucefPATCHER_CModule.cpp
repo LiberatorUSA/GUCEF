@@ -75,7 +75,7 @@ namespace PATCHER {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-typedef CORE::CTFactory< CORE::CTaskConsumer, CPatchTaskConsumer > TPatchTaskConsumerFactory;
+typedef CORE::CTFactory< CORE::CTaskConsumer, CPatchTaskConsumer, MT::CMutex > TPatchTaskConsumerFactory;
 
 /*-------------------------------------------------------------------------//
 //                                                                         //

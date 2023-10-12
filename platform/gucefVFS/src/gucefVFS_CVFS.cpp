@@ -673,14 +673,14 @@ CVFS::CopyFile( const CORE::CString& originalFilepath ,
         return false;
     }
 
-    CVFSHandlePtr originalFile = GetFile( originalFilepath, "rb", overwrite );
+    TBasicVfsResourcePtr originalFile = GetFile( originalFilepath, "rb", overwrite );
     if ( !originalFile || GUCEF_NULL == originalFile->GetAccess() || !originalFile->GetAccess()->IsValid() )
     {
         GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "VFS:CopyFile: Cannot obtain original file: " + originalFilepath );
         return false;
     }
 
-    CVFSHandlePtr targetFile = GetFile( copyFilepath, "wb", overwrite );
+    TBasicVfsResourcePtr targetFile = GetFile( copyFilepath, "wb", overwrite );
     if ( !targetFile || GUCEF_NULL == targetFile->GetAccess() || !targetFile->GetAccess()->IsValid() )
     {
         GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "VFS:CopyFile: Cannot obtain access to output file: " + copyFilepath );
@@ -753,14 +753,14 @@ CVFS::EncodeFile( const CORE::CString& originalFilepath ,
         return false;
     }
 
-    CVFSHandlePtr originalFile = GetFile( originalFilepath, "rb", overwrite );
+    TBasicVfsResourcePtr originalFile = GetFile( originalFilepath, "rb", overwrite );
     if ( !originalFile || GUCEF_NULL == originalFile->GetAccess() || !originalFile->GetAccess()->IsValid() )
     {
         GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "VFS:EncodeFile: Cannot obtain original file: " + originalFilepath );
         return false;
     }
 
-    CVFSHandlePtr targetFile = GetFile( encodedFilepath, "wb", overwrite );
+    TBasicVfsResourcePtr targetFile = GetFile( encodedFilepath, "wb", overwrite );
     if ( !targetFile || GUCEF_NULL == targetFile->GetAccess() || !targetFile->GetAccess()->IsValid() )
     {
         GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "VFS:EncodeFile: Cannot obtain access to output file: " + encodedFilepath );
@@ -836,7 +836,7 @@ CVFS::DecodeAsFile( CORE::CDynamicBuffer& decodedOutput  ,
         return false;
     }
 
-    CVFSHandlePtr sourceFile = GetFile( encodedFilePath, "rb", false );
+    TBasicVfsResourcePtr sourceFile = GetFile( encodedFilePath, "rb", false );
     if ( !sourceFile || GUCEF_NULL == sourceFile->GetAccess() || !sourceFile->GetAccess()->IsValid() )
     {
         GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "VFS:DecodeAsFile: Cannot obtain access to output file: " + encodedFilePath );
@@ -884,7 +884,7 @@ CVFS::EncodeAsFile( const CORE::CDynamicBuffer& data     ,
         return false;
     }
 
-    CVFSHandlePtr targetFile = GetFile( encodedFilepath, "wb", overwrite );
+    TBasicVfsResourcePtr targetFile = GetFile( encodedFilepath, "wb", overwrite );
     if ( !targetFile || GUCEF_NULL == targetFile->GetAccess() || !targetFile->GetAccess()->IsValid() )
     {
         GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "VFS:EncodeAsFile: Cannot obtain access to output file: " + encodedFilepath );
@@ -1013,14 +1013,14 @@ CVFS::DecodeFile( const CORE::CString& originalFilepath ,
         return false;
     }
 
-    CVFSHandlePtr originalFile = GetFile( originalFilepath, "rb", overwrite );
+    TBasicVfsResourcePtr originalFile = GetFile( originalFilepath, "rb", overwrite );
     if ( !originalFile || GUCEF_NULL == originalFile->GetAccess() || !originalFile->GetAccess()->IsValid() )
     {
         GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "VFS:DecodeFile: Cannot obtain original file: " + originalFilepath );
         return false;
     }
 
-    CVFSHandlePtr targetFile = GetFile( decodedFilepath, "wb", overwrite );
+    TBasicVfsResourcePtr targetFile = GetFile( decodedFilepath, "wb", overwrite );
     if ( !targetFile || GUCEF_NULL == targetFile->GetAccess() || !targetFile->GetAccess()->IsValid() )
     {
         GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "VFS:DecodeFile: Cannot obtain access to output file: " + decodedFilepath );
@@ -1129,7 +1129,7 @@ CVFS::StoreAsFile( const CORE::CString& file        ,
 
 /*-------------------------------------------------------------------------*/
 
-CVFS::CVFSHandlePtr
+TBasicVfsResourcePtr
 CVFS::GetFile( const CORE::CString& file          ,
                const char* mode /* = "rb" */      ,
                const bool overwrite /* = false */ )
@@ -1163,10 +1163,10 @@ CVFS::GetFile( const CORE::CString& file          ,
         {
             GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "Vfs: Found requested file using mount link remainder: " + mountLink.remainder );
             TArchivePtr archive = mountLink.mountEntry->archive;
-            CVFSHandlePtr filePtr = archive->GetFile( mountLink.remainder ,
-                                                      mode                ,
-                                                      m_maxmemloadsize     ,
-                                                      overwrite           );
+            TBasicVfsResourcePtr filePtr = archive->GetFile( mountLink.remainder ,
+                                                             mode                ,
+                                                             m_maxmemloadsize     ,
+                                                             overwrite           );
 
             if ( !filePtr )
             {
@@ -1180,7 +1180,7 @@ CVFS::GetFile( const CORE::CString& file          ,
 
     // Unable to load file
     GUCEF_ERROR_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "Vfs: Unable to locate a mount which can provide the file: " + file );
-    return CVFSHandlePtr();
+    return TBasicVfsResourcePtr();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -1196,8 +1196,8 @@ CVFS::LoadFile( CORE::CDynamicBuffer& destinationBuffer ,
         return false;
 
     // First load the file as a VFS reference as usual
-    CVFSHandlePtr fileReference = GetFile( filePath, mode, false );
-    if ( !fileReference || GUCEF_NULL == fileReference->GetAccess() )
+    TBasicVfsResourcePtr fileReference = GetFile( filePath, mode, false );
+    if ( fileReference.IsNULL() || GUCEF_NULL == fileReference->GetAccess() )
         return false;
 
     // load the data from whatever abstracted vfs medium into memory
@@ -1226,7 +1226,7 @@ CVFS::LoadFile( CORE::CDataNode& destination    ,
     }
 
     // First load the file as a VFS reference as usual
-    CVFSHandlePtr fileReference = GetFile( filePath, "rb", false );
+    TBasicVfsResourcePtr fileReference = GetFile( filePath, "rb", false );
     if ( !fileReference || GUCEF_NULL == fileReference->GetAccess() )
         return false;
     
@@ -1447,11 +1447,11 @@ CVFS::MountArchive( const CArchiveSettings& settings )
 /*-------------------------------------------------------------------------*/
 
 bool
-CVFS::MountArchive( const CString& archiveName    ,
-                    CVFSHandlePtr archiveResource ,
-                    const CString& archiveType    ,
-                    const CString& mountPoint     ,
-                    const bool writeableRequest   )
+CVFS::MountArchive( const CString& archiveName           ,
+                    TBasicVfsResourcePtr archiveResource ,
+                    const CString& archiveType           ,
+                    const CString& mountPoint            ,
+                    const bool writeableRequest          )
 {GUCEF_TRACE;
 
     if ( archiveResource.IsNULL() )

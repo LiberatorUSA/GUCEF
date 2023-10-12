@@ -55,7 +55,7 @@ namespace WEB {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-typedef CORE::CTFactoryWithParam< PUBSUB::CPubSubClient, CWebPubSubClient, PUBSUB::CPubSubClientConfig >    TWebPubSubClientFactory;
+typedef CORE::CTFactoryWithParam< PUBSUB::CPubSubClient, CWebPubSubClient, PUBSUB::CPubSubClientConfig, MT::CMutex >    TWebPubSubClientFactory;
 
 /*-------------------------------------------------------------------------//
 //                                                                         //

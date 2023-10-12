@@ -101,7 +101,7 @@ class GUCEF_HIDDEN CAsyncVfsOperation : public CORE::CTaskConsumer
 
 /*-------------------------------------------------------------------------*/
 
-typedef CORE::CTFactory< CORE::CTaskConsumer, CAsyncVfsOperation > TAsyncVfsOperationTaskFactory;
+typedef CORE::CTFactory< CORE::CTaskConsumer, CAsyncVfsOperation, MT::CMutex > TAsyncVfsOperationTaskFactory;
 
 /*-------------------------------------------------------------------------//
 //                                                                         //

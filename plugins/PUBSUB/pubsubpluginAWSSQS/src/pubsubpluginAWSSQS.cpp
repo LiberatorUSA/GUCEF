@@ -60,7 +60,7 @@ namespace AWSSQS {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-typedef CORE::CTFactoryWithParam< PUBSUB::CPubSubClient, CAwsSqsPubSubClient, PUBSUB::CPubSubClientConfig >    TAwsSqsPubSubClientFactory;
+typedef CORE::CTFactoryWithParam< PUBSUB::CPubSubClient, CAwsSqsPubSubClient, PUBSUB::CPubSubClientConfig, MT::CMutex >    TAwsSqsPubSubClientFactory;
 
 /*-------------------------------------------------------------------------//
 //                                                                         //

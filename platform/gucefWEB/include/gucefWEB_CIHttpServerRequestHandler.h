@@ -90,7 +90,7 @@ class GUCEF_WEB_PUBLIC_CPP CIHttpServerRequestHandler
 
 /*-------------------------------------------------------------------------*/
 
-typedef CORE::CTFactoryBase< CIHttpServerRequestHandler > THttpServerRequestHandlerFactory;
+typedef CORE::CTFactoryBase< CIHttpServerRequestHandler, MT::CMutex > THttpServerRequestHandlerFactory;
 
 /*-------------------------------------------------------------------------//
 //                                                                         //

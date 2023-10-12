@@ -121,7 +121,7 @@ CAsyncHttpServerRequestHandler::RegisterEvents( void )
 
 CAsyncHttpServerRequestHandler::CAsyncHttpServerRequestHandler( void )
     : CORE::CTaskConsumer() 
-    , m_requestHandler( GUCEF_NULL )
+    , m_requestHandler()
 {GUCEF_TRACE;
 
     RegisterEvents();
@@ -131,7 +131,7 @@ CAsyncHttpServerRequestHandler::CAsyncHttpServerRequestHandler( void )
 
 CAsyncHttpServerRequestHandler::CAsyncHttpServerRequestHandler( const CAsyncHttpServerRequestHandler& src )
     : CORE::CTaskConsumer()
-    , m_requestHandler( GUCEF_NULL )
+    , m_requestHandler()
 {GUCEF_TRACE;
 
 }
@@ -141,8 +141,7 @@ CAsyncHttpServerRequestHandler::CAsyncHttpServerRequestHandler( const CAsyncHttp
 CAsyncHttpServerRequestHandler::~CAsyncHttpServerRequestHandler()
 {GUCEF_TRACE;
 
-    GUCEF_DELETE m_requestHandler;
-    m_requestHandler = GUCEF_NULL;
+    m_requestHandler.Unlink();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -166,7 +165,7 @@ CAsyncHttpServerRequestHandler::OnTaskStart( CORE::CICloneable* taskData )
     if ( GUCEF_NULL != httpRequestData )
     {
         m_requestHandler = httpRequestData->httpServer->GetRequestHandlerFactory()->Create();
-        if ( GUCEF_NULL == m_requestHandler )
+        if ( m_requestHandler.IsNULL() )
             return false;
     }
     return true;
@@ -191,8 +190,8 @@ CAsyncHttpServerRequestHandler::OnTaskCycle( CORE::CICloneable* taskData )
     if ( GUCEF_NULL == m_requestHandler )
     {
         m_requestHandler = httpRequestData->httpServer->GetRequestHandlerFactory()->Create();
-        if ( GUCEF_NULL == m_requestHandler )
-            return true;
+        if ( m_requestHandler.IsNULL() )
+            return true; // true means we are done
     }
 
     CAsyncHttpResponseData* response = GUCEF_NEW CAsyncHttpResponseData( httpRequestData );
@@ -217,7 +216,7 @@ CAsyncHttpServerRequestHandler::OnTaskCycle( CORE::CICloneable* taskData )
         }
     }
 
-    return true;
+    return true; // true means we are done
 }
 
 /*-------------------------------------------------------------------------*/
@@ -238,12 +237,7 @@ CAsyncHttpServerRequestHandler::OnTaskEnded( CORE::CICloneable* taskData ,
 
     GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "AsyncHttpServerRequestHandler(" + CORE::PointerToString( this ) + "):OnTaskEnd" );
 
-    CAsyncHttpRequestData* httpRequestData = static_cast< CAsyncHttpRequestData* >( taskData );
-    if ( GUCEF_NULL != httpRequestData )
-    {
-         httpRequestData->httpServer->GetRequestHandlerFactory()->Destroy( m_requestHandler );
-         m_requestHandler = GUCEF_NULL;
-    }
+    m_requestHandler.Unlink();
 
     CORE::CTaskConsumer::OnTaskEnded( taskData, wasForced );
 }

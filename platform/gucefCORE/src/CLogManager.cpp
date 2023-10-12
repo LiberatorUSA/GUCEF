@@ -111,9 +111,9 @@ namespace CORE {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-typedef CTFactory< CILoggingFormatter, CJsonLoggingFormatter > JsonLoggingFormatterFactory;
-typedef CTFactory< CILoggingFormatter, CBasicBracketLoggingFormatter > BasicBracketLoggingFormatterFactory;
-typedef CTFactory< CILoggingFormatter, CCharSepLoggingFormatter > CharSepLoggingFormatterFactory;
+typedef CTFactory< CILoggingFormatter, CJsonLoggingFormatter, MT::CMutex > JsonLoggingFormatterFactory;
+typedef CTFactory< CILoggingFormatter, CBasicBracketLoggingFormatter, MT::CMutex > BasicBracketLoggingFormatterFactory;
+typedef CTFactory< CILoggingFormatter, CCharSepLoggingFormatter, MT::CMutex > CharSepLoggingFormatterFactory;
 
 /*-------------------------------------------------------------------------//
 //                                                                         //

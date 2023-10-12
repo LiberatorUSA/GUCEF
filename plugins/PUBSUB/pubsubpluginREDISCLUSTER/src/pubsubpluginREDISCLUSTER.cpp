@@ -62,7 +62,7 @@ namespace REDISCLUSTER {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-typedef CORE::CTFactoryWithParam< PUBSUB::CPubSubClient, CRedisClusterPubSubClient, PUBSUB::CPubSubClientConfig >    TRedisClusterPubSubClientFactory;
+typedef CORE::CTFactoryWithParam< PUBSUB::CPubSubClient, CRedisClusterPubSubClient, PUBSUB::CPubSubClientConfig, MT::CMutex >    TRedisClusterPubSubClientFactory;
 
 /*-------------------------------------------------------------------------//
 //                                                                         //

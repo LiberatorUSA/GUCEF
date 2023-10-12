@@ -134,10 +134,10 @@ CVFSURLHandler::Activate( CORE::CURL& url )
         NotifyObservers( URLActivateEvent );
 
         // Obtain the file
-        CVFS::CVFSHandlePtr handle = m_vfs->GetFile( url.GetURL().SubstrToSubstr( "://" ), "rb", false );
-        if ( handle )
+        TBasicVfsResourcePtr resource = m_vfs->GetFile( url.GetURL().SubstrToSubstr( "://" ), "rb", false );
+        if ( !resource.IsNULL() )
         {
-                CORE::CIOAccess* access = handle->GetAccess();
+                CORE::CIOAccess* access = resource->GetAccess();
                 if ( NULL == access )
                 {
                     NotifyObservers( URLDataRetrievalErrorEvent );

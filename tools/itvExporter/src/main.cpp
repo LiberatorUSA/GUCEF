@@ -469,7 +469,7 @@ GUCEF_OSMAIN_BEGIN
                                         }
                                     }
 
-                                    VFS::CVFS::CVFSHandlePtr file = vfs.GetFile( vfsFilePath, "rb", false );
+                                    VFS::TBasicVfsResourcePtr file = vfs.GetFile( vfsFilePath, "rb", false );
                                     if ( !file.IsNULL() )
                                     {
                                         GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Obtained access to resource: " + (*i) );
@@ -557,7 +557,7 @@ GUCEF_OSMAIN_BEGIN
                                                             if ( vfs.MountArchive( mount, palleteArchive, archiveType, mount, false, false ) )
                                                             {
                                                                 CORE::CString subPath = mount + '\\' + "100.itv5";
-                                                                VFS::CVFS::CVFSHandlePtr paletteFile = vfs.GetFile( subPath, "rb", false );
+                                                                VFS::TBasicVfsResourcePtr paletteFile = vfs.GetFile( subPath, "rb", false );
                                                                 if ( paletteFile )
                                                                 {
                                                                     if ( palette.Load( *paletteFile->GetAccess(), "itv5" ) )

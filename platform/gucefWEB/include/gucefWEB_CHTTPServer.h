@@ -148,7 +148,7 @@ class GUCEF_WEB_PUBLIC_CPP CHTTPServer : public CORE::CObservingNotifier
 
     CIHTTPServerRouterController* GetRouterController( void ) const;
 
-    CIHttpServerRequestHandler* GetRequestHandler( void ) const;
+    THttpServerRequestHandlerFactory::TProductPtr GetRequestHandler( void ) const;
 
     THttpServerRequestHandlerFactory* GetRequestHandlerFactory( void ) const;
     
@@ -223,7 +223,7 @@ class GUCEF_WEB_PUBLIC_CPP CHTTPServer : public CORE::CObservingNotifier
     typedef CORE::CTEventHandlerFunctor< CHTTPServer > TEventCallback;
     
     COMCORE::CTCPServerSocket m_tcpServerSocket;
-    CIHttpServerRequestHandler* m_requestHandler;
+    THttpServerRequestHandlerFactory::TProductPtr m_requestHandler;
     THttpServerRequestHandlerFactory* m_requestHandlerFactory;
     CHttpServerSettings m_settings;
     CORE::CCodecRegistry::TICodecPtr m_sha1Codec;
@@ -243,13 +243,3 @@ class GUCEF_WEB_PUBLIC_CPP CHTTPServer : public CORE::CObservingNotifier
 
 #endif /* GUCEF_WEB_CHTTPSERVER_H ? */
 
-/*-------------------------------------------------------------------------//
-//                                                                         //
-//      Info & Changes                                                     //
-//                                                                         //
-//-------------------------------------------------------------------------//
-
-- 03-03-2007 :
-        - Dinand: Added this section
-
----------------------------------------------------------------------------*/

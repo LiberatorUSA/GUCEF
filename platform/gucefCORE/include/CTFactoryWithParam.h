@@ -47,10 +47,15 @@ namespace CORE {
  *  Template for creating a concrete factory as described in the
  *  factory design pattern.
  */
-template< class BaseClassType, class ConcreteClassType, typename ConstructionParamType >
-class CTFactoryWithParam : public CTFactoryBaseWithParam< BaseClassType, ConstructionParamType >            
+template< class BaseClassType, class ConcreteClassType, typename ConstructionParamType, typename LockType >
+class CTFactoryWithParam : public CTFactoryBaseWithParam< BaseClassType, ConstructionParamType, LockType > ,           
+                           public CTTypeNamedDynamicDestructorBase< ConcreteClassType > ,
+                           public CTDynamicDestructorBase< ConcreteClassType >
 {
     public:
+
+    typedef ConcreteClassType                                   TConcreteClassType;
+    typedef CTSharedPtr< ConcreteClassType, LockType >          TConcreteProductPtr;
     
     /**
      *  Default constructor which acts as a no-op since factories are
@@ -81,20 +86,17 @@ class CTFactoryWithParam : public CTFactoryBaseWithParam< BaseClassType, Constru
      *
      *  @return pointer to the base class of the constructed factory product
      */
-    virtual BaseClassType* Create( const ConstructionParamType& param );
-    
-    /**
-     *  Destroys the concrete factory product
-     *
-     *  @param factoryProduct pointer to the base class of the constructed factory product
-     */
-    virtual void Destroy( BaseClassType* factoryProduct );
+    virtual TProductPtr Create( const ConstructionParamType& param );
 
     /**
      *  Allows creation of factories without knowing the decending concrete
      *  classes.
      */
     virtual CICloneable* Clone( void ) const;
+
+    virtual void DestroyObject( ConcreteClassType* objectToBeDestroyed ) const GUCEF_VIRTUAL_OVERRIDE;
+
+    virtual void DestroyObject( ConcreteClassType* objectToBeDestroyed, const CString& classTypeName ) const GUCEF_VIRTUAL_OVERRIDE;
 };
 
 /*-------------------------------------------------------------------------//
@@ -103,34 +105,41 @@ class CTFactoryWithParam : public CTFactoryBaseWithParam< BaseClassType, Constru
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-template< class BaseClassType, class ConcreteClassType, typename ConstructionParamType >
-CTFactoryWithParam< BaseClassType, ConcreteClassType, ConstructionParamType >::CTFactoryWithParam( void )
-{
+template< class BaseClassType, class ConcreteClassType, typename ConstructionParamType, typename LockType >
+CTFactoryWithParam< BaseClassType, ConcreteClassType, ConstructionParamType, LockType >::CTFactoryWithParam( void )
+    : CTFactoryBaseWithParam< BaseClassType, ConstructionParamType, LockType >()            
+    , CTTypeNamedDynamicDestructorBase< ConcreteClassType >()
+    , CTDynamicDestructorBase< ConcreteClassType >()
+{GUCEF_TRACE;
     
 }
 
 /*-------------------------------------------------------------------------*/
 
-template< class BaseClassType, class ConcreteClassType, typename ConstructionParamType >
-CTFactoryWithParam< BaseClassType, ConcreteClassType, ConstructionParamType >::CTFactoryWithParam( const CTFactoryWithParam< BaseClassType, ConcreteClassType, ConstructionParamType >& src )
-{
+template< class BaseClassType, class ConcreteClassType, typename ConstructionParamType, typename LockType >
+CTFactoryWithParam< BaseClassType, ConcreteClassType, ConstructionParamType, LockType >::CTFactoryWithParam( const CTFactoryWithParam< BaseClassType, ConcreteClassType, ConstructionParamType, LockType >& src )
+    : CTFactoryBaseWithParam< BaseClassType, ConstructionParamType, LockType >( src )            
+    , CTTypeNamedDynamicDestructorBase< ConcreteClassType >( src )
+    , CTDynamicDestructorBase< ConcreteClassType >( src )
+{GUCEF_TRACE;
 
 }
 
 /*-------------------------------------------------------------------------*/
    
-template< class BaseClassType, class ConcreteClassType, typename ConstructionParamType >
-CTFactoryWithParam< BaseClassType, ConcreteClassType, ConstructionParamType >::~CTFactoryWithParam()
-{
+template< class BaseClassType, class ConcreteClassType, typename ConstructionParamType, typename LockType >
+CTFactoryWithParam< BaseClassType, ConcreteClassType, ConstructionParamType, LockType >::~CTFactoryWithParam()
+{GUCEF_TRACE;
 
 }
 
 /*-------------------------------------------------------------------------*/
 
-template< class BaseClassType, class ConcreteClassType, typename ConstructionParamType >
-CTFactoryWithParam< BaseClassType, ConcreteClassType, ConstructionParamType >& 
-CTFactoryWithParam< BaseClassType, ConcreteClassType, ConstructionParamType >::operator=( const CTFactoryWithParam< BaseClassType, ConcreteClassType, ConstructionParamType >& src )
-{
+template< class BaseClassType, class ConcreteClassType, typename ConstructionParamType, typename LockType >
+CTFactoryWithParam< BaseClassType, ConcreteClassType, ConstructionParamType, LockType >& 
+CTFactoryWithParam< BaseClassType, ConcreteClassType, ConstructionParamType, LockType >::operator=( const CTFactoryWithParam< BaseClassType, ConcreteClassType, ConstructionParamType, LockType >& src )
+{GUCEF_TRACE;
+
     if ( &src != this )
     {
     }
@@ -139,33 +148,64 @@ CTFactoryWithParam< BaseClassType, ConcreteClassType, ConstructionParamType >::o
 
 /*-------------------------------------------------------------------------*/
 
-template< class BaseClassType, class ConcreteClassType, typename ConstructionParamType >
-BaseClassType* 
-CTFactoryWithParam< BaseClassType, ConcreteClassType, ConstructionParamType >::Create( const ConstructionParamType& param )
-{
-    return GUCEF_NEW ConcreteClassType( param );
+template< class BaseClassType, class ConcreteClassType, typename ConstructionParamType, typename LockType >
+typename CTFactoryWithParam< BaseClassType, ConcreteClassType, ConstructionParamType, LockType >::TProductPtr 
+CTFactoryWithParam< BaseClassType, ConcreteClassType, ConstructionParamType, LockType >::Create( const ConstructionParamType& param )
+{GUCEF_TRACE;
+
+    ConcreteClassType* concreteObj = GUCEF_NULL;
+    try
+    {
+        concreteObj = GUCEF_NEW ConcreteClassType( param );
+        BaseClassType* baseClassPtr = static_cast< BaseClassType* >( concreteObj );
+        return TProductPtr( baseClassPtr, this, concreteObj );
+    }
+    catch ( const std::exception& )
+    {
+        GUCEF_DELETE concreteObj;
+        concreteObj = GUCEF_NULL;
+    }
+
+    return TProductPtr();
 }
 
 /*-------------------------------------------------------------------------*/
-    
-template< class BaseClassType, class ConcreteClassType, typename ConstructionParamType >
-void 
-CTFactoryWithParam< BaseClassType, ConcreteClassType, ConstructionParamType >::Destroy( BaseClassType* factoryProduct )
-{
+
+template< class BaseClassType, class ConcreteClassType, typename ConstructionParamType, typename LockType >
+void
+CTFactoryWithParam< BaseClassType, ConcreteClassType, ConstructionParamType, LockType >::DestroyObject( ConcreteClassType* objectToBeDestroyed ) const
+{GUCEF_TRACE;
+
     /*
-     *  We cast to the decendant class or concrete factory product if you will, 
+     *  We delete at the level of the decendant class or concrete factory product if you will,
      *  to ensure it's destructor is called even if the base class does not have a
      *  virtual destructor
      */
-    GUCEF_DELETE static_cast< ConcreteClassType* >( factoryProduct );
+    GUCEF_DELETE objectToBeDestroyed;
+}
+
+/*-------------------------------------------------------------------------*/
+
+template< class BaseClassType, class ConcreteClassType, typename ConstructionParamType, typename LockType >
+void
+CTFactoryWithParam< BaseClassType, ConcreteClassType, ConstructionParamType, LockType >::DestroyObject( ConcreteClassType* objectToBeDestroyed, const CString& classTypeName ) const
+{GUCEF_TRACE;
+
+    /*
+     *  We delete at the level of the decendant class or concrete factory product if you will,
+     *  to ensure it's destructor is called even if the base class does not have a
+     *  virtual destructor
+     */
+    GUCEF_DELETE static_cast< ConcreteClassType* >( objectToBeDestroyed );
 }
 
 /*-------------------------------------------------------------------------*/
     
-template< class BaseClassType, class ConcreteClassType, typename ConstructionParamType >
+template< class BaseClassType, class ConcreteClassType, typename ConstructionParamType, typename LockType >
 CICloneable* 
-CTFactoryWithParam< BaseClassType, ConcreteClassType, ConstructionParamType >::Clone( void ) const
-{
+CTFactoryWithParam< BaseClassType, ConcreteClassType, ConstructionParamType, LockType >::Clone( void ) const
+{GUCEF_TRACE;
+
     /*
      *  In contrast to normal cloning we do not need to use the copy constructor
      *  here because a factory is meta data and has no attributes.
@@ -173,7 +213,7 @@ CTFactoryWithParam< BaseClassType, ConcreteClassType, ConstructionParamType >::C
      *  Decending classes can offcourse override this if additional criteria are
      *  to be considdered.
      */
-    return GUCEF_NEW CTFactoryWithParam< BaseClassType, ConcreteClassType, ConstructionParamType >;
+    return GUCEF_NEW CTFactoryWithParam< BaseClassType, ConcreteClassType, ConstructionParamType, LockType >;
 }
 
 /*-------------------------------------------------------------------------//

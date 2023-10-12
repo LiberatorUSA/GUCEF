@@ -93,8 +93,8 @@ class GUCEF_HIDDEN CAwsS3Global : public CORE::CObservingNotifier
 {
     public:
 
-    typedef CORE::CTFactory< VFS::CArchive, CS3Archive >       TAwsS3ArchiveFactory;
-    typedef CORE::CTFactory< VFS::CArchive, CS3BucketArchive > TAwsS3BucketArchiveFactory;
+    typedef CORE::CTFactory< VFS::CArchive, CS3Archive, MT::CMutex >       TAwsS3ArchiveFactory;
+    typedef CORE::CTFactory< VFS::CArchive, CS3BucketArchive, MT::CMutex > TAwsS3BucketArchiveFactory;
 
     static const CORE::CString AwsS3ArchiveType;
     static const CORE::CString AwsS3BucketArchiveType;
@@ -158,14 +158,3 @@ class GUCEF_HIDDEN CAwsS3Global : public CORE::CObservingNotifier
 /*-------------------------------------------------------------------------*/
 
 #endif /* GUCEF_VFSPLUGIN_AWSS3_CAWSS3GLOBAL_H ? */
-
-/*-------------------------------------------------------------------------//
-//                                                                         //
-//      Info & Changes                                                     //
-//                                                                         //
-//-------------------------------------------------------------------------//
-
-- 04-05-2005 :
-        - Dinand: Initial version.
-
----------------------------------------------------------------------------*/

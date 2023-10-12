@@ -78,7 +78,7 @@ class GUCEF_IMAGE_EXPORT_CPP CImageCodecPluginManager : public CORE::CPluginMana
     virtual CORE::TPluginPtr RegisterPlugin( void* modulePtr                         ,
                                              CORE::TPluginMetaDataPtr pluginMetaData );
 
-    virtual void UnregisterPlugin( CORE::TPluginPtr plugin );
+    virtual bool UnregisterPlugin( CORE::TPluginPtr plugin ) GUCEF_VIRTUAL_OVERRIDE;
 
     private:
     friend class CImageGlobal;

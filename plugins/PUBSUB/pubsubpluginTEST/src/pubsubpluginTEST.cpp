@@ -52,7 +52,7 @@
 
 using namespace GUCEF;
 
-typedef CORE::CTFactoryWithParam< PUBSUB::CPubSubClient, PUBSUBPLUGIN::TEST::CTestPubSubClient, PUBSUB::CPubSubClientConfig >    TTestPubSubClientFactory;
+typedef CORE::CTFactoryWithParam< PUBSUB::CPubSubClient, PUBSUBPLUGIN::TEST::CTestPubSubClient, PUBSUB::CPubSubClientConfig, MT::CMutex >    TTestPubSubClientFactory;
 
 /*-------------------------------------------------------------------------//
 //                                                                         //

@@ -71,6 +71,9 @@ namespace VFS {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+/**
+ *  @TODO: Rework and rename this class
+ */
 class GUCEF_VFS_PUBLIC_CPP CVFSHandle
 {
     public:
@@ -110,6 +113,11 @@ class GUCEF_VFS_PUBLIC_CPP CVFSHandle
     CString m_filePath;
 };
 
+/*-------------------------------------------------------------------------*/
+
+typedef CORE::CTSharedPtr< CVFSHandle, MT::CMutex >         TVfsResourcePtr;
+typedef TVfsResourcePtr::TBasicSharedPtrBase                TBasicVfsResourcePtr;
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //
@@ -122,14 +130,3 @@ class GUCEF_VFS_PUBLIC_CPP CVFSHandle
 /*-------------------------------------------------------------------------*/
 
 #endif /* GUCEF_VFS_CVFSHANDLE_H ? */
-
-/*-------------------------------------------------------------------------//
-//                                                                         //
-//      Info & Changes                                                     //
-//                                                                         //
-//-------------------------------------------------------------------------//
-
-- 12-02-2005 :
-        - Initial implementation
-
------------------------------------------------------------------------------*/

@@ -100,11 +100,9 @@ class GUCEF_VFS_PUBLIC_CPP CArchive : public CORE::CObservingNotifier           
                                       public CORE::CTDynamicDestructorBase< CVFSHandle >
 {
     public:
-
-    typedef CORE::CTBasicSharedPtr< CVFSHandle, MT::CMutex >    CVFSHandlePtr;
+    
     typedef CString::StringVector                               TStringVector;
     typedef CString::StringSet                                  TStringSet;
-
     
     CArchive( void );
     
@@ -114,10 +112,10 @@ class GUCEF_VFS_PUBLIC_CPP CArchive : public CORE::CObservingNotifier           
     
     CArchive& operator=( const CArchive& src );
     
-    virtual CVFSHandlePtr GetFile( const CString& file          ,
-                                   const char* mode = "rb"      ,
-                                   const UInt32 memLoadSize = 0 ,
-                                   const bool overwrite = false ) = 0;
+    virtual TBasicVfsResourcePtr GetFile( const CString& file          ,
+                                          const char* mode = "rb"      ,
+                                          const UInt32 memLoadSize = 0 ,
+                                          const bool overwrite = false ) = 0;
 
     virtual bool StoreAsFile( const CORE::CString& filepath    ,
                               const CORE::CDynamicBuffer& data ,
@@ -165,9 +163,9 @@ class GUCEF_VFS_PUBLIC_CPP CArchive : public CORE::CObservingNotifier           
     
     virtual bool LoadArchive( const CArchiveSettings& settings ) = 0;
 
-    virtual bool LoadArchive( const CString& archiveName  ,
-                              CVFSHandlePtr vfsResource   ,
-                              const bool writeableRequest ) = 0;
+    virtual bool LoadArchive( const CString& archiveName       ,
+                              TBasicVfsResourcePtr vfsResource ,
+                              const bool writeableRequest      ) = 0;
                               
     virtual bool UnloadArchive( void ) = 0;
     

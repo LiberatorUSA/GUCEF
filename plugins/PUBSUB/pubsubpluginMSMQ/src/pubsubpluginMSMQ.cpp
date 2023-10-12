@@ -57,7 +57,7 @@ namespace MSMQ {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-typedef CORE::CTFactoryWithParam< PUBSUB::CPubSubClient, CMsmqPubSubClient, PUBSUB::CPubSubClientConfig >    TMsmqPubSubClientFactory;
+typedef CORE::CTFactoryWithParam< PUBSUB::CPubSubClient, CMsmqPubSubClient, PUBSUB::CPubSubClientConfig, MT::CMutex >    TMsmqPubSubClientFactory;
 
 /*-------------------------------------------------------------------------//
 //                                                                         //

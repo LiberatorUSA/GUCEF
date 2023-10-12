@@ -79,10 +79,10 @@ class GUCEF_HIDDEN CS3Archive : public VFS::CArchive
 
     virtual ~CS3Archive();
 
-    virtual CVFSHandlePtr GetFile( const VFS::CString& file          ,
-                                   const char* mode = "rb"           ,
-                                   const VFS::UInt32 memLoadSize = 0 ,
-                                   const bool overwrite = false      ) GUCEF_VIRTUAL_OVERRIDE;
+    virtual VFS::TBasicVfsResourcePtr GetFile( const VFS::CString& file          ,
+                                               const char* mode = "rb"           ,
+                                               const VFS::UInt32 memLoadSize = 0 ,
+                                               const bool overwrite = false      ) GUCEF_VIRTUAL_OVERRIDE;
 
     virtual bool StoreAsFile( const CORE::CString& filepath    ,
                               const CORE::CDynamicBuffer& data ,
@@ -130,9 +130,9 @@ class GUCEF_HIDDEN CS3Archive : public VFS::CArchive
 
     virtual bool LoadArchive( const VFS::CArchiveSettings& settings ) GUCEF_VIRTUAL_OVERRIDE;
 
-    virtual bool LoadArchive( const VFS::CString& archiveName ,
-                              CVFSHandlePtr vfsResource       ,
-                              const bool writeableRequest     ) GUCEF_VIRTUAL_OVERRIDE;
+    virtual bool LoadArchive( const VFS::CString& archiveName       ,
+                              VFS::TBasicVfsResourcePtr vfsResource ,
+                              const bool writeableRequest           ) GUCEF_VIRTUAL_OVERRIDE;
 
     virtual bool UnloadArchive( void ) GUCEF_VIRTUAL_OVERRIDE;
 

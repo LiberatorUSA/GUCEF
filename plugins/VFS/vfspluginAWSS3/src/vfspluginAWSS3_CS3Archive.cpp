@@ -123,14 +123,14 @@ CS3Archive::RegisterEventHandlers( void )
 
 /*-------------------------------------------------------------------------*/
 
-VFS::CArchive::CVFSHandlePtr
+VFS::TBasicVfsResourcePtr
 CS3Archive::GetFile( const VFS::CString& file      ,
                      const char* mode              ,
                      const VFS::UInt32 memLoadSize ,
                      const bool overwrite          )
 {GUCEF_TRACE;
 
-    return VFS::CVFS::CVFSHandlePtr();
+    return VFS::TBasicVfsResourcePtr();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -402,9 +402,9 @@ CS3Archive::LoadArchive( const VFS::CArchiveSettings& settings )
 /*-------------------------------------------------------------------------*/
 
 bool
-CS3Archive::LoadArchive( const VFS::CString& archiveName ,
-                         CVFSHandlePtr vfsResource       ,
-                         const bool writeableRequest     )
+CS3Archive::LoadArchive( const VFS::CString& archiveName       ,
+                         VFS::TBasicVfsResourcePtr vfsResource ,
+                         const bool writeableRequest           )
 {GUCEF_TRACE;
 
     GUCEF_WARNING_LOG( CORE::LOGLEVEL_NORMAL, "S3Archive: Attempting to load a \"AWS::S3\" archive from a resource. That does not make sense. Bad config?" );

@@ -190,7 +190,7 @@ CHTTPServer::CHTTPServer( THttpServerRequestHandlerFactory* requestHandlerFactor
                           const CHttpServerSettings* settings /* = GUCEF_NULL */                     )
     : CORE::CObservingNotifier()              
     , m_tcpServerSocket( false, GUCEF_NULL != settings ? settings->maxClientConnections : 100 )
-    , m_requestHandler( GUCEF_NULL )
+    , m_requestHandler()
     , m_requestHandlerFactory( requestHandlerFactory )
     , m_settings()
     , m_sha1Codec()
@@ -218,7 +218,7 @@ CHTTPServer::CHTTPServer( const CORE::PulseGeneratorPtr& pulsGenerator          
                           const CHttpServerSettings* settings /* = GUCEF_NULL */                     )
     : CORE::CObservingNotifier()                               
     , m_tcpServerSocket( pulsGenerator, false, GUCEF_NULL != settings ? settings->maxClientConnections : 100 ) 
-    , m_requestHandler( GUCEF_NULL )
+    , m_requestHandler()
     , m_requestHandlerFactory( requestHandlerFactory )
     , m_settings()
     , m_sha1Codec()
@@ -247,9 +247,7 @@ CHTTPServer::~CHTTPServer()
     MT::CScopeMutex lock( m_lock );
     
     SignalUpcomingObserverDestruction();
-
-    if ( GUCEF_NULL != m_requestHandlerFactory )
-        m_requestHandlerFactory->Destroy( m_requestHandler );
+    m_requestHandler.Unlink();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -287,7 +285,7 @@ CHTTPServer::GetSettings( CHttpServerSettings& settings )
 
 /*-------------------------------------------------------------------------*/
 
-CIHttpServerRequestHandler* 
+THttpServerRequestHandlerFactory::TProductPtr
 CHTTPServer::GetRequestHandler( void ) const
 {GUCEF_TRACE;
 

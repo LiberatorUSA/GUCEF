@@ -26,8 +26,20 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#include "gucefCORE_ETypes.h"
+#ifndef GUCEF_CORE_CICLONEABLE_H
 #include "CICloneable.h"
+#define GUCEF_CORE_CICLONEABLE_H
+#endif /* GUCEF_CORE_CICLONEABLE_H ? */
+
+#ifndef GUCEF_CORE_CSTRING_H
+#include "gucefCORE_CString.h"
+#define GUCEF_CORE_CSTRING_H
+#endif /* GUCEF_CORE_CSTRING_H ? */
+
+#ifndef GUCEF_CORE_CTSHAREDPTR_H
+#include "CTSharedPtr.h"
+#define GUCEF_CORE_CTSHAREDPTR_H
+#endif /* GUCEF_CORE_CTSHAREDPTR_H ? */
 
 /*-------------------------------------------------------------------------*/
 
@@ -59,10 +71,14 @@ namespace CORE {
  *  Template for creating an abstract interface for creation and destruction of 
  *  objects without specifieing the concrete type
  */
-template< class BaseClassType, typename ConstructionParamType >
+template< class BaseClassType, typename ConstructionParamType, typename LockType >
 class CTFactoryBaseWithParam : public CICloneable
 {
     public:
+
+    typedef LockType                                            TLockType;
+    typedef BaseClassType                                       TProductType;
+    typedef CTBasicSharedPtr< BaseClassType, LockType >         TProductPtr;
     
     CTFactoryBaseWithParam( void );
 
@@ -81,14 +97,8 @@ class CTFactoryBaseWithParam : public CICloneable
      *
      *  @return pointer to the base class of the constructed factory product
      */
-    virtual BaseClassType* Create( const ConstructionParamType& param  ) = 0;
+    virtual TProductPtr Create( const ConstructionParamType& param  ) = 0;
     
-    /**
-     *  Destroys the concrete factory product
-     *
-     *  @param factoryProduct pointer to the base class of the constructed factory product
-     */
-    virtual void Destroy( BaseClassType* factoryProduct ) = 0;
 };
 
 /*-------------------------------------------------------------------------//
@@ -97,36 +107,37 @@ class CTFactoryBaseWithParam : public CICloneable
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-template< class BaseClassType, typename ConstructionParamType >
-CTFactoryBaseWithParam< BaseClassType, ConstructionParamType >::CTFactoryBaseWithParam( void )
+template< class BaseClassType, typename ConstructionParamType, typename LockType >
+CTFactoryBaseWithParam< BaseClassType, ConstructionParamType, LockType >::CTFactoryBaseWithParam( void )
     : CICloneable()
-{
+{GUCEF_TRACE;
 
 }
 
 /*-------------------------------------------------------------------------*/
 
-template< class BaseClassType, typename ConstructionParamType >
-CTFactoryBaseWithParam< BaseClassType, ConstructionParamType >::CTFactoryBaseWithParam( const CTFactoryBaseWithParam& src )
+template< class BaseClassType, typename ConstructionParamType, typename LockType >
+CTFactoryBaseWithParam< BaseClassType, ConstructionParamType, LockType >::CTFactoryBaseWithParam( const CTFactoryBaseWithParam& src )
     : CICloneable( src )
-{
+{GUCEF_TRACE;
 
 }
 
 /*-------------------------------------------------------------------------*/
 
-template< class BaseClassType, typename ConstructionParamType >
-CTFactoryBaseWithParam< BaseClassType, ConstructionParamType >::~CTFactoryBaseWithParam()
-{
+template< class BaseClassType, typename ConstructionParamType, typename LockType >
+CTFactoryBaseWithParam< BaseClassType, ConstructionParamType, LockType >::~CTFactoryBaseWithParam()
+{GUCEF_TRACE;
 
 }
 
 /*-------------------------------------------------------------------------*/
 
-template< class BaseClassType, typename ConstructionParamType >
-CTFactoryBaseWithParam< BaseClassType, ConstructionParamType >&
-CTFactoryBaseWithParam< BaseClassType, ConstructionParamType >::operator=( const CTFactoryBaseWithParam& src )
-{
+template< class BaseClassType, typename ConstructionParamType, typename LockType >
+CTFactoryBaseWithParam< BaseClassType, ConstructionParamType, LockType >&
+CTFactoryBaseWithParam< BaseClassType, ConstructionParamType, LockType >::operator=( const CTFactoryBaseWithParam& src )
+{GUCEF_TRACE;
+
     if ( &src != this )
     {
         // nothing to do,.. meta-data class

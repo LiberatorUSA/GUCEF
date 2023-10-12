@@ -143,9 +143,9 @@ class CRedisClusterKeyPrunerTaskData : public CORE::CStdDataNodeSerializableTask
 
 /*-------------------------------------------------------------------------*/
 
-typedef CORE::CTFactory< CORE::CIDataNodeSerializableTaskData, CRedisClusterKeyPrunerTaskData > TRedisClusterKeyPrunerTaskDataFactory;     
-typedef CORE::CTFactory< CORE::CTaskConsumer, CRedisClusterKeyPrunerTask >                      TRedisClusterKeyPrunerTaskConsumerFactory;     
-typedef CORE::CTSharedPtr< CRedisClusterKeyPrunerTask, MT::CMutex >                             CRedisClusterKeyPrunerTaskPtr;
+typedef CORE::CTFactory< CORE::CIDataNodeSerializableTaskData, CRedisClusterKeyPrunerTaskData, MT::CMutex > TRedisClusterKeyPrunerTaskDataFactory;     
+typedef CORE::CTFactory< CORE::CTaskConsumer, CRedisClusterKeyPrunerTask, MT::CMutex >                      TRedisClusterKeyPrunerTaskConsumerFactory;     
+typedef CORE::CTSharedPtr< CRedisClusterKeyPrunerTask, MT::CMutex >                                         CRedisClusterKeyPrunerTaskPtr;
 
 /*-------------------------------------------------------------------------//
 //                                                                         //

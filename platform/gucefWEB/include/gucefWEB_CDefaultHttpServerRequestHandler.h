@@ -118,7 +118,7 @@ class GUCEF_WEB_PUBLIC_CPP CDefaultHttpServerRequestHandler : public CIHttpServe
     bool m_applyTransferEncodingWhenAble;
 };
 
-typedef CORE::CTFactory< CIHttpServerRequestHandler, CDefaultHttpServerRequestHandler > TDefaultHttpServerRequestHandlerFactory;
+typedef CORE::CTFactory< CIHttpServerRequestHandler, CDefaultHttpServerRequestHandler, MT::CMutex > TDefaultHttpServerRequestHandlerFactory;
 
 /*-------------------------------------------------------------------------//
 //                                                                         //

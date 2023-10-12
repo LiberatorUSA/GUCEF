@@ -48,7 +48,7 @@
 
 using namespace GUCEF;
 
-typedef CORE::CTFactoryWithParam< PUBSUB::CPubSubClient, PUBSUBPLUGIN::STORAGE::CStoragePubSubClient, PUBSUB::CPubSubClientConfig >    TStoragePubSubClientFactory;
+typedef CORE::CTFactoryWithParam< PUBSUB::CPubSubClient, PUBSUBPLUGIN::STORAGE::CStoragePubSubClient, PUBSUB::CPubSubClientConfig, MT::CMutex >    TStoragePubSubClientFactory;
 
 /*-------------------------------------------------------------------------//
 //                                                                         //

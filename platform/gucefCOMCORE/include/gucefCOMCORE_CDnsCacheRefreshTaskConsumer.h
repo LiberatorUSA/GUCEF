@@ -82,7 +82,7 @@ class GUCEF_HIDDEN CDnsCacheRefreshTaskConsumer : public CORE::CTaskConsumer
 
 /*-------------------------------------------------------------------------*/
 
-typedef CORE::CTFactory< CORE::CTaskConsumer, CDnsCacheRefreshTaskConsumer > TDnsCacheRefreshTaskConsumerFactory;
+typedef CORE::CTFactory< CORE::CTaskConsumer, CDnsCacheRefreshTaskConsumer, MT::CMutex > TDnsCacheRefreshTaskConsumerFactory;
 
 /*-------------------------------------------------------------------------//
 //                                                                         //

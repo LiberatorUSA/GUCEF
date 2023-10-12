@@ -118,7 +118,7 @@ CS3BucketArchive::RegisterEventHandlers( void )
 
 /*-------------------------------------------------------------------------*/
 
-VFS::CArchive::CVFSHandlePtr
+VFS::TBasicVfsResourcePtr
 CS3BucketArchive::GetFile( const VFS::CString& file      ,
                            const char* mode              ,
                            const VFS::UInt32 memLoadSize ,
@@ -129,7 +129,7 @@ CS3BucketArchive::GetFile( const VFS::CString& file      ,
     {
         Aws::S3::S3Client* s3Client = CAwsS3Global::Instance()->GetS3Client();
         if ( GUCEF_NULL == s3Client )
-            return VFS::CArchive::CVFSHandlePtr();
+            return VFS::TBasicVfsResourcePtr();
 
         Aws::S3::Model::GetObjectRequest objectRequest;
         objectRequest.SetBucket( m_archiveName );
@@ -140,7 +140,7 @@ CS3BucketArchive::GetFile( const VFS::CString& file      ,
         {
             //getObjectOutcome.GetResult().GetBody()
             GUCEF_DEBUG_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "S3BucketArchive: Obtained Object \"" + file + "\" from Bucket \"" + m_archiveName + "\"" );
-            return VFS::CArchive::CVFSHandlePtr();
+            return VFS::TBasicVfsResourcePtr();
         }
         else
         {
@@ -156,7 +156,7 @@ CS3BucketArchive::GetFile( const VFS::CString& file      ,
     {
         GUCEF_EXCEPTION_LOG( CORE::LOGLEVEL_CRITICAL, "S3BucketArchive: Unknown exception trying to S3 get bucket object" );
     }
-    return VFS::CArchive::CVFSHandlePtr();
+    return VFS::TBasicVfsResourcePtr();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -175,7 +175,7 @@ CS3BucketArchive::StoreAsFile( const CORE::CString& filepath    ,
     {
         Aws::S3::S3Client* s3Client = CAwsS3Global::Instance()->GetS3Client();
         if ( GUCEF_NULL == s3Client )
-            return VFS::CArchive::CVFSHandlePtr();
+            return VFS::TBasicVfsResourcePtr();
 
         Aws::S3::Model::PutObjectRequest objectRequest;
         objectRequest.SetBucket( m_archiveName );
@@ -377,7 +377,7 @@ CS3BucketArchive::DeleteFile( const VFS::CString& filePath )
     {
         Aws::S3::S3Client* s3Client = CAwsS3Global::Instance()->GetS3Client();
         if ( GUCEF_NULL == s3Client )
-            return VFS::CArchive::CVFSHandlePtr();
+            return VFS::TBasicVfsResourcePtr();
 
         Aws::S3::Model::DeleteObjectRequest objectRequest;
         objectRequest.SetBucket( m_archiveName );
@@ -565,9 +565,9 @@ CS3BucketArchive::LoadArchive( const VFS::CArchiveSettings& settings )
 /*-------------------------------------------------------------------------*/
 
 bool
-CS3BucketArchive::LoadArchive( const VFS::CString& archiveName ,
-                               CVFSHandlePtr vfsResource       ,
-                               const bool writeableRequest     )
+CS3BucketArchive::LoadArchive( const VFS::CString& archiveName       ,
+                               VFS::TBasicVfsResourcePtr vfsResource ,
+                               const bool writeableRequest           )
 {GUCEF_TRACE;
 
     GUCEF_WARNING_LOG( CORE::LOGLEVEL_NORMAL, "S3BucketArchive: Attempting to load a \"AWS::S3::Bucket\" archive from a resource. That does not make sense. Bad config?" );

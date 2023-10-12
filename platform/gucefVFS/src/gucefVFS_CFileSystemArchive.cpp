@@ -172,9 +172,9 @@ CFileSystemArchive::LoadArchive( const CArchiveSettings& settings )
 /*-------------------------------------------------------------------------*/
 
 bool 
-CFileSystemArchive::LoadArchive( const VFS::CString& archiveName ,
-                                 CVFSHandlePtr vfsResource       ,
-                                 const bool writeableRequest     )
+CFileSystemArchive::LoadArchive( const VFS::CString& archiveName  ,
+                                 TBasicVfsResourcePtr vfsResource ,
+                                 const bool writeableRequest      )
 {GUCEF_TRACE;
 
     GUCEF_WARNING_LOG( CORE::LOGLEVEL_NORMAL, "FileSystemArchive: Attempting to load a \"FileSystem\" archive from a file. That does not make sense. Bad config?" );
@@ -192,7 +192,7 @@ CFileSystemArchive::UnloadArchive( void )
 
 /*-------------------------------------------------------------------------*/
 
-CArchive::CVFSHandlePtr
+TBasicVfsResourcePtr
 CFileSystemArchive::GetFile( const CString& file      ,
                              const char* mode         ,
                              const UInt32 memLoadSize ,
@@ -200,25 +200,10 @@ CFileSystemArchive::GetFile( const CString& file      ,
 
 {GUCEF_TRACE;
 
-    /*
-     *      Try to locate the file using the rootdirs as
-     *      a prefix
-     */
-    CVFSHandle* fh = LoadFromDisk( file        ,
-                                   mode        ,
-                                   memLoadSize ,
-                                   overwrite   );
-
-    if ( fh != GUCEF_NULL )
-    {
-        return CVFSHandlePtr( fh, this );
-    }
-
-    /*
-     *      If we get here then the file was not found in one
-     *      of the rootdirs. or in any of the packfiles
-     */
-    return CVFSHandlePtr();
+    return LoadFromDisk( file        ,
+                         mode        ,
+                         memLoadSize ,
+                         overwrite   );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -521,7 +506,7 @@ CFileSystemArchive::GetType( void ) const
 
 /*-------------------------------------------------------------------------*/
 
-CVFSHandle*
+TBasicVfsResourcePtr
 CFileSystemArchive::LoadFromDisk( const CString& filePath  ,
                                   const char* mode         ,
                                   const UInt32 memLoadSize ,
@@ -544,11 +529,11 @@ CFileSystemArchive::LoadFromDisk( const CString& filePath  ,
         {
             // We found the file in our cache, we will link to the existing buffer.
             TDynamicBufferPtr bufferPtr = (*n).second;
-            return GUCEF_NEW CVFSHandle( GUCEF_NEW CORE::CDynamicBufferAccess( bufferPtr.GetPointer() ,
-                                                                   false                  ) ,
-                                   path                                                     ,
-                                   filePath                                                 ,
-                                   bufferPtr                                                );
+            TVfsResourcePtr vfsResource( GUCEF_NEW CVFSHandle( GUCEF_NEW CORE::CDynamicBufferAccess( bufferPtr.GetPointer(), false ) ,
+                                                               path                                                     ,
+                                                               filePath                                                 ,
+                                                               bufferPtr                                                ) );
+            return vfsResource;
         }
     }
 
@@ -560,7 +545,7 @@ CFileSystemArchive::LoadFromDisk( const CString& filePath  ,
         if ( !CORE::CreateDirs( dirPath ) )
         {
             GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "FileSystemArchive:LoadFromDisk: Unable to create directories to store new file: " + dirPath );
-            return GUCEF_NULL;
+            return TBasicVfsResourcePtr();
         }
     }
     if ( ( exists && overwrite && needwriteable ) ||
@@ -573,7 +558,7 @@ CFileSystemArchive::LoadFromDisk( const CString& filePath  ,
         {
             // try a different root
             GUCEF_DELETE fa;
-            return NULL;
+            return TBasicVfsResourcePtr();
         }
 
         if ( ( strcmp( mode, "rb" ) == 0 ) ||
@@ -600,10 +585,10 @@ CFileSystemArchive::LoadFromDisk( const CString& filePath  ,
                     m_diskCacheList.insert( std::pair< CORE::CString, TDynamicBufferPtr >( path, bufferPtr ) );
 
                     // return the file handle
-                    return GUCEF_NEW CVFSHandle( bufferAccess ,
-                                           path         ,
-                                           filePath     ,
-                                           bufferPtr    );
+                    return TVfsResourcePtr( GUCEF_NEW CVFSHandle( bufferAccess ,
+                                                                  path         ,
+                                                                  filePath     ,
+                                                                  bufferPtr    ) );
                 }
                 else
                 {
@@ -616,13 +601,13 @@ CFileSystemArchive::LoadFromDisk( const CString& filePath  ,
         }
 
         // return the file handle
-        return GUCEF_NEW CVFSHandle( fa       ,
-                               path     ,
-                               filePath );
+        return TVfsResourcePtr( GUCEF_NEW CVFSHandle( fa       ,
+                                                      path     ,
+                                                      filePath ) );
 
     }
 
-    return GUCEF_NULL;
+    return TBasicVfsResourcePtr();
 }
 
 /*-------------------------------------------------------------------------*/

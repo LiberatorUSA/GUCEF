@@ -128,8 +128,7 @@ class GUCEF_VFS_PUBLIC_CPP CVFS : public CORE::CTSGNotifier          ,
     
     typedef CORE::CTAbstractFactory< CString, CArchive, MT::CMutex >    TAbstractArchiveFactory;
     typedef TAbstractArchiveFactory::TProductPtr                        TArchivePtr;
-    typedef TAbstractArchiveFactory::TConcreteFactory                   TArchiveFactory;
-    typedef CArchive::CVFSHandlePtr                                     CVFSHandlePtr;
+    typedef TAbstractArchiveFactory::TFactory                           TArchiveFactory;
     typedef CArchive::TStringVector                                     TStringVector;
     typedef CArchive::TStringSet                                        TStringSet;
     
@@ -192,11 +191,11 @@ class GUCEF_VFS_PUBLIC_CPP CVFS : public CORE::CTSGNotifier          ,
                             CORE::CICloneable* requestorData = GUCEF_NULL              ,
                             const CORE::CString& asyncRequestId = CORE::CString::Empty );
     
-    bool MountArchive( const CString& archiveName    ,
-                       CVFSHandlePtr archiveResource ,
-                       const CString& archiveType    ,
-                       const CString& mountPoint     ,
-                       const bool writeableRequest   );
+    bool MountArchive( const CString& archiveName           ,
+                       TBasicVfsResourcePtr archiveResource ,
+                       const CString& archiveType           ,
+                       const CString& mountPoint            ,
+                       const bool writeableRequest          );
     
     bool UnmountArchiveByName( const CString& archiveName );
 
@@ -211,9 +210,9 @@ class GUCEF_VFS_PUBLIC_CPP CVFS : public CORE::CTSGNotifier          ,
 
     void GetListOfSupportedArchiveTypes( TAbstractArchiveFactory::TKeySet& outList ) const;
     
-    CVFSHandlePtr GetFile( const CORE::CString& file    ,
-                           const char* mode = "rb"      ,
-                           const bool overwrite = false );
+    TBasicVfsResourcePtr GetFile( const CORE::CString& file    ,
+                                  const char* mode = "rb"      ,
+                                  const bool overwrite = false );
 
     /**
      *  Loads the entire file at the given location into memory if possible

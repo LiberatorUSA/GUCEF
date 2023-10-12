@@ -89,7 +89,7 @@ class CTSharedPtr : public CTBasicSharedPtr< T, LockType >
     public:
 
     typedef CTBasicSharedPtr< T, LockType >                     TBasicSharedPtrBase;
-    typedef typename TBasicSharedPtrBase::TDestructor           TDestructor;
+    typedef typename TBasicSharedPtrBase::TTypedDestructor      TTypedDestructor;
     typedef typename TBasicSharedPtrBase::TContainedType        TContainedType;
     typedef typename TBasicSharedPtrBase::TLockType             TLockType;
 
@@ -107,7 +107,8 @@ class CTSharedPtr : public CTBasicSharedPtr< T, LockType >
     explicit CTSharedPtr( const int NULLvalue );
 
     explicit CTSharedPtr( T* ptr                                                      ,
-                          CTDynamicDestructorBase< T >* objectDestructor = GUCEF_NULL );
+                          CTDynamicDestructorBase< T >* objectDestructor = GUCEF_NULL ,
+                          void* originalAddressAsCreated = GUCEF_NULL                 );
 
     /**
      *  Conversion constructor making it possible to pass
@@ -122,7 +123,7 @@ class CTSharedPtr : public CTBasicSharedPtr< T, LockType >
         : CTBasicSharedPtr< T, LockType >()
     {GUCEF_TRACE;
 
-        CTBasicSharedPtr< T, LockType >::InitializeUsingInheritance( src );
+        CTBasicSharedPtr< T, LockType >::InitializeUsingRelatedType( src );
     }
 
     CTSharedPtr( const CTSharedPtr& src );
@@ -193,9 +194,11 @@ class CTSharedPtr : public CTBasicSharedPtr< T, LockType >
      */
     inline operator bool() const;
 
-    inline T* GetPointerAlways( void ) { return CTBasicSharedPtr< T, LockType >::GetPointerAlways(); }
+    inline T* GetPointerAlways( void ) 
+        { return CTBasicSharedPtr< T, LockType >::GetPointerAlways(); }
 
-    inline const T* GetPointerAlways( void ) const { return CTBasicSharedPtr< T, LockType >::GetPointerAlways(); }
+    inline const T* GetPointerAlways( void ) const 
+        { return CTBasicSharedPtr< T, LockType >::GetPointerAlways(); }
 
     // implemented inline as a workaround for VC6 issues
     // The dummy param is a VC6 hack for templated member functions
@@ -225,7 +228,7 @@ class CTSharedPtrCreator : public CTBasicSharedPtrCreator< T, LockType >
     typedef typename TBasicSharedPtrCreatorBase::TBasicSharedPtrLockType         TSharedPtrLockType;
     typedef CTSharedPtr< T, LockType >                                           TSharedPtrType;
 
-    virtual CTSharedPtr< T, LockType > CreateSharedPtr( void ) const;
+    virtual CTSharedPtr< T, LockType > CreateSharedPtr( T* dummyForCppNameMangling = GUCEF_NULL ) const;
 
     CTSharedPtrCreator( T* derived );
     virtual ~CTSharedPtrCreator();
@@ -244,15 +247,22 @@ class CTSharedObjCreator : public CTSharedPtrCreator< T, LockType >
 {
     public:
 
+    typedef T                                                           TSharedObjTypeAtCreation;
     typedef CTSharedPtrCreator< T, LockType >                           TSharedPtrCreatorBase;
+    typedef CTDynamicDestructor< T >                                    TConcreteTypedDestructor;
 
-    static CTSharedPtr< T, LockType > CreateSharedObj( T* dummyForType = GUCEF_NULL );
+
+    static CTSharedPtr< T, LockType > CreateSharedObj( T* dummyForCppNameMangling = GUCEF_NULL );
 
     //template < typename Param >
     //static CTSharedPtr< T, LockType > CreateSharedObj( const typename CORE::EnableIf< CORE::TypeHasAssignmentOperator< Param >::value, Param >::type& objToCopy );
 
     CTSharedObjCreator( T* derived );
     virtual ~CTSharedObjCreator();
+
+    protected:
+    
+    TConcreteTypedDestructor m_objectDestructor;
 
     private:
 
@@ -290,18 +300,22 @@ CTSharedPtr< T, LockType >::CTSharedPtr( const int NULLvalue )
 /*-------------------------------------------------------------------------*/
 
 template< typename T, class LockType >
-CTSharedPtr< T, LockType >::CTSharedPtr( T* ptr                                                      ,
-                                         CTDynamicDestructorBase< T >* objectDestructor /* = NULL */ )
+CTSharedPtr< T, LockType >::CTSharedPtr( T* ptr                                                            ,
+                                         CTDynamicDestructorBase< T >* objectDestructor /* = GUCEF_NULL */ ,
+                                         void* originalAddressAsCreated                 /* = GUCEF_NULL */ )
     : CTBasicSharedPtr< T, LockType >()
 {GUCEF_TRACE;
 
+    if ( GUCEF_NULL == originalAddressAsCreated )
+        originalAddressAsCreated = ptr;
+
     if ( GUCEF_NULL == ptr || GUCEF_NULL != objectDestructor )
     {
-        CTBasicSharedPtr< T, LockType >::Initialize( ptr, objectDestructor );
+        CTBasicSharedPtr< T, LockType >::Initialize( ptr, objectDestructor, originalAddressAsCreated );
     }
     else
     {
-        CTBasicSharedPtr< T, LockType >::Initialize( ptr, GUCEF_NEW CTDynamicDestructor< T >( true ) );
+        CTBasicSharedPtr< T, LockType >::Initialize( ptr, GUCEF_NEW CTDynamicDestructor< T >( true ), originalAddressAsCreated );
     }
 }
 
@@ -577,10 +591,10 @@ CTSharedPtr< T, LockType >::Clone( void ) const
 
 template< typename T, class LockType >
 CTSharedPtr< T, LockType >
-CTSharedPtrCreator< T, LockType >::CreateSharedPtr( void ) const
+CTSharedPtrCreator< T, LockType >::CreateSharedPtr( T* dummyForCppNameMangling ) const
 {GUCEF_TRACE;
 
-    CTSharedPtr< T, LockType > retVal( static_cast< const CTBasicSharedPtrCreator< T, LockType >* >( this )->CreateBasicSharedPtr() );
+    CTSharedPtr< T, LockType > retVal( static_cast< const CTBasicSharedPtrCreator< T, LockType >* >( this )->CreateBasicSharedPtr( dummyForCppNameMangling ) );
     return retVal;
 }
 
@@ -590,8 +604,7 @@ template< typename T, class LockType >
 CTSharedPtrCreator< T, LockType >::CTSharedPtrCreator( T* derived )
     : CTBasicSharedPtrCreator< T, LockType >( derived )
 {GUCEF_TRACE;
-
-    CTBasicSharedPtrCreator< T, LockType >::m_objectDestructor = GUCEF_NEW CTDynamicDestructor< T >( true );
+    
 }
 
 /*-------------------------------------------------------------------------*/
@@ -606,7 +619,7 @@ CTSharedPtrCreator< T, LockType >::~CTSharedPtrCreator( void )
 
 template< typename T, class LockType >
 CTSharedPtr< T, LockType >
-CTSharedObjCreator< T, LockType >::CreateSharedObj( T* )
+CTSharedObjCreator< T, LockType >::CreateSharedObj( T* dummyForCppNameMangling )
 {GUCEF_TRACE;
 
     T* obj = GUCEF_NULL;
@@ -653,8 +666,10 @@ CTSharedObjCreator< T, LockType >::CreateSharedObj( T* )
 template< typename T, class LockType >
 CTSharedObjCreator< T, LockType >::CTSharedObjCreator( T* derived )
     : CTSharedPtrCreator< T, LockType >( derived )
+    , m_objectDestructor( false )
 {GUCEF_TRACE;
 
+    m_shared.m_voidDestructor = &m_objectDestructor;
 }
 
 /*-------------------------------------------------------------------------*/

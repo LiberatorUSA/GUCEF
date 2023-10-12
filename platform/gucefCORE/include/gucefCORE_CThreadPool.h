@@ -133,10 +133,10 @@ class GUCEF_CORE_PUBLIC_CPP CThreadPool : public CTSGNotifier ,
 
     public:
 
-    typedef CTFactoryBase< CTaskConsumer >                      TTaskConsumerFactory;
-    typedef CTFactoryBase< CIDataNodeSerializableTaskData >     TTaskDataFactory;
-    typedef std::map< UInt32, CTaskInfo >                       TTaskInfoMap;
-    typedef std::map< UInt32, CThreadInfo >                     TThreadInfoMap;
+    typedef CTFactoryBase< CTaskConsumer, MT::CMutex >                      TTaskConsumerFactory;
+    typedef CTFactoryBase< CIDataNodeSerializableTaskData, MT::CMutex >     TTaskDataFactory;
+    typedef std::map< UInt32, CTaskInfo >                                   TTaskInfoMap;
+    typedef std::map< UInt32, CThreadInfo >                                 TThreadInfoMap;
 
     typedef TCloneableUInt32                                    TThreadKilledEventData;
     typedef TCloneableUInt32                                    TThreadStartedEventData;

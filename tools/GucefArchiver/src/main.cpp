@@ -374,7 +374,7 @@ GUCEF_OSMAIN_BEGIN
                                         }
                                     }
 
-                                    VFS::CVFS::CVFSHandlePtr file = vfs.GetFile( vfsFilePath, "rb", false );
+                                    VFS::TBasicVfsResourcePtr file = vfs.GetFile( vfsFilePath, "rb", false );
                                     if ( !file.IsNULL() )
                                     {
                                         GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Obtained access to resource: " + (*i) );

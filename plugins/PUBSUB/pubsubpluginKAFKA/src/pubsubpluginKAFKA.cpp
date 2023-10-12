@@ -55,7 +55,7 @@ namespace KAFKA {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-typedef CORE::CTFactoryWithParam< PUBSUB::CPubSubClient, CKafkaPubSubClient, PUBSUB::CPubSubClientConfig >    TKafkaPubSubClientFactory;
+typedef CORE::CTFactoryWithParam< PUBSUB::CPubSubClient, CKafkaPubSubClient, PUBSUB::CPubSubClientConfig, MT::CMutex >    TKafkaPubSubClientFactory;
 
 /*-------------------------------------------------------------------------//
 //                                                                         //

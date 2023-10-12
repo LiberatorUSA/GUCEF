@@ -110,7 +110,7 @@ class GUCEF_CORE_PUBLIC_CPP CLogManager : public MT::CILockable
     public:
 
     typedef CTAbstractFactory< CString, CILoggingFormatter, MT::CMutex > TAbstractLoggingFormatterFactory;
-    typedef TAbstractLoggingFormatterFactory::TConcreteFactory TLoggingFormatterFactory;
+    typedef TAbstractLoggingFormatterFactory::TFactory    TLoggingFormatterFactory;
     typedef TAbstractLoggingFormatterFactory::TProductPtr TLoggingFormatterPtr;
 
     void AddLogger( CILogger* loggerImp );

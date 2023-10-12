@@ -131,7 +131,7 @@ CImageCodecPluginManager::RegisterPlugin( void* modulePtr                       
 
 /*-------------------------------------------------------------------------*/
 
-void
+bool
 CImageCodecPluginManager::UnregisterPlugin( CORE::TPluginPtr plugin )
 {GUCEF_TRACE;
 
@@ -142,14 +142,18 @@ CImageCodecPluginManager::UnregisterPlugin( CORE::TPluginPtr plugin )
     imageCodecPlugin->GetCodecList( codecList );
 
     CORE::CStdCodecPlugin::CCodecList::iterator i = codecList.find( CImageCodecPlugin::ImageCodecFamilyName );
-    CORE::CStdCodecPlugin::CCodecFamilyList imageCodecList = (*i).second;
-
-    CORE::CStdCodecPlugin::CCodecFamilyList::iterator n = imageCodecList.begin();
-    while ( n != imageCodecList.end() )
+    if ( codecList.end() != i )
     {
-        registry.Unregister( (*n) );
-        ++n;
+        CORE::CStdCodecPlugin::CCodecFamilyList imageCodecList = (*i).second;
+
+        CORE::CStdCodecPlugin::CCodecFamilyList::iterator n = imageCodecList.begin();
+        while ( n != imageCodecList.end() )
+        {
+            registry.Unregister( (*n) );
+            ++n;
+        }        
     }
+    return true;
 }
 
 /*-------------------------------------------------------------------------*/

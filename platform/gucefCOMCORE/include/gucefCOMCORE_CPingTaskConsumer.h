@@ -195,7 +195,7 @@ class GUCEF_COMCORE_EXPORT_CPP CPingTaskConsumer : public CORE::CTaskConsumer
 /*-------------------------------------------------------------------------*/
 
 typedef CORE::CTSharedPtr< CPingTaskConsumer, MT::CMutex > CPingTaskConsumerPtr;
-typedef CORE::CTFactory< CORE::CTaskConsumer, CPingTaskConsumer > TPingTaskConsumerFactory;
+typedef CORE::CTFactory< CORE::CTaskConsumer, CPingTaskConsumer, MT::CMutex > TPingTaskConsumerFactory;
 
 /*-------------------------------------------------------------------------//
 //                                                                         //

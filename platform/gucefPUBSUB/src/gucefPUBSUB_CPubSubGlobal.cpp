@@ -94,7 +94,7 @@ namespace PUBSUB {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-typedef CORE::CTFactoryWithParam< CIPubSubBookmarkPersistence, CVfsPubSubBookmarkPersistence, CPubSubBookmarkPersistenceConfig >    TVfsPubSubBookmarkPersistenceFactory;
+typedef CORE::CTFactoryWithParam< CIPubSubBookmarkPersistence, CVfsPubSubBookmarkPersistence, CPubSubBookmarkPersistenceConfig, MT::CMutex >    TVfsPubSubBookmarkPersistenceFactory;
 
 /*-------------------------------------------------------------------------//
 //                                                                         //

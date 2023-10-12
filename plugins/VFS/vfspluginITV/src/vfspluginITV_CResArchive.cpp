@@ -110,7 +110,7 @@ CResArchive::~CResArchive()
 
 /*-------------------------------------------------------------------------*/
 
-VFS::CArchive::CVFSHandlePtr
+VFS::TBasicVfsResourcePtr
 CResArchive::GetFile( const VFS::CString& file      ,
                       const char* mode              ,
                       const VFS::UInt32 memLoadSize ,
@@ -118,7 +118,8 @@ CResArchive::GetFile( const VFS::CString& file      ,
 {GUCEF_TRACE;
 
     // We only support read only modes
-    if ( *mode != 'r' ) return CVFSHandlePtr();
+    if ( *mode != 'r' ) 
+        return VFS::TBasicVfsResourcePtr();
 
     CORE::CIOAccess* fileAccess = LoadFile( file, memLoadSize );
     if ( NULL != fileAccess )
@@ -128,9 +129,9 @@ CResArchive::GetFile( const VFS::CString& file      ,
         CORE::AppendToPath( filePath, file );
 
         // Construct & return handle
-        return VFS::CVFS::CVFSHandlePtr( new VFS::CVFSHandle( fileAccess, file, filePath ), this );
+        return VFS::TVfsResourcePtr( new VFS::CVFSHandle( fileAccess, file, filePath ), this );
     }
-    return VFS::CVFS::CVFSHandlePtr();
+    return VFS::TBasicVfsResourcePtr();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -547,9 +548,9 @@ CResArchive::LoadArchive( const VFS::CArchiveSettings& settings )
 /*-------------------------------------------------------------------------*/
 
 bool 
-CResArchive::LoadArchive( const VFS::CString& archiveName ,
-                          CVFSHandlePtr vfsResource       ,
-                          const bool writeableRequest     )
+CResArchive::LoadArchive( const VFS::CString& archiveName        ,
+                          VFS::TBasicVfsResourcePtr vfsResource ,
+                          const bool writeableRequest           )
 {GUCEF_TRACE;
 
     return false;

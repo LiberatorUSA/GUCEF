@@ -622,7 +622,7 @@ RedisInfoService::SaveDocTo( const CORE::CDataNode& doc     ,
         return false;    
     }
 
-    VFS::CVFS::CVFSHandlePtr file = vfs.GetFile( vfsPath, "wb", true );
+    VFS::TBasicVfsResourcePtr file = vfs.GetFile( vfsPath, "wb", true );
     if ( file.IsNULL() || GUCEF_NULL == file->GetAccess() )
     {
         GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "RedisInfoService(" + CORE::ToString( this ) + "):SaveDocTo: VFS could not provide access to file at path: " + vfsPath );
@@ -655,7 +655,7 @@ RedisInfoService::LoadDocFrom( CORE::CDataNode& doc           ,
         return false;    
     }
     
-    VFS::CVFS::CVFSHandlePtr file = vfs.GetFile( vfsPath, "rb", false );
+    VFS::TBasicVfsResourcePtr file = vfs.GetFile( vfsPath, "rb", false );
     if ( file.IsNULL() || GUCEF_NULL == file->GetAccess() )
     {
         GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "RedisInfoService(" + CORE::ToString( this ) + "):LoadDocFrom: VFS could not provide access to file at path: " + vfsPath );

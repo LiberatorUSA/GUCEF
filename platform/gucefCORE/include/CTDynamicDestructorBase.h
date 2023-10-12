@@ -51,11 +51,22 @@ namespace CORE {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+class GUCEF_CORE_PUBLIC_CPP CIDynamicVoidDestructor
+{
+    public:
+
+    virtual ~CIDynamicVoidDestructor() {}
+    
+    virtual void DestroyKnownVoidedObject( void* objectToBeDestroyed ) const = 0;
+};
+
+/*-------------------------------------------------------------------------*/
+
 /**
  *  Base class for destructor delegator specializations
  */
 template< typename T >
-class CTDynamicDestructorBase
+class CTDynamicDestructorBase : public CIDynamicVoidDestructor
 {
     public:
 
@@ -63,9 +74,12 @@ class CTDynamicDestructorBase
         
     CTDynamicDestructorBase( void );
   
+    virtual ~CTDynamicDestructorBase();    
+    
     virtual void DestroyObject( T* objectToBeDestroyed ) const = 0;
 
-    virtual ~CTDynamicDestructorBase();    
+    virtual void DestroyKnownVoidedObject( void* objectToBeDestroyed ) const GUCEF_VIRTUAL_OVERRIDE
+        {GUCEF_TRACE; DestroyObject( reinterpret_cast< T* >( objectToBeDestroyed ) ); }
 
     private:
 
@@ -89,9 +103,9 @@ class CTTypeNamedDynamicDestructorBase
         
     CTTypeNamedDynamicDestructorBase( void );
   
-    virtual void DestroyObject( T* objectToBeDestroyed, const CString& classTypeName ) const = 0;
-
     virtual ~CTTypeNamedDynamicDestructorBase();    
+    
+    virtual void DestroyObject( T* objectToBeDestroyed, const CString& classTypeName ) const = 0;  
 
     private:
 

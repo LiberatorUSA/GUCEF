@@ -55,7 +55,7 @@ namespace UDP {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-typedef CORE::CTFactoryWithParam< PUBSUB::CPubSubClient, CUdpPubSubClient, PUBSUB::CPubSubClientConfig >    TUdpPubSubClientFactory;
+typedef CORE::CTFactoryWithParam< PUBSUB::CPubSubClient, CUdpPubSubClient, PUBSUB::CPubSubClientConfig, MT::CMutex >    TUdpPubSubClientFactory;
 
 /*-------------------------------------------------------------------------//
 //                                                                         //

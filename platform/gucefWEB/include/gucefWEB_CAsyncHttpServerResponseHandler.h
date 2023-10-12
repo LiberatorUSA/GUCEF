@@ -81,7 +81,7 @@ class GUCEF_HIDDEN CAsyncHttpServerResponseHandler : public CORE::CTaskConsumer
 
 /*-------------------------------------------------------------------------*/
 
-typedef CORE::CTFactory< CORE::CTaskConsumer, CAsyncHttpServerResponseHandler > TAsyncHttpServerResponseHandlerFactory;
+typedef CORE::CTFactory< CORE::CTaskConsumer, CAsyncHttpServerResponseHandler, MT::CMutex > TAsyncHttpServerResponseHandlerFactory;
 
 /*-------------------------------------------------------------------------*/
 

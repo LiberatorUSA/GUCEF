@@ -104,15 +104,6 @@ struct is_unqualified_pointer<T*>
     enum { value = true_type< T >::value };
 };
 
-//template <typename T>
-//struct is_pointer_type : is_unqualified_pointer<typename remove_cv<T>::type> {};
-//
-//template <typename T>
-//bool is_pointer(const T&)
-//{
-//    return is_pointer_type<T>::value;
-//}
-
 
 template< class T > struct remove_pointer                    {typedef T type;};
 template< class T > struct remove_pointer<T*>                {typedef T type;};
@@ -176,6 +167,27 @@ struct TypeIsPointerType
 
     // The constant used as a return value for the test.
     enum { value = sizeof( test< T >( T() ) ) == sizeof( yes ) };
+};
+
+/*-------------------------------------------------------------------------*/
+
+/**
+ *  C++98 compatible SFINAE template helper
+ *  Allows checking if T is not just a related inheritance type
+ *  but is actually a derived class
+ */
+template < class DerivedClassType, class BaseClassType >
+struct TypeIsDerivedFrom 
+{
+    // For the compile time comparison.
+    typedef char    yes[1];
+    typedef yes     no[2];
+    
+    template < typename TestType > static yes& test( const BaseClassType* ) { static yes result; return result; }
+    template < typename TestType > static no&  test( ... ) { static no result; return result; }
+
+    // The constant used as a return value for the test.
+    enum { value = sizeof( test( static_cast< DerivedClassType* >( 0 ) ) ) == sizeof( yes ) };
 };
 
 /*-------------------------------------------------------------------------//
