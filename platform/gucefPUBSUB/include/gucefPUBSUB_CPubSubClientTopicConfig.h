@@ -55,6 +55,11 @@
 #define GUCEF_PUBSUB_MACROS_H
 #endif /* GUCEF_PUBSUB_MACROS_H ? */
 
+#ifndef GUCEF_PUBSUB_CPUBSUBJOURNALCONFIG_H
+#include "gucefPUBSUB_CPubSubJournalConfig.h"
+#define GUCEF_PUBSUB_CPUBSUBJOURNALCONFIG_H
+#endif /* GUCEF_PUBSUB_CPUBSUBJOURNALCONFIG_H ? */
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //
@@ -77,7 +82,7 @@ class GUCEF_PUBSUB_EXPORT_CPP CPubSubClientTopicConfig : public CORE::CIConfigur
 {
     public:
 
-    bool isOptional;                    /**< Whether having topic access successfully contructed is a deal breaker or not */
+    bool isOptional;                                /**< Whether having topic access successfully contructed is a deal breaker or not */
     bool needSubscribeSupport;
     bool needPublishSupport;
     bool preferDedicatedConnection;
@@ -86,6 +91,7 @@ class GUCEF_PUBSUB_EXPORT_CPP CPubSubClientTopicConfig : public CORE::CIConfigur
     CORE::CString consumerName;
     bool useTopicLevelMaxTotalMsgsInFlight;
     CORE::Int64 maxTotalMsgsInFlight;
+    CPubSubJournalConfig journalConfig;             /**< config for the journal to use, if any */
     CORE::CDataNode customConfig;
 
     CPubSubClientTopicConfig( void );

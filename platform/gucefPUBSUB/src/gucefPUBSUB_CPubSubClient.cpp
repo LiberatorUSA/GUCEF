@@ -32,6 +32,16 @@
 #define GUCEF_CORE_LOGGING_H
 #endif /* GUCEF_CORE_LOGGING_H ? */
 
+#ifndef GUCEF_PUBSUB_CPUBSUBGLOBAL_H
+#include "gucefPUBSUB_CPubSubGlobal.h"
+#define GUCEF_PUBSUB_CPUBSUBGLOBAL_H
+#endif /* GUCEF_PUBSUB_CPUBSUBGLOBAL_H ? */
+
+#ifndef GUCEF_PUBSUB_CPUBSUBJOURNALFACTORY_H
+#include "gucefPUBSUB_CPubSubJournalFactory.h"
+#define GUCEF_PUBSUB_CPUBSUBJOURNALFACTORY_H
+#endif /* GUCEF_PUBSUB_CPUBSUBJOURNALFACTORY_H ? */
+
 #include "gucefPUBSUB_CPubSubClient.h"
 
 /*-------------------------------------------------------------------------//
@@ -508,6 +518,73 @@ CPubSubClient::GetJournal( void ) const
 {GUCEF_TRACE;
 
     return CIPubSubJournalBasicPtr();
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool 
+CPubSubClient::ConfigureJournal( CPubSubClientConfig& clientConfig )
+{GUCEF_TRACE;
+    
+    if ( clientConfig.journalConfig.useJournal )
+    {
+        PUBSUB::CPubSubJournalConfig& journalConfig = clientConfig.journalConfig;
+        
+        // resolve variables/macros in the journal resource if any exist
+        journalConfig.journalResource.ReplaceSubstr( "{clientType}", GetType() );
+        
+        PUBSUB::CIPubSubJournalBasicPtr journal = PUBSUB::CPubSubGlobal::Instance()->GetPubSubJournalFactory().Create( journalConfig.journalType, journalConfig );
+        if ( !journal.IsNULL() )
+        {        
+            return SetJournal( journal );
+        }
+        else
+        {
+            return false;
+        }
+    } 
+    return true;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool 
+CPubSubClient::ConfigureJournal( CPubSubClientConfigPtr clientConfig )
+{GUCEF_TRACE;
+
+    if ( !clientConfig.IsNULL() )
+    {
+        return ConfigureJournal( *clientConfig.GetPointerAlways() );
+    } 
+    return true;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CPubSubClient::ConfigureJournal( CPubSubClientTopicPtr topic             ,
+                                 CPubSubClientTopicConfigPtr topicConfig )
+{GUCEF_TRACE;
+
+    if ( !topicConfig.IsNULL() && !topic.IsNULL() && topicConfig->journalConfig.useJournal )
+    {
+        PUBSUB::CPubSubJournalConfig& journalConfig = topicConfig->journalConfig;
+        
+        // resolve variables/macros in the journal resource if any exist
+        journalConfig.journalResource.ReplaceSubstr( "{topicName}", topicConfig->topicName );
+        journalConfig.journalResource.ReplaceSubstr( "{clientType}", GetType() );
+        
+        PUBSUB::CIPubSubJournalBasicPtr journal = PUBSUB::CPubSubGlobal::Instance()->GetPubSubJournalFactory().Create( journalConfig.journalType, journalConfig );
+        if ( !journal.IsNULL() )
+        {        
+            return topic->SetJournal( journal );
+        }
+        else
+        {
+            return false;
+        }
+    } 
+    return true;
 }
 
 /*-------------------------------------------------------------------------//

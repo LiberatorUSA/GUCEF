@@ -188,8 +188,8 @@ CTAbstractFactory< SelectionCriteriaType, BaseClassType, LockType >::CTAbstractF
 template< typename SelectionCriteriaType, class BaseClassType, class LockType >
 CTAbstractFactory< SelectionCriteriaType, BaseClassType, LockType >::CTAbstractFactory( const CTAbstractFactory< SelectionCriteriaType, BaseClassType, LockType >& src )
     : CAbstractFactoryBase( src )
-    , m_concreteFactoryList( src )
-    , m_concreteFactoryTypeMap( src )
+    , m_concreteFactoryList() // Wont copy raw factory pointers, too much risk of bad access. only copy 'config' style info
+    , m_concreteFactoryTypeMap( src.m_concreteFactoryTypeMap )
     , m_assumeFactoryOwnership( src.m_assumeFactoryOwnership )
     , m_lock()
 {GUCEF_TRACE;
@@ -317,7 +317,7 @@ CTAbstractFactory< SelectionCriteriaType, BaseClassType, LockType >::GetSelectio
 {GUCEF_TRACE;
 
     MT::CObjectScopeLock lock( this, GUCEF_MT_VERY_LONG_LOCK_TIMEOUT );
-    typename TFactoryList::const_iterator i( m_concreteFactoryTypeMap.find( classTypeName ) );
+    typename TClassTypeNameMap::const_iterator i( m_concreteFactoryTypeMap.find( classTypeName ) );
     if ( i != m_concreteFactoryTypeMap.end() )
     {
         return (*i).second;

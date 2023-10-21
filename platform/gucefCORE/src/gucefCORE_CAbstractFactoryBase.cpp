@@ -70,6 +70,15 @@ CAbstractFactoryBase::CAbstractFactoryBase( bool useEventing )
 
 /*-------------------------------------------------------------------------*/
 
+CAbstractFactoryBase::CAbstractFactoryBase( const CAbstractFactoryBase& src )
+    : CNotifier( src )
+    , m_useEventing( src.m_useEventing )
+{GUCEF_TRACE;
+
+}
+
+/*-------------------------------------------------------------------------*/
+
 CAbstractFactoryBase::~CAbstractFactoryBase()
 {GUCEF_TRACE;
 

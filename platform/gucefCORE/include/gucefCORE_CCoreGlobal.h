@@ -72,7 +72,7 @@ namespace CORE {
 //-------------------------------------------------------------------------*/
 
 class CDateTime;
-//class CPulseGenerator;
+class CUriResourceAccessorFactory;
 class CTaskManager;
 class CURLHandlerRegistry;
 class CDStoreCodecRegistry;
@@ -122,6 +122,8 @@ class GUCEF_CORE_PUBLIC_CPP CCoreGlobal
     CNotificationIDRegistry& GetNotificationIDRegistry( void );
 
     CURLHandlerRegistry& GetUrlHandlerRegistry( void );
+
+    CUriResourceAccessorFactory& GetUriResourceAccessorFactory( void );
 
     CDStoreCodecRegistry& GetDStoreCodecRegistry( void );
 
@@ -187,6 +189,7 @@ class GUCEF_CORE_PUBLIC_CPP CCoreGlobal
     CConfigStore* m_configStore;
     CCodecRegistry* m_codecRegistry;
     CFunctionRegistry* m_functionRegistry;
+    CUriResourceAccessorFactory* m_uriResourceAccessorFactory;
 
     static MT::CMutex g_dataLock;
     static CCoreGlobal* g_instance;
@@ -204,14 +207,3 @@ class GUCEF_CORE_PUBLIC_CPP CCoreGlobal
 /*-------------------------------------------------------------------------*/
 
 #endif /* GUCEF_CORE_CCOREGLOBAL_H ? */
-
-/*-------------------------------------------------------------------------//
-//                                                                         //
-//      Info & Changes                                                     //
-//                                                                         //
-//-------------------------------------------------------------------------//
-
-- 16-02-2007 :
-        - Dinand: Added this class
-
----------------------------------------------------------------------------*/

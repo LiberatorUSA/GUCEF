@@ -163,6 +163,16 @@
 #define GUCEF_CORE_CLOGGINGGLOBAL_H
 #endif /* GUCEF_CORE_CLOGGINGGLOBAL_H ? */
 
+#ifndef GUCEF_CORE_CURIRESOURCEACCESSORFACTORY_H
+#include "gucefCORE_CUriResourceAccessorFactory.h"
+#define GUCEF_CORE_CURIRESOURCEACCESSORFACTORY_H
+#endif /* GUCEF_CORE_CURIRESOURCEACCESSORFACTORY_H ? */
+
+#ifndef GUCEF_CORE_CFILESYSTEMURIRESOURCEACCESSOR_H
+#include "gucefCORE_CFileSystemUriResourceAccessor.h"
+#define GUCEF_CORE_CFILESYSTEMURIRESOURCEACCESSOR_H
+#endif /* GUCEF_CORE_CFILESYSTEMURIRESOURCEACCESSOR_H ? */
+
 #if GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN
 
   #ifndef GUCEF_CORE_CWNDMSGHOOKNOTIFIER_H
@@ -194,12 +204,22 @@ namespace CORE {
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
+//      TYPES                                                              //
+//                                                                         //
+//-------------------------------------------------------------------------*/
+
+typedef CTFactory< CUriResourceAccessor, CFileSystemUriResourceAccessor, MT::CMutex >     TFileSystemUriResourceAccessorFactory;
+
+/*-------------------------------------------------------------------------//
+//                                                                         //
 //      GLOBAL VARS                                                        //
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
 MT::CMutex CCoreGlobal::g_dataLock;
 CCoreGlobal* CCoreGlobal::g_instance = NULL;
+
+TFileSystemUriResourceAccessorFactory g_fileSystemUriResourceAccessorFactory;
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -326,12 +346,14 @@ CCoreGlobal::Initialize( void )
     m_genericPluginManager = GUCEF_NEW CGenericPluginManager();
     m_stdCodecPluginManager = GUCEF_NEW CStdCodecPluginManager();        
     m_urlHandlerRegistry = GUCEF_NEW CURLHandlerRegistry();
+    m_uriResourceAccessorFactory = GUCEF_NEW CUriResourceAccessorFactory();
     m_functionRegistry = GUCEF_NEW CFunctionRegistry();
 
     /*
      *      Register some default URI handlers
      */
-    m_urlHandlerRegistry->Register( "file", CURLHandlerRegistry::TRegisteredObjPtr( GUCEF_NEW CFileURLHandler() ) );
+    m_urlHandlerRegistry->Register( "file", CURLHandlerRegistry::TRegisteredObjPtr( GUCEF_NEW CFileURLHandler() ) ); // <- legacy version. @deprecated
+    m_uriResourceAccessorFactory->RegisterConcreteFactory( CFileSystemUriResourceAccessor::SchemeName, &g_fileSystemUriResourceAccessorFactory );
 
     /*
      *      Register some default codecs
@@ -362,6 +384,7 @@ CCoreGlobal::CCoreGlobal( void )
     , m_configStore( GUCEF_NULL )                
     , m_codecRegistry( GUCEF_NULL )
     , m_functionRegistry( GUCEF_NULL )
+    , m_uriResourceAccessorFactory( GUCEF_NULL )
 {GUCEF_TRACE;
 
 }
@@ -377,11 +400,13 @@ CCoreGlobal::~CCoreGlobal()
 
     m_application->Stop( true );
     m_taskManager->RequestAllThreadsToStop( true, false );
-
+   
+    m_uriResourceAccessorFactory->UnregisterAllConcreteFactories();
     m_urlHandlerRegistry->UnregisterAll();
     m_codecRegistry->UnregisterAll();
     m_dstoreCodecRegistry->UnregisterAll();
     m_pluginControl->UnloadAll();
+   
 
     m_logManager->FlushLogs();
 
@@ -393,6 +418,8 @@ CCoreGlobal::~CCoreGlobal()
     m_taskManager = GUCEF_NULL;
     GUCEF_DELETE m_urlHandlerRegistry;
     m_urlHandlerRegistry = GUCEF_NULL;
+    GUCEF_DELETE m_uriResourceAccessorFactory;
+    m_uriResourceAccessorFactory = GUCEF_NULL;
     GUCEF_DELETE m_dstoreCodecRegistry;
     m_dstoreCodecRegistry = GUCEF_NULL;
     GUCEF_DELETE m_exclusiveActivationManager;
@@ -535,6 +562,15 @@ CCoreGlobal::GetUrlHandlerRegistry( void )
 {GUCEF_TRACE;
 
     return *m_urlHandlerRegistry;
+}
+
+/*-------------------------------------------------------------------------*/
+
+CUriResourceAccessorFactory& 
+CCoreGlobal::GetUriResourceAccessorFactory( void )
+{GUCEF_TRACE;
+
+    return *m_uriResourceAccessorFactory;
 }
 
 /*-------------------------------------------------------------------------*/

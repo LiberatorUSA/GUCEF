@@ -598,6 +598,22 @@ CUri::ParseUriInStringForm( const CString& uriInStringForm )
     return false;
 }
 
+/*-------------------------------------------------------------------------*/
+
+void
+CUri::ReplaceSubstr( const CString& oldSubstr, const CString& newSubstr )
+{GUCEF_TRACE;
+
+    m_scheme = m_scheme.ReplaceSubstr( oldSubstr, newSubstr );
+    m_authorityUsername = m_authorityUsername.ReplaceSubstr( oldSubstr, newSubstr );
+    m_authorityPassword = m_authorityPassword.ReplaceSubstr( oldSubstr, newSubstr );
+    m_authorityHost = m_authorityHost.ReplaceSubstr( oldSubstr, newSubstr );
+    m_authorityPort = m_authorityPort.ReplaceSubstr( oldSubstr, newSubstr );
+    m_path = m_path.ReplaceSubstr( oldSubstr, newSubstr );
+    m_query = m_query.ReplaceSubstr( oldSubstr, newSubstr );
+    m_fragment = m_fragment.ReplaceSubstr( oldSubstr, newSubstr );
+}
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //

@@ -139,6 +139,10 @@ class GUCEF_PUBSUB_EXPORT_CPP CPubSubClientConfig : public CORE::CIConfigurable
     virtual const CString& GetClassTypeName( void ) const GUCEF_VIRTUAL_OVERRIDE;
 };
 
+/*-------------------------------------------------------------------------*/
+
+typedef CORE::CTSharedPtr< CPubSubClientConfig, MT::CMutex > CPubSubClientConfigPtr;
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //

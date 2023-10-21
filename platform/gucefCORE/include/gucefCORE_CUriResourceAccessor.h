@@ -180,7 +180,7 @@ class GUCEF_CORE_PUBLIC_CPP CUriResourceAccessor
 
 /*-------------------------------------------------------------------------*/
 
-typedef CTSharedPtr< CUriResourceAccessor, MT::CMutex > CUriResourceAccessorPtr;
+typedef CTBasicSharedPtr< CUriResourceAccessor, MT::CMutex >        CUriResourceAccessorPtr;
 
 /*-------------------------------------------------------------------------//
 //                                                                         //

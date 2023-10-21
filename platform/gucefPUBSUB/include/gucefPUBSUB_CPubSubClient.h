@@ -288,6 +288,15 @@ class GUCEF_PUBSUB_EXPORT_CPP CPubSubClient : public CORE::CTSGNotifier         
     virtual CIPubSubJournalBasicPtr GetJournal( void ) const;
 
     static void RegisterEvents( void );
+
+    protected:
+
+    virtual bool ConfigureJournal( CPubSubClientConfig& clientConfig );
+    
+    virtual bool ConfigureJournal( CPubSubClientConfigPtr clientConfig );
+
+    virtual bool ConfigureJournal( CPubSubClientTopicPtr topic             ,
+                                   CPubSubClientTopicConfigPtr topicConfig );
     
     private:
 

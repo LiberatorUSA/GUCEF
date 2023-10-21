@@ -55,6 +55,7 @@ CPubSubClientTopicConfig::CPubSubClientTopicConfig( void )
     , consumerName()
     , useTopicLevelMaxTotalMsgsInFlight( false )
     , maxTotalMsgsInFlight( -1 )
+    , journalConfig()
     , customConfig()
 {GUCEF_TRACE;
 
@@ -73,6 +74,7 @@ CPubSubClientTopicConfig::CPubSubClientTopicConfig( const CPubSubClientTopicConf
     , consumerName( src.consumerName )
     , useTopicLevelMaxTotalMsgsInFlight( src.useTopicLevelMaxTotalMsgsInFlight )
     , maxTotalMsgsInFlight( src.maxTotalMsgsInFlight )
+    , journalConfig( src.journalConfig )
     , customConfig( src.customConfig )
 {GUCEF_TRACE;
 
@@ -103,6 +105,7 @@ CPubSubClientTopicConfig::operator=( const CPubSubClientTopicConfig& src )
         consumerName = src.consumerName;
         useTopicLevelMaxTotalMsgsInFlight = src.useTopicLevelMaxTotalMsgsInFlight;
         maxTotalMsgsInFlight = src.maxTotalMsgsInFlight;
+        journalConfig = src.journalConfig;
         customConfig = src.customConfig;        
     }
     return *this;
@@ -111,20 +114,28 @@ CPubSubClientTopicConfig::operator=( const CPubSubClientTopicConfig& src )
 /*-------------------------------------------------------------------------*/
 
 bool 
-CPubSubClientTopicConfig::SaveConfig( CORE::CDataNode& tree ) const
+CPubSubClientTopicConfig::SaveConfig( CORE::CDataNode& cfg ) const
 {GUCEF_TRACE;
 
-    tree.SetAttribute( "isOptional", isOptional );
-    tree.SetAttribute( "needSubscribeSupport", needSubscribeSupport );
-    tree.SetAttribute( "needPublishSupport", needPublishSupport );
-    tree.SetAttribute( "preferDedicatedConnection", preferDedicatedConnection );
-    tree.SetAttribute( "topicName", topicName );
-    tree.SetAttribute( "consumerGroupName", consumerGroupName );
-    tree.SetAttribute( "consumerName", consumerName );        
-    tree.SetAttribute( "useTopicLevelMaxTotalMsgsInFlight", useTopicLevelMaxTotalMsgsInFlight );        
-    tree.SetAttribute( "maxTotalMsgsInFlight", maxTotalMsgsInFlight );        
-    tree.CopySubTree( customConfig );    
-    return true;
+    bool totalSuccess = true;
+
+    totalSuccess = cfg.SetAttribute( "isOptional", isOptional ) && totalSuccess;
+    totalSuccess = cfg.SetAttribute( "needSubscribeSupport", needSubscribeSupport ) && totalSuccess;
+    totalSuccess = cfg.SetAttribute( "needPublishSupport", needPublishSupport ) && totalSuccess;
+    totalSuccess = cfg.SetAttribute( "preferDedicatedConnection", preferDedicatedConnection ) && totalSuccess;
+    totalSuccess = cfg.SetAttribute( "topicName", topicName ) && totalSuccess;
+    totalSuccess = cfg.SetAttribute( "consumerGroupName", consumerGroupName ) && totalSuccess;
+    totalSuccess = cfg.SetAttribute( "consumerName", consumerName ) && totalSuccess;        
+    totalSuccess = cfg.SetAttribute( "useTopicLevelMaxTotalMsgsInFlight", useTopicLevelMaxTotalMsgsInFlight ) && totalSuccess;        
+    totalSuccess = cfg.SetAttribute( "maxTotalMsgsInFlight", maxTotalMsgsInFlight ) && totalSuccess;        
+    cfg.CopySubTree( customConfig );   
+    
+    CORE::CDataNode* journalCfg = cfg.FindOrAddChild( "journalConfig" );
+    if ( GUCEF_NULL == journalCfg )
+       return false;
+    totalSuccess = journalConfig.SaveConfig( *journalCfg ) && totalSuccess;
+
+    return totalSuccess;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -143,6 +154,16 @@ CPubSubClientTopicConfig::LoadConfig( const CORE::CDataNode& cfg )
     useTopicLevelMaxTotalMsgsInFlight = cfg.GetAttributeValueOrChildValueByName( "useTopicLevelMaxTotalMsgsInFlight" ).AsBool( useTopicLevelMaxTotalMsgsInFlight, true );
     maxTotalMsgsInFlight = cfg.GetAttributeValueOrChildValueByName( "maxTotalMsgsInFlight" ).AsInt64( maxTotalMsgsInFlight, true );
     
+    const CORE::CDataNode* journalConfigNode = cfg.FindChild( "journalConfig" );
+    if ( GUCEF_NULL != journalConfigNode )
+    {
+        if ( !journalConfig.LoadConfig( *journalConfigNode ) )
+        {
+            GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientTopicConfig:LoadConfig: failed to load journal config section" );
+            return false;
+        }
+    }
+
     const CORE::CDataNode* newCustomConfig = cfg.FindChild( "CustomConfig" );
     if ( GUCEF_NULL != newCustomConfig )
     {

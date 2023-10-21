@@ -97,8 +97,7 @@ CRedisClusterPubSubClient::CRedisClusterPubSubClient( const PUBSUB::CPubSubClien
         GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "RedisClusterPubSubClient: Failed to load config at construction" );
     }
 
-    if ( m_config.journalConfig.useJournal && !m_config.journal.IsNULL() )
-        m_journal = m_config.journal;
+    ConfigureJournal( m_config );
 
     if ( m_config.pulseGenerator.IsNULL() )
         m_config.pulseGenerator = CORE::CCoreGlobal::Instance()->GetPulseGenerator();
@@ -271,9 +270,10 @@ CRedisClusterPubSubClient::CreateTopicAccess( PUBSUB::CPubSubClientTopicConfigPt
             {
                 m_topicMap[ topicConfig->topicName ] = topicAccess;
 
-                topicAccess->SetJournal( m_journal );
-                if ( !m_journal.IsNULL() )
-                    m_journal->AddTopicCreatedJournalEntry();
+                ConfigureJournal( topicAccess, topicConfig );
+                PUBSUB::CIPubSubJournalBasicPtr journal = topicAccess->GetJournal();
+                if ( !journal.IsNULL() && topicConfig->journalConfig.useJournal )
+                    journal->AddTopicCreatedJournalEntry();
 
                 GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "RedisClusterPubSubClient(" + CORE::PointerToString( this ) + "):CreateTopicAccess: created topic access for topic \"" + topicConfig->topicName + "\"" );
 
@@ -416,9 +416,10 @@ CRedisClusterPubSubClient::AutoCreateMultiTopicAccess( const TTopicConfigPtrToSt
                             m_config.topics.push_back( topicConfig );
                             ++newTopicAccessCount;
 
-                            tAccess->SetJournal( m_journal );
-                            if ( !m_journal.IsNULL() )
-                                m_journal->AddTopicCreatedJournalEntry();
+                            ConfigureJournal( tAccess, topicConfig );
+                            PUBSUB::CIPubSubJournalBasicPtr journal = tAccess->GetJournal();
+                            if ( !journal.IsNULL() && topicConfig->journalConfig.useJournal )
+                                journal->AddTopicCreatedJournalEntry();
 
                             GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "RedisClusterPubSubClient(" + CORE::PointerToString( this ) + "):AutoCreateMultiTopicAccess: Auto created topic \"" +
                                     topicConfig->topicName + "\" based on template config \"" + templateTopicConfig->topicName + "\"" );

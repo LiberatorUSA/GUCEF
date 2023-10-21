@@ -38,10 +38,20 @@
 #define GUCEF_CORE_CTASKMANAGER_H
 #endif /* GUCEF_CORE_CTASKMANAGER_H ? */
 
+#ifndef GUCEF_CORE_CTFACTORY_H
+#include "CTFactory.h"
+#define GUCEF_CORE_CTFACTORY_H
+#endif /* GUCEF_CORE_CTASKMANAGER_H ? */
+
 #ifndef GUCEF_CORE_CCODECREGISTRY_H
 #include "CCodecRegistry.h"
 #define GUCEF_CORE_CCODECREGISTRY_H
 #endif /* GUCEF_CORE_CCODECREGISTRY_H ? */
+
+#ifndef GUCEF_CORE_CURIRESOURCEACCESSORFACTORY_H
+#include "gucefCORE_CUriResourceAccessorFactory.h"
+#define GUCEF_CORE_CURIRESOURCEACCESSORFACTORY_H
+#endif /* GUCEF_CORE_CURIRESOURCEACCESSORFACTORY_H ? */
 
 #ifndef GUCEF_VFS_CVFS_H
 #include "gucefVFS_CVFS.h"
@@ -52,6 +62,11 @@
 #include "gucefVFS_CVFSURLHandler.h"     /* URL handler for URL's with protocol "vfs" */
 #define GUCEF_VFS_CVFSURLHANDLER_H
 #endif /* GUCEF_VFS_CVFSURLHANDLER_H ? */
+
+#ifndef GUCEF_VFS_CVFSURIRESOURCEACCESSOR_H
+#include "gucefVFS_CVfsUriResourceAccessor.h"
+#define GUCEF_VFS_CVFSURIRESOURCEACCESSOR_H
+#endif /* GUCEF_VFS_CVFSURIRESOURCEACCESSOR_H ? */
 
 #ifndef GUCEF_VFS_CASYNCVFSOPERATION_H
 #include "gucefVFS_CAsyncVfsOperation.h"
@@ -71,13 +86,23 @@ namespace VFS {
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
+//      TYPES                                                              //
+//                                                                         //
+//-------------------------------------------------------------------------*/
+
+typedef CORE::CTFactory< CORE::CUriResourceAccessor, CVfsUriResourceAccessor, MT::CMutex >     TVfsUriResourceAccessorFactory;
+
+/*-------------------------------------------------------------------------//
+//                                                                         //
 //      GLOBAL VARS                                                        //
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
 MT::CMutex CVfsGlobal::g_datalock;
 CVfsGlobal* CVfsGlobal::g_instance = GUCEF_NULL;
+
 TAsyncVfsOperationTaskFactory g_asyncVfsOperationTaskFactory;
+TVfsUriResourceAccessorFactory g_vfsUriResourceAccessorFactory;
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -145,6 +170,7 @@ CVfsGlobal::Initialize( void )
     m_vfs = GUCEF_NEW CVFS();
 
     CORE::CCoreGlobal::Instance()->GetTaskManager().RegisterTaskConsumerFactory( CAsyncVfsOperation::TaskType, &g_asyncVfsOperationTaskFactory );
+    CORE::CCoreGlobal::Instance()->GetUriResourceAccessorFactory().RegisterConcreteFactory( CVfsUriResourceAccessor::SchemeName, &g_vfsUriResourceAccessorFactory );
     
     /*
      *      register all codecs/handlers/notifiers
@@ -174,6 +200,7 @@ CVfsGlobal::~CVfsGlobal()
      */
     CVFSURLHandler::Unregister();
     CORE::CCoreGlobal::Instance()->GetTaskManager().UnregisterTaskConsumerFactory( CAsyncVfsOperation::TaskType ); 
+    CORE::CCoreGlobal::Instance()->GetUriResourceAccessorFactory().UnregisterConcreteFactory( CVfsUriResourceAccessor::SchemeName );
 
     /*
      *      cleanup all singletons

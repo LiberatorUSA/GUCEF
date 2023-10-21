@@ -60,7 +60,9 @@ namespace PUBSUB {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-typedef CORE::CTAbstractFactoryWithParam< CORE::CString, CIPubSubJournal, CPubSubJournalConfig, MT::CMutex > CPubSubJournalFactory;
+typedef CORE::CTAbstractFactoryWithParam< CORE::CString, CIPubSubJournal, CPubSubJournalConfig, MT::CMutex >    TPubSubJournalAbstractFactory;
+
+class CPubSubJournalFactory : public TPubSubJournalAbstractFactory {};
 
 /*-------------------------------------------------------------------------//
 //                                                                         //

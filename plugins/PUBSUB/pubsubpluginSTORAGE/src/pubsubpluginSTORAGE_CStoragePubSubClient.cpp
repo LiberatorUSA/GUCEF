@@ -109,8 +109,7 @@ CStoragePubSubClient::CStoragePubSubClient( const PUBSUB::CPubSubClientConfig& c
         GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "StoragePubSubClient: Failed to load config at construction" );
     }
 
-    if ( m_config.journalConfig.useJournal && !m_config.journal.IsNULL() )
-        m_journal = m_config.journal;
+    ConfigureJournal( m_config );
 
     if ( config.desiredFeatures.supportsMetrics )
     {
@@ -283,9 +282,10 @@ CStoragePubSubClient::CreateTopicAccess( PUBSUB::CPubSubClientTopicConfigPtr top
         {
             m_topicMap[ topicConfig->topicName ] = topicAccess;
 
-            topicAccess->SetJournal( m_journal );
-            if ( !m_journal.IsNULL() )
-                m_journal->AddTopicCreatedJournalEntry();
+            ConfigureJournal( topicAccess, topicConfig );
+            PUBSUB::CIPubSubJournalBasicPtr journal = topicAccess->GetJournal();
+            if ( !journal.IsNULL() && topicConfig->journalConfig.useJournal )
+                journal->AddTopicCreatedJournalEntry();
 
             RegisterTopicEventHandlers( topicAccess );
         }

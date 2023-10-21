@@ -22,6 +22,16 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+#ifndef GUCEF_CORE_CURIRESOURCEACCESSORFACTORY_H
+#include "gucefCORE_CUriResourceAccessorFactory.h"
+#define GUCEF_CORE_CURIRESOURCEACCESSORFACTORY_H
+#endif /* GUCEF_CORE_CURIRESOURCEACCESSORFACTORY_H ? */
+
+#ifndef GUCEF_CORE_CCOREGLOBAL_H
+#include "gucefCORE_CCoreGlobal.h"
+#define GUCEF_CORE_CCOREGLOBAL_H
+#endif /* GUCEF_CORE_CCOREGLOBAL_H ? */
+
 #include "gucefPUBSUB_CBinaryPubSubJournal.h"    
 
 /*-------------------------------------------------------------------------//
@@ -49,7 +59,8 @@ const CORE::CString CBinaryPubSubJournal::JournalType = "binary";
 
 CBinaryPubSubJournal::CBinaryPubSubJournal( void )
     : CIPubSubJournal()
-    , m_journal( GUCEF_NULL )
+    , m_journal()
+    , m_config()
 {GUCEF_TRACE;
     
 }
@@ -58,9 +69,11 @@ CBinaryPubSubJournal::CBinaryPubSubJournal( void )
 
 CBinaryPubSubJournal::CBinaryPubSubJournal( const CPubSubJournalConfig& config )
     : CIPubSubJournal()
-    , m_journal( GUCEF_NULL )   
+    , m_journal()   
+    , m_config()
 {GUCEF_TRACE;
     
+    LoadConfig( config );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -78,7 +91,7 @@ CBinaryPubSubJournal::ReadJournalEntry( UInt64& eventTimestamp   ,
                                        UInt64& msgActionId       )
 {GUCEF_TRACE;
 
-    if ( GUCEF_NULL != m_journal )
+    if ( !m_journal.IsNULL() )
     {
         if ( m_journal->ReadValue( eventTimestamp ) )
             if ( m_journal->ReadValue( action ) )
@@ -96,7 +109,7 @@ CBinaryPubSubJournal::AddJournalEntry( UInt64 eventTimestamp    ,
                                        UInt64 msgActionId       )
 {GUCEF_TRACE;
 
-    if ( GUCEF_NULL != m_journal )
+    if ( !m_journal.IsNULL() )
     {
         if ( m_journal->WriteValue( eventTimestamp ) )
             if ( m_journal->WriteValue( action ) )
@@ -109,10 +122,45 @@ CBinaryPubSubJournal::AddJournalEntry( UInt64 eventTimestamp    ,
 /*-------------------------------------------------------------------------*/
 
 void 
-CBinaryPubSubJournal::SetJournalResource( CORE::CIOAccess* journal )
+CBinaryPubSubJournal::SetJournalResource( CORE::IOAccessPtr journal )
 {GUCEF_TRACE;
 
     m_journal = journal;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CBinaryPubSubJournal::LoadConfig( const CPubSubJournalConfig& config )
+{GUCEF_TRACE;
+
+    m_journal.Unlink();
+
+    m_config = config;
+
+    if ( m_config.useJournal && m_config.journalType == JournalType )
+    {
+        CORE::CUriResourceAccessorPtr access = CORE::CCoreGlobal::Instance()->GetUriResourceAccessorFactory().Create( m_config.journalResource.GetScheme() );        
+        if ( !access.IsNULL() )
+        {
+            if ( access->GetResourceAccess( m_config.journalResource, m_journal, CORE::CUriResourceAccessor::URI_RESOURCEACCESS_MODE_APPEND ) )
+            {
+                return true;
+            }
+            else
+            {
+                GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "BinaryPubSubJournal:LoadConfig: Failed to get resource access for journal resource " + m_config.journalResource.ToUriInStringForm() );
+                return false;
+            }
+        }
+        else
+        {
+            GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "BinaryPubSubJournal:LoadConfig: Failed to create resource accessor for journal resource " + m_config.journalResource.ToUriInStringForm() );
+            return false;
+        }
+    }
+
+    return true;
 }
 
 /*-------------------------------------------------------------------------//

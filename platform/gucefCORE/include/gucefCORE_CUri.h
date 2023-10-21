@@ -136,6 +136,8 @@ class GUCEF_CORE_PUBLIC_CPP CUri
 
     CString ToUriInStringForm( void ) const;
 
+    void ReplaceSubstr( const CString& oldSubstr, const CString& newSubstr );
+
     protected:
 
     CString m_scheme;

@@ -89,11 +89,18 @@ class GUCEF_PUBSUB_EXPORT_CPP CBinaryPubSubJournal : public CIPubSubJournal
                                   UInt64 msgActionId       ) GUCEF_VIRTUAL_OVERRIDE;
 
 
-    void SetJournalResource( CORE::CIOAccess* journal );
+    void SetJournalResource( CORE::IOAccessPtr journal );
+
+    bool LoadConfig( const CPubSubJournalConfig& config );
+
+    private:
+
+
     
     private:
 
-    CORE::CIOAccess* m_journal; /**< the journal file */
+    CORE::IOAccessPtr m_journal; /**< the journal file */
+    CPubSubJournalConfig m_config;
 };
 
 /*-------------------------------------------------------------------------//

@@ -110,6 +110,13 @@ class CTAbstractFactoryWithParam : public CAbstractFactoryBase
     TProductPtr Create( const SelectionCriteriaType& selectedType ,
                         const ConstructionParamType& param        );
 
+    /**
+     *  Constructs the concrete factory product using a class type name
+     *
+     *  @return pointer to the base class of the constructed factory product
+     */
+    TProductPtr CreateUsingClassTypeName( const CString& classTypeName ) const;
+
     void RegisterConcreteFactory( const SelectionCriteriaType& selectedType ,
                                   TFactory* concreteFactory                 );
 
@@ -117,12 +124,26 @@ class CTAbstractFactoryWithParam : public CAbstractFactoryBase
 
     bool IsConstructible( const SelectionCriteriaType& selectedType ) const;
 
+    /**
+     *  Returns the concete class's type name as produced by a factory linked to the given selection criterea
+     */
+    CString GetConcreteClassTypeNameForSelectionCriterea( const SelectionCriteriaType& selectedType ) const;
+
+    /**
+     *  Returns the factory linked selection criterea for the given concete class's type name
+     */
+    SelectionCriteriaType GetSelectionCritereaForConcreteClassTypeName( const CString& classTypeName ) const;
+
     void ObtainKeySet( TKeySet& keySet ) const;
 
     private:
-    typedef std::map< SelectionCriteriaType, TFactory* >  TFactoryList;
+    typedef std::pair< SelectionCriteriaType, TFactory* >   TFactoryEntryPair;
+    typedef std::map< SelectionCriteriaType, TFactory*, std::less< SelectionCriteriaType >, basic_allocator< TFactoryEntryPair > >  TFactoryList;
+    typedef std::pair< CString, SelectionCriteriaType >   TStringToSCPair;
+    typedef std::map< CString, SelectionCriteriaType, std::less< CString >, basic_allocator< TStringToSCPair > >  TClassTypeNameMap;
 
     TFactoryList m_concreteFactoryList;
+    TClassTypeNameMap m_concreteFactoryTypeMap;
     bool m_assumeFactoryOwnership;
     LockType m_lock;
 };
@@ -138,6 +159,7 @@ CTAbstractFactoryWithParam< SelectionCriteriaType, BaseClassType, ConstructionPa
                                                                                                                                  const bool useEventing /* = true */             )
     : CAbstractFactoryBase( useEventing )
     , m_concreteFactoryList()
+    , m_concreteFactoryTypeMap()
     , m_assumeFactoryOwnership( assumeFactoryOwnership )
     , m_lock()
 {GUCEF_TRACE;
@@ -149,7 +171,8 @@ CTAbstractFactoryWithParam< SelectionCriteriaType, BaseClassType, ConstructionPa
 template< typename SelectionCriteriaType, class BaseClassType, typename ConstructionParamType, class LockType >
 CTAbstractFactoryWithParam< SelectionCriteriaType, BaseClassType, ConstructionParamType, LockType >::CTAbstractFactoryWithParam( const CTAbstractFactoryWithParam< SelectionCriteriaType, BaseClassType, ConstructionParamType, LockType >& src )
     : CAbstractFactoryBase( src )
-    , m_concreteFactoryList( src )
+    , m_concreteFactoryList() // Wont copy raw factory pointers, too much risk of bad access. only copy 'config' style info
+    , m_concreteFactoryTypeMap( src.m_concreteFactoryTypeMap )
     , m_assumeFactoryOwnership( src.m_assumeFactoryOwnership )
     , m_lock()
 {GUCEF_TRACE;
@@ -208,6 +231,25 @@ CTAbstractFactoryWithParam< SelectionCriteriaType, BaseClassType, ConstructionPa
 /*-------------------------------------------------------------------------*/
 
 template< typename SelectionCriteriaType, class BaseClassType, typename ConstructionParamType, class LockType >
+typename CTAbstractFactoryWithParam< SelectionCriteriaType, BaseClassType, ConstructionParamType, LockType >::TProductPtr
+CTAbstractFactoryWithParam< SelectionCriteriaType, BaseClassType, ConstructionParamType, LockType >::CreateUsingClassTypeName( const CString& classTypeName ) const
+{GUCEF_TRACE;
+
+    MT::CObjectScopeLock lock( this, GUCEF_MT_VERY_LONG_LOCK_TIMEOUT );
+    
+    // Resolve the class type name to a registered type name
+    typename TClassTypeNameMap::const_iterator i( m_concreteFactoryTypeMap.find( classTypeName ) );
+    if ( i != m_concreteFactoryTypeMap.end() )
+    {
+        // Use the registered type name to actually carry out the creation
+        return Create( (*i).second );
+    }
+    return TProductPtr();
+}
+
+/*-------------------------------------------------------------------------*/
+
+template< typename SelectionCriteriaType, class BaseClassType, typename ConstructionParamType, class LockType >
 void
 CTAbstractFactoryWithParam< SelectionCriteriaType, BaseClassType, ConstructionParamType, LockType >::ObtainKeySet( TKeySet& keySet ) const
 {GUCEF_TRACE;
@@ -230,6 +272,40 @@ CTAbstractFactoryWithParam< SelectionCriteriaType, BaseClassType, ConstructionPa
 
     MT::CObjectScopeLock lock( this );
     return m_concreteFactoryList.find( selectedType ) != m_concreteFactoryList.end();
+}
+
+/*-------------------------------------------------------------------------*/
+
+template< typename SelectionCriteriaType, class BaseClassType, typename ConstructionParamType, class LockType >
+CString
+CTAbstractFactoryWithParam< SelectionCriteriaType, BaseClassType, ConstructionParamType, LockType >::GetConcreteClassTypeNameForSelectionCriterea( const SelectionCriteriaType& selectedType ) const
+{GUCEF_TRACE;
+
+    MT::CObjectScopeReadOnlyLock lock( this, GUCEF_MT_VERY_LONG_LOCK_TIMEOUT );
+    typename TFactoryList::const_iterator i( m_concreteFactoryList.find( selectedType ) );
+    if ( i != m_concreteFactoryList.end() )
+    {
+        return (*i).second->GetConcreteClassTypeName();
+    }
+
+    return CString::Empty;
+}
+
+/*-------------------------------------------------------------------------*/
+
+template< typename SelectionCriteriaType, class BaseClassType, typename ConstructionParamType, class LockType >
+SelectionCriteriaType
+CTAbstractFactoryWithParam< SelectionCriteriaType, BaseClassType, ConstructionParamType, LockType >::GetSelectionCritereaForConcreteClassTypeName( const CString& classTypeName ) const
+{GUCEF_TRACE;
+
+    MT::CObjectScopeLock lock( this, GUCEF_MT_VERY_LONG_LOCK_TIMEOUT );
+    typename TClassTypeNameMap::const_iterator i( m_concreteFactoryTypeMap.find( classTypeName ) );
+    if ( i != m_concreteFactoryTypeMap.end() )
+    {
+        return (*i).second;
+    }
+
+    return SelectionCriteriaType();
 }
 
 /*-------------------------------------------------------------------------*/
