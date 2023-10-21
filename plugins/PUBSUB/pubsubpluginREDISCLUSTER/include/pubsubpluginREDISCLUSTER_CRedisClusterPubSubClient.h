@@ -241,6 +241,7 @@ class PUBSUBPLUGIN_REDISCLUSTER_PLUGIN_PRIVATE_CPP CRedisClusterPubSubClient : p
     typedef std::map< CORE::CString, CRedisClusterPubSubClientTopicPtr > TTopicMap;
 
     CRedisClusterPubSubClientConfig m_config;
+    PUBSUB::CIPubSubJournalBasicPtr m_journal;
     RedisNodeMap m_nodeMap;
     RedisClusterPtr m_redisContext;
     CORE::UInt32 m_redisErrorReplies;

@@ -60,6 +60,16 @@
 #define GUCEF_PUBSUB_CIPUBSUBBOOKMARKPERSISTENCE_H
 #endif /* GUCEF_PUBSUB_CIPUBSUBBOOKMARKPERSISTENCE_H ? */
 
+#ifndef GUCEF_PUBSUB_CPUBSUBJOURNALCONFIG_H
+#include "gucefPUBSUB_CPubSubJournalConfig.h"
+#define GUCEF_PUBSUB_CPUBSUBJOURNALCONFIG_H
+#endif /* GUCEF_PUBSUB_CPUBSUBJOURNALCONFIG_H ? */
+
+#ifndef GUCEF_PUBSUB_CIPUBSUBJOURNAL_H
+#include "gucefPUBSUB_CIPubSubJournal.h"    
+#define GUCEF_PUBSUB_CIPUBSUBJOURNAL_H
+#endif /* GUCEF_PUBSUB_CIPUBSUBJOURNAL_H ? */
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //
@@ -97,12 +107,14 @@ class GUCEF_PUBSUB_EXPORT_CPP CPubSubClientConfig : public CORE::CIConfigurable
     CPubSubClientTopicConfigPtr defaultTopicConfig; /**< config used as the default topic config when creating new topic access */
     CORE::CString metricsPrefix;                    /**< metric key prefix to apply if metrics are enabled */
     CORE::CString pubsubIdPrefix;                   /**< unique but consistent prefix for the pubsub instance, can be used for persistance addressability */
+    CPubSubJournalConfig journalConfig;             /**< config for the journal to use, if any */   
     
     // The following are runtime available:
 
     CORE::PulseGeneratorPtr pulseGenerator;                 /**< dedicated pulse generator to use for anything client related that uses a pulse generator directly, if any */
     CORE::PulseGeneratorPtr topicPulseGenerator;            /**< default dedicated pulse generator to use for anything topic related that uses a pulse generator directly, if any */
     TIPubSubBookmarkPersistencePtr bookmarkPersistence;     /**< peristance facility for bookmarks */
+    CIPubSubJournalBasicPtr journal;                        /**< journal to use, if any */
 
     CPubSubClientConfig( void );
 

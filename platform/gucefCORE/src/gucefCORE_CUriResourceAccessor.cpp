@@ -80,6 +80,9 @@ CUriResourceAccessor::CUriResourceAccessorOperations::CUriResourceAccessorOperat
     , getResource( false )
     , getPartialResource( false )
     , getResourceMetaData( false )
+    , getResourceWriteAccess( false )
+    , getResourceAppendAccess( false )
+    , getResourceReadAccess( false )
     , updateResource( false )
     , updatePartialResource( false )
     , deleteResource( false )
@@ -96,6 +99,9 @@ CUriResourceAccessor::CUriResourceAccessorOperations::CUriResourceAccessorOperat
     , getResource( src.getResource )
     , getPartialResource( src.getPartialResource )
     , getResourceMetaData( src.getResourceMetaData )
+    , getResourceWriteAccess( src.getResourceWriteAccess )
+    , getResourceAppendAccess( src.getResourceAppendAccess )
+    , getResourceReadAccess( src.getResourceReadAccess )
     , updateResource( src.updateResource )
     , updatePartialResource( src.updatePartialResource )
     , deleteResource( src.deleteResource )
@@ -173,6 +179,25 @@ CUriResourceAccessor::UpdatePartialResource( const CUri& uri           ,
 
     CDynamicBufferAccess access( srcBuffer );
     return UpdatePartialResource( uri, access );
+}
+
+/*-------------------------------------------------------------------------*/
+
+const char*
+CUriResourceAccessor::ResourceAccessModeStr( TURI_RESOURCEACCESS_MODE mode )
+{GUCEF_TRACE;
+
+    switch ( mode )
+    {
+        case URI_RESOURCEACCESS_MODE_READ:
+            return "rb";
+        case URI_RESOURCEACCESS_MODE_WRITE:
+            return "wb";
+        case URI_RESOURCEACCESS_MODE_APPEND:
+            return "a";
+        default:
+            return "";
+    }
 }
 
 /*-------------------------------------------------------------------------//

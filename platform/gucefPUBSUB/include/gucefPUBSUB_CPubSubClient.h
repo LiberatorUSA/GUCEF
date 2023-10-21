@@ -65,6 +65,11 @@
 #define GUCEF_PUBSUB_CPUBSUBCLIENTCONFIG_H
 #endif /* GUCEF_PUBSUB_CPUBSUBCLIENTCONFIG_H ? */
 
+#ifndef GUCEF_PUBSUB_CIPUBSUBJOURNAL_H
+#include "gucefPUBSUB_CIPubSubJournal.h"
+#define GUCEF_PUBSUB_CIPUBSUBJOURNAL_H
+#endif /* GUCEF_PUBSUB_CIPUBSUBJOURNAL_H ? */
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //
@@ -274,6 +279,13 @@ class GUCEF_PUBSUB_EXPORT_CPP CPubSubClient : public CORE::CTSGNotifier         
      *  at the time of topic creation. 
      */
     virtual CORE::PulseGeneratorPtr GetDefaultTopicPulseGenerator( void ) const;
+
+    /**
+     *  Sets the journal implementation (if any) to be used by the client
+     */
+    virtual bool SetJournal( CIPubSubJournalBasicPtr journal );
+
+    virtual CIPubSubJournalBasicPtr GetJournal( void ) const;
 
     static void RegisterEvents( void );
     

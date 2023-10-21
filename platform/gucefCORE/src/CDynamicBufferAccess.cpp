@@ -415,6 +415,16 @@ CDynamicBufferAccess::Write( const void* srcdata ,
 
 /*-------------------------------------------------------------------------*/
 
+UInt64
+CDynamicBufferAccess::Write( CORE::CIOAccess& sourceData ,
+                             Int64 bytesToWrite          )
+{GUCEF_TRACE;
+
+    return CIOAccess::Write( sourceData, bytesToWrite );
+}
+
+/*-------------------------------------------------------------------------*/
+
 bool 
 CDynamicBufferAccess::IsValid( void )
 {GUCEF_TRACE;

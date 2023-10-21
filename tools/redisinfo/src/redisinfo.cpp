@@ -629,7 +629,7 @@ RedisInfoService::SaveDocTo( const CORE::CDataNode& doc     ,
         return false;
     }
 
-    return codec->StoreDataTree( &doc, file->GetAccess() );
+    return codec->StoreDataTree( &doc, file->GetAccess().GetPointerAlways() );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -662,7 +662,7 @@ RedisInfoService::LoadDocFrom( CORE::CDataNode& doc           ,
         return false;
     }
 
-    return codec->BuildDataTree( &doc, file->GetAccess() );
+    return codec->BuildDataTree( &doc, file->GetAccess().GetPointerAlways() );
 }
 
 /*-------------------------------------------------------------------------*/

@@ -52,6 +52,8 @@ class GUCEF_CORE_PUBLIC_CPP CFileAccess : public CIOAccess
 {
     public:
 
+    typedef CTSharedPtr< CFileAccess, MT::CMutex >      FileAccessPtr;
+
     CFileAccess( const CString& file     ,
                  const char* mode = "rb" );
 
@@ -163,6 +165,10 @@ class GUCEF_CORE_PUBLIC_CPP CFileAccess : public CIOAccess
     UInt64 _size;
 };
 
+/*-------------------------------------------------------------------------*/
+
+typedef CFileAccess::FileAccessPtr  FileAccessPtr;
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //
@@ -175,19 +181,3 @@ class GUCEF_CORE_PUBLIC_CPP CFileAccess : public CIOAccess
 /*-------------------------------------------------------------------------*/
 
 #endif /* GUCEF_CORE_CFILEACCESS_H ? */
-
-/*-------------------------------------------------------------------------//
-//                                                                         //
-//      Info & Changes                                                     //
-//                                                                         //
-//-------------------------------------------------------------------------//
-
-- 25-08-2005 :
-        - Replaced the read/write bools with a const char* for a mode.
-          This allows for more options plus a more fopen() like parameter list
-- 26-04-2005 :
-        - Fixed an bug in Close(): Calling Close() twice caused an access violation
-- 26-03-2005 :
-        - Designed and implemented this class.
-
------------------------------------------------------------------------------*/

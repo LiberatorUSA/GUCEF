@@ -93,6 +93,7 @@ CRedisClusterPubSubClientTopic::CRedisClusterPubSubClientTopic( CRedisClusterPub
     , m_redisShardNodeId()
     , m_redisReconnectTimer( GUCEF_NULL )
     , m_config()
+    , m_journal()
     , m_readerThread()
     , m_needToTrackAcks( true )
     , m_subscriptionIsAtEndOfData( false )
@@ -161,6 +162,13 @@ CRedisClusterPubSubClientTopic::Shutdown( void )
     
     CleanupRedisReaderThread();
     Disconnect();    
+
+    if ( !m_journal.IsNULL() )
+    {
+        m_journal->AddTopicDestroyedJournalEntry();
+        m_journal.Unlink();
+    }
+
     SignalUpcomingDestruction();
 }
 
@@ -729,6 +737,10 @@ CRedisClusterPubSubClientTopic::RedisRead( void )
                                             }
 
                                             pubsubMsg.SetReceiveActionId( m_readVars.m_currentReceiveActionId );
+
+                                            if ( !m_journal.IsNULL() )
+                                                m_journal->AddMessageReceivedJournalEntry( m_readVars.m_currentReceiveActionId );
+
                                             ++m_readVars.m_currentReceiveActionId;
                                         }
                                     }
@@ -817,6 +829,10 @@ CRedisClusterPubSubClientTopic::RedisRead( void )
                         pubsubMsg.SetOriginClientTopic( CreateSharedPtr() );
 
                         pubsubMsg.SetReceiveActionId( m_readVars.m_currentReceiveActionId );
+
+                        if ( !m_journal.IsNULL() )
+                            m_journal->AddMessageReceivedJournalEntry( m_readVars.m_currentReceiveActionId );
+
                         ++m_readVars.m_currentReceiveActionId;
 
                         // set basic message properties
@@ -1844,6 +1860,26 @@ CRedisClusterPubSubClientTopic::GetPulseGenerator( void ) const
         return m_client->GetPulseGenerator();
 
     return CORE::PulseGeneratorPtr();
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CRedisClusterPubSubClientTopic::SetJournal( PUBSUB::CIPubSubJournalBasicPtr journal )
+{GUCEF_TRACE;
+
+    MT::CScopeMutex lock( m_lock );
+    m_journal = journal;
+    return true;
+}
+
+/*-------------------------------------------------------------------------*/
+
+PUBSUB::CIPubSubJournalBasicPtr 
+CRedisClusterPubSubClientTopic::GetJournal( void ) const
+{GUCEF_TRACE;
+
+    return m_journal;
 }
 
 /*-------------------------------------------------------------------------//

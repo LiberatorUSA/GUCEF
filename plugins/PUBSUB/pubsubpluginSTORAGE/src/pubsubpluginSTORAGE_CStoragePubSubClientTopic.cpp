@@ -535,6 +535,12 @@ CStoragePubSubClientTopic::Shutdown( void )
     GUCEF_DELETE m_bufferContentTimeWindowCheckTimer;
     m_bufferContentTimeWindowCheckTimer = GUCEF_NULL;
 
+    if ( !m_journal.IsNULL() )
+    {
+        m_journal->AddTopicDestroyedJournalEntry();
+        m_journal.Unlink();
+    }
+
     SignalUpcomingDestruction();
 }
 
@@ -2638,6 +2644,9 @@ CStoragePubSubClientTopic::AddPublishActionIdsToNotify( const TPublishActionIdVe
     {
         for ( size_t i=0; i<idCount; ++i )
         {
+            if ( !m_journal.IsNULL() )
+                m_journal->AddMessageSentJournalEntry( publishActionIds[ i ] );
+
             m_publishSuccessActionIds.push_back( publishActionIds[ i ] );
         }
     }
@@ -2645,6 +2654,9 @@ CStoragePubSubClientTopic::AddPublishActionIdsToNotify( const TPublishActionIdVe
     {
         for ( size_t i=0; i<idCount; ++i )
         {
+            if ( !m_journal.IsNULL() )
+                m_journal->AddMessageSendFailureJournalEntry( publishActionIds[ i ] );
+
             m_publishFailureActionIds.push_back( publishActionIds[ i ] );
         }
     }

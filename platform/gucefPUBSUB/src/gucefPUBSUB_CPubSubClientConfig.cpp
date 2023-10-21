@@ -64,8 +64,11 @@ CPubSubClientConfig::CPubSubClientConfig( void )
     , defaultTopicConfig()
     , metricsPrefix()
     , pubsubIdPrefix()
+    , journalConfig()
     , pulseGenerator()
     , topicPulseGenerator()
+    , bookmarkPersistence()
+    , journal()
 {GUCEF_TRACE;
 
 }
@@ -84,8 +87,11 @@ CPubSubClientConfig::CPubSubClientConfig( const CPubSubClientConfig& src )
     , defaultTopicConfig( src.defaultTopicConfig )
     , metricsPrefix( src.metricsPrefix )
     , pubsubIdPrefix( src.pubsubIdPrefix )
+    , journalConfig( src.journalConfig )
     , pulseGenerator( src.pulseGenerator )
     , topicPulseGenerator( src.topicPulseGenerator )
+    , bookmarkPersistence( src.bookmarkPersistence )
+    , journal( src.journal )
 {GUCEF_TRACE;
 
 }
@@ -116,11 +122,13 @@ CPubSubClientConfig::operator=( const CPubSubClientConfig& src )
         defaultTopicConfig = src.defaultTopicConfig;
         metricsPrefix = src.metricsPrefix;
         pubsubIdPrefix = src.pubsubIdPrefix;
+        journalConfig = src.journalConfig;
 
         // copy the runtime aspects
         pulseGenerator = src.pulseGenerator;
         topicPulseGenerator = src.topicPulseGenerator;
         bookmarkPersistence = src.bookmarkPersistence;
+        journal = src.journal;
     }
     return *this;
 }
@@ -183,6 +191,11 @@ CPubSubClientConfig::SaveConfig( CORE::CDataNode& cfg ) const
             return false;
         totalSuccess = defaultTopicConfig->SaveConfig( *defaultTopicCfgNode ) && totalSuccess;
     }
+
+    CORE::CDataNode* journalCfg = cfg.FindOrAddChild( "journalConfig" );
+    if ( GUCEF_NULL == journalCfg )
+       return false;
+    totalSuccess = journalConfig.SaveConfig( *journalCfg ) && totalSuccess;
 
     return totalSuccess;
 }
@@ -266,6 +279,16 @@ CPubSubClientConfig::LoadConfig( const CORE::CDataNode& cfg )
         if ( !defaultTopicConfig->LoadConfig( *defaultTopicConfigNode ) )
         {
             GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientConfig:LoadConfig: failed to load defaultTopicConfig section" );
+            return false;
+        }
+    }
+
+    const CORE::CDataNode* journalConfigNode = cfg.FindChild( "journalConfig" );
+    if ( GUCEF_NULL != journalConfigNode )
+    {
+        if ( !journalConfig.LoadConfig( *journalConfigNode ) )
+        {
+            GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientConfig:LoadConfig: failed to load journal config section" );
             return false;
         }
     }

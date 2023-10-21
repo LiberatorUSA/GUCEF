@@ -463,6 +463,7 @@ class PUBSUBPLUGIN_STORAGE_PLUGIN_PRIVATE_CPP CStoragePubSubClientTopic : public
     CStoragePubSubClient* m_client;
     TPubSubMsgsVector m_pubsubMsgs;
     CStoragePubSubClientTopicConfig m_config;
+    PUBSUB::CIPubSubJournalBasicPtr m_journal;
     CORE::CTimer* m_syncVfsOpsTimer;    
     CORE::CTimer* m_reconnectTimer;
     CORE::CTimer* m_noAckRetransmitTimer;

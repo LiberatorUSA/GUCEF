@@ -551,7 +551,7 @@ CRedisClusterKeyCache::SaveDocTo( const CORE::CDataNode& doc     ,
         return false;
     }
 
-    return codec->StoreDataTree( &doc, file->GetAccess() );
+    return codec->StoreDataTree( &doc, file->GetAccess().GetPointerAlways() );
 }
 
 /*-------------------------------------------------------------------------*/

@@ -14,7 +14,9 @@
 set( HEADER_FILES 
   include/gucefPUBSUB.h
   include/gucefPUBSUB_CBasicPubSubMsg.h
+  include/gucefPUBSUB_CBinaryPubSubJournal.h
   include/gucefPUBSUB_CIPubSubBookmarkPersistence.h
+  include/gucefPUBSUB_CIPubSubJournal.h
   include/gucefPUBSUB_CIPubSubMsg.h
   include/gucefPUBSUB_CModule.h
   include/gucefPUBSUB_CPubSub2PubSub.h
@@ -34,6 +36,8 @@ set( HEADER_FILES
   include/gucefPUBSUB_CPubSubFlowRouter.h
   include/gucefPUBSUB_CPubSubFlowRouterConfig.h
   include/gucefPUBSUB_CPubSubGlobal.h
+  include/gucefPUBSUB_CPubSubJournalConfig.h
+  include/gucefPUBSUB_CPubSubJournalFactory.h
   include/gucefPUBSUB_CPubSubMsgBinarySerializer.h
   include/gucefPUBSUB_CPubSubMsgContainerBinarySerializer.h
   include/gucefPUBSUB_CPubSubMsgSerializer.h
@@ -48,7 +52,9 @@ set( HEADER_FILES
 set( SOURCE_FILES 
   src/gucefPUBSUB.cpp
   src/gucefPUBSUB_CBasicPubSubMsg.cpp
+  src/gucefPUBSUB_CBinaryPubSubJournal.cpp
   src/gucefPUBSUB_CIPubSubBookmarkPersistence.cpp
+  src/gucefPUBSUB_CIPubSubJournal.cpp
   src/gucefPUBSUB_CIPubSubMsg.cpp
   src/gucefPUBSUB_CModule.cpp
   src/gucefPUBSUB_CPubSub2PubSub.cpp
@@ -67,6 +73,7 @@ set( SOURCE_FILES
   src/gucefPUBSUB_CPubSubFlowRouter.cpp
   src/gucefPUBSUB_CPubSubFlowRouterConfig.cpp
   src/gucefPUBSUB_CPubSubGlobal.cpp
+  src/gucefPUBSUB_CPubSubJournalConfig.cpp
   src/gucefPUBSUB_CPubSubMsgBinarySerializer.cpp
   src/gucefPUBSUB_CPubSubMsgContainerBinarySerializer.cpp
   src/gucefPUBSUB_CPubSubMsgSerializer.cpp

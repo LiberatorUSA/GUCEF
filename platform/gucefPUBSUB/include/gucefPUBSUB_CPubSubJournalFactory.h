@@ -16,8 +16,8 @@
  *  limitations under the License.
  */
 
-#ifndef GUCEF_PUBSUB_CPUBSUBGLOBAL_H
-#define GUCEF_PUBSUB_CPUBSUBGLOBAL_H
+#ifndef GUCEF_PUBSUB_CPUBSUBJOURNALFACTORY_H
+#define GUCEF_PUBSUB_CPUBSUBJOURNALFACTORY_H
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -26,29 +26,24 @@
 //-------------------------------------------------------------------------*/
 
 #ifndef GUCEF_MT_CMUTEX_H
-#include "gucefMT_CMutex.h"
+#include "gucefMT_CMutex.h"    
 #define GUCEF_MT_CMUTEX_H
 #endif /* GUCEF_MT_CMUTEX_H ? */
 
-#ifndef GUCEF_PUBSUB_MACROS_H
-#include "gucefPUBSUB_macros.h"      /* often used gucefCOMCORE macros */
-#define GUCEF_PUBSUB_MACROS_H
-#endif /* GUCEF_PUBSUB_MACROS_H ? */
+#ifndef GUCEF_CORE_CTABSTRACTFACTORYWITHPARAM_H
+#include "CTAbstractFactoryWithParam.h"
+#define GUCEF_CORE_CTABSTRACTFACTORYWITHPARAM_H
+#endif /* GUCEF_CORE_CTABSTRACTFACTORYWITHPARAM_H ? */
 
-#ifndef GUCEF_PUBSUB_CPUBSUBCLIENTFACTORY_H
-#include "gucefPUBSUB_CPubSubClientFactory.h"
-#define GUCEF_PUBSUB_CPUBSUBCLIENTFACTORY_H
-#endif /* GUCEF_PUBSUB_CPUBSUBCLIENTFACTORY_H ? */
+#ifndef GUCEF_PUBSUB_CIPUBSUBJOURNAL_H
+#include "gucefPUBSUB_CIPubSubJournal.h"    
+#define GUCEF_PUBSUB_CIPUBSUBJOURNAL_H
+#endif /* GUCEF_PUBSUB_CIPUBSUBJOURNAL_H ? */
 
-#ifndef GUCEF_PUBSUB_CPUBSUBBOOKMARKPERSISTENCEFACTORY_H
-#include "gucefPUBSUB_CPubSubBookmarkPersistenceFactory.h"
-#define GUCEF_PUBSUB_CPUBSUBBOOKMARKPERSISTENCEFACTORY_H
-#endif /* GUCEF_PUBSUB_CPUBSUBBOOKMARKPERSISTENCEFACTORY_H ? */
-
-#ifndef GUCEF_PUBSUB_CPUBSUBJOURNALFACTORY_H
-#include "gucefPUBSUB_CPubSubJournalFactory.h"
-#define GUCEF_PUBSUB_CPUBSUBJOURNALFACTORY_H
-#endif /* GUCEF_PUBSUB_CPUBSUBJOURNALFACTORY_H ? */
+#ifndef GUCEF_PUBSUB_CPUBSUBJOURNALCONFIG_H
+#include "gucefPUBSUB_CPubSubJournalConfig.h"
+#define GUCEF_PUBSUB_CPUBSUBJOURNALCONFIG_H
+#endif /* GUCEF_PUBSUB_CPUBSUBJOURNALCONFIG_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -65,39 +60,7 @@ namespace PUBSUB {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-class GUCEF_PUBSUB_EXPORT_CPP CPubSubGlobal
-{
-    public:
-
-    static CPubSubGlobal* Instance( void );
-
-    CPubSubClientFactory& GetPubSubClientFactory( void );
-
-    CPubSubBookmarkPersistenceFactory& GetPubSubBookmarkPersistenceFactory( void );
-
-    CPubSubJournalFactory& GetPubSubJournalFactory( void );
-
-    private:
-    friend class CModule;
-
-    static void Deinstance( void );
-
-    void Initialize( void );
-
-    CPubSubGlobal( void );
-    CPubSubGlobal( const CPubSubGlobal& src );
-    ~CPubSubGlobal();
-    CPubSubGlobal& operator=( const CPubSubGlobal& src );
-
-    private:
-
-    CPubSubClientFactory* m_pubsubClientFactory;
-    CPubSubBookmarkPersistenceFactory* m_pubsubBookmarkPersistenceFactory;
-    CPubSubJournalFactory* m_pubsubJournalFactory;
-
-    static MT::CMutex g_dataLock;
-    static CPubSubGlobal* g_instance;
-};
+typedef CORE::CTAbstractFactoryWithParam< CORE::CString, CIPubSubJournal, CPubSubJournalConfig, MT::CMutex > CPubSubJournalFactory;
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -110,4 +73,4 @@ class GUCEF_PUBSUB_EXPORT_CPP CPubSubGlobal
 
 /*-------------------------------------------------------------------------*/
 
-#endif /* GUCEF_PUBSUB_CPUBSUBGLOBAL_H ? */
+#endif /* GUCEF_PUBSUB_CPUBSUBJOURNALFACTORY_H ? */

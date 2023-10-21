@@ -121,8 +121,8 @@ CResArchive::GetFile( const VFS::CString& file      ,
     if ( *mode != 'r' ) 
         return VFS::TBasicVfsResourcePtr();
 
-    CORE::CIOAccess* fileAccess = LoadFile( file, memLoadSize );
-    if ( NULL != fileAccess )
+    CORE::IOAccessPtr fileAccess = LoadFile( file, memLoadSize );
+    if ( !fileAccess.IsNULL() )
     {
         // Create path to file
         CORE::CString filePath = m_archivePath;
@@ -355,7 +355,7 @@ CResArchive::GetResourceInfo( CORE::Int32 resourceId ,
 
 /*-------------------------------------------------------------------------*/
 
-CORE::CIOAccess*
+CORE::IOAccessPtr
 CResArchive::LoadFile( const VFS::CString& file      ,
                        const VFS::UInt32 memLoadSize ) const
 {GUCEF_TRACE;
@@ -365,7 +365,7 @@ CResArchive::LoadFile( const VFS::CString& file      ,
     typeIdStr = typeIdStr.CutChars( 3, true, 0 );
     CORE::UInt32 typeId = CORE::StringToUInt32( typeIdStr );
     if ( typeId != m_index.recordType )
-        return false;
+        return CORE::IOAccessPtr();
     
     CORE::Int32 offset = 0;
     CORE::Int32 size = 0;
@@ -374,12 +374,12 @@ CResArchive::LoadFile( const VFS::CString& file      ,
                            offset     ,
                            size       ) )
     {
-        return NULL;
+        return CORE::IOAccessPtr();
     }
         
     if ( (CORE::UInt32) size <= memLoadSize )
     {
-        CORE::CDynamicBufferAccess* memBuffer = new CORE::CDynamicBufferAccess();
+        CORE::DynamicBufferAccessPtr memBuffer( GUCEF_NEW CORE::CDynamicBufferAccess() );
         if ( memBuffer->LoadContentFromFile( m_resPath, offset, size ) )
         {
             return memBuffer;
@@ -387,14 +387,14 @@ CResArchive::LoadFile( const VFS::CString& file      ,
     }
     else
     {
-        CORE::CSubFileAccess* subFile = new CORE::CSubFileAccess();
+        CORE::SubFileAccessPtr subFile( GUCEF_NEW CORE::CSubFileAccess() );
         if ( subFile->Load( m_resPath, offset, size ) )
         {
             return subFile;
         }
     }
 
-    return NULL;
+    return CORE::IOAccessPtr();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -403,14 +403,14 @@ VFS::CString
 CResArchive::GetFileHash( const VFS::CString& file ) const
 {GUCEF_TRACE;
 
-    CORE::CIOAccess* fileAccess = LoadFile( file, 102400 );
-    if ( NULL != fileAccess )
+    CORE::IOAccessPtr fileAccess = LoadFile( file, 102400 );
+    if ( !fileAccess.IsNULL() )
     {
         VFS::UInt8 digest[ 16 ];
         if ( 0 != CORE::md5fromfile( fileAccess->CStyleAccess() ,
                                      digest                     ) )
         {
-            delete fileAccess;
+            fileAccess.Unlink();
 
             char md5_str[ 48 ];
             CORE::md5tostring( digest, md5_str );
@@ -419,7 +419,7 @@ CResArchive::GetFileHash( const VFS::CString& file ) const
             return md5Str;
         }
 
-        delete fileAccess;
+        fileAccess.Unlink();
     }
     return VFS::CString();
 }
@@ -582,10 +582,11 @@ void
 CResArchive::DestroyObject( VFS::CVFSHandle* objectToBeDestroyed ) const
 {GUCEF_TRACE;
 
-    CORE::CIOAccess* ioAccess = objectToBeDestroyed->GetAccess();
-    if ( NULL != ioAccess )
-        delete ioAccess;
-    delete objectToBeDestroyed;
+    if ( GUCEF_NULL != objectToBeDestroyed )
+    {
+        objectToBeDestroyed->GetAccess().Unlink();
+        GUCEF_DELETE objectToBeDestroyed;
+    }    
 }
 
 /*-------------------------------------------------------------------------//

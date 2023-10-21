@@ -27,6 +27,7 @@
 //-------------------------------------------------------------------------*/
 
 #include <stdio.h>
+#include <map>
 
 #ifndef GUCEF_CORE_CFILEACCESS_H
 #include "CFileAccess.h"

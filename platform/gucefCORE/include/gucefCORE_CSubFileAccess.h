@@ -52,6 +52,8 @@ class GUCEF_CORE_PUBLIC_CPP CSubFileAccess : public CIOAccess
 {
     public:
 
+    typedef CTSharedPtr< CSubFileAccess, MT::CMutex >       SubFileAccessPtr;
+
     CSubFileAccess( void );
 
     virtual ~CSubFileAccess() GUCEF_VIRTUAL_OVERRIDE;
@@ -148,6 +150,8 @@ class GUCEF_CORE_PUBLIC_CPP CSubFileAccess : public CIOAccess
     UInt64 m_offset;
 };
 
+typedef CSubFileAccess::SubFileAccessPtr    SubFileAccessPtr;
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //
@@ -160,14 +164,3 @@ class GUCEF_CORE_PUBLIC_CPP CSubFileAccess : public CIOAccess
 /*-------------------------------------------------------------------------*/
 
 #endif /* GUCEF_CORE_CSUBFILEACCESS_H ? */
-
-/*-------------------------------------------------------------------------//
-//                                                                         //
-//      Info & Changes                                                     //
-//                                                                         //
-//-------------------------------------------------------------------------//
-
-- 25-08-2005 :
-        - Dinand: created this class
-
------------------------------------------------------------------------------*/

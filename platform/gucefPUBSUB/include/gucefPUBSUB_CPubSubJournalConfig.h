@@ -16,8 +16,8 @@
  *  limitations under the License.
  */
 
-#ifndef GUCEF_PUBSUB_CPUBSUBGLOBAL_H
-#define GUCEF_PUBSUB_CPUBSUBGLOBAL_H
+#ifndef GUCEF_PUBSUB_CPUBSUBJOURNALCONFIG_H
+#define GUCEF_PUBSUB_CPUBSUBJOURNALCONFIG_H
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -25,30 +25,25 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#ifndef GUCEF_MT_CMUTEX_H
-#include "gucefMT_CMutex.h"
-#define GUCEF_MT_CMUTEX_H
-#endif /* GUCEF_MT_CMUTEX_H ? */
+#ifndef GUCEF_CORE_CICONFIGURABLE_H
+#include "gucefCORE_CIConfigurable.h"
+#define GUCEF_CORE_CICONFIGURABLE_H
+#endif /* GUCEF_CORE_CICONFIGURABLE_H ? */
+
+#ifndef GUCEF_CORE_CURI_H
+#include "gucefCORE_CUri.h"
+#define GUCEF_CORE_CURI_H
+#endif /* GUCEF_CORE_CURI_H ? */
+
+#ifndef GUCEF_CORE_CDATANODE_H
+#include "CDataNode.h"
+#define GUCEF_CORE_CDATANODE_H
+#endif /* GUCEF_CORE_CDATANODE_H ? */
 
 #ifndef GUCEF_PUBSUB_MACROS_H
-#include "gucefPUBSUB_macros.h"      /* often used gucefCOMCORE macros */
+#include "gucefPUBSUB_macros.h"    
 #define GUCEF_PUBSUB_MACROS_H
 #endif /* GUCEF_PUBSUB_MACROS_H ? */
-
-#ifndef GUCEF_PUBSUB_CPUBSUBCLIENTFACTORY_H
-#include "gucefPUBSUB_CPubSubClientFactory.h"
-#define GUCEF_PUBSUB_CPUBSUBCLIENTFACTORY_H
-#endif /* GUCEF_PUBSUB_CPUBSUBCLIENTFACTORY_H ? */
-
-#ifndef GUCEF_PUBSUB_CPUBSUBBOOKMARKPERSISTENCEFACTORY_H
-#include "gucefPUBSUB_CPubSubBookmarkPersistenceFactory.h"
-#define GUCEF_PUBSUB_CPUBSUBBOOKMARKPERSISTENCEFACTORY_H
-#endif /* GUCEF_PUBSUB_CPUBSUBBOOKMARKPERSISTENCEFACTORY_H ? */
-
-#ifndef GUCEF_PUBSUB_CPUBSUBJOURNALFACTORY_H
-#include "gucefPUBSUB_CPubSubJournalFactory.h"
-#define GUCEF_PUBSUB_CPUBSUBJOURNALFACTORY_H
-#endif /* GUCEF_PUBSUB_CPUBSUBJOURNALFACTORY_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -65,38 +60,38 @@ namespace PUBSUB {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-class GUCEF_PUBSUB_EXPORT_CPP CPubSubGlobal
+/**
+ *  Class providing construction configuration options for pub-sub clients
+ */
+class GUCEF_PUBSUB_EXPORT_CPP CPubSubJournalConfig : public CORE::CIConfigurable
 {
     public:
 
-    static CPubSubGlobal* Instance( void );
+    bool useJournal;                                /**< whether to use a journal or not */
+    CORE::CString journalType;                      /**< the string form type name of the pub-sub journal */
+    CORE::CUri journalResource;                     /**< where to find the journal resource */
 
-    CPubSubClientFactory& GetPubSubClientFactory( void );
+    CPubSubJournalConfig( void );
 
-    CPubSubBookmarkPersistenceFactory& GetPubSubBookmarkPersistenceFactory( void );
+    CPubSubJournalConfig( const CPubSubJournalConfig& src );
 
-    CPubSubJournalFactory& GetPubSubJournalFactory( void );
+    virtual ~CPubSubJournalConfig();
 
-    private:
-    friend class CModule;
+    CPubSubJournalConfig& operator=( const CPubSubJournalConfig& src );
 
-    static void Deinstance( void );
+    /**
+     *      @param cfg the data node structure where you'd like to serialize the config to
+     *      @return wheter storing the config was successfull
+     */
+    virtual bool SaveConfig( CORE::CDataNode& cfg ) const GUCEF_VIRTUAL_OVERRIDE;
 
-    void Initialize( void );
+    /**
+     *      @param cfg pertinent node in the config document from which to load the config
+     *      @return success or failure to load all required settings correctly from the given config
+     */
+    virtual bool LoadConfig( const CORE::CDataNode& cfg ) GUCEF_VIRTUAL_OVERRIDE;
 
-    CPubSubGlobal( void );
-    CPubSubGlobal( const CPubSubGlobal& src );
-    ~CPubSubGlobal();
-    CPubSubGlobal& operator=( const CPubSubGlobal& src );
-
-    private:
-
-    CPubSubClientFactory* m_pubsubClientFactory;
-    CPubSubBookmarkPersistenceFactory* m_pubsubBookmarkPersistenceFactory;
-    CPubSubJournalFactory* m_pubsubJournalFactory;
-
-    static MT::CMutex g_dataLock;
-    static CPubSubGlobal* g_instance;
+    virtual const CString& GetClassTypeName( void ) const GUCEF_VIRTUAL_OVERRIDE;
 };
 
 /*-------------------------------------------------------------------------//
@@ -110,4 +105,5 @@ class GUCEF_PUBSUB_EXPORT_CPP CPubSubGlobal
 
 /*-------------------------------------------------------------------------*/
 
-#endif /* GUCEF_PUBSUB_CPUBSUBGLOBAL_H ? */
+#endif /* GUCEF_PUBSUB_CPUBSUBJOURNALCONFIG_H ? */
+

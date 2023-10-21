@@ -56,6 +56,8 @@ class GUCEF_CORE_PUBLIC_CPP CDynamicBufferAccess : public CIOAccess
 {
     public:
 
+    typedef CTSharedPtr< CDynamicBufferAccess, MT::CMutex >         DynamicBufferAccessPtr;
+
     CDynamicBufferAccess( void );
     
     CDynamicBufferAccess( CDynamicBuffer* buffer                         ,
@@ -123,6 +125,9 @@ class GUCEF_CORE_PUBLIC_CPP CDynamicBufferAccess : public CIOAccess
                           UInt32 esize        ,
                           UInt32 elements     ) GUCEF_VIRTUAL_OVERRIDE;
 
+    virtual UInt64 Write( CORE::CIOAccess& sourceData ,
+                          Int64 bytesToWrite = -1     ) GUCEF_VIRTUAL_OVERRIDE;
+
     /**
      *      Get the current offset in bytes
      */
@@ -180,6 +185,10 @@ class GUCEF_CORE_PUBLIC_CPP CDynamicBufferAccess : public CIOAccess
     bool m_bufferWasConst;
 };
 
+/*-------------------------------------------------------------------------*/
+
+typedef CDynamicBufferAccess::DynamicBufferAccessPtr    DynamicBufferAccessPtr;
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //
@@ -192,14 +201,3 @@ class GUCEF_CORE_PUBLIC_CPP CDynamicBufferAccess : public CIOAccess
 /*-------------------------------------------------------------------------*/
 
 #endif /* GUCEF_CORE_CDYNAMICBUFFERACCESS_H ? */
-
-/*-------------------------------------------------------------------------//
-//                                                                         //
-//      Info & Changes                                                     //
-//                                                                         //
-//-------------------------------------------------------------------------//
-
-- 26-07-2006 :
-        - Dinand: Designed and implemented this class.
-
------------------------------------------------------------------------------*/

@@ -127,8 +127,8 @@ CVfsUriResourceAccessor::CreateResource( const CORE::CUri& uri ,
     TBasicVfsResourcePtr file = CVfsGlobal::Instance()->GetVfs().GetFile( fsPath, "wb", true );
     if ( !file.IsNULL() )
     {
-        CORE::CIOAccess* fileAccess = file->GetAccess();
-        if ( GUCEF_NULL != fileAccess ) 
+        CORE::IOAccessPtr fileAccess = file->GetAccess();
+        if ( !fileAccess.IsNULL() ) 
         {
             fileAccess->Open();
             fileAccess->Write( src );
@@ -183,8 +183,8 @@ CVfsUriResourceAccessor::GetResource( const CORE::CUri& uri        ,
     TBasicVfsResourcePtr file = CVfsGlobal::Instance()->GetVfs().GetFile( fsPath, "rb", false );
     if ( !file.IsNULL() )
     {
-        CORE::CIOAccess* fileAccess = file->GetAccess();
-        if ( GUCEF_NULL != fileAccess ) 
+        CORE::IOAccessPtr fileAccess = file->GetAccess();
+        if ( !fileAccess.IsNULL() )  
         {
             fileAccess->Open();
             destination.Open();
@@ -219,8 +219,8 @@ CVfsUriResourceAccessor::GetPartialResource( const CORE::CUri& uri        ,
     TBasicVfsResourcePtr file = CVfsGlobal::Instance()->GetVfs().GetFile( fsPath, "rb", false );
     if ( !file.IsNULL() )
     {
-        CORE::CIOAccess* fileAccess = file->GetAccess();
-        if ( GUCEF_NULL != fileAccess ) 
+        CORE::IOAccessPtr fileAccess = file->GetAccess();
+        if ( !fileAccess.IsNULL() ) 
         {
             fileAccess->Open();
             if ( 0 != fileAccess->Seek( SEEK_SET, byteOffset ) )
@@ -236,6 +236,41 @@ CVfsUriResourceAccessor::GetPartialResource( const CORE::CUri& uri        ,
     }
 
     GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "FileSystemUriResourceAccessor:GetResource: Cannot obtain access to resource: " + fsPath );
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool 
+CVfsUriResourceAccessor::GetResourceAccess( const CORE::CUri& uri               ,
+                                            CORE::IOAccessPtr& accessToResource ,
+                                            TURI_RESOURCEACCESS_MODE mode       )
+{GUCEF_TRACE;
+
+    if ( SchemeName != uri.GetScheme() )
+    {
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "VfsUriResourceAccessor:GetResourceAccess: Unsupported scheme " + uri.GetScheme() );
+        return false;
+    }
+
+    CString fsPath = uri.GetAuthorityAndPath();
+    const char* accessMode = ResourceAccessModeStr( mode );
+
+    TBasicVfsResourcePtr file = CVfsGlobal::Instance()->GetVfs().GetFile( fsPath, accessMode, false );
+    if ( !file.IsNULL() )
+    {
+        CORE::IOAccessPtr fileAccess = file->GetAccess();
+        if ( !fileAccess.IsNULL() ) 
+        {
+            fileAccess->Open();
+
+            accessToResource = fileAccess;
+            GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "VfsUriResourceAccessor:GetResourceAccess: Obtained access to file " + fsPath );
+            return true;         
+        }
+    }
+
+    GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "VfsUriResourceAccessor:GetResource: Cannot obtain access to resource: " + fsPath );
     return false;
 }
 
@@ -290,8 +325,8 @@ CVfsUriResourceAccessor::UpdateResource( const CORE::CUri& uri ,
     TBasicVfsResourcePtr file = CVfsGlobal::Instance()->GetVfs().GetFile( fsPath, "wb", true );
     if ( !file.IsNULL() )
     {
-        CORE::CIOAccess* fileAccess = file->GetAccess();
-        if ( GUCEF_NULL != fileAccess ) 
+        CORE::IOAccessPtr fileAccess = file->GetAccess();
+        if ( !fileAccess.IsNULL() )  
         {
             fileAccess->Open();
             fileAccess->Write( src );
@@ -324,8 +359,8 @@ CVfsUriResourceAccessor::UpdatePartialResource( const CORE::CUri& uri ,
     TBasicVfsResourcePtr file = CVfsGlobal::Instance()->GetVfs().GetFile( fsPath, "rb+", false );
     if ( !file.IsNULL() )
     {
-        CORE::CIOAccess* fileAccess = file->GetAccess();
-        if ( GUCEF_NULL != fileAccess ) 
+        CORE::IOAccessPtr fileAccess = file->GetAccess();
+        if ( !fileAccess.IsNULL() ) 
         {
             fileAccess->Open();
             if ( 0 != fileAccess->Seek( SEEK_SET, byteOffset ) )
@@ -361,8 +396,8 @@ CVfsUriResourceAccessor::UpdatePartialResource( const CORE::CUri& uri    ,
     TBasicVfsResourcePtr file = CVfsGlobal::Instance()->GetVfs().GetFile( fsPath, "wb+", true ); // we will use append mode
     if ( !file.IsNULL() )
     {
-        CORE::CIOAccess* fileAccess = file->GetAccess();
-        if ( GUCEF_NULL != fileAccess ) 
+        CORE::IOAccessPtr fileAccess = file->GetAccess();
+        if ( !fileAccess.IsNULL() ) 
         {
             fileAccess->Open();
             fileAccess->Write( src );

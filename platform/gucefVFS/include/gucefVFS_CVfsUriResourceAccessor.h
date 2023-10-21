@@ -73,6 +73,10 @@ class GUCEF_VFS_PUBLIC_CPP CVfsUriResourceAccessor : public CORE::CUriResourceAc
                                      Int64 bytesToGet             ,
                                      CORE::CIOAccess& destination ) GUCEF_VIRTUAL_OVERRIDE;
 
+    virtual bool GetResourceAccess( const CORE::CUri& uri               ,
+                                    CORE::IOAccessPtr& accessToResource ,
+                                    TURI_RESOURCEACCESS_MODE mode       ) GUCEF_VIRTUAL_OVERRIDE;
+
     virtual bool GetResourceMetaData( const CORE::CUri& uri             ,
                                       CORE::CResourceMetaData& metaData ) GUCEF_VIRTUAL_OVERRIDE;
 

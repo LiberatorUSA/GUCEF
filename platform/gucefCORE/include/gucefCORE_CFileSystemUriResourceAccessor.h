@@ -64,6 +64,10 @@ class GUCEF_CORE_PUBLIC_CPP CFileSystemUriResourceAccessor : public CUriResource
                                      Int64 bytesToGet       ,
                                      CIOAccess& destination ) GUCEF_VIRTUAL_OVERRIDE;
 
+    virtual bool GetResourceAccess( const CUri& uri               ,
+                                    IOAccessPtr& accessToResource ,
+                                    TURI_RESOURCEACCESS_MODE mode ) GUCEF_VIRTUAL_OVERRIDE;
+
     virtual bool GetResourceMetaData( const CUri& uri             ,
                                       CResourceMetaData& metaData ) GUCEF_VIRTUAL_OVERRIDE;
 

@@ -502,7 +502,7 @@ GUCEF_OSMAIN_BEGIN
                                                 CORE::CFileAccess extractedFile;
                                                 if ( extractedFile.Open( extractedFilePath, "wb" ) )
                                                 {
-                                                    CORE::CIOAccess* fileAccess = file->GetAccess();
+                                                    CORE::IOAccessPtr fileAccess = file->GetAccess();
                                                     CORE::UInt32 fileSize = fileAccess->GetSize();
 
                                                     // Skip ITV header
@@ -608,7 +608,7 @@ GUCEF_OSMAIN_BEGIN
                                                 CORE::CFileAccess extractedFile;
                                                 if ( extractedFile.Open( extractedFilePath, "wb" ) )
                                                 {
-                                                    CORE::CIOAccess* fileAccess = file->GetAccess();
+                                                    CORE::IOAccessPtr fileAccess = file->GetAccess();
                                                     CORE::UInt32 fileSize = fileAccess->GetSize();
                                                     CORE::UInt32 bytesExtracted = extractedFile.Write( *fileAccess );
                                                     extractedFile.Close();

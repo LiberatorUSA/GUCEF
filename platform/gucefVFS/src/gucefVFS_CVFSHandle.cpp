@@ -40,7 +40,7 @@ namespace VFS {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-CVFSHandle::CVFSHandle( CORE::CIOAccess* fileAccess   ,
+CVFSHandle::CVFSHandle( CORE::IOAccessPtr fileAccess  ,
                         const CORE::CString& filename ,
                         const CORE::CString& filePath )
     : m_fileAccess( fileAccess ) ,
@@ -53,7 +53,7 @@ CVFSHandle::CVFSHandle( CORE::CIOAccess* fileAccess   ,
 
 /*-------------------------------------------------------------------------*/
 
-CVFSHandle::CVFSHandle( CORE::CIOAccess* fileAccess   ,
+CVFSHandle::CVFSHandle( CORE::IOAccessPtr fileAccess  ,
                         const CORE::CString& filename ,
                         const CORE::CString& filePath ,
                         TDynamicBufferPtr& bufferPtr  )
@@ -93,7 +93,7 @@ CVFSHandle::GetFilePath( void ) const
 
 /*-------------------------------------------------------------------------*/
 
-CORE::CIOAccess*
+CORE::IOAccessPtr
 CVFSHandle::GetAccess( void )
 {GUCEF_TRACE;
 

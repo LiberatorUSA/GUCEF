@@ -492,6 +492,24 @@ CPubSubClient::LoadConfig( const CORE::CDataNode& cfg )
     return false;
 }
 
+/*-------------------------------------------------------------------------*/
+
+bool
+CPubSubClient::SetJournal( CIPubSubJournalBasicPtr journal )
+{GUCEF_TRACE;
+
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
+CIPubSubJournalBasicPtr 
+CPubSubClient::GetJournal( void ) const
+{GUCEF_TRACE;
+
+    return CIPubSubJournalBasicPtr();
+}
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //

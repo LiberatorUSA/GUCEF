@@ -94,6 +94,7 @@ const CORE::CString CStoragePubSubClient::TypeName = "STORAGE";
 CStoragePubSubClient::CStoragePubSubClient( const PUBSUB::CPubSubClientConfig& config )
     : PUBSUB::CPubSubClient( config.pulseGenerator )
     , m_config()
+    , m_journal()
     , m_metricsTimer( GUCEF_NULL )
     , m_topicMap()
     , m_pubsubBookmarkPersistence()
@@ -108,6 +109,9 @@ CStoragePubSubClient::CStoragePubSubClient( const PUBSUB::CPubSubClientConfig& c
         GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "StoragePubSubClient: Failed to load config at construction" );
     }
 
+    if ( m_config.journalConfig.useJournal && !m_config.journal.IsNULL() )
+        m_journal = m_config.journal;
+
     if ( config.desiredFeatures.supportsMetrics )
     {
         m_metricsTimer = GUCEF_NEW CORE::CTimer( config.pulseGenerator, 1000 );
@@ -118,6 +122,9 @@ CStoragePubSubClient::CStoragePubSubClient( const PUBSUB::CPubSubClientConfig& c
     m_config.metricsPrefix += "storage.";
 
     RegisterEventHandlers();
+
+    if ( !m_journal.IsNULL() )
+        m_journal->AddClientCreatedJournalEntry();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -142,6 +149,12 @@ CStoragePubSubClient::~CStoragePubSubClient()
 
     GUCEF_DELETE m_metricsTimer;
     m_metricsTimer = GUCEF_NULL;
+
+    if ( !m_journal.IsNULL() )
+    {
+        m_journal->AddClientDestroyedJournalEntry();
+        m_journal.Unlink();
+    }
 
     SignalUpcomingDestruction();
 }
@@ -269,6 +282,11 @@ CStoragePubSubClient::CreateTopicAccess( PUBSUB::CPubSubClientTopicConfigPtr top
         if ( topicAccess->LoadConfig( *topicConfig ) )
         {
             m_topicMap[ topicConfig->topicName ] = topicAccess;
+
+            topicAccess->SetJournal( m_journal );
+            if ( !m_journal.IsNULL() )
+                m_journal->AddTopicCreatedJournalEntry();
+
             RegisterTopicEventHandlers( topicAccess );
         }
         else

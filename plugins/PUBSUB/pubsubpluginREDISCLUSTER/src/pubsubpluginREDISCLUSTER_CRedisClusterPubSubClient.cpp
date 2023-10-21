@@ -78,6 +78,7 @@ const CORE::CString CRedisClusterPubSubClient::TypeName = "ClusteredRedis";
 CRedisClusterPubSubClient::CRedisClusterPubSubClient( const PUBSUB::CPubSubClientConfig& config )
     : PUBSUB::CPubSubClient()
     , m_config()
+    , m_journal()
     , m_nodeMap()
     , m_redisContext()
     , m_redisErrorReplies( 0 )
@@ -95,6 +96,9 @@ CRedisClusterPubSubClient::CRedisClusterPubSubClient( const PUBSUB::CPubSubClien
     {
         GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "RedisClusterPubSubClient: Failed to load config at construction" );
     }
+
+    if ( m_config.journalConfig.useJournal && !m_config.journal.IsNULL() )
+        m_journal = m_config.journal;
 
     if ( m_config.pulseGenerator.IsNULL() )
         m_config.pulseGenerator = CORE::CCoreGlobal::Instance()->GetPulseGenerator();
@@ -125,6 +129,9 @@ CRedisClusterPubSubClient::CRedisClusterPubSubClient( const PUBSUB::CPubSubClien
                 true );
     
     RegisterEventHandlers();
+
+    if ( !m_journal.IsNULL() )
+        m_journal->AddClientCreatedJournalEntry();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -154,6 +161,13 @@ CRedisClusterPubSubClient::~CRedisClusterPubSubClient()
         ++i;
     }
     m_topicMap.clear();
+
+    if ( !m_journal.IsNULL() )
+    {
+        m_journal->AddClientDestroyedJournalEntry();
+        m_journal.Unlink();
+    }
+
     SignalUpcomingDestruction();
 }
 
@@ -256,6 +270,10 @@ CRedisClusterPubSubClient::CreateTopicAccess( PUBSUB::CPubSubClientTopicConfigPt
             if ( topicAccess->LoadConfig( *topicConfig ) )
             {
                 m_topicMap[ topicConfig->topicName ] = topicAccess;
+
+                topicAccess->SetJournal( m_journal );
+                if ( !m_journal.IsNULL() )
+                    m_journal->AddTopicCreatedJournalEntry();
 
                 GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "RedisClusterPubSubClient(" + CORE::PointerToString( this ) + "):CreateTopicAccess: created topic access for topic \"" + topicConfig->topicName + "\"" );
 
@@ -393,10 +411,14 @@ CRedisClusterPubSubClient::AutoCreateMultiTopicAccess( const TTopicConfigPtrToSt
                         tAccess = ( GUCEF_NEW CRedisClusterPubSubClientTopic( this ) )->CreateSharedPtr();
                         if ( tAccess->LoadConfig( *topicConfig ) )
                         {
-                            m_topicMap[ topicConfig->topicName ] = tAccess;
+                            m_topicMap[ topicConfig->topicName ] = tAccess;                            
                             topicAccess.insert( tAccess );
                             m_config.topics.push_back( topicConfig );
                             ++newTopicAccessCount;
+
+                            tAccess->SetJournal( m_journal );
+                            if ( !m_journal.IsNULL() )
+                                m_journal->AddTopicCreatedJournalEntry();
 
                             GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "RedisClusterPubSubClient(" + CORE::PointerToString( this ) + "):AutoCreateMultiTopicAccess: Auto created topic \"" +
                                     topicConfig->topicName + "\" based on template config \"" + templateTopicConfig->topicName + "\"" );

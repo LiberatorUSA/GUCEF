@@ -16,8 +16,8 @@
  *  limitations under the License.
  */
 
-#ifndef GUCEF_PUBSUB_CPUBSUBGLOBAL_H
-#define GUCEF_PUBSUB_CPUBSUBGLOBAL_H
+#ifndef GUCEF_PUBSUB_CBINARYPUBSUBJOURNAL_H
+#define GUCEF_PUBSUB_CBINARYPUBSUBJOURNAL_H
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -25,30 +25,25 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#ifndef GUCEF_MT_CMUTEX_H
-#include "gucefMT_CMutex.h"
-#define GUCEF_MT_CMUTEX_H
-#endif /* GUCEF_MT_CMUTEX_H ? */
+#ifndef GUCEF_CORE_CDYNAMICBUFFER_H
+#include "CDynamicBuffer.h"
+#define GUCEF_CORE_CDYNAMICBUFFER_H
+#endif /* GUCEF_CORE_CDYNAMICBUFFER_H ? */
 
-#ifndef GUCEF_PUBSUB_MACROS_H
-#include "gucefPUBSUB_macros.h"      /* often used gucefCOMCORE macros */
-#define GUCEF_PUBSUB_MACROS_H
-#endif /* GUCEF_PUBSUB_MACROS_H ? */
+#ifndef GUCEF_CORE_CIOACCESS_H
+#include "CIOAccess.h"
+#define GUCEF_CORE_CIOACCESS_H
+#endif /* GUCEF_CORE_CIOACCESS_H ? */
 
-#ifndef GUCEF_PUBSUB_CPUBSUBCLIENTFACTORY_H
-#include "gucefPUBSUB_CPubSubClientFactory.h"
-#define GUCEF_PUBSUB_CPUBSUBCLIENTFACTORY_H
-#endif /* GUCEF_PUBSUB_CPUBSUBCLIENTFACTORY_H ? */
+#ifndef GUCEF_PUBSUB_CIPUBSUBJOURNAL_H
+#include "gucefPUBSUB_CIPubSubJournal.h"    
+#define GUCEF_PUBSUB_CIPUBSUBJOURNAL_H
+#endif /* GUCEF_PUBSUB_CIPUBSUBJOURNAL_H ? */
 
-#ifndef GUCEF_PUBSUB_CPUBSUBBOOKMARKPERSISTENCEFACTORY_H
-#include "gucefPUBSUB_CPubSubBookmarkPersistenceFactory.h"
-#define GUCEF_PUBSUB_CPUBSUBBOOKMARKPERSISTENCEFACTORY_H
-#endif /* GUCEF_PUBSUB_CPUBSUBBOOKMARKPERSISTENCEFACTORY_H ? */
-
-#ifndef GUCEF_PUBSUB_CPUBSUBJOURNALFACTORY_H
-#include "gucefPUBSUB_CPubSubJournalFactory.h"
-#define GUCEF_PUBSUB_CPUBSUBJOURNALFACTORY_H
-#endif /* GUCEF_PUBSUB_CPUBSUBJOURNALFACTORY_H ? */
+#ifndef GUCEF_PUBSUB_CPUBSUBJOURNALCONFIG_H
+#include "gucefPUBSUB_CPubSubJournalConfig.h"    
+#define GUCEF_PUBSUB_CPUBSUBJOURNALCONFIG_H
+#endif /* GUCEF_PUBSUB_CPUBSUBJOURNALCONFIG_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -65,38 +60,40 @@ namespace PUBSUB {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-class GUCEF_PUBSUB_EXPORT_CPP CPubSubGlobal
+/**
+ *  Class providing implementing a binary pub-sub messaging journal to trace what happened
+ *  This differs from a regular log in that the more specific nature allows performance optimizations to be applied
+ *  and as such allows per message tracing without the overhead of a regular log
+ */
+class GUCEF_PUBSUB_EXPORT_CPP CBinaryPubSubJournal : public CIPubSubJournal
 {
     public:
 
-    static CPubSubGlobal* Instance( void );
+    static const CORE::CString JournalType;
 
-    CPubSubClientFactory& GetPubSubClientFactory( void );
+    CBinaryPubSubJournal( void );
 
-    CPubSubBookmarkPersistenceFactory& GetPubSubBookmarkPersistenceFactory( void );
+    CBinaryPubSubJournal( const CPubSubJournalConfig& config );
 
-    CPubSubJournalFactory& GetPubSubJournalFactory( void );
+    virtual ~CBinaryPubSubJournal();
 
+    virtual bool ReadJournalEntry( UInt64& eventTimestamp    ,
+                                   TPubSubActionType& action ,
+                                   UInt64& msgActionId       ) GUCEF_VIRTUAL_OVERRIDE;
+
+    /**
+     *
+     */
+    virtual bool AddJournalEntry( UInt64 eventTimestamp    ,
+                                  TPubSubActionType action ,
+                                  UInt64 msgActionId       ) GUCEF_VIRTUAL_OVERRIDE;
+
+
+    void SetJournalResource( CORE::CIOAccess* journal );
+    
     private:
-    friend class CModule;
 
-    static void Deinstance( void );
-
-    void Initialize( void );
-
-    CPubSubGlobal( void );
-    CPubSubGlobal( const CPubSubGlobal& src );
-    ~CPubSubGlobal();
-    CPubSubGlobal& operator=( const CPubSubGlobal& src );
-
-    private:
-
-    CPubSubClientFactory* m_pubsubClientFactory;
-    CPubSubBookmarkPersistenceFactory* m_pubsubBookmarkPersistenceFactory;
-    CPubSubJournalFactory* m_pubsubJournalFactory;
-
-    static MT::CMutex g_dataLock;
-    static CPubSubGlobal* g_instance;
+    CORE::CIOAccess* m_journal; /**< the journal file */
 };
 
 /*-------------------------------------------------------------------------//
@@ -110,4 +107,4 @@ class GUCEF_PUBSUB_EXPORT_CPP CPubSubGlobal
 
 /*-------------------------------------------------------------------------*/
 
-#endif /* GUCEF_PUBSUB_CPUBSUBGLOBAL_H ? */
+#endif /* GUCEF_PUBSUB_CBINARYPUBSUBJOURNAL_H ? */

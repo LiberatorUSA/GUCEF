@@ -1236,7 +1236,8 @@ CVFS::LoadFile( CORE::CDataNode& destination    ,
     if ( codecRegistry.TryLookup( actualCodecToUse, codec, false ) && !codec.IsNULL() )
     {
         // Now pass the I/O access to the codec
-        if ( codec->BuildDataTree( &destination, fileReference->GetAccess() ) ) 
+        CORE::IOAccessPtr accessPtr = fileReference->GetAccess();
+        if ( codec->BuildDataTree( &destination, accessPtr.GetPointerAlways() ) ) 
         {
             return true;
         }

@@ -77,6 +77,16 @@ class GUCEF_CORE_PUBLIC_CPP CUriResourceAccessor
     typedef CUri::UriVector     UriVector;
     typedef CUri::UriSet        UriSet;
 
+    enum URI_RESOURCEACCESS_MODE : UInt8
+    {
+        URI_RESOURCEACCESS_MODE_UNDEFINED = 0,
+
+        URI_RESOURCEACCESS_MODE_READ,
+        URI_RESOURCEACCESS_MODE_WRITE,
+        URI_RESOURCEACCESS_MODE_APPEND
+    };
+    typedef enum URI_RESOURCEACCESS_MODE  TURI_RESOURCEACCESS_MODE;
+
     class GUCEF_CORE_PUBLIC_CPP CUriResourceAccessorOperations
     {
         public:
@@ -84,6 +94,9 @@ class GUCEF_CORE_PUBLIC_CPP CUriResourceAccessor
         bool getResource;
         bool getPartialResource;
         bool getResourceMetaData;
+        bool getResourceWriteAccess;
+        bool getResourceAppendAccess;
+        bool getResourceReadAccess;
         bool updateResource;
         bool updatePartialResource;
         bool deleteResource;
@@ -115,6 +128,10 @@ class GUCEF_CORE_PUBLIC_CPP CUriResourceAccessor
                                      UInt64 byteOffset      ,
                                      Int64 bytesToGet       ,
                                      CIOAccess& destination ) = 0;
+
+    virtual bool GetResourceAccess( const CUri& uri               ,
+                                    IOAccessPtr& accessToResource ,
+                                    TURI_RESOURCEACCESS_MODE mode ) = 0;
 
     virtual bool GetResourceMetaData( const CUri& uri             ,
                                       CResourceMetaData& metaData ) = 0;
@@ -152,6 +169,8 @@ class GUCEF_CORE_PUBLIC_CPP CUriResourceAccessor
                                                UriVector& resources   ,
                                                bool recursive         ,
                                                bool addCollectionUris ) = 0;
+
+    static const char* ResourceAccessModeStr( TURI_RESOURCEACCESS_MODE mode );
 
     CUriResourceAccessor( void ); /**< Doesn't do anything special atm. */
     CUriResourceAccessor( const CUriResourceAccessor& src ); /**< Doesn't do anything special atm. */

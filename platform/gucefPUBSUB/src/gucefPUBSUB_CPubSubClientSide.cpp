@@ -2390,9 +2390,14 @@ CPubSubClientSide::TopicLink::OnPubSubTopicMsgsPublished( CORE::CNotifier* notif
                             "):OnPubSubTopicMsgsPublished: Signaled receipt of message acknowledgement. publishActionId=" + CORE::ToString( msgTrackingEntry.publishActionId ) +
                             ". receiveActionId=" + CORE::ToString( msg->GetReceiveActionId() ) );
 
+                        UInt64 msgActionId = msg->GetReceiveActionId();
+
                         inFlightMsgs.erase( m );
                         if ( totalMsgsInFlight > 0 )
                             --totalMsgsInFlight;
+
+                        if ( !journal.IsNULL() )
+                            journal->AddMessageDeletedFromCacheJournalEntry( msgActionId );
                     }
                     else
                     {
@@ -2485,6 +2490,9 @@ CPubSubClientSide::TopicLink::OnPubSubTopicMsgsPublishFailure( CORE::CNotifier* 
             }
             else
             {
+                if ( !journal.IsNULL() )
+                    journal->AddMessageCacheMissJournalEntry( publishActionId );
+
                 // This should not happen
                 // Only understandable reasons are bad eventing from the backend or if the in-flight time-out is configured too aggressively
                 GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "PubSubClientSide(" + CORE::PointerToString( this ) +
@@ -2536,6 +2544,16 @@ CPubSubClientSide::TopicLink::Clear( void )
     metrics.Unlink();
     flowRouter = GUCEF_NULL;
     side = GUCEF_NULL;
+}
+
+/*-------------------------------------------------------------------------*/
+
+void 
+CPubSubClientSide::TopicLink::SetJournal( CIPubSubJournalBasicPtr newJournal )
+{GUCEF_TRACE;
+
+    MT::CScopeMutex lock( m_dataLock );    
+    journal = newJournal;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -2697,6 +2715,7 @@ CPubSubClientSide::ConfigureTopicLink( const CPubSubSideChannelSettings& pubSubS
         topicLink->SetClientFeatures( m_clientFeatures );
         topicLink->SetPubsubBookmarkPersistence( pubsubBookmarkPersistence );
         topicLink->SetPubsubBookmarkNamespace( m_bookmarkNamespace );
+        topicLink->SetJournal( topic->GetJournal() );
     }
 
     return true;
@@ -2900,6 +2919,26 @@ CPubSubClientSide::PerformPubSubClientSetup( bool hardReset )
         // Create and configure the pub-sub client
         pubSubConfig.pulseGenerator = GetPulseGenerator();
         pubSubConfig.metricsPrefix = m_sideSettings.metricsPrefix;
+
+        if ( pubSubConfig.journalConfig.useJournal )
+        {
+            if ( hardReset || pubSubConfig.journal.IsNULL() )
+            {
+                pubSubConfig.journal = CPubSubGlobal::Instance()->GetPubSubJournalFactory().Create( pubSubConfig.journalConfig.journalType, pubSubConfig.journalConfig );
+                if ( pubSubConfig.journal.IsNULL() )
+                {
+                    GUCEF_ERROR_LOG( CORE::LOGLEVEL_VERY_IMPORTANT, "PubSubClientSide(" + CORE::PointerToString( this ) +
+                        "):PerformPubSubClientSetup: Failed to create a pub-sub journal of type \"" + pubSubConfig.journalConfig.journalType + "\". No journaling capability" );
+                }
+                else
+                {
+                    GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientSide(" + CORE::PointerToString( this ) +
+                        "):PerformPubSubClientSetup: Created a pub-sub journal of type \"" + pubSubConfig.journalConfig.journalType + "\" for side with id " +
+                        GetSideId() );
+                }
+            }
+        }
+
         m_pubsubClient = CPubSubGlobal::Instance()->GetPubSubClientFactory().Create( pubSubConfig.pubsubClientType, pubSubConfig );
 
         if ( m_pubsubClient.IsNULL() )

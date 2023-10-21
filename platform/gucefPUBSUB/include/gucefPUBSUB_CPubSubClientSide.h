@@ -92,6 +92,11 @@
 #define GUCEF_PUBSUB_CPUBSUBCHANNELSETTINGS_H
 #endif /* GUCEF_PUBSUB_CPUBSUBCHANNELSETTINGS_H ? */
 
+#ifndef GUCEF_PUBSUB_CIPUBSUBJOURNAL_H
+#include "gucefPUBSUB_CIPubSubJournal.h"    
+#define GUCEF_PUBSUB_CIPUBSUBJOURNAL_H
+#endif /* GUCEF_PUBSUB_CIPUBSUBJOURNAL_H ? */
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //
@@ -351,6 +356,8 @@ class GUCEF_PUBSUB_EXPORT_CPP CPubSubClientSide : public CORE::CTaskConsumer
 
         CORE::CString GetMetricFriendlyTopicName( void ) const;
 
+        void SetJournal( CIPubSubJournalBasicPtr newJournal );
+
         void SetPubsubBookmarkPersistence( TIPubSubBookmarkPersistenceBasicPtr persistance );
         
         TIPubSubBookmarkPersistenceBasicPtr GetPubsubBookmarkPersistence( void ) const;
@@ -458,6 +465,7 @@ class GUCEF_PUBSUB_EXPORT_CPP CPubSubClientSide : public CORE::CTaskConsumer
         typedef CORE::CTEventHandlerFunctor< TopicLink >                            TEventCallback;
 
         CPubSubClientTopicBasicPtr topic;                                       /**< the actual backend topic access object */
+        CIPubSubJournalBasicPtr journal;                                        /**< the journal to use for tracing what happened */
         CPubSubClientTopic::TPublishActionIdVector currentPublishActionIds;     /**< temp placeholder to help prevent allocations per invocation */
         TUInt64ToMsgTrackingEntryMap inFlightMsgs;
         TUInt64Set publishFailedMsgs;
@@ -502,6 +510,7 @@ class GUCEF_PUBSUB_EXPORT_CPP CPubSubClientSide : public CORE::CTaskConsumer
     CPubSubFlowRouter* m_flowRouter;
     mutable bool m_isHealthy;
     bool m_connectOnTaskStart;
+    CIPubSubJournalBasicPtr m_journal;
     MT::CReadWriteLock m_rwdataLock;
 
     private:

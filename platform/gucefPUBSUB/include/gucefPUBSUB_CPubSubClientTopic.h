@@ -65,6 +65,11 @@
 #define GUCEF_PUBSUB_CBASICPUBSUBMSG_H
 #endif /* GUCEF_PUBSUB_CBASICPUBSUBMSG_H ? */
 
+#ifndef GUCEF_PUBSUB_CIPUBSUBJOURNAL_H
+#include "gucefPUBSUB_CIPubSubJournal.h"
+#define GUCEF_PUBSUB_CIPUBSUBJOURNAL_H
+#endif /* GUCEF_PUBSUB_CIPUBSUBJOURNAL_H ? */
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //
@@ -298,6 +303,13 @@ class GUCEF_PUBSUB_EXPORT_CPP CPubSubClientTopic : public CORE::CTSGNotifier
     virtual bool SaveConfig( PUBSUB::CPubSubClientTopicConfig& config ) const = 0;
 
     virtual bool LoadConfig( const PUBSUB::CPubSubClientTopicConfig& config ) = 0;
+
+    /**
+     *  Sets the journal implementation (if any) to be used by the client
+     */
+    virtual bool SetJournal( CIPubSubJournalBasicPtr journal );
+
+    virtual CIPubSubJournalBasicPtr GetJournal( void ) const;
 };
 
 /*-------------------------------------------------------------------------*/

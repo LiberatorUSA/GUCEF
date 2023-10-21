@@ -204,7 +204,7 @@ class CResArchive : public VFS::CArchive
     CResArchive( const CResArchive& src );
     CResArchive& operator=( const CResArchive& src );
 
-    CORE::CIOAccess*
+    CORE::IOAccessPtr
     LoadFile( const VFS::CString& file      ,
               const VFS::UInt32 memLoadSize ) const;
 
@@ -236,14 +236,3 @@ class CResArchive : public VFS::CArchive
 /*-------------------------------------------------------------------------*/
 
 #endif /* VFSPLUGIN_ITV_CZIPARCHIVE_H ? */
-
-/*-------------------------------------------------------------------------//
-//                                                                         //
-//      Info & Changes                                                     //
-//                                                                         //
-//-------------------------------------------------------------------------//
-
-- 04-05-2005 :
-        - Dinand: Initial version.
-
------------------------------------------------------------------------------*/

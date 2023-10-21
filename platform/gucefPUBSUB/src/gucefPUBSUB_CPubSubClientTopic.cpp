@@ -436,6 +436,24 @@ CPubSubClientTopic::IsSubscriptionAtEndOfData( void ) const
     return false;
 }
 
+/*-------------------------------------------------------------------------*/
+
+bool
+CPubSubClientTopic::SetJournal( CIPubSubJournalBasicPtr journal )
+{GUCEF_TRACE;
+
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
+CIPubSubJournalBasicPtr 
+CPubSubClientTopic::GetJournal( void ) const
+{GUCEF_TRACE;
+
+    return CIPubSubJournalBasicPtr();
+}
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //

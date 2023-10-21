@@ -202,6 +202,13 @@ class PUBSUBPLUGIN_REDISCLUSTER_PLUGIN_PRIVATE_CPP CRedisClusterPubSubClientTopi
 
     virtual void Shutdown( void );
 
+    /**
+     *  Sets the journal implementation (if any) to be used by the client
+     */
+    virtual bool SetJournal( PUBSUB::CIPubSubJournalBasicPtr journal ) GUCEF_VIRTUAL_OVERRIDE;
+
+    virtual PUBSUB::CIPubSubJournalBasicPtr GetJournal( void ) const GUCEF_VIRTUAL_OVERRIDE;
+
     protected:
 
     virtual MT::TLockStatus Lock( CORE::UInt32 lockWaitTimeoutInMs = GUCEF_MT_DEFAULT_LOCK_TIMEOUT_IN_MS ) const GUCEF_VIRTUAL_OVERRIDE;
@@ -278,6 +285,7 @@ class PUBSUBPLUGIN_REDISCLUSTER_PLUGIN_PRIVATE_CPP CRedisClusterPubSubClientTopi
     CORE::CString m_redisShardNodeId;
     CORE::CTimer* m_redisReconnectTimer;
     CRedisClusterPubSubClientTopicConfig m_config;
+    PUBSUB::CIPubSubJournalBasicPtr m_journal;
         
     RedisClusterPubSubClientTopicReaderPtr m_readerThread;
     bool m_needToTrackAcks;

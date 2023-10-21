@@ -128,36 +128,37 @@ CVFSURLHandler::Unregister( void )
 bool
 CVFSURLHandler::Activate( CORE::CURL& url )
 {GUCEF_TRACE;
-        assert( &url );
 
-        // Tell the data handlers we have begun our activation sequence
-        NotifyObservers( URLActivateEvent );
+    assert( &url );
 
-        // Obtain the file
-        TBasicVfsResourcePtr resource = m_vfs->GetFile( url.GetURL().SubstrToSubstr( "://" ), "rb", false );
-        if ( !resource.IsNULL() )
-        {
-                CORE::CIOAccess* access = resource->GetAccess();
-                if ( NULL == access )
-                {
-                    NotifyObservers( URLDataRetrievalErrorEvent );
-                    return false;
-                }
-                else
-                {
-                    // Pass the file data on to the data handlers
-                    NotifyObservers( URLDataRecievedEvent, access );
+    // Tell the data handlers we have begun our activation sequence
+    NotifyObservers( URLActivateEvent );
 
-                    NotifyObservers( URLAllDataRecievedEvent );
-                }
+    // Obtain the file
+    TBasicVfsResourcePtr resource = m_vfs->GetFile( url.GetURL().SubstrToSubstr( "://" ), "rb", false );
+    if ( !resource.IsNULL() )
+    {
+            CORE::IOAccessPtr access = resource->GetAccess();
+            if ( access.IsNULL() )
+            {
+                NotifyObservers( URLDataRetrievalErrorEvent );
+                return false;
+            }
+            else
+            {
+                // Pass the file data on to the data handlers
+                NotifyObservers( URLDataRecievedEvent, &access );
 
-                return true;
-        }
-        else
-        {
-            NotifyObservers( URLDataRetrievalErrorEvent );
-            return false;
-        }
+                NotifyObservers( URLAllDataRecievedEvent );
+            }
+
+            return true;
+    }
+    else
+    {
+        NotifyObservers( URLDataRetrievalErrorEvent );
+        return false;
+    }
 }
 
 /*-------------------------------------------------------------------------*/

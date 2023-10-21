@@ -182,6 +182,7 @@ class PUBSUBPLUGIN_STORAGE_PLUGIN_PRIVATE_CPP CStoragePubSubClient : public PUBS
     typedef std::map< CORE::CString, CStoragePubSubClientTopicPtr, std::less< CORE::CString >, basic_allocator< TStringAndTopicPtrPair > > TTopicMap;
 
     CStoragePubSubClientConfig m_config;
+    PUBSUB::CIPubSubJournalBasicPtr m_journal;
     CORE::CTimer* m_metricsTimer;
     TTopicMap m_topicMap;
     PUBSUB::TIPubSubBookmarkPersistenceBasicPtr m_pubsubBookmarkPersistence;

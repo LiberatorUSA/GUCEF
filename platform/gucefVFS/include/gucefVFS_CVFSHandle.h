@@ -80,18 +80,18 @@ class GUCEF_VFS_PUBLIC_CPP CVFSHandle
 
     typedef CORE::CTSharedPtr< CORE::CDynamicBuffer, MT::CMutex > TDynamicBufferPtr;
 
-    CVFSHandle( CORE::CIOAccess* fileAccess ,
-                const CString& filename     ,
-                const CString& filePath     );
+    CVFSHandle( CORE::IOAccessPtr fileAccess ,
+                const CString& filename      ,
+                const CString& filePath      );
 
-    CVFSHandle( CORE::CIOAccess* fileAccess  ,
+    CVFSHandle( CORE::IOAccessPtr fileAccess ,
                 const CString& filename      ,
                 const CString& filePath      ,
                 TDynamicBufferPtr& bufferPtr );
 
     ~CVFSHandle();
 
-    CORE::CIOAccess* GetAccess( void );
+    CORE::IOAccessPtr GetAccess( void );
 
     const CString& GetFilename( void ) const;
 
@@ -108,7 +108,7 @@ class GUCEF_VFS_PUBLIC_CPP CVFSHandle
     private:
 
     TDynamicBufferPtr m_bufferPtr;
-    CORE::CIOAccess* m_fileAccess;
+    CORE::IOAccessPtr m_fileAccess;
     CString m_filename;
     CString m_filePath;
 };

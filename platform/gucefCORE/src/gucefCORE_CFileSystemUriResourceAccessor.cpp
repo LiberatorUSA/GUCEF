@@ -188,6 +188,58 @@ CFileSystemUriResourceAccessor::GetResource( const CUri& uri        ,
 
 /*-------------------------------------------------------------------------*/
 
+bool 
+CFileSystemUriResourceAccessor::GetResourceAccess( const CUri& uri               ,
+                                                   IOAccessPtr& accessToResource ,
+                                                   TURI_RESOURCEACCESS_MODE mode )
+{GUCEF_TRACE;
+
+    if ( SchemeName != uri.GetScheme() )
+    {
+        GUCEF_ERROR_LOG( LOGLEVEL_NORMAL, "FileSystemUriResourceAccessor:GetResourceAccess: Unsupported scheme " + uri.GetScheme() );
+        return false;
+    }
+
+    CString fsPath = uri.GetAuthorityAndPath();
+
+    #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
+    fsPath = fsPath.ReplaceChar( '/', '\\' );
+    #endif
+
+    bool fileExists = FileExists( fsPath );
+
+    if ( fileExists )
+    {
+        FileAccessPtr fsFile( GUCEF_NEW CFileAccess() );
+        if ( !fsFile.IsNULL() )
+        {
+            const char* accessMode = ResourceAccessModeStr( mode );            
+            if ( fsFile->Open( fsPath, accessMode ) )
+            {
+                GUCEF_DEBUG_LOG( LOGLEVEL_NORMAL, "FileSystemUriResourceAccessor:GetResourceAccess: Obtained access to file " + fsPath );
+                return true;
+            }
+            else
+            {
+                GUCEF_ERROR_LOG( LOGLEVEL_NORMAL, "FileSystemUriResourceAccessor:GetResourceAccess: Cannot obtain access to file at: " + fsPath );
+                return false;
+            }
+        }
+        else
+        {
+            GUCEF_ERROR_LOG( LOGLEVEL_NORMAL, "FileSystemUriResourceAccessor:GetResourceAccess: Cannot allocate file access object" );
+            return false;
+        }
+    }
+    else
+    {
+        GUCEF_ERROR_LOG( LOGLEVEL_NORMAL, "FileSystemUriResourceAccessor:GetResourceAccess: file does not exist: " + fsPath );
+        return false;
+    }
+}
+
+/*-------------------------------------------------------------------------*/
+
 bool
 CFileSystemUriResourceAccessor::GetPartialResource( const CUri& uri        ,
                                                     UInt64 byteOffset      ,
