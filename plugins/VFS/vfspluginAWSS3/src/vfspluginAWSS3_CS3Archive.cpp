@@ -150,13 +150,13 @@ CS3Archive::StoreAsFile( const CORE::CString& filepath    ,
 /*-------------------------------------------------------------------------*/
 
 void
-CS3Archive::GetFileList( TStringVector& outputList           ,
-                         const VFS::CString& mountLocation   , 
-                         const VFS::CString& archiveLocation ,
-                         bool recursive                      ,
-                         bool includePathInFilename          ,
-                         const VFS::CString& nameFilter      ,
-                         UInt32 maxListEntries               ) const
+CS3Archive::GetFileList( TStringVector& outputList                  ,
+                         const VFS::CString& mountLocation          , 
+                         const VFS::CString& archiveLocation        ,
+                         bool recursive                             ,
+                         bool includePathInFilename                 ,
+                         const VFS::CString::StringSet& nameFilters ,
+                         UInt32 maxListEntries                      ) const
 {GUCEF_TRACE;
 
     // You need to mount a bucket to see its contents
@@ -165,13 +165,13 @@ CS3Archive::GetFileList( TStringVector& outputList           ,
 /*-------------------------------------------------------------------------*/
 
 void
-CS3Archive::GetDirList( TStringVector& outputList           ,
-                        const VFS::CString& mountLocation   , 
-                        const VFS::CString& archiveLocation ,
-                        bool recursive                      ,
-                        bool includeParentDirInName         ,
-                        const VFS::CString& nameFilter      ,
-                        UInt32 maxListEntries               ) const
+CS3Archive::GetDirList( TStringVector& outputList                  ,
+                        const VFS::CString& mountLocation          , 
+                        const VFS::CString& archiveLocation        ,
+                        bool recursive                             ,
+                        bool includeParentDirInName                ,
+                        const VFS::CString::StringSet& nameFilters ,
+                        UInt32 maxListEntries                      ) const
 {GUCEF_TRACE;
 
     // @TODO: handle archiveLocation & recursive
@@ -190,11 +190,9 @@ CS3Archive::GetDirList( TStringVector& outputList           ,
                     break;
                 
                 CORE::CString bucketName = bucket.GetName();
-                if ( !nameFilter.IsNULLOrEmpty() ) 
-                {
-                    if ( !bucketName.WildcardEquals( nameFilter ) )
-                        continue;
-                }
+
+                if ( !VFS::CVFS::FilterValidation( bucketName, nameFilters ) )
+                    continue;
                 
                 if ( includeParentDirInName )
                 {

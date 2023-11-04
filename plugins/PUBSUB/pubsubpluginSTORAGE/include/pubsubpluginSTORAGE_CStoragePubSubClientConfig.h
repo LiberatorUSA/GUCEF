@@ -68,6 +68,9 @@ class PUBSUBPLUGIN_STORAGE_PLUGIN_PRIVATE_CPP CStoragePubSubClientConfig : publi
     public:
     
     PUBSUB::CPubSubBookmarkPersistenceConfig pubsubBookmarkPersistenceConfig;
+    CORE::CString vfsStorageRootPath;
+    bool dirTopicDiscoveryIsRecursive;
+    bool includeDirParentInTopicName;
 
     
     CStoragePubSubClientConfig( void );

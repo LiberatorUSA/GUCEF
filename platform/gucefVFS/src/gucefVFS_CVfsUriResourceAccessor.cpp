@@ -494,7 +494,7 @@ CVfsUriResourceAccessor::ResolveResourcesInCollection( const CORE::CUri& uri  ,
     if ( recursive && addCollectionUris )
     {
         CVFS::TStringVector dirList;    
-        totalSuccess = CVfsGlobal::Instance()->GetVfs().GetDirList( dirList, fsPath, recursive, true ) && totalSuccess;
+        totalSuccess = CVfsGlobal::Instance()->GetVfs().GetDirList( dirList, fsPath, recursive, true, CString::EmptyStringSet ) && totalSuccess;
         resources.reserve( dirList.size() );
 
         CVFS::TStringVector::iterator i = dirList.begin();
@@ -511,7 +511,7 @@ CVfsUriResourceAccessor::ResolveResourcesInCollection( const CORE::CUri& uri  ,
     }
 
     CVFS::TStringVector fileList;    
-    totalSuccess = CVfsGlobal::Instance()->GetVfs().GetFileList( fileList, fsPath, recursive, true ) && totalSuccess;
+    totalSuccess = CVfsGlobal::Instance()->GetVfs().GetFileList( fileList, fsPath, recursive, true, CString::EmptyStringSet ) && totalSuccess;
     resources.reserve( resources.capacity() + fileList.size() );
 
     CVFS::TStringVector::iterator n = fileList.begin();

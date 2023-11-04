@@ -136,7 +136,7 @@ CFileSystemArchive::LoadArchive( const CArchiveSettings& settings )
 
         // Get a list of all files from the root onward
         TStringVector files;
-        GetFileList( files, settings.GetMountPath(), CString::Empty, true, true, CString::Empty );
+        GetFileList( files, settings.GetMountPath(), CString::Empty, true, true, CString::EmptyStringSet );
 
         // Find mountable types
         TStringVector::iterator i = files.begin();
@@ -260,7 +260,7 @@ CFileSystemArchive::GetListFromRoot( const CORE::CString& actualFsDir  ,
                                      const CString& vfsArchiveLocation ,
                                      bool recursive                    ,
                                      bool includePathInFilename        ,
-                                     const CString& filter             ,
+                                     const CString::StringSet& filters ,
                                      TStringVector& outputList         ,
                                      bool addFiles                     ,
                                      bool addDirs                      ) const
@@ -286,7 +286,7 @@ CFileSystemArchive::GetListFromRoot( const CORE::CString& actualFsDir  ,
                     if ( filename != '.' && filename != ".." )
                     {
                         if ( CVFS::FilterValidation( filename ,
-                                                     filter   ) )
+                                                     filters  ) )
                         {
                             if ( !includePathInFilename )
                             {
@@ -324,7 +324,7 @@ CFileSystemArchive::GetListFromRoot( const CORE::CString& actualFsDir  ,
                                          vfsSubdir             ,
                                          recursive             ,
                                          includePathInFilename ,
-                                         filter                ,
+                                         filters               ,
                                          outputList            ,
                                          true                  ,
                                          false                 );
@@ -341,13 +341,13 @@ CFileSystemArchive::GetListFromRoot( const CORE::CString& actualFsDir  ,
 /*-------------------------------------------------------------------------*/
 
 void
-CFileSystemArchive::GetFileList( TStringVector& outputList      ,
-                                 const CString& mountLocation   , 
-                                 const CString& archiveLocation ,
-                                 bool recursive                 ,
-                                 bool includePathInFilename     ,
-                                 const CString& nameFilter      ,
-                                 UInt32 maxListEntries          ) const
+CFileSystemArchive::GetFileList( TStringVector& outputList             ,
+                                 const CString& mountLocation          , 
+                                 const CString& archiveLocation        ,
+                                 bool recursive                        ,
+                                 bool includePathInFilename            ,
+                                 const CString::StringSet& nameFilters ,
+                                 UInt32 maxListEntries                 ) const
 {GUCEF_TRACE;
 
     // Translate to a local filesystem path
@@ -361,7 +361,7 @@ CFileSystemArchive::GetFileList( TStringVector& outputList      ,
                      archiveLocation       ,
                      recursive             ,
                      includePathInFilename ,
-                     nameFilter            ,
+                     nameFilters           ,
                      outputList            ,
                      true                  ,
                      false                 );
@@ -370,13 +370,13 @@ CFileSystemArchive::GetFileList( TStringVector& outputList      ,
 /*-------------------------------------------------------------------------*/
 
 void
-CFileSystemArchive::GetDirList( TStringVector& outputList      ,
-                                const CString& mountLocation   , 
-                                const CString& archiveLocation ,
-                                bool recursive                 ,
-                                bool includePathInFilename     ,
-                                const CString& nameFilter      ,
-                                UInt32 maxListEntries          ) const
+CFileSystemArchive::GetDirList( TStringVector& outputList             ,
+                                const CString& mountLocation          , 
+                                const CString& archiveLocation        ,
+                                bool recursive                        ,
+                                bool includePathInFilename            ,
+                                const CString::StringSet& nameFilters ,
+                                UInt32 maxListEntries                 ) const
 {GUCEF_TRACE;
 
     // Translate to a local filesystem path
@@ -390,7 +390,7 @@ CFileSystemArchive::GetDirList( TStringVector& outputList      ,
                      archiveLocation       ,
                      recursive             ,
                      includePathInFilename ,
-                     nameFilter            ,
+                     nameFilters           ,
                      outputList            ,
                      false                 ,
                      true                  );

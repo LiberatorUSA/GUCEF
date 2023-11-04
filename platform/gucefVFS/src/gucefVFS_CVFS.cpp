@@ -1980,6 +1980,8 @@ CVFS::FilterValidation( const CORE::CString& filename ,
 
     if ( filter.Length() > 0 )
     {
+        // perform a 'glob pattern' match which is just wildcard character based segment matching
+
         CVFS::TStringVector segs = filter.ParseElements( '*', false );
         VFS::Int32 lastSeg = 0;
         CVFS::TStringVector::iterator i = segs.begin();
@@ -1992,6 +1994,33 @@ CVFS::FilterValidation( const CORE::CString& filename ,
         }
         return true;
     }
+    
+    // no filter passed means no filtering should be applied
+    return true;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CVFS::FilterValidation( const CORE::CString& filename           ,
+                        const CORE::CString::StringSet& filters )
+{GUCEF_TRACE;
+
+    if ( !filters.empty() )
+    {
+        CORE::CString::StringSet::const_iterator i = filters.begin();
+        while ( i != filters.end() )
+        {        
+            // we just need to match 1 of the filters passed
+            if ( FilterValidation( filename, (*i) ) )
+                return true;
+
+            ++i;
+        }
+        return false;
+    }
+    
+    // no filters passed means no filtering should be applied
     return true;
 }
 
@@ -2070,6 +2099,28 @@ CVFS::GetFileList( TStringVector& outputList      ,
                    UInt32 maxListEntries          ) const
 {GUCEF_TRACE;
 
+    CORE::CString::StringSet filters;
+    filters.insert( nameFilter );
+
+    return GetFileList( outputList            , 
+                        location              ,
+                        recursive             ,
+                        includePathInFilename ,
+                        filters               ,
+                        maxListEntries        );
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CVFS::GetFileList( TStringVector& outputList             ,
+                   const CString& location               , 
+                   bool recursive                        ,
+                   bool includePathInFilename            ,
+                   const CString::StringSet& nameFilters ,
+                   UInt32 maxListEntries                 ) const
+{GUCEF_TRACE;
+
     bool totalSuccess = true;
     CString path = ConformVfsDirPath( location );
     
@@ -2089,7 +2140,7 @@ CVFS::GetFileList( TStringVector& outputList      ,
                                                     mountLink.remainder             ,
                                                     recursive                       ,
                                                     includePathInFilename           ,
-                                                    nameFilter                      ,
+                                                    nameFilters                     ,
                                                     maxListEntries                  );
         ++i;
     }
@@ -2106,6 +2157,28 @@ CVFS::GetDirList( TStringVector& outputList  ,
                   bool includePathInFilename ,
                   const CString& nameFilter  ,
                   UInt32 maxListEntries      ) const
+{GUCEF_TRACE;
+
+    CORE::CString::StringSet filters;
+    filters.insert( nameFilter );
+
+    return GetDirList( outputList            , 
+                       location              ,
+                       recursive             ,
+                       includePathInFilename ,
+                       filters               ,
+                       maxListEntries        );
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CVFS::GetDirList( TStringVector& outputList             ,
+                  const CString& location               ,
+                  bool recursive                        ,
+                  bool includePathInFilename            ,
+                  const CString::StringSet& nameFilters ,
+                  UInt32 maxListEntries                 ) const
 {GUCEF_TRACE;
 
     bool totalSuccess = true;
@@ -2127,7 +2200,7 @@ CVFS::GetDirList( TStringVector& outputList  ,
                                                    mountLink.remainder             ,
                                                    recursive                       ,
                                                    includePathInFilename           ,
-                                                   nameFilter                      ,
+                                                   nameFilters                     ,
                                                    maxListEntries                  );
         ++i;
     }

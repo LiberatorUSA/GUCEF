@@ -53,6 +53,10 @@ namespace STORAGE {
 
 CStoragePubSubClientConfig::CStoragePubSubClientConfig( void )
     : PUBSUB::CPubSubClientConfig()
+    , pubsubBookmarkPersistenceConfig()
+    , vfsStorageRootPath()
+    , dirTopicDiscoveryIsRecursive( true )
+    , includeDirParentInTopicName( true )
 {GUCEF_TRACE;
 
 }
@@ -61,6 +65,10 @@ CStoragePubSubClientConfig::CStoragePubSubClientConfig( void )
 
 CStoragePubSubClientConfig::CStoragePubSubClientConfig( const PUBSUB::CPubSubClientConfig& genericConfig )
     : PUBSUB::CPubSubClientConfig( genericConfig )
+    , pubsubBookmarkPersistenceConfig()
+    , vfsStorageRootPath()
+    , dirTopicDiscoveryIsRecursive( true )
+    , includeDirParentInTopicName( true )
 {GUCEF_TRACE;
 
     LoadCustomConfig( genericConfig.customConfig );  
@@ -79,6 +87,12 @@ bool
 CStoragePubSubClientConfig::SaveCustomConfig( CORE::CDataNode& config ) const
 {GUCEF_TRACE;
     
+    bool success = true;
+    
+    success = config.SetAttribute( "vfsStorageRootPath", vfsStorageRootPath ) && success;
+    success = config.SetAttribute( "dirTopicDiscoveryIsRecursive", dirTopicDiscoveryIsRecursive ) && success;
+    success = config.SetAttribute( "includeDirParentInTopicName", includeDirParentInTopicName ) && success;    
+    
     CORE::CDataNode* psBookmarkPersistenceConfig = config.Structure( "PubSubBookmarkPersistenceConfig", '/' );
     if ( !pubsubBookmarkPersistenceConfig.SaveConfig( *psBookmarkPersistenceConfig ) )
     {
@@ -86,7 +100,7 @@ CStoragePubSubClientConfig::SaveCustomConfig( CORE::CDataNode& config ) const
         return false;
     }  
 
-    return true;
+    return success;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -94,6 +108,10 @@ CStoragePubSubClientConfig::SaveCustomConfig( CORE::CDataNode& config ) const
 bool
 CStoragePubSubClientConfig::LoadCustomConfig( const CORE::CDataNode& config )
 {GUCEF_TRACE;
+    
+    vfsStorageRootPath = config.GetAttributeValueOrChildValueByName( "vfsStorageRootPath" ).AsString( vfsStorageRootPath, true );
+    dirTopicDiscoveryIsRecursive = config.GetAttributeValueOrChildValueByName( "dirTopicDiscoveryIsRecursive" ).AsBool( dirTopicDiscoveryIsRecursive, true );
+    includeDirParentInTopicName = config.GetAttributeValueOrChildValueByName( "includeDirParentInTopicName" ).AsBool( includeDirParentInTopicName, true );
     
     bool psPersistanceConfigLoaded = false;
     const CORE::CDataNode* psBookmarkPersistenceConfig = config.Search( "PubSubBookmarkPersistenceConfig", '/', false );
@@ -144,6 +162,9 @@ CStoragePubSubClientConfig::operator=( const CStoragePubSubClientConfig& src )
     {
         PUBSUB::CPubSubClientConfig::operator=( src );
         pubsubBookmarkPersistenceConfig = src.pubsubBookmarkPersistenceConfig;
+        vfsStorageRootPath = src.vfsStorageRootPath;
+        dirTopicDiscoveryIsRecursive = src.dirTopicDiscoveryIsRecursive;
+        includeDirParentInTopicName = src.includeDirParentInTopicName;
     }
     return *this;
 }

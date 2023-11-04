@@ -408,6 +408,32 @@ bool
 CStoragePubSubClient::BeginTopicDiscovery( const CORE::CString::StringSet& globPatternFilters )
 {GUCEF_TRACE;
 
+    if ( !m_config.desiredFeatures.supportsDiscoveryOfAvailableTopics )
+    {
+        GUCEF_WARNING_LOG( CORE::LOGLEVEL_NORMAL, "StoragePubSubClient:BeginTopicDiscovery: Topic discovery is disabled" );
+        return false;
+    }
+
+    VFS::CVFS& vfs = VFS::CVfsGlobal::Instance()->GetVfs();
+
+    VFS::CVFS::TStringVector dirList;
+    if ( vfs.GetDirList( dirList                               , 
+                         m_config.vfsStorageRootPath           , 
+                         m_config.dirTopicDiscoveryIsRecursive , 
+                         m_config.includeDirParentInTopicName  , 
+                         globPatternFilters                    ) )
+    {
+        if ( !dirList.empty() )
+        {
+            GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "StoragePubSubClient:BeginTopicDiscovery: Found " + CORE::ToString( dirList.size() ) + " dirs" );
+
+            TopicDiscoveryEventData topicNames( CORE::ToStringSet( dirList ) );            
+            NotifyObservers( TopicDiscoveryEvent, &topicNames );
+            return true;
+        }
+        return true;
+    }
+    
     return false;
 }
 

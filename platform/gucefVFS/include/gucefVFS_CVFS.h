@@ -466,12 +466,26 @@ class GUCEF_VFS_PUBLIC_CPP CVFS : public CORE::CTSGNotifier          ,
                               const VFS::CString& nameFilter = CString::Empty ,
                               UInt32 maxListEntries = GUCEF_UINT16MAX         ) const;
 
+    virtual bool GetFileList( TStringVector& outputList                                            ,
+                              const CString& location                                              ,
+                              bool recursive = false                                               ,
+                              bool includePathInFilename = false                                   ,
+                              const VFS::CString::StringSet& nameFilters = CString::EmptyStringSet ,
+                              UInt32 maxListEntries = GUCEF_UINT16MAX                              ) const;
+
     virtual bool GetDirList( TStringVector& outputList                  ,
                              const CString& location                    ,
                              bool recursive = false                     ,
                              bool includeParentDirInName = false        ,
                              const CString& nameFilter = CString::Empty ,
                              UInt32 maxListEntries = GUCEF_UINT16MAX    ) const;
+
+    virtual bool GetDirList( TStringVector& outputList                                       ,
+                             const CString& location                                         ,
+                             bool recursive = false                                          ,
+                             bool includeParentDirInName = false                             ,
+                             const CString::StringSet& nameFilters = CString::EmptyStringSet ,
+                             UInt32 maxListEntries = GUCEF_UINT16MAX                         ) const;
 
     void GetFileList( CORE::CDataNode& outputDataTree                    ,
                       const CORE::CString& location                      ,               
@@ -570,8 +584,19 @@ class GUCEF_VFS_PUBLIC_CPP CVFS : public CORE::CTSGNotifier          ,
 
     virtual const CString& GetClassTypeName( void ) const GUCEF_VIRTUAL_OVERRIDE;
     
+    /**
+     *  For consistency this utility function is provided to check whether a given filename matches 
+     *  the provided filter
+     */
     static bool FilterValidation( const CString& filename , 
                                   const CString& filter   );
+
+    /**
+     *  For consistency this utility function is provided to check whether a given filename matches 
+     *  one of the provided filters
+     */
+    static bool FilterValidation( const CString& filename           , 
+                                  const CString::StringSet& filters );
 
     static void RegisterEvents( void );
     

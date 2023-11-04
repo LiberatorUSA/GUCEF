@@ -122,21 +122,21 @@ class GUCEF_VFS_PUBLIC_CPP CArchive : public CORE::CObservingNotifier           
                               const CORE::UInt64 offset        ,
                               const bool overwrite             ) = 0;
 
-    virtual void GetFileList( TStringVector& outputList                  ,
-                              const CString& mountLocation               , 
-                              const CString& archiveLocation             ,
-                              bool recursive = false                     ,
-                              bool includePathInFilename = false         ,
-                              const CString& nameFilter = CString::Empty ,
-                              UInt32 maxListEntries = GUCEF_UINT16MAX    ) const = 0;
+    virtual void GetFileList( TStringVector& outputList                                       ,
+                              const CString& mountLocation                                    , 
+                              const CString& archiveLocation                                  ,
+                              bool recursive = false                                          ,
+                              bool includePathInFilename = false                              ,
+                              const CString::StringSet& nameFilters = CString::EmptyStringSet ,
+                              UInt32 maxListEntries = GUCEF_UINT16MAX                         ) const = 0;
 
-    virtual void GetDirList( TStringVector& outputList                  ,
-                             const CString& mountLocation               , 
-                             const CString& archiveLocation             ,
-                             bool recursive = false                     ,
-                             bool includeParentDirInName = false        ,
-                             const CString& nameFilter = CString::Empty ,
-                             UInt32 maxListEntries = GUCEF_UINT16MAX    ) const = 0;
+    virtual void GetDirList( TStringVector& outputList                                       ,
+                             const CString& mountLocation                                    , 
+                             const CString& archiveLocation                                  ,
+                             bool recursive = false                                          ,
+                             bool includeParentDirInName = false                             ,
+                             const CString::StringSet& nameFilters = CString::EmptyStringSet ,
+                             UInt32 maxListEntries = GUCEF_UINT16MAX                         ) const = 0;
     
     virtual bool DeleteFile( const CString& filePath ) = 0;
     
