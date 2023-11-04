@@ -172,6 +172,13 @@ class PUBSUBPLUGIN_REDISCLUSTER_PLUGIN_PRIVATE_CPP CRedisClusterPubSubClient : p
      */
     virtual bool LoadConfig( const PUBSUB::CPubSubClientConfig& cfg ) GUCEF_VIRTUAL_OVERRIDE;
 
+    /**
+     *  Sets the journal implementation (if any) to be used by the client
+     */
+    virtual bool SetJournal( PUBSUB::CIPubSubJournalBasicPtr journal );
+
+    virtual PUBSUB::CIPubSubJournalBasicPtr GetJournal( void ) const;
+
     CRedisClusterPubSubClientConfig& GetConfig( void );
 
     CORE::ThreadPoolPtr GetThreadPool( void );

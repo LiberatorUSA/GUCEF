@@ -141,6 +141,13 @@ class PUBSUBPLUGIN_STORAGE_PLUGIN_PRIVATE_CPP CStoragePubSubClient : public PUBS
      */
     virtual bool LoadConfig( const PUBSUB::CPubSubClientConfig& cfg ) GUCEF_VIRTUAL_OVERRIDE;
 
+    /**
+     *  Sets the journal implementation (if any) to be used by the client
+     */
+    virtual bool SetJournal( PUBSUB::CIPubSubJournalBasicPtr journal );
+
+    virtual PUBSUB::CIPubSubJournalBasicPtr GetJournal( void ) const;
+
     CStoragePubSubClientConfig& GetConfig( void );
 
     CORE::ThreadPoolPtr GetThreadPool( void );

@@ -516,7 +516,8 @@ CFileSystemArchive::LoadFromDisk( const CString& filePath  ,
     // Create a file path for this root
     CString path = CORE::CombinePath( m_rootDir, filePath.ReplaceChar( GUCEF_DIRSEPCHAROPPOSITE, GUCEF_DIRSEPCHAR ) );
 
-    bool needwriteable( ( strchr( mode, 'a' ) != NULL ) || ( strchr( mode, 'w' ) != NULL ) || ( strchr( mode, '+' ) != NULL ));
+    bool isAppend( ( strchr( mode, 'a' ) != NULL ) || ( strchr( mode, '+' ) != NULL ) );
+    bool needwriteable( ( strchr( mode, 'a' ) != NULL ) || ( strchr( mode, 'w' ) != NULL ) || ( strchr( mode, '+' ) != NULL ) );
 
     // Check if we can perform read-only access which allows us
     // to share the resource
@@ -551,7 +552,8 @@ CFileSystemArchive::LoadFromDisk( const CString& filePath  ,
     }
     if ( ( exists && overwrite && needwriteable ) ||
          ( !exists && needwriteable )             ||
-         ( exists && !needwriteable )              )
+         ( exists && !needwriteable )             ||
+         ( exists && isAppend )                    )
     {
         // Attempt to get access to the file
         CORE::FileAccessPtr fa( GUCEF_NEW CORE::CFileAccess( path, mode ) );

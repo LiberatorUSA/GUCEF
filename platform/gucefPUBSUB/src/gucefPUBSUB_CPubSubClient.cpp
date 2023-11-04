@@ -532,6 +532,7 @@ CPubSubClient::ConfigureJournal( CPubSubClientConfig& clientConfig )
         
         // resolve variables/macros in the journal resource if any exist
         journalConfig.journalResource.ReplaceSubstr( "{clientType}", GetType() );
+        journalConfig.journalResource.ReplaceSubstr( "{clientInstance}", CORE::ToString( this ) );
         
         PUBSUB::CIPubSubJournalBasicPtr journal = PUBSUB::CPubSubGlobal::Instance()->GetPubSubJournalFactory().Create( journalConfig.journalType, journalConfig );
         if ( !journal.IsNULL() )
@@ -570,9 +571,11 @@ CPubSubClient::ConfigureJournal( CPubSubClientTopicPtr topic             ,
     {
         PUBSUB::CPubSubJournalConfig& journalConfig = topicConfig->journalConfig;
         
-        // resolve variables/macros in the journal resource if any exist
-        journalConfig.journalResource.ReplaceSubstr( "{topicName}", topicConfig->topicName );
+        // resolve variables/macros in the journal resource if any exist        
         journalConfig.journalResource.ReplaceSubstr( "{clientType}", GetType() );
+        journalConfig.journalResource.ReplaceSubstr( "{clientInstance}", CORE::ToString( this ) );
+        journalConfig.journalResource.ReplaceSubstr( "{topicName}", topicConfig->topicName );
+        journalConfig.journalResource.ReplaceSubstr( "{topicInstance}", CORE::ToString( topic.GetPointerAlways() ) );
         
         PUBSUB::CIPubSubJournalBasicPtr journal = PUBSUB::CPubSubGlobal::Instance()->GetPubSubJournalFactory().Create( journalConfig.journalType, journalConfig );
         if ( !journal.IsNULL() )

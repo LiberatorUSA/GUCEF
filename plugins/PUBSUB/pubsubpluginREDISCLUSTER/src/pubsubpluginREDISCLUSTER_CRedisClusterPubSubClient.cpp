@@ -1458,6 +1458,25 @@ CRedisClusterPubSubClient::GetClassTypeName( void ) const
     return classTypeName;
 }
 
+/*-------------------------------------------------------------------------*/
+
+bool
+CRedisClusterPubSubClient::SetJournal( PUBSUB::CIPubSubJournalBasicPtr journal )
+{GUCEF_TRACE;
+
+    m_journal = journal;
+    return true;
+}
+
+/*-------------------------------------------------------------------------*/
+
+PUBSUB::CIPubSubJournalBasicPtr 
+CRedisClusterPubSubClient::GetJournal( void ) const
+{GUCEF_TRACE;
+
+    return m_journal;
+}
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //

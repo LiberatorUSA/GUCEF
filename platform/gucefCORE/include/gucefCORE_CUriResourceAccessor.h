@@ -172,6 +172,9 @@ class GUCEF_CORE_PUBLIC_CPP CUriResourceAccessor
 
     static const char* ResourceAccessModeStr( TURI_RESOURCEACCESS_MODE mode );
 
+    static bool IsReadOnlyResourceAccessMode( TURI_RESOURCEACCESS_MODE mode );
+    static bool IsOverwriteResourceAccessMode( TURI_RESOURCEACCESS_MODE mode );
+
     CUriResourceAccessor( void ); /**< Doesn't do anything special atm. */
     CUriResourceAccessor( const CUriResourceAccessor& src ); /**< Doesn't do anything special atm. */
     virtual ~CUriResourceAccessor(); /**< Doesn't do anything special atm. */

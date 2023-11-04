@@ -23,12 +23,12 @@
 				"maxTotalMsgsInFlight": 200000,
 				"RemoteAddresses": [ "127.0.0.1:6379" ],
 				"CustomConfig": {},
-				"Topics": [],
 				"journalConfig": {
 					"useJournal": true,
 					"journalType": "binary",
-					"journalPath": "vfs://DataPath/journals/clientType/{clientType}"
+					"journalPath": "vfs://DataPath/journals/clientType/{clientType}/instance/{clientInstance}"
 				},
+				"Topics": [],
 				"defaultTopicConfig": {
 					"isOptional": false,
 					"needSubscribeSupport": true,
@@ -42,7 +42,7 @@
 					"journalConfig": {
 						"useJournal": true,
 						"journalType": "binary",
-						"journalPath": "vfs://DataPath/journals/clientType/{clientType}/topicName/{topicName}"
+						"journalPath": "vfs://DataPath/journals/clientType/{clientType}/instance/{clientInstance}/topicName/{topicName}"
 					},
 					"CustomConfig": {
 						"redisXAddMaxLen": -1,
@@ -122,12 +122,12 @@
 				"pubsubIdPrefix": "{auto}",
 				"maxTotalMsgsInFlight": 200000,
 				"CustomConfig": {},
-				"Topics": [],
 				"journalConfig": {
 					"useJournal": true,
 					"journalType": "binary",
-					"journalPath": "vfs://DataPath/journals/clientType/{clientType}"
+					"journalPath": "vfs://DataPath/journals/clientType/{clientType}/instance/{clientInstance}"
 				},
+				"Topics": [],
 				"defaultTopicConfig": {
 					"isOptional": false,
 					"needSubscribeSupport": false,
@@ -141,7 +141,7 @@
 					"journalConfig": {
 						"useJournal": true,
 						"journalType": "binary",
-						"journalPath": "vfs://DataPath/journals/clientType/{clientType}"
+						"journalPath": "vfs://DataPath/journals/clientType/{clientType}/instance/{clientInstance}/topicName/{topicName}"
 					},
 					"CustomConfig": {
 						"desiredNrOfBuffers": 3,

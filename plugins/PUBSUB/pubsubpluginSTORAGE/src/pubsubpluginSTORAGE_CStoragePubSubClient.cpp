@@ -778,6 +778,25 @@ CStoragePubSubClient::GetClassTypeName( void ) const
     return classTypeName;
 }
 
+/*-------------------------------------------------------------------------*/
+
+bool
+CStoragePubSubClient::SetJournal( PUBSUB::CIPubSubJournalBasicPtr journal )
+{GUCEF_TRACE;
+
+    m_journal = journal;
+    return true;
+}
+
+/*-------------------------------------------------------------------------*/
+
+PUBSUB::CIPubSubJournalBasicPtr 
+CStoragePubSubClient::GetJournal( void ) const
+{GUCEF_TRACE;
+
+    return m_journal;
+}
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //

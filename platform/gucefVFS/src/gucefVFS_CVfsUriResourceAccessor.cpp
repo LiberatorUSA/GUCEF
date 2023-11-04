@@ -255,8 +255,9 @@ CVfsUriResourceAccessor::GetResourceAccess( const CORE::CUri& uri               
 
     CString fsPath = uri.GetAuthorityAndPath();
     const char* accessMode = ResourceAccessModeStr( mode );
+    bool overwriteResource = IsOverwriteResourceAccessMode( mode );
 
-    TBasicVfsResourcePtr file = CVfsGlobal::Instance()->GetVfs().GetFile( fsPath, accessMode, false );
+    TBasicVfsResourcePtr file = CVfsGlobal::Instance()->GetVfs().GetFile( fsPath, accessMode, overwriteResource );
     if ( !file.IsNULL() )
     {
         CORE::IOAccessPtr fileAccess = file->GetAccess();

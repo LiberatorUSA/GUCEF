@@ -200,6 +200,40 @@ CUriResourceAccessor::ResourceAccessModeStr( TURI_RESOURCEACCESS_MODE mode )
     }
 }
 
+/*-------------------------------------------------------------------------*/
+
+bool
+CUriResourceAccessor::IsReadOnlyResourceAccessMode( TURI_RESOURCEACCESS_MODE mode )
+{GUCEF_TRACE;
+
+    switch ( mode )
+    {
+        case URI_RESOURCEACCESS_MODE_READ:
+            return true;
+        
+        default:
+        case URI_RESOURCEACCESS_MODE_WRITE:
+        case URI_RESOURCEACCESS_MODE_APPEND:
+            return false;
+    }
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CUriResourceAccessor::IsOverwriteResourceAccessMode( TURI_RESOURCEACCESS_MODE mode )
+{GUCEF_TRACE;
+
+    switch ( mode )
+    {
+        case URI_RESOURCEACCESS_MODE_WRITE:
+            return true;
+        
+        default:
+            return false;
+    }
+}
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //
