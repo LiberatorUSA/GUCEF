@@ -514,7 +514,8 @@ class PUBSUBPLUGIN_STORAGE_PLUGIN_PRIVATE_CPP CStoragePubSubClientTopic : public
 
 /*-------------------------------------------------------------------------*/
 
-typedef CStoragePubSubClientTopic::TSharedPtrType   CStoragePubSubClientTopicPtr;
+typedef CStoragePubSubClientTopic::TSharedPtrType        CStoragePubSubClientTopicPtr;
+typedef CStoragePubSubClientTopic::TBasicSharedPtrType   CStoragePubSubClientTopicBasicPtr;
 
 /*-------------------------------------------------------------------------//
 //                                                                         //

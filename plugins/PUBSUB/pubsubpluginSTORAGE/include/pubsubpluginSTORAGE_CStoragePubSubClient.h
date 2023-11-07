@@ -78,6 +78,8 @@ class PUBSUBPLUGIN_STORAGE_PLUGIN_PRIVATE_CPP CStoragePubSubClient : public PUBS
 
     static const CORE::CString TypeName; 
 
+    typedef std::map< CStoragePubSubClientTopicConfigPtr , CORE::CString::StringSet > TTopicConfigPtrToStringSetMap;
+
     CStoragePubSubClient( const PUBSUB::CPubSubClientConfig& config );
 
     virtual ~CStoragePubSubClient() GUCEF_VIRTUAL_OVERRIDE;
@@ -91,6 +93,27 @@ class PUBSUBPLUGIN_STORAGE_PLUGIN_PRIVATE_CPP CStoragePubSubClient : public PUBS
     virtual PUBSUB::CPubSubClientTopicPtr CreateTopicAccess( PUBSUB::CPubSubClientTopicConfigPtr topicConfig                    ,
                                                              CORE::PulseGeneratorPtr pulseGenerator = CORE::PulseGeneratorPtr() ) GUCEF_VIRTUAL_OVERRIDE;
 
+    virtual bool GetMultiTopicAccess( const CORE::CString& topicName    ,
+                                      PubSubClientTopicSet& topicAccess ) GUCEF_VIRTUAL_OVERRIDE;
+
+    virtual bool GetMultiTopicAccess( const CORE::CString::StringSet& topicNames ,
+                                      PubSubClientTopicSet& topicAccess          ) GUCEF_VIRTUAL_OVERRIDE;
+
+    virtual bool CreateMultiTopicAccess( PUBSUB::CPubSubClientTopicConfigPtr topicConfig                    ,
+                                         PubSubClientTopicSet& topicAccess                                  ,
+                                         CORE::PulseGeneratorPtr pulseGenerator = CORE::PulseGeneratorPtr() ) GUCEF_VIRTUAL_OVERRIDE;
+
+    bool AutoCreateMultiTopicAccess( CStoragePubSubClientTopicConfigPtr templateTopicConfig ,
+                                     const CORE::CString::StringSet& topicNameList          ,
+                                     PubSubClientTopicSet& topicAccess                      ,
+                                     CORE::PulseGeneratorPtr pulseGenerator                 );
+
+    bool AutoCreateMultiTopicAccess( const TTopicConfigPtrToStringSetMap& topicsToCreate ,
+                                     PubSubClientTopicSet& topicAccess                   ,
+                                     CORE::PulseGeneratorPtr pulseGenerator              );
+
+    void AutoDestroyTopicAccess( const CORE::CString::StringSet& topicNames );
+    
     virtual PUBSUB::CPubSubClientTopicPtr GetTopicAccess( const CORE::CString& topicName ) GUCEF_VIRTUAL_OVERRIDE;
 
     virtual void DestroyTopicAccess( const CORE::CString& topicName ) GUCEF_VIRTUAL_OVERRIDE;

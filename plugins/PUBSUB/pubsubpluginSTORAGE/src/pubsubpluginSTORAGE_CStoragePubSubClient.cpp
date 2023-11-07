@@ -194,8 +194,8 @@ CStoragePubSubClient::GetSupportedFeatures( PUBSUB::CPubSubClientFeatures& featu
     features.supportsSubscribing = true;                // We support reading from VFS storage files
     features.supportsMetrics = true;                    // This plugin has support for reporting its own set of metrics
     features.supportsAutoReconnect = true;              // To the extent it even applies in this case, sure we 'reconnect' to storage
-    features.supportsDiscoveryOfAvailableTopics = false; // <- @TODO
-    features.supportsGlobPatternTopicNames = false;
+    features.supportsDiscoveryOfAvailableTopics = true; // The VFS dirs available per config will be regarded as available 'topics'
+    features.supportsGlobPatternTopicNames = true;      // We support generating topics from VFS directory name matching using glob patterns
     features.supportsSubscriptionMsgArrivalDelayRequests = false;
     features.supportsSubscriptionEndOfDataEvent = true; // we support sending these at the end of every request fullfillment or when we run out of requests to fullfill
 
@@ -263,6 +263,61 @@ CStoragePubSubClient::IsTrackingAcksNeeded( void ) const
 
 /*-------------------------------------------------------------------------*/
 
+bool
+CStoragePubSubClient::GetMultiTopicAccess( const CORE::CString& topicName    ,
+                                           PubSubClientTopicSet& topicAccess )
+{GUCEF_TRACE;
+
+    // Check to see if this logical/conceptual 'topic' name represents multiple pattern matched vfs paths
+    if ( m_config.desiredFeatures.supportsGlobPatternTopicNames &&
+         topicName.HasChar( '*' ) > -1                           )
+    {
+        // We create the actual topic objects from the wildcard glob pattern topic which is used
+        // as a template. As such we need to match the pattern again to find the various topics that could have been spawned
+        bool matchesFound = false;
+        TTopicMap::iterator i = m_topicMap.begin();
+        while ( i != m_topicMap.end() )
+        {
+            if ( (*i).first.WildcardEquals( topicName, '*', true ) )
+            {
+                topicAccess.insert( (*i).second );
+                matchesFound = true;
+            }
+            ++i;
+        }
+        return matchesFound;
+    }
+    else
+    {
+        TTopicMap::iterator i = m_topicMap.find( topicName );
+        if ( i != m_topicMap.end() )
+        {
+            topicAccess.insert( (*i).second );
+            return true;
+        }
+        return false;
+    }
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CStoragePubSubClient::GetMultiTopicAccess( const CORE::CString::StringSet& topicNames ,
+                                           PubSubClientTopicSet& topicAccess          )
+{GUCEF_TRACE;
+
+    bool totalSuccess = true;
+    CORE::CString::StringSet::const_iterator i = topicNames.begin();
+    while ( i != topicNames.end() )
+    {
+        totalSuccess = GetMultiTopicAccess( (*i), topicAccess ) && totalSuccess;
+        ++i;
+    }
+    return totalSuccess;
+}
+
+/*-------------------------------------------------------------------------*/
+
 PUBSUB::CPubSubClientTopicPtr
 CStoragePubSubClient::CreateTopicAccess( PUBSUB::CPubSubClientTopicConfigPtr topicConfig ,
                                          CORE::PulseGeneratorPtr pulseGenerator          )
@@ -303,6 +358,205 @@ CStoragePubSubClient::CreateTopicAccess( PUBSUB::CPubSubClientTopicConfigPtr top
     }
 
     return topicAccess;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CStoragePubSubClient::AutoCreateMultiTopicAccess( const TTopicConfigPtrToStringSetMap& topicsToCreate ,
+                                                  PubSubClientTopicSet& topicAccess                   ,
+                                                  CORE::PulseGeneratorPtr pulseGenerator              )
+{GUCEF_TRACE;
+
+    CORE::UInt32 newTopicAccessCount = 0;
+    bool totalSuccess = true;
+    {
+        MT::CObjectScopeLock lock( this );
+
+        TTopicConfigPtrToStringSetMap::const_iterator m = topicsToCreate.begin();
+        while ( m != topicsToCreate.end() )
+        {
+            PUBSUB::CPubSubClientTopicConfigPtr templateTopicConfig( ((*m).first) );
+            if ( !templateTopicConfig.IsNULL() ) 
+            {
+                const CORE::CString::StringSet& topicNameList = (*m).second;
+
+                CORE::CString::StringSet::const_iterator i = topicNameList.begin();
+                while ( i != topicNameList.end() )
+                {
+                    CStoragePubSubClientTopicConfigPtr topicConfig = CStoragePubSubClientTopicConfig::CreateSharedObj();
+                    topicConfig->LoadConfig( *templateTopicConfig.GetPointerAlways() ); 
+                    topicConfig->topicName = (*i);
+
+                    CStoragePubSubClientTopicPtr tAccess;
+                    {
+                        MT::CObjectScopeLock lock( this );
+
+                        tAccess = ( GUCEF_NEW CStoragePubSubClientTopic( this, pulseGenerator ) )->CreateSharedPtr();
+                        if ( tAccess->LoadConfig( *topicConfig ) )
+                        {
+                            m_topicMap[ topicConfig->topicName ] = tAccess;                            
+                            topicAccess.insert( tAccess );
+                            m_config.topics.push_back( topicConfig );
+                            ++newTopicAccessCount;
+
+                            ConfigureJournal( tAccess, topicConfig );
+                            PUBSUB::CIPubSubJournalBasicPtr journal = tAccess->GetJournal();
+                            if ( !journal.IsNULL() && topicConfig->journalConfig.useJournal )
+                                journal->AddTopicCreatedJournalEntry();
+
+                            GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "StoragePubSubClient(" + CORE::ToString( this ) + "):AutoCreateMultiTopicAccess: Auto created topic \"" +
+                                    topicConfig->topicName + "\" based on template config \"" + templateTopicConfig->topicName + "\"" );
+                        }
+                        else
+                        {
+                            tAccess.Unlink();
+                            totalSuccess = false;
+
+                            GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "StoragePubSubClient(" + CORE::ToString( this ) + "):AutoCreateMultiTopicAccess: Failed to load config for topic \"" +
+                                    topicConfig->topicName + "\" based on template config \"" + templateTopicConfig->topicName + "\"" );
+                        }
+                    }
+                    ++i;
+                }
+            }
+            ++m;
+        }
+    }
+
+    if ( newTopicAccessCount > 0 )
+    {
+        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "StoragePubSubClient(" + CORE::PointerToString( this ) + "):AutoCreateMultiTopicAccess: Auto created " +
+            CORE::ToString( newTopicAccessCount ) + " topics based on template configs" );
+
+        TopicsAccessAutoCreatedEventData eData( topicAccess );
+        NotifyObservers( TopicsAccessAutoCreatedEvent, &eData );
+    }
+
+    return totalSuccess;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CStoragePubSubClient::AutoCreateMultiTopicAccess( CStoragePubSubClientTopicConfigPtr templateTopicConfig ,
+                                                  const CORE::CString::StringSet& topicNameList          ,
+                                                  PubSubClientTopicSet& topicAccess                      ,
+                                                  CORE::PulseGeneratorPtr pulseGenerator                 )
+{GUCEF_TRACE;
+
+    TTopicConfigPtrToStringSetMap topicToCreate;
+    topicToCreate[ templateTopicConfig ] = topicNameList;
+    return AutoCreateMultiTopicAccess( topicToCreate, topicAccess, pulseGenerator );
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CStoragePubSubClient::CreateMultiTopicAccess( PUBSUB::CPubSubClientTopicConfigPtr topicConfig ,
+                                              PubSubClientTopicSet& topicAccess               ,
+                                              CORE::PulseGeneratorPtr pulseGenerator          )
+{GUCEF_TRACE;
+
+    if ( m_config.desiredFeatures.supportsGlobPatternTopicNames &&
+         topicConfig->topicName.HasChar( '*' ) > -1               )
+    {
+        GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "StoragePubSubClient:CreateMultiTopicAccess: Will look for dirs from which to generate topics using vfs root: " + m_config.vfsStorageRootPath );
+        
+        VFS::CVFS& vfs = VFS::CVfsGlobal::Instance()->GetVfs();
+        
+        VFS::CVFS::TStringVector dirList;
+        if ( vfs.GetDirList( dirList                               , 
+                             m_config.vfsStorageRootPath           , 
+                             m_config.dirTopicDiscoveryIsRecursive , 
+                             m_config.includeDirParentInTopicName  , 
+                             topicConfig->topicName                ) )
+        {
+            GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "StoragePubSubClient:CreateMultiTopicAccess: Found " + CORE::ToString( dirList.size() ) + " dirs" );
+
+            CORE::CString::StringSet topicNames( CORE::ToStringSet( dirList ) );            
+            if ( !topicNames.empty() )
+                return AutoCreateMultiTopicAccess( topicConfig, topicNames, topicAccess, pulseGenerator );
+            return true; // Since its pattern based potential creation at a later time also counts as success
+        }
+        else
+        {
+            GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "StoragePubSubClient:CreateMultiTopicAccess: Failed to get dir listing for vfs root: " + m_config.vfsStorageRootPath );
+            return false;
+        }
+    }
+    else
+    {
+        GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "StoragePubSubClient:CreateMultiTopicAccess: Interpreting topic name litterally: " + topicConfig->topicName );
+        
+        PUBSUB::CPubSubClientTopicPtr tAccess = CreateTopicAccess( topicConfig, pulseGenerator );
+        if ( !tAccess.IsNULL() )
+        {
+            topicAccess.insert( tAccess );
+            return true;
+        }
+    }
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CStoragePubSubClient::AutoDestroyTopicAccess( const CORE::CString::StringSet& topicNames )
+{GUCEF_TRACE;
+
+    PubSubClientTopicSet topicAccess;
+    {
+        MT::CScopeMutex lock( m_lock );
+
+        CORE::CString::StringSet::const_iterator t = topicNames.begin();
+        while ( t != topicNames.end() )
+        {
+            const CORE::CString& topicName = (*t);
+            TTopicMap::iterator i = m_topicMap.find( topicName );
+            if ( i != m_topicMap.end() )
+            {
+                CStoragePubSubClientTopicPtr tAccess = (*i).second;
+                topicAccess.insert( tAccess );
+            }
+            ++t;
+        }
+    }
+
+    if ( !topicAccess.empty() )
+    {
+        TopicsAccessAutoDestroyedEventData eData( topicAccess );
+        NotifyObservers( TopicsAccessAutoDestroyedEvent, &eData );
+
+        {
+            // Now that everyone has been duely warned we can proceed with the actual destruction
+            MT::CObjectScopeLock lock( this );
+
+            CORE::UInt32 destroyedTopicAccessCount = 0;
+            PubSubClientTopicSet::iterator t = topicAccess.begin();
+            while ( t != topicAccess.end() )
+            {
+                PUBSUB::CPubSubClientTopicBasicPtr tAccess = (*t);
+
+                CORE::CString topicName = tAccess->GetTopicName();
+                m_topicMap.erase( topicName );                
+                {
+                    CStoragePubSubClientTopicBasicPtr topicAccess = tAccess.StaticCast< CStoragePubSubClientTopic >();
+                    topicAccess->Shutdown();
+                    topicAccess.Unlink();
+                }
+                tAccess.Unlink();
+
+                GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "StoragePubSubClient(" + CORE::ToString( this ) + "):AutoDestroyTopicAccess: destroyed topic access for topic \"" + topicName + "\"" );
+
+                ++destroyedTopicAccessCount;
+                ++t;
+            }
+
+            GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "StoragePubSubClient(" + CORE::ToString( this ) + "):AutoDestroyTopicAccess: destroyed topic access for " +
+                CORE::ToString( destroyedTopicAccessCount ) + "topics" );
+        }
+    }
 }
 
 /*-------------------------------------------------------------------------*/
