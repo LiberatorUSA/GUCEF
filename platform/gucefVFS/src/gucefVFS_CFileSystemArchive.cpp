@@ -657,11 +657,12 @@ CFileSystemArchive::GetRootDir( void ) const
 
 bool 
 CFileSystemArchive::AddDirToWatch( const CString& dirToWatch       ,
-                                   const CDirWatchOptions& options )
+                                   const CDirWatchOptions& options ,
+                                   bool tryToCreatePathIfNotExists )
 {GUCEF_TRACE;
 
     CString path = CORE::CombinePath( m_rootDir, dirToWatch.ReplaceChar( GUCEF_DIRSEPCHAROPPOSITE, GUCEF_DIRSEPCHAR ) );
-    return m_fsWatcher.AddDirToWatch( path, options );
+    return m_fsWatcher.AddDirToWatch( path, options, tryToCreatePathIfNotExists );
 }
 
 /*-------------------------------------------------------------------------*/

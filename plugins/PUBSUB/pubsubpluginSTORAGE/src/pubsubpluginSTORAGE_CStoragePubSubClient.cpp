@@ -387,6 +387,7 @@ CStoragePubSubClient::AutoCreateMultiTopicAccess( const TTopicConfigPtrToStringS
                     CStoragePubSubClientTopicConfigPtr topicConfig = CStoragePubSubClientTopicConfig::CreateSharedObj();
                     topicConfig->LoadConfig( *templateTopicConfig.GetPointerAlways() ); 
                     topicConfig->topicName = (*i);
+                    topicConfig->vfsStorageRootPath = m_config.vfsStorageRootPath;
 
                     CStoragePubSubClientTopicPtr tAccess;
                     {
@@ -474,9 +475,23 @@ CStoragePubSubClient::CreateMultiTopicAccess( PUBSUB::CPubSubClientTopicConfigPt
         {
             GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "StoragePubSubClient:CreateMultiTopicAccess: Found " + CORE::ToString( dirList.size() ) + " dirs" );
 
+            // When used as topic names we dont want a trailing '/'
+            VFS::CVFS::TStringVector::iterator i = dirList.begin();
+            while ( i != dirList.end() )
+            {
+                CORE::CString& topicName = (*i);
+                if ( !topicName.IsNULLOrEmpty() && topicName[ topicName.Length()-1 ] == GUCEF_VFS_DIR_SEP_CHAR )
+                {
+                    (*i) = topicName.CutChars( 1, false );
+                }
+                ++i;
+            }
+
             CORE::CString::StringSet topicNames( CORE::ToStringSet( dirList ) );            
             if ( !topicNames.empty() )
+            {                
                 return AutoCreateMultiTopicAccess( topicConfig, topicNames, topicAccess, pulseGenerator );
+            }
             return true; // Since its pattern based potential creation at a later time also counts as success
         }
         else
@@ -680,6 +695,18 @@ CStoragePubSubClient::BeginTopicDiscovery( const CORE::CString::StringSet& globP
         if ( !dirList.empty() )
         {
             GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "StoragePubSubClient:BeginTopicDiscovery: Found " + CORE::ToString( dirList.size() ) + " dirs" );
+
+            // When used as topic names we dont want a trailing '/'
+            VFS::CVFS::TStringVector::iterator i = dirList.begin();
+            while ( i != dirList.end() )
+            {
+                CORE::CString& topicName = (*i);
+                if ( !topicName.IsNULLOrEmpty() && topicName[ topicName.Length()-1 ] == GUCEF_VFS_DIR_SEP_CHAR )
+                {
+                    (*i) = topicName.CutChars( 1, false );
+                }
+                ++i;
+            }
 
             TopicDiscoveryEventData topicNames( CORE::ToStringSet( dirList ) );            
             NotifyObservers( TopicDiscoveryEvent, &topicNames );

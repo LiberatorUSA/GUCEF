@@ -554,8 +554,9 @@ class GUCEF_VFS_PUBLIC_CPP CVFS : public CORE::CTSGNotifier          ,
     
     UInt32 GetMemloadSize( void ) const;
 
-    virtual bool AddDirToWatch( const CString& dirToWatch       ,
-                                const CDirWatchOptions& options ) GUCEF_VIRTUAL_OVERRIDE;
+    virtual bool AddDirToWatch( const CString& dirToWatch              ,
+                                const CDirWatchOptions& options        ,
+                                bool tryToCreatePathIfNotExists = true ) GUCEF_VIRTUAL_OVERRIDE;
 
     virtual bool RemoveDirToWatch( const CString& dirToWatch ) GUCEF_VIRTUAL_OVERRIDE;
 

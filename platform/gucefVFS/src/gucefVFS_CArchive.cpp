@@ -75,7 +75,8 @@ CArchive::operator=( const CArchive& src )
 
 bool 
 CArchive::AddDirToWatch( const CString& dirToWatch       ,
-                         const CDirWatchOptions& options )
+                         const CDirWatchOptions& options ,
+                         bool tryToCreatePathIfNotExists )
 {GUCEF_TRACE;
 
     return false;

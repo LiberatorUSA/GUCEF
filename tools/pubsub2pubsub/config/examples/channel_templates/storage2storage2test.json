@@ -22,11 +22,15 @@
         "pubsubIdPrefix": "{auto}",
         "maxTotalMsgsInFlight": 1000,
         "RemoteAddresses": [],
-        "CustomConfig": {},
+        "CustomConfig": {
+			"vfsStorageRootPath": "DataPath/storage-source",
+			"dirTopicDiscoveryIsRecursive": false,
+			"includeDirParentInTopicName": false
+		},
         "journalConfig": {
           "useJournal": true,
           "journalType": "binary",
-          "journalPath": "vfs://DataPath/journals/clientType/{clientType}/instance/{clientInstance}"
+          "journalPath": "vfs://DataPath/journals/clientType/{clientType}/instance/{clientInstance}.binjrnl"
         },
         "Topics": [],
         "defaultTopicConfig": {
@@ -42,13 +46,13 @@
           "journalConfig": {
             "useJournal": true,
             "journalType": "binary",
-            "journalPath": "vfs://DataPath/journals/clientType/{clientType}/instance/{clientInstance}/topicName/{topicName}"
+            "journalPath": "vfs://DataPath/journals/clientType/{clientType}/instance/{clientInstance}/topicName/{topicName}.binjrnl"
           },
           "CustomConfig": {
             "desiredNrOfBuffers": 3,
             "desiredMinimalSerializedBlockSize": 2560000,
             "desiredMaxTimeToWaitToGrowSerializedBlockSizeInMs": 1000,
-            "vfsStorageRootPath": "InstallPath/storage-source",
+            "vfsStorageRootPath": "DataPath/storage-source",
             "vfsFileExtention": "pubsubmsgs",
             "encodeCodecFamily": "",
             "encodeCodecName": "",
@@ -72,7 +76,7 @@
             "treatEveryFullfilledRequestAsEODEvent": false,
             "deleteContainersWithFullyAckdContent": false,
             "moveContainersWithFullyAckdContent": true,
-            "vfsStorageRootPathForFullyAckdContainers": "InstallPath/storage-source/processed",
+            "vfsStorageRootPathForFullyAckdContainers": "DataPath/storage-source/processed",
             "maxCompletedContainerRefsToRetain": 50
           }
         },
@@ -140,11 +144,15 @@
         "pubsubClientType": "STORAGE",
         "reconnectDelayInMs": 0,
         "maxTotalMsgsInFlight": 1000,
-        "CustomConfig": {},
+        "CustomConfig": {
+			"vfsStorageRootPath": "InstallPath/spillover-temp-storage",
+			"dirTopicDiscoveryIsRecursive": true,
+			"includeDirParentInTopicName": true
+		},
         "journalConfig": {
           "useJournal": true,
           "journalType": "binary",
-          "journalPath": "vfs://DataPath/journals/clientType/{clientType}/instance/{clientInstance}"
+          "journalPath": "vfs://DataPath/journals/clientType/{clientType}/instance/{clientInstance}.binjrnl"
         },
         "Topics": [],
         "defaultTopicConfig": {
@@ -160,13 +168,13 @@
           "journalConfig": {
             "useJournal": true,
             "journalType": "binary",
-            "journalPath": "vfs://DataPath/journals/clientType/{clientType}/instance/{clientInstance}/topicName/{topicName}"
+            "journalPath": "vfs://DataPath/journals/clientType/{clientType}/instance/{clientInstance}/topicName/{topicName}.binjrnl"
           },
           "CustomConfig": {
             "desiredNrOfBuffers": 3,
             "desiredMinimalSerializedBlockSize": 2560000,
             "desiredMaxTimeToWaitToGrowSerializedBlockSizeInMs": 1000,
-            "vfsStorageRootPath": "InstallPath/spillover-temp-storage",
+            "vfsStorageRootPath": "DataPath/spillover-temp-storage",
             "vfsFileExtention": "pubsubmsgs",
             "encodeCodecFamily": "",
             "encodeCodecName": "",
@@ -190,7 +198,7 @@
             "treatEveryFullfilledRequestAsEODEvent": false,
             "deleteContainersWithFullyAckdContent": false,
             "moveContainersWithFullyAckdContent": true,
-            "vfsStorageRootPathForFullyAckdContainers": "InstallPath/spillover-temp-storage/processed",
+            "vfsStorageRootPathForFullyAckdContainers": "DataPath/spillover-temp-storage/processed",
             "maxCompletedContainerRefsToRetain": 50
           }
         },
@@ -258,11 +266,15 @@
         "pubsubClientType": "TEST",
         "reconnectDelayInMs": 0,
         "maxTotalMsgsInFlight": 1000,
-        "CustomConfig": {},
+        "CustomConfig": {
+			"vfsStorageRootPath": "DataPath/test-sink",
+			"dirTopicDiscoveryIsRecursive": true,
+			"includeDirParentInTopicName": true
+		},
         "journalConfig": {
           "useJournal": true,
           "journalType": "binary",
-          "journalPath": "vfs://DataPath/journals/clientType/{clientType}/instance/{clientInstance}"
+          "journalPath": "vfs://DataPath/journals/clientType/{clientType}/instance/{clientInstance}.binjrnl"
         },
         "Topics": [],
         "defaultTopicConfig": {
@@ -278,13 +290,13 @@
           "journalConfig": {
             "useJournal": true,
             "journalType": "binary",
-            "journalPath": "vfs://DataPath/journals/clientType/{clientType}/instance/{clientInstance}/topicName/{topicName}"
+            "journalPath": "vfs://DataPath/journals/clientType/{clientType}/instance/{clientInstance}/topicName/{topicName}.binjrnl"
           },
           "CustomConfig": {
             "desiredNrOfBuffers": 3,
             "desiredMinimalSerializedBlockSize": 2560000,
             "desiredMaxTimeToWaitToGrowSerializedBlockSizeInMs": 1000,
-            "vfsStorageRootPath": "InstallPath/test-sink",
+            "vfsStorageRootPath": "DataPath/test-sink",
             "vfsFileExtention": "pubsubmsgs",
             "encodeCodecFamily": "",
             "encodeCodecName": "",
@@ -308,7 +320,7 @@
             "treatEveryFullfilledRequestAsEODEvent": false,
             "deleteContainersWithFullyAckdContent": false,
             "moveContainersWithFullyAckdContent": true,
-            "vfsStorageRootPathForFullyAckdContainers": "InstallPath/test-sink/processed",
+            "vfsStorageRootPathForFullyAckdContainers": "DataPath/test-sink/processed",
             "maxCompletedContainerRefsToRetain": 50,
             "binarySerializerOptions": {
               "msgDateTimeIncluded": true,

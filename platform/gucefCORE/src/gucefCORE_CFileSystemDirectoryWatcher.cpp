@@ -996,12 +996,27 @@ class GUCEF_HIDDEN OSSpecificDirectoryWatcher
 
 bool
 CFileSystemDirectoryWatcher::AddDirToWatch( const CString& dirToWatch       ,
-                                            const CDirWatchOptions& options )
+                                            const CDirWatchOptions& options ,
+                                            bool tryToCreatePathIfNotExists )
 {GUCEF_TRACE;
 
     if ( GUCEF_NULL != m_osSpecificImpl )
     {
         CString fullDirToWatch = RelativePath( dirToWatch );
+
+        if ( tryToCreatePathIfNotExists && !DirExists( fullDirToWatch ) )
+        {
+            GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "FileSystemDirectoryWatcher:AddDirToWatch: Directory does not exist, will try to create it first: " + fullDirToWatch );
+            if ( CreateDirs( fullDirToWatch ) )
+            {
+                GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "FileSystemDirectoryWatcher:AddDirToWatch: Directory created: " + fullDirToWatch );
+            }
+            else
+            {
+                GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "FileSystemDirectoryWatcher:AddDirToWatch: Failed to create directory: " + fullDirToWatch );
+            }
+        }
+
         if ( m_osSpecificImpl->AddDirToWatch( fullDirToWatch, options ) )
         {
             TStartedWatchingDirectoryEventData eData( fullDirToWatch );

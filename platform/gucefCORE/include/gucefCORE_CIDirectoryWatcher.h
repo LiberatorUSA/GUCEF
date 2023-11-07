@@ -75,7 +75,8 @@ class GUCEF_CORE_PUBLIC_CPP CIDirectoryWatcher : public CDirectoryWatcherEvents
     };
 
     virtual bool AddDirToWatch( const CString& dirToWatch       ,
-                                const CDirWatchOptions& options ) = 0;
+                                const CDirWatchOptions& options ,
+                                bool tryToCreatePathIfNotExists ) = 0;
 
     virtual bool RemoveDirToWatch( const CString& dirToWatch ) = 0;
 

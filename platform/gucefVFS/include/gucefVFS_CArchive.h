@@ -180,7 +180,8 @@ class GUCEF_VFS_PUBLIC_CPP CArchive : public CORE::CObservingNotifier           
      *  will always return false to the request.
      */
     virtual bool AddDirToWatch( const CString& dirToWatch       ,
-                                const CDirWatchOptions& options ) GUCEF_VIRTUAL_OVERRIDE;
+                                const CDirWatchOptions& options ,
+                                bool tryToCreatePathIfNotExists ) GUCEF_VIRTUAL_OVERRIDE;
 
     virtual bool RemoveDirToWatch( const CString& dirToWatch ) GUCEF_VIRTUAL_OVERRIDE;
 
@@ -209,14 +210,3 @@ class GUCEF_VFS_PUBLIC_CPP CArchive : public CORE::CObservingNotifier           
 /*-------------------------------------------------------------------------*/
           
 #endif /* GUCEF_VFS_CARCHIVE_H ? */
-
-/*-------------------------------------------------------------------------//
-//                                                                         //
-//      Info & Changes                                                     //
-//                                                                         //
-//-------------------------------------------------------------------------//
-
-- 24-08-2005 :
-        - Dinand: implemented
-
----------------------------------------------------------------------------*/

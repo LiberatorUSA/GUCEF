@@ -793,7 +793,7 @@ FilePushDestination::Start( void )
         }
 
         GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "FilePushDestination: Adding watch to directory \"" + (*i) + "\"" );
-        if ( !m_dirWatcher.AddDirToWatch( (*i), watchOptions ) )
+        if ( !m_dirWatcher.AddDirToWatch( (*i), watchOptions, true ) )
         {
             GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "FilePushDestination: Failed to add watch for directory " + (*i) );
             return false;

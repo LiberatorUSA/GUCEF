@@ -398,7 +398,6 @@ class CTBasicSharedPtrCreator
 
     protected:
     TBasicSharedPtrSharedData< LockType > m_shared;
-    T* m_this;
 };
 
 
@@ -1066,13 +1065,18 @@ CTBasicSharedPtr< T, LockType >::Unlink( void )
             m_shared = GUCEF_NULL;
             if ( GUCEF_NULL != localSharedRef )
             {
+                bool sharedDataIsIndependent = localSharedRef->m_hasIndependentLifeCycle;
+
                 // We should check if the destructor pointer is not-NULL
                 // Under most conditions there would be no object destructor if there is no objected pointed to
                 if ( GUCEF_NULL != localSharedRef->m_voidDestructor )
                     localSharedRef->m_voidDestructor->DestroyKnownVoidedObject( localSharedRef->m_originalAddressAsCreated );
 
-                localSharedRef->m_lock.Unlock();
-                GUCEF_DELETE localSharedRef;
+                if ( sharedDataIsIndependent )
+                {
+                    localSharedRef->m_lock.Unlock();
+                    GUCEF_DELETE localSharedRef;
+                }
             }
         }
     }
@@ -1133,7 +1137,7 @@ CTBasicSharedPtr< T, LockType >
 CTBasicSharedPtrCreator< T, LockType >::CreateBasicSharedPtr( T* dummyForCppNameMangling ) const
 {GUCEF_TRACE;
     
-    CTBasicSharedPtr< T, LockType > retVal( &m_shared, m_this );
+    CTBasicSharedPtr< T, LockType > retVal( &m_shared, static_cast< T* >( m_shared.m_originalAddressAsCreated ) );
     return retVal;
 }
 
@@ -1142,9 +1146,9 @@ CTBasicSharedPtrCreator< T, LockType >::CreateBasicSharedPtr( T* dummyForCppName
 template< typename T, class LockType >
 CTBasicSharedPtrCreator< T, LockType >::CTBasicSharedPtrCreator( T* derived )
     : m_shared( false )
-    , m_this( derived )
 {GUCEF_TRACE;
 
+    m_shared.m_originalAddressAsCreated = derived;
 }
 
 /*-------------------------------------------------------------------------*/

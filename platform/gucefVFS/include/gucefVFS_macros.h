@@ -53,6 +53,16 @@
 //-------------------------------------------------------------------------*/
 
 /*
+ *  In similar style as the CORE module's define for a dir seperation delimiter
+ *  we define one here for the VFS.
+ *  Since the VFS abstracts other filesystems we always use a forward slash regardless of
+ *  the operating system etc we are running on.
+ */
+#define GUCEF_VFS_DIR_SEP_CHAR          '/'
+
+/*-------------------------------------------------------------------------*/
+
+/*
  *      Auto detection of debug mode
  */
 #ifndef GUCEF_VFS_DEBUG_MODE
@@ -131,13 +141,3 @@
 
 #endif /* GUCEF_VFS_MACROS_H ? */
 
-/*-------------------------------------------------------------------------//
-//                                                                         //
-//      Info & Changes                                                     //
-//                                                                         //
-//-------------------------------------------------------------------------//
-
-- 26-03-2005 :
-       - Initial version of this file.
-
------------------------------------------------------------------------------*/

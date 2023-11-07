@@ -527,14 +527,14 @@ inline CString ToString( void ) { return typeid( typeNameParam ).name(); }
 
 inline CString::StringSet ToStringSet( const CUtf8String& str ) { CString::StringSet set; set.insert( str ); return set; }
 inline CString::StringSet ToStringSet( const CAsciiString& str ) { CString::StringSet set; set.insert( str ); return set; }
-inline CString::StringSet ToStringSet( const CUtf8String::StringVector& vec ) { CString::StringSet set; CUtf8String::StringVector::const_iterator i=vec.begin(); while ( i != vec.end() ) { set.insert( (*i) ); } return set; }
-inline CString::StringSet ToStringSet( const CAsciiString::StringVector& vec ) { CString::StringSet set; CAsciiString::StringVector::const_iterator i=vec.begin(); while ( i != vec.end() ) { set.insert( (*i) ); } return set; }
+inline CString::StringSet ToStringSet( const CUtf8String::StringVector& vec ) { CString::StringSet set; CUtf8String::StringVector::const_iterator i=vec.begin(); while ( i != vec.end() ) { set.insert( (*i) ); ++i; } return set; }
+inline CString::StringSet ToStringSet( const CAsciiString::StringVector& vec ) { CString::StringSet set; CAsciiString::StringVector::const_iterator i=vec.begin(); while ( i != vec.end() ) { set.insert( (*i) ); ++i; } return set; }
 #if ( GUCEF_DEFAULT_STRING_FORMAT == GUCEF_DATATYPE_ASCII_STRING )
-inline CString::StringSet ToStringSet( const CUtf8String::StringSet& orgSet ) { CString::StringSet set; CUtf8String::StringSet::const_iterator i=orgSet.begin(); while ( i != orgSet.end() ) { set.insert( (*i) ); } return set; }
+inline CString::StringSet ToStringSet( const CUtf8String::StringSet& orgSet ) { CString::StringSet set; CUtf8String::StringSet::const_iterator i=orgSet.begin(); while ( i != orgSet.end() ) { set.insert( (*i) ); ++i; } return set; }
 inline CString::StringSet ToStringSet( const CAsciiString::StringSet& orgSet ) { return orgSet; }
 #elif ( GUCEF_DEFAULT_STRING_FORMAT == GUCEF_DATATYPE_UTF8_STRING )
 inline CString::StringSet ToStringSet( const CUtf8String::StringSet& orgSet ) { return orgSet; }
-inline CString::StringSet ToStringSet( const CAsciiString::StringSet& orgSet ) { CString::StringSet set; CAsciiString::StringSet::const_iterator i=orgSet.begin(); while ( i != orgSet.end() ) { set.insert( (*i) ); } return set; }
+inline CString::StringSet ToStringSet( const CAsciiString::StringSet& orgSet ) { CString::StringSet set; CAsciiString::StringSet::const_iterator i=orgSet.begin(); while ( i != orgSet.end() ) { set.insert( (*i) ); ++i; } return set; }
 #endif
 
 /*-------------------------------------------------------------------------//

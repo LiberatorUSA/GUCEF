@@ -2388,7 +2388,8 @@ CVFS::GetFileSize( const CORE::CString& file ) const
 
 bool
 CVFS::AddDirToWatch( const CString& dirToWatch       ,
-                     const CDirWatchOptions& options )
+                     const CDirWatchOptions& options ,
+                     bool tryToCreatePathIfNotExists )
 {GUCEF_TRACE;
 
     CString path = ConformVfsFilePath( dirToWatch );
@@ -2407,7 +2408,7 @@ CVFS::AddDirToWatch( const CString& dirToWatch       ,
         TConstMountLink& mountLink = (*i);
         TArchivePtr archiveToWatch = mountLink.mountEntry->archive;
 
-        if ( !archiveToWatch->AddDirToWatch( mountLink.remainder, options ) )
+        if ( !archiveToWatch->AddDirToWatch( mountLink.remainder, options, tryToCreatePathIfNotExists ) )
             totalSuccess = false;
         ++i;
     }

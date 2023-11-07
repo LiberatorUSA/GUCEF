@@ -66,7 +66,8 @@ class GUCEF_CORE_PUBLIC_CPP CFileSystemDirectoryWatcher : public CObservingNotif
     public:
 
     virtual bool AddDirToWatch( const CString& dirToWatch       ,
-                                const CDirWatchOptions& options ) GUCEF_VIRTUAL_OVERRIDE;
+                                const CDirWatchOptions& options ,
+                                bool tryToCreatePathIfNotExists ) GUCEF_VIRTUAL_OVERRIDE;
 
     virtual bool RemoveDirToWatch( const CString& dirToWatch ) GUCEF_VIRTUAL_OVERRIDE;
 

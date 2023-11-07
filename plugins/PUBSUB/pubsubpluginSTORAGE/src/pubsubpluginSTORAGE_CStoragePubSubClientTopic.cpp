@@ -1046,12 +1046,12 @@ CStoragePubSubClientTopic::LoadConfig( const PUBSUB::CPubSubClientTopicConfig& c
     // Sanity check the config
     if ( config.needPublishSupport && config.needSubscribeSupport )
     {
-        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "StoragePubSubClientTopic(" + CORE::PointerToString( this ) + "):LoadConfig: This backend does not support publishing and subscribing on the same topic. Both are currently selected" );
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "StoragePubSubClientTopic(" + CORE::ToString( this ) + "):LoadConfig: This backend does not support publishing and subscribing on the same topic. Both are currently selected" );
         return false;
     }
     if ( !config.needPublishSupport && !config.needSubscribeSupport )
     {
-        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "StoragePubSubClientTopic(" + CORE::PointerToString( this ) + "):LoadConfig: Neither publishing nor subscribing is selected for the topic, this is invalid" );
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "StoragePubSubClientTopic(" + CORE::ToString( this ) + "):LoadConfig: Neither publishing nor subscribing is selected for the topic, this is invalid" );
         return false;
     }
 
@@ -1105,7 +1105,7 @@ CStoragePubSubClientTopic::BeginVfsOps( void )
         // This is a performance tradeoff specific to your use-case
         if ( GUCEF_NULL != m_syncVfsOpsTimer )
         {
-            GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "StoragePubSubClientTopic(" + CORE::PointerToString( this ) + "):BeginVfsOps: Will use timer for sync VFS ops" );
+            GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "StoragePubSubClientTopic(" + CORE::ToString( this ) + "):BeginVfsOps: Will use timer for sync VFS ops" );
             return m_syncVfsOpsTimer->SetEnabled( true );
         }
         return false;
@@ -1115,7 +1115,7 @@ CStoragePubSubClientTopic::BeginVfsOps( void )
         // Do we want a dedicated thread per topic or will a more general threadpool with intermixed work suffice
         // This is a performance tradeoff specific to your use-case
         //      Do you have extra threading capacity available on the node?
-        //      Is it important we write to VFS as fast as possible?
+        //      Is it important we read/write from/to VFS as fast as possible?
         //      Etc.
         if ( m_config.performVfsOpsInDedicatedThread )
         {
@@ -1128,7 +1128,7 @@ CStoragePubSubClientTopic::BeginVfsOps( void )
                 CORE::ThreadPoolPtr threadPool = m_client->GetThreadPool();
                 if ( threadPool.IsNULL() )
                 {
-                    GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "StoragePubSubClientTopic(" + CORE::PointerToString( this ) + "):BeginVfsOps: Failed to obtain dedicated thread pool for dedicated VFS thread for async operations. Falling back to global thread pool" );
+                    GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "StoragePubSubClientTopic(" + CORE::ToString( this ) + "):BeginVfsOps: Failed to obtain dedicated thread pool for dedicated VFS thread for async operations. Falling back to global thread pool" );
                     threadPool = CORE::CCoreGlobal::Instance()->GetTaskManager().GetThreadPool();
                     if ( threadPool.IsNULL() )
                     {
@@ -1138,17 +1138,17 @@ CStoragePubSubClientTopic::BeginVfsOps( void )
                 }
                 if ( threadPool->StartTask( m_vfsOpsThread ) )
                 {
-                    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "StoragePubSubClientTopic(" + CORE::PointerToString( this ) + "):BeginVfsOps: Started dedicated per-topic thread for async VFS ops" );
+                    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "StoragePubSubClientTopic(" + CORE::ToString( this ) + "):BeginVfsOps: Started dedicated per-topic thread for async VFS ops" );
                 }
                 else
                 {
-                    GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "StoragePubSubClientTopic(" + CORE::PointerToString( this ) + "):BeginVfsOps: Failed to start dedicated VFS thread for async operations" );
+                    GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "StoragePubSubClientTopic(" + CORE::ToString( this ) + "):BeginVfsOps: Failed to start dedicated VFS thread for async operations" );
                     return false;
                 }
             }
             else
             {
-                GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "StoragePubSubClientTopic(" + CORE::PointerToString( this ) + "):BeginVfsOps: Failed to create dedicated VFS task (thread) for async operations" );
+                GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "StoragePubSubClientTopic(" + CORE::ToString( this ) + "):BeginVfsOps: Failed to create dedicated VFS task (thread) for async operations" );
                 return false;
             }
         }
