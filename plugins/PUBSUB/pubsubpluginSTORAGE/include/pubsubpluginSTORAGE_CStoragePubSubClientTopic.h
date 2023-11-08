@@ -216,6 +216,17 @@ class PUBSUBPLUGIN_STORAGE_PLUGIN_PRIVATE_CPP CStoragePubSubClientTopic : public
 
     virtual void Shutdown( void );
 
+    /**
+     *  Sets the journal implementation (if any) to be used by the client
+     */
+    virtual bool SetJournal( PUBSUB::CIPubSubJournalBasicPtr journal ) GUCEF_VIRTUAL_OVERRIDE;
+
+    virtual PUBSUB::CIPubSubJournalBasicPtr GetJournal( void ) const GUCEF_VIRTUAL_OVERRIDE;
+
+    virtual void SetPulseGenerator( CORE::PulseGeneratorPtr newPulseGenerator ) GUCEF_VIRTUAL_OVERRIDE;
+    
+    virtual CORE::PulseGeneratorPtr GetPulseGenerator( void ) const GUCEF_VIRTUAL_OVERRIDE;
+
     class TopicMetrics
     {
         public:

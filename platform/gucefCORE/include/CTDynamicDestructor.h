@@ -142,10 +142,11 @@ template< typename T >
 void
 CTDynamicDestructor< T >::DestroyObject( T* objectToBeDestroyed ) const
 {GUCEF_TRACE;
-
+    
+    bool destroySelfOnDestroyObject = m_destroySelfOnDestroyObject;
     GUCEF_DELETE objectToBeDestroyed;
 
-    if ( m_destroySelfOnDestroyObject )
+    if ( destroySelfOnDestroyObject )
     {
         // For broad applicability of dynamic destructors we will pretend its always a logically const operation
         GUCEF_DELETE const_cast< CTDynamicDestructor< T >* >( this );
@@ -191,12 +192,14 @@ void
 CTTypeNamedDynamicDestructor< T >::DestroyObject( T* objectToBeDestroyed, const CString& classTypeName ) const
 {GUCEF_TRACE;
 
+    bool destroySelfOnDestroyObject = m_destroySelfOnDestroyObject;
+    
     if ( GUCEF_NULL != m_externalDestructor )
         m_externalDestructor->DestroyObject( objectToBeDestroyed, classTypeName );
     else
         GUCEF_DELETE objectToBeDestroyed;
 
-    if ( m_destroySelfOnDestroyObject )
+    if ( destroySelfOnDestroyObject )
     {
         // For broad applicability of dynamic destructors we will pretend its always a logically const operation
         GUCEF_DELETE const_cast< CTTypeNamedDynamicDestructor< T >* >( this );

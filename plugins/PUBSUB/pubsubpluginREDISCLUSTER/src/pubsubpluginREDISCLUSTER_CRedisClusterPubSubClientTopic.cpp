@@ -1840,6 +1840,20 @@ CRedisClusterPubSubClientTopic::GetClassTypeName( void ) const
 
 /*-------------------------------------------------------------------------*/
 
+void 
+CRedisClusterPubSubClientTopic::SetPulseGenerator( CORE::PulseGeneratorPtr newPulseGenerator )
+{GUCEF_TRACE;
+
+    if ( GUCEF_NULL != m_redisReconnectTimer )
+    {
+        m_redisReconnectTimer->SetPulseGenerator( newPulseGenerator );
+    }
+    
+    PUBSUB::CPubSubClientTopic::SetPulseGenerator( newPulseGenerator );
+}
+
+/*-------------------------------------------------------------------------*/
+
 CORE::PulseGeneratorPtr 
 CRedisClusterPubSubClientTopic::GetPulseGenerator( void ) const
 {GUCEF_TRACE;

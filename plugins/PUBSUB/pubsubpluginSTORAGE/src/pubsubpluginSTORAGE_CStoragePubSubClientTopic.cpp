@@ -1089,6 +1089,41 @@ CStoragePubSubClientTopic::Disconnect( void )
 
 /*-------------------------------------------------------------------------*/
 
+void 
+CStoragePubSubClientTopic::SetPulseGenerator( CORE::PulseGeneratorPtr newPulseGenerator )
+{GUCEF_TRACE;
+
+    if ( GUCEF_NULL != m_syncVfsOpsTimer )
+    {
+        m_syncVfsOpsTimer->SetPulseGenerator( newPulseGenerator );
+    }
+    if ( GUCEF_NULL != m_reconnectTimer )
+    {
+        m_reconnectTimer->SetPulseGenerator( newPulseGenerator );
+    }
+    if ( GUCEF_NULL != m_noAckRetransmitTimer )
+    {
+        m_noAckRetransmitTimer->SetPulseGenerator( newPulseGenerator );
+    }
+    if ( GUCEF_NULL != m_bufferContentTimeWindowCheckTimer )
+    {
+        m_bufferContentTimeWindowCheckTimer->SetPulseGenerator( newPulseGenerator );
+    }
+    
+    PUBSUB::CPubSubClientTopic::SetPulseGenerator( newPulseGenerator );
+}
+
+/*-------------------------------------------------------------------------*/
+
+CORE::PulseGeneratorPtr 
+CStoragePubSubClientTopic::GetPulseGenerator( void ) const
+{GUCEF_TRACE;
+
+    return PUBSUB::CPubSubClientTopic::GetPulseGenerator();
+}
+
+/*-------------------------------------------------------------------------*/
+
 bool
 CStoragePubSubClientTopic::BeginVfsOps( void )
 {GUCEF_TRACE;
@@ -1346,7 +1381,11 @@ CStoragePubSubClientTopic::Subscribe( void )
     MT::CScopeMutex lock( m_lock );
     if ( m_config.needSubscribeSupport && m_config.autoPushAfterStartupIfStorageToPubSub )
     {
-        AddStorageToPubSubRequest( StorageToPubSubRequest( m_config.oldestStoragePubSubMsgFileToLoad, m_config.youngestStoragePubSubMsgFileToLoad, true, m_config.autoPushAfterStartupIsPersistent ) );
+        if ( !AddStorageToPubSubRequest( StorageToPubSubRequest( m_config.oldestStoragePubSubMsgFileToLoad, m_config.youngestStoragePubSubMsgFileToLoad, true, m_config.autoPushAfterStartupIsPersistent ) ) )
+        {
+            GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "StoragePubSubClientTopic:Subscribe: Failed to 'subscribe to topic' for Topic Name \"" + m_config.topicName + "\" because we could not auto add a publish request as configured");
+            return false;
+        }
     }
 
     bool success = BeginVfsOps();
@@ -3557,6 +3596,26 @@ CStoragePubSubClientTopic::GetClassTypeName( void ) const
 
     static const CORE::CString classTypeName = "GUCEF::PUBSUBPLUGIN::STORAGE::CStoragePubSubClientTopic";
     return classTypeName;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CStoragePubSubClientTopic::SetJournal( PUBSUB::CIPubSubJournalBasicPtr journal )
+{GUCEF_TRACE;
+
+    MT::CScopeMutex lock( m_lock );
+    m_journal = journal;
+    return true;
+}
+
+/*-------------------------------------------------------------------------*/
+
+PUBSUB::CIPubSubJournalBasicPtr 
+CStoragePubSubClientTopic::GetJournal( void ) const
+{GUCEF_TRACE;
+
+    return m_journal;
 }
 
 /*-------------------------------------------------------------------------//

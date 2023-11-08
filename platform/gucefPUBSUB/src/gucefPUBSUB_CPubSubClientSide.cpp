@@ -1117,6 +1117,9 @@ CPubSubClientSide::TopicLink::SetPulseGenerator( CORE::PulseGeneratorPtr newPuls
                  callback                             );
 
     CORE::CTSGNotifier::SetPulseGenerator( newPulseGenerator );
+
+    if ( !topic.IsNULL() )
+        topic->SetPulseGenerator( newPulseGenerator );
 }
 
 /*-------------------------------------------------------------------------*/

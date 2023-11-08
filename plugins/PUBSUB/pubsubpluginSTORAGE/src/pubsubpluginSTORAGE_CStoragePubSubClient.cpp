@@ -408,6 +408,8 @@ CStoragePubSubClient::AutoCreateMultiTopicAccess( const TTopicConfigPtrToStringS
 
                             GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "StoragePubSubClient(" + CORE::ToString( this ) + "):AutoCreateMultiTopicAccess: Auto created topic \"" +
                                     topicConfig->topicName + "\" based on template config \"" + templateTopicConfig->topicName + "\"" );
+                        
+                            RegisterTopicEventHandlers( tAccess );
                         }
                         else
                         {
