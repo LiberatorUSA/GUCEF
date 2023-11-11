@@ -375,6 +375,15 @@ CStoragePubSubClientTopicConfig::operator=( const CStoragePubSubClientTopicConfi
     return *this;
 }
 
+/*-------------------------------------------------------------------------*/
+
+CORE::CICloneable* 
+CStoragePubSubClientTopicConfig::Clone( void ) const
+{GUCEF_TRACE;
+
+    return GUCEF_NEW CStoragePubSubClientTopicConfig( *this );
+}
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //

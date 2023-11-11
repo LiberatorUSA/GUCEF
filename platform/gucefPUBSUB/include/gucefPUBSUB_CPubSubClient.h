@@ -167,6 +167,11 @@ class GUCEF_PUBSUB_EXPORT_CPP CPubSubClient : public CORE::CTSGNotifier         
                                          CORE::PulseGeneratorPtr pulseGenerator = CORE::PulseGeneratorPtr() );
 
     /**
+     *  Attempts to obtain from the backend the default config for any topic
+     */
+    virtual CPubSubClientTopicConfigPtr GetDefaultTopicConfig( void ) = 0;
+
+    /**
      *  Attempts to obtain from the backend the config associated with a given topic, if any
      */
     virtual CPubSubClientTopicConfigPtr GetTopicConfig( const CString& topicName ) = 0;

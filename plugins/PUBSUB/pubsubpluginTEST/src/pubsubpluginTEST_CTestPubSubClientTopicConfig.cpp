@@ -154,6 +154,15 @@ CTestPubSubClientTopicConfig::operator=( const CTestPubSubClientTopicConfig& src
     return *this;
 }
 
+/*-------------------------------------------------------------------------*/
+
+CORE::CICloneable* 
+CTestPubSubClientTopicConfig::Clone( void ) const
+{GUCEF_TRACE;
+
+    return GUCEF_NEW CTestPubSubClientTopicConfig( *this );
+}
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //

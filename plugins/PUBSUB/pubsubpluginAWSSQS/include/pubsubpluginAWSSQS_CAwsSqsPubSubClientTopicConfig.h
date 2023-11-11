@@ -67,6 +67,8 @@ class PUBSUBPLUGIN_AWSSQS_PLUGIN_PRIVATE_CPP CAwsSqsPubSubClientTopicConfig : pu
     
     CAwsSqsPubSubClientTopicConfig( const PUBSUB::CPubSubClientTopicConfig& genericConfig );
 
+    CAwsSqsPubSubClientTopicConfig( const CAwsSqsPubSubClientTopicConfig& src );
+
     virtual ~CAwsSqsPubSubClientTopicConfig() GUCEF_VIRTUAL_OVERRIDE;
 
     CAwsSqsPubSubClientTopicConfig& operator=( const PUBSUB::CPubSubClientTopicConfig& src );
@@ -76,6 +78,8 @@ class PUBSUBPLUGIN_AWSSQS_PLUGIN_PRIVATE_CPP CAwsSqsPubSubClientTopicConfig : pu
     bool LoadCustomConfig( const CORE::CDataNode& config );
 
     bool LoadConfig( const PUBSUB::CPubSubClientTopicConfig& src );
+
+    virtual CORE::CICloneable* Clone( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
     bool topicNameIsQueueName;
     bool tryToUseSendMessageBatch;

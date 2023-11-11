@@ -79,6 +79,27 @@ CUdpPubSubClientTopicConfig::CUdpPubSubClientTopicConfig( void )
 
 /*-------------------------------------------------------------------------*/
 
+CUdpPubSubClientTopicConfig::CUdpPubSubClientTopicConfig( const CUdpPubSubClientTopicConfig& src )
+    : PUBSUB::CPubSubClientTopicConfig( src )
+    , CORE::CTSharedObjCreator< CUdpPubSubClientTopicConfig, MT::CMutex >( this )
+    , udpInterface( src.udpInterface )
+    , udpMulticastToJoin( src.udpMulticastToJoin )
+    , wantsTestPackage( src.wantsTestPackage )
+    , ticketRefillOnBusyCycle( src.ticketRefillOnBusyCycle )
+    , nrOfUdpReceiveBuffersPerSocket( src.nrOfUdpReceiveBuffersPerSocket )
+    , udpSocketOsReceiveBufferSize( src.udpSocketOsReceiveBufferSize )
+    , udpSocketUpdateCyclesPerPulse( src.udpSocketUpdateCyclesPerPulse )
+    , addUdpSourceAddressAsMetaData( src.addUdpSourceAddressAsMetaData )
+    , translateUdpSourceAddressToString( src.translateUdpSourceAddressToString )
+    , udpSourceAddressAsMetaDataKeyName( src.udpSourceAddressAsMetaDataKeyName )
+    , maxUdpPacketPayloadSizeInBytes( src.maxUdpPacketPayloadSizeInBytes )
+    , addTimestampToReceivedPackages( src.addTimestampToReceivedPackages )
+{GUCEF_TRACE;
+     
+}
+
+/*-------------------------------------------------------------------------*/
+
 CUdpPubSubClientTopicConfig::CUdpPubSubClientTopicConfig( const PUBSUB::CPubSubClientTopicConfig& genericConfig )
     : PUBSUB::CPubSubClientTopicConfig( genericConfig )
     , CORE::CTSharedObjCreator< CUdpPubSubClientTopicConfig, MT::CMutex >( this )
@@ -199,6 +220,15 @@ CUdpPubSubClientTopicConfig::operator=( const CUdpPubSubClientTopicConfig& src )
         addTimestampToReceivedPackages = src.addTimestampToReceivedPackages;
     }
     return *this;
+}
+
+/*-------------------------------------------------------------------------*/
+
+CORE::CICloneable* 
+CUdpPubSubClientTopicConfig::Clone( void ) const
+{GUCEF_TRACE;
+
+    return GUCEF_NEW CUdpPubSubClientTopicConfig( *this );
 }
 
 /*-------------------------------------------------------------------------//

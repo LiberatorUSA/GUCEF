@@ -78,7 +78,8 @@ namespace PUBSUB {
 /**
  *  Class providing configuration options for pub-sub topics
  */
-class GUCEF_PUBSUB_EXPORT_CPP CPubSubClientTopicConfig : public CORE::CIConfigurable
+class GUCEF_PUBSUB_EXPORT_CPP CPubSubClientTopicConfig : public CORE::CIConfigurable ,
+                                                         public CORE::CICloneable
 {
     public:
 
@@ -122,6 +123,8 @@ class GUCEF_PUBSUB_EXPORT_CPP CPubSubClientTopicConfig : public CORE::CIConfigur
     virtual bool LoadConfig( const CORE::CDataNode& treeroot ) GUCEF_VIRTUAL_OVERRIDE;
 
     virtual const CString& GetClassTypeName( void ) const GUCEF_VIRTUAL_OVERRIDE;
+
+    virtual CORE::CICloneable* Clone( void ) const GUCEF_VIRTUAL_OVERRIDE;
 };
 
 /*-------------------------------------------------------------------------*/

@@ -56,6 +56,17 @@ CAwsSqsPubSubClientTopicConfig::CAwsSqsPubSubClientTopicConfig( void )
 
 /*-------------------------------------------------------------------------*/
 
+CAwsSqsPubSubClientTopicConfig::CAwsSqsPubSubClientTopicConfig( const CAwsSqsPubSubClientTopicConfig& src )
+    : PUBSUB::CPubSubClientTopicConfig( src )
+    , CORE::CTSharedObjCreator< CAwsSqsPubSubClientTopicConfig, MT::CMutex >( this )
+    , topicNameIsQueueName( src.topicNameIsQueueName )
+    , tryToUseSendMessageBatch( src.tryToUseSendMessageBatch )
+{GUCEF_TRACE;
+
+}
+
+/*-------------------------------------------------------------------------*/
+
 CAwsSqsPubSubClientTopicConfig::CAwsSqsPubSubClientTopicConfig( const PUBSUB::CPubSubClientTopicConfig& genericConfig )
     : PUBSUB::CPubSubClientTopicConfig( genericConfig )
     , CORE::CTSharedObjCreator< CAwsSqsPubSubClientTopicConfig, MT::CMutex >( this )
@@ -126,6 +137,15 @@ CAwsSqsPubSubClientTopicConfig::operator=( const CAwsSqsPubSubClientTopicConfig&
         tryToUseSendMessageBatch = src.tryToUseSendMessageBatch;
     }
     return *this;
+}
+
+/*-------------------------------------------------------------------------*/
+
+CORE::CICloneable* 
+CAwsSqsPubSubClientTopicConfig::Clone( void ) const
+{GUCEF_TRACE;
+
+    return GUCEF_NEW CAwsSqsPubSubClientTopicConfig( *this );
 }
 
 /*-------------------------------------------------------------------------//

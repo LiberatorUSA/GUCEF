@@ -294,6 +294,16 @@ CMsmqPubSubClient::DestroyTopicAccess( const CORE::CString& topicName )
 
 /*-------------------------------------------------------------------------*/
 
+PUBSUB::CPubSubClientTopicConfigPtr
+CMsmqPubSubClient::GetDefaultTopicConfig( void )
+{GUCEF_TRACE;
+
+    MT::CScopeMutex lock( m_lock );
+    return m_config.defaultTopicConfig;
+}
+
+/*-------------------------------------------------------------------------*/
+
 PUBSUB::CPubSubClientTopicConfigPtr 
 CMsmqPubSubClient::GetTopicConfig( const CORE::CString& topicName )
 {GUCEF_TRACE;

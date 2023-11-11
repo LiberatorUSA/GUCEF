@@ -74,6 +74,8 @@ class PUBSUBPLUGIN_REDISCLUSTER_PLUGIN_PRIVATE_CPP CRedisClusterPubSubClientTopi
 
     CRedisClusterPubSubClientTopicConfig( void );
     
+    CRedisClusterPubSubClientTopicConfig( const CRedisClusterPubSubClientTopicConfig& src );
+
     CRedisClusterPubSubClientTopicConfig( const PUBSUB::CPubSubClientTopicConfig& genericConfig );
 
     virtual ~CRedisClusterPubSubClientTopicConfig() GUCEF_VIRTUAL_OVERRIDE;
@@ -85,6 +87,8 @@ class PUBSUBPLUGIN_REDISCLUSTER_PLUGIN_PRIVATE_CPP CRedisClusterPubSubClientTopi
     bool LoadCustomConfig( const CORE::CDataNode& config );
 
     bool LoadConfig( const PUBSUB::CPubSubClientTopicConfig& src );
+
+    virtual CORE::CICloneable* Clone( void ) const GUCEF_VIRTUAL_OVERRIDE;
 };
 
 /*--------------------------------------------------------------------------*/

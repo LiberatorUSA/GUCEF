@@ -589,6 +589,16 @@ CRedisClusterPubSubClient::AutoDestroyTopicAccess( const CORE::CString::StringSe
 /*-------------------------------------------------------------------------*/
 
 PUBSUB::CPubSubClientTopicConfigPtr
+CRedisClusterPubSubClient::GetDefaultTopicConfig( void )
+{GUCEF_TRACE;
+
+    MT::CScopeMutex lock( m_lock );
+    return m_config.defaultTopicConfig;
+}
+
+/*-------------------------------------------------------------------------*/
+
+PUBSUB::CPubSubClientTopicConfigPtr
 CRedisClusterPubSubClient::GetTopicConfig( const CORE::CString& topicName )
 {GUCEF_TRACE;
 

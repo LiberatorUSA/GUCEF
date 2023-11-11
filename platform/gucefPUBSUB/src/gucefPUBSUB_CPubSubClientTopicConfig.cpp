@@ -184,6 +184,15 @@ CPubSubClientTopicConfig::GetClassTypeName( void ) const
     return classTypeName;
 }
 
+/*-------------------------------------------------------------------------*/
+
+CORE::CICloneable* 
+CPubSubClientTopicConfig::Clone( void ) const 
+{GUCEF_TRACE;
+
+    return GUCEF_NEW CPubSubClientTopicConfig( *this );
+}
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //

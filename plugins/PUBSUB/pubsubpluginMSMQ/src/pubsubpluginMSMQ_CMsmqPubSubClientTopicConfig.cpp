@@ -472,6 +472,15 @@ CMsmqPubSubClientTopicConfig::SupplementPropIdsWithPairedPropId( MSGPROPIDVector
     return true;
 }
 
+/*-------------------------------------------------------------------------*/
+
+CORE::CICloneable* 
+CMsmqPubSubClientTopicConfig::Clone( void ) const
+{GUCEF_TRACE;
+
+    return GUCEF_NEW CMsmqPubSubClientTopicConfig( *this );
+}
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //

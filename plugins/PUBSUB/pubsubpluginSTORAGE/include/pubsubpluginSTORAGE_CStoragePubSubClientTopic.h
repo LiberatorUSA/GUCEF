@@ -214,6 +214,11 @@ class PUBSUBPLUGIN_STORAGE_PLUGIN_PRIVATE_CPP CStoragePubSubClientTopic : public
 
     virtual bool LoadConfig( const PUBSUB::CPubSubClientTopicConfig& config ) GUCEF_VIRTUAL_OVERRIDE;
 
+    virtual bool LoadConfig( const CStoragePubSubClientTopicConfig& config );
+
+    template <class C>
+    bool LoadConfigType( const C& config );
+
     virtual void Shutdown( void );
 
     /**

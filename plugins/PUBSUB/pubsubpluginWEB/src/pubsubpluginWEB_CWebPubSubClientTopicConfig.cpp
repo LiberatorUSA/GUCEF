@@ -82,6 +82,20 @@ CWebPubSubClientTopicConfig::CWebPubSubClientTopicConfig( const PUBSUB::CPubSubC
 
 /*-------------------------------------------------------------------------*/
 
+CWebPubSubClientTopicConfig::CWebPubSubClientTopicConfig( const CWebPubSubClientTopicConfig& src )
+    : PUBSUB::CPubSubClientTopicConfig( src )
+    , CORE::CTSharedObjCreator< CWebPubSubClientTopicConfig, MT::CMutex >( this )
+    , httpServerPort( src.httpServerPort )
+    , exposeBasicHealthEndpoint( src.exposeBasicHealthEndpoint )
+    , basicHealthEndpointPath( src.basicHealthEndpointPath )
+    , supportHttpServerBasedRestEndpoints( src.supportHttpServerBasedRestEndpoints )
+    , maxPublishedMsgCountToRetainForRest( src.maxPublishedMsgCountToRetainForRest )
+{GUCEF_TRACE;
+      
+}
+
+/*-------------------------------------------------------------------------*/
+
 CWebPubSubClientTopicConfig::~CWebPubSubClientTopicConfig()
 {GUCEF_TRACE;
 
@@ -147,6 +161,15 @@ CWebPubSubClientTopicConfig::operator=( const CWebPubSubClientTopicConfig& src )
         maxPublishedMsgCountToRetainForRest = src.maxPublishedMsgCountToRetainForRest;
     }
     return *this;
+}
+
+/*-------------------------------------------------------------------------*/
+
+CORE::CICloneable* 
+CWebPubSubClientTopicConfig::Clone( void ) const
+{GUCEF_TRACE;
+
+    return GUCEF_NEW CWebPubSubClientTopicConfig( *this );
 }
 
 /*-------------------------------------------------------------------------//

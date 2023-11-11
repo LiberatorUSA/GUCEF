@@ -79,6 +79,8 @@ class PUBSUBPLUGIN_KAFKA_PLUGIN_PRIVATE_CPP CKafkaPubSubClientTopicConfig : publ
     
     CKafkaPubSubClientTopicConfig( void );
     
+    CKafkaPubSubClientTopicConfig( const CKafkaPubSubClientTopicConfig& src );
+
     CKafkaPubSubClientTopicConfig( const PUBSUB::CPubSubClientTopicConfig& genericConfig );
 
     virtual ~CKafkaPubSubClientTopicConfig() GUCEF_VIRTUAL_OVERRIDE;
@@ -90,6 +92,8 @@ class PUBSUBPLUGIN_KAFKA_PLUGIN_PRIVATE_CPP CKafkaPubSubClientTopicConfig : publ
     bool LoadCustomConfig( const CORE::CDataNode& config );
 
     bool LoadConfig( const PUBSUB::CPubSubClientTopicConfig& src );
+
+    virtual CORE::CICloneable* Clone( void ) const GUCEF_VIRTUAL_OVERRIDE;
 };
 
 /*-------------------------------------------------------------------------*/

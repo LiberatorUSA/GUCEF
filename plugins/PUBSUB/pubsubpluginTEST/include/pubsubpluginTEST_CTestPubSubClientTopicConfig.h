@@ -81,6 +81,8 @@ class PUBSUBPLUGIN_TEST_PLUGIN_PRIVATE_CPP CTestPubSubClientTopicConfig : public
     virtual bool LoadCustomConfig( const CORE::CDataNode& config ) GUCEF_VIRTUAL_OVERRIDE;
 
     virtual bool SaveCustomConfig( CORE::CDataNode& config ) const GUCEF_VIRTUAL_OVERRIDE;
+
+    virtual CORE::CICloneable* Clone( void ) const GUCEF_VIRTUAL_OVERRIDE;
 };
 
 /*-------------------------------------------------------------------------//

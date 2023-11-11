@@ -262,6 +262,16 @@ CKafkaPubSubClient::DestroyTopicAccess( const CORE::CString& topicName )
 
 /*-------------------------------------------------------------------------*/
 
+PUBSUB::CPubSubClientTopicConfigPtr
+CKafkaPubSubClient::GetDefaultTopicConfig( void )
+{GUCEF_TRACE;
+
+    MT::CScopeMutex lock( m_lock );
+    return m_config.defaultTopicConfig;
+}
+
+/*-------------------------------------------------------------------------*/
+
 PUBSUB::CPubSubClientTopicConfigPtr 
 CKafkaPubSubClient::GetTopicConfig( const CORE::CString& topicName )
 {GUCEF_TRACE;

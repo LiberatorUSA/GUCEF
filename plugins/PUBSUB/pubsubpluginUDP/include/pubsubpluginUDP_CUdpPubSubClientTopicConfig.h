@@ -73,6 +73,8 @@ class PUBSUBPLUGIN_UDP_PLUGIN_PRIVATE_CPP CUdpPubSubClientTopicConfig : public P
 
     CUdpPubSubClientTopicConfig( void );
     
+    CUdpPubSubClientTopicConfig( const CUdpPubSubClientTopicConfig& src );
+
     CUdpPubSubClientTopicConfig( const PUBSUB::CPubSubClientTopicConfig& genericConfig );
 
     virtual ~CUdpPubSubClientTopicConfig() GUCEF_VIRTUAL_OVERRIDE;
@@ -84,6 +86,8 @@ class PUBSUBPLUGIN_UDP_PLUGIN_PRIVATE_CPP CUdpPubSubClientTopicConfig : public P
     bool LoadCustomConfig( const CORE::CDataNode& config );
 
     bool LoadConfig( const PUBSUB::CPubSubClientTopicConfig& src );
+
+    virtual CORE::CICloneable* Clone( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
     COMCORE::CHostAddress udpInterface;
     HostAddressVector udpMulticastToJoin;

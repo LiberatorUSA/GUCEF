@@ -63,6 +63,24 @@ CRedisClusterPubSubClientTopicConfig::CRedisClusterPubSubClientTopicConfig( void
 
 /*-------------------------------------------------------------------------*/
 
+CRedisClusterPubSubClientTopicConfig::CRedisClusterPubSubClientTopicConfig( const CRedisClusterPubSubClientTopicConfig& src )
+    : PUBSUB::CPubSubClientTopicConfig( src )
+    , CORE::CTSharedObjCreator< CRedisClusterPubSubClientTopicConfig, MT::CMutex >( this )
+    , redisXAddMaxLen( src.redisXAddMaxLen )
+    , redisXAddMaxLenIsApproximate( src.redisXAddMaxLenIsApproximate )    
+    , redisXAddIgnoreMsgId( src.redisXAddIgnoreMsgId )
+    , redisXReadDefaultOffset( src.redisXReadDefaultOffset )
+    , redisXReadCount( src.redisXReadCount )
+    , redisXReadBlockTimeoutInMs( src.redisXReadBlockTimeoutInMs )
+    , treatXReadBlockTimeoutAsEndOfDataEvent( src.treatXReadBlockTimeoutAsEndOfDataEvent )
+    , minAvailableInFlightSlotsBeforeRead( src.minAvailableInFlightSlotsBeforeRead )
+    , useDedicatedReadThread( src.useDedicatedReadThread )
+{GUCEF_TRACE;
+ 
+}
+
+/*-------------------------------------------------------------------------*/
+
 CRedisClusterPubSubClientTopicConfig::CRedisClusterPubSubClientTopicConfig( const PUBSUB::CPubSubClientTopicConfig& genericConfig )
     : PUBSUB::CPubSubClientTopicConfig( genericConfig )
     , CORE::CTSharedObjCreator< CRedisClusterPubSubClientTopicConfig, MT::CMutex >( this )
@@ -153,6 +171,15 @@ CRedisClusterPubSubClientTopicConfig::operator=( const CRedisClusterPubSubClient
         useDedicatedReadThread = src.useDedicatedReadThread;
     }
     return *this;
+}
+
+/*-------------------------------------------------------------------------*/
+
+CORE::CICloneable* 
+CRedisClusterPubSubClientTopicConfig::Clone( void ) const
+{GUCEF_TRACE;
+
+    return GUCEF_NEW CRedisClusterPubSubClientTopicConfig( *this );
 }
 
 /*-------------------------------------------------------------------------//

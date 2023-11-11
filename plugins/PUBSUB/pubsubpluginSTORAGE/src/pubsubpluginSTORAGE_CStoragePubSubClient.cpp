@@ -387,7 +387,7 @@ CStoragePubSubClient::AutoCreateMultiTopicAccess( const TTopicConfigPtrToStringS
                     CStoragePubSubClientTopicConfigPtr topicConfig = CStoragePubSubClientTopicConfig::CreateSharedObj();
                     topicConfig->LoadConfig( *templateTopicConfig.GetPointerAlways() ); 
                     topicConfig->topicName = (*i);
-                    topicConfig->vfsStorageRootPath = m_config.vfsStorageRootPath;
+                    topicConfig->vfsStorageRootPath = m_config.vfsStorageRootPath + GUCEF_VFS_DIR_SEP_CHAR + topicConfig->topicName + GUCEF_VFS_DIR_SEP_CHAR;
 
                     CStoragePubSubClientTopicPtr tAccess;
                     {
@@ -475,7 +475,7 @@ CStoragePubSubClient::CreateMultiTopicAccess( PUBSUB::CPubSubClientTopicConfigPt
                              m_config.includeDirParentInTopicName  , 
                              topicConfig->topicName                ) )
         {
-            GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "StoragePubSubClient:CreateMultiTopicAccess: Found " + CORE::ToString( dirList.size() ) + " dirs" );
+            GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "StoragePubSubClient:CreateMultiTopicAccess: Found " + CORE::ToString( dirList.size() ) + " dirs matching topic filter: " + topicConfig->topicName );
 
             // When used as topic names we dont want a trailing '/'
             VFS::CVFS::TStringVector::iterator i = dirList.begin();
@@ -634,6 +634,16 @@ CStoragePubSubClient::DestroyTopicAccess( const CORE::CString& topicName )
 /*-------------------------------------------------------------------------*/
 
 PUBSUB::CPubSubClientTopicConfigPtr
+CStoragePubSubClient::GetDefaultTopicConfig( void )
+{GUCEF_TRACE;
+
+    MT::CScopeMutex lock( m_lock );
+    return m_config.defaultTopicConfig;
+}
+
+/*-------------------------------------------------------------------------*/
+
+PUBSUB::CPubSubClientTopicConfigPtr
 CStoragePubSubClient::GetTopicConfig( const CORE::CString& topicName )
 {GUCEF_TRACE;
 
@@ -648,6 +658,7 @@ CStoragePubSubClient::GetTopicConfig( const CORE::CString& topicName )
         }
         ++i;
     }
+
     return PUBSUB::CPubSubClientTopicConfigPtr();
 }
 

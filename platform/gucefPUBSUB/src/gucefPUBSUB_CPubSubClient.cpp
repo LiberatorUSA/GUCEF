@@ -383,6 +383,19 @@ CPubSubClient::CreateMultiTopicAccess( const CString& topicName               ,
     // In the multi-topic scenario we'd expect the topic name to be a pattern to match
     // As such the config applies to everything matching the pattern
     CPubSubClientTopicConfigPtr topicConfig = GetTopicConfig( topicName );
+    if ( topicConfig.IsNULL() )
+    {
+        CPubSubClientTopicConfigPtr defaultTopicConfig = GetDefaultTopicConfig();
+        if ( !defaultTopicConfig.IsNULL() )
+        {
+            topicConfig = CPubSubClientTopicConfigPtr( static_cast< CPubSubClientTopicConfig* >( defaultTopicConfig->Clone() ) );
+            if ( !topicConfig.IsNULL() )
+            {
+                // overwrite the template's topic name, which could be anything, with the topic name given
+                topicConfig->topicName = topicName;
+            }
+        }
+    }
     if ( !topicConfig.IsNULL() )
     {
         return CreateMultiTopicAccess( topicConfig, topicAccess, pulseGenerator );

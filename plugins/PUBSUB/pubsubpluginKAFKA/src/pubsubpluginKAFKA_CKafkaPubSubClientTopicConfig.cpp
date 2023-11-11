@@ -67,6 +67,27 @@ CKafkaPubSubClientTopicConfig::CKafkaPubSubClientTopicConfig( void )
 
 /*-------------------------------------------------------------------------*/
 
+CKafkaPubSubClientTopicConfig::CKafkaPubSubClientTopicConfig( const CKafkaPubSubClientTopicConfig& src )
+    : PUBSUB::CPubSubClientTopicConfig( src )
+    , CORE::CTSharedObjCreator< CKafkaPubSubClientTopicConfig, MT::CMutex >( this )
+    , kafkaProducerTopicConfigSettings( src.kafkaProducerTopicConfigSettings )
+    , kafkaConsumerTopicConfigSettings( src.kafkaConsumerTopicConfigSettings )
+    , consumerModeStartOffset( src.consumerModeStartOffset )
+    , useKafkaMsgHeadersForConsumerFiltering( src.useKafkaMsgHeadersForConsumerFiltering )
+    , kafkaMsgHeaderUsedForFiltering( src.kafkaMsgHeaderUsedForFiltering )
+    , kafkaMsgValuesUsedForFiltering( src.kafkaMsgValuesUsedForFiltering )
+    , addProducerHostnameAsKafkaMsgHeader( src.addProducerHostnameAsKafkaMsgHeader )
+    , prefixToAddForMetaDataKvPairs( src.prefixToAddForMetaDataKvPairs )
+    , prefixToAddForKvPairs( src.prefixToAddForKvPairs )
+    , stripPrefixForMetaDataKvPairs( src.stripPrefixForMetaDataKvPairs )
+    , stripPrefixForKvPairs( src.stripPrefixForKvPairs )
+    , maxKafkaErrorsToBeHealthy( src.maxKafkaErrorsToBeHealthy )
+{GUCEF_TRACE;
+ 
+}
+
+/*-------------------------------------------------------------------------*/
+
 CKafkaPubSubClientTopicConfig::CKafkaPubSubClientTopicConfig( const PUBSUB::CPubSubClientTopicConfig& genericConfig )
     : PUBSUB::CPubSubClientTopicConfig( genericConfig )
     , CORE::CTSharedObjCreator< CKafkaPubSubClientTopicConfig, MT::CMutex >( this )
@@ -230,6 +251,15 @@ CKafkaPubSubClientTopicConfig::operator=( const CKafkaPubSubClientTopicConfig& s
         maxKafkaErrorsToBeHealthy = src.maxKafkaErrorsToBeHealthy;
     }
     return *this;
+}
+
+/*-------------------------------------------------------------------------*/
+
+CORE::CICloneable* 
+CKafkaPubSubClientTopicConfig::Clone( void ) const
+{GUCEF_TRACE;
+
+    return GUCEF_NEW CKafkaPubSubClientTopicConfig( *this );
 }
 
 /*-------------------------------------------------------------------------//

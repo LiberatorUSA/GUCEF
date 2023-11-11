@@ -215,6 +215,16 @@ CWebPubSubClient::CreateTopicAccess( PUBSUB::CPubSubClientTopicConfigPtr topicCo
 
 /*-------------------------------------------------------------------------*/
 
+PUBSUB::CPubSubClientTopicConfigPtr
+CWebPubSubClient::GetDefaultTopicConfig( void )
+{GUCEF_TRACE;
+
+    MT::CObjectScopeLock lock( this );
+    return m_config.defaultTopicConfig;
+}
+
+/*-------------------------------------------------------------------------*/
+
 PUBSUB::CPubSubClientTopicPtr
 CWebPubSubClient::GetTopicAccess( const CORE::CString& topicName )
 {GUCEF_TRACE;

@@ -75,6 +75,8 @@ class PUBSUBPLUGIN_MSMQ_PLUGIN_PRIVATE_CPP CMsmqPubSubClientTopicConfig : public
 
     virtual ~CMsmqPubSubClientTopicConfig() GUCEF_VIRTUAL_OVERRIDE;
 
+    virtual CORE::CICloneable* Clone( void ) const GUCEF_VIRTUAL_OVERRIDE;
+
     CMsmqPubSubClientTopicConfig& operator=( const PUBSUB::CPubSubClientTopicConfig& src );
 
     CMsmqPubSubClientTopicConfig& operator=( const CMsmqPubSubClientTopicConfig& src );

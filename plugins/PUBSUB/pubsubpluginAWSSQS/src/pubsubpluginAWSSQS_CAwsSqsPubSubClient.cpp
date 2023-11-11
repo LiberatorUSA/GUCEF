@@ -266,6 +266,16 @@ CAwsSqsPubSubClient::DestroyTopicAccess( const CORE::CString& topicName )
 /*-------------------------------------------------------------------------*/
 
 PUBSUB::CPubSubClientTopicConfigPtr
+CAwsSqsPubSubClient::GetDefaultTopicConfig( void )
+{GUCEF_TRACE;
+
+    MT::CObjectScopeLock lock( this );
+    return m_config.defaultTopicConfig;
+}
+
+/*-------------------------------------------------------------------------*/
+
+PUBSUB::CPubSubClientTopicConfigPtr
 CAwsSqsPubSubClient::GetTopicConfig( const CORE::CString& topicName )
 {GUCEF_TRACE;
 

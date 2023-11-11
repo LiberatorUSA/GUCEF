@@ -66,6 +66,8 @@ class PUBSUBPLUGIN_WEB_PLUGIN_PRIVATE_CPP CWebPubSubClientTopicConfig : public P
 
     CWebPubSubClientTopicConfig( void );
     
+    CWebPubSubClientTopicConfig( const CWebPubSubClientTopicConfig& src );
+
     CWebPubSubClientTopicConfig( const PUBSUB::CPubSubClientTopicConfig& genericConfig );
 
     virtual ~CWebPubSubClientTopicConfig() GUCEF_VIRTUAL_OVERRIDE;
@@ -77,6 +79,8 @@ class PUBSUBPLUGIN_WEB_PLUGIN_PRIVATE_CPP CWebPubSubClientTopicConfig : public P
     bool LoadCustomConfig( const CORE::CDataNode& config );
 
     bool LoadConfig( const PUBSUB::CPubSubClientTopicConfig& src );
+
+    virtual CORE::CICloneable* Clone( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
     CORE::UInt16 httpServerPort;
     bool exposeBasicHealthEndpoint;

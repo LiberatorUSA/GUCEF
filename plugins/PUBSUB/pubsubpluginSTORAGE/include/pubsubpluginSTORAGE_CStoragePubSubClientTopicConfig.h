@@ -133,6 +133,8 @@ class PUBSUBPLUGIN_STORAGE_PLUGIN_PRIVATE_CPP CStoragePubSubClientTopicConfig : 
     virtual bool LoadCustomConfig( const CORE::CDataNode& config );
 
     virtual bool SaveCustomConfig( CORE::CDataNode& config ) const;
+
+    virtual CORE::CICloneable* Clone( void ) const GUCEF_VIRTUAL_OVERRIDE;
 };
 
 /*-------------------------------------------------------------------------*/

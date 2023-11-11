@@ -1043,6 +1043,25 @@ bool
 CStoragePubSubClientTopic::LoadConfig( const PUBSUB::CPubSubClientTopicConfig& config )
 {GUCEF_TRACE;
 
+    return LoadConfigType< PUBSUB::CPubSubClientTopicConfig >( config );
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CStoragePubSubClientTopic::LoadConfig( const CStoragePubSubClientTopicConfig& config )
+{GUCEF_TRACE;
+    
+    return LoadConfigType< CStoragePubSubClientTopicConfig >( config );
+}
+
+/*-------------------------------------------------------------------------*/
+
+template <class C>
+bool 
+CStoragePubSubClientTopic::LoadConfigType( const C& config )
+{GUCEF_TRACE;
+
     // Sanity check the config
     if ( config.needPublishSupport && config.needSubscribeSupport )
     {
