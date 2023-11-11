@@ -1594,6 +1594,42 @@ CPubSubFlowRouter::IsTrackingInFlightPublishedMsgsForAcksNeededForSide( const CP
 
 /*-------------------------------------------------------------------------*/
 
+bool 
+CPubSubFlowRouter::ShouldSideBeConnected( CPubSubClientSide* side ) const
+{GUCEF_TRACE;
+
+    if ( GUCEF_NULL != side )
+    {
+        MT::CScopeReaderLock lock( m_lock );
+    
+        TSidePtrToRouteInfoPtrVectorMap::const_iterator i = m_usedInRouteMap.find( side );
+        if ( i != m_usedInRouteMap.end() )
+        {
+            const TRouteInfoPtrVector& multiRouteInfo = (*i).second;
+            TRouteInfoPtrVector::const_iterator n = multiRouteInfo.begin();
+            while ( n != multiRouteInfo.end() )
+            {
+                const CRouteInfo* routeInfo = (*n);
+
+                if ( routeInfo->fromSide == side         &&
+                     routeInfo->IsSpilloverInActiveUse() )
+                {        
+                    // For destinations we always want to be connected so they are ready for use
+                    // for sources this is usually also true except for when a spillover is used 
+                    // a spillover alters the 'from' of the route dynamically
+                    return false;
+                }
+                ++n;
+            }
+        }
+    
+        return true;
+    }
+    return false;    
+}
+
+/*-------------------------------------------------------------------------*/
+
 void 
 CPubSubFlowRouter::RegisterSideEventHandlers( CPubSubClientSide* side )
 {GUCEF_TRACE;

@@ -103,6 +103,8 @@ class GUCEF_PUBSUB_EXPORT_CPP CPubSubFlowRouter : public CORE::CTSGNotifier
 
     bool IsTrackingInFlightPublishedMsgsForAcksNeeded( CPubSubClientSide* sideWeAskFor ) const;
 
+    bool ShouldSideBeConnected( CPubSubClientSide* sideWeAskFor ) const;
+
     bool PublishMsgs( CPubSubClientSide* fromSide                          ,
                       const CPubSubClientTopic::TPubSubMsgsRefVector& msgs ,
                       RouteType routeType = RouteType::Primary             );

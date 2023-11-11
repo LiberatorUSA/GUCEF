@@ -658,18 +658,28 @@ CPubSubClientSide::OnTopicAccessCreated( CORE::CNotifier* notifier    ,
     {
         MT::CScopeWriterLock lock( m_rwdataLock );
 
-        GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientSide(" + CORE::PointerToString( this ) +
+        GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientSide(" + CORE::ToString( this ) +
             "):OnTopicAccessCreated: Configuring topic link for new topic " + topicAccess->GetTopicName() );
 
         // Configure the link to the topic if needed
         // leave pre-existing topics alone
         if ( ConfigureTopicLink( m_sideSettings, topicAccess, false ) )
         {
-            ConnectPubSubClientTopic( *topicAccess, m_clientFeatures, m_sideSettings, false );
+            // Connect the newly configured topic if this is part of an active flow/route
+            // Similarly if this is part of an inactive route we should defer connecting
+            if ( GUCEF_NULL == m_flowRouter || m_flowRouter->ShouldSideBeConnected( this ) )
+            {
+                ConnectPubSubClientTopic( *topicAccess, m_clientFeatures, m_sideSettings, false );
+            }
+            else
+            {
+                GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientSide(" + CORE::ToString( this ) +
+                    "):OnTopicAccessCreated: Skipping connecting topic at this time: " + topicAccess->GetTopicName() );
+            }
         }
         else
         {
-            GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientSide(" + CORE::PointerToString( this ) +
+            GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientSide(" + CORE::ToString( this ) +
                 "):OnTopicAccessCreated: Failed configuring topic link for new topic " + topicAccess->GetTopicName() );
         }
     }
@@ -693,7 +703,7 @@ CPubSubClientSide::OnTopicAccessDestroyed( CORE::CNotifier* notifier    ,
     {
         MT::CScopeWriterLock lock( m_rwdataLock );
         
-        GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientSide(" + CORE::PointerToString( this ) +
+        GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientSide(" + CORE::ToString( this ) +
             "):OnTopicAccessDestroyed: Removing topic link info for destroyed topic " + topicAccess->GetTopicName() );
 
         // @TODO: What to do about in-flight messages, mailbox, etc? Any special action?
@@ -722,18 +732,28 @@ CPubSubClientSide::OnTopicsAccessAutoCreated( CORE::CNotifier* notifier    ,
             {
                 MT::CScopeWriterLock lock( m_rwdataLock );
                 
-                GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientSide(" + CORE::PointerToString( this ) +
+                GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientSide(" + CORE::ToString( this ) +
                     "):OnTopicsAccessAutoCreated: Configuring topic link for new auto topic " + topicAccess->GetTopicName() );
 
                 // Configure the link to the topic if needed
                 // leave pre-existing topics alone
                 if ( ConfigureTopicLink( m_sideSettings, topicAccess, false ) )
                 {
-                    ConnectPubSubClientTopic( *topicAccess, m_clientFeatures, m_sideSettings, false );
+                    // Connect the newly configured topic if this is part of an active flow/route
+                    // Similarly if this is part of an inactive route we should defer connecting
+                    if ( GUCEF_NULL == m_flowRouter || m_flowRouter->ShouldSideBeConnected( this ) )
+                    {
+                        ConnectPubSubClientTopic( *topicAccess, m_clientFeatures, m_sideSettings, false );
+                    }
+                    else
+                    {
+                        GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientSide(" + CORE::ToString( this ) +
+                            "):OnTopicsAccessAutoCreated: Skipping connecting topic at this time: " + topicAccess->GetTopicName() );
+                    }
                 }
                 else
                 {
-                    GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientSide(" + CORE::PointerToString( this ) +
+                    GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientSide(" + CORE::ToString( this ) +
                         "):OnTopicsAccessAutoCreated: Failed configuring topic link for new auto topic " + topicAccess->GetTopicName() );
                 }
             }
