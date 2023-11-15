@@ -87,9 +87,9 @@ class PUBSUBPLUGIN_AWSSQS_PLUGIN_PRIVATE_CPP CAwsSqsPubSubClientTopic : public P
 
     virtual bool IsHealthy( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
-    virtual bool IsPublishingSupported( void ) GUCEF_VIRTUAL_OVERRIDE;
+    virtual bool IsPublishingSupported( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
-    virtual bool IsSubscribingSupported( void ) GUCEF_VIRTUAL_OVERRIDE;
+    virtual bool IsSubscribingSupported( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
     virtual bool Subscribe( void ) GUCEF_VIRTUAL_OVERRIDE;
 

@@ -164,7 +164,7 @@ CUdpPubSubClientTopic::RegisterEventHandlers( void )
 /*-------------------------------------------------------------------------*/
 
 bool
-CUdpPubSubClientTopic::IsPublishingSupported( void )
+CUdpPubSubClientTopic::IsPublishingSupported( void ) const
 {GUCEF_TRACE;
     
     return m_config.needPublishSupport;
@@ -173,7 +173,7 @@ CUdpPubSubClientTopic::IsPublishingSupported( void )
 /*-------------------------------------------------------------------------*/
 
 bool
-CUdpPubSubClientTopic::IsSubscribingSupported( void )
+CUdpPubSubClientTopic::IsSubscribingSupported( void ) const
 {GUCEF_TRACE;
 
     return m_config.needSubscribeSupport;

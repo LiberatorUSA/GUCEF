@@ -178,9 +178,9 @@ class PUBSUBPLUGIN_STORAGE_PLUGIN_PRIVATE_CPP CStoragePubSubClientTopic : public
 
     virtual bool IsSubscriptionAtEndOfData( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
-    virtual bool IsPublishingSupported( void ) GUCEF_VIRTUAL_OVERRIDE;
+    virtual bool IsPublishingSupported( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
-    virtual bool IsSubscribingSupported( void ) GUCEF_VIRTUAL_OVERRIDE;
+    virtual bool IsSubscribingSupported( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
     virtual bool Subscribe( void ) GUCEF_VIRTUAL_OVERRIDE;
     

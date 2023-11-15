@@ -204,7 +204,7 @@ CRedisClusterPubSubClientTopic::GetClient( void )
 /*-------------------------------------------------------------------------*/
 
 bool
-CRedisClusterPubSubClientTopic::IsPublishingSupported( void )
+CRedisClusterPubSubClientTopic::IsPublishingSupported( void ) const
 {GUCEF_TRACE;
 
     return m_config.needPublishSupport;
@@ -213,7 +213,7 @@ CRedisClusterPubSubClientTopic::IsPublishingSupported( void )
 /*-------------------------------------------------------------------------*/
 
 bool
-CRedisClusterPubSubClientTopic::IsSubscribingSupported( void )
+CRedisClusterPubSubClientTopic::IsSubscribingSupported( void ) const
 {GUCEF_TRACE;
 
     return true;

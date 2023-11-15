@@ -603,6 +603,37 @@ CPubSubClient::ConfigureJournal( CPubSubClientTopicPtr topic             ,
     return true;
 }
 
+/*-------------------------------------------------------------------------*/
+
+bool 
+CPubSubClient::IsConnectedAndSubscribedAsNeeded( void ) const
+{GUCEF_TRACE;
+
+    if ( IsConnected() )
+    {
+        PubSubClientTopicSet topics;
+        GetAllCreatedTopicAccess( topics );
+
+        if ( !topics.empty() )
+        {
+            PubSubClientTopicSet::iterator i = topics.begin();
+            while ( i != topics.end() )
+            {
+                const CPubSubClientTopicBasicPtr& topic = (*i);
+                if ( topic->IsSubscribingSupported() && !topic->IsSubscribed() )
+                {
+                    // Found a topic which supports subscribing but it isnt currently subscribed
+                    return false;
+                }
+                ++i;
+            }
+        }
+
+        return true;
+    } 
+    return false;
+}
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //

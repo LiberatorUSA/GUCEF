@@ -190,8 +190,23 @@ class GUCEF_PUBSUB_EXPORT_CPP CPubSubClientSide : public CORE::CTaskConsumer
 
     virtual bool IsHealthy( void ) const;
 
+    /**
+     *  Returns whether connectivty is established as applicable for the given backend
+     *  It also validates that if the relevant topics are intended for subscriptions purposes that 
+     *  an active subscription has been established.
+     */
+    bool IsConnectedAndSubscribedAsNeeded( void ) const;
+
+    /**
+     *  Returns whether connectivty is established as applicable for the given backend
+     *  Note that being connected does not imply being subscribed which is logically distinct.
+     */
     bool IsConnected( void ) const;
 
+    /**
+     *  Returns whether any applicable infrastructure as applicable for the given backend is 
+     *  ready for making a connectivity attempt
+     */
     bool IsPubSubClientInfraReadyToConnect( void ) const;
 
     bool AcknowledgeReceipt( CIPubSubMsg::TNoLockSharedPtr& msg );
@@ -285,7 +300,7 @@ class GUCEF_PUBSUB_EXPORT_CPP CPubSubClientSide : public CORE::CTaskConsumer
     bool PublishMsgsSync( const TMsgCollection& msgs              ,
                           CPubSubClientTopic* specificTargetTopic );
 
-    bool RetryPublishFailedMsgsAndProcessMailbox( void );
+    bool ProcessMailbox( void );
 
     static CORE::CString GetMsgAttributesForLog( const CIPubSubMsg& msg );
 

@@ -243,9 +243,9 @@ class GUCEF_PUBSUB_EXPORT_CPP CPubSubClientTopic : public CORE::CTSGNotifier
      */
     virtual bool IsSubscriptionAtEndOfData( void ) const;
 
-    virtual bool IsPublishingSupported( void ) = 0;
+    virtual bool IsPublishingSupported( void ) const = 0;
 
-    virtual bool IsSubscribingSupported( void ) = 0;
+    virtual bool IsSubscribingSupported( void ) const = 0;
 
     virtual const CORE::CString& GetTopicName( void ) const = 0;
 

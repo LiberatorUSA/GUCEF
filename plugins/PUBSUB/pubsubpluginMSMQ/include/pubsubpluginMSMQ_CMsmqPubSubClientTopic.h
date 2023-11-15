@@ -143,9 +143,9 @@ class PUBSUBPLUGIN_MSMQ_PLUGIN_PRIVATE_CPP CMsmqPubSubClientTopic : public PUBSU
 
     virtual bool IsSubscriptionAtEndOfData( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
-    virtual bool IsPublishingSupported( void ) GUCEF_VIRTUAL_OVERRIDE;
+    virtual bool IsPublishingSupported( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
-    virtual bool IsSubscribingSupported( void ) GUCEF_VIRTUAL_OVERRIDE;
+    virtual bool IsSubscribingSupported( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
     virtual bool Subscribe( void ) GUCEF_VIRTUAL_OVERRIDE;
     

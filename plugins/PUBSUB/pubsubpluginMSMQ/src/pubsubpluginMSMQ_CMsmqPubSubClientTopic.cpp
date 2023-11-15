@@ -278,7 +278,7 @@ CMsmqPubSubClientTopic::RegisterEventHandlers( void )
 /*-------------------------------------------------------------------------*/
 
 bool
-CMsmqPubSubClientTopic::IsPublishingSupported( void )
+CMsmqPubSubClientTopic::IsPublishingSupported( void ) const
 {GUCEF_TRACE;
     
     return m_config.needPublishSupport;
@@ -287,7 +287,7 @@ CMsmqPubSubClientTopic::IsPublishingSupported( void )
 /*-------------------------------------------------------------------------*/
 
 bool
-CMsmqPubSubClientTopic::IsSubscribingSupported( void )
+CMsmqPubSubClientTopic::IsSubscribingSupported( void ) const
 {GUCEF_TRACE;
 
     return m_config.needSubscribeSupport;

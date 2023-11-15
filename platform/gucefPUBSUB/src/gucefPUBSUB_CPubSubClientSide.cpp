@@ -1482,56 +1482,60 @@ CPubSubClientSide::TopicLink::OnCheckForTimedOutInFlightMessagesTimerCycle( CORE
 /*-------------------------------------------------------------------------*/
 
 bool
-CPubSubClientSide::RetryPublishFailedMsgsAndProcessMailbox( void )
+CPubSubClientSide::ProcessMailbox( void )
 {GUCEF_TRACE;
-
-    MT::CScopeReaderLock readerLock( m_rwdataLock );
-    bool totalSuccess = true; 
 
     // Are we supporting blanket cross-topic broadcasts?
     if ( m_sideSettings.treatPublishWithoutTargetTopicAsBroadcast )
     {
-        UInt64 approxTotalMsgsInFlight = 0;
+        MT::CScopeReaderLock readerLock( m_rwdataLock );
+        bool totalSuccess = true; 
+
+        if ( m_sideSettings.treatPublishWithoutTargetTopicAsBroadcast )
+        {
+            UInt64 approxTotalMsgsInFlight = 0;
            
-        TopicPtrMap::iterator i = m_topicPtrs.begin();
-        while ( i != m_topicPtrs.end() )
-        {
-            TopicLinkPtr topicLink = (*i).second;
-            if ( !topicLink.IsNULL() )
+            TopicPtrMap::iterator i = m_topicPtrs.begin();
+            while ( i != m_topicPtrs.end() )
             {
-                approxTotalMsgsInFlight += topicLink->GetTotalMsgsInFlight();
+                TopicLinkPtr topicLink = (*i).second;
+                if ( !topicLink.IsNULL() )
+                {
+                    approxTotalMsgsInFlight += topicLink->GetTotalMsgsInFlight();
+                }
+                ++i;
             }
-            ++i;
-        }
 
-        CORE::Int32 maxMailItemsToGrab = -1;
-        if ( m_sideSettings.pubsubClientConfig.maxTotalMsgsInFlight > 0 )
-        {
-            CORE::Int64 remainingForFlight = m_sideSettings.pubsubClientConfig.maxTotalMsgsInFlight - approxTotalMsgsInFlight;
-            if ( remainingForFlight > 0 && remainingForFlight < GUCEF_MT_INT32MAX )
-                maxMailItemsToGrab = (CORE::Int32) remainingForFlight;
-        }
+            CORE::Int32 maxMailItemsToGrab = -1;
+            if ( m_sideSettings.pubsubClientConfig.maxTotalMsgsInFlight > 0 )
+            {
+                CORE::Int64 remainingForFlight = m_sideSettings.pubsubClientConfig.maxTotalMsgsInFlight - approxTotalMsgsInFlight;
+                if ( remainingForFlight > 0 && remainingForFlight < GUCEF_MT_INT32MAX )
+                    maxMailItemsToGrab = (CORE::Int32) remainingForFlight;
+            }
 
-        CPubSubClientTopic::TIPubSubMsgSPtrVector msgs;
-        try
-        {
-            if ( m_broadcastMailbox.GetSPtrBulkMail( msgs, maxMailItemsToGrab ) )
+            CPubSubClientTopic::TIPubSubMsgSPtrVector msgs;
+            try
             {
-                totalSuccess = BroadcastPublishMsgsSync< CPubSubClientTopic::TIPubSubMsgSPtrVector >( msgs ) && totalSuccess;
+                if ( m_broadcastMailbox.GetSPtrBulkMail( msgs, maxMailItemsToGrab ) )
+                {
+                    totalSuccess = BroadcastPublishMsgsSync< CPubSubClientTopic::TIPubSubMsgSPtrVector >( msgs ) && totalSuccess;
+                }
+            }
+            catch ( const timeout_exception& )
+            {
+                if ( !m_broadcastMailbox.ReInsertSPtrBulkMail( msgs ) )
+                {
+                    GUCEF_ERROR_LOG( CORE::LOGLEVEL_CRITICAL, "PubSubClientSide(" + CORE::ToString( this ) +
+                        "):RetryPublishFailedMsgsAndProcessMailbox: Failed to reinsert " + CORE::ToString( msgs.size() ) + 
+                        " messages into the mailbox after an exception occured" );
+                }
             }
         }
-        catch ( const timeout_exception& )
-        {
-            if ( !m_broadcastMailbox.ReInsertSPtrBulkMail( msgs ) )
-            {
-                GUCEF_ERROR_LOG( CORE::LOGLEVEL_CRITICAL, "PubSubClientSide(" + CORE::ToString( this ) +
-                    "):RetryPublishFailedMsgsAndProcessMailbox: Failed to reinsert " + CORE::ToString( msgs.size() ) + 
-                    " messages into the mailbox after an exception occured" );
-            }
-        }
+        return totalSuccess;
     }    
     
-    return totalSuccess;
+    return true;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -3016,7 +3020,7 @@ bool
 CPubSubClientSide::ConnectPubSubClient( bool reset )
 {GUCEF_TRACE;
 
-    if ( !reset && IsConnected() )
+    if ( !reset && IsConnectedAndSubscribedAsNeeded() )
         return true;
     
     MT::CObjectScopeLock lock( this );
@@ -3173,6 +3177,30 @@ CPubSubClientSide::IsPubSubClientInfraReadyToConnect( void ) const
 
 /*-------------------------------------------------------------------------*/
 
+bool 
+CPubSubClientSide::IsConnectedAndSubscribedAsNeeded( void ) const
+{GUCEF_TRACE;
+
+    MT::CScopeReaderLock lock( m_rwdataLock );
+
+    if ( !m_pubsubBookmarkPersistence.IsNULL() )
+    {
+        // if we are using bookmark peristence it's connected state counts as part of the aggregate connected state
+        // because we will need to source the bookmarks for the client
+        if ( !m_pubsubBookmarkPersistence->IsConnected() )
+            return false;
+    }
+    if ( !m_pubsubClient.IsNULL() )
+    {
+        if ( m_pubsubClient->IsConnectedAndSubscribedAsNeeded() )
+            return true;
+    }
+
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
 bool
 CPubSubClientSide::IsConnected( void ) const
 {GUCEF_TRACE;
@@ -3291,11 +3319,7 @@ bool
 CPubSubClientSide::OnTaskCycle( CORE::CICloneable* taskData )
 {GUCEF_TRACE;
 
-    // If we are running async from other sides we need to check the mailbox
-    if ( m_sideSettings.performPubSubInDedicatedThread )
-    {
-        RetryPublishFailedMsgsAndProcessMailbox();
-    }
+    ProcessMailbox();
 
     // We are never 'done' so return false
     return false;

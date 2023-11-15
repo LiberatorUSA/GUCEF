@@ -612,7 +612,7 @@ CStoragePubSubClientTopic::RegisterEventHandlers( void )
 /*-------------------------------------------------------------------------*/
 
 bool
-CStoragePubSubClientTopic::IsPublishingSupported( void )
+CStoragePubSubClientTopic::IsPublishingSupported( void ) const
 {GUCEF_TRACE;
 
     return m_config.needPublishSupport;
@@ -621,7 +621,7 @@ CStoragePubSubClientTopic::IsPublishingSupported( void )
 /*-------------------------------------------------------------------------*/
 
 bool
-CStoragePubSubClientTopic::IsSubscribingSupported( void )
+CStoragePubSubClientTopic::IsSubscribingSupported( void ) const
 {GUCEF_TRACE;
 
     return m_config.needSubscribeSupport;

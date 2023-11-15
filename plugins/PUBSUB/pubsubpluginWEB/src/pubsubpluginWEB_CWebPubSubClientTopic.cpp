@@ -295,7 +295,7 @@ CWebPubSubClientTopic::RegisterEventHandlers( void )
 /*-------------------------------------------------------------------------*/
 
 bool
-CWebPubSubClientTopic::IsPublishingSupported( void )
+CWebPubSubClientTopic::IsPublishingSupported( void ) const
 {GUCEF_TRACE;
     
     return m_config.needPublishSupport;
@@ -304,7 +304,7 @@ CWebPubSubClientTopic::IsPublishingSupported( void )
 /*-------------------------------------------------------------------------*/
 
 bool
-CWebPubSubClientTopic::IsSubscribingSupported( void )
+CWebPubSubClientTopic::IsSubscribingSupported( void ) const
 {GUCEF_TRACE;
 
     return m_config.needSubscribeSupport;

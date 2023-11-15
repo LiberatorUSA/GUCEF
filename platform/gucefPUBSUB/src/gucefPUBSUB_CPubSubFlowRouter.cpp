@@ -1611,12 +1611,21 @@ CPubSubFlowRouter::ShouldSideBeConnected( CPubSubClientSide* side ) const
             {
                 const CRouteInfo* routeInfo = (*n);
 
+                if ( GUCEF_NULL == routeInfo->activeSide )
+                {
+                    GUCEF_DEBUG_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "PubSubFlowRouter(" + CORE::ToString( this ) +
+                        "):ShouldSideBeConnected: Determined that side \"" + side->GetSideId() + "\" should not be connected at this time due to lacking an active destination for the route" );
+                    return false;
+                }
+                
                 if ( routeInfo->fromSide == side         &&
                      routeInfo->IsSpilloverInActiveUse() )
                 {        
                     // For destinations we always want to be connected so they are ready for use
                     // for sources this is usually also true except for when a spillover is used 
                     // a spillover alters the 'from' of the route dynamically
+                    GUCEF_DEBUG_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "PubSubFlowRouter(" + CORE::ToString( this ) +
+                        "):ShouldSideBeConnected: Determined that side \"" + side->GetSideId() + "\" should not be connected at this time due to spillover activity" );
                     return false;
                 }
                 ++n;

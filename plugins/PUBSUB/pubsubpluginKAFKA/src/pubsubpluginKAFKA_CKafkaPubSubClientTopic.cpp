@@ -205,7 +205,7 @@ CKafkaPubSubClientTopic::RegisterEventHandlers( void )
 /*-------------------------------------------------------------------------*/
 
 bool
-CKafkaPubSubClientTopic::IsPublishingSupported( void )
+CKafkaPubSubClientTopic::IsPublishingSupported( void ) const
 {GUCEF_TRACE;
 
     return m_config.needPublishSupport;
@@ -214,7 +214,7 @@ CKafkaPubSubClientTopic::IsPublishingSupported( void )
 /*-------------------------------------------------------------------------*/
 
 bool
-CKafkaPubSubClientTopic::IsSubscribingSupported( void )
+CKafkaPubSubClientTopic::IsSubscribingSupported( void ) const
 {GUCEF_TRACE;
 
     return m_config.needSubscribeSupport;

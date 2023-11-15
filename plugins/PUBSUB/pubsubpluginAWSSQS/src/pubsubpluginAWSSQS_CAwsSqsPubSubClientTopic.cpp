@@ -162,7 +162,7 @@ CAwsSqsPubSubClientTopic::RegisterEventHandlers( void )
 /*-------------------------------------------------------------------------*/
 
 bool
-CAwsSqsPubSubClientTopic::IsPublishingSupported( void )
+CAwsSqsPubSubClientTopic::IsPublishingSupported( void ) const
 {GUCEF_TRACE;
     
     return m_config.needPublishSupport;
@@ -171,7 +171,7 @@ CAwsSqsPubSubClientTopic::IsPublishingSupported( void )
 /*-------------------------------------------------------------------------*/
 
 bool
-CAwsSqsPubSubClientTopic::IsSubscribingSupported( void )
+CAwsSqsPubSubClientTopic::IsSubscribingSupported( void ) const
 {GUCEF_TRACE;
 
     return true;

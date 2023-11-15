@@ -226,8 +226,24 @@ class GUCEF_PUBSUB_EXPORT_CPP CPubSubClient : public CORE::CTSGNotifier         
 
     virtual bool Disconnect( void ) = 0;
 
+    /**
+     *  Returns whether connectivty is established as applicable for the given backend
+     *  It also validates that if the relevant topics are intended for subscriptions purposes that 
+     *  an active subscription has been established.
+     */
+    virtual bool IsConnectedAndSubscribedAsNeeded( void ) const;
+
+    /**
+     *  Returns whether connectivty is established as applicable for the given backend
+     *  Note that being connected does not imply being subscribed which is logically distinct.
+     */
     virtual bool IsConnected( void ) const = 0;
 
+    /**
+     *  Returns whether everything is working as far as the code is contextually aware
+     *  If anything of any kind is doing recovery, such as a reconnect timer cycle, that would cause
+     *  the healthy state to be 'false'
+     */
     virtual bool IsHealthy( void ) const = 0;
 
     /**
