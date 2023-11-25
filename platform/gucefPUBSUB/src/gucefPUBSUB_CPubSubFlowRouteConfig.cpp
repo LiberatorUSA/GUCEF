@@ -46,6 +46,7 @@ namespace PUBSUB {
 
 CPubSubFlowRouteTopicConfig::CPubSubFlowRouteTopicConfig( void )
     : CORE::CIConfigurable() 
+    , CORE::CTSharedObjCreator< CPubSubFlowRouteTopicConfig, MT::CMutex >( this )
     , fromSideTopicName()
     , toSideTopicName()
     , failoverSideTopicName()
@@ -59,6 +60,7 @@ CPubSubFlowRouteTopicConfig::CPubSubFlowRouteTopicConfig( void )
 
 CPubSubFlowRouteTopicConfig::CPubSubFlowRouteTopicConfig( const CPubSubFlowRouteTopicConfig& src )
     : CORE::CIConfigurable( src ) 
+    , CORE::CTSharedObjCreator< CPubSubFlowRouteTopicConfig, MT::CMutex >( this )
     , fromSideTopicName( src.fromSideTopicName )
     , toSideTopicName( src.toSideTopicName )
     , failoverSideTopicName( src.failoverSideTopicName )
@@ -141,6 +143,7 @@ CPubSubFlowRouteTopicConfig::GetClassTypeName( void ) const
 
 CPubSubFlowRouteConfig::CPubSubFlowRouteConfig( void )
     : CORE::CIConfigurable() 
+    , CORE::CTSharedObjCreator< CPubSubFlowRouteConfig, MT::CMutex >( this )
     , fromSideId()
     , toSideId()
     , failoverSideId()
@@ -160,6 +163,7 @@ CPubSubFlowRouteConfig::CPubSubFlowRouteConfig( void )
 
 CPubSubFlowRouteConfig::CPubSubFlowRouteConfig( const CPubSubFlowRouteConfig& src )
     : CORE::CIConfigurable( src ) 
+    , CORE::CTSharedObjCreator< CPubSubFlowRouteConfig, MT::CMutex >( this )
     , fromSideId( src.fromSideId )
     , toSideId( src.toSideId )
     , failoverSideId( src.failoverSideId )
@@ -232,9 +236,9 @@ CPubSubFlowRouteConfig::SaveConfig( CORE::CDataNode& cfg ) const
         PubSubFlowRouteTopicConfigVector::const_iterator i = topicAssociations.begin();
         while ( i != topicAssociations.end() )
         {
-            const CPubSubFlowRouteTopicConfig& topicConfig = (*i);
+            const CPubSubFlowRouteTopicConfigPtr topicConfig = (*i);
             CORE::CDataNode* topicConfigNode = topicAssociationsNode->AddChild();
-            totalSuccess = topicConfig.SaveConfig( *topicConfigNode ) && totalSuccess;
+            totalSuccess = topicConfig->SaveConfig( *topicConfigNode ) && totalSuccess;
             ++i;
         }
     }    
@@ -267,8 +271,8 @@ CPubSubFlowRouteConfig::LoadConfig( const CORE::CDataNode& cfg )
         CORE::CDataNode::const_iterator i = topicAssociationsNode->ConstBegin();
         while ( i != topicAssociationsNode->ConstEnd() )
         {
-            CPubSubFlowRouteTopicConfig topicConfig;
-            if ( topicConfig.LoadConfig( *(*i) ) )
+            CPubSubFlowRouteTopicConfigPtr topicConfig = CPubSubFlowRouteTopicConfig::CreateSharedObj();
+            if ( topicConfig->LoadConfig( *(*i) ) )
             {
                 topicAssociations.push_back( topicConfig );
             }
@@ -307,39 +311,37 @@ CPubSubFlowRouteConfig::IsAnyAutoTopicMatchingNeeded( void ) const
 
 /*-------------------------------------------------------------------------*/
 
-CPubSubFlowRouteTopicConfig*
+CPubSubFlowRouteTopicConfigPtr
 CPubSubFlowRouteConfig::FindTopicAssociation( const CORE::CString& fromTopicName )
 {GUCEF_TRACE;
 
     PubSubFlowRouteTopicConfigVector::iterator i = topicAssociations.begin();
     while ( i != topicAssociations.end() )
     {
-        CPubSubFlowRouteTopicConfig& topicConfig = (*i);
-        if ( topicConfig.fromSideTopicName == fromTopicName )
-            return &topicConfig;
+        CPubSubFlowRouteTopicConfigPtr topicConfig = (*i);
+        if ( topicConfig->fromSideTopicName == fromTopicName )
+            return topicConfig;
         ++i;
     }
-    return GUCEF_NULL;
+    return CPubSubFlowRouteTopicConfigPtr();
 }
 
 /*-------------------------------------------------------------------------*/
 
-CPubSubFlowRouteTopicConfig*
+CPubSubFlowRouteTopicConfigPtr
 CPubSubFlowRouteConfig::FindOrCreateTopicAssociation( const CORE::CString& fromTopicName )
 {GUCEF_TRACE;
 
-    CPubSubFlowRouteTopicConfig* topicRouteConfig = FindTopicAssociation( fromTopicName );
-    if ( GUCEF_NULL != topicRouteConfig )
+    CPubSubFlowRouteTopicConfigPtr topicRouteConfig = FindTopicAssociation( fromTopicName );
+    if ( !topicRouteConfig.IsNULL() )
         return topicRouteConfig;
 
     if ( IsAnyAutoTopicMatchingNeeded() )
     {
         // Create the new association
 
-        CPubSubFlowRouteTopicConfig newTopicRouteConfig;
-        newTopicRouteConfig.fromSideTopicName = fromTopicName;
-        topicAssociations.push_back( newTopicRouteConfig );
-        topicRouteConfig = &topicAssociations.back();
+        topicRouteConfig = CPubSubFlowRouteTopicConfig::CreateSharedObj();
+        topicRouteConfig->fromSideTopicName = fromTopicName;
 
         // Init with matching topic names as desired
         // Once initialized we respect the state as-is but at init the other config plays a role in the manner of initialization

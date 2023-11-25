@@ -119,6 +119,7 @@ CPubSubFlowRouter::CRouteInfo::CRouteInfo( void )
     , spilloverBufferSideIsHealthy( true )
     , spilloverBufferSideLastHealthStatusChange( CORE::CDateTime::PastMax )
     , flowingIntoSpillover( true )
+    , isSpilloverEgressRoute( false )
     , deadLetterSide( GUCEF_NULL )
     , deadLetterSideIsHealthy( true )
     , deadLetterSideLastHealthStatusChange( CORE::CDateTime::PastMax )
@@ -145,6 +146,7 @@ CPubSubFlowRouter::CRouteInfo::CRouteInfo( const CRouteInfo& src )
     , spilloverBufferSideIsHealthy( src.spilloverBufferSideIsHealthy )
     , spilloverBufferSideLastHealthStatusChange( src.spilloverBufferSideLastHealthStatusChange )
     , flowingIntoSpillover( src.flowingIntoSpillover )
+    , isSpilloverEgressRoute( src.isSpilloverEgressRoute )
     , deadLetterSide( src.deadLetterSide )
     , deadLetterSideIsHealthy( src.deadLetterSideIsHealthy )
     , deadLetterSideLastHealthStatusChange( src.deadLetterSideLastHealthStatusChange )
@@ -244,17 +246,17 @@ CPubSubFlowRouter::CRouteInfo::SwitchAllTopicLinksActiveTopic( RouteType activeS
 /*-------------------------------------------------------------------------*/
 
 bool
-CPubSubFlowRouter::CRouteInfo::MatchTopicRouteConfig( const CPubSubFlowRouteTopicConfig& topicRouteConfig , 
-                                                      CORE::PulseGeneratorPtr fromPulseGenerator          ,
-                                                      CORE::PulseGeneratorPtr destPulseGenerator          )
+CPubSubFlowRouter::CRouteInfo::MatchTopicRouteConfig( const CPubSubFlowRouteTopicConfigPtr topicRouteConfig , 
+                                                      CORE::PulseGeneratorPtr fromPulseGenerator            ,
+                                                      CORE::PulseGeneratorPtr destPulseGenerator            )
 {GUCEF_TRACE;
 
-    if ( topicRouteConfig.fromSideTopicName.IsNULLOrEmpty() )
+    if ( topicRouteConfig->fromSideTopicName.IsNULLOrEmpty() )
         return true;
 
     bool totalSuccess = true;
     GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "PubSubFlowRouter:RouteInfo:MatchTopicRouteConfig: Applying config for topic association for 'from' topic " + 
-            topicRouteConfig.fromSideTopicName );
+            topicRouteConfig->fromSideTopicName );
 
     // refresh destination topic pointers to match config
     // this will also auto create topics as needed to satisfy the routing needs
@@ -270,18 +272,18 @@ CPubSubFlowRouter::CRouteInfo::MatchTopicRouteConfig( const CPubSubFlowRouteTopi
             // Check if we need to worry about glob pattern topic names
             if ( routeConfig->IsAnyAutoTopicMatchingNeeded()             && 
                  supportedFeatures.supportsGlobPatternTopicNames         && 
-                 topicRouteConfig.fromSideTopicName.HasChar( '*' ) >= 0  )
+                 topicRouteConfig->fromSideTopicName.HasChar( '*' ) >= 0  )
             {
                 // Glob pattern topic names are supported by the backend and we actually have a wildcard topic name
                 // As such we need to map N:N not 1:1 for each association
 
                 CPubSubClient::PubSubClientTopicSet topicAccessSet;
-                if ( fromSideClient->GetOrCreateMultiTopicAccess( topicRouteConfig.fromSideTopicName ,
+                if ( fromSideClient->GetOrCreateMultiTopicAccess( topicRouteConfig->fromSideTopicName ,
                                                                   topicAccessSet                     ,
                                                                   fromPulseGenerator                 ) )
                 {
                     GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "PubSubFlowRouter:RouteInfo:MatchTopicRouteConfig: Obtained access to " + CORE::ToString( topicAccessSet.size() ) + 
-                        " topics association for pattern matched 'from' topic " + topicRouteConfig.fromSideTopicName +
+                        " topics association for pattern matched 'from' topic " + topicRouteConfig->fromSideTopicName +
                         ( fromPulseGenerator.IsNULL() ?  "" : ". Requested using pulse generator for thread " + CORE::ToString( fromPulseGenerator->GetPulseDriverThreadId() ) ) );
 
                     CPubSubClient::PubSubClientTopicSet::iterator i = topicAccessSet.begin();
@@ -308,28 +310,28 @@ CPubSubFlowRouter::CRouteInfo::MatchTopicRouteConfig( const CPubSubFlowRouteTopi
                                 }
                             }
                             
-                            CPubSubFlowRouteTopicConfig autoTopicRouteConfig;
-                            autoTopicRouteConfig.fromSideTopicName = topicName;
+                            CPubSubFlowRouteTopicConfigPtr autoTopicRouteConfig = CPubSubFlowRouteTopicConfig::CreateSharedObj();
+                            autoTopicRouteConfig->fromSideTopicName = topicName;
 
                             if ( routeConfig->toSideTopicsAutoMatchFromSide )
-                                autoTopicRouteConfig.toSideTopicName = topicName;
+                                autoTopicRouteConfig->toSideTopicName = topicName;
                             else
-                                autoTopicRouteConfig.toSideTopicName = topicRouteConfig.toSideTopicName;
+                                autoTopicRouteConfig->toSideTopicName = topicRouteConfig->toSideTopicName;
 
                             if ( routeConfig->failoverSideTopicsAutoMatchFromSide )
-                                autoTopicRouteConfig.failoverSideTopicName = topicName;
+                                autoTopicRouteConfig->failoverSideTopicName = topicName;
                             else
-                                autoTopicRouteConfig.failoverSideTopicName = topicRouteConfig.failoverSideTopicName;
+                                autoTopicRouteConfig->failoverSideTopicName = topicRouteConfig->failoverSideTopicName;
 
                             if ( routeConfig->spilloverSideTopicsAutoMatchFromSide )
-                                autoTopicRouteConfig.spilloverSideTopicName = topicName;
+                                autoTopicRouteConfig->spilloverSideTopicName = topicName;
                             else
-                                autoTopicRouteConfig.spilloverSideTopicName = topicRouteConfig.spilloverSideTopicName;
+                                autoTopicRouteConfig->spilloverSideTopicName = topicRouteConfig->spilloverSideTopicName;
 
                             if ( routeConfig->deadLetterSideTopicsAutoMatchFromSide )
-                                autoTopicRouteConfig.deadLetterSideTopicName = topicName;
+                                autoTopicRouteConfig->deadLetterSideTopicName = topicName;
                             else
-                                autoTopicRouteConfig.deadLetterSideTopicName = topicRouteConfig.deadLetterSideTopicName;
+                                autoTopicRouteConfig->deadLetterSideTopicName = topicRouteConfig->deadLetterSideTopicName;
                         
                             totalSuccess = MatchTopicRouteConfig( autoTopicRouteConfig , 
                                                                   fromPulseGenerator   , 
@@ -341,7 +343,7 @@ CPubSubFlowRouter::CRouteInfo::MatchTopicRouteConfig( const CPubSubFlowRouteTopi
                 else
                 {
                     GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "PubSubFlowRouter:RouteInfo:MatchTopicRouteConfig: Found no relevant topic access for glob pattern topic \""  + 
-                            topicRouteConfig.fromSideTopicName + "\" for 'from' side \"" + fromSide->GetSideId() + "\" at this time" );
+                            topicRouteConfig->fromSideTopicName + "\" for 'from' side \"" + fromSide->GetSideId() + "\" at this time" );
                 }
             }
             else
@@ -349,19 +351,19 @@ CPubSubFlowRouter::CRouteInfo::MatchTopicRouteConfig( const CPubSubFlowRouteTopi
                 // Glob pattern topic names are not supported by the backend or the topic does not contain any wildcards (anymore? since the above in the end calls this)
                 // either way, we can do a more straightforward explicit mapping
 
-                CRouteTopicLinks& topicLinks = fromSideTopicNameLinks[ topicRouteConfig.fromSideTopicName ];
+                CRouteTopicLinks& topicLinks = fromSideTopicNameLinks[ topicRouteConfig->fromSideTopicName ];
                 CPubSubClientTopic* oldFromTopic = topicLinks.fromTopic;
-                topicLinks.fromTopic = fromSideClient->GetOrCreateTopicAccess( topicRouteConfig.fromSideTopicName, fromPulseGenerator ).GetPointerAlways();
+                topicLinks.fromTopic = fromSideClient->GetOrCreateTopicAccess( topicRouteConfig->fromSideTopicName, fromPulseGenerator ).GetPointerAlways();
                 if ( GUCEF_NULL != topicLinks.fromTopic )
                 {
-                    GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "PubSubFlowRouter:RouteInfo:MatchTopicRouteConfig: Obtained access to topic for 'from' topic " + topicRouteConfig.fromSideTopicName +
+                    GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "PubSubFlowRouter:RouteInfo:MatchTopicRouteConfig: Obtained access to topic for 'from' topic " + topicRouteConfig->fromSideTopicName +
                             ( fromPulseGenerator.IsNULL() ?  "" : ". Requested using pulse generator for thread " + CORE::ToString( fromPulseGenerator->GetPulseDriverThreadId() ) ) );
                 }
                 else
                 {
                     totalSuccess = false;
                     GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "PubSubFlowRouter:RouteInfo:MatchTopicRouteConfig: Failed to obtain topic access to topic \""  + 
-                            topicRouteConfig.fromSideTopicName + "\" for 'from' side \"" + fromSide->GetSideId() + "\"" );
+                            topicRouteConfig->fromSideTopicName + "\" for 'from' side \"" + fromSide->GetSideId() + "\"" );
                 }
 
                 if ( fromPulseGenerator.IsNULL() && routeConfig->preferFromTopicThreadForDestination )
@@ -391,59 +393,59 @@ CPubSubFlowRouter::CRouteInfo::MatchTopicRouteConfig( const CPubSubFlowRouteTopi
                     fromSideTopicLinks[ topicLinks.fromTopic ] = &topicLinks;
                 }
 
-                if ( GUCEF_NULL != toSide && !topicRouteConfig.toSideTopicName.IsNULLOrEmpty() )
+                if ( GUCEF_NULL != toSide && !topicRouteConfig->toSideTopicName.IsNULLOrEmpty() )
                 {
                     CPubSubClientPtr toSideClient = toSide->GetCurrentUnderlyingPubSubClient();
                     if ( !toSideClient.IsNULL() )
                     {
-                        topicLinks.toTopic = toSideClient->GetOrCreateTopicAccess( topicRouteConfig.toSideTopicName, destPulseGenerator ).GetPointerAlways();
+                        topicLinks.toTopic = toSideClient->GetOrCreateTopicAccess( topicRouteConfig->toSideTopicName, destPulseGenerator ).GetPointerAlways();
                         if ( GUCEF_NULL == topicLinks.toTopic )
                         {
                             totalSuccess = false;
                             GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "PubSubFlowRouter:RouteInfo:MatchTopicRouteConfig: Failed to obtain topic access to topic \""  + 
-                                    topicRouteConfig.toSideTopicName + "\" for 'to' side \"" + toSide->GetSideId() + "\"" );
+                                    topicRouteConfig->toSideTopicName + "\" for 'to' side \"" + toSide->GetSideId() + "\"" );
                         }
                     }
                 }
-                if ( GUCEF_NULL != failoverSide && !topicRouteConfig.failoverSideTopicName.IsNULLOrEmpty() )
+                if ( GUCEF_NULL != failoverSide && !topicRouteConfig->failoverSideTopicName.IsNULLOrEmpty() )
                 {
                     CPubSubClientPtr failoverSideClient = failoverSide->GetCurrentUnderlyingPubSubClient();
                     if ( !failoverSideClient.IsNULL() )
                     {
-                        topicLinks.failoverTopic = failoverSideClient->GetOrCreateTopicAccess( topicRouteConfig.failoverSideTopicName, destPulseGenerator ).GetPointerAlways();
+                        topicLinks.failoverTopic = failoverSideClient->GetOrCreateTopicAccess( topicRouteConfig->failoverSideTopicName, destPulseGenerator ).GetPointerAlways();
                         if ( GUCEF_NULL == topicLinks.failoverTopic )
                         {
                             totalSuccess = false;
                             GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "PubSubFlowRouter:RouteInfo:MatchTopicRouteConfig: Failed to obtain topic access to topic \""  + 
-                                    topicRouteConfig.failoverSideTopicName + "\" for 'failover' side \"" + failoverSide->GetSideId() + "\"" );
+                                    topicRouteConfig->failoverSideTopicName + "\" for 'failover' side \"" + failoverSide->GetSideId() + "\"" );
                         }
                     }
                 }
-                if ( GUCEF_NULL != spilloverBufferSide && !topicRouteConfig.spilloverSideTopicName.IsNULLOrEmpty() )
+                if ( GUCEF_NULL != spilloverBufferSide && !topicRouteConfig->spilloverSideTopicName.IsNULLOrEmpty() )
                 {
                     CPubSubClientPtr spilloverSideClient = spilloverBufferSide->GetCurrentUnderlyingPubSubClient();
                     if ( !spilloverSideClient.IsNULL() )
                     {
-                        topicLinks.spilloverTopic = spilloverSideClient->GetOrCreateTopicAccess( topicRouteConfig.spilloverSideTopicName, destPulseGenerator ).GetPointerAlways();
+                        topicLinks.spilloverTopic = spilloverSideClient->GetOrCreateTopicAccess( topicRouteConfig->spilloverSideTopicName, destPulseGenerator ).GetPointerAlways();
                         if ( GUCEF_NULL == topicLinks.spilloverTopic )
                         {
                             totalSuccess = false;
                             GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "PubSubFlowRouter:RouteInfo:MatchTopicRouteConfig: Failed to obtain topic access to topic \""  + 
-                                    topicRouteConfig.spilloverSideTopicName + "\" for 'spillover' side \"" + spilloverBufferSide->GetSideId() + "\"" );
+                                    topicRouteConfig->spilloverSideTopicName + "\" for 'spillover' side \"" + spilloverBufferSide->GetSideId() + "\"" );
                         }
                     }
                 }
-                if ( GUCEF_NULL != deadLetterSide && !topicRouteConfig.deadLetterSideTopicName.IsNULLOrEmpty() )
+                if ( GUCEF_NULL != deadLetterSide && !topicRouteConfig->deadLetterSideTopicName.IsNULLOrEmpty() )
                 {
                     CPubSubClientPtr deadLetterSideClient = deadLetterSide->GetCurrentUnderlyingPubSubClient();
                     if ( !deadLetterSideClient.IsNULL() )
                     {
-                        topicLinks.deadletterTopic = deadLetterSideClient->GetOrCreateTopicAccess( topicRouteConfig.deadLetterSideTopicName, destPulseGenerator ).GetPointerAlways();
+                        topicLinks.deadletterTopic = deadLetterSideClient->GetOrCreateTopicAccess( topicRouteConfig->deadLetterSideTopicName, destPulseGenerator ).GetPointerAlways();
                         if ( GUCEF_NULL == topicLinks.deadletterTopic )
                         {
                             totalSuccess = false;
                             GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "PubSubFlowRouter:RouteInfo:MatchTopicRouteConfig: Failed to obtain topic access to topic \""  + 
-                                    topicRouteConfig.deadLetterSideTopicName + "\" for 'dead letter' side \"" + deadLetterSide->GetSideId() + "\"" );
+                                    topicRouteConfig->deadLetterSideTopicName + "\" for 'dead letter' side \"" + deadLetterSide->GetSideId() + "\"" );
                         }
                     }
                 }
@@ -457,7 +459,7 @@ CPubSubFlowRouter::CRouteInfo::MatchTopicRouteConfig( const CPubSubFlowRouteTopi
 /*-------------------------------------------------------------------------*/
 
 bool
-CPubSubFlowRouter::CRouteInfo::MatchTopicRouteConfig( const CPubSubFlowRouteTopicConfig& topicRouteConfig )
+CPubSubFlowRouter::CRouteInfo::MatchTopicRouteConfig( const CPubSubFlowRouteTopicConfigPtr topicRouteConfig )
 {GUCEF_TRACE;
 
     CORE::PulseGeneratorPtr nullPulseGenerator;
@@ -668,10 +670,10 @@ CPubSubFlowRouter::NormalizeConfig( const CPubSubFlowRouterConfig& originalConfi
     CPubSubFlowRouterConfig::PubSubFlowRouteConfigVector::const_iterator n = originalConfig.routes.begin();
     while ( n != originalConfig.routes.end() )
     {
-        if ( "*" != (*n).toSideId )
-            knownSides.insert( (*n).toSideId );
-        if ( "*" != (*n).fromSideId )
-            knownSides.insert( (*n).fromSideId );
+        if ( "*" != (*n)->toSideId )
+            knownSides.insert( (*n)->toSideId );
+        if ( "*" != (*n)->fromSideId )
+            knownSides.insert( (*n)->fromSideId );
         ++n;
     }
 
@@ -685,16 +687,16 @@ CPubSubFlowRouter::NormalizeConfig( const CPubSubFlowRouterConfig& originalConfi
     n = originalConfig.routes.begin();
     while ( n != originalConfig.routes.end() )
     {
-        if ( "*" != (*n).fromSideId &&  "*" != (*n).toSideId )
+        if ( "*" != (*n)->fromSideId &&  "*" != (*n)->toSideId )
         {
-            explicitRoutes.Set( (*n).fromSideId, (*n).toSideId );
+            explicitRoutes.Set( (*n)->fromSideId, (*n)->toSideId );
             
             // Nothing to normalize, just copy to the normalized output
             normalizedConfig.routes.push_back( (*n) );
 
             GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "PubSubFlowRouter:NormalizeConfig: We have an explicit route from \"" + 
-                    (*n).fromSideId + "\" to \"" + (*n).toSideId + "\" with failover side \"" + (*n).failoverSideId + "\" and spillover side \"" +
-                    (*n).spilloverBufferSideId + "\" and deadletter side \"" + (*n).deadLetterSideId + "\"" );
+                    (*n)->fromSideId + "\" to \"" + (*n)->toSideId + "\" with failover side \"" + (*n)->failoverSideId + "\" and spillover side \"" +
+                    (*n)->spilloverBufferSideId + "\" and deadletter side \"" + (*n)->deadLetterSideId + "\"" );
         }
         ++n;
     }
@@ -706,54 +708,54 @@ CPubSubFlowRouter::NormalizeConfig( const CPubSubFlowRouterConfig& originalConfi
     n = originalConfig.routes.begin();
     while ( n != originalConfig.routes.end() )
     {
-        if ( "*" == (*n).toSideId && "*" != (*n).fromSideId )
+        if ( "*" == (*n)->toSideId && "*" != (*n)->fromSideId )
         {
              // Try to generate routes using all known sides
              CORE::CString::StringSet::iterator m = knownSides.begin();
              while ( m != knownSides.end() )
              {
                 // Don't generate a route where the 'from' and 'to' are the same side
-                if ( (*n).fromSideId != (*m) )
+                if ( (*n)->fromSideId != (*m) )
                 {
                     // Don't generate a route if an explicit route was specified
-                    if ( !explicitRoutes.HasKeyAndValue( (*n).fromSideId, (*m) ) )
+                    if ( !explicitRoutes.HasKeyAndValue( (*n)->fromSideId, (*m) ) )
                     {
-                        CPubSubFlowRouteConfig route( (*n) );
-                        route.toSideId = (*m);
+                        CPubSubFlowRouteConfigPtr route( CPubSubFlowRouteConfig::CreateSharedObjWithParam( *(*n) ) );
+                        route->toSideId = (*m);
                         normalizedConfig.routes.push_back( route );
 
-                        explicitRoutes.Set( route.fromSideId, route.toSideId );
+                        explicitRoutes.Set( route->fromSideId, route->toSideId );
 
                         GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "PubSubFlowRouter:NormalizeConfig: Generated route from \"" + 
-                                route.fromSideId + "\" to \"" + route.toSideId + "\" with failover side \"" + route.failoverSideId + "\" and spillover side \"" +
-                                route.spilloverBufferSideId + "\" and deadletter side \"" + route.deadLetterSideId + "\"" );
+                                route->fromSideId + "\" to \"" + route->toSideId + "\" with failover side \"" + route->failoverSideId + "\" and spillover side \"" +
+                                route->spilloverBufferSideId + "\" and deadletter side \"" + route->deadLetterSideId + "\"" );
                     }                
                 }
                 ++m;
              }
         }
         else
-        if ( "*" == (*n).fromSideId && "*" != (*n).toSideId )
+        if ( "*" == (*n)->fromSideId && "*" != (*n)->toSideId )
         {
              // Try to generate routes using all known sides
              CORE::CString::StringSet::iterator m = knownSides.begin();
              while ( m != knownSides.end() )
              {
                 // Don't generate a route where the 'from' and 'to' are the same side
-                if ( (*n).toSideId != (*m) )
+                if ( (*n)->toSideId != (*m) )
                 {
                     // Don't generate a route if an explicit route was specified
-                    if ( !explicitRoutes.HasKeyAndValue( (*n).toSideId, (*m) ) )
+                    if ( !explicitRoutes.HasKeyAndValue( (*n)->toSideId, (*m) ) )
                     {
-                        CPubSubFlowRouteConfig route( (*n) );
-                        route.fromSideId = (*m);
+                        CPubSubFlowRouteConfigPtr route( CPubSubFlowRouteConfig::CreateSharedObjWithParam( *(*n) ) );
+                        route->fromSideId = (*m);
                         normalizedConfig.routes.push_back( route );
 
-                        explicitRoutes.Set( route.fromSideId, route.toSideId );
+                        explicitRoutes.Set( route->fromSideId, route->toSideId );
 
                         GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "PubSubFlowRouter:NormalizeConfig: Generated route from \"" + 
-                                route.fromSideId + "\" to \"" + route.toSideId + "\" with failover side \"" + route.failoverSideId + "\" and spillover side \"" +
-                                route.spilloverBufferSideId + "\" and deadletter side \"" + route.deadLetterSideId + "\"" );
+                                route->fromSideId + "\" to \"" + route->toSideId + "\" with failover side \"" + route->failoverSideId + "\" and spillover side \"" +
+                                route->spilloverBufferSideId + "\" and deadletter side \"" + route->deadLetterSideId + "\"" );
                     }                
                 }
                 ++m;
@@ -768,7 +770,7 @@ CPubSubFlowRouter::NormalizeConfig( const CPubSubFlowRouterConfig& originalConfi
     n = originalConfig.routes.begin();
     while ( n != originalConfig.routes.end() )
     {
-        if ( "*" == (*n).fromSideId &&  "*" == (*n).toSideId )
+        if ( "*" == (*n)->fromSideId &&  "*" == (*n)->toSideId )
         {
             if ( !foundCatchAll )
             {
@@ -787,16 +789,16 @@ CPubSubFlowRouter::NormalizeConfig( const CPubSubFlowRouterConfig& originalConfi
                             // Don't generate a route if an explicit route was specified
                             if ( !explicitRoutes.HasKeyAndValue( (*m), (*k) ) )
                             {
-                                CPubSubFlowRouteConfig route( (*n) );
-                                route.fromSideId = (*m);
-                                route.toSideId = (*k);
+                                CPubSubFlowRouteConfigPtr route( CPubSubFlowRouteConfig::CreateSharedObjWithParam( *(*n) ) );
+                                route->fromSideId = (*m);
+                                route->toSideId = (*k);
                                 normalizedConfig.routes.push_back( route );
 
-                                explicitRoutes.Set( route.fromSideId, route.toSideId );
+                                explicitRoutes.Set( route->fromSideId, route->toSideId );
 
                                 GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "PubSubFlowRouter:NormalizeConfig: Generated catch-all route from \"" + 
-                                        route.fromSideId + "\" to \"" + route.toSideId + "\" with failover side \"" + route.failoverSideId + "\" and spillover side \"" +
-                                        route.spilloverBufferSideId + "\" and deadletter side \"" + route.deadLetterSideId + "\"" );
+                                        route->fromSideId + "\" to \"" + route->toSideId + "\" with failover side \"" + route->failoverSideId + "\" and spillover side \"" +
+                                        route->spilloverBufferSideId + "\" and deadletter side \"" + route->deadLetterSideId + "\"" );
                             }
                         }
                         ++k;
@@ -818,11 +820,11 @@ CPubSubFlowRouter::NormalizeConfig( const CPubSubFlowRouterConfig& originalConfi
     CPubSubFlowRouterConfig::PubSubFlowRouteConfigVector::iterator r = normalizedConfig.routes.begin();
     while ( r != normalizedConfig.routes.end() )
     {
-        CPubSubFlowRouteConfig& routeConfig = (*r);
-        CPubSubClientSidePtr fromSide = GetSideWithId( sides, routeConfig.fromSideId );
+        CPubSubFlowRouteConfigPtr routeConfig = (*r);
+        CPubSubClientSidePtr fromSide = GetSideWithId( sides, routeConfig->fromSideId );
         if ( !fromSide.IsNULL() )
         {   
-            if ( routeConfig.IsAnyAutoTopicMatchingNeeded() )
+            if ( routeConfig->IsAnyAutoTopicMatchingNeeded() )
             {
                 CORE::CString::StringSet fromSideTopicNames;
                 if ( fromSide->GetCurrentTopicNames( fromSideTopicNames ) )
@@ -833,10 +835,10 @@ CPubSubFlowRouter::NormalizeConfig( const CPubSubFlowRouterConfig& originalConfi
                         const CORE::CString& fromSideTopicName = (*t);
                         
                         // Find of create (config permitting) the topic association config
-                        CPubSubFlowRouteTopicConfig* topicRouteConfig = routeConfig.FindOrCreateTopicAssociation( fromSideTopicName ); 
-                        if ( GUCEF_NULL == topicRouteConfig )
+                        CPubSubFlowRouteTopicConfigPtr topicRouteConfig = routeConfig->FindOrCreateTopicAssociation( fromSideTopicName ); 
+                        if ( topicRouteConfig.IsNULL() )
                         {
-                            GUCEF_WARNING_LOG( CORE::LOGLEVEL_NORMAL, "PubSubFlowRouter:NormalizeConfig: No topic association entry found for side \"" + routeConfig.fromSideId + 
+                            GUCEF_WARNING_LOG( CORE::LOGLEVEL_NORMAL, "PubSubFlowRouter:NormalizeConfig: No topic association entry found for side \"" + routeConfig->fromSideId + 
                                 "\" and from-topic \"" + fromSideTopicName + "\"" );
                         }
                         ++t;
@@ -878,7 +880,7 @@ CPubSubFlowRouter::BuildRoutes( const CPubSubFlowRouterConfig& config ,
     CPubSubFlowRouterConfig::PubSubFlowRouteConfigVector::const_iterator i = m_normalizedConfig.routes.begin();
     while ( i != m_normalizedConfig.routes.end() )
     {
-        const CPubSubFlowRouteConfig& routeConfig = (*i);
+        const CPubSubFlowRouteConfigPtr routeConfig = (*i);
 
         // Try to find actual side objects to match against the IDs in the config
         // Note that based on how sloppy the config is we may not find any matches
@@ -894,28 +896,28 @@ CPubSubFlowRouter::BuildRoutes( const CPubSubFlowRouterConfig& config ,
             CORE::CString sideId = (*n)->GetSideId();
             if ( !sideId.IsNULLOrEmpty() )
             {
-                if ( routeConfig.fromSideId == sideId )
+                if ( routeConfig->fromSideId == sideId )
                     fromSide = (*n);
                 else
-                if ( routeConfig.toSideId == sideId )
+                if ( routeConfig->toSideId == sideId )
                 {
                     toSide = (*n);
                     ++possibleRoutes;
                 }
                 else
-                if ( routeConfig.failoverSideId == sideId )
+                if ( routeConfig->failoverSideId == sideId )
                 {
                     failoverSide = (*n);
                     ++possibleRoutes;
                 }
                 else
-                if ( routeConfig.spilloverBufferSideId == sideId )
+                if ( routeConfig->spilloverBufferSideId == sideId )
                 {
                     spilloverSide = (*n);
                     ++possibleRoutes;
                 }
                 else
-                if ( routeConfig.deadLetterSideId == sideId )
+                if ( routeConfig->deadLetterSideId == sideId )
                 {
                     deadletterSide = (*n);
                     ++possibleRoutes;
@@ -936,14 +938,14 @@ CPubSubFlowRouter::BuildRoutes( const CPubSubFlowRouterConfig& config ,
             routeInfo.failoverSide = failoverSide.GetPointerAlways();
             routeInfo.spilloverBufferSide = spilloverSide.GetPointerAlways();
             routeInfo.deadLetterSide = deadletterSide.GetPointerAlways();           
-            routeInfo.routeConfig = &routeConfig;
+            routeInfo.routeConfig = routeConfig;
 
             totalPossibleRoutes += possibleRoutes;
         }
         else
         {
             GUCEF_WARNING_LOG( CORE::LOGLEVEL_IMPORTANT, "PubSubFlowRouter:BuildRoutes: Unable to find sides referenced in route " +
-                routeConfig.fromSideId + " -> " + routeConfig.toSideId + ". Route has no effect" );
+                routeConfig->fromSideId + " -> " + routeConfig->toSideId + ". Route has no effect" );
         }
 
         ++i;
@@ -1134,14 +1136,26 @@ CPubSubFlowRouter::BuildRoutes( const CPubSubFlowRouterConfig& config ,
 
             if ( GUCEF_NULL != routeInfo.spilloverBufferSide )
             {
+                CORE::CString spilloverSideId = routeInfo.spilloverBufferSide->GetSideId();
+                
                 // We found a validated spillover side
                 // now lets make sure we have an egress route for it
                 TSidePtrToRouteInfoVectorMap::iterator r2 = m_routeMap.find( routeInfo.spilloverBufferSide );
                 if ( r2 != m_routeMap.end() )
                 {
                     CPubSubClientSide* toSide = GUCEF_NULL != routeInfo.toSide ? routeInfo.toSide : routeInfo.failoverSide;
-                    GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "PubSubFlowRouter:BuildRoutes: Egress route for spillover buffer \"" + routeInfo.spilloverBufferSide->GetSideId() + 
+                    GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "PubSubFlowRouter:BuildRoutes: Egress route for spillover buffer \"" + spilloverSideId + 
                         "\" to side \"" + toSide->GetSideId() + "\" exists as an explicitly provided configured route. No such route will be auto-generated" );
+
+                    // Ensure the egress routes are marked as such
+                    TRouteInfoVector& spilloverMultiRouteInfo = (*r2).second;
+                    TRouteInfoVector::iterator n2 = spilloverMultiRouteInfo.begin();
+                    while ( n2 != spilloverMultiRouteInfo.end() )
+                    {
+                        CRouteInfo& spilloverRouteInfo = (*n2);
+                        spilloverRouteInfo.isSpilloverEgressRoute = true;
+                        ++n2;
+                    }
                 }
                 else
                 {
@@ -1156,11 +1170,51 @@ CPubSubFlowRouter::BuildRoutes( const CPubSubFlowRouterConfig& config ,
                     newSpilloverBypassRoute.fromSide = routeInfo.spilloverBufferSide;
                     newSpilloverBypassRoute.spilloverBufferSide = GUCEF_NULL;
                     newSpilloverBypassRoute.spilloverInfo = GUCEF_NULL;
+                    newSpilloverBypassRoute.isSpilloverEgressRoute = true;
 
                     spilloverMultiRouteInfo.push_back( newSpilloverBypassRoute );
+                    CRouteInfo& spilloverBypassRoute = spilloverMultiRouteInfo.back();
+
+                    bool foundSpilloverEgressRouteConfig = false;
+                    CPubSubFlowRouterConfig::PubSubFlowRouteConfigVector::iterator c = m_normalizedConfig.routes.begin();
+                    while ( c != m_normalizedConfig.routes.end() )
+                    {
+                        CPubSubFlowRouteConfigPtr routeConfig = (*c);
+                        if ( routeConfig->fromSideId == spilloverSideId )
+                        {
+                            foundSpilloverEgressRouteConfig = true;
+                        }
+                        ++c;
+                    }
+                    
+                    if ( !foundSpilloverEgressRouteConfig )
+                    {
+                        CPubSubClientSide* toSide = GUCEF_NULL != routeInfo.toSide ? routeInfo.toSide : routeInfo.failoverSide;
+                        GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "PubSubFlowRouter:BuildRoutes: No route config found for egress route from spillover buffer \"" + spilloverSideId + 
+                            "\" to side \"" + toSide->GetSideId() + "\". Auto generating egress route config" );
+
+                        // We need to add a route config for this auto-generated route
+
+                        CORE::CString fromSideId = routeInfo.fromSide->GetSideId();
+
+                        if ( !routeInfo.routeConfig.IsNULL() )
+                        {
+                            CPubSubFlowRouteConfigPtr egressRouteConfig( CPubSubFlowRouteConfig::CreateSharedObjWithParam( *routeInfo.routeConfig ) );
+                            egressRouteConfig->fromSideId = spilloverSideId;
+                            egressRouteConfig->spilloverBufferSideId.Clear();
+                            spilloverBypassRoute.routeConfig = egressRouteConfig;
+                            m_normalizedConfig.routes.push_back( egressRouteConfig );
+                        }
+                        else
+                        {
+                            CPubSubClientSide* toSide = GUCEF_NULL != routeInfo.toSide ? routeInfo.toSide : routeInfo.failoverSide;
+                            GUCEF_ERROR_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "PubSubFlowRouter:BuildRoutes: No route config found which uses spillover \"" + spilloverSideId + 
+                                "\" and 'from' side \"" + fromSideId + "\". This should not happen since we have instantiations" );
+                        }
+                    }                    
 
                     CPubSubClientSide* toSide = GUCEF_NULL != routeInfo.toSide ? routeInfo.toSide : routeInfo.failoverSide;
-                    GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "PubSubFlowRouter:BuildRoutes: Auto-generated egress route for spillover buffer \"" + routeInfo.spilloverBufferSide->GetSideId() + 
+                    GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "PubSubFlowRouter:BuildRoutes: Auto-generated egress route for spillover buffer \"" + spilloverSideId + 
                         "\" to side \"" + toSide->GetSideId() + "\"" );
                 }
 
@@ -1221,29 +1275,20 @@ CPubSubFlowRouter::BuildRoutes( const CPubSubFlowRouterConfig& config ,
 
     // Now that all route info is build at the 'side' level we also layer in the topic level mappings
     // these are to topic objects, leveraging the sides we just setup to gain access to those
-
-    i = normalizedConfig.routes.begin();
-    while ( i != normalizedConfig.routes.end() )
+    r = m_routeMap.begin();
+    while ( r != m_routeMap.end() )
     {
-        const CPubSubFlowRouteConfig& routeConfig = (*i);
-
-        r = m_routeMap.begin();
-        while ( r != m_routeMap.end() )
+        TRouteInfoVector& multiRouteInfo = (*r).second;
+        TRouteInfoVector::iterator n = multiRouteInfo.begin();
+        while ( n != multiRouteInfo.end() )
         {
-            TRouteInfoVector& multiRouteInfo = (*r).second;
-            TRouteInfoVector::iterator n = multiRouteInfo.begin();
-            while ( n != multiRouteInfo.end() )
-            {
-                CRouteInfo& routeInfo = (*n);
-                routeInfo.MatchAllTopicRouteConfigs();
+            CRouteInfo& routeInfo = (*n);
+            routeInfo.MatchAllTopicRouteConfigs();
 
-                ++n;
-            }
-
-            ++r;
+            ++n;
         }
 
-        ++i;
+        ++r;
     }
     
     // Now set up all the event handlers 
@@ -1958,8 +2003,7 @@ CPubSubFlowRouter::DetermineFirstActiveRoute( CRouteInfo& routeInfo )
         // Even if this route does not have a spillover we have to make sure this route is not actually the
         // derived spillover route itself in which case we need to make sure we do not partake in any initialization ourselves
         // independently of the parent route
-        TSidePtrToSpilloverInfoMap::iterator i = m_spilloverInfoMap.find( routeInfo.fromSide );
-        if ( i == m_spilloverInfoMap.end() )
+        if ( !routeInfo.isSpilloverEgressRoute )
         {
             // This is a regular route without any spillover functionality
             // As such we can straightforward connect without special spillover bootstrapping
@@ -2437,22 +2481,22 @@ CPubSubFlowRouter::CreateNewFromTopicAssociationAsNeeded( CPubSubClientTopicBasi
     CPubSubFlowRouterConfig::PubSubFlowRouteConfigVector::iterator c = m_config.routes.begin();
     while ( c != m_config.routes.end() )
     {
-        CPubSubFlowRouteConfig& routeConfig = (*c);
-        CPubSubFlowRouteTopicConfig* topicRouteConfig = routeConfig.FindOrCreateTopicAssociation( fromTopicName );
-        if ( GUCEF_NULL != topicRouteConfig )
+        CPubSubFlowRouteConfigPtr routeConfig = (*c);
+        CPubSubFlowRouteTopicConfigPtr topicRouteConfig = routeConfig->FindOrCreateTopicAssociation( fromTopicName );
+        if ( !topicRouteConfig.IsNULL() )
         {
             // We either had an explicit topic mapping or we are auto-matching
             // either way make sure our raw pointers are up to date
 
             CORE::PulseGeneratorPtr fromPulseGenerator;
-            if ( routeConfig.preferFromTopicThreadForDestination )
+            if ( routeConfig->preferFromTopicThreadForDestination )
             {
                 fromPulseGenerator = fromTopicPtr->GetPulseGenerator();
                 if ( fromPulseGenerator.IsNULL() )
                     fromPulseGenerator = fromClient->GetDefaultTopicPulseGenerator();
             }
             CORE::PulseGeneratorPtr destPulseGenerator;
-            if ( !fromPulseGenerator.IsNULL() && routeConfig.preferFromTopicThreadForDestination )
+            if ( !fromPulseGenerator.IsNULL() && routeConfig->preferFromTopicThreadForDestination )
             {
                 destPulseGenerator = fromPulseGenerator;
             }
@@ -2462,7 +2506,7 @@ CPubSubFlowRouter::CreateNewFromTopicAssociationAsNeeded( CPubSubClientTopicBasi
             while ( i != routes.end() )
             {
                 CRouteInfo& routeInfo = (*i);
-                if ( routeInfo.MatchTopicRouteConfig( *topicRouteConfig, fromPulseGenerator, destPulseGenerator ) )
+                if ( routeInfo.MatchTopicRouteConfig( topicRouteConfig, fromPulseGenerator, destPulseGenerator ) )
                 {
                     DetermineActiveRoute( routeInfo );
                 }

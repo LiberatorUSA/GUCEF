@@ -262,9 +262,9 @@ CPubSubChannelConfig::LoadConfig( const CORE::CDataNode& cfg )
         // If we do not have a flow router config we take it as allowing * -> * implicitly
         // this setting matches the historical behaviour, this route wont have any failover or spillover or dead letter
         flowRouterConfig.Clear();        
-        CPubSubFlowRouteConfig implicitRoute;
-        implicitRoute.fromSideId = "*";
-        implicitRoute.toSideId = "*";
+        CPubSubFlowRouteConfigPtr implicitRoute = CPubSubFlowRouteConfig::CreateSharedObj();
+        implicitRoute->fromSideId = "*";
+        implicitRoute->toSideId = "*";
         flowRouterConfig.routes.push_back( implicitRoute );
 
         // We also use the safest setting for the ack style

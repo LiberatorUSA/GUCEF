@@ -175,11 +175,11 @@ CPubSubFlowRouterConfig::SaveConfig( CORE::CDataNode& cfg ) const
         PubSubFlowRouteConfigVector::const_iterator i = routes.begin();
         while ( i != routes.end() )
         {
-            const CPubSubFlowRouteConfig& route = (*i);
+            const CPubSubFlowRouteConfigPtr route = (*i);
             CORE::CDataNode* routeNode = routesParentNode->AddChild( "PubSubFlowRouteConfig" );
             if ( GUCEF_NULL != routeNode )
             {
-                if ( !route.SaveConfig( *routeNode ) )
+                if ( !route->SaveConfig( *routeNode ) )
                     totalSuccess = false;    
             }
             else
@@ -220,8 +220,8 @@ CPubSubFlowRouterConfig::LoadConfig( const CORE::CDataNode& cfg )
         {
             const CORE::CDataNode* routeNode = (*i);
             
-            CPubSubFlowRouteConfig route;
-            if ( route.LoadConfig( *routeNode ) )
+            CPubSubFlowRouteConfigPtr route = CPubSubFlowRouteConfig::CreateSharedObj();
+            if ( route->LoadConfig( *routeNode ) )
             {
                 routes.push_back( route );
             }

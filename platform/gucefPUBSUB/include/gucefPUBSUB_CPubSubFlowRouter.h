@@ -176,6 +176,7 @@ class GUCEF_PUBSUB_EXPORT_CPP CPubSubFlowRouter : public CORE::CTSGNotifier
         bool spilloverBufferSideIsHealthy;        
         CORE::CDateTime spilloverBufferSideLastHealthStatusChange;
         bool flowingIntoSpillover;
+        bool isSpilloverEgressRoute;
 
         CPubSubClientSide* deadLetterSide;
         bool deadLetterSideIsHealthy;
@@ -183,7 +184,7 @@ class GUCEF_PUBSUB_EXPORT_CPP CPubSubFlowRouter : public CORE::CTSGNotifier
 
         CORE::CTimer routeSwitchingTimer;
         CSpilloverInfo* spilloverInfo;
-        const CPubSubFlowRouteConfig* routeConfig;
+        CPubSubFlowRouteConfigPtr routeConfig;
 
         TTopicRawPtrToRouteTopicLinksRawPtrMap    fromSideTopicLinks;
         TStringToRouteTopicLinksMap               fromSideTopicNameLinks;
@@ -194,10 +195,10 @@ class GUCEF_PUBSUB_EXPORT_CPP CPubSubFlowRouter : public CORE::CTSGNotifier
         bool DidMsgsFlowIntoSpillover( void ) const;
         bool IsSpilloverInActiveUse( void ) const;
         void SwitchAllTopicLinksActiveTopic( RouteType activeSide );
-        bool MatchTopicRouteConfig( const CPubSubFlowRouteTopicConfig& topicRouteConfig , 
-                                    CORE::PulseGeneratorPtr fromPulseGenerator          , 
-                                    CORE::PulseGeneratorPtr destPulseGenerator          );
-        bool MatchTopicRouteConfig( const CPubSubFlowRouteTopicConfig& topicRouteConfig );
+        bool MatchTopicRouteConfig( const CPubSubFlowRouteTopicConfigPtr topicRouteConfig , 
+                                    CORE::PulseGeneratorPtr fromPulseGenerator            , 
+                                    CORE::PulseGeneratorPtr destPulseGenerator            );
+        bool MatchTopicRouteConfig( const CPubSubFlowRouteTopicConfigPtr topicRouteConfig );
         bool MatchAllTopicRouteConfigs( void );
 
         CRouteInfo( void );

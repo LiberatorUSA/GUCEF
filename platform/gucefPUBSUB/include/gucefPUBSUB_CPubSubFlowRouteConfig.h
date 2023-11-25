@@ -25,6 +25,16 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+#ifndef GUCEF_MT_CMUTEX_H
+#include "gucefMT_CMutex.h"
+#define GUCEF_MT_CMUTEX_H
+#endif /* GUCEF_MT_CMUTEX_H ? */
+
+#ifndef GUCEF_CORE_CTSHAREDPTR_H
+#include "CTSharedPtr.h"
+#define GUCEF_CORE_CTSHAREDPTR_H
+#endif /* GUCEF_CORE_CTSHAREDPTR_H ? */
+
 #ifndef GUCEF_CORE_CICONFIGURABLE_H
 #include "gucefCORE_CIConfigurable.h"
 #define GUCEF_CORE_CICONFIGURABLE_H
@@ -61,11 +71,13 @@ namespace PUBSUB {
  *  Using the topic names for known sides it logically refers to said topics to spell out a mapping between them that the sides themselves are oblivious of
  *  The flow router uses this information to correctly route data between sides and their associated client's topics for a given channel
  */
-class GUCEF_PUBSUB_EXPORT_CPP CPubSubFlowRouteTopicConfig : public CORE::CIConfigurable
+class GUCEF_PUBSUB_EXPORT_CPP CPubSubFlowRouteTopicConfig : public CORE::CIConfigurable ,
+                                                            public CORE::CTSharedObjCreator< CPubSubFlowRouteTopicConfig, MT::CMutex >
 {
     public:
 
-    typedef std::vector< CPubSubFlowRouteTopicConfig, basic_allocator< CPubSubFlowRouteTopicConfig > >   PubSubFlowRouteTopicConfigVector;
+    typedef CORE::CTSharedPtr< CPubSubFlowRouteTopicConfig, MT::CMutex >                                    CPubSubFlowRouteTopicConfigPtr;
+    typedef std::vector< CPubSubFlowRouteTopicConfigPtr, basic_allocator< CPubSubFlowRouteTopicConfig > >   PubSubFlowRouteTopicConfigVector;
 
     CORE::CString fromSideTopicName;        /**< primary 'from' side topic for this route */
     CORE::CString toSideTopicName;          /**< primary 'to' side topic for this route */
@@ -97,11 +109,14 @@ class GUCEF_PUBSUB_EXPORT_CPP CPubSubFlowRouteTopicConfig : public CORE::CIConfi
  *  Using the ids of sides it logically refers to said sides to spell out a mapping between them that the sides themselves are oblivious of
  *  The flow router uses this information to correctly route data between sides for a given channel
  */
-class GUCEF_PUBSUB_EXPORT_CPP CPubSubFlowRouteConfig : public CORE::CIConfigurable
+class GUCEF_PUBSUB_EXPORT_CPP CPubSubFlowRouteConfig : public CORE::CIConfigurable ,
+                                                       public CORE::CTSharedObjCreator< CPubSubFlowRouteConfig, MT::CMutex >
 {
     public:
                                                                             
-    typedef std::vector< CPubSubFlowRouteConfig, basic_allocator< CPubSubFlowRouteConfig > >        PubSubFlowRouteConfigVector;                                                
+    typedef CORE::CTSharedPtr< CPubSubFlowRouteConfig, MT::CMutex >                                 CPubSubFlowRouteConfigPtr;
+    typedef std::vector< CPubSubFlowRouteConfigPtr, basic_allocator< CPubSubFlowRouteConfig > >     PubSubFlowRouteConfigVector;                                                
+    typedef CPubSubFlowRouteTopicConfig::CPubSubFlowRouteTopicConfigPtr                             CPubSubFlowRouteTopicConfigPtr;
     typedef CPubSubFlowRouteTopicConfig::PubSubFlowRouteTopicConfigVector                           PubSubFlowRouteTopicConfigVector;
 
     CORE::CString fromSideId;                              /**< primary 'from' side for this route */
@@ -132,11 +147,16 @@ class GUCEF_PUBSUB_EXPORT_CPP CPubSubFlowRouteConfig : public CORE::CIConfigurab
 
     bool IsAnyAutoTopicMatchingNeeded( void ) const;
 
-    CPubSubFlowRouteTopicConfig* FindTopicAssociation( const CORE::CString& fromTopicName );
+    CPubSubFlowRouteTopicConfigPtr FindTopicAssociation( const CORE::CString& fromTopicName );
 
-    CPubSubFlowRouteTopicConfig* FindOrCreateTopicAssociation( const CORE::CString& fromTopicName );
+    CPubSubFlowRouteTopicConfigPtr FindOrCreateTopicAssociation( const CORE::CString& fromTopicName );
 
 };
+
+/*-------------------------------------------------------------------------*/
+
+typedef CPubSubFlowRouteTopicConfig::CPubSubFlowRouteTopicConfigPtr     CPubSubFlowRouteTopicConfigPtr;
+typedef CPubSubFlowRouteConfig::CPubSubFlowRouteConfigPtr               CPubSubFlowRouteConfigPtr;
 
 /*-------------------------------------------------------------------------//
 //                                                                         //

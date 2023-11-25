@@ -187,7 +187,7 @@ struct TypeIsDerivedFrom
     template < typename TestType > static no&  test( ... ) { static no result; return result; }
 
     // The constant used as a return value for the test.
-    enum { value = sizeof( test( static_cast< DerivedClassType* >( 0 ) ) ) == sizeof( yes ) };
+    enum { value = sizeof( test( static_cast< DerivedClassType* >( GUCEF_NULL ) ) ) == sizeof( yes ) };
 };
 
 /*-------------------------------------------------------------------------//
