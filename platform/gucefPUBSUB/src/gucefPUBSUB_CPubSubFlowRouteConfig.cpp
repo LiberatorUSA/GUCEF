@@ -155,6 +155,7 @@ CPubSubFlowRouteConfig::CPubSubFlowRouteConfig( void )
     , spilloverSideTopicsAutoMatchFromSide( false )
     , deadLetterSideTopicsAutoMatchFromSide( false )
     , preferFromTopicThreadForDestination( false )
+    , egressAllDiscoveredSpilloverTopicsOnStart( true )
 {GUCEF_TRACE;
 
 }
@@ -175,6 +176,7 @@ CPubSubFlowRouteConfig::CPubSubFlowRouteConfig( const CPubSubFlowRouteConfig& sr
     , spilloverSideTopicsAutoMatchFromSide( src.spilloverSideTopicsAutoMatchFromSide )
     , deadLetterSideTopicsAutoMatchFromSide( src.deadLetterSideTopicsAutoMatchFromSide )
     , preferFromTopicThreadForDestination( src.preferFromTopicThreadForDestination )
+    , egressAllDiscoveredSpilloverTopicsOnStart( src.egressAllDiscoveredSpilloverTopicsOnStart )
 {GUCEF_TRACE;
 
 }
@@ -206,6 +208,7 @@ CPubSubFlowRouteConfig::operator=( const CPubSubFlowRouteConfig& src )
         spilloverSideTopicsAutoMatchFromSide = src.spilloverSideTopicsAutoMatchFromSide;
         deadLetterSideTopicsAutoMatchFromSide = src.deadLetterSideTopicsAutoMatchFromSide;
         preferFromTopicThreadForDestination = src.preferFromTopicThreadForDestination;
+        egressAllDiscoveredSpilloverTopicsOnStart = src.egressAllDiscoveredSpilloverTopicsOnStart;
     }
     return *this;
 }
@@ -227,6 +230,7 @@ CPubSubFlowRouteConfig::SaveConfig( CORE::CDataNode& cfg ) const
     totalSuccess = cfg.SetAttribute( "spilloverSideTopicsAutoMatchFromSide", spilloverSideTopicsAutoMatchFromSide ) && totalSuccess;
     totalSuccess = cfg.SetAttribute( "deadLetterSideTopicsAutoMatchFromSide", deadLetterSideTopicsAutoMatchFromSide ) && totalSuccess;
     totalSuccess = cfg.SetAttribute( "preferFromTopicThreadForDestination", preferFromTopicThreadForDestination ) && totalSuccess; 
+    totalSuccess = cfg.SetAttribute( "egressAllDiscoveredSpilloverTopicsOnStart", egressAllDiscoveredSpilloverTopicsOnStart ) && totalSuccess;
 
     CORE::CDataNode* topicAssociationsNode = cfg.FindOrAddChild( "topicAssociations" );
     if ( GUCEF_NULL != topicAssociationsNode )
@@ -264,6 +268,7 @@ CPubSubFlowRouteConfig::LoadConfig( const CORE::CDataNode& cfg )
     spilloverSideTopicsAutoMatchFromSide = cfg.GetAttributeValueOrChildValueByName( "spilloverSideTopicsAutoMatchFromSide" ).AsBool( spilloverSideTopicsAutoMatchFromSide, true ); 
     deadLetterSideTopicsAutoMatchFromSide = cfg.GetAttributeValueOrChildValueByName( "deadLetterSideTopicsAutoMatchFromSide" ).AsBool( deadLetterSideTopicsAutoMatchFromSide, true );
     preferFromTopicThreadForDestination = cfg.GetAttributeValueOrChildValueByName( "preferFromTopicThreadForDestination" ).AsBool( preferFromTopicThreadForDestination, true );
+    egressAllDiscoveredSpilloverTopicsOnStart = cfg.GetAttributeValueOrChildValueByName( "egressAllDiscoveredSpilloverTopicsOnStart" ).AsBool( egressAllDiscoveredSpilloverTopicsOnStart, true );
 
     const CORE::CDataNode* topicAssociationsNode = cfg.FindChild( "topicAssociations" );
     if ( GUCEF_NULL != topicAssociationsNode )

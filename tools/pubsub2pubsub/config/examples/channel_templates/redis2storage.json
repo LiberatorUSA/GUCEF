@@ -121,7 +121,12 @@
 				"reconnectDelayInMs": 0,
 				"pubsubIdPrefix": "{auto}",
 				"maxTotalMsgsInFlight": 200000,
-				"CustomConfig": {},
+				"CustomConfig": {
+					"vfsStorageRootPath": "DataPath/storage/"
+					"dirTopicDiscoveryIsRecursive": true,
+					"includeDirParentInTopicName": true,
+					"destroyTopicWhenDirIsDeleted": true
+				},
 				"journalConfig": {
 					"useJournal": true,
 					"journalType": "binary",

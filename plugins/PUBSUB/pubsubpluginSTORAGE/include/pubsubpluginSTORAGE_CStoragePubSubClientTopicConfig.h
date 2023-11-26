@@ -115,6 +115,7 @@ class PUBSUBPLUGIN_STORAGE_PLUGIN_PRIVATE_CPP CStoragePubSubClientTopicConfig : 
     CORE::UInt32 maxCompletedContainerRefsToRetain;
     CORE::UInt32 nonAckdMsgCheckIntervalInMs;
     CORE::UInt32 maxTimeToWaitForAllMsgBatchAcksInMs;
+    bool topicFollowsDirRenames;                                        /**< if true, the topic will follow the dir rename, if false, the topic will remain on the old path and thus functionally be disconnected */
 
     CStoragePubSubClientTopicConfig( void );
 

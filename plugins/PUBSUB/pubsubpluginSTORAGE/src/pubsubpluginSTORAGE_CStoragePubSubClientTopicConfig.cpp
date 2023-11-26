@@ -98,6 +98,7 @@ CStoragePubSubClientTopicConfig::CStoragePubSubClientTopicConfig( void )
     , maxCompletedContainerRefsToRetain( GUCEF_DEFAULT_MAX_COMPLETED_CONTAINERREFS_TO_RETAIN )
     , nonAckdMsgCheckIntervalInMs( GUCEF_DEFAULT_NOACK_RETRANSMIT_CHECK_CYCLETIME_IN_MS )
     , maxTimeToWaitForAllMsgBatchAcksInMs( GUCEF_DEFAULT_MAX_TIME_FOR_ACKING_ALL_IN_MSG_BATHC_IN_MS )
+    , topicFollowsDirRenames( false )
 {GUCEF_TRACE;
     
 }
@@ -140,6 +141,7 @@ CStoragePubSubClientTopicConfig::CStoragePubSubClientTopicConfig( const CStorage
     , maxCompletedContainerRefsToRetain( src.maxCompletedContainerRefsToRetain )
     , nonAckdMsgCheckIntervalInMs( src.nonAckdMsgCheckIntervalInMs )
     , maxTimeToWaitForAllMsgBatchAcksInMs( src.maxTimeToWaitForAllMsgBatchAcksInMs )
+    , topicFollowsDirRenames( src.topicFollowsDirRenames )
 {GUCEF_TRACE;
     
     customConfig = src.customConfig;  
@@ -183,6 +185,7 @@ CStoragePubSubClientTopicConfig::CStoragePubSubClientTopicConfig( const PUBSUB::
     , maxCompletedContainerRefsToRetain( GUCEF_DEFAULT_MAX_COMPLETED_CONTAINERREFS_TO_RETAIN )
     , nonAckdMsgCheckIntervalInMs( GUCEF_DEFAULT_NOACK_RETRANSMIT_CHECK_CYCLETIME_IN_MS )
     , maxTimeToWaitForAllMsgBatchAcksInMs( GUCEF_DEFAULT_MAX_TIME_FOR_ACKING_ALL_IN_MSG_BATHC_IN_MS )
+    , topicFollowsDirRenames( false )
 {GUCEF_TRACE;
     
     LoadCustomConfig( genericConfig.customConfig );  
@@ -233,6 +236,7 @@ CStoragePubSubClientTopicConfig::LoadCustomConfig( const CORE::CDataNode& config
     maxCompletedContainerRefsToRetain = config.GetAttributeValueOrChildValueByName( "maxCompletedContainerRefsToRetain" ).AsUInt32( maxCompletedContainerRefsToRetain, true );
     nonAckdMsgCheckIntervalInMs = config.GetAttributeValueOrChildValueByName( "nonAckdMsgCheckIntervalInMs" ).AsUInt32( nonAckdMsgCheckIntervalInMs, true );
     maxTimeToWaitForAllMsgBatchAcksInMs = config.GetAttributeValueOrChildValueByName( "maxTimeToWaitForAllMsgBatchAcksInMs" ).AsUInt32( maxTimeToWaitForAllMsgBatchAcksInMs, true );
+    topicFollowsDirRenames = config.GetAttributeValueOrChildValueByName( "topicFollowsDirRenames" ).AsBool( topicFollowsDirRenames, true );
 
     CORE::CDataNode* binarySerializerOptionsCfg = config.FindChild( "binarySerializerOptions" );
     if ( GUCEF_NULL != binarySerializerOptionsCfg )
@@ -284,6 +288,7 @@ CStoragePubSubClientTopicConfig::SaveCustomConfig( CORE::CDataNode& config ) con
     success = config.SetAttribute( "maxCompletedContainerRefsToRetain", maxCompletedContainerRefsToRetain ) && success;    
     success = config.SetAttribute( "nonAckdMsgCheckIntervalInMs", nonAckdMsgCheckIntervalInMs ) && success;        
     success = config.SetAttribute( "maxTimeToWaitForAllMsgBatchAcksInMs", maxTimeToWaitForAllMsgBatchAcksInMs ) && success;            
+    success = config.SetAttribute( "topicFollowsDirRenames", topicFollowsDirRenames ) && success;
     
     CORE::CDataNode* binarySerializerOptionsCfg = config.AddChild( "PubSubMsgBinarySerializerOptions" );
     if ( GUCEF_NULL != binarySerializerOptionsCfg )
@@ -369,6 +374,7 @@ CStoragePubSubClientTopicConfig::operator=( const CStoragePubSubClientTopicConfi
         maxCompletedContainerRefsToRetain = src.maxCompletedContainerRefsToRetain;
         nonAckdMsgCheckIntervalInMs = src.nonAckdMsgCheckIntervalInMs;
         maxTimeToWaitForAllMsgBatchAcksInMs = src.maxTimeToWaitForAllMsgBatchAcksInMs;
+        topicFollowsDirRenames = src.topicFollowsDirRenames;
 
         customConfig = src.customConfig;
     }

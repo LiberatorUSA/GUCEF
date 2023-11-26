@@ -98,6 +98,7 @@ class GUCEF_PUBSUB_EXPORT_CPP CPubSubClient : public CORE::CTSGNotifier         
     static const CORE::CEvent TopicsAccessAutoCreatedEvent;            /**< occurs when topic access is automatically created following discovery. Requires the 'supportsDiscoveryOfAvailableTopics' feature to be supported and enabled */
     static const CORE::CEvent TopicsAccessAutoDestroyedEvent;          /**< occurs when topic access is automatically destroyed following discovery. Requires the 'supportsDiscoveryOfAvailableTopics' feature to be supported and enabled */
     static const CORE::CEvent TopicDiscoveryEvent;                     /**< occurs when available topic changes are detected. Requires the 'supportsDiscoveryOfAvailableTopics' feature to be supported and enabled */
+    static const CORE::CEvent TopicDiscoveryEndedEvent;                /**< backend signaling that as far as its concerned the discovery of available topics has ended and you should not expect more TopicDiscoveryEvent events. Requires the 'supportsDiscoveryOfAvailableTopics' feature to be supported and enabled */
     static const CORE::CEvent HealthStatusChangeEvent;                 /**< event msg sent if the health status changes for the topic */
 
     typedef std::set< CPubSubClientTopicBasicPtr >                  PubSubClientTopicSet;

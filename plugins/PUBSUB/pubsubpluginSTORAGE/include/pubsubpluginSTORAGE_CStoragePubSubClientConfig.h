@@ -71,7 +71,7 @@ class PUBSUBPLUGIN_STORAGE_PLUGIN_PRIVATE_CPP CStoragePubSubClientConfig : publi
     CORE::CString vfsStorageRootPath;
     bool dirTopicDiscoveryIsRecursive;
     bool includeDirParentInTopicName;
-
+    bool destroyTopicWhenDirIsDeleted;
     
     CStoragePubSubClientConfig( void );
     

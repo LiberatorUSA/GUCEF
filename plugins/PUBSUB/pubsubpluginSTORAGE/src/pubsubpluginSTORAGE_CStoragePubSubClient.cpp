@@ -570,7 +570,7 @@ CStoragePubSubClient::AutoDestroyTopicAccess( const CORE::CString::StringSet& to
                 ++t;
             }
 
-            GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "StoragePubSubClient(" + CORE::ToString( this ) + "):AutoDestroyTopicAccess: destroyed topic access for " +
+            GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "StoragePubSubClient(" + CORE::ToString( this ) + "):AutoDestroyTopicAccess: destroyed topic access for " +
                 CORE::ToString( destroyedTopicAccessCount ) + "topics" );
         }
     }
@@ -686,6 +686,91 @@ CStoragePubSubClient::GetOrCreateTopicConfig( const CORE::CString& topicName )
 
 /*-------------------------------------------------------------------------*/
 
+void
+CStoragePubSubClient::OnVfsDirCreated( CORE::CNotifier* notifier    ,
+                                       const CORE::CEvent& eventId  ,
+                                       CORE::CICloneable* eventData )
+{GUCEF_TRACE;
+
+    CORE::CDirectoryWatcherEvents::TDirCreatedEventData* dirCreatedEventData = static_cast< CORE::CDirectoryWatcherEvents::TDirCreatedEventData* >( eventData );
+    if ( GUCEF_NULL != dirCreatedEventData )
+    {
+        const CORE::CString& newDirPath = (*dirCreatedEventData);
+        VFS::CVFS& vfs = VFS::CVfsGlobal::Instance()->GetVfs();
+        
+        // Check to see if this dir is a sub dir of the storage root, it could be an irrelevant dir
+        if ( vfs.IsDirPathSubOfDirPath( m_config.vfsStorageRootPath, newDirPath ) )
+        {
+            // Do we take action for new dirs that are created in the storage root ?
+            if ( m_config.desiredFeatures.supportsDiscoveryOfAvailableTopics )
+            {
+                PubSubClientTopicSet topicAccess;
+                TTopicConfigPtrToStringSetMap topicToCreate;
+                topicToCreate[ m_config.defaultTopicConfig ].insert( newDirPath );
+                AutoCreateMultiTopicAccess( topicToCreate, topicAccess, m_config.topicPulseGenerator );
+            }
+        }
+    }
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CStoragePubSubClient::OnVfsDirDeleted( CORE::CNotifier* notifier    ,
+                                       const CORE::CEvent& eventId  ,
+                                       CORE::CICloneable* eventData )
+{GUCEF_TRACE;
+
+    CORE::CDirectoryWatcherEvents::TDirDeletedEventData* dirDeletedEventData = static_cast< CORE::CDirectoryWatcherEvents::TDirDeletedEventData* >( eventData );
+    if ( GUCEF_NULL != dirDeletedEventData )
+    {
+        const CORE::CString& deletedDirPath = (*dirDeletedEventData);
+        VFS::CVFS& vfs = VFS::CVfsGlobal::Instance()->GetVfs();
+        
+        // Check to see if this dir is a sub dir of the storage root, it could be an irrelevant dir
+        if ( vfs.IsDirPathSubOfDirPath( m_config.vfsStorageRootPath, deletedDirPath ) )
+        {
+            // Do we take action for new dirs that are created in the storage root ?
+            if ( m_config.destroyTopicWhenDirIsDeleted )
+            {
+                GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "StoragePubSubClient(" + CORE::ToString( this ) + "):OnVfsDirDeleted: auto destroying topic access for vfs path " +
+                    CORE::ToString( deletedDirPath ) );
+
+                DestroyTopicAccess( deletedDirPath );
+            }
+        }
+    }
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CStoragePubSubClient::SubscribeToVfsTopicPathEvents( void )
+{GUCEF_TRACE;
+
+    bool success = true;
+    VFS::CVFS& vfs = VFS::CVfsGlobal::Instance()->GetVfs();
+
+    CORE::CIDirectoryWatcher::CDirWatchOptions dirWatchOptions( false );
+    dirWatchOptions.watchForDirCreation = m_config.desiredFeatures.supportsDiscoveryOfAvailableTopics;
+    dirWatchOptions.watchForDirDeletion = m_config.destroyTopicWhenDirIsDeleted;
+    dirWatchOptions.watchForDirRenames  = true;
+    dirWatchOptions.watchSubTree        = m_config.dirTopicDiscoveryIsRecursive;
+
+    if ( vfs.AddDirToWatch( m_config.vfsStorageRootPath, dirWatchOptions ) )
+    {
+        GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "StoragePubSubClient:SubscribeToVfsTopicPathEvents: Now watching vfs storage root: " + m_config.vfsStorageRootPath );
+    }
+    else
+    {
+        success = false;
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "StoragePubSubClient:SubscribeToVfsTopicPathEvents: Failed to add watch to vfs storage root: " + m_config.vfsStorageRootPath );
+    }
+    return success;
+}
+
+/*-------------------------------------------------------------------------*/
+
 bool
 CStoragePubSubClient::BeginTopicDiscovery( const CORE::CString::StringSet& globPatternFilters )
 {GUCEF_TRACE;
@@ -696,6 +781,8 @@ CStoragePubSubClient::BeginTopicDiscovery( const CORE::CString::StringSet& globP
         return false;
     }
 
+    SubscribeToVfsTopicPathEvents();
+    
     VFS::CVFS& vfs = VFS::CVfsGlobal::Instance()->GetVfs();
 
     VFS::CVFS::TStringVector dirList;
@@ -992,6 +1079,14 @@ CStoragePubSubClient::RegisterEventHandlers( void )
                      CORE::CTimer::TimerUpdateEvent ,
                      callback                       );
     }
+
+    VFS::CVFS& vfs = VFS::CVfsGlobal::Instance()->GetVfs();
+    
+    TEventCallback callback( this, &CStoragePubSubClient::OnVfsDirCreated );
+    SubscribeTo( &vfs, VFS::CVFS::DirCreatedEvent, callback );
+    
+    TEventCallback callback2( this, &CStoragePubSubClient::OnVfsDirDeleted );
+    SubscribeTo( &vfs, VFS::CVFS::DirDeletedEvent, callback2 );
 }
 
 /*-------------------------------------------------------------------------*/

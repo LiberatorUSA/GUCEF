@@ -1320,17 +1320,58 @@ CStoragePubSubClientTopic::OnVfsArchiveMounted( CORE::CNotifier* notifier    ,
     // persistent storage requests set up a new dir watch for new files IF
     // the archive's mount location matches our vfs root
 
-    MT::CScopeMutex lock( m_lock );
-
     VFS::CVFS::TArchiveMountedEventData* archiveMountedEventData = static_cast< VFS::CVFS::TArchiveMountedEventData* >( eventdata );
     if ( GUCEF_NULL != archiveMountedEventData )
     {
+        MT::CScopeMutex lock( m_lock );
+        
         if ( !m_stage0StorageToPubSubRequests.empty() )
         {
             if ( m_vfsRootPath.HasSubstr( *archiveMountedEventData, true ) )
             {
                 // redo our subscription since the relevant archive landscape changed
                 SubscribeToVfsTopicPathEvents();
+            }
+        }
+    }
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CStoragePubSubClientTopic::OnVfsDirRenamed( CORE::CNotifier* notifier    ,
+                                            const CORE::CEvent& eventId  ,
+                                            CORE::CICloneable* eventData )
+{GUCEF_TRACE;
+
+    // if the underlying vfs storage dir is renamed we should update our config accordingly
+    CORE::CDirectoryWatcherEvents::TDirRenamedEventData* dirRenamedEventData = static_cast< CORE::CDirectoryWatcherEvents::TDirRenamedEventData* >( eventData );
+    if ( GUCEF_NULL != dirRenamedEventData )
+    {
+        const CORE::CString& oldDirPath = dirRenamedEventData->GetData().oldDirName;
+        VFS::CVFS& vfs = VFS::CVfsGlobal::Instance()->GetVfs();
+        
+        MT::CScopeMutex lock( m_lock );
+        
+        // Check to see if this renamed dir is the storage root, it could be an irrelevant dir
+        if ( m_vfsRootPath == oldDirPath )
+        {
+            // Do we take action for new dirs that are created in the storage root ?
+            if ( m_config.topicFollowsDirRenames )
+            {
+                const CORE::CString& newDirPath = dirRenamedEventData->GetData().newDirName;
+                
+                m_vfsRootPath = newDirPath;
+                
+                GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "StoragePubSubClient(" + CORE::ToString( this ) + "):OnVfsDirRenamed: Topic is auto following dir rename from \"" +
+                    oldDirPath + " to \"" + newDirPath + "\"");
+
+                // @TODO: Currently the topic name itself is not renamed, this is a future feature
+                // we would need to add topic rename support
+            }
+            else
+            {
+                GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "StoragePubSubClient(" + CORE::ToString( this ) + "):OnVfsDirRenamed: Underlying dir was renamed and per config the topic will not follow. It will be functionally 'disconnected'" );
             }
         }
     }
@@ -1346,9 +1387,13 @@ CStoragePubSubClientTopic::SubscribeToVfsTopicPathEvents( void )
 
     CORE::CIDirectoryWatcher::CDirWatchOptions dirWatchOptions( false );
     dirWatchOptions.watchForFileCreation = true;
+    dirWatchOptions.watchForDirRenames = m_config.topicFollowsDirRenames;
 
     TEventCallback callback( this, &CStoragePubSubClientTopic::OnVfsFileCreated );
     SubscribeTo( &vfs, VFS::CVFS::FileCreatedEvent, callback );
+
+    TEventCallback callback2( this, &CStoragePubSubClientTopic::OnVfsDirRenamed );
+    SubscribeTo( &vfs, VFS::CVFS::DirRenamedEvent, callback2 );
 
     //SubscribeTo( &vfs, VFS::CVFS::FileModifiedEvent );
     //SubscribeTo( &vfs, VFS::CVFS::FileRenamedEvent );

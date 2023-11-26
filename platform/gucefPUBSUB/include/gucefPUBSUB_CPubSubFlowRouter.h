@@ -214,8 +214,9 @@ class GUCEF_PUBSUB_EXPORT_CPP CPubSubFlowRouter : public CORE::CTSGNotifier
         public:
         CORE::UInt64 spilloverIngressMsgCount;
         CORE::UInt64 spilloverEgressMsgCount;
-        bool endOfDataEventOccured;
+        mutable bool endOfDataEventOccured;
         bool endOfDataEventSupported;
+        bool supportsDiscoveryOfAvailableTopics;
         bool msgsFlowedIntoSpillover;
         CRouteInfo* route;
 

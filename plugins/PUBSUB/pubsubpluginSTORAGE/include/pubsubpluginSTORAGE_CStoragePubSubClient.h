@@ -198,12 +198,24 @@ class PUBSUBPLUGIN_STORAGE_PLUGIN_PRIVATE_CPP CStoragePubSubClient : public PUBS
     OnTopicHealthStatusChange( CORE::CNotifier* notifier    ,
                                const CORE::CEvent& eventId  ,
                                CORE::CICloneable* eventData );
+
+    void
+    OnVfsDirCreated( CORE::CNotifier* notifier    ,
+                     const CORE::CEvent& eventId  ,
+                     CORE::CICloneable* eventData );
+
+    void
+    OnVfsDirDeleted( CORE::CNotifier* notifier    ,
+                     const CORE::CEvent& eventId  ,
+                     CORE::CICloneable* eventData );
     
     void RegisterEventHandlers( void );
 
     void RegisterTopicEventHandlers( CStoragePubSubClientTopicPtr& topic );
 
     bool ConfigureBookmarkPersistance( void );
+
+    bool SubscribeToVfsTopicPathEvents( void );
     
     CStoragePubSubClient( void ); /**< not implemented */
 

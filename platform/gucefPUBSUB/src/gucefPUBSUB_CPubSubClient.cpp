@@ -64,6 +64,7 @@ const CORE::CEvent CPubSubClient::TopicAccessDestroyedEvent = "GUCEF::PUBSUB::CP
 const CORE::CEvent CPubSubClient::TopicsAccessAutoCreatedEvent = "GUCEF::PUBSUB::CPubSubClient::TopicsAccessAutoCreatedEvent";
 const CORE::CEvent CPubSubClient::TopicsAccessAutoDestroyedEvent = "GUCEF::PUBSUB::CPubSubClient::TopicsAccessAutoDestroyedEvent";
 const CORE::CEvent CPubSubClient::TopicDiscoveryEvent = "GUCEF::PUBSUB::CPubSubClient::TopicDiscoveryEvent";
+const CORE::CEvent CPubSubClient::TopicDiscoveryEndedEvent = "GUCEF::PUBSUB::CPubSubClient::TopicDiscoveryEndedEvent";
 const CORE::CEvent CPubSubClient::HealthStatusChangeEvent = "GUCEF::PUBSUB::CPubSubClient::HealthStatusChangeEvent";
 
 /*-------------------------------------------------------------------------//
@@ -121,6 +122,7 @@ CPubSubClient::RegisterEvents( void )
     TopicsAccessAutoCreatedEvent.Initialize();
     TopicsAccessAutoDestroyedEvent.Initialize();
     TopicDiscoveryEvent.Initialize();
+    TopicDiscoveryEndedEvent.Initialize();
     HealthStatusChangeEvent.Initialize();
 }
 
@@ -483,8 +485,8 @@ CPubSubClient::AreAllSubscriptionsAtEndOfData( void ) const
         return allAtEnd;
     }
 
-    // default is in all cases 'false'
-    return false;
+    // if there are no topics you also cannot have any data
+    return true;
 }
 
 /*-------------------------------------------------------------------------*/

@@ -272,6 +272,10 @@ class PUBSUBPLUGIN_STORAGE_PLUGIN_PRIVATE_CPP CStoragePubSubClientTopic : public
     void OnVfsFileCreated( CORE::CNotifier* notifier    ,
                            const CORE::CEvent& eventid  ,
                            CORE::CICloneable* eventdata );
+
+    void OnVfsDirRenamed( CORE::CNotifier* notifier    ,
+                          const CORE::CEvent& eventId  ,
+                          CORE::CICloneable* eventData );
     
     void OnVfsArchiveMounted( CORE::CNotifier* notifier    ,
                               const CORE::CEvent& eventid  ,
