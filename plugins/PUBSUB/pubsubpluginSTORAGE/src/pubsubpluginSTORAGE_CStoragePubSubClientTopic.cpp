@@ -456,6 +456,7 @@ CStoragePubSubClientTopic::CStoragePubSubClientTopic( CStoragePubSubClient* clie
     , m_pubsubBookmarkPersistence()
     , m_vfsFilePostfix( GenerateDefaultVfsStorageContainerFileExt() )
     , m_vfsRootPath()
+    , m_vfsStorageRootPathForFullyAckdContainers()
     , m_lastPersistedMsgId()
     , m_lastPersistedMsgDt()
     , m_encodeSizeRatio( -1 )
@@ -1039,6 +1040,22 @@ CStoragePubSubClientTopic::ResolveVfsRootPath( void ) const
 
 /*-------------------------------------------------------------------------*/
 
+CORE::CString
+CStoragePubSubClientTopic::ResolveVfsStorageRootPathForFullyAckdContainers( void ) const
+{GUCEF_TRACE;
+
+    if ( GUCEF_NULL != m_client )
+    {
+        CORE::CString vfsRootPath = m_config.vfsStorageRootPathForFullyAckdContainers.ReplaceSubstr( "{pubsubIdPrefix}", m_client->GetConfig().pubsubIdPrefix );
+        vfsRootPath = vfsRootPath.ReplaceSubstr( "{topicName}", m_config.topicName );
+        vfsRootPath = vfsRootPath.ReplaceSubstr( "{metricsFriendlyTopicName}", m_metricFriendlyTopicName );
+        return vfsRootPath;
+    }
+    return  CORE::CString::Empty;
+}
+
+/*-------------------------------------------------------------------------*/
+
 bool
 CStoragePubSubClientTopic::LoadConfig( const PUBSUB::CPubSubClientTopicConfig& config )
 {GUCEF_TRACE;
@@ -1081,8 +1098,9 @@ CStoragePubSubClientTopic::LoadConfigType( const C& config )
 
     m_config = config;
     m_metricFriendlyTopicName = GenerateMetricsFriendlyTopicName( m_config.topicName );
-    m_vfsRootPath = ResolveVfsRootPath();
     m_vfsFilePostfix = GenerateVfsStorageContainerFileExt();
+    m_vfsRootPath = ResolveVfsRootPath();
+    m_vfsStorageRootPathForFullyAckdContainers = ResolveVfsStorageRootPathForFullyAckdContainers();     
 
     if ( m_config.useTopicLevelMaxTotalMsgsInFlight )
         m_maxTotalMsgsInFlight = m_config.maxTotalMsgsInFlight;
@@ -1255,53 +1273,62 @@ CStoragePubSubClientTopic::OnVfsFileCreated( CORE::CNotifier* notifier    ,
 
         // Since VFS events are global lets make sure this relates to a path we actually care about
         VFS::CVFS& vfs = VFS::CVfsGlobal::Instance()->GetVfs();
-        if ( vfs.IsFilePathSubOfDirPath( m_config.vfsStorageRootPath, vfsNewFilePath ) )
+        if ( vfs.IsFilePathSubOfDirPath( m_vfsRootPath, vfsNewFilePath ) )
         {
-            CORE::CDateTime containerFileFirstMsgDt;
-            CORE::CDateTime containerFileLastMsgDt;
-            CORE::CDateTime containerFileCaptureDt;
-            if ( GetTimestampsFromContainerFilename( vfsNewFilePath, containerFileFirstMsgDt, containerFileLastMsgDt, containerFileCaptureDt ) )
-            {
-                // Now that we have the relevant timestamps we check these against the ranges of the persistent requests
-                // this is on a first come first serve basis if we find a match
-
-                StorageToPubSubRequestDeque::iterator i = m_stage0StorageToPubSubRequests.begin();
-                while ( i != m_stage0StorageToPubSubRequests.end() )
+            CORE::CString newFileExt = CORE::ExtractFileExtention( vfsNewFilePath );
+            if ( newFileExt == m_config.vfsFileExtention )
+            {            
+                CORE::CDateTime containerFileFirstMsgDt;
+                CORE::CDateTime containerFileLastMsgDt;
+                CORE::CDateTime containerFileCaptureDt;
+                if ( GetTimestampsFromContainerFilename( vfsNewFilePath, containerFileFirstMsgDt, containerFileLastMsgDt, containerFileCaptureDt ) )
                 {
-                    // Check to see if the file is in range
+                    // Now that we have the relevant timestamps we check these against the ranges of the persistent requests
+                    // this is on a first come first serve basis if we find a match
 
-                    bool firstMsgIsInRange = containerFileFirstMsgDt.IsWithinRange( (*i).startDt, (*i).endDt );
-                    bool lastMsgIsInRange = containerFileLastMsgDt.IsWithinRange( (*i).startDt, (*i).endDt );
-                    bool isPartialMatch = ( firstMsgIsInRange && !lastMsgIsInRange ) || ( !firstMsgIsInRange && lastMsgIsInRange );
-
-                    if ( firstMsgIsInRange || lastMsgIsInRange )
+                    StorageToPubSubRequestDeque::iterator i = m_stage0StorageToPubSubRequests.begin();
+                    while ( i != m_stage0StorageToPubSubRequests.end() )
                     {
-                        StorageToPubSubRequest newAutoRequest( (*i) );
-                        newAutoRequest.isPersistentRequest = false;
-                        newAutoRequest.startDt = containerFileFirstMsgDt;
-                        newAutoRequest.endDt = containerFileLastMsgDt;
-                        newAutoRequest.okIfZeroContainersAreFound = false;
+                        // Check to see if the file is in range
 
-                        TCContainerRangeInfoPtr bookmarkInfo = CContainerRangeInfo::CreateSharedObj();
-                        bookmarkInfo->vfsFilePath = vfsNewFilePath;
-                        newAutoRequest.vfsPubSubMsgContainersToPush.insert( bookmarkInfo );
+                        bool firstMsgIsInRange = containerFileFirstMsgDt.IsWithinRange( (*i).startDt, (*i).endDt );
+                        bool lastMsgIsInRange = containerFileLastMsgDt.IsWithinRange( (*i).startDt, (*i).endDt );
+                        bool isPartialMatch = ( firstMsgIsInRange && !lastMsgIsInRange ) || ( !firstMsgIsInRange && lastMsgIsInRange );
 
-                        GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "StoragePubSubClientTopic:OnVfsFileCreated: auto-added file " + *fileCreatedEventData +
-                            " as request based on persistent storage request" );
+                        if ( firstMsgIsInRange || lastMsgIsInRange )
+                        {
+                            StorageToPubSubRequest newAutoRequest( (*i) );
+                            newAutoRequest.isPersistentRequest = false;
+                            newAutoRequest.startDt = containerFileFirstMsgDt;
+                            newAutoRequest.endDt = containerFileLastMsgDt;
+                            newAutoRequest.okIfZeroContainersAreFound = false;
 
-                        m_subscriptionIsAtEndOfData = false;
-                        m_stage2StorageToPubSubRequests.push_back( newAutoRequest );
+                            TCContainerRangeInfoPtr bookmarkInfo = CContainerRangeInfo::CreateSharedObj();
+                            bookmarkInfo->vfsFilePath = vfsNewFilePath;
+                            newAutoRequest.vfsPubSubMsgContainersToPush.insert( bookmarkInfo );
+
+                            GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "StoragePubSubClientTopic:OnVfsFileCreated: auto-added file " + *fileCreatedEventData +
+                                " as request based on persistent storage request" );
+
+                            m_subscriptionIsAtEndOfData = false;
+                            m_stage2StorageToPubSubRequests.push_back( newAutoRequest );
+                        }
+
+                        if ( !isPartialMatch )
+                            break;
+
+                        ++i;
                     }
-
-                    if ( !isPartialMatch )
-                        break;
-
-                    ++i;
+                }
+                else
+                {
+                    // could be some other file that is not a container file
+                    GUCEF_WARNING_LOG( CORE::LOGLEVEL_NORMAL, "StoragePubSubClientTopic:OnVfsFileCreated: Ignoring new file because of inability to extract timestamps from supposed container file name: " + vfsNewFilePath );
                 }
             }
             else
             {
-                // could be some other file that is not a container file
+                GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "StoragePubSubClientTopic:OnVfsFileCreated: Ignoring new file because its file extension doesnt match the configured one: " + vfsNewFilePath );
             }
         }
     }
@@ -2015,7 +2042,7 @@ CStoragePubSubClientTopic::WasContainerMoved( const CORE::CString& vfsFilePath )
 {GUCEF_TRACE;
 
     CORE::CString containerVfsFilename = vfsFilePath.SubstrToChar( '/', false, true );
-    containerVfsFilename = m_config.vfsStorageRootPathForFullyAckdContainers + '/' + containerVfsFilename;
+    containerVfsFilename = m_vfsStorageRootPathForFullyAckdContainers + '/' + containerVfsFilename;
 
     VFS::CVFS& vfs = VFS::CVfsGlobal::Instance()->GetVfs();
     return vfs.FileExists( containerVfsFilename );
@@ -2096,7 +2123,7 @@ CStoragePubSubClientTopic::AcknowledgeReceiptImpl( const CStorageBookmarkInfo& b
                 GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "StoragePubSubClientTopic:AcknowledgeReceipt: Moving container since its content is fully ack'd: " + metaData->linkedRequestEntry->vfsFilePath );
 
                 CORE::CString containerFilename = metaData->linkedRequestEntry->vfsFilePath.SubstrToChar( '/', false, true );
-                containerFilename = m_config.vfsStorageRootPathForFullyAckdContainers + '/' + containerFilename;
+                containerFilename = m_vfsStorageRootPathForFullyAckdContainers + '/' + containerFilename;
 
                 VFS::CVFS& vfs = VFS::CVfsGlobal::Instance()->GetVfs();
                 if ( !vfs.MoveFile( metaData->linkedRequestEntry->vfsFilePath, containerFilename, true ) )
@@ -2134,12 +2161,12 @@ CStoragePubSubClientTopic::AcknowledgeReceiptImpl( const CStorageBookmarkInfo& b
             // All messages from this container have been acknowledged
             if ( m_config.moveContainersWithFullyAckdContent )
             {
-                if ( 0 == bookmark.vfsFilePath.HasSubstr( m_config.vfsStorageRootPath, true ) )
+                if ( 0 == bookmark.vfsFilePath.HasSubstr( m_vfsRootPath, true ) )
                 {
                     GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "StoragePubSubClientTopic:AcknowledgeReceipt: Moving container since its content is fully ack'd: " + bookmark.vfsFilePath );
 
                     CORE::CString containerFilename = bookmark.vfsFilePath.SubstrToChar( '/', false, true );
-                    containerFilename = m_config.vfsStorageRootPathForFullyAckdContainers + '/' + containerFilename;
+                    containerFilename = m_vfsStorageRootPathForFullyAckdContainers + '/' + containerFilename;
 
                     VFS::CVFS& vfs = VFS::CVfsGlobal::Instance()->GetVfs();
                     if ( !vfs.MoveFile( bookmark.vfsFilePath, containerFilename, true ) )
@@ -3142,6 +3169,7 @@ CStoragePubSubClientTopic::ProcessNextPubSubRequestRelatedFile( void )
                     }
                     else
                     {
+                        if ( !failureToLoadIsOk )
                         if ( !failureToLoadIsOk )
                         {
                             GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "StoragePubSubClientTopic:ProcessNextPubSubRequestRelatedFile: Failed load pubsub msg container at path \"" +

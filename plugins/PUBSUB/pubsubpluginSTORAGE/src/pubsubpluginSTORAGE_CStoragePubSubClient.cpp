@@ -332,22 +332,37 @@ CStoragePubSubClient::CreateTopicAccess( PUBSUB::CPubSubClientTopicConfigPtr top
         if ( pulseGenerator.IsNULL() )
             pulseGenerator = GetPulseGenerator();          // none present, use client level pulse generator
 
-        topicAccess = ( GUCEF_NEW CStoragePubSubClientTopic( this, pulseGenerator ) )->CreateSharedPtr();
-        if ( topicAccess->LoadConfig( *topicConfig ) )
+        TTopicMap::iterator i = m_topicMap.find( topicConfig->topicName );
+        if ( i == m_topicMap.end() )
         {
-            m_topicMap[ topicConfig->topicName ] = topicAccess;
+            topicAccess = ( GUCEF_NEW CStoragePubSubClientTopic( this, pulseGenerator ) )->CreateSharedPtr();
+            if ( topicAccess->LoadConfig( *topicConfig ) )
+            {
+                m_topicMap[ topicConfig->topicName ] = topicAccess;
 
-            ConfigureJournal( topicAccess, topicConfig );
-            PUBSUB::CIPubSubJournalBasicPtr journal = topicAccess->GetJournal();
-            if ( !journal.IsNULL() && topicConfig->journalConfig.useJournal )
-                journal->AddTopicCreatedJournalEntry();
+                ConfigureJournal( topicAccess, topicConfig );
+                PUBSUB::CIPubSubJournalBasicPtr journal = topicAccess->GetJournal();
+                if ( !journal.IsNULL() && topicConfig->journalConfig.useJournal )
+                    journal->AddTopicCreatedJournalEntry();
 
-            RegisterTopicEventHandlers( topicAccess );
-        }
+                RegisterTopicEventHandlers( topicAccess );
+
+                GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "StoragePubSubClient(" + CORE::ToString( this ) + "):CreateTopicAccess: Created topic access for topic \"" +
+                        topicConfig->topicName + "\" with implementation " + CORE::ToString( topicAccess.GetPointerAlways() ) );
+            }
+            else
+            {
+                GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "StoragePubSubClient(" + CORE::ToString( this ) + "):CreateTopicAccess: Failed to load config while creating topic access for topic \"" +
+                        topicConfig->topicName + "\" with implementation " + CORE::ToString( topicAccess.GetPointerAlways() ) );
+
+                topicAccess->Shutdown();
+                topicAccess.Unlink();
+            }
+        }   
         else
         {
-            topicAccess->Shutdown();
-            topicAccess.Unlink();
+            GUCEF_WARNING_LOG( CORE::LOGLEVEL_NORMAL, "StoragePubSubClient(" + CORE::ToString( this ) + "):CreateTopicAccess: Topic access for topic \"" + topicConfig->topicName + "\" already exists" );
+            return (*i).second;
         }
     }
 
@@ -384,41 +399,50 @@ CStoragePubSubClient::AutoCreateMultiTopicAccess( const TTopicConfigPtrToStringS
                 CORE::CString::StringSet::const_iterator i = topicNameList.begin();
                 while ( i != topicNameList.end() )
                 {
-                    CStoragePubSubClientTopicConfigPtr topicConfig = CStoragePubSubClientTopicConfig::CreateSharedObj();
-                    topicConfig->LoadConfig( *templateTopicConfig.GetPointerAlways() ); 
-                    topicConfig->topicName = (*i);
-                    topicConfig->vfsStorageRootPath = m_config.vfsStorageRootPath + GUCEF_VFS_DIR_SEP_CHAR + topicConfig->topicName + GUCEF_VFS_DIR_SEP_CHAR;
-
-                    CStoragePubSubClientTopicPtr tAccess;
+                    const CORE::CString& topicName = (*i);
+                    TTopicMap::iterator t = m_topicMap.find( topicName );
+                    if ( t == m_topicMap.end() )
                     {
-                        MT::CObjectScopeLock lock( this );
+                        CStoragePubSubClientTopicConfigPtr topicConfig = CStoragePubSubClientTopicConfig::CreateSharedObj();
+                        topicConfig->LoadConfig( *templateTopicConfig.GetPointerAlways() ); 
+                        topicConfig->topicName = topicName;
+                        topicConfig->vfsStorageRootPath = m_config.vfsStorageRootPath + GUCEF_VFS_DIR_SEP_CHAR + topicName + GUCEF_VFS_DIR_SEP_CHAR;
 
-                        tAccess = ( GUCEF_NEW CStoragePubSubClientTopic( this, pulseGenerator ) )->CreateSharedPtr();
-                        if ( tAccess->LoadConfig( *topicConfig ) )
+                        CStoragePubSubClientTopicPtr tAccess;
                         {
-                            m_topicMap[ topicConfig->topicName ] = tAccess;                            
-                            topicAccess.insert( tAccess );
-                            m_config.topics.push_back( topicConfig );
-                            ++newTopicAccessCount;
+                            MT::CObjectScopeLock lock( this );
 
-                            ConfigureJournal( tAccess, topicConfig );
-                            PUBSUB::CIPubSubJournalBasicPtr journal = tAccess->GetJournal();
-                            if ( !journal.IsNULL() && topicConfig->journalConfig.useJournal )
-                                journal->AddTopicCreatedJournalEntry();
+                            tAccess = ( GUCEF_NEW CStoragePubSubClientTopic( this, pulseGenerator ) )->CreateSharedPtr();
+                            if ( tAccess->LoadConfig( *topicConfig ) )
+                            {
+                                m_topicMap[ topicConfig->topicName ] = tAccess;                            
+                                topicAccess.insert( tAccess );
+                                m_config.topics.push_back( topicConfig );
+                                ++newTopicAccessCount;
 
-                            GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "StoragePubSubClient(" + CORE::ToString( this ) + "):AutoCreateMultiTopicAccess: Auto created topic \"" +
-                                    topicConfig->topicName + "\" based on template config \"" + templateTopicConfig->topicName + "\"" );
+                                ConfigureJournal( tAccess, topicConfig );
+                                PUBSUB::CIPubSubJournalBasicPtr journal = tAccess->GetJournal();
+                                if ( !journal.IsNULL() && topicConfig->journalConfig.useJournal )
+                                    journal->AddTopicCreatedJournalEntry();
+
+                                GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "StoragePubSubClient(" + CORE::ToString( this ) + "):AutoCreateMultiTopicAccess: Auto created topic \"" +
+                                        topicConfig->topicName + "\" based on template config \"" + templateTopicConfig->topicName + "\" with implementation " + CORE::ToString( tAccess.GetPointerAlways() ) );
                         
-                            RegisterTopicEventHandlers( tAccess );
-                        }
-                        else
-                        {
-                            tAccess.Unlink();
-                            totalSuccess = false;
+                                RegisterTopicEventHandlers( tAccess );
+                            }
+                            else
+                            {
+                                tAccess.Unlink();
+                                totalSuccess = false;
 
-                            GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "StoragePubSubClient(" + CORE::ToString( this ) + "):AutoCreateMultiTopicAccess: Failed to load config for topic \"" +
-                                    topicConfig->topicName + "\" based on template config \"" + templateTopicConfig->topicName + "\"" );
+                                GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "StoragePubSubClient(" + CORE::ToString( this ) + "):AutoCreateMultiTopicAccess: Failed to load config for topic \"" +
+                                        topicConfig->topicName + "\" based on template config \"" + templateTopicConfig->topicName + "\" with implementation " + CORE::ToString( tAccess.GetPointerAlways() ) );
+                            }
                         }
+                    }
+                    else
+                    {
+                        GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "StoragePubSubClient(" + CORE::ToString( this ) + "):AutoCreateMultiTopicAccess: Topic access for topic \"" + topicName + "\" already exists" );
                     }
                     ++i;
                 }

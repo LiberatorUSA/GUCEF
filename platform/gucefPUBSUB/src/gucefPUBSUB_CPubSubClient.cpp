@@ -261,17 +261,7 @@ CPubSubClient::GetMultiTopicAccess( CPubSubClientTopicConfigPtr topicConfig ,
     if ( topicConfig.IsNULL() )
         return false;
     
-    // The default implementation here assumes no 1:N pattern matching access is supported
-    // As such it redirects to the basic GetTopicAccess()
-    // Backends should override this if they support pattern matching access
-
-    CPubSubClientTopicPtr tAccess = GetTopicAccess( topicConfig->topicName );
-    if ( !tAccess.IsNULL() )
-    {
-        topicAccess.insert( tAccess );
-        return true;
-    }
-    return false;
+    return GetMultiTopicAccess( topicConfig->topicName, topicAccess );
 }
 
 /*-------------------------------------------------------------------------*/

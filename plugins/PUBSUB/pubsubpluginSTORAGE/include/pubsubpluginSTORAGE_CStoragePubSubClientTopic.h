@@ -456,6 +456,8 @@ class PUBSUBPLUGIN_STORAGE_PLUGIN_PRIVATE_CPP CStoragePubSubClientTopic : public
 
     CORE::CString ResolveVfsRootPath( void ) const;
 
+    CORE::CString ResolveVfsStorageRootPathForFullyAckdContainers( void ) const;
+
     bool WasContainerMoved( const CORE::CString& vfsFilePath ) const;
 
     void UpdateIsHealthyStatus( bool newStatus );
@@ -510,6 +512,7 @@ class PUBSUBPLUGIN_STORAGE_PLUGIN_PRIVATE_CPP CStoragePubSubClientTopic : public
     PUBSUB::TIPubSubBookmarkPersistenceBasicPtr m_pubsubBookmarkPersistence;
     CORE::CString m_vfsFilePostfix;
     CORE::CString m_vfsRootPath;
+    CORE::CString m_vfsStorageRootPathForFullyAckdContainers;
     CORE::CVariant m_lastPersistedMsgId;
     CORE::CDateTime m_lastPersistedMsgDt;
     CORE::Float32 m_encodeSizeRatio;

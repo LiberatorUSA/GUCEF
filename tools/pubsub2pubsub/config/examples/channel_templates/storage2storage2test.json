@@ -77,7 +77,7 @@
                         "treatEveryFullfilledRequestAsEODEvent": false,
                         "deleteContainersWithFullyAckdContent": false,
                         "moveContainersWithFullyAckdContent": true,
-                        "vfsStorageRootPathForFullyAckdContainers": "DataPath/storage-source/processed",
+                        "vfsStorageRootPathForFullyAckdContainers": "DataPath/processed/storage-source/{topicName}",
                         "maxCompletedContainerRefsToRetain": 50,
                         "topicFollowsDirRenames": true
                     }
@@ -201,7 +201,7 @@
                         "treatEveryFullfilledRequestAsEODEvent": false,
                         "deleteContainersWithFullyAckdContent": false,
                         "moveContainersWithFullyAckdContent": true,
-                        "vfsStorageRootPathForFullyAckdContainers": "DataPath/spillover-temp-storage/processed",
+                        "vfsStorageRootPathForFullyAckdContainers": "DataPath/processed/spillover-temp-storage/{topicName}",
                         "maxCompletedContainerRefsToRetain": 50,
                         "topicFollowsDirRenames": true,
                         "binarySerializerOptions": {
@@ -350,7 +350,7 @@
                         "treatEveryFullfilledRequestAsEODEvent": false,
                         "deleteContainersWithFullyAckdContent": false,
                         "moveContainersWithFullyAckdContent": true,
-                        "vfsStorageRootPathForFullyAckdContainers": "DataPath/test-sink/processed",
+                        "vfsStorageRootPathForFullyAckdContainers": "DataPath/processed/test-sink/{topicName}",
                         "maxCompletedContainerRefsToRetain": 50,
                         "topicFollowsDirRenames": true,
                         "binarySerializerOptions": {

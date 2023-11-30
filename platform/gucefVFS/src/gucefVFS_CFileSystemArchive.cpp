@@ -309,7 +309,11 @@ CFileSystemArchive::GetListFromRoot( const CORE::CString& actualFsDir  ,
                 {
                     if ( addDirs )
                     {
-                        outputList.push_back( dirName + '/' );
+                        if ( CVFS::FilterValidation( dirName ,
+                                                     filters ) )
+                        {
+                            outputList.push_back( dirName + '/' );
+                        }
                     }
 
                     if ( recursive )

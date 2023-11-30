@@ -2639,7 +2639,7 @@ CPubSubClientSide::ConfigureTopicLink( const CPubSubSideChannelSettings& pubSubS
     if ( topic.IsNULL() )
     {
         GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientSide(" + CORE::ToString( this ) +
-            "):ConfigureTopicLink: NULL topic passed" );
+            "):ConfigureTopicLink: NULL topic passed. SideId=" + m_sideId );
         return false;
     }
 
@@ -2658,12 +2658,12 @@ CPubSubClientSide::ConfigureTopicLink( const CPubSubSideChannelSettings& pubSubS
             m_sideSettings.pubsubClientConfig.topics.push_back( topicConfig );
 
             GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientSide(" + CORE::ToString( this ) +
-                "):ConfigureTopicLink: Obtained a copy of the topic config from the topic itself for topic which has no predefined config. topicName=" + topicName );
+                "):ConfigureTopicLink: Obtained a copy of the topic config from the topic itself for topic which has no predefined config. topicName=" + topicName + " SideId=" + m_sideId  );
         }
         else
         {
             GUCEF_WARNING_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientSide(" + CORE::ToString( this ) +
-                "):ConfigureTopicLink: Unable to get a copy of the topic config from the topic itself for topic which has no predefined config. Knowledge about the Topic will be lost across resets. topicName=" + topicName );
+                "):ConfigureTopicLink: Unable to get a copy of the topic config from the topic itself for topic which has no predefined config. Knowledge about the Topic will be lost across resets. topicName=" + topicName + " SideId=" + m_sideId );
         }
     }
 
@@ -2690,31 +2690,37 @@ CPubSubClientSide::ConfigureTopicLink( const CPubSubSideChannelSettings& pubSubS
                     m_topics[ topic->GetTopicName() ] = topicLink;
 
                     GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientSide(" + CORE::ToString( this ) +
-                        "):ConfigureTopicLink: Created topic link for topic with name: " + topicName );
+                        "):ConfigureTopicLink: Created topic link for topic with name: " + topicName + " for side with id " + m_sideId );
 
                 }
                 else
                 {
                     GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientSide(" + CORE::ToString( this ) +
-                        "):ConfigureTopicLink: Failed to create topic link for topic with name " + topicName );
+                        "):ConfigureTopicLink: Failed to create topic link for topic with name " + topicName + " for side with id " + m_sideId  );
                     return false;
                 }
             }
             else
             {
-                // If we get here we had a pre-existing topic link for a topic of this name.
-                // However the implementation, the topic object, is now different.
-                // This can occur when we perform a swap-out/reset of the underlying implementation
-                // such as to solve issues like bad state in some backend implementation
-                topicLink = (*t).second;
+                topicLink = (*t).second;                
+                CPubSubClientTopicBasicPtr originalTopic = topicLink->GetTopic();
+                
+                if ( topic != originalTopic )
+                {                
+                    // If we get here we had a pre-existing topic link for a topic of this name.
+                    // However the implementation, the topic object, is now different.
+                    // This can occur when we perform a swap-out/reset of the underlying implementation
+                    // such as to solve issues like bad state in some backend implementation                
 
-                GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientSide(" + CORE::ToString( this ) +
-                    "):ConfigureTopicLink: Found pre-existing topic link for topic with name \"" + topicName +
-                    "\", relinking to the new implementation" );
+                    GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientSide(" + CORE::ToString( this ) +
+                        "):ConfigureTopicLink: Found pre-existing topic link for topic with name \"" + topicName +
+                        "\", relinking to the new topic implementation. " + CORE::ToString( originalTopic.GetPointerAlways() ) + " -> " + CORE::ToString( topic.GetPointerAlways() ) +
+                        " for side with id " + m_sideId );
 
-                // Note most of the 're-linking' is actually done in the code a bit further down
-                topicLink->DetachFromTopic();
-                m_topicPtrs[ topic.GetPointerAlways() ] = topicLink;
+                    // Note most of the 're-linking' is actually done in the code a bit further down
+                    topicLink->DetachFromTopic();
+                    m_topicPtrs[ topic.GetPointerAlways() ] = topicLink;
+                }
             }
         }
         else
@@ -3077,8 +3083,10 @@ CPubSubClientSide::ConnectPubSubClient( bool reset )
     if ( reset )
         m_topicPtrs.clear();
 
-    CPubSubClientConfig::TPubSubClientTopicConfigPtrVector::iterator i = pubSubConfig.topics.begin();
-    while ( i != pubSubConfig.topics.end() )
+    // create a copy of the topic config vector to avoid issues with the vector changing while we are iterating through it
+    CPubSubClientConfig::TPubSubClientTopicConfigPtrVector topics( pubSubConfig.topics );
+    CPubSubClientConfig::TPubSubClientTopicConfigPtrVector::iterator i = topics.begin();
+    while ( i != topics.end() )
     {
         CPubSubClient::PubSubClientTopicSet topicAccess;
         if ( m_pubsubClient->GetOrCreateMultiTopicAccess( (*i), topicAccess ) )
