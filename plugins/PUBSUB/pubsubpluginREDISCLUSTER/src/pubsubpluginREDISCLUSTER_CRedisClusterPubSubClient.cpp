@@ -232,6 +232,7 @@ CRedisClusterPubSubClient::GetSupportedFeatures( PUBSUB::CPubSubClientFeatures& 
     features.supportsDerivingBookmarkFromMsg = true;    // The Redis auto-generated msgId acts as a topic index and as such we can derive a bookmark from a message
     features.supportsDiscoveryOfAvailableTopics = true; // we support scanning for available Redis streams
     features.supportsGlobPatternTopicNames = true;      // we support glob pattern matching the scan of available Redis streams
+    features.supportsPatternBasedAggregateTopic = false; // @TODO: Look into supporting this with 
     features.supportsSubscriptionMsgArrivalDelayRequests = true;    // we support delaying the redis read thread on a per read cycle basis
     
     // the following features we enable based on expresed desired functionality, we support either

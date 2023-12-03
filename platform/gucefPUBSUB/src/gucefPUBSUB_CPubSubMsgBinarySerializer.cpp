@@ -67,6 +67,7 @@ CPubSubMsgBinarySerializerOptions::CPubSubMsgBinarySerializerOptions( void )
     , msgPrimaryPayloadIncluded( true )
     , msgKeyValuePairsIncluded( true )
     , msgMetaDataKeyValuePairsIncluded( true )
+    , topicNameIncluded( false )
 {GUCEF_TRACE;
 
 }
@@ -84,15 +85,18 @@ bool
 CPubSubMsgBinarySerializerOptions::SaveConfig( CORE::CDataNode& config ) const
 {GUCEF_TRACE;
 
-    config.SetAttribute( "msgDateTimeIncluded", msgDateTimeIncluded );
-    config.SetAttribute( "msgDateTimeAsMsSinceUnixEpochInUtc", msgDateTimeAsMsSinceUnixEpochInUtc );
-    config.SetAttribute( "msgIdIncluded", msgIdIncluded );
-    config.SetAttribute( "msgIndexIncluded", msgIndexIncluded );
-    config.SetAttribute( "msgPrimaryPayloadIncluded", msgPrimaryPayloadIncluded );
-    config.SetAttribute( "msgKeyValuePairsIncluded", msgKeyValuePairsIncluded );
-    config.SetAttribute( "msgMetaDataKeyValuePairsIncluded", msgMetaDataKeyValuePairsIncluded );
+    bool success = true;
     
-    return true;
+    success = config.SetAttribute( "msgDateTimeIncluded", msgDateTimeIncluded ) && success;
+    success = config.SetAttribute( "msgDateTimeAsMsSinceUnixEpochInUtc", msgDateTimeAsMsSinceUnixEpochInUtc ) && success;
+    success = config.SetAttribute( "msgIdIncluded", msgIdIncluded ) && success;
+    success = config.SetAttribute( "msgIndexIncluded", msgIndexIncluded ) && success;
+    success = config.SetAttribute( "msgPrimaryPayloadIncluded", msgPrimaryPayloadIncluded ) && success;
+    success = config.SetAttribute( "msgKeyValuePairsIncluded", msgKeyValuePairsIncluded ) && success;
+    success = config.SetAttribute( "msgMetaDataKeyValuePairsIncluded", msgMetaDataKeyValuePairsIncluded ) && success;
+    success = config.SetAttribute( "topicNameIncluded", topicNameIncluded ) && success;
+    
+    return success;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -108,6 +112,7 @@ CPubSubMsgBinarySerializerOptions::LoadConfig( const CORE::CDataNode& config )
     msgPrimaryPayloadIncluded = config.GetAttributeValueOrChildValueByName( "msgPrimaryPayloadIncluded" ).AsBool( msgPrimaryPayloadIncluded, true );
     msgKeyValuePairsIncluded = config.GetAttributeValueOrChildValueByName( "msgKeyValuePairsIncluded" ).AsBool( msgKeyValuePairsIncluded, true );
     msgMetaDataKeyValuePairsIncluded = config.GetAttributeValueOrChildValueByName( "msgMetaDataKeyValuePairsIncluded" ).AsBool( msgMetaDataKeyValuePairsIncluded, true );
+    topicNameIncluded = config.GetAttributeValueOrChildValueByName( "topicNameIncluded" ).AsBool( topicNameIncluded, true );
     return true;
 }
 
@@ -135,6 +140,7 @@ CPubSubMsgBinarySerializerOptions::ToOptionsBitMask( void ) const
     msgPrimaryPayloadIncluded ? GUCEF_SETBITXON( bitMask, 5 ) : GUCEF_SETBITXOFF( bitMask, 5 );
     msgKeyValuePairsIncluded ? GUCEF_SETBITXON( bitMask, 6 ) : GUCEF_SETBITXOFF( bitMask, 6 );
     msgMetaDataKeyValuePairsIncluded ? GUCEF_SETBITXON( bitMask, 7 ) : GUCEF_SETBITXOFF( bitMask, 7 );
+    topicNameIncluded ? GUCEF_SETBITXON( bitMask, 8 ) : GUCEF_SETBITXOFF( bitMask, 8 );
     return bitMask;
 }
 
@@ -151,6 +157,7 @@ CPubSubMsgBinarySerializerOptions::FromOptionsBitMask( UInt32 bitMask )
     msgPrimaryPayloadIncluded = ( 0 != GUCEF_GETBITX( bitMask, 5 ) );
     msgKeyValuePairsIncluded = ( 0 != GUCEF_GETBITX( bitMask, 6 ) );
     msgMetaDataKeyValuePairsIncluded = ( 0 != GUCEF_GETBITX( bitMask, 7 ) );
+    topicNameIncluded = ( 0 != GUCEF_GETBITX( bitMask, 8 ) );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -166,6 +173,7 @@ CPubSubMsgBinarySerializerOptions::FromPubSubClientFeatures( const CPubSubClient
     msgPrimaryPayloadIncluded = features.supportsPrimaryPayloadPerMsg;
     msgKeyValuePairsIncluded = features.supportsKeyValueSetPerMsg;
     msgMetaDataKeyValuePairsIncluded = features.supportsMetaDataKeyValueSetPerMsg;
+    topicNameIncluded = false; // just use the default setting for this which is 'false'
 }
 
 /*-------------------------------------------------------------------------*/
@@ -294,6 +302,21 @@ CPubSubMsgBinarySerializer::Serialize( const CPubSubMsgBinarySerializerOptions& 
             currentTargetOffset += kvPairsSize;
             bytesWritten += kvPairsSize;
         }
+
+        if ( options.topicNameIncluded )
+        {
+            // We store the topic name as a variant to avoid having to deal with string encoding issues
+            CORE::CVariant topicNameVariant;
+            topicNameVariant.LinkTo( msg.GetOriginClientTopicName() );
+
+            // Write the topic name using the variable length variant serializer
+            UInt32 varBinSize = 0;
+            if ( !CORE::CVariantBinarySerializer::Serialize( topicNameVariant, currentTargetOffset, target, varBinSize ) )
+                return false;
+            currentTargetOffset += varBinSize;
+            bytesWritten += varBinSize;
+        }
+
         return true;
     }   
     catch ( const std::exception& e )    
@@ -446,6 +469,21 @@ CPubSubMsgBinarySerializer::Deserialize( const CPubSubMsgBinarySerializerOptions
                 return false;
             currentSourceOffset += kvPairsByteSize;
             bytesRead += kvPairsByteSize;          
+        }
+
+        if ( options.topicNameIncluded )
+        {
+            // the topic name is stored as a variant to avoid having to deal with string encoding issues
+            CORE::CVariant topicNameVariant;
+
+            UInt32 varByteSize = 0;
+            if ( !CORE::CVariantBinarySerializer::Deserialize( topicNameVariant, currentSourceOffset, source, linkWherePossible, varByteSize ) )
+                return false;
+            currentSourceOffset += varByteSize;
+            bytesRead += varByteSize;
+
+            CORE::CString topicName = CORE::ToString( topicNameVariant );
+            msg.SetOriginClientTopicName( topicName );
         }
 
         return true;

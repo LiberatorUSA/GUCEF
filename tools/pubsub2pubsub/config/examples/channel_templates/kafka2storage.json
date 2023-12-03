@@ -20,7 +20,7 @@
 			"PubSubClientConfig": {
 				"pubsubClientType": "Kafka",
 				"reconnectDelayInMs": 500,
-				"RemoteAddresses": ["127.0.0.1:6000"],
+				"RemoteAddresses": [ "127.0.0.1:6000" ],
 				"CustomConfig": {
 					"KafkaConsumerGlobalConfig": {
 						"max.in.flight.requests.per.connection": 100000,
@@ -90,7 +90,20 @@
 					"supportsSubscriberMsgReceivedAck": true,
 					"supportsSubscriberRateThrottling": true,
 					"supportsSubscribing": true,
-					"supportsTopicIndexBasedBookmark": false
+					"supportsTopicIndexBasedBookmark": true,
+					"supportsSubscriptionMsgArrivalDelayRequests": true,
+					"supportsSubscriptionEndOfDataEvent": true,
+					"supportsMsgIndex": true,
+					"supportsAutoMsgReceivedAck": false,
+					"supportsAbsentMsgReceivedAck": false,
+					"supportsAckUsingLastMsgInBatch": true,
+					"supportsAckUsingBookmark": true,
+					"supportsSubscribingUsingBookmark": true,
+					"supportsServerSideBookmarkPersistance": true,
+					"supportsDerivingBookmarkFromMsg": true,
+					"supportsDiscoveryOfAvailableTopics": true,
+					"supportsGlobPatternTopicNames": true,
+					"supportsPatternBasedAggregateTopic": false
 				}
 			},
 			"PubSubBookmarkPersistenceConfig": {
@@ -164,7 +177,33 @@
 						"deleteContainersWithFullyAckdContent": false,
 						"moveContainersWithFullyAckdContent": true,
 						"vfsStorageRootPathForFullyAckdContainers": "InstallPath/storage-sink/ackd",
-						"maxCompletedContainerRefsToRetain": 50
+						"maxCompletedContainerRefsToRetain": 50,
+						"binarySerializerOptions": {
+							"msgDateTimeIncluded": true,
+							"msgDateTimeAsMsSinceUnixEpochInUtc": true,
+							"msgIdIncluded": true,
+							"msgIndexIncluded": false,
+							"msgPrimaryPayloadIncluded": false,
+							"msgKeyValuePairsIncluded": true,
+							"msgMetaDataKeyValuePairsIncluded": true,
+							"topicNameIncluded": false
+						},
+						"serializerOptions": {
+							"msgDateTimeIncluded": true,
+							"msgDateTimeAsMsSinceUnixEpochInUtc": true,
+							"msgIdIncluded": true,
+							"msgIndexIncluded": false,
+							"msgPrimaryPayloadIncluded": false,
+							"msgPrimaryPayloadTypeIncluded": false,
+							"msgKeyValuePairsIncluded": true,
+							"msgMetaDataKeyValuePairsIncluded": false,
+							"includeUndefinedValues": false,
+							"receiveActionIdIncluded": true,
+							"originTopicObjPointerIncluded": false,
+							"originTopicNameIncluded": false,
+							"originClientTypeNameIncluded": false,
+							"originClientObjPointerIncluded": false
+						}
 					}
 				},
 				"DesiredFeatures": {
@@ -225,17 +264,20 @@
 		"minFailoverSideGoodHealthDurationBeforeActivationInMs": 5000,
 		"minSpilloverSideGoodHealthDurationBeforeActivationInMs": 5000,
 		"routeSwitchingTimerIntervalInMs": 1000,
-		"routes": [{
-			"fromSideId": "kafka-source",
-			"toSideId": "storage-sink",
-			"failoverSideId": "",
-			"spilloverBufferSideId": "",
-			"deadLetterSideId": "",
-			"toSideTopicsAutoMatchFromSide": true,
-			"failoverSideTopicsAutoMatchFromSide": true,
-			"spilloverSideTopicsAutoMatchFromSide": true,
-			"deadLetterSideTopicsAutoMatchFromSide": true,
-			"topicAssociations": []
-		}]
+		"routes": [
+			{
+				"fromSideId": "kafka-source",
+				"toSideId": "storage-sink",
+				"failoverSideId": "",
+				"spilloverBufferSideId": "",
+				"deadLetterSideId": "",
+				"toSideTopicsAutoMatchFromSide": true,
+				"failoverSideTopicsAutoMatchFromSide": true,
+				"spilloverSideTopicsAutoMatchFromSide": true,
+				"deadLetterSideTopicsAutoMatchFromSide": true,
+				"preferFromTopicThreadForDestination": true,
+				"topicAssociations": []
+			}
+		]
 	}
 }

@@ -27,6 +27,11 @@
 #define GUCEF_CORE_LOGGING_H
 #endif /* GUCEF_CORE_LOGGING_H ? */
 
+#ifndef GUCEF_PUBSUB_CPUBSUBCLIENTTOPIC_H
+#include "gucefPUBSUB_CPubSubClientTopic.h"
+#define GUCEF_PUBSUB_CPUBSUBCLIENTTOPIC_H
+#endif /* GUCEF_PUBSUB_CPUBSUBCLIENTTOPIC_H ? */
+
 #include "gucefPUBSUB_CIPubSubMsg.h"
 
 /*-------------------------------------------------------------------------//
@@ -63,6 +68,30 @@ CIPubSubMsg::CIPubSubMsg( const CIPubSubMsg& src )
 CIPubSubMsg::~CIPubSubMsg()
 {GUCEF_TRACE;
 
+}
+
+/*-------------------------------------------------------------------------*/
+
+const CORE::CString& 
+CIPubSubMsg::GetOriginClientTopicName( void ) const
+{GUCEF_TRACE;
+
+    CPubSubClientTopicBasicPtr originTopic = GetOriginClientTopic();
+    if ( !originTopic.IsNULL() )
+    {
+        return originTopic->GetTopicName();
+    }
+
+    return CORE::CString::Empty;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool 
+CIPubSubMsg::SetOriginClientTopicName( const CORE::CString& topicName )
+{GUCEF_TRACE;
+
+    return false;
 }
 
 /*-------------------------------------------------------------------------//

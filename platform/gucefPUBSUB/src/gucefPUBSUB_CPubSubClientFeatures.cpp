@@ -61,7 +61,6 @@ CPubSubClientFeatures::CPubSubClientFeatures( void )
     , supportsKeyValueSetPerMsg( false )
     , supportsDuplicateKeysPerMsg( false )
     , supportsMetaDataKeyValueSetPerMsg( false )
-    , supportsMetrics( false )
     , supportsSubscriberMsgReceivedAck( false )
     , supportsAutoMsgReceivedAck( false )
     , supportsAbsentMsgReceivedAck( false )
@@ -78,6 +77,8 @@ CPubSubClientFeatures::CPubSubClientFeatures( void )
     , supportsDerivingBookmarkFromMsg( false )
     , supportsDiscoveryOfAvailableTopics( false )
     , supportsGlobPatternTopicNames( false )
+    , supportsPatternBasedAggregateTopic( false )
+    , supportsMetrics( false )
 {GUCEF_TRACE;
 
 }
@@ -128,6 +129,7 @@ CPubSubClientFeatures::SaveConfig( CORE::CDataNode& cfg ) const
     success = cfg.SetAttribute( "supportsDerivingBookmarkFromMsg", supportsDerivingBookmarkFromMsg ) && success;    
     success = cfg.SetAttribute( "supportsDiscoveryOfAvailableTopics", supportsDiscoveryOfAvailableTopics ) && success;    
     success = cfg.SetAttribute( "supportsGlobPatternTopicNames", supportsGlobPatternTopicNames ) && success;    
+    success = cfg.SetAttribute( "supportsPatternBasedAggregateTopic", supportsPatternBasedAggregateTopic ) && success;
     success = cfg.SetAttribute( "supportsMetrics", supportsMetrics ) && success;
 
     return success;
@@ -171,6 +173,7 @@ CPubSubClientFeatures::LoadConfig( const CORE::CDataNode& cfg )
     supportsDerivingBookmarkFromMsg = cfg.GetAttributeValueOrChildValueByName( "supportsDerivingBookmarkFromMsg" ).AsBool( supportsDerivingBookmarkFromMsg, true );
     supportsDiscoveryOfAvailableTopics = cfg.GetAttributeValueOrChildValueByName( "supportsDiscoveryOfAvailableTopics" ).AsBool( supportsDiscoveryOfAvailableTopics, true );    
     supportsGlobPatternTopicNames = cfg.GetAttributeValueOrChildValueByName( "supportsGlobPatternTopicNames" ).AsBool( supportsGlobPatternTopicNames, true );    
+    supportsPatternBasedAggregateTopic = cfg.GetAttributeValueOrChildValueByName( "supportsPatternBasedAggregateTopic" ).AsBool( supportsPatternBasedAggregateTopic, true );
     supportsMetrics = cfg.GetAttributeValueOrChildValueByName( "supportsMetrics" ).AsBool( supportsMetrics, true );
 
     return true;

@@ -1290,14 +1290,13 @@ CStoragePubSubClientTopic::OnVfsFileCreated( CORE::CNotifier* notifier    ,
                     while ( i != m_stage0StorageToPubSubRequests.end() )
                     {
                         // Check to see if the file is in range
-
-                        bool firstMsgIsInRange = containerFileFirstMsgDt.IsWithinRange( (*i).startDt, (*i).endDt );
-                        bool lastMsgIsInRange = containerFileLastMsgDt.IsWithinRange( (*i).startDt, (*i).endDt );
-                        bool isPartialMatch = ( firstMsgIsInRange && !lastMsgIsInRange ) || ( !firstMsgIsInRange && lastMsgIsInRange );
+                        const StorageToPubSubRequest& persistentRequest = (*i);                        
+                        bool firstMsgIsInRange = containerFileFirstMsgDt.IsWithinRange( persistentRequest.startDt, persistentRequest.endDt );
+                        bool lastMsgIsInRange = containerFileLastMsgDt.IsWithinRange( persistentRequest.startDt, persistentRequest.endDt );
 
                         if ( firstMsgIsInRange || lastMsgIsInRange )
                         {
-                            StorageToPubSubRequest newAutoRequest( (*i) );
+                            StorageToPubSubRequest newAutoRequest( persistentRequest );
                             newAutoRequest.isPersistentRequest = false;
                             newAutoRequest.startDt = containerFileFirstMsgDt;
                             newAutoRequest.endDt = containerFileLastMsgDt;
@@ -1313,10 +1312,13 @@ CStoragePubSubClientTopic::OnVfsFileCreated( CORE::CNotifier* notifier    ,
                             m_subscriptionIsAtEndOfData = false;
                             m_stage2StorageToPubSubRequests.push_back( newAutoRequest );
                         }
-
-                        if ( !isPartialMatch )
-                            break;
-
+                        else
+                        {
+                            GUCEF_DEBUG_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "StoragePubSubClientTopic:OnVfsFileCreated: Ignoring new file for persistent storage request with time range from=" + 
+                                    CORE::ToString( persistentRequest.startDt ) + " to=" + CORE::ToString( persistentRequest.endDt ) + 
+                                    ". File represents time range: from=" + 
+                                    CORE::ToString( containerFileFirstMsgDt ) + " to=" + CORE::ToString( containerFileLastMsgDt ) );
+                        }
                         ++i;
                     }
                 }

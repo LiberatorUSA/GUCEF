@@ -138,6 +138,20 @@ class GUCEF_PUBSUB_EXPORT_CPP CBasicPubSubMsg : public CIPubSubMsg
      */
     virtual CORE::UInt64 GetReceiveActionId( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
+    /**
+     *  For a message that was received by a pub-sub topic this would allow setting
+     *  the name of the topic where the message originated via a subscription
+     *  If no such topic is relevant or available the value should be an empty string
+     */ 
+    virtual bool SetOriginClientTopicName( const CORE::CString& topicName ) GUCEF_VIRTUAL_OVERRIDE;
+
+    /**
+     *  For a message that was received by a pub-sub topic this would provide
+     *  a name of the topic where the message originated via a subscription
+     *  If no such topic is relevant or available the value will be an empty string
+     */ 
+    virtual const CORE::CString& GetOriginClientTopicName( void ) const GUCEF_VIRTUAL_OVERRIDE;
+
     bool AddKeyValuePair( const CORE::CVariant& key, const CORE::CVariant& value );
     bool AddMetaDataKeyValuePair( const CORE::CVariant& key, const CORE::CVariant& value );
     
@@ -199,6 +213,7 @@ class GUCEF_PUBSUB_EXPORT_CPP CBasicPubSubMsg : public CIPubSubMsg
     TKeyValuePairs m_keyValuePairs;    
     TKeyValuePairs m_metaDataKeyValuePairs;    
     CPubSubClientTopicBasicPtr m_msgOriginClientTopic;
+    CORE::CString m_msgOriginClientTopicName;
     CORE::UInt64 m_receiveActionId;
 };
 

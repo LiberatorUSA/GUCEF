@@ -92,6 +92,7 @@ class GUCEF_PUBSUB_EXPORT_CPP CPubSubMsgBinarySerializerOptions : public CORE::C
     bool msgPrimaryPayloadIncluded;
     bool msgKeyValuePairsIncluded;
     bool msgMetaDataKeyValuePairsIncluded;
+    bool topicNameIncluded;
 };
 
 /*-------------------------------------------------------------------------*/

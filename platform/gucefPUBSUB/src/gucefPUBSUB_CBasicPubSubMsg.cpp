@@ -47,6 +47,11 @@
 #define GUCEF_PUBSUB_CPUBSUBMSGBINARYSERIALIZER_H
 #endif /* GUCEF_PUBSUB_CPUBSUBMSGBINARYSERIALIZER_H ? */
 
+#ifndef GUCEF_PUBSUB_CPUBSUBCLIENTTOPIC_H
+#include "gucefPUBSUB_CPubSubClientTopic.h"
+#define GUCEF_PUBSUB_CPUBSUBCLIENTTOPIC_H
+#endif /* GUCEF_PUBSUB_CPUBSUBCLIENTTOPIC_H ? */
+
 #include "gucefPUBSUB_CBasicPubSubMsg.h"
 
 /*-------------------------------------------------------------------------//
@@ -81,6 +86,7 @@ CBasicPubSubMsg::CBasicPubSubMsg( void )
     , m_keyValuePairs()
     , m_metaDataKeyValuePairs()
     , m_msgOriginClientTopic()
+    , m_msgOriginClientTopicName()
     , m_receiveActionId( 0 )
 {GUCEF_TRACE;
 
@@ -97,6 +103,7 @@ CBasicPubSubMsg::CBasicPubSubMsg( const CBasicPubSubMsg& src )
     , m_keyValuePairs( src.m_keyValuePairs )
     , m_metaDataKeyValuePairs( src.m_metaDataKeyValuePairs )
     , m_msgOriginClientTopic( src.m_msgOriginClientTopic )
+    , m_msgOriginClientTopicName( src.m_msgOriginClientTopicName )
     , m_receiveActionId( src.m_receiveActionId )
 {GUCEF_TRACE;
 
@@ -118,6 +125,7 @@ CBasicPubSubMsg::operator=( const CBasicPubSubMsg& src )
         m_keyValuePairs = src.m_keyValuePairs;
         m_metaDataKeyValuePairs = src.m_metaDataKeyValuePairs;
         m_msgOriginClientTopic = src.m_msgOriginClientTopic;
+        m_msgOriginClientTopicName = src.m_msgOriginClientTopicName;
         m_receiveActionId = src.m_receiveActionId;
     }
     return *this;
@@ -140,10 +148,14 @@ CBasicPubSubMsg::operator==( const CBasicPubSubMsg& other ) const
            m_msgDateTime == other.m_msgDateTime &&
            m_primaryPayload == other.m_primaryPayload &&
            m_keyValuePairs == other.m_keyValuePairs &&
-           m_metaDataKeyValuePairs == other.m_metaDataKeyValuePairs;
+           m_metaDataKeyValuePairs == other.m_metaDataKeyValuePairs &&
+           m_msgOriginClientTopicName == other.m_msgOriginClientTopicName;
 
     // We do not include m_msgOriginClientTopic or m_receiveActionId on purpose
     // those are runtime associated properties, not intrinsically part of the message content
+    
+    // We do include m_msgOriginClientTopicName because IF it is set it is part of the message content
+    // Needed to support the use-case of mixing message origins into a single funnel
 }
 
 /*-------------------------------------------------------------------------*/
@@ -648,6 +660,32 @@ CBasicPubSubMsg::EncodeKeyValuePairsAsBlob( const TKeyValuePairs& kvPairs, const
         }
     }
     return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool 
+CBasicPubSubMsg::SetOriginClientTopicName( const CORE::CString& topicName )
+{GUCEF_TRACE;
+
+    m_msgOriginClientTopicName = topicName;
+    return true;
+}
+
+/*-------------------------------------------------------------------------*/
+
+const CORE::CString& 
+CBasicPubSubMsg::GetOriginClientTopicName( void ) const
+{GUCEF_TRACE;
+
+    if ( m_msgOriginClientTopic.IsNULL() )
+    {
+        return m_msgOriginClientTopicName;
+    }
+    else
+    {
+        return m_msgOriginClientTopic->GetTopicName();
+    }
 }
 
 /*-------------------------------------------------------------------------//

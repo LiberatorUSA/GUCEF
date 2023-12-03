@@ -90,6 +90,22 @@ class GUCEF_PUBSUB_EXPORT_CPP CIPubSubMsg : public COMCORE::CIMessage
     virtual CPubSubClientTopicBasicPtr GetOriginClientTopic( void ) const = 0;
 
     /**
+     *  For a message that was received by a pub-sub topic this would allow setting
+     *  the name of the topic where the message originated via a subscription
+     *  If no such topic is relevant or available the value should be an empty string
+     *  
+     *  Default implementation always fails. Override to provide this functionality
+     */ 
+    virtual bool SetOriginClientTopicName( const CORE::CString& topicName );
+
+    /**
+     *  For a message that was received by a pub-sub topic this would provide
+     *  a name of the topic where the message originated via a subscription
+     *  If no such topic is relevant or available the value will be an empty string
+     */ 
+    virtual const CORE::CString& GetOriginClientTopicName( void ) const;
+
+    /**
      *  Receive Action ID is a backend runtime unique ID used for referencing
      *  the message run-instance-uniquely to said backend without having to retain said message
      *  Generic Pubsub system requirement, not backend specific
