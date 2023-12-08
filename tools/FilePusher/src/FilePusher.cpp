@@ -452,6 +452,7 @@ FilePushDestination::PushEntry::PushEntry( void )
     : currentOffsetInFile( 0 )
     , encodedFilepath()
     , filePath()
+    , volumeId()
 {GUCEF_TRACE;
 
 }
@@ -490,6 +491,7 @@ FilePushDestination::FilePushDestination( void )
     , m_totalBytesPushed( 0 )
     , m_metricsTimer()
     , m_settings()
+    , m_fsVolumes()
 {GUCEF_TRACE;
 
     RegisterEventHandlers();
@@ -517,6 +519,7 @@ FilePushDestination::FilePushDestination( const FilePushDestination& src )
     , m_totalBytesPushed( src.m_totalBytesPushed )
     , m_metricsTimer( src.m_metricsTimer )
     , m_settings( src.m_settings )
+    , m_fsVolumes( src.m_fsVolumes )
 {GUCEF_TRACE;
 
     RegisterEventHandlers();
@@ -547,6 +550,7 @@ FilePushDestination::operator=( const FilePushDestination& src )
         m_totalBytesPushed = src.m_totalBytesPushed;
         m_metricsTimer = src.m_metricsTimer;
         m_settings = src.m_settings;
+        m_fsVolumes = src.m_fsVolumes;
     }
     return *this;
 }
@@ -1040,7 +1044,7 @@ FilePushDestination::OnAsyncVfsFileEncodeOpCompleted( CORE::CNotifier* notifier 
         TStringInFlightEntryPtrMap::iterator i = m_inflight.find( originalFilePath );
         if ( i != m_inflight.end() )
         {
-            InFlightEntryPtr slot = (*i).second;
+            InFlightEntryPtr& slot = (*i).second;
 
             switch ( asyncOpResult->operationType )
             {
@@ -1058,7 +1062,7 @@ FilePushDestination::OnAsyncVfsFileEncodeOpCompleted( CORE::CNotifier* notifier 
                         m_encodeQueue.erase( pushEntry->filePath );
 
                         GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "FilePushDestination:OnAsyncVfsFileEncodeOpCompleted: Async encode operation successfull for \"" +
-                            pushEntry->filePath + "\" which was encoded at path \"" + pushEntry->encodedFilepath + "\"" );
+                            pushEntry->filePath + "\" which was encoded at path \"" + slot->entryInfo->encodedFilepath + "\"" );
 
                         QueueFileForPushing( pushEntry );
                         break;
@@ -1163,7 +1167,19 @@ FilePushDestination::OnFilePushOpFinished( CORE::CNotifier* notifier    ,
                                     slot->entryInfo->filePath = moveDestinationPath;
 
                                     if ( m_settings.pruneMovedFiles )
-                                        m_movedFiles[ CORE::CDateTime::NowUTCDateTime() ].insert( moveDestinationPath );
+                                    {
+                                        // We need to update the volume id to match the new path
+                                        CORE::CString dirPath = CORE::StripFilename( moveDestinationPath );
+                                        CORE::CString volumeId;
+                                        if ( CORE::GetFileSystemStorageVolumeIdByDirPath( volumeId, dirPath ) )
+                                        {
+                                            slot->entryInfo->volumeId = volumeId;
+                                        }
+
+                                        m_fsVolumes.insert( volumeId );
+
+                                        m_movedFiles[ slot->entryInfo->volumeId ][ CORE::CDateTime::NowUTCDateTime() ].insert( moveDestinationPath );
+                                    }
                                 }
                                 else
                                 {
@@ -1186,7 +1202,6 @@ FilePushDestination::OnFilePushOpFinished( CORE::CNotifier* notifier    ,
                                 }
                             }
 
-                            m_inflight.erase( i );
                             YieldInFlightSlot( slot );
                         }
                         else
@@ -1194,7 +1209,6 @@ FilePushDestination::OnFilePushOpFinished( CORE::CNotifier* notifier    ,
                             GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "FilePushDestination:OnFilePushOpFinished: Async operation failed to push file \"" +
                                 slot->entryInfo->filePath + "\" to \"" + taskData->filepath );
 
-                            m_inflight.erase( i );
                             m_pushQueue[ slot->entryInfo->filePath ] = slot->entryInfo;
                             YieldInFlightSlot( slot );
                         }
@@ -1312,7 +1326,6 @@ FilePushDestination::PushFileUsingHttp( PushEntryPtr entry )
     pushUrlForFile = pushUrlForFile.ReplaceSubstr( "{watchedDirSubDirPath}", watchedDirSubDirPath );
     pushUrlForFile = pushUrlForFile.CompactRepeatingChar( '/' );
 
-    m_inflight[ slot->entryInfo->filePath ] = slot;
     m_pushQueue.erase( slot->entryInfo->filePath );
     if ( m_httpClient.Post( pushUrlForFile, contentType, slot->buffer ) )
     {
@@ -1324,7 +1337,6 @@ FilePushDestination::PushFileUsingHttp( PushEntryPtr entry )
         GUCEF_WARNING_LOG( CORE::LOGLEVEL_NORMAL, "FilePushDestination: Failed to HTTP POST bytes from file \"" +
             filename + "\". Skipping the file for now" );
         m_pushQueue[ slot->entryInfo->filePath ] = slot->entryInfo;
-        m_inflight.erase( slot->entryInfo->filePath );
         YieldInFlightSlot( slot );
         return false;
     }
@@ -1413,42 +1425,57 @@ FilePushDestination::PruneAgedMovedFiles( void )
     if ( !m_settings.pruneMovedFiles )
         return false;
 
-    TDateTimeStringSetMap::iterator i = m_movedFiles.begin();
+    TDateTimeStringSetMapMap::iterator i = m_movedFiles.begin();
     while ( i != m_movedFiles.end() )
     {
-        const CORE::CDateTime& fileMoveDt = (*i).first;
-        CORE::Int64 ageInMs = fileMoveDt.GetTimeDifferenceInMillisecondsToNow();
-        if ( ( m_settings.minAgeOfMovedFilesInSecsBeforePrune * 1000 ) < ageInMs )
-        {
-            // Found an entry that has aged enough and its now eligible for the pruner
-            CORE::CString::StringSet& filePaths = (*i).second;
-            CORE::CString::StringSet::iterator n = filePaths.begin();
-            while ( n != filePaths.end() )
-            {
-                const CORE::CString& filePath = (*n);
-                if ( CORE::DeleteFile( filePath ) )
-                {
-                    GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "FilePushDestination:OnFilePrunerTimerCycle: Pruned " + CORE::ToString( ageInMs ) +
-                        "ms rested moved file: " + filePath );
+        const CORE::CString& volumeId = (*i).first;
+        TDateTimeStringSetMap& movedFilesOnVolume = (*i).second;
 
-                    n = filePaths.erase( n );
+        TDateTimeStringSetMap::iterator m = movedFilesOnVolume.begin();        
+        while ( m != movedFilesOnVolume.end() )
+        { 
+            const CORE::CDateTime& fileMoveDt = (*m).first;
+            CORE::Int64 ageInMs = fileMoveDt.GetTimeDifferenceInMillisecondsToNow();
+            if ( ( m_settings.minAgeOfMovedFilesInSecsBeforePrune * 1000 ) < ageInMs )
+            {
+                // Found an entry that has aged enough and its now eligible for the pruner
+                CORE::CString::StringSet& filePaths = (*m).second;
+                CORE::CString::StringSet::iterator n = filePaths.begin();
+                while ( n != filePaths.end() )
+                {
+                    const CORE::CString& filePath = (*n);
+                    if ( CORE::DeleteFile( filePath ) )
+                    {
+                        GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "FilePushDestination:OnFilePrunerTimerCycle: Pruned " + CORE::ToString( ageInMs ) +
+                            "ms rested moved file: " + filePath );
+
+                        n = filePaths.erase( n );
+                        continue;
+                    }
+                    ++n;
+                }
+
+                if ( filePaths.empty() )
+                {
+                    m = movedFilesOnVolume.erase( m );
                     continue;
                 }
-                ++n;
             }
-
-            if ( filePaths.empty() )
+            else
             {
-                i = m_movedFiles.erase( i );
-                continue;
+                // since this is an ordered (old->new) map, no need to check out all the other entries as they will always be newer still
+                // no need to iterate the rest of the collection
+                return true;
             }
+            ++m;
         }
-        else
+
+        if ( movedFilesOnVolume.empty() )
         {
-            // since this is an ordered (old->new) map, no need to check out all the other entries as they will always be newer still
-            // no need to iterate the rest of the collection
-            return true;
+            i = m_movedFiles.erase( i );
+            continue;
         }
+
         ++i;
     }
 
@@ -1491,33 +1518,10 @@ FilePushDestination::PruneMovedFilesIfLowOnVolumeSpace( void )
 
     bool totalSuccess = true;
 
-    // get a list of relevant filesystem volumes
-    CORE::CString::StringSet fsVolumes;
-    TDateTimeStringSetMap::iterator i = m_movedFiles.begin();
-    while ( i != m_movedFiles.end() )
-    {
-        const CORE::CString::StringSet& fileSet = (*i).second;
-        CORE::CString::StringSet::const_iterator n = fileSet.begin();
-        while ( n != fileSet.end() )
-        {
-            const CORE::CString& path = (*n);
-            CORE::CString dirPath = CORE::StripFilename( path );
-            CORE::CString volumeId;
-            if ( CORE::GetFileSystemStorageVolumeIdByDirPath( volumeId, dirPath ) )
-            {
-                fsVolumes.insert( volumeId );
-            }
-            else
-                totalSuccess = false;
-            ++n;
-        }
-        ++i;
-    }
-
     // check filesystem volumes for free disk space requirement
     CORE::CString::StringSet volumesThatNeedPruning;
-    CORE::CString::StringSet::iterator n = fsVolumes.begin();
-    while ( n != fsVolumes.end() )
+    CORE::CString::StringSet::iterator n = m_fsVolumes.begin();
+    while ( n != m_fsVolumes.end() )
     {
         const CORE::CString& volumeId = (*n);
         CORE::TStorageVolumeInformation storageVolumeInformation;
@@ -1538,29 +1542,36 @@ FilePushDestination::PruneMovedFilesIfLowOnVolumeSpace( void )
         return true;
 
     // Prune files matching one of the to-be-pruned volumes
-    i = m_movedFiles.begin();
+    TDateTimeStringSetMapMap::iterator i = m_movedFiles.begin();
     while ( i != m_movedFiles.end() )
     {
-        CORE::CString::StringSet& fileSet = (*i).second;
-        CORE::CString::StringSet::iterator n = fileSet.begin();
-        while ( n != fileSet.end() )
+        const CORE::CString& volumeId = (*i).first;
+        TDateTimeStringSetMap& movedFilesOnVolumeAtDt = (*i).second;
+
+        // Check if this set of files is on a volume that needs pruning
+        CORE::CString::StringSet::iterator v = volumesThatNeedPruning.find( volumeId );
+        if ( v != volumesThatNeedPruning.end() )
         {
-            const CORE::CString& filePath = (*n);
-            CORE::CString dirPath = CORE::StripFilename( filePath );
-            CORE::CString volumeId;
-            if ( CORE::GetFileSystemStorageVolumeIdByDirPath( volumeId, dirPath ) )
+            // We need to process this set of files to see what we can prune
+            
+            TDateTimeStringSetMap::iterator m = movedFilesOnVolumeAtDt.begin();
+            while ( m != movedFilesOnVolumeAtDt.end() )
             {
-                // this file is on a volume that needs pruning
-                if ( volumesThatNeedPruning.find( volumeId ) != volumesThatNeedPruning.end() )
+                const CORE::CDateTime& fileMoveDt = (*m).first;
+                CORE::Int64 ageInMs = fileMoveDt.GetTimeDifferenceInMillisecondsToNow();
+
+                CORE::CString::StringSet& fileSet = (*m).second;
+                CORE::CString::StringSet::iterator n = fileSet.begin();
+                while ( n != fileSet.end() )
                 {
+                    const CORE::CString& filePath = (*n);
+
                     CORE::TStorageVolumeInformation storageVolumeInformation;
                     if ( CORE::GetFileSystemStorageVolumeInformationByVolumeId( storageVolumeInformation, volumeId ) )
                     {
                         // recheck space requirement
                         if ( !DoesStorageVolumeHaveSufficientSpace( volumeId, storageVolumeInformation ) )
                         {
-                            const CORE::CDateTime& fileMoveDt = (*i).first;
-                            CORE::Int64 ageInMs = fileMoveDt.GetTimeDifferenceInMillisecondsToNow();
                             GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "FilePushDestination:OnFilePrunerTimerCycle: Trying to prune " + CORE::ToString( ageInMs ) +
                                 "ms rested moved file because of free filesystem space requirement. File: " + filePath );
 
@@ -1573,28 +1584,33 @@ FilePushDestination::PruneMovedFilesIfLowOnVolumeSpace( void )
                                 continue;
                             }
                             else
+                            {
                                 totalSuccess = false;
+                            }
                         }
                         else
                         {
                             // lack of sufficient space situation has been resolved
                             GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "FilePushDestination:OnFilePrunerTimerCycle: Lack of enough space situation resolved for volumeId: " + volumeId );
                             volumesThatNeedPruning.erase( volumeId );
+
+                            // Is there anything to do by this pruner?
+                            if ( volumesThatNeedPruning.empty() )
+                                return totalSuccess;
                         }
                     }
-                    else
-                        totalSuccess = false;
-                }
-            }
-            else
-                totalSuccess = false;
-            ++n;
-        }
 
-        if ( fileSet.empty() )
-        {
-            i = m_movedFiles.erase( i );
-            continue;
+                    ++n;
+                }
+
+                if ( fileSet.empty() )
+                {
+                    i = m_movedFiles.erase( i );
+                    continue;
+                }
+
+                ++m;
+            }
         }
         ++i;
     }
@@ -1629,10 +1645,10 @@ FilePushDestination::OnFileEncodeTimerCycle( CORE::CNotifier* notifier    ,
     if ( m_encodeQueue.empty() )
         return;
 
-    while ( !m_encodeQueue.empty() )
+    TStringPushEntryPtrMap::iterator i = m_encodeQueue.begin();
+    while ( i != m_encodeQueue.end() )
     {
-        TStringPushEntryPtrMap::iterator i = m_encodeQueue.begin();
-        CORE::CString filePath = (*i).first;
+        const CORE::CString& filePath = (*i).first;
         PushEntryPtr pushEntry = (*i).second;
 
         // We limit the nr of in flight operations to limit system load
@@ -1657,7 +1673,7 @@ FilePushDestination::OnFileEncodeTimerCycle( CORE::CNotifier* notifier    ,
                     
                     
                     GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "FilePushDestination:OnFileEncodeTimerCycle: Commenced async encode of content from file \"" +
-                         filePath + "\" to VFS path \"" + slot->entryInfo->encodedFilepath + "\"" );
+                        filePath + "\" to VFS path \"" + slot->entryInfo->encodedFilepath + "\"" );
                     m_encodeQueue.erase( i );
                 }
                 else
@@ -1693,14 +1709,29 @@ FilePushDestination::OnFilePushTimerCycle( CORE::CNotifier* notifier    ,
 {GUCEF_TRACE;
 
     // We only allow a limited nr of files to be in flight at the same time
-    while ( !m_pushQueue.empty() && !m_inflightFreeSlots.empty() )
+    if ( m_inflightFreeSlots.empty() )
+        return;
+
+    TStringPushEntryPtrMap::iterator i = m_pushQueue.begin();
+    while ( i != m_pushQueue.end() )
     {
-        TStringPushEntryPtrMap::iterator i = m_pushQueue.begin();
-        CORE::CString filePath = (*i).first;
+        const CORE::CString& filePath = (*i).first;
         PushEntryPtr entry = (*i).second;
 
         if ( CORE::FileExists( filePath ) )
-        {
+        { 
+            if ( m_settings.pruneMovedFiles && entry->volumeId.IsNULLOrEmpty() )
+            {
+                CORE::CString dirPath = CORE::StripFilename( filePath );
+                CORE::CString volumeId;
+                if ( CORE::GetFileSystemStorageVolumeIdByDirPath( volumeId, dirPath ) )
+                {
+                    entry->volumeId = volumeId;
+                }
+
+                m_fsVolumes.insert( volumeId );
+            }
+
             // Files in the push queue should already have an encoded version waiting if we are indeed applying an encoding
             if ( !entry->encodedFilepath.IsNULLOrEmpty() )
             {
@@ -1719,9 +1750,6 @@ FilePushDestination::OnFilePushTimerCycle( CORE::CNotifier* notifier    ,
                 if ( PushFileUsingHttp( entry ) )
                 {
                     m_pushTimer.RequestImmediateTrigger();
-                }
-                else
-                {
                     return;
                 }
             }
@@ -1730,9 +1758,6 @@ FilePushDestination::OnFilePushTimerCycle( CORE::CNotifier* notifier    ,
                 if ( PushFileUsingVfs( entry ) )
                 {
                     m_pushTimer.RequestImmediateTrigger();
-                }
-                else
-                {
                     return;
                 }
             }
@@ -1743,6 +1768,7 @@ FilePushDestination::OnFilePushTimerCycle( CORE::CNotifier* notifier    ,
             i = m_pushQueue.erase( i );
             continue;
         }
+        ++i;
     }
 }
 
@@ -2198,6 +2224,8 @@ FilePushDestination::DiscoverAllPreExistingMovedFilesForDir( const CORE::CString
         searchDir = dir.SubstrToIndex( (UInt32) filenameMacroIndex, true );
     }
 
+    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "FilePushDestination: Discovering pre-existing moved files for dir: " + searchDir );
+
     bool totalSuccess = true;
     struct CORE::SDI_Data* did = CORE::DI_First_Dir_Entry( searchDir.C_String() );
     if ( GUCEF_NULL != did )
@@ -2217,7 +2245,28 @@ FilePushDestination::DiscoverAllPreExistingMovedFilesForDir( const CORE::CString
                         GUCEF_DEBUG_LOG_EVERYTHING( "FilePusher:DiscoverAllPreExistingMovedFilesForDir: Matched file \"" + preexistingFilePath + "\" to 'push all files' pattern" );
 
                         CORE::CDateTime lastChange = GetLatestTimestampForFile( preexistingFilePath );
-                        m_movedFiles[ lastChange ].insert( preexistingFilePath );
+                        CORE::CString volumeId;
+
+                        // We only care about volume ids if we prune per volume, otherwise an empty string will do
+                        if ( m_settings.pruneMovedFiles )
+                        {
+                            // We need to update the volume id to match the new path
+                            CORE::CString dirPath = CORE::StripFilename( preexistingFilePath );
+                            CORE::CString volumeId;
+                            if ( CORE::GetFileSystemStorageVolumeIdByDirPath( volumeId, dirPath ) )
+                            {
+                                m_fsVolumes.insert( volumeId );
+                                m_movedFiles[ volumeId ][ lastChange ].insert( preexistingFilePath );
+                            }
+                            else
+                            {
+                                GUCEF_WARNING_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "FilePushDestination: Could not determine volumeId for path: " + dirPath );
+                            }
+                        }
+                        else
+                        {
+                            m_movedFiles[ volumeId ][ lastChange ].insert( preexistingFilePath );
+                        }                        
                     }
                 }
                 else

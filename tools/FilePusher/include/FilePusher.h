@@ -216,6 +216,7 @@ class FilePushDestination : public CORE::CObservingNotifier
         CORE::UInt64 currentOffsetInFile;
         CORE::CString encodedFilepath;
         CORE::CString filePath;
+        CORE::CString volumeId;
 
         PushEntry( void );
     };
@@ -409,6 +410,7 @@ class FilePushDestination : public CORE::CObservingNotifier
     typedef std::map< CORE::CString, InFlightEntryPtr > TStringInFlightEntryPtrMap;
     typedef std::map< CORE::CDateTime, CORE::CString::StringVector > TDateTimeStringVectorMap;
     typedef std::map< CORE::CDateTime, CORE::CString::StringSet > TDateTimeStringSetMap;
+    typedef std::map< CORE::CString, TDateTimeStringSetMap > TDateTimeStringSetMapMap;
 
     WEB::CHTTPClient m_httpClient;
     CORE::CFileSystemDirectoryWatcher m_dirWatcher;
@@ -422,13 +424,14 @@ class FilePushDestination : public CORE::CObservingNotifier
     CORE::CTimer m_pushTimer;
     CORE::CTimer m_encodeTimer;
     CORE::CTimer m_prunerTimer;
-    TDateTimeStringSetMap m_movedFiles;
+    TDateTimeStringSetMapMap m_movedFiles;
     CORE::UInt32 m_lastPushDurationInMilliSecs;
     CORE::UInt32 m_lastEncodeDurationInMilliSecs;
     CORE::UInt64 m_totalBytesEncoded;
     CORE::UInt64 m_totalBytesPushed;
     CORE::CTimer m_metricsTimer;
     FilePushDestinationSettings m_settings;
+    CORE::CString::StringSet m_fsVolumes;
 };
 
 /*-------------------------------------------------------------------------*/
