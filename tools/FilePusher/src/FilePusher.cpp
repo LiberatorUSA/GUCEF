@@ -1164,8 +1164,6 @@ FilePushDestination::OnFilePushOpFinished( CORE::CNotifier* notifier    ,
                                     GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "FilePushDestination:OnFilePushOpFinished: Successfully moved pushed file \"" +
                                         slot->entryInfo->filePath + "\" to \"" + moveDestinationPath + "\"" );
 
-                                    slot->entryInfo->filePath = moveDestinationPath;
-
                                     if ( m_settings.pruneMovedFiles )
                                     {
                                         // We need to update the volume id to match the new path
@@ -1174,11 +1172,11 @@ FilePushDestination::OnFilePushOpFinished( CORE::CNotifier* notifier    ,
                                         if ( CORE::GetFileSystemStorageVolumeIdByDirPath( volumeId, dirPath ) )
                                         {
                                             slot->entryInfo->volumeId = volumeId;
+                                            
+                                            m_fsVolumes.insert( volumeId );
+
+                                            m_movedFiles[ slot->entryInfo->volumeId ][ CORE::CDateTime::NowUTCDateTime() ].insert( moveDestinationPath );
                                         }
-
-                                        m_fsVolumes.insert( volumeId );
-
-                                        m_movedFiles[ slot->entryInfo->volumeId ][ CORE::CDateTime::NowUTCDateTime() ].insert( moveDestinationPath );
                                     }
                                 }
                                 else
