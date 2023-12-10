@@ -97,17 +97,17 @@ PerformVFSFileLoadUnloadTest( void )
 
         // We will attempt to load a number of files in sequence
         VFS::UInt32 maxFiles = (VFS::UInt32) fileList.size() > 5 ? 5 : (VFS::UInt32) fileList.size();
-        std::vector< VFS::CVFS::CVFSHandlePtr > fileHandles;
+        std::vector< VFS::TBasicVfsResourcePtr > fileHandles;
         VFS::CVFS::TStringVector::iterator n = fileList.begin();
         for ( VFS::UInt32 i=0; i<maxFiles; ++i )
         {
             // Try to load the file
             VFS::UInt32 errorCode = 0;
-            VFS::CVFS::CVFSHandlePtr filePtr = vfs.GetFile( (*n)  ,
+            VFS::TBasicVfsResourcePtr filePtr = vfs.GetFile( (*n)  ,
                                                             "rb"  ,
                                                             false );
             // check if the file was loaded
-            if ( filePtr == NULL )
+            if ( filePtr.IsNULL() )
             {
                 // We failed to load a file even though we know it is there
                 // make sure the file is not being written to because that would invalidate this test
@@ -137,18 +137,18 @@ PerformVFSFileLoadUnloadTest( void )
         }    
         while ( vfs.FileExists( newFilename ) );
         
-        VFS::CVFS::CVFSHandlePtr filePtr = vfs.GetFile( newFilename ,
-                                                        "wb"        ,
-                                                        true        );
+        VFS::TBasicVfsResourcePtr filePtr = vfs.GetFile( newFilename ,
+                                                         "wb"        ,
+                                                         true        );
     
-        if ( NULL == filePtr )
+        if ( filePtr.IsNULL() )
         {
             // We verified that the filename was unique, the operation should have suceeded
             ERRORHERE;
         }
         
         // Get access to the file
-        CORE::CIOAccess* access = filePtr->GetAccess();
+        CORE::IOAccessPtr access = filePtr->GetAccess();
         access->Open();
         
         // Create a buffer with test values

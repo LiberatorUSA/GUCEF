@@ -105,7 +105,7 @@ CDVPArchive::~CDVPArchive()
 
 /*-------------------------------------------------------------------------*/
     
-VFS::CArchive::CVFSHandlePtr
+VFS::TBasicVfsResourcePtr
 CDVPArchive::GetFile( const VFS::CString& file      ,
                       const char* mode              ,
                       const VFS::UInt32 memLoadSize ,
@@ -118,27 +118,27 @@ CDVPArchive::GetFile( const VFS::CString& file      ,
     if ( *mode != 'r' )
     {
         GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "CDVPArchive: Unable to support requested file access mode for file: " + file );
-        return CVFSHandlePtr();
+        return VFS::TBasicVfsResourcePtr();
     }
     
     // load the file
-    CORE::CIOAccess* fileAccess = LoadFile( file, memLoadSize );
-    if ( NULL != fileAccess )
+    CORE::IOAccessPtr fileAccess = LoadFile( file, memLoadSize );
+    if ( !fileAccess.IsNULL() )
     {
         // create a handle for the file
         VFS::CString filePath = m_archivePath;
         CORE::AppendToPath( filePath, file );
 
-        VFS::CVFSHandle* fileHandle = new VFS::CVFSHandle( fileAccess , 
-                                                           file       ,
-                                                           filePath   );
+        VFS::TVfsResourcePtr fileHandle( GUCEF_NEW VFS::CVFSHandle( fileAccess , 
+                                                                    file       ,
+                                                                    filePath   ), this );
                                                            
         GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "CDVPArchive: providing access to file: " + file );        
-        return CVFSHandlePtr( fileHandle, this );
+        return fileHandle;
     }
     
     GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "CDVPArchive: Unable to provide access to file: " + file );
-    return CVFSHandlePtr();
+    return VFS::TBasicVfsResourcePtr();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -191,13 +191,13 @@ CDVPArchive::StoreAsFile( const CORE::CString& filepath    ,
 /*-------------------------------------------------------------------------*/
 
 void
-CDVPArchive::GetFileList( TStringVector& outputList           ,
-                          const VFS::CString& mountLocation   , 
-                          const VFS::CString& archiveLocation ,
-                          bool recursive                      ,
-                          bool includePathInFilename          ,
-                          const VFS::CString& nameFilter      ,
-                          UInt32 maxListEntries               ) const
+CDVPArchive::GetFileList( TStringVector& outputList                   ,
+                          const CORE::CString& mountLocation          , 
+                          const CORE::CString& archiveLocation        ,
+                          bool recursive                              ,
+                          bool includePathInFilename                  ,
+                          const CORE::CString::StringSet& nameFilters ,
+                          UInt32 maxListEntries                       ) const
 {GUCEF_TRACE;
 
     // @TODO
@@ -206,13 +206,13 @@ CDVPArchive::GetFileList( TStringVector& outputList           ,
 /*-------------------------------------------------------------------------*/
 
 void
-CDVPArchive::GetDirList( TStringVector& outputList           ,
-                         const VFS::CString& mountLocation   , 
-                         const VFS::CString& archiveLocation ,
-                         bool recursive                      ,
-                         bool includeParentDirInName         ,
-                         const VFS::CString& nameFilter      ,
-                         UInt32 maxListEntries               ) const
+CDVPArchive::GetDirList( TStringVector& outputList                   ,
+                         const CORE::CString& mountLocation          , 
+                         const CORE::CString& archiveLocation        ,
+                         bool recursive                              ,
+                         bool includeParentDirInName                 ,
+                         const CORE::CString::StringSet& nameFilters ,
+                         UInt32 maxListEntries                       ) const
 {GUCEF_TRACE;
 
     // this format does not support sub-dirs
@@ -272,7 +272,7 @@ CDVPArchive::GetFileSize( const VFS::CString& filePath ) const
 
 /*-------------------------------------------------------------------------*/
 
-CORE::CIOAccess*
+CORE::IOAccessPtr
 CDVPArchive::LoadFile( const VFS::CString& filePath  ,
                        const VFS::UInt32 memLoadSize ) const
 {GUCEF_TRACE;
@@ -292,9 +292,9 @@ CDVPArchive::LoadFile( const VFS::CString& filePath  ,
                 delete subFileAccess;
                 
                 GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "CDVPArchive: Failed to link file subsegment as a subfile for archive file: " +  m_archivePath );
-                return NULL;
+                return CORE::IOAccessPtr();
             }
-            return subFileAccess;
+            return CORE::IOAccessPtr( subFileAccess );
         }
         else
         {
@@ -306,14 +306,14 @@ CDVPArchive::LoadFile( const VFS::CString& filePath  ,
                 delete buffer;
                 
                 GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "CDVPArchive: Failed to load file into memory from archive file: " +  m_archivePath );
-                return NULL;
+                return CORE::IOAccessPtr();
             }
             
-            return new CORE::CDynamicBufferAccess( buffer, true );
+            return CORE::IOAccessPtr( new CORE::CDynamicBufferAccess( buffer, true ) );
         }
 
     }
-    return NULL;    
+    return CORE::IOAccessPtr();    
 }
 
 /*-------------------------------------------------------------------------*/
@@ -322,14 +322,14 @@ VFS::CString
 CDVPArchive::GetFileHash( const VFS::CString& file ) const
 {GUCEF_TRACE;
 
-    CORE::CIOAccess* fileAccess = LoadFile( file, 102400 );
-    if ( NULL != fileAccess )
+    CORE::IOAccessPtr fileAccess = LoadFile( file, 102400 );
+    if ( !fileAccess.IsNULL() )
     {
         VFS::UInt8 digest[ 16 ];
         if ( 0 != CORE::md5fromfile( fileAccess->CStyleAccess() ,
                                      digest                     ) )
         {
-            delete fileAccess;
+            fileAccess.Unlink();
             
             char md5_str[ 48 ];
             CORE::md5tostring( digest, md5_str );
@@ -338,7 +338,7 @@ CDVPArchive::GetFileHash( const VFS::CString& file ) const
             return md5Str;
         }
         
-        delete fileAccess; 
+        fileAccess.Unlink(); 
     }
     return VFS::CString();
 }
@@ -496,9 +496,9 @@ CDVPArchive::LoadArchive( const VFS::CArchiveSettings& settings )
 /*-------------------------------------------------------------------------*/
 
 bool 
-CDVPArchive::LoadArchive( const VFS::CString& archiveName ,
-                          CVFSHandlePtr vfsResource       ,
-                          const bool writeableRequest     )
+CDVPArchive::LoadArchive( const VFS::CString& archiveName       ,
+                          VFS::TBasicVfsResourcePtr vfsResource ,
+                          const bool writeableRequest           )
 {GUCEF_TRACE;
 
     return false;

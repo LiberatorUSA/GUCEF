@@ -223,7 +223,6 @@ class GUCEF_CORE_PUBLIC_CPP CTSGNotifier : public CNotifier  ,
     protected: 
 
     MT::CMutex m_dataLock;
-    MT::CMutex m_notificationLock;
     
     private:
 

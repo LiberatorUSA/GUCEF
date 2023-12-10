@@ -1207,7 +1207,7 @@ DVP_IOA_Extract_All_Files( TIOAccess *access      ,
                          *      We have a file entry. We will extract the file
                          */
                         strcpy( filepath, curdir );
-                        Append_To_Path( filepath, entry.name );
+                        Append_To_Path( filepath, sizeof(filepath), entry.name );
                         if ( DVP_IOA_Extract_File( access, entry.offset, entry.size, DVP_BLOCK_SIZE, filepath ) )
                         {
                                 /*
@@ -1238,7 +1238,7 @@ DVP_IOA_Extract_All_Files( TIOAccess *access      ,
                                  *      acess rights then we will return at
                                  *      DVP_Extract_File() which will fail also.
                                  */
-                                Append_To_Path( curdir, entry.name );
+                                Append_To_Path( curdir, sizeof(curdir), entry.name );
                                 Create_Directory( curdir );
                         }
                 }
@@ -1300,7 +1300,7 @@ DVP_Extract_All_Files( FILE *fptr, const char *dest_dir )
                          *      We have a file entry. We will extract the file
                          */
                         strcpy( filepath, curdir );
-                        Append_To_Path( filepath, entry.name );
+                        Append_To_Path( filepath, sizeof(filepath), entry.name );
                         if ( DVP_Extract_File( fptr, entry.offset, entry.size, DVP_BLOCK_SIZE, filepath ) )
                         {
                                 /*
@@ -1331,7 +1331,7 @@ DVP_Extract_All_Files( FILE *fptr, const char *dest_dir )
                                  *      acess rights then we will return at
                                  *      DVP_Extract_File() which will fail also.
                                  */
-                                Append_To_Path( curdir, entry.name );
+                                Append_To_Path( curdir, sizeof(curdir), entry.name );
                                 Create_Directory( curdir );
                         }
                 }
@@ -1725,7 +1725,7 @@ DVP_Pack_Directory( FILE *dfpt, FILE *ifpt, UInt32 *total_size, const char *path
 			if ( ( strcmp( "..", DI_Name( data ) )!= 0 ) && ( strcmp( ".", DI_Name( data ) )!= 0 ) )
                         {
 				strcpy( tmp, path );
-				Append_To_Path( tmp, DI_Name( data ) );
+				Append_To_Path( tmp, sizeof(tmp), DI_Name( data ) );
                                 if ( DVP_Pack_Directory( dfpt        ,
                                                          ifpt        ,
                                                          total_size  ,

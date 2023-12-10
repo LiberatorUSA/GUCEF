@@ -58,6 +58,8 @@ class GUCEF_MT_PUBLIC_CPP CNoLock : public CILockable
 {
     public:
 
+    typedef bool        SFINAE_NoLocking;   /* Dummy type to enable/disable template specializations */
+
     /**
      *  Dummy, does nothing
      */

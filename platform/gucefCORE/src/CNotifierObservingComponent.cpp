@@ -137,9 +137,8 @@ void
 CNotifierObservingComponent::SetOwner( CObservingNotifier* owner )
 {GUCEF_TRACE;
 
-    Lock();
+    MT::CObjectScopeLock lock( this );
     m_owner = owner;
-    Unlock();
 }
 
 /*-------------------------------------------------------------------------*/

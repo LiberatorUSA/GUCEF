@@ -51,6 +51,16 @@
 #define GUCEF_MT_CSCOPERWLOCK_H
 #endif /* GUCEF_MT_CSCOPERWLOCK_H ? */
 
+#ifndef GUCEF_MT_CNOLOCK_H
+#include "gucefMT_CNoLock.h"
+#define GUCEF_MT_CNOLOCK_H
+#endif /* GUCEF_MT_CNOLOCK_H ? */
+
+#ifndef GUCEF_CORE_CTSHAREDPTR_H
+#include "CTSharedPtr.h"
+#define GUCEF_CORE_CTSHAREDPTR_H
+#endif /* GUCEF_CORE_CTSHAREDPTR_H ? */
+
 #include "TestReaderWriterLock.h"
 
 /*-------------------------------------------------------------------------//
@@ -87,7 +97,9 @@ class CTestWriter : public MT::CActiveObject
 {
     public:
 
-    typedef MT::CReadWriteLock::TRWLockStates   TRWLockStates;
+    typedef MT::CReadWriteLock::TRWLockStates                           TRWLockStates;
+    typedef CORE::CTSharedPtr< MT::CScopeWriterLock, MT::CNoLock >      CScopeWriterLockPtr;
+    typedef std::vector< CScopeWriterLockPtr >                          TScopeWriterLockVector;
 
     CTestWriter( void );
 
@@ -117,6 +129,7 @@ class CTestWriter : public MT::CActiveObject
     MT::UInt64 m_ticksAtLastCycle;
     MT::UInt64 m_ticksAtThreadStart;
     MT::UInt32 m_currentReentrancyDepth;
+    TScopeWriterLockVector m_scopeLocks;
 };
 
 /*-------------------------------------------------------------------------*/
@@ -126,6 +139,8 @@ class CTestReader : public MT::CActiveObject
     public:
 
     typedef MT::CReadWriteLock::TRWLockStates   TRWLockStates;
+    typedef CORE::CTSharedPtr< MT::CScopeReaderLock, MT::CNoLock >      CScopeReaderLockPtr;
+    typedef std::vector< CScopeReaderLockPtr >                          TScopeReaderLockVector;
 
     CTestReader( void );
 
@@ -155,6 +170,7 @@ class CTestReader : public MT::CActiveObject
     MT::UInt64 m_ticksAtLastCycle;
     MT::UInt64 m_ticksAtThreadStart;
     MT::UInt32 m_currentReentrancyDepth;
+    TScopeReaderLockVector m_scopeLocks;
 };
 
 /*-------------------------------------------------------------------------*/
@@ -182,7 +198,9 @@ class CRwLockTestData
     bool readerWorkIsReentrant;
     UInt32 readerReentrancyDepth;
 
-    CRwLockTestData( bool writersHavePriority );
+    bool useScopeObjects;
+
+    CRwLockTestData( bool writersHavePriority, bool usingScopeObjects );
     ~CRwLockTestData();
 
     bool Shutdown( void );
@@ -210,7 +228,7 @@ typedef CRwLockTestData::TTestReaderVector  TTestReaderVector;
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-CRwLockTestData::CRwLockTestData( bool writersHavePriority )
+CRwLockTestData::CRwLockTestData( bool writersHavePriority, bool usingScopeObjects )
     : ticksPerMs( MT::PrecisionTimerResolution() / 1000.0 )
     , rwLock( writersHavePriority )
     , writers()
@@ -223,6 +241,7 @@ CRwLockTestData::CRwLockTestData( bool writersHavePriority )
     , writerReentrancyDepth( 0 )
     , readerWorkIsReentrant( false )
     , readerReentrancyDepth( 0 )
+    , useScopeObjects( usingScopeObjects )
 {GUCEF_TRACE;
         
 }
@@ -513,6 +532,7 @@ CTestWriter::CTestWriter( void )
     , m_ticksAtLastCycle( 0 )
     , m_ticksAtThreadStart( 0 )
     , m_currentReentrancyDepth( 0 )
+    , m_scopeLocks()
 {GUCEF_TRACE;
     
 }
@@ -599,10 +619,34 @@ CTestWriter::OnThreadStart( void* taskdata )
     m_ticksAtThreadStart = m_ticksAtLastCycle = MT::PrecisionTickCount();
     m_onThreadStartWasTriggered = true;
     
-    m_lastRwLockOpResult = m_testData->rwLock.WriterStart();
-    if ( TRWLockStates::RWLOCK_OPERATION_SUCCESS != m_lastRwLockOpResult )
-        m_rwLockFailed = true;
+    if ( m_testData->useScopeObjects )
+    {
+        m_scopeLocks.reserve( m_testData->writerReentrancyDepth );
+        
+        CScopeWriterLockPtr scopeLock;
+        try
+        {
+            // Since scope objects area really intended for lock/unlock as your code stack flows we simulate a code callstack
+            // simply by having the scope locks in a collections which represents the callstack
+            scopeLock = CScopeWriterLockPtr( GUCEF_NEW MT::CScopeWriterLock( m_testData->rwLock ) );
+            m_scopeLocks.push_back( scopeLock );
+        }
+        catch ( const timeout_exception& )
+        {
+            m_rwLockFailed = true;
+        }
 
+        if ( !scopeLock->IsScopeWriteLocked() )
+        {
+            m_rwLockFailed = true;
+        }
+    }
+    else
+    {
+        m_lastRwLockOpResult = m_testData->rwLock.WriterStart();
+        if ( TRWLockStates::RWLOCK_OPERATION_SUCCESS != m_lastRwLockOpResult )
+            m_rwLockFailed = true;
+    }
     return true;
 }
 
@@ -626,12 +670,38 @@ CTestWriter::OnThreadCycle( void* taskdata )
     if ( timeDeltaInMs >= m_testData->writerWorkDurationInMs )
         return true; // we are done
 
-    if ( m_testData->writerWorkIsReentrant )
+    if ( m_testData->writerWorkIsReentrant && ( m_currentReentrancyDepth < m_testData->writerReentrancyDepth ) )
     {
-        if ( m_currentReentrancyDepth < m_testData->writerReentrancyDepth )
+        // We already hold the lock to be able to get here
+        // however we will now make a reentrant lock request from the same thread
+
+        if ( m_testData->useScopeObjects )
+        {        
+            CScopeWriterLockPtr scopeLock;
+            try
+            {
+                // Since scope objects area really intended for lock/unlock as your code stack flows we simulate a code callstack
+                // simply by having the scope locks in a collections which represents the callstack
+                scopeLock = CScopeWriterLockPtr( GUCEF_NEW MT::CScopeWriterLock( m_testData->rwLock ) );
+                m_scopeLocks.push_back( scopeLock );
+            }
+            catch ( const timeout_exception& )
+            {
+                m_rwLockFailed = true;
+            }
+
+            if ( !scopeLock->IsScopeWriteLocked() )
+            {
+                m_rwLockFailed = true;
+            }
+
+            if ( !m_rwLockFailed )
+            {
+                ++m_currentReentrancyDepth;
+            }
+        }
+        else
         {
-            // We already hold the lock to be able to get here
-            // however we will now make a reentrant lock request from the same thread
             m_lastRwLockOpResult = m_testData->rwLock.WriterStart();
             if ( TRWLockStates::RWLOCK_OPERATION_SUCCESS != m_lastRwLockOpResult )
             {
@@ -654,25 +724,58 @@ void
 CTestWriter::OnThreadEnding( void* taskdata, bool willBeForced )
 {GUCEF_TRACE;
 
-    if ( m_testData->writerWorkIsReentrant )
+    if ( m_testData->useScopeObjects )    
     {
-        for ( MT::UInt32 i=0; i<m_currentReentrancyDepth; ++i )
+        if ( m_testData->writerWorkIsReentrant )
         {
-            // We must unroll the reentrancy on this thread
-            // similar to rolling up in the call stack
-            m_lastRwLockOpResult = m_testData->rwLock.WriterStop();
-            if ( TRWLockStates::RWLOCK_OPERATION_SUCCESS != m_lastRwLockOpResult )
+            ASSERT_TRUE( m_currentReentrancyDepth+1 == m_scopeLocks.size() );
+            
+            try
+            {
+                // We could just clear the entire lock collection but we are doing it intentionally verbose here
+                // intent is to simulate a stack unroll
+                for ( MT::UInt32 i=0; i<m_currentReentrancyDepth; ++i )
+                {
+                    // We must unroll the reentrancy on this thread
+                    // similar to rolling up in the call stack
+                    CScopeWriterLockPtr scopeLock = m_scopeLocks.back();
+                    m_scopeLocks.pop_back();
+
+                    // We are supposedly leaving the callstack scope so we end the life of the scope object
+                    ASSERT_TRUE( 1 == scopeLock.GetReferenceCount() );
+                    scopeLock.Unlink();
+                }
+            }
+            catch ( const timeout_exception& )
             {
                 m_rwLockFailed = true;
             }
         }
-    }
 
-    m_lastRwLockOpResult = m_testData->rwLock.WriterStop();
-    if ( TRWLockStates::RWLOCK_OPERATION_SUCCESS != m_lastRwLockOpResult )
+        m_scopeLocks.clear();
+    }
+    else
     {
-        m_rwLockFailed = true;
-    }     
+        if ( m_testData->writerWorkIsReentrant )
+        {
+            for ( MT::UInt32 i=0; i<m_currentReentrancyDepth; ++i )
+            {
+                // We must unroll the reentrancy on this thread
+                // similar to rolling up in the call stack
+                m_lastRwLockOpResult = m_testData->rwLock.WriterStop();
+                if ( TRWLockStates::RWLOCK_OPERATION_SUCCESS != m_lastRwLockOpResult )
+                {
+                    m_rwLockFailed = true;
+                }
+            }
+        }
+
+        m_lastRwLockOpResult = m_testData->rwLock.WriterStop();
+        if ( TRWLockStates::RWLOCK_OPERATION_SUCCESS != m_lastRwLockOpResult )
+        {
+            m_rwLockFailed = true;
+        }
+    }
 
     m_onThreadEndingWasTriggered = true;
 }
@@ -776,10 +879,35 @@ CTestReader::OnThreadStart( void* taskdata )
     m_ticksAtThreadStart = m_ticksAtLastCycle = MT::PrecisionTickCount();
     m_onThreadStartWasTriggered = true;
 
-    m_lastRwLockOpResult = m_testData->rwLock.ReaderStart();    
-    if ( TRWLockStates::RWLOCK_OPERATION_SUCCESS != m_lastRwLockOpResult )
-        m_rwLockFailed = true;
+    if ( m_testData->useScopeObjects )
+    {
+        m_scopeLocks.reserve( m_testData->readerReentrancyDepth );
+        
+        CScopeReaderLockPtr scopeLock;
+        try
+        {
+            // Since scope objects area really intended for lock/unlock as your code stack flows we simulate a code callstack
+            // simply by having the scope locks in a collections which represents the callstack
+            scopeLock = CScopeReaderLockPtr( GUCEF_NEW MT::CScopeReaderLock( m_testData->rwLock ) );
+            m_scopeLocks.push_back( scopeLock );
+        }
+        catch ( const timeout_exception& )
+        {
+            m_rwLockFailed = true;
+        }
+
+        if ( !scopeLock->IsScopeReadLocked() )
+        {
+            m_rwLockFailed = true;
+        }
+    }
+    else
+    {
+        m_lastRwLockOpResult = m_testData->rwLock.ReaderStart();    
+        if ( TRWLockStates::RWLOCK_OPERATION_SUCCESS != m_lastRwLockOpResult )
+            m_rwLockFailed = true;
     
+    }
     return true;
 }
 
@@ -803,9 +931,34 @@ CTestReader::OnThreadCycle( void* taskdata )
     if ( timeDeltaInMs >= m_testData->readerWorkDurationInMs )
         return true; // we are done
 
-    if ( m_testData->readerWorkIsReentrant )
+    if ( m_testData->readerWorkIsReentrant && ( m_currentReentrancyDepth < m_testData->readerReentrancyDepth ) )
     {
-        if ( m_currentReentrancyDepth < m_testData->readerReentrancyDepth )
+        if ( m_testData->useScopeObjects )
+        {        
+            CScopeReaderLockPtr scopeLock;
+            try
+            {
+                // Since scope objects area really intended for lock/unlock as your code stack flows we simulate a code callstack
+                // simply by having the scope locks in a collections which represents the callstack
+                scopeLock = CScopeReaderLockPtr( GUCEF_NEW MT::CScopeReaderLock( m_testData->rwLock ) );
+                m_scopeLocks.push_back( scopeLock );
+            }
+            catch ( const timeout_exception& )
+            {
+                m_rwLockFailed = true;
+            }
+
+            if ( !scopeLock->IsScopeReadLocked() )
+            {
+                m_rwLockFailed = true;
+            }
+
+            if ( !m_rwLockFailed )
+            {
+                ++m_currentReentrancyDepth;
+            }
+        }
+        else
         {
             // We already hold the lock to be able to get here
             // however we will now make a reentrant lock request from the same thread
@@ -831,23 +984,59 @@ void
 CTestReader::OnThreadEnding( void* taskdata, bool willBeForced )
 {GUCEF_TRACE;
 
-    if ( m_testData->readerWorkIsReentrant )
+    if ( m_testData->useScopeObjects )    
     {
-        for ( MT::UInt32 i=0; i<m_currentReentrancyDepth; ++i )
+        if ( m_testData->readerWorkIsReentrant )
         {
-            // We must unroll the reentrancy on this thread
-            // similar to rolling up in the call stack
-            m_lastRwLockOpResult = m_testData->rwLock.ReaderStop();
-            if ( TRWLockStates::RWLOCK_OPERATION_SUCCESS != m_lastRwLockOpResult )
+            ASSERT_TRUE( m_currentReentrancyDepth+1 == m_scopeLocks.size() );
+            
+            try
+            {
+                // We could just clear the entire lock collection but we are doing it intentionally verbose here
+                // intent is to simulate a stack unroll
+                for ( MT::UInt32 i=0; i<m_currentReentrancyDepth; ++i )
+                {
+                    // We must unroll the reentrancy on this thread
+                    // similar to rolling up in the call stack
+                    CScopeReaderLockPtr scopeLock = m_scopeLocks.back();
+                    m_scopeLocks.pop_back();
+
+                    // We are supposedly leaving the callstack scope so we end the life of the scope object
+                    ASSERT_TRUE( 1 == scopeLock.GetReferenceCount() );
+                    scopeLock.Unlink();
+                }
+            
+                
+            }
+            catch ( const timeout_exception& )
             {
                 m_rwLockFailed = true;
             }
         }
-    }
 
-    m_lastRwLockOpResult = m_testData->rwLock.ReaderStop();
-    if ( TRWLockStates::RWLOCK_OPERATION_SUCCESS != m_lastRwLockOpResult )
-        m_rwLockFailed = true;  
+        m_scopeLocks.clear();
+    }
+    else
+    {
+        if ( m_testData->readerWorkIsReentrant )
+        {
+            for ( MT::UInt32 i=0; i<m_currentReentrancyDepth; ++i )
+            {
+                // We must unroll the reentrancy on this thread
+                // similar to rolling up in the call stack
+                m_lastRwLockOpResult = m_testData->rwLock.ReaderStop();
+                if ( TRWLockStates::RWLOCK_OPERATION_SUCCESS != m_lastRwLockOpResult )
+                {
+                    m_rwLockFailed = true;
+                }
+            } 
+        }
+
+        m_lastRwLockOpResult = m_testData->rwLock.ReaderStop();
+        if ( TRWLockStates::RWLOCK_OPERATION_SUCCESS != m_lastRwLockOpResult )
+            m_rwLockFailed = true;
+
+    }
         
     m_onThreadEndingWasTriggered = true;
 }
@@ -855,12 +1044,12 @@ CTestReader::OnThreadEnding( void* taskdata, bool willBeForced )
 /*-------------------------------------------------------------------------*/
 
 void
-PerformReaderWriterLockSingleThreadTests_InitTest( bool writersHavePriority )
+PerformReaderWriterLockSingleThreadTests_InitTest( bool writersHavePriority, bool usingScopeObjects )
 {GUCEF_TRACE;
 
     try
     {       
-        CRwLockTestData testData( writersHavePriority );
+        CRwLockTestData testData( writersHavePriority, usingScopeObjects );
 
         // start with a basic sanity check on the init state
         ASSERT_TRUE( GUCEF_NULL != testData.rwLock.AsLockable() );
@@ -893,12 +1082,12 @@ PerformReaderWriterLockSingleThreadTests_InitTest( bool writersHavePriority )
 /*-------------------------------------------------------------------------*/
 
 void
-PerformReaderWriterLockSingleThreadTests_SingleReader( bool writersHavePriority )
+PerformReaderWriterLockSingleThreadTests_SingleReader( bool writersHavePriority, bool usingScopeObjects )
 {GUCEF_TRACE;
 
     try
     {       
-        CRwLockTestData testData( writersHavePriority );
+        CRwLockTestData testData( writersHavePriority, usingScopeObjects );
 
         // test with a singular reader (this thread)
         testData.nrOfWriters = 0;
@@ -942,12 +1131,12 @@ PerformReaderWriterLockSingleThreadTests_SingleReader( bool writersHavePriority 
 /*-------------------------------------------------------------------------*/
 
 void
-PerformReaderWriterLockSingleThreadTests_SingleWriter( bool writersHavePriority )
+PerformReaderWriterLockSingleThreadTests_SingleWriter( bool writersHavePriority, bool usingScopeObjects )
 {GUCEF_TRACE;
 
     try
     {       
-        CRwLockTestData testData( writersHavePriority );
+        CRwLockTestData testData( writersHavePriority, usingScopeObjects );
 
         // test with a singular writer (this thread)
         testData.nrOfWriters = 0;
@@ -991,12 +1180,12 @@ PerformReaderWriterLockSingleThreadTests_SingleWriter( bool writersHavePriority 
 /*-------------------------------------------------------------------------*/
 
 void
-PerformReaderWriterLockSingleThreadTests_SingleReaderReentrant( bool writersHavePriority )
+PerformReaderWriterLockSingleThreadTests_SingleReaderReentrant( bool writersHavePriority, bool usingScopeObjects )
 {GUCEF_TRACE;
 
     try
     {       
-        CRwLockTestData testData( writersHavePriority );
+        CRwLockTestData testData( writersHavePriority, usingScopeObjects );
 
         // test with a singular re-entrant reader (this thread)
         testData.nrOfWriters = 0;
@@ -1047,12 +1236,12 @@ PerformReaderWriterLockSingleThreadTests_SingleReaderReentrant( bool writersHave
 /*-------------------------------------------------------------------------*/
 
 void
-PerformReaderWriterLockSingleThreadTests_SingleWriterReentrant( bool writersHavePriority )
+PerformReaderWriterLockSingleThreadTests_SingleWriterReentrant( bool writersHavePriority, bool usingScopeObjects )
 {GUCEF_TRACE;
 
     try
     {       
-        CRwLockTestData testData( writersHavePriority );
+        CRwLockTestData testData( writersHavePriority, usingScopeObjects );
 
         // test with a singular re-entrant writer (this thread)
         testData.nrOfWriters = 0;
@@ -1117,25 +1306,25 @@ PerformReaderWriterLockSingleThreadTests_SingleWriterReentrant( bool writersHave
 /*-------------------------------------------------------------------------*/
 
 void
-PerformReaderWriterLockSingleThreadTests( bool writersHavePriority )
+PerformReaderWriterLockSingleThreadTests( bool writersHavePriority, bool usingScopeObjects )
 {GUCEF_TRACE;
 
-    PerformReaderWriterLockSingleThreadTests_InitTest( writersHavePriority );
-    PerformReaderWriterLockSingleThreadTests_SingleReader( writersHavePriority );
-    PerformReaderWriterLockSingleThreadTests_SingleWriter( writersHavePriority );
-    PerformReaderWriterLockSingleThreadTests_SingleReaderReentrant( writersHavePriority );
-    PerformReaderWriterLockSingleThreadTests_SingleWriterReentrant( writersHavePriority );
+    PerformReaderWriterLockSingleThreadTests_InitTest( writersHavePriority, usingScopeObjects );
+    PerformReaderWriterLockSingleThreadTests_SingleReader( writersHavePriority, usingScopeObjects );
+    PerformReaderWriterLockSingleThreadTests_SingleWriter( writersHavePriority, usingScopeObjects );
+    PerformReaderWriterLockSingleThreadTests_SingleReaderReentrant( writersHavePriority, usingScopeObjects );
+    PerformReaderWriterLockSingleThreadTests_SingleWriterReentrant( writersHavePriority, usingScopeObjects );
 }
 
 /*-------------------------------------------------------------------------*/
 
 void
-PerformReaderWriterLockTests_SingleReader( bool writersHavePriority )
+PerformReaderWriterLockTests_SingleReader( bool writersHavePriority, bool usingScopeObjects )
 {GUCEF_TRACE;
 
     try
     {       
-        CRwLockTestData testData( writersHavePriority );
+        CRwLockTestData testData( writersHavePriority, usingScopeObjects );
 
         // test with a singular reader
         testData.nrOfWriters = 0;
@@ -1171,12 +1360,12 @@ PerformReaderWriterLockTests_SingleReader( bool writersHavePriority )
 /*-------------------------------------------------------------------------*/
 
 void
-PerformReaderWriterLockTests_SingleWriter( bool writersHavePriority )
+PerformReaderWriterLockTests_SingleWriter( bool writersHavePriority, bool usingScopeObjects )
 {GUCEF_TRACE;
 
     try
     {       
-        CRwLockTestData testData( writersHavePriority );
+        CRwLockTestData testData( writersHavePriority, usingScopeObjects );
 
         // test with a singular writer
         testData.nrOfWriters = 1;
@@ -1212,12 +1401,12 @@ PerformReaderWriterLockTests_SingleWriter( bool writersHavePriority )
 /*-------------------------------------------------------------------------*/
 
 void
-PerformReaderWriterLockTests_MultipleReaders( bool writersHavePriority )
+PerformReaderWriterLockTests_MultipleReaders( bool writersHavePriority, bool usingScopeObjects )
 {GUCEF_TRACE;
 
     try
     {       
-        CRwLockTestData testData( writersHavePriority );
+        CRwLockTestData testData( writersHavePriority, usingScopeObjects );
 
         // test with a multiple readers all starting +- at the same time
         // they will keep running
@@ -1255,12 +1444,12 @@ PerformReaderWriterLockTests_MultipleReaders( bool writersHavePriority )
 /*-------------------------------------------------------------------------*/
 
 void
-PerformReaderWriterLockTests_MultipleWriters( bool writersHavePriority )
+PerformReaderWriterLockTests_MultipleWriters( bool writersHavePriority, bool usingScopeObjects )
 {GUCEF_TRACE;
 
     try
     {       
-        CRwLockTestData testData( writersHavePriority );
+        CRwLockTestData testData( writersHavePriority, usingScopeObjects );
 
         // test with a multiple writers all starting +- at the same time
         // they will keep running. Since these are different writers only 1 should be allowed active
@@ -1309,12 +1498,12 @@ PerformReaderWriterLockTests_MultipleWriters( bool writersHavePriority )
 /*-------------------------------------------------------------------------*/
 
 void
-PerformReaderWriterLockTests_MultipleWritersReentrant( bool writersHavePriority )
+PerformReaderWriterLockTests_MultipleWritersReentrant( bool writersHavePriority, bool usingScopeObjects )
 {GUCEF_TRACE;
 
     try
     {       
-        CRwLockTestData testData( writersHavePriority );
+        CRwLockTestData testData( writersHavePriority, usingScopeObjects );
 
         // test with a multiple writers all starting +- at the same time
         // they will keep running. Since these are different writers only 1 should be allowed active
@@ -1366,12 +1555,12 @@ PerformReaderWriterLockTests_MultipleWritersReentrant( bool writersHavePriority 
 /*-------------------------------------------------------------------------*/
 
 void
-PerformReaderWriterLockTests_MultipleReadersReentrant( bool writersHavePriority )
+PerformReaderWriterLockTests_MultipleReadersReentrant( bool writersHavePriority, bool usingScopeObjects )
 {GUCEF_TRACE;
 
     try
     {       
-        CRwLockTestData testData( writersHavePriority );
+        CRwLockTestData testData( writersHavePriority, usingScopeObjects );
 
         // test with a multiple writers all starting +- at the same time
         // they will keep running. Since these are different writers only 1 should be allowed active
@@ -1420,7 +1609,7 @@ PerformReaderWriterLockTests_MultipleReadersReentrant( bool writersHavePriority 
 /*-------------------------------------------------------------------------*/
 
 void
-PerformReaderWriterLockTests_MultipleWritersMultipleReaders( bool writersHavePriority )
+PerformReaderWriterLockTests_MultipleWritersMultipleReaders( bool writersHavePriority, bool usingScopeObjects )
 {GUCEF_TRACE;
 
     try
@@ -1430,7 +1619,7 @@ PerformReaderWriterLockTests_MultipleWritersMultipleReaders( bool writersHavePri
 
         do 
         {
-            CRwLockTestData testData( writersHavePriority );
+            CRwLockTestData testData( writersHavePriority, usingScopeObjects );
 
             // test with a multiple readers and writers all starting +- at the same time
             // this test is heavily reliant on timing and as such we can only really check that the tallies make sense
@@ -1497,16 +1686,16 @@ PerformReaderWriterLockTests_MultipleWritersMultipleReaders( bool writersHavePri
 /*-------------------------------------------------------------------------*/
 
 void
-PerformReaderWriterLockTests( bool writersHavePriority )
+PerformReaderWriterLockTests( bool writersHavePriority, bool usingScopeObjects )
 {GUCEF_TRACE;
 
-    PerformReaderWriterLockTests_SingleReader( writersHavePriority );
-    PerformReaderWriterLockTests_SingleWriter( writersHavePriority );
-    PerformReaderWriterLockTests_MultipleReaders( writersHavePriority );
-    PerformReaderWriterLockTests_MultipleWriters( writersHavePriority );
-    PerformReaderWriterLockTests_MultipleReadersReentrant( writersHavePriority );
-    PerformReaderWriterLockTests_MultipleWritersReentrant( writersHavePriority );    
-    PerformReaderWriterLockTests_MultipleWritersMultipleReaders( writersHavePriority );    
+    PerformReaderWriterLockTests_SingleReader( writersHavePriority, usingScopeObjects );
+    PerformReaderWriterLockTests_SingleWriter( writersHavePriority, usingScopeObjects );
+    PerformReaderWriterLockTests_MultipleReaders( writersHavePriority, usingScopeObjects );
+    PerformReaderWriterLockTests_MultipleWriters( writersHavePriority, usingScopeObjects );
+    PerformReaderWriterLockTests_MultipleReadersReentrant( writersHavePriority, usingScopeObjects );
+    PerformReaderWriterLockTests_MultipleWritersReentrant( writersHavePriority, usingScopeObjects );    
+    PerformReaderWriterLockTests_MultipleWritersMultipleReaders( writersHavePriority, usingScopeObjects );    
 }
 
 /*-------------------------------------------------------------------------*/
@@ -1517,10 +1706,14 @@ PerformReaderWriterLockTests( void )
 
     std::cout << "\n\n**** COMMENCING Reader Writer lock TESTS ****\n";
 
-    PerformReaderWriterLockSingleThreadTests( true );
-    PerformReaderWriterLockSingleThreadTests( false );
-    PerformReaderWriterLockTests( true );
-    PerformReaderWriterLockTests( false );
+    PerformReaderWriterLockSingleThreadTests( true, false );
+    PerformReaderWriterLockSingleThreadTests( true, true );
+    PerformReaderWriterLockSingleThreadTests( false, false );
+    PerformReaderWriterLockSingleThreadTests( false, true );
+    PerformReaderWriterLockTests( true, false );
+    PerformReaderWriterLockTests( true, true );
+    //PerformReaderWriterLockTests( false, false );
+    //PerformReaderWriterLockTests( false, true );
 
     std::cout << "\n\n**** FINISHED Reader Writer lock TESTS ****\n";
 }

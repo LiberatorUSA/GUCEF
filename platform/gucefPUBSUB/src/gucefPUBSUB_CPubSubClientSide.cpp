@@ -697,17 +697,39 @@ CPubSubClientSide::OnTopicAccessDestroyed( CORE::CNotifier* notifier    ,
     if ( GUCEF_NULL == pubsubClient || GUCEF_NULL == eventData )
         return;
 
+    if ( pubsubClient != m_pubsubClient )
+    {
+        // the pointer is suspect, this should not happen
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientSide(" + CORE::PointerToString( this ) +
+            "):OnTopicAccessDestroyed: client pointer doesnt match. Event=" + CORE::ToString( pubsubClient ) + " Ours=" + CORE::ToString( m_pubsubClient.GetPointerAlways() ) );
+        return;
+    }
+
     CORE::CString topicName = *static_cast< CPubSubClient::TopicAccessCreatedEventData* >( eventData );
     CPubSubClientTopicPtr topicAccess = pubsubClient->GetTopicAccess( topicName );
     if ( !topicAccess.IsNULL() )
     {
         MT::CScopeWriterLock lock( m_rwdataLock );
-        
-        GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientSide(" + CORE::ToString( this ) +
-            "):OnTopicAccessDestroyed: Removing topic link info for destroyed topic " + topicAccess->GetTopicName() );
 
-        // @TODO: What to do about in-flight messages, mailbox, etc? Any special action?
-        //      send them to dead letter ?
+        TopicPtrMap::iterator i = m_topicPtrs.find( topicAccess.GetPointerAlways() );
+        if ( i != m_topicPtrs.end() )
+        {
+            TopicLinkPtr topicLink = (*i).second; 
+
+            GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientSide(" + CORE::PointerToString( this ) +
+                "):OnTopicAccessDestroyed: Removing topic link info for destroyed topic " + topicAccess->GetTopicName() +
+                ". There are " + CORE::ToString( topicLink->GetTotalMsgsInFlight() ) + " messages left in-flight" );
+
+            // @TODO: What to do about in-flight messages, mailbox, etc? Any special action?
+            //      send them to dead letter ?
+
+        }
+        else
+        {
+            GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientSide(" + CORE::PointerToString( this ) +
+                "):OnTopicAccessDestroyed: Cannot find topic link info for destroyed topic " + topicAccess->GetTopicName() );
+        }
+        
         m_topicPtrs.erase( topicAccess.GetPointerAlways() );
     }
 }
@@ -773,21 +795,35 @@ CPubSubClientSide::OnTopicsAccessAutoDestroyed( CORE::CNotifier* notifier    ,
     CPubSubClient::TopicsAccessAutoDestroyedEventData* eData = static_cast< CPubSubClient::TopicsAccessAutoDestroyedEventData* >( eventData );
     if ( GUCEF_NULL != eData )
     {
-        CPubSubClient::PubSubClientTopicSet& topicsAccess = *eData;
-        CPubSubClient::PubSubClientTopicSet::iterator i = topicsAccess.begin();
-        while ( i != topicsAccess.end() )
+        CPubSubClient::PubSubClientTopicSet& topicsAccessSet = *eData;
+        CPubSubClient::PubSubClientTopicSet::iterator i = topicsAccessSet.begin();
+        while ( i != topicsAccessSet.end() )
         {
-            CPubSubClientTopicBasicPtr tAccess = (*i);
-            if ( !tAccess.IsNULL() )
+            CPubSubClientTopicBasicPtr topicAccess = (*i);
+            if ( !topicAccess.IsNULL() )
             {
-                GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientSide(" + CORE::PointerToString( this ) +
-                    "):OnTopicsAccessAutoDestroyed: Removing topic link info for auto destroyed topic " + tAccess->GetTopicName() );
-
                 MT::CScopeWriterLock lock( m_rwdataLock );
                 
-                // @TODO: What to do about in-flight messages etc? Any special action?
-                //      send them to dead letter ?
-                m_topicPtrs.erase( tAccess.GetPointerAlways() );
+                TopicPtrMap::iterator i = m_topicPtrs.find( topicAccess.GetPointerAlways() );
+                if ( i != m_topicPtrs.end() )
+                {
+                    TopicLinkPtr topicLink = (*i).second; 
+
+                    GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientSide(" + CORE::PointerToString( this ) +
+                        "):OnTopicsAccessAutoDestroyed: Removing topic link info for destroyed topic " + topicAccess->GetTopicName() +
+                        ". There are " + CORE::ToString( topicLink->GetTotalMsgsInFlight() ) + " messages left in-flight" );
+
+                    // @TODO: What to do about in-flight messages, mailbox, etc? Any special action?
+                    //      send them to dead letter ?
+
+                    m_topicPtrs.erase( topicAccess.GetPointerAlways() );
+                
+                }
+                else
+                {
+                    GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientSide(" + CORE::PointerToString( this ) +
+                        "):OnTopicAccessDestroyed: Cannot find topic link info for destroyed topic " + topicAccess->GetTopicName() );
+                }
             }
             ++i;
         }
@@ -2267,16 +2303,20 @@ void
 CPubSubClientSide::TopicLink::ProcessAcknowledgeReceiptsMailbox( void )
 {GUCEF_TRACE;
 
-    TPubSubMsgPtrMailbox::TMailBoxMailRemovalBlock mailRemovalBlock( publishAckdMsgsMailbox );
+    MT::CScopeReaderLock reader( publishAckdMsgsMailbox.GetLock() );
     
     CIPubSubMsg::TNoLockSharedPtr msg;
-    while ( publishAckdMsgsMailbox.PeekMail( mailRemovalBlock, msg, GUCEF_NULL ) )
+    while ( publishAckdMsgsMailbox.PeekMail( reader, msg, GUCEF_NULL ) )
     {
         try
         {
             if ( AcknowledgeReceiptSync( msg ) )
             {
-                publishAckdMsgsMailbox.PopMail( mailRemovalBlock );
+                {
+                    MT::CScopeWriterLock writer( reader );
+                    publishAckdMsgsMailbox.PopMail( writer );
+                    writer.TransitionToReader( reader );
+                }
             }
             else
             {

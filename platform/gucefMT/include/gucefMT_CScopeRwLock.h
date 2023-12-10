@@ -109,6 +109,8 @@ class GUCEF_MT_PUBLIC_CPP CScopeReaderLock
      */
     bool TransitionToWriter( CScopeWriterLock& targetWriter, UInt32 lockWaitTimeoutInMs = GUCEF_MT_DEFAULT_LOCK_TIMEOUT_IN_MS );
 
+    const CReadWriteLock* GetReadWriteLock( void ) const;
+
     private:
     friend class CScopeWriterLock;
 
@@ -177,6 +179,8 @@ class GUCEF_MT_PUBLIC_CPP CScopeWriterLock
      */
     bool TransitionToReader( CScopeReaderLock& targetReader, UInt32 lockWaitTimeoutInMs = GUCEF_MT_DEFAULT_LOCK_TIMEOUT_IN_MS );
 
+    const CReadWriteLock* GetReadWriteLock( void ) const;
+    
     private:
     friend class CScopeReaderLock;
 

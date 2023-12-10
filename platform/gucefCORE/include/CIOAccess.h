@@ -33,6 +33,11 @@
 #define GUCEF_MT_CNOLOCK_H
 #endif /* GUCEF_MT_CNOLOCK_H ? */
 
+#ifndef GUCEF_MT_CMUTEX_H
+#include "gucefMT_CMutex.h"
+#define GUCEF_MT_CMUTEX_H
+#endif /* GUCEF_MT_CMUTEX_H ? */
+
 #ifndef GUCEF_CORE_CSTRING_H
 #include "gucefCORE_CString.h"          /* GUCEF string implementation */
 #define GUCEF_CORE_CSTRING_H

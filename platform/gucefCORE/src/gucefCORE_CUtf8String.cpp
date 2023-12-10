@@ -33,6 +33,11 @@
 #define GUCEF_CORE_DVSTRUTILS_H
 #endif /* GUCEF_CORE_DVSTRUTILS_H ? */
 
+#ifndef GUCEF_CORE_CIOACCESS_H
+#include "CIOAccess.h"
+#define GUCEF_CORE_CIOACCESS_H
+#endif /* GUCEF_CORE_CIOACCESS_H ? */
+
 #ifndef GUCEF_CORE_CASCIISTRING_H
 #include "gucefCORE_CAsciiString.h"
 #define GUCEF_CORE_CASCIISTRING_H

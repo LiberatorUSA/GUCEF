@@ -1295,7 +1295,7 @@ ProcessFirstTimeInitialization( const CORE::CString& resRootDir ,
                         }
                     }
 
-                    if ( 0 == CORE::Move_File( destPath.C_String(), srcPath.C_String() ) )
+                    if ( 0 == CORE::Move_File( destPath.C_String(), srcPath.C_String(), 1 ) )
                     {
                         // Failed to execute command
                         return false;
@@ -1333,7 +1333,7 @@ ProcessFirstTimeInitialization( const CORE::CString& resRootDir ,
             // This keeps the file for later review but it wont trigger another initialization
             CORE::CString afterFirstRunFilePath = resRootDir + "firstrun.completed.txt";
             CORE::Delete_File( afterFirstRunFilePath.C_String() );
-            if ( 0 == CORE::Move_File( afterFirstRunFilePath.C_String(), firstRunFilePath.C_String() ) )
+            if ( 0 == CORE::Move_File( afterFirstRunFilePath.C_String(), firstRunFilePath.C_String(), 1 ) )
             {
                 return false;
             }

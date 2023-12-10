@@ -146,7 +146,7 @@ CZIPArchive::~CZIPArchive()
 
 /*-------------------------------------------------------------------------*/
 
-VFS::CArchive::CVFSHandlePtr
+VFS::TBasicVfsResourcePtr
 CZIPArchive::GetFile( const VFS::CString& file      ,
                       const char* mode              ,
                       const VFS::UInt32 memLoadSize ,
@@ -154,19 +154,20 @@ CZIPArchive::GetFile( const VFS::CString& file      ,
 {GUCEF_TRACE;
 
     // We only support read only modes
-    if ( *mode != 'r' ) return CVFSHandlePtr();
+    if ( *mode != 'r' ) 
+        return VFS::TBasicVfsResourcePtr();
 
-    CORE::CIOAccess* fileAccess = LoadFile( file, memLoadSize );
-    if ( NULL != fileAccess )
+    CORE::IOAccessPtr fileAccess = LoadFile( file, memLoadSize );
+    if ( !fileAccess.IsNULL() )
     {
         // Create path to file
-        CORE::CString filePath = m_archivePath;
+        CORE::CString filePath = m_archivePath;                
         CORE::AppendToPath( filePath, file );
 
         // Construct & return handle
-        return VFS::CVFS::CVFSHandlePtr( new VFS::CVFSHandle( fileAccess, file, filePath ), this );
+        return VFS::TVfsResourcePtr( GUCEF_NEW VFS::CVFSHandle( fileAccess, file, filePath ), this );
     }
-    return VFS::CVFS::CVFSHandlePtr();
+    return VFS::TBasicVfsResourcePtr();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -207,13 +208,13 @@ CZIPArchive::StoreAsFile( const CORE::CString& filepath    ,
 /*-------------------------------------------------------------------------*/
 
 void
-CZIPArchive::GetFileList( TStringVector& outputList           ,
-                          const VFS::CString& mountLocation   , 
-                          const VFS::CString& archiveLocation ,
-                          bool recursive                      ,
-                          bool includePathInFilename          ,
-                          const VFS::CString& nameFilter      ,
-                          UInt32 maxListEntries               ) const
+CZIPArchive::GetFileList( TStringVector& outputList                   ,
+                          const CORE::CString& mountLocation          , 
+                          const CORE::CString& archiveLocation        ,
+                          bool recursive                              ,
+                          bool includePathInFilename                  ,
+                          const CORE::CString::StringSet& nameFilters ,
+                          UInt32 maxListEntries                       ) const
 {GUCEF_TRACE;
 
     // @TODO
@@ -222,13 +223,13 @@ CZIPArchive::GetFileList( TStringVector& outputList           ,
 /*-------------------------------------------------------------------------*/
 
 void
-CZIPArchive::GetDirList( TStringVector& outputList           ,
-                         const VFS::CString& mountLocation   , 
-                         const VFS::CString& archiveLocation ,
-                         bool recursive                      ,
-                         bool includeParentDirInName         ,
-                         const VFS::CString& nameFilter      ,
-                         UInt32 maxListEntries               ) const
+CZIPArchive::GetDirList( TStringVector& outputList                   ,
+                         const CORE::CString& mountLocation          , 
+                         const CORE::CString& archiveLocation        ,
+                         bool recursive                              ,
+                         bool includeParentDirInName                 ,
+                         const CORE::CString::StringSet& nameFilters ,
+                         UInt32 maxListEntries                       ) const
 {GUCEF_TRACE;
 
     // @TODO
@@ -315,13 +316,14 @@ CZIPArchive::GetFileModificationTime( const VFS::CString& filePath ) const
 
 /*-------------------------------------------------------------------------*/
 
-CORE::CIOAccess*
+CORE::IOAccessPtr
 CZIPArchive::LoadFile( const VFS::CString& file      ,
                        const VFS::UInt32 memLoadSize ) const
 {GUCEF_TRACE;
 
     // Check for failed archive
-    if ( NULL == m_zipRoot ) return NULL;
+    if ( NULL == m_zipRoot ) 
+        return CORE::IOAccessPtr();
 
     // Get non const access, no worries, it wont be changed
     ZZIP_DIR* zipRoot = const_cast< ZZIP_DIR* >( m_zipRoot );
@@ -335,14 +337,14 @@ CZIPArchive::LoadFile( const VFS::CString& file      ,
         GUCEF_SYSTEM_LOG( 0, m_archiveName + ": - Unable to open file " + file + ", error was '" + zzDesc + "'" );
 
         // return null pointer
-        return NULL;
+        return CORE::IOAccessPtr();
     }
 
     // Get uncompressed size too
     ZZIP_STAT zstat;
     zzip_dir_stat( zipRoot, file.C_String(), &zstat, ZZIP_CASEINSENSITIVE );
 
-    CZipIOAccess* fileAccess = new CZipIOAccess( zipFile, zstat.st_size );
+    CORE::IOAccessPtr fileAccess( GUCEF_NEW CZipIOAccess( zipFile, zstat.st_size ) );
 
     // We will not load anything in memory for now (ignore memLoadSize)
     return fileAccess;
@@ -354,14 +356,14 @@ VFS::CString
 CZIPArchive::GetFileHash( const VFS::CString& file ) const
 {GUCEF_TRACE;
 
-    CORE::CIOAccess* fileAccess = LoadFile( file, 102400 );
-    if ( NULL != fileAccess )
+    CORE::IOAccessPtr fileAccess = LoadFile( file, 102400 );
+    if ( !fileAccess.IsNULL() )
     {
         VFS::UInt8 digest[ 16 ];
         if ( 0 != CORE::md5fromfile( fileAccess->CStyleAccess() ,
                                      digest                     ) )
         {
-            delete fileAccess;
+            fileAccess.Unlink();
 
             char md5_str[ 48 ];
             CORE::md5tostring( digest, md5_str );
@@ -370,7 +372,7 @@ CZIPArchive::GetFileHash( const VFS::CString& file ) const
             return md5Str;
         }
 
-        delete fileAccess;
+        fileAccess.Unlink();
     }
     return VFS::CString();
 }
@@ -462,9 +464,9 @@ CZIPArchive::LoadArchive( const VFS::CArchiveSettings& settings )
 /*-------------------------------------------------------------------------*/
 
 bool 
-CZIPArchive::LoadArchive( const VFS::CString& archiveName ,
-                          CVFSHandlePtr vfsResource       ,
-                          const bool writeableRequest     )
+CZIPArchive::LoadArchive( const VFS::CString& archiveName       ,
+                          VFS::TBasicVfsResourcePtr vfsResource ,
+                          const bool writeableRequest           )
 {GUCEF_TRACE;
 
     return false;

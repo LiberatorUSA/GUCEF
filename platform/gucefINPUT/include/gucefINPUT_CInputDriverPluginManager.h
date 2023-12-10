@@ -69,7 +69,7 @@ class GUCEF_INPUT_PUBLIC_CPP CInputDriverPluginManager : public CORE::CPluginMan
     virtual CORE::TPluginPtr RegisterPlugin( void* modulePtr                        ,
                                             CORE::TPluginMetaDataPtr pluginMetaData );
 
-    virtual void UnregisterPlugin( CORE::TPluginPtr plugin );
+    virtual bool UnregisterPlugin( CORE::TPluginPtr plugin );
     
     private:
     

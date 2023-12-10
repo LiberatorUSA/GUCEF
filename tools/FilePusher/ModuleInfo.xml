@@ -19,6 +19,7 @@
 		</Linker>
 		<RuntimeDependencies>
 			<RuntimeDependency Name="vfspluginAWSS3" />
+			<RuntimeDependency Name="vfspluginZIP" />
 			<RuntimeDependency Name="dstorepluginPARSIFALXML" />
 			<RuntimeDependency Name="dstorepluginJSONPARSER" />
 			<RuntimeDependency Name="dstorepluginYAML" />

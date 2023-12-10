@@ -29,6 +29,7 @@ add_subdirectory( ${CMAKE_CURRENT_SOURCE_DIR}/../../../../dependencies/libparsif
 add_subdirectory( ${CMAKE_CURRENT_SOURCE_DIR}/../../../../dependencies/libyaml ${CMAKE_BINARY_DIR}/yaml )
 add_subdirectory( ${CMAKE_CURRENT_SOURCE_DIR}/../../../../dependencies/stbrumme-hash-library ${CMAKE_BINARY_DIR}/stbrumme-hash )
 add_subdirectory( ${CMAKE_CURRENT_SOURCE_DIR}/../../../../dependencies/zlib ${CMAKE_BINARY_DIR}/zlib )
+add_subdirectory( ${CMAKE_CURRENT_SOURCE_DIR}/../../../../dependencies/zziplib ${CMAKE_BINARY_DIR}/zziplib )
 add_subdirectory( ${CMAKE_CURRENT_SOURCE_DIR}/../../../../platform/gucefCOM ${CMAKE_BINARY_DIR}/gucefCOM )
 add_subdirectory( ${CMAKE_CURRENT_SOURCE_DIR}/../../../../platform/gucefCOMCORE ${CMAKE_BINARY_DIR}/gucefCOMCORE )
 add_subdirectory( ${CMAKE_CURRENT_SOURCE_DIR}/../../../../platform/gucefCORE ${CMAKE_BINARY_DIR}/gucefCORE )
@@ -42,4 +43,5 @@ add_subdirectory( ${CMAKE_CURRENT_SOURCE_DIR}/../../../../plugins/CORE/dstoreplu
 add_subdirectory( ${CMAKE_CURRENT_SOURCE_DIR}/../../../../plugins/CORE/dstorepluginYAML ${CMAKE_BINARY_DIR}/dstorepluginYAML )
 add_subdirectory( ${CMAKE_CURRENT_SOURCE_DIR}/../../../../plugins/SHARED/pluginglueAWSSDK ${CMAKE_BINARY_DIR}/pluginglueAWSSDK )
 add_subdirectory( ${CMAKE_CURRENT_SOURCE_DIR}/../../../../plugins/VFS/vfspluginAWSS3 ${CMAKE_BINARY_DIR}/vfspluginAWSS3 )
+add_subdirectory( ${CMAKE_CURRENT_SOURCE_DIR}/../../../../plugins/VFS/vfspluginZIP ${CMAKE_BINARY_DIR}/vfspluginZIP )
 add_subdirectory( ${CMAKE_CURRENT_SOURCE_DIR}/../../../../tools/FilePusher ${CMAKE_BINARY_DIR}/FilePusher )

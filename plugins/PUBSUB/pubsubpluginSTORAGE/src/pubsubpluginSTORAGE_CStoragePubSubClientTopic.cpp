@@ -842,9 +842,14 @@ CStoragePubSubClientTopic::PublishViaMsgPtrs( TPublishActionIdVector& publishAct
                 // Serialize the message
                 CORE::UInt32 ticks = CORE::GUCEFGetTickCount();
                 CORE::UInt32 msgBytesWritten = 0;
-                const PUBSUB::CIPubSubMsg* msg = &(*(*i));
+                const T& entry = (*i);
+                const PUBSUB::CIPubSubMsg* msg = static_cast< const PUBSUB::CIPubSubMsg* >( &(*(entry)) );
                 if ( GUCEF_NULL != msg )
                 {
+                    CORE::CDateTime dt = entry->GetMsgDateTime();  
+                    
+                    UInt64 msSinceUnixEpochInUtc = entry->GetMsgDateTime().ToUnixEpochBasedTicksInMillisecs();
+                    
                     if ( PUBSUB::CPubSubMsgBinarySerializer::Serialize( m_config.pubsubBinarySerializerOptions, *msg, bufferOffset, *m_currentWriteBuffer, msgBytesWritten ) && 0 != msgBytesWritten )
                     {
                         #ifdef GUCEF_DEBUG_MODE
@@ -2478,13 +2483,21 @@ CStoragePubSubClientTopic::NotifyPublishResults( void )
 
     if ( !m_publishSuccessActionIds.empty() )
     {
-        GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "StoragePubSubClientTopic:NotifyPublishResults: Notifying MsgsPublishedEvent for " + CORE::ToString( m_publishSuccessActionIds.size() ) + " messages" );
+        UInt64 firstId = *m_publishSuccessActionEventData.GetData().begin();
+        UInt64 lastId = *m_publishSuccessActionEventData.GetData().rbegin();
+        GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "StoragePubSubClientTopic:NotifyPublishResults: Notifying MsgsPublishedEvent for " + 
+            CORE::ToString( m_publishSuccessActionIds.size() ) + " messages. First Id=" + CORE::ToString( firstId ) + " Last Id=" + CORE::ToString( lastId ) );
+
         if ( !NotifyObservers( MsgsPublishedEvent, &m_publishSuccessActionEventData ) ) return;
         m_publishSuccessActionIds.clear();
     }
     if ( !m_publishFailureActionIds.empty() )
     {
-        GUCEF_WARNING_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "StoragePubSubClientTopic:NotifyPublishResults: Notifying MsgsPublishFailureEvent for " + CORE::ToString( m_publishFailureActionIds.size() ) + " messages" );
+        UInt64 firstId = *m_publishSuccessActionEventData.GetData().begin();
+        UInt64 lastId = *m_publishSuccessActionEventData.GetData().rbegin();
+        GUCEF_WARNING_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "StoragePubSubClientTopic:NotifyPublishResults: Notifying MsgsPublishFailureEvent for " + 
+            CORE::ToString( m_publishFailureActionIds.size() ) + " messages. First Id=" + CORE::ToString( firstId ) + " Last Id=" + CORE::ToString( lastId ) );
+
         if ( !NotifyObservers( MsgsPublishFailureEvent, &m_publishFailureActionEventData ) ) return;
         m_publishFailureActionIds.clear();
     }

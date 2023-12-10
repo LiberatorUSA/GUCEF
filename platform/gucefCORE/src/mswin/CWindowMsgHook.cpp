@@ -23,6 +23,11 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+#ifndef GUCEF_MT_CSCOPEMUTEX_H
+#include "gucefMT_CScopeMutex.h"
+#define GUCEF_MT_CSCOPEMUTEX_H
+#endif /* GUCEF_MT_CSCOPEMUTEX_H ? */
+
 #include "CWindowMsgHook.h"
 
 #ifdef GUCEF_MSWIN_BUILD
@@ -69,7 +74,7 @@ CWindowMsgHook::CWindowMsgHook( void )
 CWindowMsgHook::~CWindowMsgHook()
 {GUCEF_TRACE;
 
-    s_globalDataLock.Lock();
+    MT::CScopeMutex lock( s_globalDataLock );
 
     // Make sure there are no outstanding refrences to this window
     TMappedWindowHookList::iterator i = s_list.begin();
@@ -89,8 +94,6 @@ CWindowMsgHook::~CWindowMsgHook()
 
         ++i;
     }
-
-    s_globalDataLock.Unlock();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -102,13 +105,12 @@ CWindowMsgHook::Hook( const HWND hWnd              ,
 
     if ( hWnd && ::IsWindow( hWnd ) )
     {
-        s_globalDataLock.Lock();
+        MT::CScopeMutex lock( s_globalDataLock );
     
         TMappedWindowHookList::iterator i = s_list.find( hWnd );
         if ( i != s_list.end() )
         {
             (*i).second.hookList[ this ] = userData;
-            s_globalDataLock.Unlock();
             return;
         }
 
@@ -124,8 +126,6 @@ CWindowMsgHook::Hook( const HWND hWnd              ,
         #else
         SetWindowLongPtr( hWnd, GWLP_WNDPROC, (LONG_PTR)( HookProc ) );
         #endif
-            
-        s_globalDataLock.Unlock();
     }
 }
 
@@ -137,7 +137,7 @@ CWindowMsgHook::Unhook( const HWND hWnd )
 
     if ( hWnd && ::IsWindow( hWnd ) )
     {
-        s_globalDataLock.Lock();
+        MT::CScopeMutex lock( s_globalDataLock );
     
         TMappedWindowHookList::iterator i = s_list.find( hWnd );
         if ( i != s_list.end() )
@@ -157,7 +157,6 @@ CWindowMsgHook::Unhook( const HWND hWnd )
             }
 
         }
-        s_globalDataLock.Unlock();
     }            
 }
 
@@ -188,7 +187,7 @@ CWindowMsgHook::HookProc( HWND hWnd     ,
                           LPARAM lParam )
 {GUCEF_TRACE;
 
-    s_globalDataLock.Lock();
+    MT::CScopeMutex lock( s_globalDataLock );
 
     // Iterate our hook list for each hook for this window handle
     TWindowData& windowData = s_list[ hWnd ];
@@ -215,7 +214,8 @@ CWindowMsgHook::HookProc( HWND hWnd     ,
     {
         // Store the window proc pointer on stack before releasing our lock
         WNDPROC orgWinProc = windowData.orgWinProc;    
-        s_globalDataLock.Unlock();
+        
+        lock.EarlyUnlock();
 
         // Now we call the original window procedure
         return CallWindowProc( orgWinProc ,
@@ -224,7 +224,6 @@ CWindowMsgHook::HookProc( HWND hWnd     ,
                                wParam     ,
                                lParam     );
     }
-    s_globalDataLock.Unlock();
     return 0;
 }
 

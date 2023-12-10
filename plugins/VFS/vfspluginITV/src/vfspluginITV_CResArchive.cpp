@@ -160,13 +160,13 @@ CResArchive::StoreAsFile( const CORE::CString& filepath    ,
 /*-------------------------------------------------------------------------*/
 
 void
-CResArchive::GetFileList( TStringVector& outputList           ,
-                          const VFS::CString& mountLocation   , 
-                          const VFS::CString& archiveLocation ,
-                          bool recursive                      ,
-                          bool includePathInFilename          ,
-                          const VFS::CString& nameFilter      ,
-                          UInt32 maxListEntries               ) const
+CResArchive::GetFileList( TStringVector& outputList                   ,
+                          const CORE::CString& mountLocation          , 
+                          const CORE::CString& archiveLocation        ,
+                          bool recursive                              ,
+                          bool includePathInFilename                  ,
+                          const CORE::CString::StringSet& nameFilters ,
+                          UInt32 maxListEntries                       ) const
 {GUCEF_TRACE;
 
     // This format does not support (sub)dirs
@@ -191,13 +191,13 @@ CResArchive::GetFileList( TStringVector& outputList           ,
 /*-------------------------------------------------------------------------*/
 
 void
-CResArchive::GetDirList( TStringVector& outputList           ,
-                         const VFS::CString& mountLocation   , 
-                         const VFS::CString& archiveLocation ,
-                         bool recursive                      ,
-                         bool includeParentDirInName         ,
-                         const VFS::CString& nameFilter      ,
-                         UInt32 maxListEntries               ) const
+CResArchive::GetDirList( TStringVector& outputList                   ,
+                         const CORE::CString& mountLocation          , 
+                         const CORE::CString& archiveLocation        ,
+                         bool recursive                              ,
+                         bool includeParentDirInName                 ,
+                         const CORE::CString::StringSet& nameFilters ,
+                         UInt32 maxListEntries                       ) const
 {GUCEF_TRACE;
 
     // this format does not support sub-dirs

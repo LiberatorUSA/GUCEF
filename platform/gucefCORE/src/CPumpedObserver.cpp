@@ -244,9 +244,9 @@ void
 CPumpedObserver::ClearNotifierReferencesFromMailbox( CNotifier* notifier )
 {GUCEF_TRACE;
 
-    MT::CObjectScopeLock mailboxLock( m_mailbox );
+    MT::CScopeWriterLock writer( m_mailbox.GetLock() );
 
-    MT::CTMailBox< CEvent >::TMailQueue::iterator i = m_mailbox.begin();
+    MT::CTMailBox< CEvent >::TMailQueue::iterator i = m_mailbox.begin( writer );
     while ( i != m_mailbox.end() )
     {
         CMailElement* mail = static_cast< CMailElement* >( (*i).data );
@@ -257,7 +257,7 @@ CPumpedObserver::ClearNotifierReferencesFromMailbox( CNotifier* notifier )
                 GUCEF_DELETE mail->GetCallback();
                 GUCEF_DELETE mail->GetData();
                 GUCEF_DELETE mail;
-                i = m_mailbox.erase( i );
+                i = m_mailbox.erase( writer, i );
                 continue;
             }
         }
@@ -341,14 +341,14 @@ CPumpedObserver::OnPulse( CNotifier* notifier                       ,
 
     if ( m_notificationsHolds <= 0 )
     {
-        MT::CTMailBox< CEvent >::TMailBoxMailRemovalBlock mailRemovalBlock( m_mailbox );
+        MT::CScopeReaderLock reader( m_mailbox.GetLock() );
         
         CEvent mailEventID;
         CICloneable* dataptr( GUCEF_NULL );
         CMailElement* maildata( GUCEF_NULL );
-        while ( m_mailbox.PeekMail( mailRemovalBlock ,
-                                    mailEventID      ,
-                                    &dataptr         ) )
+        while ( m_mailbox.PeekMail( reader      ,
+                                    mailEventID ,
+                                    &dataptr    ) )
         {
             try
             {
@@ -384,7 +384,11 @@ CPumpedObserver::OnPulse( CNotifier* notifier                       ,
                 return;
             }
 
-            m_mailbox.PopMail( mailRemovalBlock );
+            {
+                MT::CScopeWriterLock writer( reader );
+                m_mailbox.PopMail( writer );
+                writer.TransitionToReader( reader );
+            }
         }
     }
 
@@ -583,6 +587,42 @@ CPumpedObserver::Unlock( void ) const
 {GUCEF_TRACE;
 
     return MT::LOCKSTATUS_NOT_APPLICABLE;
+}
+
+/*-------------------------------------------------------------------------*/
+
+MT::TLockStatus 
+CPumpedObserver::NotificationLock( UInt32 lockWaitTimeoutInMs ) const
+{GUCEF_TRACE;
+
+    return m_mailbox.GetLock().Lock( lockWaitTimeoutInMs );
+}
+
+/*-------------------------------------------------------------------------*/
+
+MT::TLockStatus 
+CPumpedObserver::NotificationUnlock( void ) const
+{GUCEF_TRACE;
+
+    return m_mailbox.GetLock().Unlock();
+}
+
+/*-------------------------------------------------------------------------*/
+
+MT::TLockStatus 
+CPumpedObserver::NotificationReadOnlyLock( UInt32 lockWaitTimeoutInMs ) const
+{GUCEF_TRACE;
+
+    return m_mailbox.GetLock().ReadOnlyLock( lockWaitTimeoutInMs );
+}
+
+/*-------------------------------------------------------------------------*/
+
+MT::TLockStatus 
+CPumpedObserver::NotificationReadOnlyUnlock( void ) const
+{GUCEF_TRACE;
+
+    return m_mailbox.GetLock().ReadOnlyUnlock();
 }
 
 /*-------------------------------------------------------------------------*/

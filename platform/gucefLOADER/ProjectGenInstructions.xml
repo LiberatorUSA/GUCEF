@@ -18,7 +18,7 @@
         <ITEM NAME="../gucefCORE/include/DVOSWRAP.h" TYPE="FILE" />
         <ITEM NAME="../gucefCORE/src/DVCPPOSWRAP.cpp" TYPE="FILE" />
         <ITEM NAME="../gucefCORE/include/DVCPPOSWRAP.h" TYPE="FILE" />
-        <ITEM NAME="../gucefCORE/src/dvstrutils.c" TYPE="FILE" />
+        <ITEM NAME="../gucefCORE/src/dvstrutils.cpp" TYPE="FILE" />
         <ITEM NAME="../gucefCORE/include/dvstrutils.h" TYPE="FILE" />
         <ITEM NAME="../gucefCORE/include/gucefCORE_CString.h" TYPE="FILE" />
         <ITEM NAME="../gucefCORE/src/gucefCORE_CAsciiString.cpp" TYPE="FILE" />

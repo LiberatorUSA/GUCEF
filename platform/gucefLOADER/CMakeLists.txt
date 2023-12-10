@@ -67,7 +67,7 @@ set( SOURCE_FILES
   ../gucefCORE/src/dvcppstringutils.cpp
   ../gucefCORE/src/dvfileutils.cpp
   ../gucefCORE/src/dvmd5utils.c
-  ../gucefCORE/src/dvstrutils.c
+  ../gucefCORE/src/dvstrutils.cpp
   ../gucefCORE/src/gucefCORE_CAsciiString.cpp
   ../gucefCORE/src/gucefCORE_CDate.cpp
   ../gucefCORE/src/gucefCORE_CDateTime.cpp
@@ -147,7 +147,7 @@ if (ANDROID)
     ../gucefCORE/src/dvcppstringutils.cpp
     ../gucefCORE/src/dvfileutils.cpp
     ../gucefCORE/src/dvmd5utils.c
-    ../gucefCORE/src/dvstrutils.c
+    ../gucefCORE/src/dvstrutils.cpp
     ../gucefCORE/src/gucefCORE_CAsciiString.cpp
     ../gucefCORE/src/gucefCORE_CDate.cpp
     ../gucefCORE/src/gucefCORE_CDateTime.cpp
@@ -227,7 +227,7 @@ elseif (EMSCRIPTEN)
     ../gucefCORE/src/dvcppstringutils.cpp
     ../gucefCORE/src/dvfileutils.cpp
     ../gucefCORE/src/dvmd5utils.c
-    ../gucefCORE/src/dvstrutils.c
+    ../gucefCORE/src/dvstrutils.cpp
     ../gucefCORE/src/gucefCORE_CAsciiString.cpp
     ../gucefCORE/src/gucefCORE_CDate.cpp
     ../gucefCORE/src/gucefCORE_CDateTime.cpp
@@ -307,7 +307,7 @@ elseif (GLX)
     ../gucefCORE/src/dvcppstringutils.cpp
     ../gucefCORE/src/dvfileutils.cpp
     ../gucefCORE/src/dvmd5utils.c
-    ../gucefCORE/src/dvstrutils.c
+    ../gucefCORE/src/dvstrutils.cpp
     ../gucefCORE/src/gucefCORE_CAsciiString.cpp
     ../gucefCORE/src/gucefCORE_CDate.cpp
     ../gucefCORE/src/gucefCORE_CDateTime.cpp
@@ -387,7 +387,7 @@ elseif (GTK)
     ../gucefCORE/src/dvcppstringutils.cpp
     ../gucefCORE/src/dvfileutils.cpp
     ../gucefCORE/src/dvmd5utils.c
-    ../gucefCORE/src/dvstrutils.c
+    ../gucefCORE/src/dvstrutils.cpp
     ../gucefCORE/src/gucefCORE_CAsciiString.cpp
     ../gucefCORE/src/gucefCORE_CDate.cpp
     ../gucefCORE/src/gucefCORE_CDateTime.cpp
@@ -467,7 +467,7 @@ elseif (IOS)
     ../gucefCORE/src/dvcppstringutils.cpp
     ../gucefCORE/src/dvfileutils.cpp
     ../gucefCORE/src/dvmd5utils.c
-    ../gucefCORE/src/dvstrutils.c
+    ../gucefCORE/src/dvstrutils.cpp
     ../gucefCORE/src/gucefCORE_CAsciiString.cpp
     ../gucefCORE/src/gucefCORE_CDate.cpp
     ../gucefCORE/src/gucefCORE_CDateTime.cpp
@@ -547,7 +547,7 @@ elseif (LINUX32)
     ../gucefCORE/src/dvcppstringutils.cpp
     ../gucefCORE/src/dvfileutils.cpp
     ../gucefCORE/src/dvmd5utils.c
-    ../gucefCORE/src/dvstrutils.c
+    ../gucefCORE/src/dvstrutils.cpp
     ../gucefCORE/src/gucefCORE_CAsciiString.cpp
     ../gucefCORE/src/gucefCORE_CDate.cpp
     ../gucefCORE/src/gucefCORE_CDateTime.cpp
@@ -627,7 +627,7 @@ elseif (LINUX64)
     ../gucefCORE/src/dvcppstringutils.cpp
     ../gucefCORE/src/dvfileutils.cpp
     ../gucefCORE/src/dvmd5utils.c
-    ../gucefCORE/src/dvstrutils.c
+    ../gucefCORE/src/dvstrutils.cpp
     ../gucefCORE/src/gucefCORE_CAsciiString.cpp
     ../gucefCORE/src/gucefCORE_CDate.cpp
     ../gucefCORE/src/gucefCORE_CDateTime.cpp
@@ -707,7 +707,7 @@ elseif (NACL)
     ../gucefCORE/src/dvcppstringutils.cpp
     ../gucefCORE/src/dvfileutils.cpp
     ../gucefCORE/src/dvmd5utils.c
-    ../gucefCORE/src/dvstrutils.c
+    ../gucefCORE/src/dvstrutils.cpp
     ../gucefCORE/src/gucefCORE_CAsciiString.cpp
     ../gucefCORE/src/gucefCORE_CDate.cpp
     ../gucefCORE/src/gucefCORE_CDateTime.cpp
@@ -787,7 +787,7 @@ elseif (OSX)
     ../gucefCORE/src/dvcppstringutils.cpp
     ../gucefCORE/src/dvfileutils.cpp
     ../gucefCORE/src/dvmd5utils.c
-    ../gucefCORE/src/dvstrutils.c
+    ../gucefCORE/src/dvstrutils.cpp
     ../gucefCORE/src/gucefCORE_CAsciiString.cpp
     ../gucefCORE/src/gucefCORE_CDate.cpp
     ../gucefCORE/src/gucefCORE_CDateTime.cpp
@@ -867,7 +867,7 @@ elseif (POSIX)
     ../gucefCORE/src/dvcppstringutils.cpp
     ../gucefCORE/src/dvfileutils.cpp
     ../gucefCORE/src/dvmd5utils.c
-    ../gucefCORE/src/dvstrutils.c
+    ../gucefCORE/src/dvstrutils.cpp
     ../gucefCORE/src/gucefCORE_CAsciiString.cpp
     ../gucefCORE/src/gucefCORE_CDate.cpp
     ../gucefCORE/src/gucefCORE_CDateTime.cpp
@@ -947,7 +947,7 @@ elseif (SDL)
     ../gucefCORE/src/dvcppstringutils.cpp
     ../gucefCORE/src/dvfileutils.cpp
     ../gucefCORE/src/dvmd5utils.c
-    ../gucefCORE/src/dvstrutils.c
+    ../gucefCORE/src/dvstrutils.cpp
     ../gucefCORE/src/gucefCORE_CAsciiString.cpp
     ../gucefCORE/src/gucefCORE_CDate.cpp
     ../gucefCORE/src/gucefCORE_CDateTime.cpp
@@ -1027,7 +1027,7 @@ elseif (SYMBIAN)
     ../gucefCORE/src/dvcppstringutils.cpp
     ../gucefCORE/src/dvfileutils.cpp
     ../gucefCORE/src/dvmd5utils.c
-    ../gucefCORE/src/dvstrutils.c
+    ../gucefCORE/src/dvstrutils.cpp
     ../gucefCORE/src/gucefCORE_CAsciiString.cpp
     ../gucefCORE/src/gucefCORE_CDate.cpp
     ../gucefCORE/src/gucefCORE_CDateTime.cpp
@@ -1107,7 +1107,7 @@ elseif (UNIX)
     ../gucefCORE/src/dvcppstringutils.cpp
     ../gucefCORE/src/dvfileutils.cpp
     ../gucefCORE/src/dvmd5utils.c
-    ../gucefCORE/src/dvstrutils.c
+    ../gucefCORE/src/dvstrutils.cpp
     ../gucefCORE/src/gucefCORE_CAsciiString.cpp
     ../gucefCORE/src/gucefCORE_CDate.cpp
     ../gucefCORE/src/gucefCORE_CDateTime.cpp
@@ -1189,7 +1189,7 @@ elseif (WIN32)
     ../gucefCORE/src/dvcppstringutils.cpp
     ../gucefCORE/src/dvfileutils.cpp
     ../gucefCORE/src/dvmd5utils.c
-    ../gucefCORE/src/dvstrutils.c
+    ../gucefCORE/src/dvstrutils.cpp
     ../gucefCORE/src/gucefCORE_CAsciiString.cpp
     ../gucefCORE/src/gucefCORE_CDate.cpp
     ../gucefCORE/src/gucefCORE_CDateTime.cpp
@@ -1273,7 +1273,7 @@ elseif (WIN64)
     ../gucefCORE/src/dvcppstringutils.cpp
     ../gucefCORE/src/dvfileutils.cpp
     ../gucefCORE/src/dvmd5utils.c
-    ../gucefCORE/src/dvstrutils.c
+    ../gucefCORE/src/dvstrutils.cpp
     ../gucefCORE/src/gucefCORE_CAsciiString.cpp
     ../gucefCORE/src/gucefCORE_CDate.cpp
     ../gucefCORE/src/gucefCORE_CDateTime.cpp

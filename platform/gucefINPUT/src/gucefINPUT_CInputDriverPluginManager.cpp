@@ -96,7 +96,7 @@ CInputDriverPluginManager::RegisterPlugin( void* modulePtr                      
 
 /*-------------------------------------------------------------------------*/
 
-void
+bool
 CInputDriverPluginManager::UnregisterPlugin( CORE::TPluginPtr plugin )
 {GUCEF_TRACE;
 
@@ -106,6 +106,8 @@ CInputDriverPluginManager::UnregisterPlugin( CORE::TPluginPtr plugin )
 
     // Now unlink the plugin
     pointerToPlugin->Unlink();
+
+    return true;
 }
     
 /*-------------------------------------------------------------------------//

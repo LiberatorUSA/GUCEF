@@ -51,7 +51,6 @@ CTSGNotifier::CTSGNotifier( bool allowSameThreadEventsToFlowThrough ,
                             bool forwardAllNotifications            )
     : CNotifier()                    
     , m_dataLock()
-    , m_notificationLock()
     , m_tsgObserver( CCoreGlobal::Instance()->GetPulseGenerator(), allowSameThreadEventsToFlowThrough )
     , m_forwardAllNotifications( forwardAllNotifications )
 {GUCEF_TRACE;
@@ -66,7 +65,6 @@ CTSGNotifier::CTSGNotifier( PulseGeneratorPtr pulsGenerator         ,
                             bool forwardAllNotifications            )
     : CNotifier()                    
     , m_dataLock()
-    , m_notificationLock()
     , m_tsgObserver( pulsGenerator, allowSameThreadEventsToFlowThrough )
     , m_forwardAllNotifications( forwardAllNotifications )
 {GUCEF_TRACE;
@@ -79,7 +77,6 @@ CTSGNotifier::CTSGNotifier( PulseGeneratorPtr pulsGenerator         ,
 CTSGNotifier::CTSGNotifier( const CTSGNotifier& src )
     : CNotifier( src )                   
     , m_dataLock()
-    , m_notificationLock()
     , m_tsgObserver( src.m_tsgObserver )
     , m_forwardAllNotifications( src.m_forwardAllNotifications )
 {GUCEF_TRACE;
@@ -294,7 +291,7 @@ MT::TLockStatus
 CTSGNotifier::NotificationLock( UInt32 lockWaitTimeoutInMs ) const
 {GUCEF_TRACE; 
 
-    return m_notificationLock.Lock( lockWaitTimeoutInMs );
+    return m_tsgObserver.NotificationLock( lockWaitTimeoutInMs );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -303,7 +300,7 @@ MT::TLockStatus
 CTSGNotifier::NotificationUnlock( void ) const
 {GUCEF_TRACE;
 
-    return m_notificationLock.Unlock();
+    return m_tsgObserver.NotificationUnlock();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -312,7 +309,7 @@ MT::TLockStatus
 CTSGNotifier::NotificationReadOnlyLock( UInt32 lockWaitTimeoutInMs ) const 
 {GUCEF_TRACE; 
 
-    return m_notificationLock.Lock( lockWaitTimeoutInMs );
+    return m_tsgObserver.NotificationReadOnlyLock( lockWaitTimeoutInMs );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -321,7 +318,7 @@ MT::TLockStatus
 CTSGNotifier::NotificationReadOnlyUnlock( void ) const 
 {GUCEF_TRACE;
 
-    return m_notificationLock.Unlock();
+    return m_tsgObserver.NotificationReadOnlyUnlock();
 }
 
 /*-------------------------------------------------------------------------*/

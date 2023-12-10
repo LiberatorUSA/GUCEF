@@ -53,7 +53,8 @@ CLoggingTask::CLoggingTask( void )
       CILogger()              ,
       m_loggerBackend( NULL ) ,
       m_mailbox()             ,
-      m_mailList()
+      m_mailList()            ,
+      m_minLogLevel( 0 )
 {GUCEF_TRACE;
 
     m_mailList.reserve( MAXMAILITEMSPERCYCLE );
@@ -86,9 +87,8 @@ void
 CLoggingTask::SetLoggerBackend( CILogger& loggerBackend )
 {GUCEF_TRACE;
 
-    Lock();
+    MT::CObjectScopeLock lock( this );
     m_loggerBackend = &loggerBackend;
-    Unlock();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -319,7 +319,7 @@ MT::TLockStatus
 CLoggingTask::Lock( UInt32 lockWaitTimeoutInMs ) const
 {GUCEF_TRACE;
 
-    return m_mailbox.DoLock( lockWaitTimeoutInMs );
+    return MT::CReadWriteLock::RwLockStateToLockStatus( m_mailbox.GetLock().WriterStart( lockWaitTimeoutInMs ) );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -328,7 +328,7 @@ MT::TLockStatus
 CLoggingTask::Unlock( void ) const
 {GUCEF_TRACE;
 
-    return m_mailbox.DoUnlock();
+    return MT::CReadWriteLock::RwLockStateToLockStatus( m_mailbox.GetLock().WriterStop() ); 
 }
 
 /*-------------------------------------------------------------------------*/

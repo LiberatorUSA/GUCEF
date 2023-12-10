@@ -123,8 +123,8 @@ bool
 CFormEx::LoadLayoutUsingVfs( const CString& filename )
 {GUCEF_TRACE;
 
-    VFS::CVFS::CVFSHandlePtr file = VFS::CVfsGlobal::Instance()->GetVfs().GetFile( filename );
-    if ( file )
+    VFS::TBasicVfsResourcePtr file = VFS::CVfsGlobal::Instance()->GetVfs().GetFile( filename );
+    if ( !file.IsNULL() )
     {
         if ( LoadLayout( *file->GetAccess() ) )
         {

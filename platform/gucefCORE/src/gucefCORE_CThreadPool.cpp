@@ -431,10 +431,10 @@ CThreadPool::RemoveConsumer( const UInt32 taskID )
     UInt32 queueItemsRemoved = 0;
     bool taskConsumerUnlinked = false;
 
-    Lock();
-    m_taskQueue.DoLock();
+    MT::CObjectScopeLock lock( this );
+    MT::CScopeWriterLock writer( m_taskQueue.GetLock() );
 
-    TTaskMailbox::iterator i = m_taskQueue.begin();
+    TTaskMailbox::iterator i = m_taskQueue.begin( writer );
     while ( i != m_taskQueue.end() )
     {
         TTaskMailbox::TMailElement& mailElement = (*i);
@@ -443,14 +443,12 @@ CThreadPool::RemoveConsumer( const UInt32 taskID )
         CTaskConsumerPtr& consumer = queueItem->GetTaskConsumer();
         if ( !consumer.IsNULL() && taskID == consumer->GetTaskId() )
         {
-            m_taskQueue.erase( i );
-            i = m_taskQueue.begin();
+            m_taskQueue.erase( writer, i );
+            i = m_taskQueue.begin( writer );
             continue;
         }
         ++i;
     }
-
-    m_taskQueue.DoUnlock();
 
     TTaskConsumerMap::iterator n = m_taskConsumerMap.find( taskID );
     if ( n != m_taskConsumerMap.end() )
@@ -459,7 +457,8 @@ CThreadPool::RemoveConsumer( const UInt32 taskID )
         taskConsumerUnlinked = true;
     }
 
-    Unlock();
+    writer.EarlyUnlock();
+    lock.EarlyUnlock();
 
     GUCEF_SYSTEM_LOG( LOGLEVEL_BELOW_NORMAL, "ThreadPool(" + m_poolName + "): Removing refrences to task ID " + ToString( taskID ) +
         ". This task had " + ToString( queueItemsRemoved ) + " queued work items. Unlinked consumer: " + ToString( taskConsumerUnlinked ) );
@@ -1256,7 +1255,8 @@ CThreadPool::PauseTask( const UInt32 taskID          ,
                         const bool okIfTaskIsUnknown )
 {GUCEF_TRACE;
 
-    Lock();
+    MT::CObjectScopeLock lock( this );
+
     TTaskConsumerMap::iterator i = m_taskConsumerMap.find( taskID );
     if ( i != m_taskConsumerMap.end() )
     {
@@ -1267,7 +1267,7 @@ CThreadPool::PauseTask( const UInt32 taskID          ,
             if ( !delegator.IsNULL() )
             {
                 delegator->Pause( force );
-                Unlock();
+                lock.EarlyUnlock();
 
                 GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "ThreadPool(" + m_poolName + "): Paused task with ID " + UInt32ToString( taskID ) );
                 NotifyObserversFromThread( TaskPausedEvent );
@@ -1276,17 +1276,14 @@ CThreadPool::PauseTask( const UInt32 taskID          ,
             else
             {
                 // If a consumer does not have a delegator then it hasnt started yet
-                Unlock();
                 return true;
             }
         }
     }
     else
     {
-        Unlock();
         return okIfTaskIsUnknown;
     }
-    Unlock();
     return true;
 }
 

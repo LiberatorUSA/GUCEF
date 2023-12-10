@@ -86,7 +86,7 @@ class GUCEF_GUI_PUBLIC_CPP CGUIManager : public CORE::CObservingNotifier
     
     public:
     
-    typedef CFormFactory::TConcreteFactory TConcreteFormFactory;
+    typedef CFormFactory::TFactory       TConcreteFormFactory;
     typedef CString::StringSet TStringSet;
     typedef TStringSet TFormTypeSet;
     typedef TStringSet TDriverNameSet;

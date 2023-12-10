@@ -96,7 +96,7 @@ class GUCEF_GUI_PUBLIC_CPP CFormBackend
 
 /*-------------------------------------------------------------------------*/
 
-typedef CORE::CTFactoryBase< CFormBackend > CFormBackendFactory;
+typedef CORE::CTFactoryBase< CFormBackend, MT::CMutex > CFormBackendFactory;
 
 /*-------------------------------------------------------------------------//
 //                                                                         //

@@ -74,31 +74,31 @@ class CZIPArchive : public VFS::CArchive
     
     virtual ~CZIPArchive();
     
-    virtual CVFSHandlePtr GetFile( const VFS::CString& file          ,
-                                   const char* mode = "rb"           ,
-                                   const VFS::UInt32 memLoadSize = 0 ,
-                                   const bool overwrite = false      ) GUCEF_VIRTUAL_OVERRIDE;
+    virtual VFS::TBasicVfsResourcePtr GetFile( const VFS::CString& file          ,
+                                               const char* mode = "rb"           ,
+                                               const VFS::UInt32 memLoadSize = 0 ,
+                                               const bool overwrite = false      ) GUCEF_VIRTUAL_OVERRIDE;
 
     virtual bool StoreAsFile( const CORE::CString& filepath    ,
                               const CORE::CDynamicBuffer& data ,
                               const CORE::UInt64 offset        ,
                               const bool overwrite             ) GUCEF_VIRTUAL_OVERRIDE;
                                   
-    virtual void GetFileList( TStringVector& outputList                            ,
-                              const VFS::CString& mountLocation                    , 
-                              const VFS::CString& archiveLocation                  ,
-                              bool recursive = false                               ,
-                              bool includePathInFilename = false                   ,
-                              const VFS::CString& nameFilter = VFS::CString::Empty ,
-                              UInt32 maxListEntries = GUCEF_UINT16MAX              ) const GUCEF_VIRTUAL_OVERRIDE;
+    virtual void GetFileList( TStringVector& outputList                                                   ,
+                              const CORE::CString& mountLocation                                          , 
+                              const CORE::CString& archiveLocation                                        ,
+                              bool recursive = false                                                      ,
+                              bool includePathInFilename = false                                          ,
+                              const CORE::CString::StringSet& nameFilters = CORE::CString::EmptyStringSet ,
+                              UInt32 maxListEntries = GUCEF_UINT16MAX                                     ) const GUCEF_VIRTUAL_OVERRIDE;
 
-    virtual void GetDirList( TStringVector& outputList                            ,
-                             const VFS::CString& mountLocation                    , 
-                             const VFS::CString& archiveLocation                  ,
-                             bool recursive = false                               ,
-                             bool includeParentDirInName = false                  ,
-                             const VFS::CString& nameFilter = VFS::CString::Empty ,
-                             UInt32 maxListEntries = GUCEF_UINT16MAX              ) const GUCEF_VIRTUAL_OVERRIDE;
+    virtual void GetDirList( TStringVector& outputList                                                   ,
+                             const CORE::CString& mountLocation                                          , 
+                             const CORE::CString& archiveLocation                                        ,
+                             bool recursive = false                                                      ,
+                             bool includeParentDirInName = false                                         ,
+                             const CORE::CString::StringSet& nameFilters = CORE::CString::EmptyStringSet ,
+                             UInt32 maxListEntries = GUCEF_UINT16MAX                                     ) const GUCEF_VIRTUAL_OVERRIDE;
     
     virtual bool DeleteFile( const VFS::CString& filePath ) GUCEF_VIRTUAL_OVERRIDE;
     
@@ -125,9 +125,9 @@ class CZIPArchive : public VFS::CArchive
     
     virtual bool LoadArchive( const VFS::CArchiveSettings& settings ) GUCEF_VIRTUAL_OVERRIDE;
                               
-    virtual bool LoadArchive( const VFS::CString& archiveName ,
-                              CVFSHandlePtr vfsResource       ,
-                              const bool writeableRequest     ) GUCEF_VIRTUAL_OVERRIDE;
+    virtual bool LoadArchive( const VFS::CString& archiveName       ,
+                              VFS::TBasicVfsResourcePtr vfsResource ,
+                              const bool writeableRequest           ) GUCEF_VIRTUAL_OVERRIDE;
     
     virtual bool UnloadArchive( void ) GUCEF_VIRTUAL_OVERRIDE;
     
@@ -152,7 +152,7 @@ class CZIPArchive : public VFS::CArchive
     void CheckZzipError( int zzipError                 ,
                          const VFS::CString& operation ) const;
 
-    CORE::CIOAccess*
+    CORE::IOAccessPtr
     LoadFile( const VFS::CString& file      ,
               const VFS::UInt32 memLoadSize ) const;
     

@@ -61,7 +61,7 @@ namespace VP {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-typedef CORE::CTFactory< VFS::CArchive, CVPArchive > TVPArchiveFactory;
+typedef CORE::CTFactory< VFS::CArchive, CVPArchive, MT::CMutex > TVPArchiveFactory;
 
 /*-------------------------------------------------------------------------//
 //                                                                         //

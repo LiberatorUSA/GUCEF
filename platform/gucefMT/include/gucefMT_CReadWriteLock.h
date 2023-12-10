@@ -187,8 +187,6 @@ class GUCEF_MT_PUBLIC_CPP CReadWriteLock : public CILockable
 
     static TLockStatus RwLockStateToLockStatus( TRWLockStates state );
 
-    protected:
-
     /**
      *  Should be implemented by the derived classes such that all interactions with the class
      *  member functions and variables are protected against multiple threads accessing them

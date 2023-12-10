@@ -48,7 +48,7 @@ CScopeReaderLock::CScopeReaderLock( const CReadWriteLock& rwLock, UInt32 lockWai
 {GUCEF_TRACE;
 
     assert( m_rwLock );
-    m_lockState = m_rwLock->ReaderStart();
+    m_lockState = m_rwLock->ReaderStart( lockWaitTimeoutInMs );
     m_isReadLocked = TRWLockStates::RWLOCK_OPERATION_SUCCESS == m_lockState;
 }
 
@@ -60,7 +60,12 @@ CScopeReaderLock::CScopeReaderLock( CScopeWriterLock& writerToTransition, UInt32
     , m_isReadLocked( false )
 {GUCEF_TRACE;
 
-    writerToTransition.TransitionToReader( *this );
+    if ( !writerToTransition.TransitionToReader( *this, lockWaitTimeoutInMs ) )
+    {
+        // Not entirely accurate to make it a timeout exception since that is not per se the reason 
+        // but we should not allow the scope to progress
+        throw timeout_exception();
+    }
 }
 
 /*--------------------------------------------------------------------------*/
@@ -131,7 +136,7 @@ CScopeReaderLock::TransitionToWriter( CScopeWriterLock& targetWriter, UInt32 loc
         {
             do
             {
-                m_lockState = m_rwLock->TransitionReaderToWriter();
+                m_lockState = m_rwLock->TransitionReaderToWriter( lockWaitTimeoutInMs );
                 m_isReadLocked = !( TRWLockStates::RWLOCK_OPERATION_SUCCESS == m_lockState );
                 if ( !m_isReadLocked )
                 {
@@ -146,12 +151,21 @@ CScopeReaderLock::TransitionToWriter( CScopeWriterLock& targetWriter, UInt32 loc
         else
         {
             targetWriter.m_rwLock = m_rwLock;
-            targetWriter.m_lockState = m_rwLock->WriterStart();
+            targetWriter.m_lockState = m_rwLock->WriterStart( lockWaitTimeoutInMs );
             targetWriter.m_isWriteLocked = TRWLockStates::RWLOCK_OPERATION_SUCCESS == m_lockState;
             return true;
         }
     }
     return false;
+}
+
+/*--------------------------------------------------------------------------*/
+
+const CReadWriteLock* 
+CScopeReaderLock::GetReadWriteLock( void ) const
+{GUCEF_TRACE;
+    
+    return m_rwLock; 
 }
 
 /*--------------------------------------------------------------------------*/
@@ -165,7 +179,7 @@ CScopeWriterLock::CScopeWriterLock( const CReadWriteLock& rwLock, UInt32 lockWai
     assert( m_rwLock );
     do
     {
-        m_lockState = m_rwLock->WriterStart();
+        m_lockState = m_rwLock->WriterStart( lockWaitTimeoutInMs );
         m_isWriteLocked = TRWLockStates::RWLOCK_OPERATION_SUCCESS == m_lockState;
     }
     while ( !m_isWriteLocked );
@@ -179,7 +193,12 @@ CScopeWriterLock::CScopeWriterLock( CScopeReaderLock& readerToTransition, UInt32
     , m_isWriteLocked( false )
 {GUCEF_TRACE;
 
-    readerToTransition.TransitionToWriter( *this );
+    if ( !readerToTransition.TransitionToWriter( *this, lockWaitTimeoutInMs ) )
+    {
+        // Not entirely accurate to make it a timeout exception since that is not per se the reason 
+        // but we should not allow the scope to progress
+        throw timeout_exception();
+    }
 }
 
 /*--------------------------------------------------------------------------*/
@@ -264,7 +283,7 @@ CScopeWriterLock::TransitionToReader( CScopeReaderLock& targetReader, UInt32 loc
         {
             do
             {
-                m_lockState = m_rwLock->TransitionWriterToReader();
+                m_lockState = m_rwLock->TransitionWriterToReader( lockWaitTimeoutInMs );
                 m_isWriteLocked = !( TRWLockStates::RWLOCK_OPERATION_SUCCESS == m_lockState );
             
                 if ( !m_isWriteLocked && ( TRWLockStates::RWLOCK_OPERATION_SUCCESS == m_lockState ) )
@@ -280,12 +299,21 @@ CScopeWriterLock::TransitionToReader( CScopeReaderLock& targetReader, UInt32 loc
         else
         {
             targetReader.m_rwLock = m_rwLock;
-            targetReader.m_lockState = m_rwLock->ReaderStart();
+            targetReader.m_lockState = m_rwLock->ReaderStart( lockWaitTimeoutInMs );
             targetReader.m_isReadLocked = TRWLockStates::RWLOCK_OPERATION_SUCCESS == m_lockState;
             return true;
         }
     }
     return false;
+}
+
+/*--------------------------------------------------------------------------*/
+
+const CReadWriteLock* 
+CScopeWriterLock::GetReadWriteLock( void ) const
+{GUCEF_TRACE;
+    
+    return m_rwLock; 
 }
 
 /*-------------------------------------------------------------------------//
