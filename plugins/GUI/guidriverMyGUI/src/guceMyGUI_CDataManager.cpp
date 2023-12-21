@@ -111,8 +111,8 @@ CDataManager::getData( const std::string& name )
     CORE::CString pathToResource = m_guiDataRoot;
     CORE::AppendToPath( pathToResource, name.c_str() );
 
-    VFS::CVFS::CVFSHandlePtr filePtr = VFS::CVfsGlobal::Instance()->GetVfs().GetFile( pathToResource );
-    if ( NULL != filePtr )
+    VFS::TBasicVfsResourcePtr filePtr = VFS::CVfsGlobal::Instance()->GetVfs().GetFile( pathToResource );
+    if ( !filePtr.IsNULL() )
     {
         return new CVfsHandleToMyGUIDataStreamAdapter( filePtr );
     }

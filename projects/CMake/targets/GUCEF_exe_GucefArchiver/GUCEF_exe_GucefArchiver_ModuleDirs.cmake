@@ -8,6 +8,7 @@
 # free to make use of it in any way you like.
 #-------------------------------------------------------------------
 #
+add_subdirectory( ${CMAKE_CURRENT_SOURCE_DIR}/../../../../dependencies/DVPACKSYS ${CMAKE_BINARY_DIR}/DVPACKSYS )
 add_subdirectory( ${CMAKE_CURRENT_SOURCE_DIR}/../../../../dependencies/aws-cpp-sdk-core ${CMAKE_BINARY_DIR}/aws-cpp-sdk-core )
 add_subdirectory( ${CMAKE_CURRENT_SOURCE_DIR}/../../../../dependencies/aws-cpp-sdk-s3 ${CMAKE_BINARY_DIR}/aws-cpp-sdk-s3 )
 add_subdirectory( ${CMAKE_CURRENT_SOURCE_DIR}/../../../../dependencies/aws-crt-cpp ${CMAKE_BINARY_DIR}/aws-crt-cpp )
@@ -29,7 +30,9 @@ add_subdirectory( ${CMAKE_CURRENT_SOURCE_DIR}/../../../../dependencies/libparsif
 add_subdirectory( ${CMAKE_CURRENT_SOURCE_DIR}/../../../../dependencies/libyaml ${CMAKE_BINARY_DIR}/yaml )
 add_subdirectory( ${CMAKE_CURRENT_SOURCE_DIR}/../../../../dependencies/stbrumme-hash-library ${CMAKE_BINARY_DIR}/stbrumme-hash )
 add_subdirectory( ${CMAKE_CURRENT_SOURCE_DIR}/../../../../dependencies/zlib ${CMAKE_BINARY_DIR}/zlib )
+add_subdirectory( ${CMAKE_CURRENT_SOURCE_DIR}/../../../../dependencies/zziplib ${CMAKE_BINARY_DIR}/zziplib )
 add_subdirectory( ${CMAKE_CURRENT_SOURCE_DIR}/../../../../platform/gucefCORE ${CMAKE_BINARY_DIR}/gucefCORE )
+add_subdirectory( ${CMAKE_CURRENT_SOURCE_DIR}/../../../../platform/gucefKAITAI ${CMAKE_BINARY_DIR}/gucefKAITAI )
 add_subdirectory( ${CMAKE_CURRENT_SOURCE_DIR}/../../../../platform/gucefMT ${CMAKE_BINARY_DIR}/gucefMT )
 add_subdirectory( ${CMAKE_CURRENT_SOURCE_DIR}/../../../../platform/gucefVFS ${CMAKE_BINARY_DIR}/gucefVFS )
 add_subdirectory( ${CMAKE_CURRENT_SOURCE_DIR}/../../../../plugins/CORE/codecspluginSTBRUMMEHASH ${CMAKE_BINARY_DIR}/codecspluginSTBRUMMEHASH )
@@ -39,4 +42,8 @@ add_subdirectory( ${CMAKE_CURRENT_SOURCE_DIR}/../../../../plugins/CORE/dstoreplu
 add_subdirectory( ${CMAKE_CURRENT_SOURCE_DIR}/../../../../plugins/CORE/dstorepluginYAML ${CMAKE_BINARY_DIR}/dstorepluginYAML )
 add_subdirectory( ${CMAKE_CURRENT_SOURCE_DIR}/../../../../plugins/SHARED/pluginglueAWSSDK ${CMAKE_BINARY_DIR}/pluginglueAWSSDK )
 add_subdirectory( ${CMAKE_CURRENT_SOURCE_DIR}/../../../../plugins/VFS/vfspluginAWSS3 ${CMAKE_BINARY_DIR}/vfspluginAWSS3 )
+add_subdirectory( ${CMAKE_CURRENT_SOURCE_DIR}/../../../../plugins/VFS/vfspluginDVP ${CMAKE_BINARY_DIR}/vfspluginDVP )
+add_subdirectory( ${CMAKE_CURRENT_SOURCE_DIR}/../../../../plugins/VFS/vfspluginITV ${CMAKE_BINARY_DIR}/vfspluginITV )
+add_subdirectory( ${CMAKE_CURRENT_SOURCE_DIR}/../../../../plugins/VFS/vfspluginVP ${CMAKE_BINARY_DIR}/vfspluginVP )
+add_subdirectory( ${CMAKE_CURRENT_SOURCE_DIR}/../../../../plugins/VFS/vfspluginZIP ${CMAKE_BINARY_DIR}/vfspluginZIP )
 add_subdirectory( ${CMAKE_CURRENT_SOURCE_DIR}/../../../../tools/GucefArchiver ${CMAKE_BINARY_DIR}/GucefArchiver )

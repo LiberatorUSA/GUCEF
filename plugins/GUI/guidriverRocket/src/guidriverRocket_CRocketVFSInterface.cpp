@@ -91,8 +91,8 @@ CRocketVFSInterface::Open( const Rocket::Core::String& path )
 {GUCEF_TRACE;
 
     Rocket::Core::FileHandle openSlot = FindOpenHandleSlot();
-    VFS::CVFS::CVFSHandlePtr vfsFileHandle = m_vfs->GetFile( path.CString() );
-    if ( NULL != vfsFileHandle )
+    VFS::TBasicVfsResourcePtr vfsFileHandle = m_vfs->GetFile( path.CString() );
+    if ( !vfsFileHandle.IsNULL() )
     {
         // Set the VFS on the open slot which is now in use
         m_fileHandles[ openSlot ] = vfsFileHandle;
@@ -107,8 +107,8 @@ void
 CRocketVFSInterface::Close( Rocket::Core::FileHandle file )
 {GUCEF_TRACE;
 
-    VFS::CVFS::CVFSHandlePtr vfsFile = m_fileHandles[ file ];
-    if ( NULL != vfsFile )
+    VFS::TBasicVfsResourcePtr vfsFile = m_fileHandles[ file ];
+    if ( !vfsFile.IsNULL() )
     {
         vfsFile->GetAccess()->Close();
     }
@@ -121,8 +121,8 @@ size_t
 CRocketVFSInterface::Read( void* buffer, size_t size, Rocket::Core::FileHandle file )
 {GUCEF_TRACE;
 
-    VFS::CVFS::CVFSHandlePtr vfsFile = m_fileHandles[ file ];
-    if ( NULL != vfsFile )
+    VFS::TBasicVfsResourcePtr vfsFile = m_fileHandles[ file ];
+    if ( !vfsFile.IsNULL() )
     {
         return vfsFile->GetAccess()->Read( buffer, 1, size );
     }
@@ -140,8 +140,8 @@ bool
 CRocketVFSInterface::Seek( Rocket::Core::FileHandle file, long offset, int origin )
 {GUCEF_TRACE;
 
-    VFS::CVFS::CVFSHandlePtr vfsFile = m_fileHandles[ file ];
-    if ( NULL != vfsFile )
+    VFS::TBasicVfsResourcePtr vfsFile = m_fileHandles[ file ];
+    if ( !vfsFile.IsNULL() )
     {
         return vfsFile->GetAccess()->Seek( offset, origin ) == 0;
     }
@@ -159,8 +159,8 @@ size_t
 CRocketVFSInterface::Tell( Rocket::Core::FileHandle file )
 {GUCEF_TRACE;
 
-    VFS::CVFS::CVFSHandlePtr vfsFile = m_fileHandles[ file ];
-    if ( NULL != vfsFile )
+    VFS::TBasicVfsResourcePtr vfsFile = m_fileHandles[ file ];
+    if ( !vfsFile.IsNULL() )
     {
         return vfsFile->GetAccess()->Tell();
     }

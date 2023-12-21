@@ -1,6 +1,6 @@
 /*
  *  gucefCORE: GUCEF module providing O/S abstraction and generic solutions
- *  Copyright (C) 2002 - 2007.  Dinand Vanvelzen
+ *  Copyright (C) 2002 - 2008.  Dinand Vanvelzen
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public
@@ -17,8 +17,8 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
-#ifndef GUIDRIVEROGRE_COGREPLUGINMANAGER_H
-#define GUIDRIVEROGRE_COGREPLUGINMANAGER_H
+#ifndef GUCEF_CORE_CICALLBACKSTYLEPARSER_H
+#define GUCEF_CORE_CICALLBACKSTYLEPARSER_H
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -26,22 +26,20 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#include <vector>
+#ifndef GUCEF_CORE_MACROS_H
+#include "gucefCORE_macros.h"
+#define GUCEF_CORE_MACROS_H
+#endif /* GUCEF_CORE_MACROS_H ? */
 
-#ifndef GUCEF_CORE_CPLUGINMANAGER_H
-#include "CPluginManager.h"
-#define GUCEF_CORE_CPLUGINMANAGER_H
-#endif /* GUCEF_CORE_CPLUGINMANAGER_H ? */
+#ifndef GUCEF_CORE_CSTRING_H
+#include "gucefCORE_CString.h"
+#define GUCEF_CORE_CSTRING_H
+#endif /* GUCEF_CORE_CSTRING_H ? */
 
-#ifndef GUCEF_CORE_CICONFIGURABLE_H
-#include "CIConfigurable.h"
-#define GUCEF_CORE_CICONFIGURABLE_H
-#endif /* GUCEF_CORE_CICONFIGURABLE_H ? */
-
-#ifndef GUCEF_CORE_CVALUELIST_H
-#include "CValueList.h"
-#define GUCEF_CORE_CVALUELIST_H
-#endif /* GUCEF_CORE_CVALUELIST_H ? */
+#ifndef GUCEF_CORE_CVARIANT_H
+#include "gucefCORE_CVariant.h"
+#define GUCEF_CORE_CVARIANT_H
+#endif /* GUCEF_CORE_CVARIANT_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -50,7 +48,7 @@
 //-------------------------------------------------------------------------*/
 
 namespace GUCEF {
-namespace GUIDRIVEROGRE {
+namespace CORE {
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -58,35 +56,36 @@ namespace GUIDRIVEROGRE {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-/**
- *  Plugin manager for Ogre plugins
- */
-class COgrePluginManager : public CORE::CPluginManager
+class GUCEF_CORE_PUBLIC_CPP CICallbackStyleParser
 {
     public:
 
-    virtual CORE::CString GetPluginType( void ) const;
+    virtual void OnObjectStart( void ) = 0;
+    virtual void OnObjectEnd( void ) = 0;
 
-    protected:
+    virtual void OnArrayStart( void ) = 0;
+    virtual void OnArrayEnd( void ) = 0;
 
-    virtual CORE::TPluginPtr RegisterPlugin( void* modulePtr                         ,
-                                             CORE::TPluginMetaDataPtr pluginMetaData );
+    virtual void OnMapStart( void ) = 0;
+    virtual void OnMapEnd( void ) = 0;
 
-    virtual bool UnregisterPlugin( CORE::TPluginPtr plugin );
+    virtual void OnSetStart( void ) = 0;
+    virtual void OnSetEnd( void ) = 0;
 
-    public:
+    virtual void OnKeyValueStart( void ) = 0;
+    virtual void OnKeyValueEnd( void ) = 0;
+
+    virtual void OnName( const CString& name ) = 0;
+    virtual void OnCommentary( const CString& name ) = 0;
+    virtual void OnCommentaryReference( const CString& name ) = 0;
+    virtual void OnDocumentation( const CString& name ) = 0;
+    virtual void OnDocumentationReference( const CString& name ) = 0;
     
-    COgrePluginManager( void );
+    virtual void OnValue( const CVariant& value ) = 0;
 
-    virtual ~COgrePluginManager();
-
-    private:
+    virtual ~CICallbackStyleParser();
     
-    COgrePluginManager( const COgrePluginManager& src );
-
-    COgrePluginManager& operator=( const COgrePluginManager& src );
 };
-
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -94,20 +93,9 @@ class COgrePluginManager : public CORE::CPluginManager
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-}; /* namespace GUIDRIVEROGRE */
+}; /* namespace CORE */
 }; /* namespace GUCEF */
 
 /*-------------------------------------------------------------------------*/
 
-#endif /* GUIDRIVEROGRE_COGREPLUGINMANAGER_H ? */
-
-/*-------------------------------------------------------------------------//
-//                                                                         //
-//      Info & Changes                                                     //
-//                                                                         //
-//-------------------------------------------------------------------------//
-
-- 27-11-2004 :
-        - Dinand: Initial implementation
-
-----------------------------------------------------------------------------*/
+#endif /* GUCEF_CORE_CICALLBACKSTYLEPARSER_H ? */

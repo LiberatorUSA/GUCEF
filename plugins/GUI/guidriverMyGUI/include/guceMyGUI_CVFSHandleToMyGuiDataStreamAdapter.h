@@ -56,7 +56,7 @@ class CVfsHandleToMyGUIDataStreamAdapter : public CIOAccessToMyGUIDataStreamAdap
 {
     public:
 
-    CVfsHandleToMyGUIDataStreamAdapter( GUCEF::VFS::CVFS::CVFSHandlePtr filePtr );
+    CVfsHandleToMyGUIDataStreamAdapter( GUCEF::VFS::TBasicVfsResourcePtr filePtr );
 
     virtual ~CVfsHandleToMyGUIDataStreamAdapter();
 
@@ -67,7 +67,7 @@ class CVfsHandleToMyGUIDataStreamAdapter : public CIOAccessToMyGUIDataStreamAdap
 
     private:
 
-    GUCEF::VFS::CVFS::CVFSHandlePtr m_filePtr;
+    GUCEF::VFS::TBasicVfsResourcePtr m_filePtr;
 };
 
 /*-------------------------------------------------------------------------//

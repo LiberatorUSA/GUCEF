@@ -40,7 +40,7 @@ namespace MYGUI {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-CVfsHandleToMyGUIDataStreamAdapter::CVfsHandleToMyGUIDataStreamAdapter( GUCEF::VFS::CVFS::CVFSHandlePtr filePtr )
+CVfsHandleToMyGUIDataStreamAdapter::CVfsHandleToMyGUIDataStreamAdapter( GUCEF::VFS::TBasicVfsResourcePtr filePtr )
     : CIOAccessToMyGUIDataStreamAdapter( *filePtr->GetAccess() ) ,
       m_filePtr( filePtr )
 {GUCEF_TRACE;

@@ -134,11 +134,11 @@ VfsResourceProvider::loadRawDataContainer( const CEGUI::String& filename      ,
 
     VFS::CVFS& vfs = VFS::CVfsGlobal::Instance()->GetVfs();
 
-    VFS::CVFS::CVFSHandlePtr file = vfs.GetFile( filePath, "rb", false );
+    VFS::TBasicVfsResourcePtr file = vfs.GetFile( filePath, "rb", false );
     if ( !file.IsNULL() )
     {
-        CORE::CIOAccess* fileAccess = file->GetAccess();
-        if ( NULL != fileAccess )
+        CORE::IOAccessPtr fileAccess = file->GetAccess();
+        if ( fileAccess.IsNULL() )
         {
             CORE::CDynamicBuffer memBuffer( *fileAccess );
              

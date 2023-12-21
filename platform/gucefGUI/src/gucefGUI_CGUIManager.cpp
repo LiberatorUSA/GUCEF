@@ -217,7 +217,7 @@ void
 CGUIManager::DestroyGenericForm( CForm* genericForm )
 {GUCEF_TRACE;
 
-    m_genericFormFactory.DestroyObject( genericForm, genericForm->GetClassTypeName() );
+    //m_genericFormFactory.DestroyObject( genericForm, genericForm->GetClassTypeName() );
 }
 
 /*-------------------------------------------------------------------------*/

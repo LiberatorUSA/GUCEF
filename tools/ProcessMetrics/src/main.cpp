@@ -291,6 +291,47 @@ GUCEF_OSSERVICEMAIN_BEGIN( "ProcessMetrics" )
 
     GUCEF_OSMAIN_SIGNAL_HANDLER( GucefAppSignalHandler );
 
+
+
+
+
+
+CORE::CDStoreCodecRegistry::TDStoreCodecPtr ymlCodec;
+if ( CORE::CCoreGlobal::Instance()->GetDStoreCodecRegistry().TryLookup( "yaml", ymlCodec, false ) )
+{
+    CORE::CString testfile = CORE::ResolveVars( "$MODULEDIR$\\example.yaml" );
+    
+    CORE::CDataNode doc;
+    if ( ymlCodec->BuildDataTree( &doc, testfile ) )
+    {
+        CORE::CDStoreCodecRegistry::TDStoreCodecPtr jsonCodec;
+        if ( CORE::CCoreGlobal::Instance()->GetDStoreCodecRegistry().TryLookup( "json", jsonCodec, false ) )
+        {
+            CORE::CString testOutfile = CORE::ResolveVars( "$MODULEDIR$\\example.json" );
+            jsonCodec->StoreDataTree( &doc, testOutfile );
+        }
+    }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     ProcessMetrics processMetrics;
     if ( !processMetrics.LoadConfig( keyValueList, *globalConfig ) )
     {

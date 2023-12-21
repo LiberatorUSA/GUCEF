@@ -100,7 +100,7 @@ CGridView::GetText( const UInt32 columnIndex ,
                     const UInt32 rowIndex    ) const
 {GUCEF_TRACE;
 
-    return NULL;
+    return CString::Empty;
 }
 
 /*-------------------------------------------------------------------------*/

@@ -87,7 +87,11 @@ PerformVFSFileLoadUnloadTest( void )
         // We will use the root directory itself and ask for a list with no recursive
         // dir iteration and no filter.
         VFS::CVFS::TStringVector fileList;
-        vfs.GetFileList( fileList, "", false, "" );
+        if ( !vfs.GetFileList( fileList, CORE::CString::Empty, false, false, CORE::CString::EmptyStringSet ) )
+        {
+            // We should have at least 1 file in that dir
+            ERRORHERE;
+        }
 
         if ( fileList.size() == 0 )
         {

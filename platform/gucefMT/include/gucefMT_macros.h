@@ -102,6 +102,11 @@
 
 /*-------------------------------------------------------------------------*/
 
+#define GUCEF_MT_PRIVATE_C      GUCEF_HIDDEN
+#define GUCEF_MT_PRIVATE_CPP    GUCEF_HIDDEN
+
+/*-------------------------------------------------------------------------*/
+
 
 #define GUCEF_MT_TINY_LOCK_TIMEOUT              1
 #define GUCEF_MT_SHORT_LOCK_TIMEOUT             5

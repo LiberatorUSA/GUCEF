@@ -69,7 +69,7 @@ class GUCEF_GUIDRIVERCEGUI_EXPORT_CPP VfsResourceProvider : public ::CEGUI::Reso
 
     struct SDataContainerInfo
     {
-        VFS::CVFS::CVFSHandlePtr fileHandle;
+        VFS::TBasicVfsResourcePtr fileHandle;
         CEGUI::RawDataContainer ceContainer;
         CORE::CString requestFilename;
         CORE::CString requestresourceGroup;

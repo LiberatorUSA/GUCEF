@@ -102,15 +102,16 @@ COgrePluginManager::RegisterPlugin( void* modulePtr                         ,
 
 /*-------------------------------------------------------------------------*/
 
-void
+bool
 COgrePluginManager::UnregisterPlugin( CORE::TPluginPtr plugin )
 {GUCEF_TRACE;
 
     TCOgrePluginAdapterPtr ogrePlugin = plugin.StaticCast< COgrePluginAdapter >();
     if ( !ogrePlugin.IsNULL() )
     {
-        ogrePlugin->Unlink();
+        return ogrePlugin->Unlink();
     }
+    return false;
 }
 
 /*-------------------------------------------------------------------------*/

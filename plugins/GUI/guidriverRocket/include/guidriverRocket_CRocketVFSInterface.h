@@ -101,7 +101,7 @@ class GUCEF_GUIDRIVERROCKET_PUBLIC_CPP CRocketVFSInterface : public Rocket::Core
 
     private:
 
-    typedef std::map< Rocket::Core::FileHandle, VFS::CVFS::CVFSHandlePtr > TFileHandleMap;
+    typedef std::map< Rocket::Core::FileHandle, VFS::TBasicVfsResourcePtr > TFileHandleMap;
     typedef std::set< Rocket::Core::FileHandle > THandleSet;
 
     VFS::CVFS* m_vfs;

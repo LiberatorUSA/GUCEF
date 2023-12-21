@@ -219,11 +219,11 @@ CFormBackendImp::LoadLayout( const GUCEF::CORE::CString& layoutStoragePath )
 {GUCEF_TRACE;
 
     VFS::CVFS& vfs = VFS::CVfsGlobal::Instance()->GetVfs();
-    VFS::CVFS::CVFSHandlePtr file = vfs.GetFile( layoutStoragePath );
+    VFS::TBasicVfsResourcePtr file = vfs.GetFile( layoutStoragePath );
     if ( !file.IsNULL() )
     {
-        CORE::CIOAccess* fileAccess = file->GetAccess();
-        if ( NULL != fileAccess )
+        CORE::IOAccessPtr fileAccess = file->GetAccess();
+        if ( !fileAccess.IsNULL() )
         {
             return LoadLayout( *fileAccess );
         }
@@ -301,11 +301,11 @@ CFormBackendImp::SaveLayout( const GUCEF::CORE::CString& layoutStoragePath )
 {GUCEF_TRACE;
 
     VFS::CVFS& vfs = VFS::CVfsGlobal::Instance()->GetVfs();
-    VFS::CVFS::CVFSHandlePtr file = vfs.GetFile( layoutStoragePath, "wb", true );
+    VFS::TBasicVfsResourcePtr file = vfs.GetFile( layoutStoragePath, "wb", true );
     if ( !file.IsNULL() )
     {
-        CORE::CIOAccess* fileAccess = file->GetAccess();
-        if ( NULL != fileAccess )
+        CORE::IOAccessPtr fileAccess = file->GetAccess();
+        if ( fileAccess.IsNULL() )
         {
             return SaveLayout( *fileAccess );
         }

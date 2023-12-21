@@ -5,11 +5,13 @@
             <Dependency Name="gucefMT" />
             <Dependency Name="gucefCORE" />
             <Dependency Name="gucefVFS" />
+			<Dependency Name="gucefKAITAI" />
         </Dependencies>
         <Linker>
             <Dependency Name="gucefMT" />
             <Dependency Name="gucefCORE" />
             <Dependency Name="gucefVFS" />
+			<Dependency Name="gucefKAITAI" />
         </Linker>
 		<RuntimeDependencies>
 			<RuntimeDependency Name="dstorepluginPARSIFALXML" />
@@ -18,6 +20,10 @@
 			<RuntimeDependency Name="codecspluginZLIB" />
 			<RuntimeDependency Name="codecspluginSTBRUMMEHASH" />
 			<RuntimeDependency Name="vfspluginAWSS3" />
+			<RuntimeDependency Name="vfspluginVP" />
+			<RuntimeDependency Name="vfspluginDVP" />
+			<RuntimeDependency Name="vfspluginZIP" />
+			<RuntimeDependency Name="vfspluginITV" />
 		</RuntimeDependencies>		
         <Preprocessor>
             <Define String="GUCEF_ARCHIVER_BUILD_MODULE" />

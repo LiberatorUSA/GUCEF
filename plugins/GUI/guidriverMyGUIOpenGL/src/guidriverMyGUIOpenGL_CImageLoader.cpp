@@ -133,9 +133,9 @@ CImageLoader::loadImage( int& _width                  ,
     CORE::CString dataType = CORE::ExtractFileExtention( _filename ).Lowercase();
     
     VFS::CVFS& vfs = VFS::CVfsGlobal::Instance()->GetVfs();
-    VFS::CVFS::CVFSHandlePtr filePtr = vfs.GetFile( _filename );
+    VFS::TBasicVfsResourcePtr filePtr = vfs.GetFile( _filename );
 
-    if ( 0 != filePtr )
+    if ( !filePtr.IsNULL() )
     {
         IMAGE::CImage image;
         if ( image.Load( *filePtr->GetAccess() ,
@@ -176,9 +176,9 @@ CImageLoader::saveImage( int _width                   ,
     CORE::CString dataType = CORE::ExtractFileExtention( _filename ).Lowercase();
     
     VFS::CVFS& vfs = VFS::CVfsGlobal::Instance()->GetVfs();
-    VFS::CVFS::CVFSHandlePtr filePtr = vfs.GetFile( _filename, "wb" );
+    VFS::TBasicVfsResourcePtr filePtr = vfs.GetFile( _filename, "wb" );
 
-    if ( 0 != filePtr )
+    if ( !filePtr.IsNULL() )
     {
         IMAGE::TPixelMapPtr pixelMap( new IMAGE::CPixelMap( _texture                         , 
                                                             _width                           ,

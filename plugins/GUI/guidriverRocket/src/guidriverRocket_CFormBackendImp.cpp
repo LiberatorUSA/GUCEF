@@ -311,8 +311,8 @@ bool
 CFormBackendImp::LoadLayout( const GUCEF::CORE::CString& layoutStoragePath )
 {GUCEF_TRACE;
 
-    VFS::CVFS::CVFSHandlePtr filePtr = VFS::CVfsGlobal::Instance()->GetVfs().GetFile( layoutStoragePath );
-    if ( NULL != filePtr )
+    VFS::TBasicVfsResourcePtr filePtr = VFS::CVfsGlobal::Instance()->GetVfs().GetFile( layoutStoragePath );
+    if ( !filePtr.IsNULL() )
     {
         return LoadLayout( *filePtr->GetAccess() );
     }

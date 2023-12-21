@@ -96,7 +96,7 @@ CString
 CCombobox::GetText( void ) const
 {GUCEF_TRACE;
 
-    return NULL;
+    return CString::Empty;
 }
 
 /*-------------------------------------------------------------------------*/
