@@ -126,11 +126,18 @@ class GUCEF_MT_PUBLIC_CPP CReadWriteLock : public CILockable
     UInt32 ActiveWriterCount( void ) const;
 
     /**
-     *  Returns the current number of active writers. Note that this function
-     *  is meant for output to humans. Race conditions ect. make it
+     *  Returns the rentrancy depth of the currently active writer, if any. 
+     *  Note that this function is meant for output to humans. Race conditions ect. make it
      *  useless for any control code.    
      */
     UInt32 ActiveWriterReentrancyDepth( void ) const;
+
+    /**
+     *  Returns the rentrancy depth of the currently active reader with the given thread id, if any. 
+     *  Note that this function is meant for output to humans. Race conditions ect. make it
+     *  useless for any control code.    
+     */
+    UInt32 ActiveReaderReentrancyDepth( UInt32 threadId ) const;
 
     /**
      *      Returns the current number of writers. Note that this function

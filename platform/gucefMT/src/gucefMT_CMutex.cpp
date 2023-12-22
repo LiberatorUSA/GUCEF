@@ -25,6 +25,11 @@
 #include <assert.h>
 #include "gucefMT_CMutex.h"     /* Our mutex class definition */
 
+#ifndef GUCEF_MT_DVMTOSWRAP_H
+#include "gucefMT_dvmtoswrap.h"
+#define GUCEF_MT_DVMTOSWRAP_H
+#endif /* GUCEF_MT_DVMTOSWRAP_H ? */
+
 #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
 
 #include <windows.h>
@@ -59,8 +64,10 @@ struct SMutexData
     UInt32 threadLastOwningLock;
 
     #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
-
-    HANDLE id;
+    
+    #if ( GUCEF_MT_MUTEX_WINDOWS_LOCK_IMPLEMENTATION == GUCEF_MT_MUTEX_LOCK_IMPLEMENTATION_WIN32_MUTEX )
+    
+    ::HANDLE id;
 
     SMutexData( void )
         : isLocked( false )
@@ -68,7 +75,21 @@ struct SMutexData
         , id( 0 )
     {GUCEF_TRACE;
     }
+    
+    #elif ( GUCEF_MT_MUTEX_WINDOWS_LOCK_IMPLEMENTATION == GUCEF_MT_MUTEX_LOCK_IMPLEMENTATION_WIN32_CRITICAL_SECTION )
+    
+    ::CRITICAL_SECTION critsection;
+    
+    SMutexData( void )
+        : isLocked( false )
+        , threadLastOwningLock( 0 )
+        , critsection()
+    {GUCEF_TRACE;
 
+    }
+
+    #endif
+    
     #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
 
     pthread_mutex_t id;
@@ -94,6 +115,7 @@ CMutex::CMutex( void )
 {GUCEF_TRACE;
 
     #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
+    #if ( GUCEF_MT_MUTEX_WINDOWS_LOCK_IMPLEMENTATION == GUCEF_MT_MUTEX_LOCK_IMPLEMENTATION_WIN32_MUTEX )
 
     _mutexdata->id = CreateMutex( NULL, FALSE, NULL );
     if ( 0 == _mutexdata->id )
@@ -104,6 +126,13 @@ CMutex::CMutex( void )
         return;
     }
     GUCEF_TRACE_EXCLUSIVE_LOCK_CREATED( _mutexdata->id );
+
+    #elif ( GUCEF_MT_MUTEX_WINDOWS_LOCK_IMPLEMENTATION == GUCEF_MT_MUTEX_LOCK_IMPLEMENTATION_WIN32_CRITICAL_SECTION )
+
+    ::InitializeCriticalSection( (::CRITICAL_SECTION*) &_mutexdata->critsection );
+    GUCEF_TRACE_EXCLUSIVE_LOCK_CREATED( (::CRITICAL_SECTION*) &_mutexdata->critsection );
+
+    #endif
 
     #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
 
@@ -134,11 +163,22 @@ CMutex::~CMutex()
     Lock();
 
     #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
+    
+    #if ( GUCEF_MT_MUTEX_WINDOWS_LOCK_IMPLEMENTATION == GUCEF_MT_MUTEX_LOCK_IMPLEMENTATION_WIN32_MUTEX )
 
     GUCEF_TRACE_EXCLUSIVE_LOCK_DESTROY( ((TMutexData*)_mutexdata)->id );
     CloseHandle( ((TMutexData*)_mutexdata)->id );
     GUCEF_DELETE (TMutexData*)_mutexdata;
     _mutexdata = GUCEF_NULL;
+
+    #elif ( GUCEF_MT_MUTEX_WINDOWS_LOCK_IMPLEMENTATION == GUCEF_MT_MUTEX_LOCK_IMPLEMENTATION_WIN32_CRITICAL_SECTION )
+
+    GUCEF_TRACE_EXCLUSIVE_LOCK_DESTROY( &_mutexdata->critsection );
+    ::DeleteCriticalSection( &_mutexdata->critsection );
+    GUCEF_DELETE _mutexdata;
+    _mutexdata = GUCEF_NULL;
+
+    #endif
 
     #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
 
@@ -161,8 +201,10 @@ CMutex::Lock( UInt32 lockWaitTimeoutInMs ) const
 
     #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
 
-    DWORD timeoutInMs = lockWaitTimeoutInMs == GUCEF_MT_INFINITE_LOCK_TIMEOUT ? INFINITE : (DWORD) lockWaitTimeoutInMs;
-    DWORD waitResult = WaitForSingleObject( ((TMutexData*)_mutexdata)->id, timeoutInMs );
+    #if ( GUCEF_MT_MUTEX_WINDOWS_LOCK_IMPLEMENTATION == GUCEF_MT_MUTEX_LOCK_IMPLEMENTATION_WIN32_MUTEX )
+
+    ::DWORD timeoutInMs = lockWaitTimeoutInMs == GUCEF_MT_INFINITE_LOCK_TIMEOUT ? INFINITE : (::DWORD) lockWaitTimeoutInMs;
+    ::DWORD waitResult = ::WaitForSingleObject( ((TMutexData*)_mutexdata)->id, timeoutInMs );
     switch ( waitResult )
     {
         case WAIT_OBJECT_0:
@@ -194,6 +236,34 @@ CMutex::Lock( UInt32 lockWaitTimeoutInMs ) const
         }
     }
 
+    #elif ( GUCEF_MT_MUTEX_WINDOWS_LOCK_IMPLEMENTATION == GUCEF_MT_MUTEX_LOCK_IMPLEMENTATION_WIN32_CRITICAL_SECTION )
+
+    ::ULONGLONG tickCountAtWaitStart = ::GetTickCount64();
+    UInt32 timeWaitedInMs = 0;
+    do
+    {
+        ::BOOL lockSuccess = ::TryEnterCriticalSection( (::CRITICAL_SECTION*) &_mutexdata->critsection );
+        if ( FALSE == lockSuccess )
+        {
+            timeWaitedInMs = (UInt32) ( ::GetTickCount64() - tickCountAtWaitStart );
+            Int32 timeRemaining = lockWaitTimeoutInMs - timeWaitedInMs;
+            if ( timeRemaining > 0 )
+                PrecisionDelay( 1 );    
+        }
+        else
+        {
+            _mutexdata->threadLastOwningLock = (UInt32) ::GetCurrentThreadId();
+            _mutexdata->isLocked = true;
+            GUCEF_TRACE_EXCLUSIVE_LOCK_OBTAINED( (::CRITICAL_SECTION*) &_mutexdata->critsection );
+            return LOCKSTATUS_OPERATION_SUCCESS;
+        }
+    }
+    while ( timeWaitedInMs < lockWaitTimeoutInMs );
+    
+    return LOCKSTATUS_WAIT_TIMEOUT;
+    
+    #endif
+
     #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
 
     if ( pthread_mutex_lock( &((TMutexData*)_mutexdata)->id ) < 0 )
@@ -220,17 +290,46 @@ CMutex::Unlock( void ) const
 
     #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
 
-    ((TMutexData*)_mutexdata)->isLocked = false;
-    GUCEF_TRACE_EXCLUSIVE_LOCK_RELEASED( ((TMutexData*)_mutexdata)->id );
+    #if ( GUCEF_MT_MUTEX_WINDOWS_LOCK_IMPLEMENTATION == GUCEF_MT_MUTEX_LOCK_IMPLEMENTATION_WIN32_MUTEX )
 
-    if ( ReleaseMutex( ((TMutexData*)_mutexdata)->id ) == FALSE )
+    _mutexdata->isLocked = false;
+    GUCEF_TRACE_EXCLUSIVE_LOCK_RELEASED( _mutexdata->id );
+
+    if ( ReleaseMutex( _mutexdata->id ) == FALSE )
     {
         ((TMutexData*)_mutexdata)->isLocked = true;
-        GUCEF_TRACE_EXCLUSIVE_LOCK_OBTAINED( ((TMutexData*)_mutexdata)->id );
+        GUCEF_TRACE_EXCLUSIVE_LOCK_OBTAINED( _mutexdata->id );
         return LOCKSTATUS_OPERATION_FAILED;
     }
     return LOCKSTATUS_OPERATION_SUCCESS;
 
+    #elif ( GUCEF_MT_MUTEX_WINDOWS_LOCK_IMPLEMENTATION == GUCEF_MT_MUTEX_LOCK_IMPLEMENTATION_WIN32_CRITICAL_SECTION )
+
+    if ( _mutexdata->isLocked )
+    {
+        if ( _mutexdata->threadLastOwningLock == (UInt32) ::GetCurrentThreadId() )
+        {
+            _mutexdata->isLocked = false;
+            GUCEF_TRACE_EXCLUSIVE_LOCK_RELEASED( &_mutexdata->critsection );
+            ::LeaveCriticalSection( &_mutexdata->critsection );
+        }
+        else
+        {
+            /*
+             *  From MS Docs:
+             *      If a thread calls LeaveCriticalSection when it does not have ownership of the 
+             *      specified critical section object, an error occurs that may cause another thread 
+             *      using EnterCriticalSection to wait indefinitely.
+             * 
+             *  If your code is structured correctly we should never come here
+             */
+            return LOCKSTATUS_OPERATION_FAILED;
+        }
+    }
+    return LOCKSTATUS_OPERATION_SUCCESS;
+
+    #endif
+    
     #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
 
     ((TMutexData*)_mutexdata)->isLocked = false;
@@ -279,12 +378,27 @@ CMutex::IsLocked( void ) const
 
     #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
 
+    #if ( GUCEF_MT_MUTEX_WINDOWS_LOCK_IMPLEMENTATION == GUCEF_MT_MUTEX_LOCK_IMPLEMENTATION_WIN32_MUTEX )
+
     /* lock with a timeout of 0. Note this is not a cheap operation */
     if ( WaitForSingleObject( ((TMutexData*)_mutexdata)->id , 0 ) == WAIT_FAILED )
         return true;
     ReleaseMutex( ((TMutexData*)_mutexdata)->id );
     return false;
 
+    #elif ( GUCEF_MT_MUTEX_WINDOWS_LOCK_IMPLEMENTATION == GUCEF_MT_MUTEX_LOCK_IMPLEMENTATION_WIN32_CRITICAL_SECTION )
+    
+    /* attempt a lock to see if its locked by anyone */
+    ::BOOL lockSuccess = ::TryEnterCriticalSection( &_mutexdata->critsection );
+    if ( FALSE != lockSuccess )
+    {
+        ::LeaveCriticalSection( &_mutexdata->critsection );
+        return false;
+    }
+    return true;
+
+    #endif
+    
     #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
 
     if ( pthread_mutex_trylock( &((TMutexData*)_mutexdata)->id ) != 0 )

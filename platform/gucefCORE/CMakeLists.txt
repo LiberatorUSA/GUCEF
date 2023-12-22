@@ -164,6 +164,7 @@ set( HEADER_FILES
   include/gucefCORE_CGenericValueToDataNodeSerializer.h
   include/gucefCORE_CGlobalConfigValueList.h
   include/gucefCORE_CGloballyConfigurable.h
+  include/gucefCORE_CICallbackStyleParser.h
   include/gucefCORE_CIConfigurable.h
   include/gucefCORE_CIConsoleLogger.h
   include/gucefCORE_CIDataNodeSerializable.h

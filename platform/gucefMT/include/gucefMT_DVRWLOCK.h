@@ -184,6 +184,17 @@ rwl_active_readers( const TRWLock *rwlock );
 GUCEF_MT_PUBLIC_C UInt32
 rwl_queued_readers( const TRWLock *rwlock );
 
+/*-------------------------------------------------------------------------*/
+
+/**
+ *  Returns the current reentrancy depth of the currently active reader.
+ *  If there is no active reader 0 is always returned
+ *  Note that this function is meant for output to humans in an informational capacity as it is a snapshot-in-time
+ *  It has no use in relation with the other rwl_ functions.
+ */
+GUCEF_MT_PUBLIC_C UInt32
+rwl_active_reader_reentrancy_depth( const TRWLock *rwlock, UInt32 threadId );
+
 /*--------------------------------------------------------------------------*/
 
 /**
@@ -245,6 +256,17 @@ rwl_writer_start( TRWLock *rwlock, UInt32 lockWaitTimeoutInMs );
  */
 GUCEF_MT_PUBLIC_C UInt32
 rwl_writer_stop( TRWLock *rwlock );
+
+/*--------------------------------------------------------------------------*/
+
+/**
+ *  If you are killing threads you might leave the read-write lock with an incorrect
+ *  administration of which threads are using the lock. If the killed thread was capable
+ *  of using the lock, use this function to signal that a cleanup sanity check should be
+ *  performed, checking for dangling references to said thread.
+ */
+GUCEF_MT_PUBLIC_C void
+rwl_signal_thread_killed( TRWLock *rwlock, UInt32 killedThreadId );
 
 /*--------------------------------------------------------------------------*/
 

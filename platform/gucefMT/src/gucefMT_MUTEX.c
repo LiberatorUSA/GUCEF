@@ -22,12 +22,17 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+#include <malloc.h>
+
 #ifndef GUCEF_MT_MUTEX_H
 #include "gucefMT_mutex.h"     /* mutex utility prototypes */
 #define GUCEF_MT_MUTEX_H
 #endif /* GUCEF_MT_MUTEX_H ? */
 
-#include <malloc.h>
+#ifndef GUCEF_MT_DVMTOSWRAP_H
+#include "gucefMT_dvmtoswrap.h"
+#define GUCEF_MT_DVMTOSWRAP_H
+#endif /* GUCEF_MT_DVMTOSWRAP_H ? */
 
 #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
 
@@ -54,8 +59,16 @@ struct SMutex
     Int32 reentrancyCount;
     
     #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
+
+    #if ( GUCEF_MT_MUTEX_WINDOWS_LOCK_IMPLEMENTATION == GUCEF_MT_MUTEX_LOCK_IMPLEMENTATION_WIN32_MUTEX )
     
     HANDLE id;
+
+    #elif ( GUCEF_MT_MUTEX_WINDOWS_LOCK_IMPLEMENTATION == GUCEF_MT_MUTEX_LOCK_IMPLEMENTATION_WIN32_CRITICAL_SECTION )
+
+    CRITICAL_SECTION critsection;
+    
+    #endif
 
     #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
 
@@ -79,6 +92,8 @@ MutexCreate( void )
 {
     #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
     
+    #if ( GUCEF_MT_MUTEX_WINDOWS_LOCK_IMPLEMENTATION == GUCEF_MT_MUTEX_LOCK_IMPLEMENTATION_WIN32_MUTEX )
+
     TMutex* mutex = malloc( sizeof( TMutex ) );
     if ( GUCEF_NULL != mutex )
     {
@@ -93,6 +108,20 @@ MutexCreate( void )
         GUCEF_TRACE_EXCLUSIVE_LOCK_CREATED( mutex->id );
     }
     return mutex;
+
+    #elif ( GUCEF_MT_MUTEX_WINDOWS_LOCK_IMPLEMENTATION == GUCEF_MT_MUTEX_LOCK_IMPLEMENTATION_WIN32_CRITICAL_SECTION )
+
+    TMutex* mutex = malloc( sizeof( TMutex ) );
+    if ( GUCEF_NULL != mutex )
+    {
+        mutex->lockedByThread = 0;
+        mutex->reentrancyCount = 0;
+        InitializeCriticalSection( &mutex->critsection );
+        GUCEF_TRACE_EXCLUSIVE_LOCK_CREATED( &mutex->critsection );
+    }
+    return mutex;
+    
+    #endif
     
     #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
     
@@ -124,10 +153,20 @@ MutexDestroy( struct SMutex* mutex )
     MutexLock( mutex, GUCEF_UINT32MAX );
     
     #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
+
+    #if ( GUCEF_MT_MUTEX_WINDOWS_LOCK_IMPLEMENTATION == GUCEF_MT_MUTEX_LOCK_IMPLEMENTATION_WIN32_MUTEX )
     
     GUCEF_TRACE_EXCLUSIVE_LOCK_DESTROY( mutex->id );
     CloseHandle( mutex->id );
     free( mutex );
+
+    #elif ( GUCEF_MT_MUTEX_WINDOWS_LOCK_IMPLEMENTATION == GUCEF_MT_MUTEX_LOCK_IMPLEMENTATION_WIN32_CRITICAL_SECTION )
+
+    GUCEF_TRACE_EXCLUSIVE_LOCK_DESTROY( mutex->id );
+    DeleteCriticalSection( &mutex->critsection );
+    free( mutex );
+
+    #endif
     
     #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
     
@@ -144,6 +183,8 @@ UInt32
 MutexLock( struct SMutex* mutex, UInt32 timeoutInMs )
 {
     #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
+    
+    #if ( GUCEF_MT_MUTEX_WINDOWS_LOCK_IMPLEMENTATION == GUCEF_MT_MUTEX_LOCK_IMPLEMENTATION_WIN32_MUTEX )
     
     GUCEF_BEGIN;
     DWORD waitResult = WaitForSingleObject( mutex->id, (DWORD) timeoutInMs );
@@ -183,6 +224,38 @@ MutexLock( struct SMutex* mutex, UInt32 timeoutInMs )
         }
     }
     
+    #elif ( GUCEF_MT_MUTEX_WINDOWS_LOCK_IMPLEMENTATION == GUCEF_MT_MUTEX_LOCK_IMPLEMENTATION_WIN32_CRITICAL_SECTION )
+
+    ULONGLONG tickCountAtWaitStart = GetTickCount64();
+    UInt32 timeWaitedInMs = 0;
+    do
+    {
+        BOOL lockSuccess = TryEnterCriticalSection( &mutex->critsection );
+        if ( FALSE == lockSuccess )
+        {
+            timeWaitedInMs = (UInt32) ( GetTickCount64() - tickCountAtWaitStart );
+            Int32 timeRemaining = timeoutInMs - timeWaitedInMs;
+            if ( timeRemaining > 0 )
+                PrecisionDelay( 1 );    
+        }
+        else
+        {
+            UInt32 callerThreadId = (UInt32) GetCurrentThreadId();
+            if ( callerThreadId == mutex->lockedByThread )             
+                ++mutex->reentrancyCount;
+            else
+                mutex->lockedByThread = callerThreadId;
+
+            GUCEF_TRACE_EXCLUSIVE_LOCK_OBTAINED( &mutex->critsection );
+            return LOCKSTATUS_OPERATION_SUCCESS;
+        }
+    }
+    while ( timeWaitedInMs < timeoutInMs );
+    
+    return LOCKSTATUS_WAIT_TIMEOUT;
+
+    #endif
+    
     #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
     
     UInt32 callerThreadId = (UInt32) pthread_self();
@@ -206,7 +279,11 @@ UInt32
 MutexUnlock( struct SMutex* mutex )
 {
     #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
+
+    #if ( GUCEF_MT_MUTEX_WINDOWS_LOCK_IMPLEMENTATION == GUCEF_MT_MUTEX_LOCK_IMPLEMENTATION_WIN32_MUTEX )
     
+    GUCEF_BEGIN;
+
     UInt32 callerThreadId = (UInt32) GetCurrentThreadId();
     if ( mutex->lockedByThread == callerThreadId )
     {
@@ -232,9 +309,47 @@ MutexUnlock( struct SMutex* mutex )
 
             GUCEF_TRACE_EXCLUSIVE_LOCK_OBTAINED( mutex->id );
         }
+        
+        GUCEF_END;
         return GUCEF_MUTEX_OPERATION_FAILED;
     }
+
+    GUCEF_END;
     return GUCEF_MUTEX_OPERATION_SUCCESS;
+
+    #elif ( GUCEF_MT_MUTEX_WINDOWS_LOCK_IMPLEMENTATION == GUCEF_MT_MUTEX_LOCK_IMPLEMENTATION_WIN32_CRITICAL_SECTION )
+
+    GUCEF_BEGIN;
+
+    UInt32 callerThreadId = (UInt32) GetCurrentThreadId();
+    if ( mutex->lockedByThread == callerThreadId )
+    {
+        if ( mutex->reentrancyCount > 0 )
+            --mutex->reentrancyCount;
+        else
+            mutex->lockedByThread = 0;
+    
+        GUCEF_TRACE_EXCLUSIVE_LOCK_RELEASED( &mutex->critsection );
+        LeaveCriticalSection( &mutex->critsection );
+
+        GUCEF_END;
+        return LOCKSTATUS_OPERATION_SUCCESS;
+    }
+    else
+    {
+        /*
+         *  From MS Docs:
+         *      If a thread calls LeaveCriticalSection when it does not have ownership of the 
+         *      specified critical section object, an error occurs that may cause another thread 
+         *      using EnterCriticalSection to wait indefinitely.
+         * 
+         *  If your code is structured correctly we should never come here
+         */
+        GUCEF_END;
+        return LOCKSTATUS_OPERATION_FAILED;
+    }
+
+    #endif
     
     #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
     
@@ -275,7 +390,7 @@ MutexUnlock( struct SMutex* mutex )
 UInt32
 MutexLocked( struct SMutex* mutex )
 {
-    return mutex->lockedByThread;
+    return 0 != mutex->lockedByThread ? 1 : 0;
 }
 
 /*--------------------------------------------------------------------------*/

@@ -168,6 +168,15 @@ CReadWriteLock::ActiveWriterReentrancyDepth( void ) const
 
 /*--------------------------------------------------------------------------*/
 
+UInt32 
+CReadWriteLock::ActiveReaderReentrancyDepth( UInt32 threadId ) const
+{GUCEF_TRACE;
+
+    return rwl_active_reader_reentrancy_depth( _rwlock, threadId );
+}
+
+/*--------------------------------------------------------------------------*/
+
 UInt32
 CReadWriteLock::QueuedWriterCount( void ) const
 {GUCEF_TRACE;

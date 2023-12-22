@@ -159,28 +159,6 @@
 #endif /* GUCEF_MT_CSEMAPHORE_H ? */
 
 /*
- *      O/S Wrapper class for a critical section.
- *
- *      A critical section object provides synchronization similar to that
- *      provided by a mutex object, except that a critical section can be used
- *      only by the threads of a single process. Event, mutex, and semaphore
- *      objects can also be used in a single-process application, but critical
- *      section objects provide a slightly faster, more efficient mechanism
- *      for mutual-exclusion synchronization (a processor-specific test and set
- *      instruction). Like a mutex object, a critical section object can be
- *      owned by only one thread at a time, which makes it useful for protecting
- *      a shared resource from simultaneous access. There is no guarantee about
- *      the order that threads obtain ownership of the critical section,
- *      however, the system is fair to all threads. Unlike a mutex object, there
- *      is no way to tell whether a critical section has been abandoned.
- *
- */
-#ifndef GUCEF_MT_CCRITICALSECTION_H
-#include "gucefMT_CCriticalSection.h"
-#define GUCEF_MT_CCRITICALSECTION_H
-#endif /* GUCEF_MT_CCRITICALSECTION_H ? */
-
-/*
  *      Base class for an active object.
  *      Independant activity is implemented using threads.
  */

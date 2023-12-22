@@ -15,7 +15,6 @@ set( HEADER_FILES
   include/gucefMT.h
   include/gucefMT_CActiveObject.h
   include/gucefMT_CCondition.h
-  include/gucefMT_CCriticalSection.h
   include/gucefMT_CGUCEFMTModule.h
   include/gucefMT_CICloneable.h
   include/gucefMT_CILockable.h
@@ -44,7 +43,6 @@ set( SOURCE_FILES
   src/gucefMT.cpp
   src/gucefMT_CActiveObject.cpp
   src/gucefMT_CCondition.cpp
-  src/gucefMT_CCriticalSection.cpp
   src/gucefMT_CGUCEFMTModule.cpp
   src/gucefMT_CICloneable.cpp
   src/gucefMT_CILockable.cpp

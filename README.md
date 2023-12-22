@@ -84,6 +84,7 @@ If you get into trouble for whatever reason with stale/bad output files (disk is
 - gucefLOADER: Optional library used when dynamically loading multiple GUCEF platform versions dynamically 
 - gucefPATCHER: Optional library used when support is needed for auto-patching functionality vs an end-user manually downloading updates
 - gucefMATH: Optional library used when performing math calculations via OO concepts
+- gucefKAITAI: Optional library used when interpretating binary formats leveraging the Kaitai schema to do so
 
 ## Contained Platform Plugins
 - dstorepluginPARSIFALXML: gucefCORE plugin: Adds DStore (DataNode) codec support for XML. Writing via GUCEF code and reading via the ParsifalXML dependency library

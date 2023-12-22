@@ -54,20 +54,16 @@
 
 /*-------------------------------------------------------------------------*/
 
+#define GUCEF_MT_MUTEX_LOCK_IMPLEMENTATION_NONE                         0
+#define GUCEF_MT_MUTEX_LOCK_IMPLEMENTATION_PTHREADS_MUTEX               10
+#define GUCEF_MT_MUTEX_LOCK_IMPLEMENTATION_WIN32_MUTEX                  100
+#define GUCEF_MT_MUTEX_LOCK_IMPLEMENTATION_WIN32_CRITICAL_SECTION       101
+
+/*
+ *  Flag to change the implementation used on MS Windows for the Mutex class
+ */
+#define GUCEF_MT_MUTEX_WINDOWS_LOCK_IMPLEMENTATION      GUCEF_MT_MUTEX_LOCK_IMPLEMENTATION_WIN32_CRITICAL_SECTION
+
+/*-------------------------------------------------------------------------*/
+
 #endif /* GUCEF_MT_CONFIG_H */
-
-/*-------------------------------------------------------------------------//
-//                                                                         //
-//      Info & Changes                                                     //
-//                                                                         //
-//-------------------------------------------------------------------------//
-
-- 26-09-2006 :
-       - Dinand: moved platform wide build switches to the GUCEF platform config file
-- 25-02-2006 :
-       - Dinand: Added GUCEFMT_ prefix to all defines
-- 16-10-2004 :
-       - Dinand: Initial version of this file.
-
------------------------------------------------------------------------------*/
-

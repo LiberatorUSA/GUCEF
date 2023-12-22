@@ -1096,28 +1096,34 @@ PerformReaderWriterLockSingleThreadTests_SingleReader( bool writersHavePriority,
         testData.readerWorkDurationInMs = 100;
         ASSERT_TRUE( writersHavePriority == testData.rwLock.DoWritersOverrule() );
         UInt32 activeReaderCount = testData.rwLock.ActiveReaderCount();
+        UInt32 activeReaderReentrantCount = testData.rwLock.ActiveReaderReentrancyDepth( MT::GetCurrentTaskID() );
         UInt32 activeWriterCount = testData.rwLock.ActiveWriterCount();
         UInt32 queuedReaderCount = testData.rwLock.QueuedReaderCount();
         UInt32 queuedWriterCount = testData.rwLock.QueuedWriterCount();
         ASSERT_TRUE( 0 == activeReaderCount );
+        ASSERT_TRUE( 0 == activeReaderReentrantCount );
         ASSERT_TRUE( 0 == activeWriterCount );
         ASSERT_TRUE( 0 == queuedReaderCount );
         ASSERT_TRUE( 0 == queuedWriterCount );
         ASSERT_TRUE( MT::CReadWriteLock::TRWLockStates::RWLOCK_OPERATION_SUCCESS == testData.rwLock.ReaderStart() );
         activeReaderCount = testData.rwLock.ActiveReaderCount();
+        activeReaderReentrantCount = testData.rwLock.ActiveReaderReentrancyDepth( MT::GetCurrentTaskID() );
         activeWriterCount = testData.rwLock.ActiveWriterCount();
         queuedReaderCount = testData.rwLock.QueuedReaderCount();
         queuedWriterCount = testData.rwLock.QueuedWriterCount();
         ASSERT_TRUE( 1 == activeReaderCount );
+        ASSERT_TRUE( 0 == activeReaderReentrantCount );
         ASSERT_TRUE( 0 == activeWriterCount );
         ASSERT_TRUE( 0 == queuedReaderCount );
         ASSERT_TRUE( 0 == queuedWriterCount );
         ASSERT_TRUE( MT::CReadWriteLock::TRWLockStates::RWLOCK_OPERATION_SUCCESS == testData.rwLock.ReaderStop() );
         activeReaderCount = testData.rwLock.ActiveReaderCount();
+        activeReaderReentrantCount = testData.rwLock.ActiveReaderReentrancyDepth( MT::GetCurrentTaskID() );
         activeWriterCount = testData.rwLock.ActiveWriterCount();
         queuedReaderCount = testData.rwLock.QueuedReaderCount();
         queuedWriterCount = testData.rwLock.QueuedWriterCount();
         ASSERT_TRUE( 0 == activeReaderCount );
+        ASSERT_TRUE( 0 == activeReaderReentrantCount );
         ASSERT_TRUE( 0 == activeWriterCount );
         ASSERT_TRUE( 0 == queuedReaderCount );
         ASSERT_TRUE( 0 == queuedWriterCount );
@@ -1194,22 +1200,28 @@ PerformReaderWriterLockSingleThreadTests_SingleReaderReentrant( bool writersHave
         testData.readerWorkDurationInMs = 100;        
         ASSERT_TRUE( writersHavePriority == testData.rwLock.DoWritersOverrule() );
         UInt32 activeReaderCount = testData.rwLock.ActiveReaderCount();
+        UInt32 activeReaderReentrantCount = testData.rwLock.ActiveReaderReentrancyDepth( MT::GetCurrentTaskID() );
         UInt32 activeWriterCount = testData.rwLock.ActiveWriterCount();
         UInt32 queuedReaderCount = testData.rwLock.QueuedReaderCount();
         UInt32 queuedWriterCount = testData.rwLock.QueuedWriterCount();
         ASSERT_TRUE( 0 == activeReaderCount );
+        ASSERT_TRUE( 0 == activeReaderReentrantCount );
         ASSERT_TRUE( 0 == activeWriterCount );
         ASSERT_TRUE( 0 == queuedReaderCount );
         ASSERT_TRUE( 0 == queuedWriterCount );
         UInt32 reentrancyDepth = 5;
         for ( UInt32 i=0; i<reentrancyDepth; ++i )
         {
+            // note that the first pass is not re-entrant
+
             ASSERT_TRUE( MT::CReadWriteLock::TRWLockStates::RWLOCK_OPERATION_SUCCESS == testData.rwLock.ReaderStart() );
             activeReaderCount = testData.rwLock.ActiveReaderCount();
+            activeReaderReentrantCount = testData.rwLock.ActiveReaderReentrancyDepth( MT::GetCurrentTaskID() );
             activeWriterCount = testData.rwLock.ActiveWriterCount();
             queuedReaderCount = testData.rwLock.QueuedReaderCount();
             queuedWriterCount = testData.rwLock.QueuedWriterCount();
-            ASSERT_TRUE( i+1 == activeReaderCount );
+            ASSERT_TRUE( 1 == activeReaderCount );
+            ASSERT_TRUE( i == activeReaderReentrantCount );
             ASSERT_TRUE( 0 == activeWriterCount );
             ASSERT_TRUE( 0 == queuedReaderCount );
             ASSERT_TRUE( 0 == queuedWriterCount );
@@ -1218,10 +1230,28 @@ PerformReaderWriterLockSingleThreadTests_SingleReaderReentrant( bool writersHave
         {
             ASSERT_TRUE( MT::CReadWriteLock::TRWLockStates::RWLOCK_OPERATION_SUCCESS == testData.rwLock.ReaderStop() );
             activeReaderCount = testData.rwLock.ActiveReaderCount();
+            activeReaderReentrantCount = testData.rwLock.ActiveReaderReentrancyDepth( MT::GetCurrentTaskID() );
             activeWriterCount = testData.rwLock.ActiveWriterCount();
             queuedReaderCount = testData.rwLock.QueuedReaderCount();
             queuedWriterCount = testData.rwLock.QueuedWriterCount();
-            ASSERT_TRUE( reentrancyDepth-(i+1) == activeReaderCount );
+            if ( i+2 == reentrancyDepth )
+            {
+                // last one, no more lock
+                ASSERT_TRUE( 0 == activeReaderReentrantCount );
+                ASSERT_TRUE( 1 == activeReaderCount );
+            }
+            else
+            if ( i+1 == reentrancyDepth )
+            {
+                // last one, no more lock
+                ASSERT_TRUE( 0 == activeReaderReentrantCount );
+                ASSERT_TRUE( 0 == activeReaderCount );
+            }
+            else
+            {
+                ASSERT_TRUE( reentrancyDepth-(i+2) == activeReaderReentrantCount );
+                ASSERT_TRUE( 1 == activeReaderCount );
+            }
             ASSERT_TRUE( 0 == activeWriterCount );
             ASSERT_TRUE( 0 == queuedReaderCount );
             ASSERT_TRUE( 0 == queuedWriterCount );
@@ -1250,11 +1280,13 @@ PerformReaderWriterLockSingleThreadTests_SingleWriterReentrant( bool writersHave
         testData.readerWorkDurationInMs = 100;        
         ASSERT_TRUE( writersHavePriority == testData.rwLock.DoWritersOverrule() );
         UInt32 activeReaderCount = testData.rwLock.ActiveReaderCount();
+        UInt32 activeReaderReentrantCount = testData.rwLock.ActiveReaderReentrancyDepth( MT::GetCurrentTaskID() );
         UInt32 activeWriterCount = testData.rwLock.ActiveWriterCount();
         UInt32 queuedReaderCount = testData.rwLock.QueuedReaderCount();
         UInt32 queuedWriterCount = testData.rwLock.QueuedWriterCount();
         UInt32 reentrancyDepth = testData.rwLock.ActiveWriterReentrancyDepth();
         ASSERT_TRUE( 0 == activeReaderCount );
+        ASSERT_TRUE( 0 == activeReaderReentrantCount );
         ASSERT_TRUE( 0 == activeWriterCount );
         ASSERT_TRUE( 0 == reentrancyDepth );
         ASSERT_TRUE( 0 == queuedReaderCount );
@@ -1264,11 +1296,13 @@ PerformReaderWriterLockSingleThreadTests_SingleWriterReentrant( bool writersHave
         {
             ASSERT_TRUE( MT::CReadWriteLock::TRWLockStates::RWLOCK_OPERATION_SUCCESS == testData.rwLock.WriterStart() );
             activeReaderCount = testData.rwLock.ActiveReaderCount();
+            activeReaderReentrantCount = testData.rwLock.ActiveReaderReentrancyDepth( MT::GetCurrentTaskID() );
             activeWriterCount = testData.rwLock.ActiveWriterCount();
             queuedReaderCount = testData.rwLock.QueuedReaderCount();
             queuedWriterCount = testData.rwLock.QueuedWriterCount();
             reentrancyDepth = testData.rwLock.ActiveWriterReentrancyDepth(); 
             ASSERT_TRUE( 0 == activeReaderCount );
+            ASSERT_TRUE( 0 == activeReaderReentrantCount );
             ASSERT_TRUE( 1 == activeWriterCount );
             ASSERT_TRUE( reentrancyDepth == i );
             ASSERT_TRUE( 0 == queuedReaderCount );
@@ -1278,11 +1312,13 @@ PerformReaderWriterLockSingleThreadTests_SingleWriterReentrant( bool writersHave
         {
             ASSERT_TRUE( MT::CReadWriteLock::TRWLockStates::RWLOCK_OPERATION_SUCCESS == testData.rwLock.WriterStop() );
             activeReaderCount = testData.rwLock.ActiveReaderCount();
+            activeReaderReentrantCount = testData.rwLock.ActiveReaderReentrancyDepth( MT::GetCurrentTaskID() );
             activeWriterCount = testData.rwLock.ActiveWriterCount();
             queuedReaderCount = testData.rwLock.QueuedReaderCount();
             queuedWriterCount = testData.rwLock.QueuedWriterCount();
             reentrancyDepth = testData.rwLock.ActiveWriterReentrancyDepth(); 
-            ASSERT_TRUE( 0 == activeReaderCount );            
+            ASSERT_TRUE( 0 == activeReaderCount );
+            ASSERT_TRUE( 0 == activeReaderReentrantCount );
             if ( i < desiredReentrancyDepth )
             {
                 ASSERT_TRUE( 1 == activeWriterCount );
