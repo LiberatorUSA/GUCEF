@@ -62,7 +62,7 @@
 /*
  *  Flag to change the implementation used on MS Windows for the Mutex class
  */
-#define GUCEF_MT_MUTEX_WINDOWS_LOCK_IMPLEMENTATION      GUCEF_MT_MUTEX_LOCK_IMPLEMENTATION_WIN32_CRITICAL_SECTION
+#define GUCEF_MT_MUTEX_WINDOWS_LOCK_IMPLEMENTATION      GUCEF_MT_MUTEX_LOCK_IMPLEMENTATION_WIN32_MUTEX
 
 /*-------------------------------------------------------------------------*/
 

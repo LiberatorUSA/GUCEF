@@ -1603,7 +1603,7 @@ FilePushDestination::PruneMovedFilesIfLowOnVolumeSpace( void )
 
                 if ( fileSet.empty() )
                 {
-                    i = m_movedFiles.erase( i );
+                    m = movedFilesOnVolumeAtDt.erase( m );
                     continue;
                 }
 
