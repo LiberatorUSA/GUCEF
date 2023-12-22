@@ -571,22 +571,29 @@ void
 CPulseGenerator::OnDriverPulse( void )
 {GUCEF_TRACE;
 
-    MT::CScopeMutex dataLock( m_dataLock );
+    try
+    {
+        MT::CScopeMutex dataLock( m_dataLock );
 
-    m_driverThreadId = MT::GetCurrentTaskID();
+        m_driverThreadId = MT::GetCurrentTaskID();
     
-    UInt64 tickCount = MT::PrecisionTickCount();
-    UInt64 deltaTicks = tickCount - m_lastCycleTickCount;
-    Float64 deltaMilliSecs = deltaTicks / m_ticksPerMs;   
-    m_lastCycleTickCount = tickCount; 
+        UInt64 tickCount = MT::PrecisionTickCount();
+        UInt64 deltaTicks = tickCount - m_lastCycleTickCount;
+        Float64 deltaMilliSecs = deltaTicks / m_ticksPerMs;   
+        m_lastCycleTickCount = tickCount; 
     
-    dataLock.EarlyUnlock();
+        dataLock.EarlyUnlock();
     
-    // A pulse event will trigger all sorts of things so its important that the object lock taken by 
-    // notification is not the same as the data lock of our local state or it would be easy with multiple threads
-    // interacting to end up in a hard to trace deadlock
-    CPulseData pulseData( tickCount, deltaTicks, deltaMilliSecs );
-    NotifyObservers( PulseEvent, &pulseData );                                   
+        // A pulse event will trigger all sorts of things so its important that the object lock taken by 
+        // notification is not the same as the data lock of our local state or it would be easy with multiple threads
+        // interacting to end up in a hard to trace deadlock
+        CPulseData pulseData( tickCount, deltaTicks, deltaMilliSecs );
+        NotifyObservers( PulseEvent, &pulseData );                                   
+    }
+    catch ( const timeout_exception& )
+    {
+        GUCEF_WARNING_LOG( LOGLEVEL_NORMAL, "PulseGenerator:OnDriverPulse: timeout exception occured" );
+    }
 }
 
 /*-------------------------------------------------------------------------//
