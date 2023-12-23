@@ -314,9 +314,10 @@ GUCEF_OSSERVICEMAIN_BEGIN( "FilePusher" )
         return -2;
     }
 
-    auto& app = CORE::CCoreGlobal::Instance()->GetApplication();
+    CORE::CGUCEFApplication& app = CORE::CCoreGlobal::Instance()->GetApplication();
     app.GetPulseGenerator()->RequestPulseInterval( 10 );
-    return app.main( argc, argv, true );
+    int returnValue = app.main( argc, argv, true );
+    GUCEF_LOG( CORE::LOGLEVEL_IMPORTANT, "FilePusher: Exited main. Return value = " + CORE::ToString( returnValue ) );
 }
 GUCEF_OSMAIN_END
 

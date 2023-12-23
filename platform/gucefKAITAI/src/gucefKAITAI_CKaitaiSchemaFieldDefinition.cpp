@@ -51,6 +51,65 @@ const CORE::CString CKaitaiSchemaFieldDefinition::ClassTypeName = "GUCEF::KAITAI
 //      IMPLEMENTATION                                                     //
 //                                                                         //
 //-------------------------------------------------------------------------*/
+CKaitaiSchemaFieldDefinition::CKaitaiSchemaFieldDefinition( void )
+    : CORE::CIDataNodeSerializable()
+    , id()
+    , type()
+    , endianess( 0 )
+    , fieldTypeId( 0 )
+    , hasSize( false )
+    , size( 0 )
+    , isEnum( false )
+    , enumId()
+    , documentation()
+    , hasContents( false )
+    , contents()
+{GUCEF_TRACE;
+}
+
+/*-------------------------------------------------------------------------*/
+
+CKaitaiSchemaFieldDefinition::CKaitaiSchemaFieldDefinition( const CKaitaiSchemaFieldDefinition& src )    
+    : CORE::CIDataNodeSerializable( src )
+    , id( src.id )
+    , type( src.type )
+    , endianess( src.endianess )
+    , fieldTypeId( src.fieldTypeId )
+    , hasSize( src.hasSize )
+    , size( src.size )
+    , isEnum( src.isEnum )
+    , enumId( src.enumId )
+    , documentation( src.documentation )
+    , hasContents( src.hasContents )
+    , contents( src.contents )
+{GUCEF_TRACE;
+}
+
+/*-------------------------------------------------------------------------*/
+
+CKaitaiSchemaFieldDefinition& 
+CKaitaiSchemaFieldDefinition::operator=( const CKaitaiSchemaFieldDefinition& src )
+{GUCEF_TRACE;
+
+    if ( this != &src )
+    {
+        CORE::CIDataNodeSerializable::operator=( src );
+        id = src.id;
+        type = src.type;
+        endianess = src.endianess;
+        fieldTypeId = src.fieldTypeId;
+        hasSize = src.hasSize;
+        size = src.size;
+        isEnum = src.isEnum;
+        enumId = src.enumId;
+        documentation = src.documentation;
+        hasContents = src.hasContents;
+        contents = src.contents;
+    }
+    return *this;
+}
+
+/*-------------------------------------------------------------------------*/
 
 CORE::CICloneable* 
 CKaitaiSchemaFieldDefinition::Clone( void ) const

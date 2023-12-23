@@ -1,0 +1,27 @@
+<ModuleInfoEntry>
+    <Module Name="gucefKAITAI_TestApp" Type="Executable" Platform="All" Tags="test">
+        <Dependencies>
+            <Dependency Name="gucefMT" />
+            <Dependency Name="gucefCORE" />
+			<Dependency Name="gucefVFS" />
+            <Dependency Name="gucefKAITAI" />
+        </Dependencies>
+        <Linker>
+            <Dependency Name="gucefMT" />
+            <Dependency Name="gucefCORE" />
+            <Dependency Name="gucefVFS" />
+			<Dependency Name="gucefKAITAI" />
+        </Linker>
+        <Preprocessor>
+            <Define String="GUCEF_KAITAI_TESTAPP_BUILD_MODULE" />
+        </Preprocessor>
+		<RuntimeDependencies>
+			<RuntimeDependency Name="vfspluginZIP" />
+			<RuntimeDependency Name="dstorepluginJSONPARSER" />
+			<RuntimeDependency Name="dstorepluginPARSIFALXML" />
+			<RuntimeDependency Name="dstorepluginYAML" />
+			<RuntimeDependency Name="codecspluginZLIB" />
+			<RuntimeDependency Name="codecspluginSTBRUMMEHASH" />
+		</RuntimeDependencies>
+    </Module>
+</ModuleInfoEntry>

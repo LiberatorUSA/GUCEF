@@ -138,7 +138,7 @@ class CTestReader : public MT::CActiveObject
 {
     public:
 
-    typedef MT::CReadWriteLock::TRWLockStates   TRWLockStates;
+    typedef MT::CReadWriteLock::TRWLockStates                           TRWLockStates;
     typedef CORE::CTSharedPtr< MT::CScopeReaderLock, MT::CNoLock >      CScopeReaderLockPtr;
     typedef std::vector< CScopeReaderLockPtr >                          TScopeReaderLockVector;
 
@@ -175,31 +175,84 @@ class CTestReader : public MT::CActiveObject
 
 /*-------------------------------------------------------------------------*/
 
+class CTestReaderAndWriter : public MT::CActiveObject
+{
+    public:
+
+    typedef MT::CReadWriteLock::TRWLockStates                           TRWLockStates;
+    typedef CORE::CTSharedPtr< MT::CScopeReaderLock, MT::CNoLock >      CScopeReaderLockPtr;
+    typedef CORE::CTSharedPtr< MT::CScopeWriterLock, MT::CNoLock >      CScopeWriterLockPtr;
+    typedef std::pair< CScopeReaderLockPtr, CScopeWriterLockPtr >       TReadWriteScopeLockPtrs;
+    typedef std::vector< TReadWriteScopeLockPtrs >                      TScopeReaderWriterLockVector;
+    typedef std::vector< bool >                                         TBoolVector;
+
+    CTestReaderAndWriter( void );
+
+    virtual bool OnThreadStart( void* taskdata ) GUCEF_VIRTUAL_OVERRIDE;    
+    virtual void OnThreadStarted( void* taskdata ) GUCEF_VIRTUAL_OVERRIDE;
+    virtual bool OnThreadCycle( void* taskdata ) GUCEF_VIRTUAL_OVERRIDE;
+    virtual void OnThreadEnding( void* taskdata, bool willBeForced ) GUCEF_VIRTUAL_OVERRIDE;
+    virtual const MT::CILockable* AsLockable( void ) const GUCEF_VIRTUAL_OVERRIDE;
+
+    bool WasOnThreadStartTriggered( void ) const;
+    bool HadALockFailure( void ) const;    
+    TRWLockStates GetLastLockOperationResult( void ) const;
+    MT::Float64 GetTimeSinceThreadStartInMs( void ) const;
+    MT::Float64 GetCyclingDurationInMs( void ) const;
+    MT::UInt32 GetCurrentReentrancyDepth( void ) const;
+
+    void SignalCompletionOfWork( void );
+    
+    private:
+
+    CRwLockTestData* m_testData;
+    bool m_onThreadStartWasTriggered;
+    bool m_onThreadEndingWasTriggered;
+    TRWLockStates m_lastRwLockOpResult;
+    bool m_rwLockFailed;
+    bool m_isDone;
+    MT::UInt64 m_ticksAtLastCycle;
+    MT::UInt64 m_ticksAtThreadStart;
+    MT::UInt32 m_currentReentrancyDepth;
+    TScopeReaderWriterLockVector m_scopeLocks;
+    TBoolVector m_depthIsWriterFlags;
+};
+
+/*-------------------------------------------------------------------------*/
+
 class CRwLockTestData
 {
     public:
 
-    typedef std::vector< CTestWriter >  TTestWriterVector;
-    typedef std::vector< CTestReader >  TTestReaderVector;
+    typedef std::vector< CTestWriter >              TTestWriterVector;
+    typedef std::vector< CTestReader >              TTestReaderVector;
+    typedef std::vector< CTestReaderAndWriter >     TTestReaderAndWriterVector;
 
     Float64 ticksPerMs;
     
     MT::CReadWriteLock rwLock;
     TTestWriterVector writers;
     TTestReaderVector readers;
+    TTestReaderAndWriterVector readerAndWriters;
     UInt32 nrOfWriters;
     UInt32 nrOfReaders;
+    UInt32 nrOfReaderAndWriters;
 
     UInt32 writerWorkDurationInMs;
     UInt32 readerWorkDurationInMs;
+    UInt32 readerAndWriterWorkDurationInMs;
 
     bool writerWorkIsReentrant;
     UInt32 writerReentrancyDepth;
     bool readerWorkIsReentrant;
     UInt32 readerReentrancyDepth;
+    bool readerAndWriterWorkIsReentrant;
+    UInt32 readerAndWriterReentrancyDepth;
 
     bool useScopeObjects;
-
+    bool readerAndWriterUsesTopLevelReader;
+    Float32 readerAndWriterPercWrites;
+    
     CRwLockTestData( bool writersHavePriority, bool usingScopeObjects );
     ~CRwLockTestData();
 
@@ -208,6 +261,7 @@ class CRwLockTestData
 
     bool DidAnyWriterHaveALockFailure( void ) const;
     bool DidAnyReaderHaveALockFailure( void ) const;
+    bool DidAnyReaderWriterHaveALockFailure( void ) const;
     
     void SignalCompletionOfWorkToWriters( UInt32 nrOfWriters );
     void SignalCompletionOfWorkToReaders( UInt32 nrOfReaders );
@@ -233,15 +287,22 @@ CRwLockTestData::CRwLockTestData( bool writersHavePriority, bool usingScopeObjec
     , rwLock( writersHavePriority )
     , writers()
     , readers()
+    , readerAndWriters()
     , nrOfWriters( 0 )
     , nrOfReaders( 0 )
+    , nrOfReaderAndWriters( 0 )
     , writerWorkDurationInMs( 0 )
-    , readerWorkDurationInMs( 0 )    
+    , readerWorkDurationInMs( 0 ) 
+    , readerAndWriterWorkDurationInMs( 0 )
     , writerWorkIsReentrant( false )
     , writerReentrancyDepth( 0 )
     , readerWorkIsReentrant( false )
     , readerReentrancyDepth( 0 )
+    , readerAndWriterWorkIsReentrant( false )
+    , readerAndWriterReentrancyDepth( 0 )
     , useScopeObjects( usingScopeObjects )
+    , readerAndWriterUsesTopLevelReader( false )
+    , readerAndWriterPercWrites( 0.25 )
 {GUCEF_TRACE;
         
 }
@@ -335,7 +396,17 @@ CRwLockTestData::Configure( void )
         ++r;
     }
 
+    readerAndWriters.resize( nrOfReaderAndWriters );
+    TTestReaderAndWriterVector::iterator d = readerAndWriters.begin();
+    while ( d != readerAndWriters.end() )
+    {
+        if ( !(*d).Activate( this, true ) )
+            return false;
+        ++d;
+    }
+
     // To help reduce timing issues in the test on a slow system at least wait for the threads to start
+
     if ( !readers.empty() )
     {
         bool allReadersStarted = false;
@@ -374,6 +445,27 @@ CRwLockTestData::Configure( void )
                 ++w;
             }
             if ( !allWritersStarted )
+                MT::PrecisionDelay( 25 );
+        }
+    }
+
+    if ( !readerAndWriters.empty() )
+    {
+        bool allReaderAndWritersStarted = false;
+        while ( !allReaderAndWritersStarted )
+        {
+            allReaderAndWritersStarted = true;
+            TTestReaderAndWriterVector::iterator r = readerAndWriters.begin();
+            while ( r != readerAndWriters.end() )
+            {
+                if ( !(*r).WasOnThreadStartTriggered() )
+                {
+                    allReaderAndWritersStarted = false;
+                    break;
+                }
+                ++r;
+            }
+            if ( !allReaderAndWritersStarted )
                 MT::PrecisionDelay( 25 );
         }
     }
@@ -422,6 +514,27 @@ CRwLockTestData::Configure( void )
                 ++w;
             }
             if ( !allWritersLikelyInRwLock )
+                MT::PrecisionDelay( 25 );
+        }
+    }
+
+    if ( !readerAndWriters.empty() )
+    {
+        bool allReaderAndWritersLikelyInRwLock = false;
+        while ( !allReaderAndWritersLikelyInRwLock )
+        {
+            allReaderAndWritersLikelyInRwLock = true;
+            TTestReaderAndWriterVector::iterator r = readerAndWriters.begin();
+            while ( r != readerAndWriters.end() )
+            {
+                if ( GUCEF_RWLOCKTEST_TEST_THREAD_BOOTUP_TIME_IN_MS > (*r).GetTimeSinceThreadStartInMs() )
+                {
+                    allReaderAndWritersLikelyInRwLock = false;
+                    break;
+                }
+                ++r;
+            }
+            if ( !allReaderAndWritersLikelyInRwLock )
                 MT::PrecisionDelay( 25 );
         }
     }
@@ -501,6 +614,24 @@ CRwLockTestData::DidAnyReaderHaveALockFailure( void ) const
 
     TTestReaderVector::const_iterator i = readers.begin();
     while ( i != readers.end() )
+    {
+        if ( (*i).HadALockFailure() )
+        {
+            return true;
+        }
+        ++i;
+    }
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool 
+CRwLockTestData::DidAnyReaderWriterHaveALockFailure( void ) const
+{GUCEF_TRACE;
+
+    TTestReaderAndWriterVector::const_iterator i = readerAndWriters.begin();
+    while ( i != readerAndWriters.end() )
     {
         if ( (*i).HadALockFailure() )
         {
@@ -1040,6 +1171,345 @@ CTestReader::OnThreadEnding( void* taskdata, bool willBeForced )
         
     m_onThreadEndingWasTriggered = true;
 }
+/*-------------------------------------------------------------------------*/
+
+CTestReaderAndWriter::CTestReaderAndWriter( void )
+    : MT::CActiveObject()
+    , m_testData( GUCEF_NULL )
+    , m_onThreadStartWasTriggered( false )
+    , m_onThreadEndingWasTriggered( false )
+    , m_lastRwLockOpResult( TRWLockStates::RWLOCK_OPERATION_FAILED )
+    , m_rwLockFailed( false )
+    , m_isDone( false )
+    , m_ticksAtLastCycle( 0 )
+    , m_ticksAtThreadStart( 0 )
+    , m_currentReentrancyDepth( 0 )
+    , m_scopeLocks()
+    , m_depthIsWriterFlags()
+{GUCEF_TRACE;
+    
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CTestReaderAndWriter::WasOnThreadStartTriggered( void ) const
+{GUCEF_TRACE;
+        
+    return m_onThreadStartWasTriggered;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CTestReaderAndWriter::HadALockFailure( void ) const
+{GUCEF_TRACE;
+        
+    return m_rwLockFailed;
+}
+
+/*-------------------------------------------------------------------------*/
+
+CTestReaderAndWriter::TRWLockStates 
+CTestReaderAndWriter::GetLastLockOperationResult( void ) const
+{GUCEF_TRACE;
+        
+    return m_lastRwLockOpResult;
+}
+
+/*-------------------------------------------------------------------------*/
+
+void 
+CTestReaderAndWriter::SignalCompletionOfWork( void )
+{GUCEF_TRACE;
+        
+    m_isDone = true;
+}
+
+/*-------------------------------------------------------------------------*/
+
+MT::Float64 
+CTestReaderAndWriter::GetTimeSinceThreadStartInMs( void ) const
+{GUCEF_TRACE;
+    
+    return ( MT::PrecisionTickCount() - m_ticksAtThreadStart ) / m_testData->ticksPerMs;
+}
+
+/*-------------------------------------------------------------------------*/
+
+MT::Float64 
+CTestReaderAndWriter::GetCyclingDurationInMs( void ) const
+{GUCEF_TRACE;
+    
+    return ( m_ticksAtLastCycle - m_ticksAtThreadStart ) / m_testData->ticksPerMs;
+}
+
+/*-------------------------------------------------------------------------*/
+
+MT::UInt32 
+CTestReaderAndWriter::GetCurrentReentrancyDepth( void ) const
+{GUCEF_TRACE;
+        
+    return m_currentReentrancyDepth;
+}
+
+/*-------------------------------------------------------------------------*/
+
+const MT::CILockable* 
+CTestReaderAndWriter::AsLockable( void ) const
+{GUCEF_TRACE;
+        
+    return static_cast< const MT::CILockable* >( this );
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CTestReaderAndWriter::OnThreadStart( void* taskdata )
+{GUCEF_TRACE;
+        
+    m_testData = static_cast< CRwLockTestData* >( taskdata );    
+    m_ticksAtThreadStart = m_ticksAtLastCycle = MT::PrecisionTickCount();
+    m_onThreadStartWasTriggered = true;
+    
+    if ( m_testData->useScopeObjects )
+    {
+        m_scopeLocks.reserve( m_testData->readerAndWriterReentrancyDepth );
+
+        // Set up the flags to let us know if we should act as a reader or writer at each level of reentrancy
+        // we alternate and we need to match as we simulate going up and down the stack        
+        m_depthIsWriterFlags.reserve( m_testData->readerAndWriterReentrancyDepth );
+        if ( m_testData->readerAndWriterReentrancyDepth > 0 )
+        {
+            m_depthIsWriterFlags.push_back( !m_testData->readerAndWriterUsesTopLevelReader );
+            for ( UInt32 i=1; i<m_testData->readerAndWriterReentrancyDepth; ++i )
+            {
+                Float32 random = ( rand() / ( 1.0 * RAND_MAX ) );
+                bool isWriter = random <= m_testData->readerAndWriterPercWrites;
+                m_depthIsWriterFlags.push_back( isWriter );    
+            }
+        }
+        
+        if ( m_testData->readerAndWriterUsesTopLevelReader )
+        {
+            TReadWriteScopeLockPtrs scopeLockPtrs;
+            try
+            {
+                // Since scope objects area really intended for lock/unlock as your code stack flows we simulate a code callstack
+                // simply by having the scope locks in a collections which represents the callstack
+                scopeLockPtrs.first = CScopeReaderLockPtr( GUCEF_NEW MT::CScopeReaderLock( m_testData->rwLock ) );
+                m_scopeLocks.push_back( scopeLockPtrs );
+            }
+            catch ( const timeout_exception& )
+            {
+                m_rwLockFailed = true;
+            }
+
+            if ( !scopeLockPtrs.first->IsScopeReadLocked() )
+            {
+                m_rwLockFailed = true;
+            }
+        }
+        else
+        {
+            TReadWriteScopeLockPtrs scopeLockPtrs;
+            try
+            {
+                // Since scope objects area really intended for lock/unlock as your code stack flows we simulate a code callstack
+                // simply by having the scope locks in a collections which represents the callstack
+                scopeLockPtrs.second = CScopeWriterLockPtr( GUCEF_NEW MT::CScopeWriterLock( m_testData->rwLock ) );
+                m_scopeLocks.push_back( scopeLockPtrs );
+            }
+            catch ( const timeout_exception& )
+            {
+                m_rwLockFailed = true;
+            }
+
+            if ( !scopeLockPtrs.second->IsScopeWriteLocked() )
+            {
+                m_rwLockFailed = true;
+            }
+        }
+    }
+    else
+    {
+        if ( m_testData->readerAndWriterUsesTopLevelReader )
+        {
+            m_lastRwLockOpResult = m_testData->rwLock.ReaderStart();
+            if ( TRWLockStates::RWLOCK_OPERATION_SUCCESS != m_lastRwLockOpResult )
+                m_rwLockFailed = true;
+        }
+        else
+        {
+            m_lastRwLockOpResult = m_testData->rwLock.WriterStart();
+            if ( TRWLockStates::RWLOCK_OPERATION_SUCCESS != m_lastRwLockOpResult )
+                m_rwLockFailed = true;
+        }
+    }
+    return true;
+}
+
+/*-------------------------------------------------------------------------*/
+    
+void
+CTestReaderAndWriter::OnThreadStarted( void* taskdata ) 
+{GUCEF_TRACE;
+        
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CTestReaderAndWriter::OnThreadCycle( void* taskdata ) 
+{GUCEF_TRACE;
+        
+    MT::UInt64 newTickCount = MT::PrecisionTickCount();
+    MT::Float64 timeDeltaInMs = ( newTickCount - m_ticksAtThreadStart ) / m_testData->ticksPerMs;
+
+    if ( timeDeltaInMs >= m_testData->readerAndWriterWorkDurationInMs )
+        return true; // we are done
+
+    if ( m_testData->readerAndWriterWorkIsReentrant && ( m_currentReentrancyDepth < m_testData->readerAndWriterReentrancyDepth ) )
+    {
+        // We already hold the lock to be able to get here
+        // however we will now make a reentrant lock request from the same thread
+
+        if ( m_testData->useScopeObjects )
+        {        
+            bool shouldActAsWriter = m_depthIsWriterFlags[ m_currentReentrancyDepth ];
+            if ( shouldActAsWriter )
+            {
+                TReadWriteScopeLockPtrs scopeLockPtrs;
+                try
+                {
+                    // Since scope objects area really intended for lock/unlock as your code stack flows we simulate a code callstack
+                    // simply by having the scope locks in a collections which represents the callstack
+                    scopeLockPtrs.second = CScopeWriterLockPtr( GUCEF_NEW MT::CScopeWriterLock( m_testData->rwLock ) );
+                    m_scopeLocks.push_back( scopeLockPtrs );
+                }
+                catch ( const timeout_exception& )
+                {
+                    m_rwLockFailed = true;
+                }
+
+                if ( !scopeLockPtrs.second->IsScopeWriteLocked() )
+                {
+                    m_rwLockFailed = true;
+                }
+            }
+            else
+            {
+                TReadWriteScopeLockPtrs scopeLockPtrs;
+                try
+                {
+                    // Since scope objects area really intended for lock/unlock as your code stack flows we simulate a code callstack
+                    // simply by having the scope locks in a collections which represents the callstack
+                    scopeLockPtrs.first = CScopeReaderLockPtr( GUCEF_NEW MT::CScopeReaderLock( m_testData->rwLock ) );
+                    m_scopeLocks.push_back( scopeLockPtrs );
+                }
+                catch ( const timeout_exception& )
+                {
+                    m_rwLockFailed = true;
+                }
+
+                if ( !scopeLockPtrs.first->IsScopeReadLocked() )
+                {
+                    m_rwLockFailed = true;
+                }
+            }
+
+            if ( !m_rwLockFailed )
+            {
+                ++m_currentReentrancyDepth;
+            }
+        }
+        else
+        {
+            m_lastRwLockOpResult = m_testData->rwLock.WriterStart();
+            if ( TRWLockStates::RWLOCK_OPERATION_SUCCESS != m_lastRwLockOpResult )
+            {
+                m_rwLockFailed = true;
+            }
+            else
+            {
+                ++m_currentReentrancyDepth;
+            }
+        }
+    }
+    
+    m_ticksAtLastCycle = newTickCount;
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CTestReaderAndWriter::OnThreadEnding( void* taskdata, bool willBeForced )
+{GUCEF_TRACE;
+
+    if ( m_testData->useScopeObjects )    
+    {
+        if ( m_testData->readerAndWriterWorkIsReentrant )
+        {
+            ASSERT_TRUE( m_currentReentrancyDepth+1 == m_scopeLocks.size() );
+            
+            try
+            {
+                // We could just clear the entire lock collection but we are doing it intentionally verbose here
+                // intent is to simulate a stack unroll
+                for ( MT::UInt32 i=0; i<m_currentReentrancyDepth; ++i )
+                {
+                    // We must unroll the reentrancy on this thread
+                    // similar to rolling up in the call stack
+                    TReadWriteScopeLockPtrs scopeLocks = m_scopeLocks.back();
+                    m_scopeLocks.pop_back();
+
+                    // We are supposedly leaving the callstack scope so we end the life of the scope object
+                    if ( scopeLocks.first.IsNULL() )
+                    {
+                        ASSERT_TRUE( 1 == scopeLocks.second.GetReferenceCount() );
+                        scopeLocks.second.Unlink();
+                    }
+                    else
+                    {
+                        ASSERT_TRUE( 1 == scopeLocks.first.GetReferenceCount() );
+                        scopeLocks.first.Unlink();
+                    }
+                }
+            }
+            catch ( const timeout_exception& )
+            {
+                m_rwLockFailed = true;
+            }
+        }
+
+        m_scopeLocks.clear();
+    }
+    else
+    {
+        if ( m_testData->readerAndWriterWorkIsReentrant )
+        {
+            for ( MT::UInt32 i=0; i<m_currentReentrancyDepth; ++i )
+            {
+                // We must unroll the reentrancy on this thread
+                // similar to rolling up in the call stack
+                m_lastRwLockOpResult = m_testData->rwLock.WriterStop();
+                if ( TRWLockStates::RWLOCK_OPERATION_SUCCESS != m_lastRwLockOpResult )
+                {
+                    m_rwLockFailed = true;
+                }
+            }
+        }
+
+        m_lastRwLockOpResult = m_testData->rwLock.WriterStop();
+        if ( TRWLockStates::RWLOCK_OPERATION_SUCCESS != m_lastRwLockOpResult )
+        {
+            m_rwLockFailed = true;
+        }
+    }
+
+    m_onThreadEndingWasTriggered = true;
+}
 
 /*-------------------------------------------------------------------------*/
 
@@ -1339,6 +1809,146 @@ PerformReaderWriterLockSingleThreadTests_SingleWriterReentrant( bool writersHave
     }
 }
 
+
+/*-------------------------------------------------------------------------*/
+
+void
+PerformReaderWriterLockSingleThreadTests_SingleReaderWriterReentrant( bool writersHavePriority, bool usingScopeObjects )
+{GUCEF_TRACE;
+
+    typedef std::vector< bool >     TBoolVector;
+    try
+    {       
+        CRwLockTestData testData( writersHavePriority, usingScopeObjects );
+
+        // test with a singular re-entrant writer (this thread)
+        testData.nrOfWriters = 0;
+        testData.nrOfReaders = 0;
+        testData.nrOfReaderAndWriters = 0;
+        testData.writerWorkDurationInMs = 100;
+        testData.readerWorkDurationInMs = 100;  
+        testData.readerAndWriterWorkDurationInMs = 100;
+
+        testData.readerAndWriterReentrancyDepth = 50;
+
+        ASSERT_TRUE( writersHavePriority == testData.rwLock.DoWritersOverrule() );
+        UInt32 activeReaderCount = testData.rwLock.ActiveReaderCount();
+        UInt32 activeReaderReentrantCount = testData.rwLock.ActiveReaderReentrancyDepth( MT::GetCurrentTaskID() );
+        UInt32 activeWriterCount = testData.rwLock.ActiveWriterCount();
+        UInt32 queuedReaderCount = testData.rwLock.QueuedReaderCount();
+        UInt32 queuedWriterCount = testData.rwLock.QueuedWriterCount();
+        UInt32 activeWriterReentrancyDepth = testData.rwLock.ActiveWriterReentrancyDepth();
+        ASSERT_TRUE( 0 == activeReaderCount );
+        ASSERT_TRUE( 0 == activeReaderReentrantCount );
+        ASSERT_TRUE( 0 == activeWriterCount );
+        ASSERT_TRUE( 0 == activeWriterReentrancyDepth );
+        ASSERT_TRUE( 0 == queuedReaderCount );
+        ASSERT_TRUE( 0 == queuedWriterCount );
+
+        // Set up the flags to let us know if we should act as a reader or writer at each level of reentrancy
+        // we alternate and we need to match as we simulate going up and down the stack
+        TBoolVector depthIsWriterFlags;
+        depthIsWriterFlags.reserve( testData.readerAndWriterReentrancyDepth+1 );
+        if ( testData.readerAndWriterReentrancyDepth > 0 )
+        {
+            depthIsWriterFlags.push_back( !testData.readerAndWriterUsesTopLevelReader );
+            for ( UInt32 i=0; i<testData.readerAndWriterReentrancyDepth; ++i )
+            {
+                Float32 random = ( rand() / ( 1.0 * RAND_MAX ) );
+                bool isWriter = random <= testData.readerAndWriterPercWrites;
+                depthIsWriterFlags.push_back( isWriter );    
+            }
+        }
+
+        UInt32 writeCount = 0;
+        UInt32 readCount = 0;
+        for ( UInt32 i=0; i<=testData.readerAndWriterReentrancyDepth; ++i )
+        {
+            bool actAsWriter = depthIsWriterFlags[ i ];
+            if ( actAsWriter )
+            {
+                ASSERT_TRUE( MT::CReadWriteLock::TRWLockStates::RWLOCK_OPERATION_SUCCESS == testData.rwLock.WriterStart() );
+                ++writeCount;
+            }
+            else
+            {
+                ASSERT_TRUE( MT::CReadWriteLock::TRWLockStates::RWLOCK_OPERATION_SUCCESS == testData.rwLock.ReaderStart() );
+                ++readCount;
+            }
+            activeReaderCount = testData.rwLock.ActiveReaderCount();
+            activeReaderReentrantCount = testData.rwLock.ActiveReaderReentrancyDepth( MT::GetCurrentTaskID() );
+            activeWriterCount = testData.rwLock.ActiveWriterCount();
+            queuedReaderCount = testData.rwLock.QueuedReaderCount();
+            queuedWriterCount = testData.rwLock.QueuedWriterCount();
+            activeWriterReentrancyDepth = testData.rwLock.ActiveWriterReentrancyDepth();
+            if ( readCount > 0 )
+            {
+                ASSERT_TRUE( 1 == activeReaderCount );
+                ASSERT_TRUE( activeReaderReentrantCount == readCount-1 );
+            }
+            if ( writeCount > 0 )
+            {
+                ASSERT_TRUE( 1 == activeWriterCount );
+                ASSERT_TRUE( activeWriterReentrancyDepth == writeCount-1 );
+            }
+            ASSERT_TRUE( 0 == queuedReaderCount );
+            ASSERT_TRUE( 0 == queuedWriterCount );
+        }
+
+
+        for ( Int32 i=testData.readerAndWriterReentrancyDepth; i>=0; --i )
+        {
+            bool actAsWriter = depthIsWriterFlags[ i ];
+            if ( actAsWriter )
+            {
+                ASSERT_TRUE( MT::CReadWriteLock::TRWLockStates::RWLOCK_OPERATION_SUCCESS == testData.rwLock.WriterStop() );
+            }
+            else
+            {
+                ASSERT_TRUE( MT::CReadWriteLock::TRWLockStates::RWLOCK_OPERATION_SUCCESS == testData.rwLock.ReaderStop() );
+            }
+            activeReaderCount = testData.rwLock.ActiveReaderCount();
+            activeReaderReentrantCount = testData.rwLock.ActiveReaderReentrancyDepth( MT::GetCurrentTaskID() );
+            activeWriterCount = testData.rwLock.ActiveWriterCount();
+            queuedReaderCount = testData.rwLock.QueuedReaderCount();
+            queuedWriterCount = testData.rwLock.QueuedWriterCount();
+            activeWriterReentrancyDepth = testData.rwLock.ActiveWriterReentrancyDepth(); 
+
+            if ( actAsWriter )
+                --writeCount;
+            else
+                --readCount;
+
+            if ( readCount > 0 )
+            {
+                ASSERT_TRUE( 1 == activeReaderCount );
+                ASSERT_TRUE( activeReaderReentrantCount == (readCount-1) );
+            }
+            else
+            {
+                ASSERT_TRUE( 0 == activeReaderCount );
+                ASSERT_TRUE( 0 == activeReaderReentrantCount );
+            }
+            if ( writeCount > 0 )
+            {
+                ASSERT_TRUE( 1 == activeWriterCount );
+                ASSERT_TRUE( activeWriterReentrancyDepth == (writeCount-1) );
+            }
+            else
+            {
+                ASSERT_TRUE( 0 == activeWriterCount );
+                ASSERT_TRUE( 0 == activeWriterReentrancyDepth );
+            }
+            ASSERT_TRUE( 0 == queuedReaderCount );
+            ASSERT_TRUE( 0 == queuedWriterCount );
+        }
+    }
+    catch( ... )
+    {
+        ERRORHERE;
+    }
+}
+
 /*-------------------------------------------------------------------------*/
 
 void
@@ -1350,6 +1960,7 @@ PerformReaderWriterLockSingleThreadTests( bool writersHavePriority, bool usingSc
     PerformReaderWriterLockSingleThreadTests_SingleWriter( writersHavePriority, usingScopeObjects );
     PerformReaderWriterLockSingleThreadTests_SingleReaderReentrant( writersHavePriority, usingScopeObjects );
     PerformReaderWriterLockSingleThreadTests_SingleWriterReentrant( writersHavePriority, usingScopeObjects );
+    PerformReaderWriterLockSingleThreadTests_SingleReaderWriterReentrant( writersHavePriority, usingScopeObjects );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -1523,6 +2134,70 @@ PerformReaderWriterLockTests_MultipleWriters( bool writersHavePriority, bool usi
         ASSERT_TRUE( writersHavePriority == testData.rwLock.DoWritersOverrule() );
         ASSERT_TRUE( false == testData.DidAnyReaderHaveALockFailure() );
         ASSERT_TRUE( false == testData.DidAnyWriterHaveALockFailure() );
+        ASSERT_TRUE( testData.Shutdown() );
+    }
+    catch( ... )
+    {
+        ERRORHERE;
+    }
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+PerformReaderWriterLockTests_MultipleReaderWritersReentrant( bool writersHavePriority, bool usingScopeObjects )
+{GUCEF_TRACE;
+
+    try
+    {       
+        CRwLockTestData testData( writersHavePriority, usingScopeObjects );
+
+        // test with a multiple writers all starting +- at the same time
+        // they will keep running. Since these are different writers only 1 should be allowed active
+        // the rest should queue up. We now also make the active writer reentrant
+        testData.nrOfWriters = 0;
+        testData.nrOfReaders = 0;
+        testData.nrOfReaderAndWriters = 50;
+        testData.readerAndWriterPercWrites = 0.25;
+        testData.readerAndWriterUsesTopLevelReader = false; // <- top lock will always be a write lock
+        testData.writerReentrancyDepth = 0;
+        testData.writerWorkIsReentrant = false;
+        testData.readerReentrancyDepth = 0;
+        testData.readerWorkIsReentrant = false;
+        testData.readerAndWriterWorkIsReentrant = true;
+        testData.readerAndWriterReentrancyDepth = 10;
+        testData.writerWorkDurationInMs = GUCEF_UINT32MAX;
+        testData.readerWorkDurationInMs = GUCEF_UINT32MAX;
+        testData.readerAndWriterWorkDurationInMs = GUCEF_UINT32MAX;
+        ASSERT_TRUE( testData.Configure() );
+        UInt32 activeReaderCount = testData.rwLock.ActiveReaderCount();
+        UInt32 activeWriterCount = testData.rwLock.ActiveWriterCount();
+        UInt32 queuedReaderCount = testData.rwLock.QueuedReaderCount();
+        UInt32 queuedWriterCount = testData.rwLock.QueuedWriterCount();
+        //ASSERT_TRUE( 0 == activeReaderCount );
+        ASSERT_TRUE( 1 == activeWriterCount );
+        ASSERT_TRUE( 0 == queuedReaderCount );
+        ASSERT_TRUE( queuedWriterCount > 0 );
+        MT::PrecisionDelay( GUCEF_RWLOCKTEST_TEST_THREAD_BOOTUP_TIME_IN_MS * 2 );
+        UInt32 cyclingReaderWritersFound = 0;
+        UInt32 cyclingReaderWriterIndex = 0;
+        for ( UInt32 i=0; i<testData.nrOfReaderAndWriters; ++i )
+        {
+            MT::Float64 cyclingDurationInMs = testData.readerAndWriters[ i ].GetCyclingDurationInMs();
+            if ( cyclingDurationInMs > GUCEF_RWLOCKTEST_TEST_THREAD_BOOTUP_TIME_IN_MS )
+            {
+                ++cyclingReaderWritersFound;
+                cyclingReaderWriterIndex = i;
+            }
+        }
+        ASSERT_TRUE( 1 == cyclingReaderWritersFound );
+        UInt32 activeWriterReentrancyDepth = testData.rwLock.ActiveWriterReentrancyDepth();
+        ASSERT_TRUE( testData.readerAndWriterReentrancyDepth == activeWriterReentrancyDepth );        
+        ASSERT_TRUE( writersHavePriority == testData.rwLock.DoWritersOverrule() );
+        ASSERT_TRUE( false == testData.DidAnyReaderHaveALockFailure() );
+        ASSERT_TRUE( false == testData.DidAnyWriterHaveALockFailure() );
+        ASSERT_TRUE( false == testData.DidAnyReaderWriterHaveALockFailure() );
+        ASSERT_TRUE( testData.readerAndWriterReentrancyDepth == testData.readerAndWriters[ cyclingReaderWriterIndex ].GetCurrentReentrancyDepth() );
         ASSERT_TRUE( testData.Shutdown() );
     }
     catch( ... )
@@ -1722,6 +2397,84 @@ PerformReaderWriterLockTests_MultipleWritersMultipleReaders( bool writersHavePri
 /*-------------------------------------------------------------------------*/
 
 void
+PerformReaderWriterLockTests_MultipleWritersMultipleReaderWriters( bool writersHavePriority, bool usingScopeObjects )
+{GUCEF_TRACE;
+
+    try
+    {       
+        bool hadATestRunWithActiveWriters = false;
+        bool hadATestRunWithActiveReaders = false;
+
+        do 
+        {
+            CRwLockTestData testData( writersHavePriority, usingScopeObjects );
+
+            // test with a multiple readers and writers all starting +- at the same time
+            // this test is heavily reliant on timing and as such we can only really check that the tallies make sense
+            testData.nrOfWriters = 5;
+            testData.nrOfReaders = 0;
+            testData.nrOfReaderAndWriters = 25;
+            testData.writerReentrancyDepth = 0;
+            testData.writerWorkIsReentrant = false;
+            testData.readerReentrancyDepth = 0;
+            testData.readerWorkIsReentrant = false;
+            testData.writerWorkDurationInMs = GUCEF_UINT32MAX;
+            testData.readerWorkDurationInMs = GUCEF_UINT32MAX;
+            ASSERT_TRUE( testData.Configure() );
+            UInt32 activeReaderCount = testData.rwLock.ActiveReaderCount();
+            UInt32 activeWriterCount = testData.rwLock.ActiveWriterCount();
+            UInt32 activeWriterReentrancyDepth = testData.rwLock.ActiveWriterReentrancyDepth();
+            UInt32 queuedReaderCount = testData.rwLock.QueuedReaderCount();
+            UInt32 queuedWriterCount = testData.rwLock.QueuedWriterCount();
+            ASSERT_TRUE( testData.nrOfReaders == ( activeReaderCount + queuedReaderCount ) );
+            ASSERT_TRUE( testData.nrOfWriters == ( activeWriterCount + queuedWriterCount ) );
+            ASSERT_TRUE( 0 == activeWriterReentrancyDepth );
+            MT::PrecisionDelay( GUCEF_RWLOCKTEST_TEST_THREAD_BOOTUP_TIME_IN_MS * 2 );
+            UInt32 cyclingWritersFound = 0;
+            for ( UInt32 i=0; i<testData.nrOfWriters; ++i )
+            {
+                MT::Float64 cyclingDurationInMs = testData.writers[ i ].GetCyclingDurationInMs();
+                if ( cyclingDurationInMs > GUCEF_RWLOCKTEST_TEST_THREAD_BOOTUP_TIME_IN_MS )
+                {
+                    ++cyclingWritersFound;
+                }
+            }
+            UInt32 cyclingReadersFound = 0;
+            for ( UInt32 i=0; i<testData.nrOfReaders; ++i )
+            {
+                MT::Float64 cyclingDurationInMs = testData.readers[ i ].GetCyclingDurationInMs();
+                if ( cyclingDurationInMs > GUCEF_RWLOCKTEST_TEST_THREAD_BOOTUP_TIME_IN_MS )
+                {
+                    ++cyclingReadersFound;
+                }
+            }
+            ASSERT_TRUE( activeWriterCount == cyclingWritersFound );
+            ASSERT_TRUE( activeReaderCount == cyclingReadersFound );
+            ASSERT_TRUE( cyclingWritersFound <= 1 );
+            ASSERT_TRUE( ( activeReaderCount > 0 && 0 == activeWriterCount ) || ( activeWriterCount > 0 && 0 == activeReaderCount ) );
+            ASSERT_TRUE( writersHavePriority == testData.rwLock.DoWritersOverrule() );
+            ASSERT_TRUE( false == testData.DidAnyReaderHaveALockFailure() );
+            ASSERT_TRUE( false == testData.DidAnyWriterHaveALockFailure() );
+
+            if ( activeWriterCount > 0 )
+                hadATestRunWithActiveWriters = true;
+            if ( activeReaderCount > 0  )
+                hadATestRunWithActiveReaders = true;
+
+            ASSERT_TRUE( testData.Shutdown() );
+        }
+        while ( ( writersHavePriority && !hadATestRunWithActiveWriters ) || 
+                ( !writersHavePriority && !hadATestRunWithActiveReaders ) );
+    }
+    catch( ... )
+    {
+        ERRORHERE;
+    }
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
 PerformReaderWriterLockTests( bool writersHavePriority, bool usingScopeObjects )
 {GUCEF_TRACE;
 
@@ -1731,7 +2484,8 @@ PerformReaderWriterLockTests( bool writersHavePriority, bool usingScopeObjects )
     PerformReaderWriterLockTests_MultipleWriters( writersHavePriority, usingScopeObjects );
     PerformReaderWriterLockTests_MultipleReadersReentrant( writersHavePriority, usingScopeObjects );
     PerformReaderWriterLockTests_MultipleWritersReentrant( writersHavePriority, usingScopeObjects );    
-    PerformReaderWriterLockTests_MultipleWritersMultipleReaders( writersHavePriority, usingScopeObjects );    
+    PerformReaderWriterLockTests_MultipleWritersMultipleReaders( writersHavePriority, usingScopeObjects ); 
+    PerformReaderWriterLockTests_MultipleReaderWritersReentrant( writersHavePriority, usingScopeObjects );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -1742,10 +2496,13 @@ PerformReaderWriterLockTests( void )
 
     std::cout << "\n\n**** COMMENCING Reader Writer lock TESTS ****\n";
 
+    // perform tests in the calling thread
     PerformReaderWriterLockSingleThreadTests( true, false );
     PerformReaderWriterLockSingleThreadTests( true, true );
     PerformReaderWriterLockSingleThreadTests( false, false );
     PerformReaderWriterLockSingleThreadTests( false, true );
+
+    // spin up worker threads and run test workloads from that context
     PerformReaderWriterLockTests( true, false );
     PerformReaderWriterLockTests( true, true );
     //PerformReaderWriterLockTests( false, false );

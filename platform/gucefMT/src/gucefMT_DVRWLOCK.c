@@ -694,11 +694,17 @@ rwl_reader_start( TRWLock* rwlock, UInt32 lockWaitTimeoutInMs )
                             /*
                              *  The reader thread is also the writer thread
                              *  allow it to proceed since we already have write access anyway
-                             *  Treat it as writer reentrancy, in essense taking another write lock
                              */
-                            ++rwlock->activeWriterReentrancyCount;
-                            MutexUnlock( rwlock->datalock );
-                            return GUCEF_RWLOCK_OPERATION_SUCCESS;
+                            if ( rwl_impl_push_active_reader( rwlock ) != 0 )
+                            {
+                                MutexUnlock( rwlock->datalock );
+                                return GUCEF_RWLOCK_OPERATION_SUCCESS;
+                            }
+                            else
+                            {
+                                MutexUnlock( rwlock->datalock );
+                                return GUCEF_RWLOCK_OPERATION_FAILED;
+                            }
                         }
                     }                    
                     
@@ -962,12 +968,20 @@ rwl_reader_stop( TRWLock *rwlock )
                     {
                         /*
                          *  The caller is the currently active writer thread who also grabbed a read lock
-                         *  this is considered a no-op since the write lock is read-write access and already covered the read access
+                         *  this is considered ok since the write lock is read-write access and already covered the read access
                          */
-                        --rwlock->activeWriterReentrancyCount;
-                        MutexUnlock( rwlock->datalock );
-                        GUCEF_END;
-                        return GUCEF_RWLOCK_OPERATION_SUCCESS;
+                        if ( rwl_impl_pop_active_reader( rwlock ) != 0 )
+                        {
+                            MutexUnlock( rwlock->datalock );
+                            GUCEF_END;
+                            return GUCEF_RWLOCK_OPERATION_SUCCESS;
+                        }
+                        else
+                        {
+                            MutexUnlock( rwlock->datalock );
+                            GUCEF_END;
+                            return GUCEF_RWLOCK_OPERATION_FAILED;
+                        }
                     }
                     else
                     {
@@ -1063,14 +1077,17 @@ rwl_reader_transition_to_writer( TRWLock* rwlock, UInt32 lockWaitTimeoutInMs )
 	            /*
                  *	Sanity check
                  */
-                if ( rwlock->activeWriterCount > 0            ||
-                     rwlock->activeWriterReentrancyCount > 0  ||
+                if ( ( ( rwlock->activeWriterCount > 0            ||
+                         rwlock->activeWriterReentrancyCount > 0  ) && rwlock->lastWriterThreadId != callerThreadId ) ||
                      rwlock->activeReaderCount <= 0           )
                 {
                     /*
                      *  You should not get here
                      *  We have not met the prerequisite conditions to transition a reader
                      *      - There must be no active writer because presumably you already have an active reader
+                     *              Exception is the current is already both a reader and a writer.
+                     *              In that case you are allowed to transition the reader part since you 
+                     *              already have a write lock anyway
                      *      - There must be an active reader because how else can you transition it
                      */
                     GUCEF_ASSERT_ALWAYS;

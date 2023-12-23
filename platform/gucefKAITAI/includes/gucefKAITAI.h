@@ -16,3 +16,51 @@
  *  limitations under the License.
  */
 
+/*
+ *      This is the main include header for the gucefKAITAI library.
+ *      It is part of a framework called GUCEF.
+ *      All classes in this library have to do with utilizing the Kaitai descriptive format to interpret binary data
+ */
+
+#ifndef GUCEF_KAITAI_H
+#define GUCEF_KAITAI_H
+
+/*-------------------------------------------------------------------------//
+//                                                                         //
+//      INCLUDES                                                           //
+//                                                                         //
+//-------------------------------------------------------------------------*/
+
+/*
+ *      Library build configuration      
+ */
+#ifndef GUCEF_KAITAI_CONFIG_H
+#include "gucefKAITAI_config.h"
+#define GUCEF_KAITAI_CONFIG_H
+#endif /* GUCEF_KAITAI_CONFIG_H ? */
+
+/*
+ *      Library specific macros and generic macros
+ */
+#ifndef GUCEF_KAITAI_MACROS_H
+#include "gucefKAITAI_macros.h"
+#define GUCEF_KAITAI_MACROS_H
+#endif /* GUCEF_KAITAI_MACROS_H ? */
+
+/*---------------------------------------------------------------------------/
+
+        C++ includes
+
+/---------------------------------------------------------------------------*/
+#ifdef __cplusplus
+
+#ifndef GUCEF_KAITAI_CKAITAISCHEMA_H
+#include "gucefKAITAI_CKaitaiSchema.h"
+#define GUCEF_KAITAI_CKAITAISCHEMA_H
+#endif /* GUCEF_KAITAI_CKAITAISCHEMA_H ? */
+
+
+#endif /* __cplusplus ? */
+/*--------------------------------------------------------------------------*/
+
+#endif /* GUCEF_KAITAI_H ? */

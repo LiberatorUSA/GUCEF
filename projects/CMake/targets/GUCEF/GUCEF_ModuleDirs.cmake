@@ -157,6 +157,7 @@ add_subdirectory( ${CMAKE_CURRENT_SOURCE_DIR}/../../../../tests/gucefDRN_TestApp
 add_subdirectory( ${CMAKE_CURRENT_SOURCE_DIR}/../../../../tests/gucefGUI_TestApp ${CMAKE_BINARY_DIR}/gucefGUI_TestApp )
 add_subdirectory( ${CMAKE_CURRENT_SOURCE_DIR}/../../../../tests/gucefIMAGE_TestApp ${CMAKE_BINARY_DIR}/gucefIMAGE_TestApp )
 add_subdirectory( ${CMAKE_CURRENT_SOURCE_DIR}/../../../../tests/gucefINPUT_TestApp ${CMAKE_BINARY_DIR}/gucefINPUT_TestApp )
+add_subdirectory( ${CMAKE_CURRENT_SOURCE_DIR}/../../../../tests/gucefKAITAI_TestApp ${CMAKE_BINARY_DIR}/gucefKAITAI_TestApp )
 add_subdirectory( ${CMAKE_CURRENT_SOURCE_DIR}/../../../../tests/gucefLOADER_TestApp ${CMAKE_BINARY_DIR}/gucefLOADER_TestApp )
 add_subdirectory( ${CMAKE_CURRENT_SOURCE_DIR}/../../../../tests/gucefMT_TestApp ${CMAKE_BINARY_DIR}/gucefMT_TestApp )
 add_subdirectory( ${CMAKE_CURRENT_SOURCE_DIR}/../../../../tests/gucefPATCHERAPP_TestApp ${CMAKE_BINARY_DIR}/gucefPATCHERAPP_TestApp )

@@ -59,6 +59,30 @@ CKaitaiSchemaEnumDefinition::CKaitaiSchemaEnumDefinition( void )
 {GUCEF_TRACE;
 
 }
+/*-------------------------------------------------------------------------*/
+
+CKaitaiSchemaEnumDefinition::CKaitaiSchemaEnumDefinition( const CKaitaiSchemaEnumDefinition& src )
+    : CORE::CIDataNodeSerializable( src )
+    , id( src.id )
+    , values( src.values )
+{GUCEF_TRACE;
+
+}
+
+/*-------------------------------------------------------------------------*/
+
+CKaitaiSchemaEnumDefinition& 
+CKaitaiSchemaEnumDefinition::operator=( const CKaitaiSchemaEnumDefinition& src )
+{GUCEF_TRACE;
+
+    if ( this != &src )
+    {
+        CORE::CIDataNodeSerializable::operator=( src );
+        id = src.id;
+        values = src.values;
+    }
+    return *this;
+}
 
 /*-------------------------------------------------------------------------*/
 

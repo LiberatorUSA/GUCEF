@@ -15,6 +15,7 @@
 		<RuntimeDependencies>
 			<RuntimeDependency Name="dstorepluginJSONPARSER" />
 			<RuntimeDependency Name="dstorepluginPARSIFALXML" />
+			<RuntimeDependency Name="dstorepluginYAML" />
 		</RuntimeDependencies>
     </Module>
 	<Module Platform="mswin" >

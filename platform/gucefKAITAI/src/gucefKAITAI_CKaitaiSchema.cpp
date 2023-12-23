@@ -58,13 +58,45 @@ const CORE::CString CKaitaiSchema::ClassTypeName = "GUCEF::KAITAI::CKaitaiSchema
 //-------------------------------------------------------------------------*/
 
 CKaitaiSchema::CKaitaiSchema( void )
-    : id()
+    : CORE::CIDataNodeSerializable()
+    , id()
     , imports()
     , endianess( GUCEF_BYTEORDER_UNKNOWN_ENDIAN )
     , fields()
     , enums()
 {GUCEF_TRACE;
 
+}
+
+/*-------------------------------------------------------------------------*/
+
+CKaitaiSchema::CKaitaiSchema( const CKaitaiSchema& src )
+    : CORE::CIDataNodeSerializable( src )
+    , id( src.id )
+    , imports( src.imports )
+    , endianess( src.endianess )
+    , fields( src.fields )
+    , enums( src.enums )
+{GUCEF_TRACE;
+
+}
+
+/*-------------------------------------------------------------------------*/
+
+CKaitaiSchema& 
+CKaitaiSchema::operator=( const CKaitaiSchema& src )
+{GUCEF_TRACE;
+
+    if ( this != &src )
+    {
+        CORE::CIDataNodeSerializable::operator=( src );
+        id = src.id;
+        imports = src.imports;
+        endianess = src.endianess;
+        fields = src.fields;
+        enums = src.enums;
+    }
+    return *this;
 }
 
 /*-------------------------------------------------------------------------*/
