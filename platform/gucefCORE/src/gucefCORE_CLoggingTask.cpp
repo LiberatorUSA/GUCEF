@@ -319,7 +319,7 @@ MT::TLockStatus
 CLoggingTask::Lock( UInt32 lockWaitTimeoutInMs ) const
 {GUCEF_TRACE;
 
-    return MT::CReadWriteLock::RwLockStateToLockStatus( m_mailbox.GetLock().WriterStart( lockWaitTimeoutInMs ) );
+    return m_mailbox.GetLock().Lock( lockWaitTimeoutInMs );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -328,7 +328,7 @@ MT::TLockStatus
 CLoggingTask::Unlock( void ) const
 {GUCEF_TRACE;
 
-    return MT::CReadWriteLock::RwLockStateToLockStatus( m_mailbox.GetLock().WriterStop() ); 
+    return m_mailbox.GetLock().Unlock(); 
 }
 
 /*-------------------------------------------------------------------------*/

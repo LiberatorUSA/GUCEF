@@ -123,6 +123,17 @@ MutexLocked( struct SMutex* mutex );
 /*-------------------------------------------------------------------------*/
 
 /**
+ *  Returns the reentrancy count on the lock by the current thread holding the lock.
+ *
+ *  Note that this is subject to race conditions and it only intended as a snapshot-in-time
+ *  The value should only be considered accurate when queried by the thread holding the lock
+ */
+GUCEF_MT_PUBLIC_C Int32 
+MutexReentrancy( struct SMutex* mutex );
+
+/*-------------------------------------------------------------------------*/
+
+/**
  *      Unlocks the mutex after a call to Lock_Mutex(). Other processes
  *      will have the ability to get a mutex lock after this call.
  *      The boolean return value indicates wheter the unlock failed or succeeded.

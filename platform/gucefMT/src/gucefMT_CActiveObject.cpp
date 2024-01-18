@@ -314,9 +314,13 @@ CActiveObject::Deactivate( bool force, bool callerShouldWait )
     }
     else
     {
+        CObjectScopeLock lock( this );
         m_isDeactivationRequested = true;
         if ( _active && callerShouldWait )
         {
+            OnThreadEnding( m_threadData, false );
+
+            lock.EarlyUnlock();
             UInt32 waitResult = ThreadWait( _td, 15000 );
             OnThreadEnded( m_threadData, false );
         }

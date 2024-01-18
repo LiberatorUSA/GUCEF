@@ -244,7 +244,7 @@ void
 CPumpedObserver::ClearNotifierReferencesFromMailbox( CNotifier* notifier )
 {GUCEF_TRACE;
 
-    MT::CScopeWriterLock writer( m_mailbox.GetLock() );
+    MT::CScopeMutex writer( m_mailbox.GetLock() );
 
     MT::CTMailBox< CEvent >::TMailQueue::iterator i = m_mailbox.begin( writer );
     while ( i != m_mailbox.end() )
@@ -341,12 +341,12 @@ CPumpedObserver::OnPulse( CNotifier* notifier                       ,
 
     if ( m_notificationsHolds <= 0 )
     {
-        MT::CScopeReaderLock reader( m_mailbox.GetLock() );
+        MT::CScopeMutex lock( m_mailbox.GetLock() );
         
         CEvent mailEventID;
         CICloneable* dataptr( GUCEF_NULL );
         CMailElement* maildata( GUCEF_NULL );
-        while ( m_mailbox.PeekMail( reader      ,
+        while ( m_mailbox.PeekMail( lock        ,
                                     mailEventID ,
                                     &dataptr    ) )
         {
@@ -384,11 +384,7 @@ CPumpedObserver::OnPulse( CNotifier* notifier                       ,
                 return;
             }
 
-            {
-                MT::CScopeWriterLock writer( reader );
-                m_mailbox.PopMail( writer );
-                writer.TransitionToReader( reader );
-            }
+            m_mailbox.PopMail( lock );
         }
     }
 
@@ -613,7 +609,7 @@ MT::TLockStatus
 CPumpedObserver::NotificationReadOnlyLock( UInt32 lockWaitTimeoutInMs ) const
 {GUCEF_TRACE;
 
-    return m_mailbox.GetLock().ReadOnlyLock( lockWaitTimeoutInMs );
+    return m_mailbox.GetLock().Lock( lockWaitTimeoutInMs );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -622,7 +618,7 @@ MT::TLockStatus
 CPumpedObserver::NotificationReadOnlyUnlock( void ) const
 {GUCEF_TRACE;
 
-    return m_mailbox.GetLock().ReadOnlyUnlock();
+    return m_mailbox.GetLock().Unlock();
 }
 
 /*-------------------------------------------------------------------------*/

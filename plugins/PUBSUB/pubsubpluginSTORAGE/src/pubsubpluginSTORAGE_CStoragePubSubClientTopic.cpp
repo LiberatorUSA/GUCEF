@@ -1264,6 +1264,63 @@ CStoragePubSubClientTopic::StopVfsOps( void )
 /*-------------------------------------------------------------------------*/
 
 void
+CStoragePubSubClientTopic::AddVfsFileToSubscription( const CORE::CString& vfsFilePath )
+{GUCEF_TRACE;
+
+    CORE::CDateTime containerFileFirstMsgDt;
+    CORE::CDateTime containerFileLastMsgDt;
+    CORE::CDateTime containerFileCaptureDt;
+    if ( GetTimestampsFromContainerFilename( vfsFilePath, containerFileFirstMsgDt, containerFileLastMsgDt, containerFileCaptureDt ) )
+    {
+        // Now that we have the relevant timestamps we check these against the ranges of the persistent requests
+        // this is on a first come first serve basis if we find a match
+
+        StorageToPubSubRequestDeque::iterator i = m_stage0StorageToPubSubRequests.begin();
+        while ( i != m_stage0StorageToPubSubRequests.end() )
+        {
+            // Check to see if the file is in range
+            const StorageToPubSubRequest& persistentRequest = (*i);                        
+            bool firstMsgIsInRange = containerFileFirstMsgDt.IsWithinRange( persistentRequest.startDt, persistentRequest.endDt );
+            bool lastMsgIsInRange = containerFileLastMsgDt.IsWithinRange( persistentRequest.startDt, persistentRequest.endDt );
+
+            if ( firstMsgIsInRange || lastMsgIsInRange )
+            {
+                StorageToPubSubRequest newAutoRequest( persistentRequest );
+                newAutoRequest.isPersistentRequest = false;
+                newAutoRequest.startDt = containerFileFirstMsgDt;
+                newAutoRequest.endDt = containerFileLastMsgDt;
+                newAutoRequest.okIfZeroContainersAreFound = false;
+
+                TCContainerRangeInfoPtr bookmarkInfo = CContainerRangeInfo::CreateSharedObj();
+                bookmarkInfo->vfsFilePath = vfsFilePath;
+                newAutoRequest.vfsPubSubMsgContainersToPush.insert( bookmarkInfo );
+
+                GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "StoragePubSubClientTopic:AddVfsFileToSubscription: auto-added file " + vfsFilePath +
+                    " as request based on persistent storage request" );
+
+                m_subscriptionIsAtEndOfData = false;
+                m_stage2StorageToPubSubRequests.push_back( newAutoRequest );
+            }
+            else
+            {
+                GUCEF_DEBUG_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "StoragePubSubClientTopic:AddVfsFileToSubscription: Ignoring new file for persistent storage request with time range from=" + 
+                        CORE::ToString( persistentRequest.startDt ) + " to=" + CORE::ToString( persistentRequest.endDt ) + 
+                        ". File represents time range: from=" + 
+                        CORE::ToString( containerFileFirstMsgDt ) + " to=" + CORE::ToString( containerFileLastMsgDt ) );
+            }
+            ++i;
+        }
+    }
+    else
+    {
+        // could be some other file that is not a container file
+        GUCEF_WARNING_LOG( CORE::LOGLEVEL_NORMAL, "StoragePubSubClientTopic:AddVfsFileToSubscription: Ignoring new file because of inability to extract timestamps from supposed container file name: " + vfsFilePath );
+    }
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
 CStoragePubSubClientTopic::OnVfsFileCreated( CORE::CNotifier* notifier    ,
                                              const CORE::CEvent& eventid  ,
                                              CORE::CICloneable* eventdata )
@@ -1283,55 +1340,9 @@ CStoragePubSubClientTopic::OnVfsFileCreated( CORE::CNotifier* notifier    ,
             CORE::CString newFileExt = CORE::ExtractFileExtention( vfsNewFilePath );
             if ( newFileExt == m_config.vfsFileExtention )
             {            
-                CORE::CDateTime containerFileFirstMsgDt;
-                CORE::CDateTime containerFileLastMsgDt;
-                CORE::CDateTime containerFileCaptureDt;
-                if ( GetTimestampsFromContainerFilename( vfsNewFilePath, containerFileFirstMsgDt, containerFileLastMsgDt, containerFileCaptureDt ) )
-                {
-                    // Now that we have the relevant timestamps we check these against the ranges of the persistent requests
-                    // this is on a first come first serve basis if we find a match
-
-                    StorageToPubSubRequestDeque::iterator i = m_stage0StorageToPubSubRequests.begin();
-                    while ( i != m_stage0StorageToPubSubRequests.end() )
-                    {
-                        // Check to see if the file is in range
-                        const StorageToPubSubRequest& persistentRequest = (*i);                        
-                        bool firstMsgIsInRange = containerFileFirstMsgDt.IsWithinRange( persistentRequest.startDt, persistentRequest.endDt );
-                        bool lastMsgIsInRange = containerFileLastMsgDt.IsWithinRange( persistentRequest.startDt, persistentRequest.endDt );
-
-                        if ( firstMsgIsInRange || lastMsgIsInRange )
-                        {
-                            StorageToPubSubRequest newAutoRequest( persistentRequest );
-                            newAutoRequest.isPersistentRequest = false;
-                            newAutoRequest.startDt = containerFileFirstMsgDt;
-                            newAutoRequest.endDt = containerFileLastMsgDt;
-                            newAutoRequest.okIfZeroContainersAreFound = false;
-
-                            TCContainerRangeInfoPtr bookmarkInfo = CContainerRangeInfo::CreateSharedObj();
-                            bookmarkInfo->vfsFilePath = vfsNewFilePath;
-                            newAutoRequest.vfsPubSubMsgContainersToPush.insert( bookmarkInfo );
-
-                            GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "StoragePubSubClientTopic:OnVfsFileCreated: auto-added file " + *fileCreatedEventData +
-                                " as request based on persistent storage request" );
-
-                            m_subscriptionIsAtEndOfData = false;
-                            m_stage2StorageToPubSubRequests.push_back( newAutoRequest );
-                        }
-                        else
-                        {
-                            GUCEF_DEBUG_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "StoragePubSubClientTopic:OnVfsFileCreated: Ignoring new file for persistent storage request with time range from=" + 
-                                    CORE::ToString( persistentRequest.startDt ) + " to=" + CORE::ToString( persistentRequest.endDt ) + 
-                                    ". File represents time range: from=" + 
-                                    CORE::ToString( containerFileFirstMsgDt ) + " to=" + CORE::ToString( containerFileLastMsgDt ) );
-                        }
-                        ++i;
-                    }
-                }
-                else
-                {
-                    // could be some other file that is not a container file
-                    GUCEF_WARNING_LOG( CORE::LOGLEVEL_NORMAL, "StoragePubSubClientTopic:OnVfsFileCreated: Ignoring new file because of inability to extract timestamps from supposed container file name: " + vfsNewFilePath );
-                }
+                // We have a new file that matches our topic's file extension
+                // We should add it to our subscription list
+                AddVfsFileToSubscription( vfsNewFilePath );
             }
             else
             {
@@ -1365,6 +1376,42 @@ CStoragePubSubClientTopic::OnVfsArchiveMounted( CORE::CNotifier* notifier    ,
             {
                 // redo our subscription since the relevant archive landscape changed
                 SubscribeToVfsTopicPathEvents();
+            }
+        }
+    }
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CStoragePubSubClientTopic::OnVfsFileRenamed( CORE::CNotifier* notifier    ,
+                                             const CORE::CEvent& eventId  ,
+                                             CORE::CICloneable* eventData )
+{GUCEF_TRACE;
+
+    CORE::CDirectoryWatcherEvents::TFileRenamedEventData* fileRenamedEventData = static_cast< CORE::CDirectoryWatcherEvents::TFileRenamedEventData* >( eventData );
+    if ( GUCEF_NULL != fileRenamedEventData )
+    {
+        const CORE::CString& oldFilename = fileRenamedEventData->GetData().oldFilename;
+        const CORE::CString& newFilename = fileRenamedEventData->GetData().newFilename;
+
+        // Since VFS events are global lets make sure this relates to a path we actually care about
+        VFS::CVFS& vfs = VFS::CVfsGlobal::Instance()->GetVfs();
+        if ( vfs.IsFilePathSubOfDirPath( m_vfsRootPath, newFilename ) )
+        {
+            CORE::CString oldFileExt = CORE::ExtractFileExtention( oldFilename );
+            CORE::CString newFileExt = CORE::ExtractFileExtention( newFilename );
+
+            MT::CScopeMutex lock( m_lock );
+        
+            if ( oldFileExt != newFileExt )
+            { 
+                // the file extension was changed. this could change the eligibility of the file for our topic
+                if ( newFileExt == m_config.vfsFileExtention )
+                {
+                    // This file has now become eligible for our topic
+                    AddVfsFileToSubscription( newFilename );
+                }
             }
         }
     }
@@ -1421,6 +1468,7 @@ CStoragePubSubClientTopic::SubscribeToVfsTopicPathEvents( void )
 
     CORE::CIDirectoryWatcher::CDirWatchOptions dirWatchOptions( false );
     dirWatchOptions.watchForFileCreation = true;
+    dirWatchOptions.watchForFileRenames = true;
     dirWatchOptions.watchForDirRenames = m_config.topicFollowsDirRenames;
 
     TEventCallback callback( this, &CStoragePubSubClientTopic::OnVfsFileCreated );
@@ -1428,6 +1476,9 @@ CStoragePubSubClientTopic::SubscribeToVfsTopicPathEvents( void )
 
     TEventCallback callback2( this, &CStoragePubSubClientTopic::OnVfsDirRenamed );
     SubscribeTo( &vfs, VFS::CVFS::DirRenamedEvent, callback2 );
+
+    TEventCallback callback3( this, &CStoragePubSubClientTopic::OnVfsFileRenamed );
+    SubscribeTo( &vfs, VFS::CVFS::FileRenamedEvent, callback3 );
 
     //SubscribeTo( &vfs, VFS::CVFS::FileModifiedEvent );
     //SubscribeTo( &vfs, VFS::CVFS::FileRenamedEvent );

@@ -112,6 +112,11 @@ class GUCEF_MT_PUBLIC_CPP CScopeMutex
      */
     TLockStatus TryReLock( UInt32 lockWaitTimeoutInMs = GUCEF_MT_DEFAULT_LOCK_TIMEOUT_IN_MS );
 
+    /**
+     *  Returns the mutex that is being locked
+     */
+    const CMutex* GetMutex( void ) const;
+
     private:
     const CMutex* m_mutex;
     bool m_isLocked;

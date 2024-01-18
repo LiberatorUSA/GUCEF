@@ -136,6 +136,15 @@ CScopeMutex::TryReLock( UInt32 lockWaitTimeoutInMs )
     return LOCKSTATUS_NOT_APPLICABLE;
 }
 
+/*--------------------------------------------------------------------------*/
+
+const CMutex* 
+CScopeMutex::GetMutex( void ) const
+{GUCEF_TRACE;
+
+    return m_mutex;
+}
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //

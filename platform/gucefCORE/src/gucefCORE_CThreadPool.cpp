@@ -432,7 +432,7 @@ CThreadPool::RemoveConsumer( const UInt32 taskID )
     bool taskConsumerUnlinked = false;
 
     MT::CObjectScopeLock lock( this );
-    MT::CScopeWriterLock writer( m_taskQueue.GetLock() );
+    MT::CScopeMutex writer( m_taskQueue.GetLock() );
 
     TTaskMailbox::iterator i = m_taskQueue.begin( writer );
     while ( i != m_taskQueue.end() )

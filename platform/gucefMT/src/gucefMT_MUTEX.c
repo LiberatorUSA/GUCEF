@@ -390,7 +390,19 @@ MutexUnlock( struct SMutex* mutex )
 UInt32
 MutexLocked( struct SMutex* mutex )
 {
-    return 0 != mutex->lockedByThread ? 1 : 0;
+    if ( GUCEF_NULL != mutex )
+        return 0 != mutex->lockedByThread ? 1 : 0;
+    return 0;
+}
+
+/*--------------------------------------------------------------------------*/
+
+Int32
+MutexReentrancy( struct SMutex* mutex )
+{
+    if ( GUCEF_NULL != mutex )
+        return mutex->reentrancyCount;
+    return 0;
 }
 
 /*--------------------------------------------------------------------------*/

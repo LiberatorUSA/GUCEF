@@ -305,6 +305,7 @@ CRwLockTestData::CRwLockTestData( bool writersHavePriority, bool usingScopeObjec
     , readerAndWriterPercWrites( 0.25 )
 {GUCEF_TRACE;
         
+    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "CRwLockTestData: Setting up. writersHavePriority=" + CORE::ToString( writersHavePriority ) + " usingScopeObjects=" + CORE::ToString( usingScopeObjects ) );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -313,8 +314,10 @@ bool
 CRwLockTestData::Shutdown( void )
 {GUCEF_TRACE;
 
-    if ( !writers.empty() || !readers.empty() )
+    if ( !writers.empty() || !readers.empty() || !readerAndWriters.empty() )
     {
+        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "CRwLockTestData:Shutdown: Asking all threads to shut down politely" );
+
         // ask all threads to shut down politely
         // they can perform shutdown in paralell 
     
@@ -331,8 +334,16 @@ CRwLockTestData::Shutdown( void )
             (*r).Deactivate( false, false );
             ++r;
         }
+        
+        TTestReaderAndWriterVector::iterator j = readerAndWriters.begin();
+        while ( j != readerAndWriters.end() )
+        {
+            (*j).Deactivate( false, false );
+            ++j;
+        }
 
         // wait for the threads to be shut down
+        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "CRwLockTestData:Shutdown: Waiting for the threads to shut down ...." );
     
         w = writers.begin();
         while ( w != writers.end() )
@@ -346,6 +357,7 @@ CRwLockTestData::Shutdown( void )
             }
             ++w;
         }
+        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "CRwLockTestData:Shutdown: Threads shut down completed for all writer workers" );
 
         r = readers.begin();
         while ( r != readers.end() )
@@ -359,9 +371,27 @@ CRwLockTestData::Shutdown( void )
             }
             ++r;
         }
+        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "CRwLockTestData:Shutdown: Threads shut down completed for all reader workers" );
+
+        j = readerAndWriters.begin();
+        while ( j != readerAndWriters.end() )
+        {
+            MT::UInt32 waitResult = (*j).WaitForThreadToFinish( 30000 );
+            if ( waitResult != GUCEF_THREAD_WAIT_OK         &&
+                 waitResult != GUCEF_THREAD_WAIT_ABANDONEND  )
+            {
+                // go for another round
+                j = readerAndWriters.begin();
+            }
+            ++j;
+        }
+        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "CRwLockTestData:Shutdown: Threads shut down completed for all reader-writer combo workers" );
+
+        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "CRwLockTestData:Shutdown: Threads shut down completed for all workers" );
     
         writers.clear();
         readers.clear();
+        readerAndWriters.clear();
     }
     return true;
 }
@@ -378,6 +408,8 @@ CRwLockTestData::Configure( void )
 
     // Now cleanly configure the desired number of readers and writers
     
+    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "CRwLockTestData:Shutdown: Configuring " + CORE::ToString( nrOfWriters ) + " writers" );
+    
     writers.resize( nrOfWriters );
     TTestWriterVector::iterator w = writers.begin();
     while ( w != writers.end() )
@@ -387,6 +419,8 @@ CRwLockTestData::Configure( void )
         ++w;
     }
 
+    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "CRwLockTestData:Shutdown: Configuring " + CORE::ToString( nrOfReaders ) + " readers" );
+
     readers.resize( nrOfReaders );
     TTestReaderVector::iterator r = readers.begin();
     while ( r != readers.end() )
@@ -395,6 +429,8 @@ CRwLockTestData::Configure( void )
             return false;
         ++r;
     }
+
+    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "CRwLockTestData:Shutdown: Configuring " + CORE::ToString( nrOfReaderAndWriters ) + " reader-writers" );
 
     readerAndWriters.resize( nrOfReaderAndWriters );
     TTestReaderAndWriterVector::iterator d = readerAndWriters.begin();
@@ -426,6 +462,7 @@ CRwLockTestData::Configure( void )
             if ( !allReadersStarted )
                 MT::PrecisionDelay( 25 );
         }
+        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "CRwLockTestData:Shutdown: All readers have been started" );
     }
 
     if ( !writers.empty() )
@@ -447,6 +484,7 @@ CRwLockTestData::Configure( void )
             if ( !allWritersStarted )
                 MT::PrecisionDelay( 25 );
         }
+        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "CRwLockTestData:Shutdown: All writers have been started" );
     }
 
     if ( !readerAndWriters.empty() )
@@ -468,6 +506,7 @@ CRwLockTestData::Configure( void )
             if ( !allReaderAndWritersStarted )
                 MT::PrecisionDelay( 25 );
         }
+        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "CRwLockTestData:Shutdown: All reader-writers have been started" );
     }
 
     // Now that we know all threads at least started we also know the very next call would 
@@ -749,6 +788,8 @@ CTestWriter::OnThreadStart( void* taskdata )
     m_testData = static_cast< CRwLockTestData* >( taskdata );    
     m_ticksAtThreadStart = m_ticksAtLastCycle = MT::PrecisionTickCount();
     m_onThreadStartWasTriggered = true;
+
+    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "CTestWriter:OnThreadStart: writer worker starting" );
     
     if ( m_testData->useScopeObjects )
     {
@@ -855,6 +896,8 @@ void
 CTestWriter::OnThreadEnding( void* taskdata, bool willBeForced )
 {GUCEF_TRACE;
 
+    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "CTestWriter:OnThreadStart: writer worker ending" );
+    
     if ( m_testData->useScopeObjects )    
     {
         if ( m_testData->writerWorkIsReentrant )
@@ -1010,6 +1053,8 @@ CTestReader::OnThreadStart( void* taskdata )
     m_ticksAtThreadStart = m_ticksAtLastCycle = MT::PrecisionTickCount();
     m_onThreadStartWasTriggered = true;
 
+    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "CTestWriter:OnThreadStart: reader worker starting" );
+    
     if ( m_testData->useScopeObjects )
     {
         m_scopeLocks.reserve( m_testData->readerReentrancyDepth );
@@ -1115,6 +1160,8 @@ void
 CTestReader::OnThreadEnding( void* taskdata, bool willBeForced )
 {GUCEF_TRACE;
 
+    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "CTestWriter:OnThreadStart: reader worker ending" );
+    
     if ( m_testData->useScopeObjects )    
     {
         if ( m_testData->readerWorkIsReentrant )
@@ -1271,6 +1318,8 @@ CTestReaderAndWriter::OnThreadStart( void* taskdata )
     m_testData = static_cast< CRwLockTestData* >( taskdata );    
     m_ticksAtThreadStart = m_ticksAtLastCycle = MT::PrecisionTickCount();
     m_onThreadStartWasTriggered = true;
+    
+    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "CTestWriter:OnThreadStart: reader-writer worker starting" );
     
     if ( m_testData->useScopeObjects )
     {
@@ -1447,6 +1496,8 @@ void
 CTestReaderAndWriter::OnThreadEnding( void* taskdata, bool willBeForced )
 {GUCEF_TRACE;
 
+    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "CTestWriter:OnThreadStart: reader-writer worker ending" );
+    
     if ( m_testData->useScopeObjects )    
     {
         if ( m_testData->readerAndWriterWorkIsReentrant )
@@ -2550,23 +2601,6 @@ PerformReaderWriterLockSingleThreadTests_SingleReaderWriterExplicitTransitionRee
 /*-------------------------------------------------------------------------*/
 
 void
-PerformReaderWriterLockSingleThreadTests( bool writersHavePriority, bool usingScopeObjects )
-{GUCEF_TRACE;
-
-    PerformReaderWriterLockSingleThreadTests_InitTest( writersHavePriority, usingScopeObjects );
-    PerformReaderWriterLockSingleThreadTests_SingleReader( writersHavePriority, usingScopeObjects );
-    PerformReaderWriterLockSingleThreadTests_SingleWriter( writersHavePriority, usingScopeObjects );
-    PerformReaderWriterLockSingleThreadTests_SingleReaderReentrant( writersHavePriority, usingScopeObjects );
-    PerformReaderWriterLockSingleThreadTests_SingleWriterReentrant( writersHavePriority, usingScopeObjects );
-    PerformReaderWriterLockSingleThreadTests_SingleReaderWriterReentrant( writersHavePriority, usingScopeObjects );
-    PerformReaderWriterLockSingleThreadTests_SingleReaderWriterExplicitTransition( writersHavePriority, usingScopeObjects );
-    PerformReaderWriterLockSingleThreadTests_SingleReaderWriterExplicitTransitionReentrant( writersHavePriority, usingScopeObjects );
-    PerformReaderWriterLockSingleThreadTests_SingleReaderWriterExplicitTransitionReentrantRandom( writersHavePriority, usingScopeObjects );
-}
-
-/*-------------------------------------------------------------------------*/
-
-void
 PerformReaderWriterLockTests_SingleReader( bool writersHavePriority, bool usingScopeObjects )
 {GUCEF_TRACE;
 
@@ -2793,7 +2827,64 @@ PerformReaderWriterLockTests_MultipleReaderWritersReentrant( bool writersHavePri
         }
         ASSERT_TRUE( 1 == cyclingReaderWritersFound );
         UInt32 activeWriterReentrancyDepth = testData.rwLock.ActiveWriterReentrancyDepth();
-        ASSERT_TRUE( testData.readerAndWriterReentrancyDepth == activeWriterReentrancyDepth );        
+        ASSERT_TRUE( activeWriterReentrancyDepth > 0 );        
+        ASSERT_TRUE( writersHavePriority == testData.rwLock.DoWritersOverrule() );
+        ASSERT_TRUE( false == testData.DidAnyReaderHaveALockFailure() );
+        ASSERT_TRUE( false == testData.DidAnyWriterHaveALockFailure() );
+        ASSERT_TRUE( false == testData.DidAnyReaderWriterHaveALockFailure() );
+        ASSERT_TRUE( testData.readerAndWriterReentrancyDepth == testData.readerAndWriters[ cyclingReaderWriterIndex ].GetCurrentReentrancyDepth() );
+        ASSERT_TRUE( testData.Shutdown() );
+    }
+    catch( ... )
+    {
+        ERRORHERE;
+    }
+
+    try
+    {       
+        CRwLockTestData testData( writersHavePriority, usingScopeObjects );
+
+        // test with a multiple writers all starting +- at the same time
+        // they will keep running. Since these are different writers only 1 should be allowed active
+        // the rest should queue up. We now also make the active writer reentrant
+        testData.nrOfWriters = 0;
+        testData.nrOfReaders = 0;
+        testData.nrOfReaderAndWriters = 50;
+        testData.readerAndWriterPercWrites = 0.25;
+        testData.readerAndWriterUsesTopLevelReader = false; // <- top lock will always be a read lock
+        testData.writerReentrancyDepth = 0;
+        testData.writerWorkIsReentrant = false;
+        testData.readerReentrancyDepth = 0;
+        testData.readerWorkIsReentrant = false;
+        testData.readerAndWriterWorkIsReentrant = true;
+        testData.readerAndWriterReentrancyDepth = 10;
+        testData.writerWorkDurationInMs = GUCEF_UINT32MAX;
+        testData.readerWorkDurationInMs = GUCEF_UINT32MAX;
+        testData.readerAndWriterWorkDurationInMs = GUCEF_UINT32MAX;
+        ASSERT_TRUE( testData.Configure() );
+        UInt32 activeReaderCount = testData.rwLock.ActiveReaderCount();
+        UInt32 activeWriterCount = testData.rwLock.ActiveWriterCount();
+        UInt32 queuedReaderCount = testData.rwLock.QueuedReaderCount();
+        UInt32 queuedWriterCount = testData.rwLock.QueuedWriterCount();
+        //ASSERT_TRUE( 0 == activeReaderCount );
+        //ASSERT_TRUE( 1 == activeWriterCount || 0 == activeWriterCount );
+        //ASSERT_TRUE( 0 == queuedReaderCount );
+        //ASSERT_TRUE( queuedWriterCount > 0 );
+        MT::PrecisionDelay( GUCEF_RWLOCKTEST_TEST_THREAD_BOOTUP_TIME_IN_MS * 2 );
+        UInt32 cyclingReaderWritersFound = 0;
+        UInt32 cyclingReaderWriterIndex = 0;
+        for ( UInt32 i=0; i<testData.nrOfReaderAndWriters; ++i )
+        {
+            MT::Float64 cyclingDurationInMs = testData.readerAndWriters[ i ].GetCyclingDurationInMs();
+            if ( cyclingDurationInMs > GUCEF_RWLOCKTEST_TEST_THREAD_BOOTUP_TIME_IN_MS )
+            {
+                ++cyclingReaderWritersFound;
+                cyclingReaderWriterIndex = i;
+            }
+        }
+        ASSERT_TRUE( 1 == cyclingReaderWritersFound );
+        UInt32 activeWriterReentrancyDepth = testData.rwLock.ActiveWriterReentrancyDepth();
+        ASSERT_TRUE( activeWriterReentrancyDepth > 0 );        
         ASSERT_TRUE( writersHavePriority == testData.rwLock.DoWritersOverrule() );
         ASSERT_TRUE( false == testData.DidAnyReaderHaveALockFailure() );
         ASSERT_TRUE( false == testData.DidAnyWriterHaveALockFailure() );
@@ -3071,6 +3162,23 @@ PerformReaderWriterLockTests_MultipleWritersMultipleReaderWriters( bool writersH
     {
         ERRORHERE;
     }
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+PerformReaderWriterLockSingleThreadTests( bool writersHavePriority, bool usingScopeObjects )
+{GUCEF_TRACE;
+
+    PerformReaderWriterLockSingleThreadTests_InitTest( writersHavePriority, usingScopeObjects );
+    PerformReaderWriterLockSingleThreadTests_SingleReader( writersHavePriority, usingScopeObjects );
+    PerformReaderWriterLockSingleThreadTests_SingleWriter( writersHavePriority, usingScopeObjects );
+    PerformReaderWriterLockSingleThreadTests_SingleReaderReentrant( writersHavePriority, usingScopeObjects );
+    PerformReaderWriterLockSingleThreadTests_SingleWriterReentrant( writersHavePriority, usingScopeObjects );
+    PerformReaderWriterLockSingleThreadTests_SingleReaderWriterReentrant( writersHavePriority, usingScopeObjects );
+    PerformReaderWriterLockSingleThreadTests_SingleReaderWriterExplicitTransition( writersHavePriority, usingScopeObjects );
+    PerformReaderWriterLockSingleThreadTests_SingleReaderWriterExplicitTransitionReentrant( writersHavePriority, usingScopeObjects );
+    PerformReaderWriterLockSingleThreadTests_SingleReaderWriterExplicitTransitionReentrantRandom( writersHavePriority, usingScopeObjects );
 }
 
 /*-------------------------------------------------------------------------*/

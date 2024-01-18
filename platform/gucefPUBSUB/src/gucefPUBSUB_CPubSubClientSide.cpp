@@ -2303,20 +2303,16 @@ void
 CPubSubClientSide::TopicLink::ProcessAcknowledgeReceiptsMailbox( void )
 {GUCEF_TRACE;
 
-    MT::CScopeReaderLock reader( publishAckdMsgsMailbox.GetLock() );
+    MT::CScopeMutex lock( publishAckdMsgsMailbox.GetLock() );
     
     CIPubSubMsg::TNoLockSharedPtr msg;
-    while ( publishAckdMsgsMailbox.PeekMail( reader, msg, GUCEF_NULL ) )
+    while ( publishAckdMsgsMailbox.PeekMail( lock, msg, GUCEF_NULL ) )
     {
         try
         {
             if ( AcknowledgeReceiptSync( msg ) )
             {
-                {
-                    MT::CScopeWriterLock writer( reader );
-                    publishAckdMsgsMailbox.PopMail( writer );
-                    writer.TransitionToReader( reader );
-                }
+                publishAckdMsgsMailbox.PopMail( lock );
             }
             else
             {

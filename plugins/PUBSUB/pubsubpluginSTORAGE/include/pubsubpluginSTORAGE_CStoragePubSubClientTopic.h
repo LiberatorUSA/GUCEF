@@ -273,6 +273,10 @@ class PUBSUBPLUGIN_STORAGE_PLUGIN_PRIVATE_CPP CStoragePubSubClientTopic : public
                            const CORE::CEvent& eventid  ,
                            CORE::CICloneable* eventdata );
 
+    void OnVfsFileRenamed( CORE::CNotifier* notifier    ,
+                           const CORE::CEvent& eventId  ,
+                           CORE::CICloneable* eventData );
+
     void OnVfsDirRenamed( CORE::CNotifier* notifier    ,
                           const CORE::CEvent& eventId  ,
                           CORE::CICloneable* eventData );
@@ -453,6 +457,8 @@ class PUBSUBPLUGIN_STORAGE_PLUGIN_PRIVATE_CPP CStoragePubSubClientTopic : public
     bool FinalizeWriteBuffer( bool onlyIfBufferHasContent );
 
     void AddPublishActionIdsToNotify( const TPublishActionIdVector& publishActionIds, bool success );
+
+    void AddVfsFileToSubscription( const CORE::CString& vfsFilePath );
 
     CORE::CString ResolveVfsRootPath( void ) const;
 

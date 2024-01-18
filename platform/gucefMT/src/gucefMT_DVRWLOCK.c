@@ -1069,9 +1069,25 @@ rwl_reader_transition_to_writer( TRWLock* rwlock, UInt32 lockWaitTimeoutInMs )
                      */
                     if ( rwl_impl_pop_active_reader( rwlock ) != 0 )
                     {
-                        ++rwlock->activeWriterReentrancyCount;
-                        MutexUnlock( rwlock->datalock );
-                        return GUCEF_RWLOCK_OPERATION_SUCCESS;
+                        /*
+                         *  Make sure the write lock itself is in-sync wrt its reentrancy count 
+                         */
+                        if ( MutexLock( rwlock->writerlock, lockWaitTimeoutInMs ) == GUCEF_MUTEX_OPERATION_SUCCESS )
+                        {
+                            rwlock->activeWriterReentrancyCount = MutexReentrancy( rwlock->writerlock );
+                            MutexUnlock( rwlock->datalock );
+                            return GUCEF_RWLOCK_OPERATION_SUCCESS;
+                        }
+                        else
+                        {
+                            /*
+                             *  You should not get here
+                             *  We performed the sanity checks that should have allowed the writer lock grab to always work
+                             */
+                            rwl_impl_push_active_reader( rwlock );
+                            MutexUnlock( rwlock->datalock );
+                            return GUCEF_RWLOCK_OPERATION_FAILED;
+                        }
                     }
                     else
                     {
@@ -1121,6 +1137,7 @@ rwl_reader_transition_to_writer( TRWLock* rwlock, UInt32 lockWaitTimeoutInMs )
                     while ( GUCEF_MUTEX_OPERATION_SUCCESS != MutexLock( rwlock->writerlock, GUCEF_MUTEX_INFINITE_TIMEOUT ) ) {};
                     rwlock->activeWriterCount++;        
                     rwlock->queuedWriterCount--;
+                    rwlock->activeWriterReentrancyCount = MutexReentrancy( rwlock->writerlock );
                     rwlock->lastWriterThreadId = GetCurrentTaskID(); 
                     MutexUnlock( rwlock->datalock );
                     GUCEF_END;
@@ -1181,6 +1198,7 @@ rwl_reader_transition_to_writer( TRWLock* rwlock, UInt32 lockWaitTimeoutInMs )
                                                         rwlock->lastWriterThreadId = GetCurrentTaskID();
                                                         rwlock->writeLockAquisitionInProgress = 0;
                                                         rwlock->queuedWriterCount--;
+                                                        rwlock->activeWriterReentrancyCount = MutexReentrancy( rwlock->writerlock );
                                                         MutexUnlock( rwlock->datalock );
                                                         GUCEF_END;
                                                         return GUCEF_RWLOCK_OPERATION_SUCCESS;
@@ -1316,6 +1334,7 @@ rwl_reader_transition_to_writer( TRWLock* rwlock, UInt32 lockWaitTimeoutInMs )
                                                         rwlock->activeWriterCount++;
                                                         rwlock->lastWriterThreadId = GetCurrentTaskID();
                                                         rwlock->writeLockAquisitionInProgress = 0;
+                                                        rwlock->activeWriterReentrancyCount = MutexReentrancy( rwlock->writerlock );
                                                         rwlock->queuedWriterCount--;
                                                         MutexUnlock( rwlock->datalock );
                                                         GUCEF_END;
@@ -1330,6 +1349,7 @@ rwl_reader_transition_to_writer( TRWLock* rwlock, UInt32 lockWaitTimeoutInMs )
                                                 GUCEF_ASSERT_ALWAYS;
                                                 rwlock->writeLockAquisitionInProgress = 0;
                                                 rwlock->queuedWriterCount--;
+                                                rwlock->activeWriterReentrancyCount = MutexReentrancy( rwlock->writerlock );
                                                 MutexUnlock( rwlock->writerlock );
                                                 GUCEF_END;
                                                 return GUCEF_RWLOCK_OPERATION_FAILED;
@@ -1439,7 +1459,6 @@ rwl_writer_start( TRWLock* rwlock, UInt32 lockWaitTimeoutInMs )
                              *  The caller is already the currently active writer thread
                              *  allow it to proceed since we already have write access anyway
                              */
-                            ++rwlock->activeWriterReentrancyCount;
                             --rwlock->queuedWriterCount;
                             do
                             {
@@ -1449,6 +1468,7 @@ rwl_writer_start( TRWLock* rwlock, UInt32 lockWaitTimeoutInMs )
 	                                case GUCEF_MUTEX_OPERATION_SUCCESS :
                                     case GUCEF_MUTEX_ABANDONED :
                                     {
+                                        rwlock->activeWriterReentrancyCount = MutexReentrancy( rwlock->writerlock );
                                         MutexUnlock( rwlock->datalock );
                                         return GUCEF_RWLOCK_OPERATION_SUCCESS;
                                     }
@@ -1502,7 +1522,8 @@ rwl_writer_start( TRWLock* rwlock, UInt32 lockWaitTimeoutInMs )
                                     {
                                         rwlock->activeWriterCount++;        
                                         rwlock->queuedWriterCount--;
-                                        rwlock->lastWriterThreadId = GetCurrentTaskID(); 
+                                        rwlock->lastWriterThreadId = GetCurrentTaskID();
+                                        rwlock->activeWriterReentrancyCount = MutexReentrancy( rwlock->writerlock );
                                         MutexUnlock( rwlock->datalock );
                                         return GUCEF_RWLOCK_OPERATION_SUCCESS; 
                                     }
@@ -1639,6 +1660,7 @@ rwl_writer_start( TRWLock* rwlock, UInt32 lockWaitTimeoutInMs )
                                                                             rwlock->lastWriterThreadId = GetCurrentTaskID();
                                                                             rwlock->writeLockAquisitionInProgress = 0;
                                                                             rwlock->queuedWriterCount--;
+                                                                            rwlock->activeWriterReentrancyCount = MutexReentrancy( rwlock->writerlock );
                                                                             MutexUnlock( rwlock->datalock );
                                                                             return GUCEF_RWLOCK_OPERATION_SUCCESS;                                    
                                                                         }
@@ -1964,24 +1986,29 @@ rwl_writer_stop( TRWLock *rwlock )
         {
             if ( MutexLock( rwlock->datalock, GUCEF_MUTEX_INFINITE_TIMEOUT ) == GUCEF_MUTEX_OPERATION_SUCCESS )
             {
-                if ( rwlock->lastWriterThreadId == GetCurrentTaskID() )
+                if ( rwlock->activeWriterCount > 0                    &&
+                     rwlock->lastWriterThreadId == GetCurrentTaskID() )
                 {
                     /*
                      *  The caller is the currently active writer thread
                      *  This should always be the case
                      *  allow it to proceed since we already have write access anyway
                      */
-                    assert( rwlock->activeWriterCount > 0 );
-                    
                     if ( rwlock->activeWriterReentrancyCount > 0 )
+                    {
                         --rwlock->activeWriterReentrancyCount;
+                    }
                     else
+                    {
+                        assert( rwlock->activeWriterCount == 1 );
                         --rwlock->activeWriterCount;
+                    }
 
                     MutexUnlock( rwlock->writerlock );
                 }               
                 else
                 {
+                    assert( rwlock->activeWriterCount > 0 );
                     GUCEF_UNREACHABLE;
                 }
                                 
@@ -2012,7 +2039,7 @@ rwl_writer_transition_to_reader( TRWLock* rwlock, UInt32 lockWaitTimeoutInMs )
                 
                 /*
                  *	Sanity check
-                 *  If we claim to be tranistioning a writer that means there should be a currently active writer
+                 *  If we claim to be transitioning a writer that means there should be a currently active writer
                  *  a writer that is the calling thread.
                  */
                 if ( 1 != rwlock->activeWriterCount               ||
@@ -2048,6 +2075,8 @@ rwl_writer_transition_to_reader( TRWLock* rwlock, UInt32 lockWaitTimeoutInMs )
                      */
                     if ( rwl_impl_push_active_reader( rwlock ) != 0 )
                     {
+                        rwlock->activeWriterReentrancyCount = MutexReentrancy( rwlock->writerlock );
+                        MutexUnlock( rwlock->writerlock );
                         --rwlock->activeWriterReentrancyCount;
                         MutexUnlock( rwlock->datalock );
                         GUCEF_END;
