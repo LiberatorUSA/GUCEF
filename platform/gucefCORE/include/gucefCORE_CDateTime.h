@@ -126,7 +126,9 @@ class GUCEF_CORE_PUBLIC_CPP CDateTime : public CDate ,
 
     CString ToIso8601DateTimeString( bool includeDelimeters, bool includeMilliseconds ) const;
     Int32 ToIso8601DateTimeString( void* targetBuffer, UInt32 targetBufferSize, bool includeDelimeters, bool includeMilliseconds ) const;
+    Int32 ToIso8601DateString( void* targetBuffer, UInt32 targetBufferSize, bool includeDelimeters ) const;
     Int32 ToIso8601DateTimeString( CDynamicBuffer& target, UInt32 targetBufferOffset, bool includeDelimeters, bool includeMilliseconds ) const;
+    virtual CString ToIso8601DateString( bool includeDelimeters ) const GUCEF_VIRTUAL_OVERRIDE;
 
     Int32 FromIso8601DateTimeString( const void* sourceBuffer, UInt32 sourceBufferSize );
     Int32 FromIso8601DateTimeString( const CDynamicBuffer& source, UInt32 sourceBufferOffset = 0 );

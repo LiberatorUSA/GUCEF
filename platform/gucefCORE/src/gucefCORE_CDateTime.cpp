@@ -1130,6 +1130,40 @@ CDateTime::ToIso8601DateTimeString( void* targetBuffer, UInt32 targetBufferSize,
 /*-------------------------------------------------------------------------*/
 
 Int32
+CDateTime::ToIso8601DateString( void* targetBuffer, UInt32 targetBufferSize, bool includeDelimeters ) const
+{GUCEF_TRACE;
+
+    if ( !IsUTC() )
+    {
+        return ToUTC().ToIso8601DateString( targetBuffer, targetBufferSize, includeDelimeters );
+    }
+
+    char* dtBuffer = static_cast< char* >( targetBuffer );
+
+    // The ISO DateTime range is likely different from the host O/S range
+    // As such we should always clamp to the ISO supported range
+    Int16 isoClampedYear = m_year;
+    if ( isoClampedYear > 9999 )
+        isoClampedYear = 9999;
+    else
+    if ( isoClampedYear < 0000 )
+        isoClampedYear = 0000;
+
+    if ( includeDelimeters )
+    {
+        // Length = date(4+1+2+1+2) = 9 chars
+        return sprintf_s( dtBuffer, targetBufferSize, "%04d-%02u-%02u", isoClampedYear, m_month, m_day );
+    }
+    else
+    {
+        // Length = date(4+2+2) = 8 chars
+        return sprintf_s( dtBuffer, targetBufferSize, "%04d%02u%02u", isoClampedYear, m_month, m_day );
+    }
+}
+
+/*-------------------------------------------------------------------------*/
+
+Int32
 CDateTime::ToIso8601DateTimeString( CDynamicBuffer& target, UInt32 targetBufferOffset, bool includeDelimeters, bool includeMilliseconds ) const
 {GUCEF_TRACE;
 
@@ -1168,6 +1202,29 @@ CDateTime::ToIso8601DateTimeString( bool includeDelimeters, bool includeMillisec
 
     char dtBuffer[ 32 ];
     if ( 0 < ToIso8601DateTimeString( dtBuffer, sizeof(dtBuffer), includeDelimeters, includeMilliseconds ) )
+        return dtBuffer;
+    return CString::Empty;
+}
+
+/*-------------------------------------------------------------------------*/
+
+CString 
+CDateTime::ToIso8601DateString( bool includeDelimeters ) const
+{GUCEF_TRACE;
+
+    // We cannot just assume our data structure holds values in a specific range
+    // The data storage in the class specifically is more tolerant
+    //
+    // Int16 year <- thus "-32768" thus 6 chars
+    // UInt8 month <- thus "256" thus 3 chars
+    // UInt8 day <- thus "256" thus 3 chars
+    // --------------------------------------  +
+    // Thus with assuming garbage input is a possibility we need space for 12 chars for just the digits
+    // Adding in the seperators for the ISO 8601 we get +3 chars
+    // This gives us a total max with garbage input of 15 chars plus null terminator thus 16 chars
+
+    char dtBuffer[ 16 ];
+    if ( 0 < ToIso8601DateString( dtBuffer, sizeof(dtBuffer), includeDelimeters ) )
         return dtBuffer;
     return CString::Empty;
 }

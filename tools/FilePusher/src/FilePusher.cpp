@@ -1284,7 +1284,7 @@ FilePushDestination::PushFileUsingHttp( PushEntryPtr entry )
         // Load the file content from disk
         if ( !slot->buffer.LoadContentFromFile( entry->filePath, (CORE::UInt32) entry->currentOffsetInFile ) )
         {
-            GUCEF_WARNING_LOG( CORE::LOGLEVEL_NORMAL, "FilePushDestination:PushFileUsingVfs: Unable to load bytes from file \"" +
+            GUCEF_WARNING_LOG( CORE::LOGLEVEL_NORMAL, "FilePushDestination:PushFileUsingHttp: Unable to load bytes from file \"" +
                 entry->filePath + "\". Is it still in use? Skipping the file for now" );
             YieldInFlightSlot( slot );
             return false;
@@ -1296,7 +1296,7 @@ FilePushDestination::PushFileUsingHttp( PushEntryPtr entry )
         // Load the file content from disk, keeping in mind the encoded file is in the VFS
         if ( !VFS::CVfsGlobal::Instance()->GetVfs().LoadFile( slot->buffer, entry->encodedFilepath, "rb" ) )
         {
-            GUCEF_WARNING_LOG( CORE::LOGLEVEL_NORMAL, "FilePushDestination:PushFileUsingVfs: Unable to load bytes from encoded vfs file \"" +
+            GUCEF_WARNING_LOG( CORE::LOGLEVEL_NORMAL, "FilePushDestination:PushFileUsingHttp: Unable to load bytes from encoded vfs file \"" +
                 entry->encodedFilepath + "\". Is it still in use? Skipping the file for now" );
             YieldInFlightSlot( slot );
             return false;
@@ -1321,6 +1321,35 @@ FilePushDestination::PushFileUsingHttp( PushEntryPtr entry )
     }
 
     CORE::CString pushUrlForFile = m_settings.filePushDestinationUri.ReplaceSubstr( "{filename}", filename );
+
+    if ( m_settings.filePushDestinationUri.HasSubstr( "{fileCreationDate" ) > 0 ||
+         m_settings.filePushDestinationUri.HasSubstr( "{fileModifiedDate" ) > 0 ||
+         m_settings.filePushDestinationUri.HasSubstr( "{fileSizeInBytes}" ) > 0 )
+    {
+        CORE::CResourceMetaData resourceMetaData;
+        if ( !CORE::GetFileMetaData( entry->filePath, resourceMetaData ) || !resourceMetaData.resourceExists )
+        {
+            GUCEF_WARNING_LOG( CORE::LOGLEVEL_NORMAL, "FilePushDestination:PushFileUsingHttp: Unable to obtain resource metadata from filesystem for file: " + entry->filePath );
+            YieldInFlightSlot( slot );
+            return false;
+        }
+
+        if ( resourceMetaData.hasCreationDateTime )
+        {
+            pushUrlForFile = pushUrlForFile.ReplaceSubstr( "{fileCreationDateUtc}", resourceMetaData.creationDateTime.ToUTC().ToIso8601DateString( false ) );
+            pushUrlForFile = pushUrlForFile.ReplaceSubstr( "{fileCreationDateLocal}", resourceMetaData.creationDateTime.ToIso8601DateString( false ) );
+        }
+        if ( resourceMetaData.hasModifiedDateTime )
+        {
+            pushUrlForFile = pushUrlForFile.ReplaceSubstr( "{fileModifiedDateUtc}", resourceMetaData.modifiedDateTime.ToUTC().ToIso8601DateString( false ) );
+            pushUrlForFile = pushUrlForFile.ReplaceSubstr( "{fileModifiedDateLocal}", resourceMetaData.modifiedDateTime.ToIso8601DateString( false ) );
+        }
+        if ( resourceMetaData.hasResourceSizeInBytes )
+        {
+            pushUrlForFile = pushUrlForFile.ReplaceSubstr( "{fileSizeInBytes}", CORE::ToString( resourceMetaData.resourceSizeInBytes ) );
+        }
+    }
+
     pushUrlForFile = pushUrlForFile.ReplaceSubstr( "{watchedDirSubDirPath}", watchedDirSubDirPath );
     pushUrlForFile = pushUrlForFile.CompactRepeatingChar( '/' );
 
@@ -1382,6 +1411,7 @@ FilePushDestination::PushFileUsingVfs( PushEntryPtr entry )
     }
 
     // Begin the push
+
     CORE::CString watchedDirSubDirPath;
     if ( m_settings.filePushDestinationUri.HasSubstr( "{watchedDirSubDirPath}", true ) > 0 )
     {
@@ -1390,6 +1420,39 @@ FilePushDestination::PushFileUsingVfs( PushEntryPtr entry )
     }
 
     CORE::CString pushUrlForFile = m_settings.filePushDestinationUri.ReplaceSubstr( "{filename}", filename );
+
+    CORE::CDateTime nowDt = CORE::CDateTime::NowUTCDateTime();
+    pushUrlForFile = pushUrlForFile.ReplaceSubstr( "{nowDateTimeUtc}", nowDt.ToIso8601DateTimeString( false, true ) );
+    pushUrlForFile = pushUrlForFile.ReplaceSubstr( "{nowDateUtc}", nowDt.ToIso8601DateString( false ) );
+    
+    if ( m_settings.filePushDestinationUri.HasSubstr( "{fileCreationDate" ) > 0 ||
+         m_settings.filePushDestinationUri.HasSubstr( "{fileModifiedDate" ) > 0 ||
+         m_settings.filePushDestinationUri.HasSubstr( "{fileSizeInBytes}" ) > 0 )
+    {
+        CORE::CResourceMetaData resourceMetaData;
+        if ( !CORE::GetFileMetaData( entry->filePath, resourceMetaData ) || !resourceMetaData.resourceExists )
+        {
+            GUCEF_WARNING_LOG( CORE::LOGLEVEL_NORMAL, "FilePushDestination:PushFileUsingVfs: Unable to obtain resource metadata from filesystem for file: " + entry->filePath );
+            YieldInFlightSlot( slot );
+            return false;
+        }
+
+        if ( resourceMetaData.hasCreationDateTime )
+        {
+            pushUrlForFile = pushUrlForFile.ReplaceSubstr( "{fileCreationDateUtc}", resourceMetaData.creationDateTime.ToUTC().ToIso8601DateString( false ) );
+            pushUrlForFile = pushUrlForFile.ReplaceSubstr( "{fileCreationDateLocal}", resourceMetaData.creationDateTime.ToIso8601DateString( false ) );
+        }
+        if ( resourceMetaData.hasModifiedDateTime )
+        {
+            pushUrlForFile = pushUrlForFile.ReplaceSubstr( "{fileModifiedDateUtc}", resourceMetaData.modifiedDateTime.ToUTC().ToIso8601DateString( false ) );
+            pushUrlForFile = pushUrlForFile.ReplaceSubstr( "{fileModifiedDateLocal}", resourceMetaData.modifiedDateTime.ToIso8601DateString( false ) );
+        }
+        if ( resourceMetaData.hasResourceSizeInBytes )
+        {
+            pushUrlForFile = pushUrlForFile.ReplaceSubstr( "{fileSizeInBytes}", CORE::ToString( resourceMetaData.resourceSizeInBytes ) );
+        }
+    }
+
     pushUrlForFile = pushUrlForFile.ReplaceSubstr( "{watchedDirSubDirPath}", watchedDirSubDirPath );
     pushUrlForFile = pushUrlForFile.CutChars( 6, true, 0 ); // Cut vfs://
     pushUrlForFile = pushUrlForFile.CompactRepeatingChar( '/' );

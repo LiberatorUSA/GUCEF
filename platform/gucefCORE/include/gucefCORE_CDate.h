@@ -89,6 +89,8 @@ class GUCEF_CORE_PUBLIC_CPP CDate : public CIDate
     CDate( UInt16 year, UInt8 month, UInt8 day );
     CDate( const CDate& src );
     virtual ~CDate();
+
+    virtual CString ToIso8601DateString( bool includeDelimeters ) const;
     
     protected:
 
@@ -96,6 +98,10 @@ class GUCEF_CORE_PUBLIC_CPP CDate : public CIDate
     UInt8 m_month;
     UInt8 m_day;
 };
+
+/*-------------------------------------------------------------------------*/
+
+inline CString ToString( const CDate& value ) { return value.ToIso8601DateString( true ); }
 
 /*-------------------------------------------------------------------------//
 //                                                                         //

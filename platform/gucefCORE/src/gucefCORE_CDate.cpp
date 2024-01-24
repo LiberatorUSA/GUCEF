@@ -28,6 +28,11 @@
 
 #include "gucefCORE_CDate.h"
 
+#ifndef GUCEF_CORE_CDATETIME_H
+#include "gucefCORE_CDateTime.h"
+#define GUCEF_CORE_CDATETIME_H
+#endif /* GUCEF_CORE_CDATETIME_H ? */
+
 #ifndef GUCEF_CORE_LOGGING_H
 #include "gucefCORE_Logging.h"
 #define GUCEF_CORE_LOGGING_H
@@ -269,6 +274,15 @@ CDate::operator!=( const CDate& src ) const
 {GUCEF_TRACE;
 
     return m_year != src.m_year || m_month != src.m_month || m_day != src.m_day;
+}
+
+/*-------------------------------------------------------------------------*/
+
+CString 
+CDate::ToIso8601DateString( bool includeDelimeters ) const
+{GUCEF_TRACE;
+
+    return CDateTime( *this, true ).ToIso8601DateString( includeDelimeters );
 }
 
 /*-------------------------------------------------------------------------//
