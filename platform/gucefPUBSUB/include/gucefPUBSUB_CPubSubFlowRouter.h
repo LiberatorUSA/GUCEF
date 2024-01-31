@@ -99,7 +99,8 @@ class GUCEF_PUBSUB_EXPORT_CPP CPubSubFlowRouter : public CORE::CTSGNotifier
     void ClearRoutes( void );
     
     bool BuildRoutes( const CPubSubFlowRouterConfig& config ,
-                      TPubSubClientSidePtrVector& sides     );
+                      TPubSubClientSidePtrVector& sides     ,
+                      bool attemptConnect                   );
 
     bool IsTrackingInFlightPublishedMsgsForAcksNeeded( CPubSubClientSide* sideWeAskFor ) const;
 
@@ -287,7 +288,9 @@ class GUCEF_PUBSUB_EXPORT_CPP CPubSubFlowRouter : public CORE::CTSGNotifier
     
     void UpdatePulseGeneratorUsage( void );
 
-    void DetermineActiveRoute( CRouteInfo& routeInfo );
+    void DetermineActiveRoutes( bool attemptConnect );
+
+    void DetermineActiveRoute( CRouteInfo& routeInfo, bool attemptConnect );
 
     void OnRouteSwitchTimerCycle( CORE::CNotifier* notifier    ,
                                   const CORE::CEvent& eventId  ,
@@ -297,17 +300,17 @@ class GUCEF_PUBSUB_EXPORT_CPP CPubSubFlowRouter : public CORE::CTSGNotifier
     UpdateRoutesBasedOnSideHealthStatus( CPubSubClientSide* side ,
                                          bool isHealthy          );
     
-    void CreateNewFromTopicAssociationAsNeeded( CPubSubClientTopicBasicPtr topicAccess );
+    void CreateNewFromTopicAssociationAsNeeded( CPubSubClientTopicBasicPtr topicAccess, bool attemptConnect );
     
-    bool ConfigureSpillover( CPubSubClientSide* spilloverSide, bool flowIntoSpillover );
+    bool ConfigureSpillover( CPubSubClientSide* spilloverSide, bool flowIntoSpillover, bool attemptConnect );
 
     bool ConnectRoutesForFromSide( CPubSubClientSide* fromSide );
 
     bool ConnectSide( CPubSubClientSide* sideToConnect );
 
-    void DetermineFirstActiveRoute( CRouteInfo& routeInfo );
+    void DetermineFirstActiveRoute( CRouteInfo& routeInfo, bool attemptConnect );
 
-    void DetermineActiveRouteDestination( CRouteInfo& routeInfo );
+    void DetermineActiveRouteDestination( CRouteInfo& routeInfo, bool attemptConnect );
     
     private:
     

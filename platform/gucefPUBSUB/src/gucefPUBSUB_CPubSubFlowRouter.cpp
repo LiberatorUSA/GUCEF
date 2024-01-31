@@ -871,7 +871,8 @@ CPubSubFlowRouter::NormalizeConfig( const CPubSubFlowRouterConfig& originalConfi
 
 bool
 CPubSubFlowRouter::BuildRoutes( const CPubSubFlowRouterConfig& config ,
-                                TPubSubClientSidePtrVector& sides     )
+                                TPubSubClientSidePtrVector& sides     ,
+                                bool attemptConnect                   )
 {GUCEF_TRACE;
 
     MT::CScopeWriterLock lock( m_lock );
@@ -1316,7 +1317,6 @@ CPubSubFlowRouter::BuildRoutes( const CPubSubFlowRouterConfig& config ,
             CRouteInfo& routeInfo = (*n);
             routeInfo.routeSwitchingTimer.SetInterval( normalizedConfig.routeSwitchingTimerIntervalInMs );
             RegisterRouteEventHandlers( routeInfo );
-            DetermineActiveRoute( routeInfo );
             ++n;
         }
 
@@ -1324,6 +1324,25 @@ CPubSubFlowRouter::BuildRoutes( const CPubSubFlowRouterConfig& config ,
     }
 
     UpdatePulseGeneratorUsage();
+
+    // Now connect the routes if desired 
+    if ( attemptConnect )
+    {
+        r = m_routeMap.begin();
+        while ( r != m_routeMap.end() )
+        {
+            TRouteInfoVector& multiRouteInfo = (*r).second;
+            TRouteInfoVector::iterator n = multiRouteInfo.begin();
+            while ( n != multiRouteInfo.end() )
+            {
+                CRouteInfo& routeInfo = (*n);
+                DetermineActiveRoute( routeInfo, true );
+                ++n;
+            }
+
+            ++r;
+        }
+    }
 
     return true;
 }
@@ -1796,7 +1815,7 @@ CPubSubFlowRouter::RegisterSidePubSubClientTopicEventHandlers( CPubSubClientPtr&
 /*-------------------------------------------------------------------------*/
 
 bool
-CPubSubFlowRouter::ConfigureSpillover( CPubSubClientSide* spilloverSide, bool flowIntoSpillover )
+CPubSubFlowRouter::ConfigureSpillover( CPubSubClientSide* spilloverSide, bool flowIntoSpillover, bool attemptConnect )
 {GUCEF_TRACE;
 
     // pull a copy of the config
@@ -1847,7 +1866,10 @@ CPubSubFlowRouter::ConfigureSpillover( CPubSubClientSide* spilloverSide, bool fl
     {
         if ( spilloverSide->LoadConfig( sideSettings ) )
         {
-            return spilloverSide->ConnectPubSubClient( true );
+            if ( attemptConnect )
+                return spilloverSide->ConnectPubSubClient( true );
+            else
+                return true;
         }
     }
     return false;
@@ -1910,7 +1932,7 @@ CPubSubFlowRouter::ConnectRoutesForFromSide( CPubSubClientSide* fromSide )
                 GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "PubSubFlowRouter(" + CORE::PointerToString( this ) +
                     "):ConnectRoutesForFromSide: A route does not have an active side yet, we will have to determine it first" ); 
 
-                DetermineActiveRouteDestination( specificRoute );
+                DetermineActiveRouteDestination( specificRoute, true );
             }
 
             allTargetsAreConnected = ConnectSide( specificRoute.activeSide ) && allTargetsAreConnected;
@@ -1929,7 +1951,7 @@ CPubSubFlowRouter::ConnectRoutesForFromSide( CPubSubClientSide* fromSide )
 /*-------------------------------------------------------------------------*/
 
 void
-CPubSubFlowRouter::DetermineFirstActiveRoute( CRouteInfo& routeInfo )
+CPubSubFlowRouter::DetermineFirstActiveRoute( CRouteInfo& routeInfo, bool attemptConnect )
 {GUCEF_TRACE;
 
     // For a first run we cover the scenario of having a spillover which was not fully drained for whatever
@@ -1950,7 +1972,7 @@ CPubSubFlowRouter::DetermineFirstActiveRoute( CRouteInfo& routeInfo )
         
         routeInfo.spilloverInfo->msgsFlowedIntoSpillover = true;    // init state assuming msgs previously flowed into the spillover
         routeInfo.flowingIntoSpillover = false;                     // egress mode
-        if ( !ConfigureSpillover( routeInfo.spilloverBufferSide, false ) )
+        if ( !ConfigureSpillover( routeInfo.spilloverBufferSide, false, attemptConnect ) )
         {
             // Initial connect did not succeed, rely on timer to try again
             GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "PubSubFlowRouter(" + CORE::ToString( this ) +
@@ -1998,32 +2020,35 @@ CPubSubFlowRouter::DetermineFirstActiveRoute( CRouteInfo& routeInfo )
             {
                 CRouteInfo& spilloverRoute = (*n);
                 if ( GUCEF_NULL == spilloverRoute.activeSide )
-                    DetermineActiveRouteDestination( spilloverRoute );
+                    DetermineActiveRouteDestination( spilloverRoute, attemptConnect );
                 
-                if ( GUCEF_NULL != spilloverRoute.activeSide )
+                if ( attemptConnect )
                 {
-                    if ( ConnectSide( spilloverRoute.activeSide ) )
+                    if ( GUCEF_NULL != spilloverRoute.activeSide )
                     {
-                        GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "PubSubFlowRouter(" + CORE::ToString( this ) +
-                            "):DetermineFirstActiveRoute: The spillover destination is now connected for route \"" + routeInfo.spilloverBufferSide->GetSideId() + 
-                                "\" -> \"" + spilloverRoute.activeSide->GetSideId() + "\" for route with regular 'from' side \"" + routeInfo.fromSide->GetSideId() + "\"" );   
+                        if ( ConnectSide( spilloverRoute.activeSide ) )
+                        {
+                            GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "PubSubFlowRouter(" + CORE::ToString( this ) +
+                                "):DetermineFirstActiveRoute: The spillover destination is now connected for route \"" + routeInfo.spilloverBufferSide->GetSideId() + 
+                                    "\" -> \"" + spilloverRoute.activeSide->GetSideId() + "\" for route with regular 'from' side \"" + routeInfo.fromSide->GetSideId() + "\"" );   
+                        }
+                        else
+                        {
+                            allSpilloverEgressPathsConnected = false;
+                            GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "PubSubFlowRouter(" + CORE::ToString( this ) +
+                                "):DetermineFirstActiveRoute: Failed to connect spillover egress route. Will retry" );
+                        }
                     }
                     else
                     {
-                        allSpilloverEgressPathsConnected = false;
-                        GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "PubSubFlowRouter(" + CORE::ToString( this ) +
-                            "):DetermineFirstActiveRoute: Failed to connect spillover egress route. Will retry" );
+                        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "PubSubFlowRouter(" + CORE::ToString( this ) +
+                            "):DetermineFirstActiveRoute: Failed to determine active route for spillover egress route" );
                     }
-                }
-                else
-                {
-                    GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "PubSubFlowRouter(" + CORE::ToString( this ) +
-                        "):DetermineFirstActiveRoute: Failed to determine active route for spillover egress route" );
                 }
                 ++n;
             }
 
-            if ( allSpilloverEgressPathsConnected )
+            if ( attemptConnect && allSpilloverEgressPathsConnected )
             {
                 if ( ConnectSide( routeInfo.spilloverBufferSide ) )
                 {
@@ -2053,31 +2078,34 @@ CPubSubFlowRouter::DetermineFirstActiveRoute( CRouteInfo& routeInfo )
         // independently of the parent route
         if ( !routeInfo.isSpilloverEgressRoute )
         {
-            // This is a regular route without any spillover functionality
-            // As such we can straightforward connect without special spillover bootstrapping
+            // This is a regular route without any spillover functionality            
             
-            GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "PubSubFlowRouter(" + CORE::ToString( this ) +
-                "):DetermineFirstActiveRoute: Commencing first route connectivity attempt for routes from side: " + routeInfo.fromSide->GetSideId() );
-
-            if ( ConnectRoutesForFromSide( routeInfo.fromSide ) )
+            if ( attemptConnect )
             {
+                // As such we can straightforward connect without special spillover bootstrapping            
+                
                 GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "PubSubFlowRouter(" + CORE::ToString( this ) +
-                    "):DetermineFirstActiveRoute: The route is now connected. \"" + routeInfo.fromSide->GetSideId() + 
-                        "\" -> \"" + routeInfo.activeSide->GetSideId() + "\"" ); 
-            }
-            else
-            {
-                // Initial connect did not succeed, rely on timer to try again
-                routeInfo.routeSwitchingTimer.SetEnabled( true );
-            }
+                    "):DetermineFirstActiveRoute: Commencing first route connectivity attempt for routes from side: " + routeInfo.fromSide->GetSideId() );
 
+                if ( ConnectRoutesForFromSide( routeInfo.fromSide ) )
+                {
+                    GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "PubSubFlowRouter(" + CORE::ToString( this ) +
+                        "):DetermineFirstActiveRoute: The route is now connected. \"" + routeInfo.fromSide->GetSideId() + 
+                            "\" -> \"" + routeInfo.activeSide->GetSideId() + "\"" ); 
+                }
+                else
+                {
+                    // Initial connect did not succeed, rely on timer to try again
+                    routeInfo.routeSwitchingTimer.SetEnabled( true );
+                }
+            }
         }
         else
         {
             //  This is a spillover derived route where the 'from' side is actually a spillover side
             //  in which case do nothing connectivity wise and just determine the active route destination
             if ( GUCEF_NULL != routeInfo.activeSide )
-                DetermineActiveRouteDestination( routeInfo );
+                DetermineActiveRouteDestination( routeInfo, attemptConnect );
         }
     }
 }
@@ -2085,7 +2113,7 @@ CPubSubFlowRouter::DetermineFirstActiveRoute( CRouteInfo& routeInfo )
 /*-------------------------------------------------------------------------*/
 
 void
-CPubSubFlowRouter::DetermineActiveRouteDestination( CRouteInfo& routeInfo )
+CPubSubFlowRouter::DetermineActiveRouteDestination( CRouteInfo& routeInfo, bool attemptConnect )
 {GUCEF_TRACE;
 
     CORE::UInt64 primarySideHealthDurationInMs = (CORE::UInt64) routeInfo.toSideLastHealthStatusChange.GetTimeDifferenceInMillisecondsToNow();
@@ -2117,7 +2145,7 @@ CPubSubFlowRouter::DetermineActiveRouteDestination( CRouteInfo& routeInfo )
                     "):DetermineActiveRoute: Primary side health is restored but spillover absorbed messages. Commencing spillover egress" );
 
                 // Switch from ingress to egress
-                if ( ConfigureSpillover( routeInfo.spilloverBufferSide, false ) )
+                if ( ConfigureSpillover( routeInfo.spilloverBufferSide, false, attemptConnect ) )
                 {
                     routeInfo.flowingIntoSpillover = false;
                 }
@@ -2171,7 +2199,7 @@ CPubSubFlowRouter::DetermineActiveRouteDestination( CRouteInfo& routeInfo )
                             "):DetermineActiveRoute: Failover side health is restored and spillover absorbed messages. Commencing spillover egress" );
 
                         // Switch from ingress to egress                            
-                        if ( ConfigureSpillover( routeInfo.spilloverBufferSide, false ) )
+                        if ( ConfigureSpillover( routeInfo.spilloverBufferSide, false, attemptConnect ) )
                         {
                             routeInfo.flowingIntoSpillover = false;
                         }
@@ -2233,7 +2261,7 @@ CPubSubFlowRouter::DetermineActiveRouteDestination( CRouteInfo& routeInfo )
                                     GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "PubSubFlowRouter(" + CORE::PointerToString( this ) +
                                         "):DetermineActiveRoute: Reconfiguring spillover side " + routeInfo.spilloverBufferSide->GetSideId() + " for data ingress" );
 
-                                    if ( ConfigureSpillover( routeInfo.spilloverBufferSide, true ) )
+                                    if ( ConfigureSpillover( routeInfo.spilloverBufferSide, true, attemptConnect ) )
                                     {
                                         routeInfo.flowingIntoSpillover = true;
                                     }
@@ -2258,11 +2286,34 @@ CPubSubFlowRouter::DetermineActiveRouteDestination( CRouteInfo& routeInfo )
         }
     } 
 }
+/*-------------------------------------------------------------------------*/
+
+void
+CPubSubFlowRouter::DetermineActiveRoutes( bool attemptConnect )
+{GUCEF_TRACE;
+
+    MT::CScopeWriterLock lock( m_lock );
+
+    TSidePtrToRouteInfoVectorMap::iterator r = m_routeMap.begin();
+    while ( r != m_routeMap.end() )
+    {
+        TRouteInfoVector& multiRouteInfo = (*r).second;
+        TRouteInfoVector::iterator n = multiRouteInfo.begin();
+        while ( n != multiRouteInfo.end() )
+        {
+            CRouteInfo& routeInfo = (*n);
+            DetermineActiveRoute( routeInfo, attemptConnect );
+            ++n;
+        }
+
+        ++r;
+    }
+}
 
 /*-------------------------------------------------------------------------*/
 
 void
-CPubSubFlowRouter::DetermineActiveRoute( CRouteInfo& routeInfo )
+CPubSubFlowRouter::DetermineActiveRoute( CRouteInfo& routeInfo, bool attemptConnect )
 {GUCEF_TRACE;
 
     MT::CScopeWriterLock lock( m_lock );
@@ -2270,7 +2321,7 @@ CPubSubFlowRouter::DetermineActiveRoute( CRouteInfo& routeInfo )
     // Check if this our first run at determining the active route
     if ( GUCEF_NULL == routeInfo.activeSide )
     {
-        DetermineFirstActiveRoute( routeInfo );
+        DetermineFirstActiveRoute( routeInfo, attemptConnect );
         return;
     }
 
@@ -2282,8 +2333,9 @@ CPubSubFlowRouter::DetermineActiveRoute( CRouteInfo& routeInfo )
         return;
     }
     
-    DetermineActiveRouteDestination( routeInfo );           
-    if ( GUCEF_NULL != routeInfo.activeSide )
+    DetermineActiveRouteDestination( routeInfo, attemptConnect );           
+
+    if ( attemptConnect && GUCEF_NULL != routeInfo.activeSide )
     {
         if ( ConnectRoutesForFromSide( routeInfo.fromSide ) )
         {
@@ -2316,7 +2368,7 @@ CPubSubFlowRouter::OnRouteSwitchTimerCycle( CORE::CNotifier* notifier    ,
         CRouteInfo* routeInfo = static_cast< CRouteInfo* >( routeSwitchTimer->GetOpaqueUserData() );
         if ( GUCEF_NULL != routeInfo )
         {
-            DetermineActiveRoute( *routeInfo );
+            DetermineActiveRoute( *routeInfo, true );
         }
     }
 }
@@ -2382,7 +2434,7 @@ CPubSubFlowRouter::UpdateRoutesBasedOnSideHealthStatus( CPubSubClientSide* side 
                 }
             }
 
-            DetermineActiveRoute( *routeInfo );
+            DetermineActiveRoute( *routeInfo, true );
 
             ++n;
         }
@@ -2463,7 +2515,7 @@ CPubSubFlowRouter::OnSidePubSubClientTopicEndOfData( CPubSubClientTopic* topic )
             
             // if an entire client and thus a side (since its a 1:1 relationship) has reached EOD
             // we check to see if we need to update the active route            
-            DetermineActiveRoute( *spilloverInfo.route );
+            DetermineActiveRoute( *spilloverInfo.route, true );
         }
     }
 }
@@ -2503,7 +2555,7 @@ CPubSubFlowRouter::OnSidePubSubClientInstantiation( CORE::CNotifier* notifier   
 /*-------------------------------------------------------------------------*/
 
 void
-CPubSubFlowRouter::CreateNewFromTopicAssociationAsNeeded( CPubSubClientTopicBasicPtr fromTopicPtr )
+CPubSubFlowRouter::CreateNewFromTopicAssociationAsNeeded( CPubSubClientTopicBasicPtr fromTopicPtr, bool attemptConnect )
 {GUCEF_TRACE;
 
     if ( fromTopicPtr.IsNULL() )
@@ -2550,20 +2602,30 @@ CPubSubFlowRouter::CreateNewFromTopicAssociationAsNeeded( CPubSubClientTopicBasi
             }
 
             TRouteInfoVector& routes = (*r).second;
+
+            // first match the all configs in a batch
             TRouteInfoVector::iterator i = routes.begin();
             while ( i != routes.end() )
             {
                 CRouteInfo& routeInfo = (*i);
-                if ( routeInfo.MatchTopicRouteConfig( topicRouteConfig, fromPulseGenerator, destPulseGenerator ) )
+                if ( !routeInfo.MatchTopicRouteConfig( topicRouteConfig, fromPulseGenerator, destPulseGenerator ) )
                 {
-                    DetermineActiveRoute( routeInfo );
-                }
-                else
-                {
-                    GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "PubSubFlowRouter(" + CORE::PointerToString( this ) +
+                    GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "PubSubFlowRouter(" + CORE::ToString( this ) +
                         "):CreateNewFromTopicAssociationAsNeeded: Failed to match topic route config to runtime topics for new topic " + fromTopicName );
                 }
                 ++i;
+            }
+
+            // next determine the new active route if any after processing the change batch above
+            if ( attemptConnect )
+            {
+                i = routes.begin();
+                while ( i != routes.end() )
+                {
+                    CRouteInfo& routeInfo = (*i);
+                    DetermineActiveRoute( routeInfo, attemptConnect );
+                    ++i;
+                }
             }
         }
         ++c;
@@ -2586,12 +2648,17 @@ CPubSubFlowRouter::OnSidePubSubClientTopicCreation( CORE::CNotifier* notifier   
     CPubSubClientTopicPtr topicAccess = pubsubClient->GetTopicAccess( topicName );
     if ( !topicAccess.IsNULL() ) 
     {
-        CreateNewFromTopicAssociationAsNeeded( topicAccess );
+        // create the topic association but dont connect yet
+        CreateNewFromTopicAssociationAsNeeded( topicAccess, false );
         
         GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "PubSubFlowRouter(" + CORE::PointerToString( this ) +
             "):OnSidePubSubClientTopicCreation: Adding event handlers for new topic " + topicAccess->GetTopicName() );
 
-        RegisterSidePubSubClientTopicEventHandlers( topicAccess );   
+        // hook up the event handlers that will listen to the new topic
+        RegisterSidePubSubClientTopicEventHandlers( topicAccess );
+        
+        // now that everything is set up confirm the active route and connect as needed
+        DetermineActiveRoutes( true );
     }
 }
 
@@ -2611,14 +2678,20 @@ CPubSubFlowRouter::OnSidePubSubClientTopicsAutoCreation( CORE::CNotifier* notifi
     CPubSubClient::PubSubClientTopicSet::iterator i = topics.begin();
     while ( i != topics.end() )
     {
-        CreateNewFromTopicAssociationAsNeeded( (*i) );
+        // create the topic association but dont connect yet
+        CreateNewFromTopicAssociationAsNeeded( (*i), false );
         
         GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "PubSubFlowRouter(" + CORE::PointerToString( this ) +
             "):OnSidePubSubClientTopicsAutoCreation: Adding event handlers for new auto created topic " + (*i)->GetTopicName() );
 
+        // hook up the event handlers that will listen to the new topic
         RegisterSidePubSubClientTopicEventHandlers( (*i) );
+
         ++i;
     }
+
+    // now that everything is set up confirm the active route and connect as needed
+    DetermineActiveRoutes( true );
 }
 
 

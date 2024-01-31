@@ -24,6 +24,7 @@
 //-------------------------------------------------------------------------*/
 
 #include <assert.h>
+#include <cmath>
 
 #ifndef GUCEF_CORE_CDYNAMICBUFFER_H
 #include "CDynamicBuffer.h"
@@ -1862,9 +1863,12 @@ CVariant::operator==( const CVariant& other ) const
             return AsInt64() == other.AsInt64();
         }
         case GUCEF_DATATYPE_FLOAT32:
+        {
+            return ( (Float32) std::fabs( AsFloat64() - other.AsFloat64() ) ) < GUCEF_FLOAT32_COMPARISON_EPSILON;
+        }
         case GUCEF_DATATYPE_FLOAT64:
         {
-            return AsFloat64() == other.AsFloat64();   // @todo: epsilon compare
+            return std::fabs( AsFloat64() - other.AsFloat64() ) < GUCEF_FLOAT64_COMPARISON_EPSILON;
         }
         case GUCEF_DATATYPE_BOOLEAN_INT32:
         case GUCEF_DATATYPE_BOOLEAN_ASCII_STRING:

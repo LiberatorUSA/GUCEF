@@ -315,7 +315,8 @@ CPubSubClientChannel::InitializeChannel( bool force )
     
     // Build the flow router's network based on available sides
     if ( !m_flowRouter.BuildRoutes( m_channelSettings.flowRouterConfig ,
-                                    m_sides                            ) )
+                                    m_sides                            ,
+                                    true                               ) )
     {
         GUCEF_ERROR_LOG( CORE::LOGLEVEL_CRITICAL, "PubSubClientChannel:InitializeChannel: Aborting because we failed to build the flow router's routes" );
         return false;

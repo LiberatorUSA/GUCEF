@@ -485,6 +485,8 @@ class GUCEF_PUBSUB_EXPORT_CPP CPubSubClientSide : public CORE::CTaskConsumer
         TUInt64ToMsgTrackingEntryMap inFlightMsgs;
         TUInt64Set publishFailedMsgs;
         TPubSubMsgPtrMailbox publishAckdMsgsMailbox;
+        CORE::Int32 maxASyncPublishMailboxSize;                                 /**< max messages allowed in async publish mailbox when async publishing. <0 means infinite */
+        CORE::Int32 maxASyncPublishMailboxSizeDuringAFR;                        /**< max messages allowed in async publish mailbox when diveriting there from a sync send due to 'Awaiting Failure Report'. <0 means infinite */
         CORE::CString metricFriendlyTopicName;
         CORE::CString metricsPrefix;
         PubSubClientSideMetricsPtr metrics;

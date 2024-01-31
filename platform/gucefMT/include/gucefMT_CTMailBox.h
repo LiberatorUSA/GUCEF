@@ -183,8 +183,6 @@ class CTMailBox : public virtual MT::CILockable
 
     const CMutex& GetLock( void ) const;
 
-    TLockStatus DoUnlock( void ) const;
-
     typename TMailQueue::iterator begin( CScopeMutex& lock );
 
     typename TMailQueue::iterator end( void );

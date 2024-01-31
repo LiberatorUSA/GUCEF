@@ -94,6 +94,8 @@ namespace PUBSUB {
 #define GUCEF_DEFAULT_TICKET_REFILLS_ON_BUSY_CYCLE                  10000
 #define GUCEF_DEFAULT_PUBSUB_RECONNECT_DELAY_IN_MS                  100
 #define GUCEF_DEFAULT_PUBSUB_MAX_PUBLISHED_MSG_INFLIGHT_TIME_IN_MS  ( 30 * 1000 )
+#define GUCEF_DEFAULT_PUBSUB_MAX_ASYNC_PUBLISH_MAILBOX_SIZE         50000
+#define GUCEF_DEFAULT_PUBSUB_MAX_ASYNC_PUBLISH_MAILBOX_SIZE_AFR     50000
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -119,6 +121,8 @@ CPubSubSideChannelConfig::CPubSubSideChannelConfig( void )
     , allowTimedOutPublishedInFlightMsgsRetryOutOfOrder( true )                                         // even though we dont want to send messages out-of-order here we will allow it to avoid losing messages as the bigger evil
     , maxMsgPublishAckRetryAttempts( -1 )                                                               // safer default is no max nr of ack retries
     , maxMsgPublishAckRetryTotalTimeInMs( -1 )                                                          // safer default is no max time for ack retries
+    , maxASyncPublishMailboxSize( GUCEF_DEFAULT_PUBSUB_MAX_ASYNC_PUBLISH_MAILBOX_SIZE )                 // we dont want the mailbox the grow unchecked by default. 
+    , maxASyncPublishMailboxSizeDuringAFR( GUCEF_DEFAULT_PUBSUB_MAX_ASYNC_PUBLISH_MAILBOX_SIZE_AFR )    // we dont want the mailbox the grow unchecked by default. 
     , ticketRefillOnBusyCycle( GUCEF_DEFAULT_TICKET_REFILLS_ON_BUSY_CYCLE )
     , collectMetrics( true )
     , metricsIntervalInMs( 1000 )
@@ -147,6 +151,8 @@ CPubSubSideChannelConfig::CPubSubSideChannelConfig( const CPubSubSideChannelConf
     , allowTimedOutPublishedInFlightMsgsRetryOutOfOrder( src.allowTimedOutPublishedInFlightMsgsRetryOutOfOrder )
     , maxMsgPublishAckRetryAttempts( src.maxMsgPublishAckRetryAttempts )
     , maxMsgPublishAckRetryTotalTimeInMs( src.maxMsgPublishAckRetryTotalTimeInMs )
+    , maxASyncPublishMailboxSize( src.maxASyncPublishMailboxSize )
+    , maxASyncPublishMailboxSizeDuringAFR( src.maxASyncPublishMailboxSizeDuringAFR )
     , ticketRefillOnBusyCycle( src.ticketRefillOnBusyCycle )
     , collectMetrics( src.collectMetrics )
     , metricsIntervalInMs( src.metricsIntervalInMs )
@@ -188,6 +194,8 @@ CPubSubSideChannelConfig::operator=( const CPubSubSideChannelConfig& src )
         allowTimedOutPublishedInFlightMsgsRetryOutOfOrder = src.allowTimedOutPublishedInFlightMsgsRetryOutOfOrder;
         maxMsgPublishAckRetryAttempts = src.maxMsgPublishAckRetryAttempts;
         maxMsgPublishAckRetryTotalTimeInMs = src.maxMsgPublishAckRetryTotalTimeInMs;
+        maxASyncPublishMailboxSize = src.maxASyncPublishMailboxSize;
+        maxASyncPublishMailboxSizeDuringAFR = src.maxASyncPublishMailboxSizeDuringAFR;
         ticketRefillOnBusyCycle = src.ticketRefillOnBusyCycle;
         collectMetrics = src.collectMetrics;
         metricsIntervalInMs = src.metricsIntervalInMs;
@@ -230,7 +238,9 @@ CPubSubSideChannelConfig::SaveConfig( CORE::CDataNode& cfg ) const
     totalSuccess = cfg.SetAttribute( "maxPublishedMsgInFlightTimeInMs", maxPublishedMsgInFlightTimeInMs ) && totalSuccess;
     totalSuccess = cfg.SetAttribute( "allowTimedOutPublishedInFlightMsgsRetryOutOfOrder", allowTimedOutPublishedInFlightMsgsRetryOutOfOrder ) && totalSuccess;
     totalSuccess = cfg.SetAttribute( "maxMsgPublishAckRetryAttempts", maxMsgPublishAckRetryAttempts ) && totalSuccess;
-    totalSuccess = cfg.SetAttribute( "maxMsgPublishAckRetryTotalTimeInMs", maxMsgPublishAckRetryTotalTimeInMs ) && totalSuccess;
+    totalSuccess = cfg.SetAttribute( "maxMsgPublishAckRetryTotalTimeInMs", maxMsgPublishAckRetryTotalTimeInMs ) && totalSuccess;    
+    totalSuccess = cfg.SetAttribute( "maxASyncPublishMailboxSize", maxASyncPublishMailboxSize ) && totalSuccess;
+    totalSuccess = cfg.SetAttribute( "maxASyncPublishMailboxSizeDuringAFR", maxASyncPublishMailboxSizeDuringAFR ) && totalSuccess;
     totalSuccess = cfg.SetAttribute( "ticketRefillOnBusyCycle", ticketRefillOnBusyCycle ) && totalSuccess;
     totalSuccess = cfg.SetAttribute( "collectMetrics", collectMetrics ) && totalSuccess;
     totalSuccess = cfg.SetAttribute( "metricsIntervalInMs", metricsIntervalInMs ) && totalSuccess;
@@ -294,6 +304,8 @@ CPubSubSideChannelConfig::LoadConfig( const CORE::CDataNode& cfg )
     maxMsgPublishRetryTotalTimeInMs = cfg.GetAttributeValueOrChildValueByName( "maxMsgPublishRetryTotalTimeInMs" ).AsInt32( maxMsgPublishRetryTotalTimeInMs, true );
     maxPublishedMsgInFlightTimeInMs = cfg.GetAttributeValueOrChildValueByName( "maxPublishedMsgInFlightTimeInMs" ).AsInt32( maxPublishedMsgInFlightTimeInMs, true );
     allowTimedOutPublishedInFlightMsgsRetryOutOfOrder = cfg.GetAttributeValueOrChildValueByName( "allowTimedOutPublishedInFlightMsgsRetryOutOfOrder" ).AsBool( allowTimedOutPublishedInFlightMsgsRetryOutOfOrder, true );
+    maxASyncPublishMailboxSize = cfg.GetAttributeValueOrChildValueByName( "maxASyncPublishMailboxSize" ).AsInt32( maxASyncPublishMailboxSize, true );
+    maxASyncPublishMailboxSizeDuringAFR = cfg.GetAttributeValueOrChildValueByName( "maxASyncPublishMailboxSizeDuringAFR" ).AsInt32( maxASyncPublishMailboxSizeDuringAFR, true );
     ticketRefillOnBusyCycle = cfg.GetAttributeValueOrChildValueByName( "ticketRefillOnBusyCycle" ).AsUInt32( ticketRefillOnBusyCycle, true );
     collectMetrics = cfg.GetAttributeValueOrChildValueByName( "collectMetrics" ).AsBool( collectMetrics, true );
     metricsIntervalInMs = cfg.GetAttributeValueOrChildValueByName( "metricsIntervalInMs" ).AsUInt32( metricsIntervalInMs, true );

@@ -392,6 +392,11 @@ typedef enum EBasicDataType TBasicDataType;
 
 #endif /* __cplusplus ? */
 
+/*--------------------------------------------------------------------------*/
+
+#define GUCEF_FLOAT32_COMPARISON_EPSILON   0.00001f
+#define GUCEF_FLOAT64_COMPARISON_EPSILON   0.00001
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //

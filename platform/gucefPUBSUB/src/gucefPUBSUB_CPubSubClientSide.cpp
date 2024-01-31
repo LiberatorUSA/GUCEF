@@ -934,6 +934,7 @@ CPubSubClientSide::BroadcastPublishMsgsSync( const TMsgCollection& msgs )
                 }
             }
         }
+        ++i;
     }
 
     if ( !totalSuccess )
@@ -1086,6 +1087,8 @@ CPubSubClientSide::TopicLink::ApplySettings( const CPubSubSideChannelSettings& s
     MT::CScopeMutex lock( m_dataLock );
 
     metricsPrefix = sideSettings.metricsPrefix;
+    maxASyncPublishMailboxSize = sideSettings.maxASyncPublishMailboxSize;
+    maxASyncPublishMailboxSizeDuringAFR = sideSettings.maxASyncPublishMailboxSizeDuringAFR;
 
     if ( sideSettings.maxPublishedMsgInFlightTimeInMs > 0 )
     {
@@ -1243,7 +1246,34 @@ bool
 CPubSubClientSide::TopicLink::PublishMsgsASync( const TMsgCollection& msgs )
 {GUCEF_TRACE;
 
-    return msgMailbox.AddBulkMail< const TMsgCollection >( msgs );
+    if ( awaitingFailureReport )
+    {
+        if ( maxASyncPublishMailboxSizeDuringAFR < 0                                  ||
+             msgMailbox.AmountOfMail() < (UInt32) maxASyncPublishMailboxSizeDuringAFR )
+        {
+            return msgMailbox.AddBulkMail< const TMsgCollection >( msgs );
+        }
+        else
+        {
+            GUCEF_WARNING_LOG( CORE::LOGLEVEL_NORMAL, "TopicLink(" + CORE::ToString( this ) +
+                "):PublishMsgsASync: max mailbox items reached while waiting for failure report. wont add more" );
+            return false;
+        }
+    }
+    else
+    {
+        if ( maxASyncPublishMailboxSize < 0                                  ||
+             msgMailbox.AmountOfMail() < (UInt32) maxASyncPublishMailboxSize )
+        {
+            return msgMailbox.AddBulkMail< const TMsgCollection >( msgs );
+        }
+        else
+        {
+            GUCEF_WARNING_LOG( CORE::LOGLEVEL_NORMAL, "TopicLink(" + CORE::ToString( this ) +
+                "):PublishMsgsASync: max mailbox items reached. wont add more" );
+            return false;
+        }
+    }
 }
 
 /*-------------------------------------------------------------------------*/
@@ -1258,7 +1288,19 @@ CPubSubClientSide::PublishMsgs( const CPubSubClientTopic::TPubSubMsgsRefVector& 
         // Without a specific target topic this can only be valid if its a broadcast attempt
         // the mailbox has its own lock, no need for extra locking
         if ( m_sideSettings.treatPublishWithoutTargetTopicAsBroadcast )
-            return m_broadcastMailbox.AddBulkMail< const CPubSubClientTopic::TPubSubMsgsRefVector >( msgs );
+        {
+            if ( m_sideSettings.maxASyncPublishMailboxSize < 0                                          ||
+                 m_broadcastMailbox.AmountOfMail() < (UInt32) m_sideSettings.maxASyncPublishMailboxSize )
+            {
+                return m_broadcastMailbox.AddBulkMail< const CPubSubClientTopic::TPubSubMsgsRefVector >( msgs );
+            }
+            else
+            {
+                GUCEF_WARNING_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientSide(" + CORE::ToString( this ) +
+                    "):PublishMsgs: max broadcast mailbox items reached. wont add more" );
+                return false;
+            }
+        }
         else
         {
             GUCEF_WARNING_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientSide(" + CORE::ToString( this ) +
@@ -1290,7 +1332,7 @@ CPubSubClientSide::PublishMsgs( const CPubSubClientTopic::TPubSubMsgsRefVector& 
                 // depending on thread timings
                 ConfigureTopicLink( m_sideSettings, newTopicObj, true );
 
-                GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientSide(" + CORE::PointerToString( this ) +
+                GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientSide(" + CORE::PointerToString( this ) +
                     "):PublishMsgs: specificTargetTopic passed " + CORE::ToString( specificTargetTopic ) +
                     " was not registered yet, will do so now to instance " + CORE::ToString( newTopicObj.GetPointerAlways() ) +
                     " for topic " + newTopicObj->GetTopicName() );
@@ -1356,6 +1398,10 @@ CPubSubClientSide::TopicLink::PublishMsgs( const TMsgCollection& msgs )
             //
             // this is a performance tradeoff where pulling messages in-proc as a prefetch is expected
             // to provide faster recovery
+            GUCEF_WARNING_LOG( CORE::LOGLEVEL_NORMAL, "TopicLink(" + CORE::ToString( this ) +
+                "):PublishMsgs: awaiting failure report. Deferring transmission as async send for " + CORE::ToString( msgs.size() ) +
+                " msgs for topic " + ( !topic.IsNULL() ? topic->GetTopicName() : "\"\"" )  );
+
             return PublishMsgsASync< const TMsgCollection >( msgs );
         }
     }

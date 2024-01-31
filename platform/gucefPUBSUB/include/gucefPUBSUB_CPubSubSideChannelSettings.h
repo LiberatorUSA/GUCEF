@@ -103,6 +103,8 @@ class GUCEF_PUBSUB_EXPORT_CPP CPubSubSideChannelConfig : public CORE::CIConfigur
     bool allowTimedOutPublishedInFlightMsgsRetryOutOfOrder;
     CORE::Int32 maxMsgPublishAckRetryAttempts;
     CORE::Int32 maxMsgPublishAckRetryTotalTimeInMs;
+    CORE::Int32 maxASyncPublishMailboxSize;                                    /**< max messages allowed in async publish mailbox when async publishing. <0 means infinite */
+    CORE::Int32 maxASyncPublishMailboxSizeDuringAFR;                           /**< max messages allowed in async publish mailbox when diveriting there from a sync send due to 'Awaiting Failure Report'. <0 means infinite */
     CORE::UInt32 ticketRefillOnBusyCycle;
     bool collectMetrics;                                                   
     CORE::UInt32 metricsIntervalInMs;

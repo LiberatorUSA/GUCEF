@@ -13,6 +13,8 @@
             "maxMsgPublishRetryAttempts": 20,
             "maxMsgPublishRetryTotalTimeInMs": 60000,
             "maxPublishedMsgInFlightTimeInMs": 240000,
+			"maxASyncPublishMailboxSize": 50000,
+			"maxASyncPublishMailboxSizeDuringAFR": 50000,
             "performPubSubInDedicatedThread": false,
             "retryFailedPublishAttempts": true,
             "subscribeWithoutBookmarkIfNoneIsPersisted": true,
@@ -44,7 +46,7 @@
                     "journalConfig": {
                         "useJournal": true,
                         "journalType": "binary",
-                        "journalPath": "vfs://DataPath/journals/clientType/{clientType}/instance/{clientInstance}/topicName/{topicName}"
+                        "journalPath": "vfs://DataPath/journals/clientType/{clientType}/instance/topics/{clientInstance}/topicName/{topicName}"
                     },
                     "CustomConfig": {
                         "redisXAddMaxLen": -1,
@@ -116,6 +118,8 @@
             "maxMsgPublishRetryAttempts": 20,
             "maxMsgPublishRetryTotalTimeInMs": 60000,
             "maxPublishedMsgInFlightTimeInMs": 240000,
+			"maxASyncPublishMailboxSize": 200000,
+			"maxASyncPublishMailboxSizeDuringAFR": 200000,			
             "performPubSubInDedicatedThread": false,
             "retryFailedPublishAttempts": true,
             "subscribeWithoutBookmarkIfNoneIsPersisted": true,
@@ -149,7 +153,7 @@
                     "journalConfig": {
                         "useJournal": true,
                         "journalType": "binary",
-                        "journalPath": "vfs://DataPath/journals/clientType/{clientType}/instance/{clientInstance}/topicName/{topicName}"
+                        "journalPath": "vfs://DataPath/journals/clientType/{clientType}/instance/topics/{clientInstance}/topicName/{topicName}"
                     },
                     "CustomConfig": {
                         "desiredNrOfBuffers": 3,
