@@ -317,9 +317,11 @@ CPubSubFlowRouteConfig::IsAnyAutoTopicMatchingNeeded( void ) const
 /*-------------------------------------------------------------------------*/
 
 CPubSubFlowRouteTopicConfigPtr
-CPubSubFlowRouteConfig::FindTopicAssociation( const CORE::CString& fromTopicName )
+CPubSubFlowRouteConfig::FindTopicAssociation( const CORE::CString& fromTopicName ,
+                                              bool performPatternMatch           )
 {GUCEF_TRACE;
 
+    // first look for an exact match, those should take priority regardless
     PubSubFlowRouteTopicConfigVector::iterator i = topicAssociations.begin();
     while ( i != topicAssociations.end() )
     {
@@ -328,37 +330,112 @@ CPubSubFlowRouteConfig::FindTopicAssociation( const CORE::CString& fromTopicName
             return topicConfig;
         ++i;
     }
+
+    if ( performPatternMatch )
+    {
+        // if there is no exact match the request is to try and pattern match next
+
+        PubSubFlowRouteTopicConfigVector::iterator i = topicAssociations.begin();
+        while ( i != topicAssociations.end() )
+        {
+            CPubSubFlowRouteTopicConfigPtr topicConfig = (*i);
+            if ( topicConfig->fromSideTopicName.WildcardEquals( fromTopicName, '*', true, true ) )
+                return topicConfig;
+            ++i;
+        }
+    }
+
+    // Didnt find anything
     return CPubSubFlowRouteTopicConfigPtr();
 }
 
 /*-------------------------------------------------------------------------*/
 
 CPubSubFlowRouteTopicConfigPtr
-CPubSubFlowRouteConfig::FindOrCreateTopicAssociation( const CORE::CString& fromTopicName )
+CPubSubFlowRouteConfig::FindOrCreateTopicAssociation( const CORE::CString& fromTopicName ,
+                                                      bool performPatternMatch           )
 {GUCEF_TRACE;
 
-    CPubSubFlowRouteTopicConfigPtr topicRouteConfig = FindTopicAssociation( fromTopicName );
-    if ( !topicRouteConfig.IsNULL() )
+    CPubSubFlowRouteTopicConfigPtr topicRouteConfig = FindTopicAssociation( fromTopicName, performPatternMatch );
+    if ( !performPatternMatch && !topicRouteConfig.IsNULL() )
         return topicRouteConfig;
 
     if ( IsAnyAutoTopicMatchingNeeded() )
     {
-        // Create the new association
+        if ( !topicRouteConfig.IsNULL() )
+        {
+            // is the one we have a template? if so treat it as such 
+            if ( performPatternMatch                                     &&
+                 ( topicRouteConfig->fromSideTopicName.HasChar( '*' ) > -1 ||
+                   fromTopicName.HasChar( '*' ) > -1                        ) )
+            {
+                
+                // Create the new association using the template format
 
+                CPubSubFlowRouteTopicConfigPtr templateTopicRouteConfig = topicRouteConfig;
+                topicRouteConfig = CPubSubFlowRouteTopicConfig::CreateSharedObj();
+                if ( topicRouteConfig.IsNULL() )
+                    return topicRouteConfig;
+
+                topicRouteConfig->fromSideTopicName = fromTopicName;
+                
+                // we now copy the settings from the template since its possible that some target topics are explicitly
+                // defined and not auto matching while some others are
+                if ( toSideTopicsAutoMatchFromSide && !toSideId.IsNULLOrEmpty() )
+                {
+                    if( !templateTopicRouteConfig->toSideTopicName.IsNULLOrEmpty() && templateTopicRouteConfig->toSideTopicName != templateTopicRouteConfig->fromSideTopicName )
+                        topicRouteConfig->toSideTopicName = templateTopicRouteConfig->toSideTopicName;    
+                    else
+                        topicRouteConfig->toSideTopicName = fromTopicName;
+                }
+                if ( failoverSideTopicsAutoMatchFromSide && !failoverSideId.IsNULLOrEmpty() )
+                {
+                    if( !templateTopicRouteConfig->failoverSideTopicName.IsNULLOrEmpty() && templateTopicRouteConfig->failoverSideTopicName != templateTopicRouteConfig->fromSideTopicName )
+                        topicRouteConfig->failoverSideTopicName = templateTopicRouteConfig->failoverSideTopicName;    
+                    else
+                        topicRouteConfig->failoverSideTopicName = fromTopicName;
+                }
+                if ( spilloverSideTopicsAutoMatchFromSide && !spilloverBufferSideId.IsNULLOrEmpty() )
+                {
+                    if( !templateTopicRouteConfig->spilloverSideTopicName.IsNULLOrEmpty() && templateTopicRouteConfig->spilloverSideTopicName != templateTopicRouteConfig->fromSideTopicName )
+                        topicRouteConfig->spilloverSideTopicName = templateTopicRouteConfig->spilloverSideTopicName;    
+                    else
+                        topicRouteConfig->spilloverSideTopicName = fromTopicName;
+                }
+                if ( deadLetterSideTopicsAutoMatchFromSide && !deadLetterSideId.IsNULLOrEmpty() )
+                {
+                    if( !templateTopicRouteConfig->deadLetterSideTopicName.IsNULLOrEmpty() && templateTopicRouteConfig->deadLetterSideTopicName != templateTopicRouteConfig->fromSideTopicName )
+                        topicRouteConfig->deadLetterSideTopicName = templateTopicRouteConfig->deadLetterSideTopicName;    
+                    else
+                        topicRouteConfig->deadLetterSideTopicName = fromTopicName;
+                }
+
+                topicAssociations.push_back( topicRouteConfig );
+
+                return topicRouteConfig;
+            }
+        }
+
+        // Create the new association using default format
         topicRouteConfig = CPubSubFlowRouteTopicConfig::CreateSharedObj();
-        topicRouteConfig->fromSideTopicName = fromTopicName;
+        if ( !topicRouteConfig.IsNULL() )
+        {
+            topicRouteConfig->fromSideTopicName = fromTopicName;
 
-        // Init with matching topic names as desired
-        // Once initialized we respect the state as-is but at init the other config plays a role in the manner of initialization
+            // Init with matching topic names as desired
+            // Once initialized we respect the state as-is but at init the other config plays a role in the manner of initialization
         
-        if ( toSideTopicsAutoMatchFromSide && !toSideId.IsNULLOrEmpty() && topicRouteConfig->toSideTopicName.IsNULLOrEmpty() )
-            topicRouteConfig->toSideTopicName = fromTopicName;    
-        if ( failoverSideTopicsAutoMatchFromSide && !failoverSideId.IsNULLOrEmpty() && topicRouteConfig->failoverSideTopicName.IsNULLOrEmpty() )
-            topicRouteConfig->failoverSideTopicName = fromTopicName; 
-        if ( spilloverSideTopicsAutoMatchFromSide && !spilloverBufferSideId.IsNULLOrEmpty() && topicRouteConfig->spilloverSideTopicName.IsNULLOrEmpty() )
-            topicRouteConfig->spilloverSideTopicName = fromTopicName; 
-        if ( deadLetterSideTopicsAutoMatchFromSide && !deadLetterSideId.IsNULLOrEmpty() && topicRouteConfig->deadLetterSideTopicName.IsNULLOrEmpty() )
-            topicRouteConfig->deadLetterSideTopicName = fromTopicName; 
+            if ( toSideTopicsAutoMatchFromSide && !toSideId.IsNULLOrEmpty() && topicRouteConfig->toSideTopicName.IsNULLOrEmpty() )
+                topicRouteConfig->toSideTopicName = fromTopicName;    
+            if ( failoverSideTopicsAutoMatchFromSide && !failoverSideId.IsNULLOrEmpty() && topicRouteConfig->failoverSideTopicName.IsNULLOrEmpty() )
+                topicRouteConfig->failoverSideTopicName = fromTopicName; 
+            if ( spilloverSideTopicsAutoMatchFromSide && !spilloverBufferSideId.IsNULLOrEmpty() && topicRouteConfig->spilloverSideTopicName.IsNULLOrEmpty() )
+                topicRouteConfig->spilloverSideTopicName = fromTopicName; 
+            if ( deadLetterSideTopicsAutoMatchFromSide && !deadLetterSideId.IsNULLOrEmpty() && topicRouteConfig->deadLetterSideTopicName.IsNULLOrEmpty() )
+                topicRouteConfig->deadLetterSideTopicName = fromTopicName; 
+
+            topicAssociations.push_back( topicRouteConfig );
+        }
     }
 
     return topicRouteConfig;
