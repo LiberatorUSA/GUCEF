@@ -476,6 +476,15 @@ CStoragePubSubClientTopic::CStoragePubSubClientTopic( CStoragePubSubClient* clie
     , m_storageDeserializationFailures( 0 )
 {GUCEF_TRACE;
 
+    GUCEF_ASSERT( GUCEF_NULL != client );    
+    
+    // Check if an override pulse generator was provided
+    if ( pulseGenerator.IsNULL() && GUCEF_NULL != client )
+    {
+        pulseGenerator = client->GetConfig().pulseGenerator;
+        SetPulseGenerator( pulseGenerator );
+    }
+    
     m_publishSuccessActionEventData.LinkTo( &m_publishSuccessActionIds );
     m_publishFailureActionEventData.LinkTo( &m_publishFailureActionIds );
 
@@ -499,7 +508,7 @@ CStoragePubSubClientTopic::CStoragePubSubClientTopic( CStoragePubSubClient* clie
         m_noAckRetransmitTimer = GUCEF_NEW CORE::CTimer( pulseGenerator, GUCEF_DEFAULT_NOACK_RETRANSMIT_CHECK_CYCLETIME_IN_MS );
     }
 
-    RegisterEventHandlers();
+    RegisterEventHandlers( pulseGenerator );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -557,7 +566,7 @@ CStoragePubSubClientTopic::GetClient( void )
 /*-------------------------------------------------------------------------*/
 
 void
-CStoragePubSubClientTopic::RegisterEventHandlers( void )
+CStoragePubSubClientTopic::RegisterEventHandlers( CORE::PulseGeneratorPtr pulseGenerator )
 {GUCEF_TRACE;
 
     if ( GUCEF_NULL != m_reconnectTimer )
@@ -605,9 +614,9 @@ CStoragePubSubClientTopic::RegisterEventHandlers( void )
                  callback2                      );
 
     TEventCallback callback3( this, &CStoragePubSubClientTopic::OnPulseCycle );
-    SubscribeTo( m_client->GetConfig().pulseGenerator.GetPointerAlways() ,
-                 CORE::CPulseGenerator::PulseEvent                       ,
-                 callback3                                               );
+    SubscribeTo( pulseGenerator.GetPointerAlways() ,
+                 CORE::CPulseGenerator::PulseEvent ,
+                 callback3                         );
 }
 
 /*-------------------------------------------------------------------------*/

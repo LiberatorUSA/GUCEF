@@ -254,14 +254,15 @@ CPubSubFlowRouter::CRouteInfo::SwitchAllTopicLinksActiveTopic( RouteType activeS
 /*-------------------------------------------------------------------------*/
 
 CPubSubFlowRouter::CRouteTopicLinks* 
-CPubSubFlowRouter::CRouteInfo::GetTargetTopicLinks( CPubSubClientTopic* fromTopic , 
-                                                    bool& errorOccured            )
+CPubSubFlowRouter::GetTargetTopicLinks( CPubSubClientTopic* fromTopic , 
+                                        CRouteInfo& routeInfo         ,
+                                        bool& errorOccured            )
 {GUCEF_TRACE;
 
     errorOccured = false;
 
-    TTopicRawPtrToRouteTopicLinksRawPtrMap::iterator t = fromSideTopicLinks.find( fromTopic );                
-    if ( t != fromSideTopicLinks.end() )
+    TTopicRawPtrToRouteTopicLinksRawPtrMap::iterator t = routeInfo.fromSideTopicLinks.find( fromTopic );                
+    if ( t != routeInfo.fromSideTopicLinks.end() )
     {
         return (*t).second;  
     }
@@ -269,22 +270,24 @@ CPubSubFlowRouter::CRouteInfo::GetTargetTopicLinks( CPubSubClientTopic* fromTopi
     {
         // Check if we need to worry about auto matching topics
         if ( fromTopic != GUCEF_NULL && 
-             !routeConfig.IsNULL() && 
-             routeConfig->IsAnyAutoTopicMatchingNeeded() )
-        {
+             !routeInfo.routeConfig.IsNULL() && 
+             routeInfo.routeConfig->IsAnyAutoTopicMatchingNeeded() )
+        {            
             // We should always have a target topic considering we are auto matching them and not relying on an explicit map
             // Due to topic discovery and auto generation this scenario can happen. 
             // We will 'lazy init' the mapping now.
 
             GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "RouteInfo:GetTargetTopicLinks: topic links not yet found, will lazy init" );
             
+            MT::CScopeWriterLock lock( m_lock );
+            
             CORE::PulseGeneratorPtr nullPulseGenerator;
-            if ( MatchTopicRouteConfig( fromTopic, nullPulseGenerator ) )
+            if ( routeInfo.MatchTopicRouteConfig( fromTopic, nullPulseGenerator ) )
             {
                 // Now lets try again after lazy matching the topic route configs
 
-                t = fromSideTopicLinks.find( fromTopic );
-                if ( t != fromSideTopicLinks.end() )
+                t = routeInfo.fromSideTopicLinks.find( fromTopic );
+                if ( t != routeInfo.fromSideTopicLinks.end() )
                 {
                     return (*t).second;  
                 }                                    
@@ -1640,7 +1643,7 @@ CPubSubFlowRouter::PublishMsgs( CPubSubClientSide* fromSide                     
                 // Doing so would mess up sequencing and intermix new and older messages. We should just wait for the spillover egress to finish
                 if ( !routeInfo.IsSpilloverEgressActive() )
                 {
-                    CRouteTopicLinks* topicLinks = routeInfo.GetTargetTopicLinks( fromTopic, errorOccured );
+                    CRouteTopicLinks* topicLinks = GetTargetTopicLinks( fromTopic, routeInfo, errorOccured );
                 
                     switch ( routeType )
                     {                                

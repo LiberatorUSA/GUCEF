@@ -350,7 +350,7 @@ class PUBSUBPLUGIN_STORAGE_PLUGIN_PRIVATE_CPP CStoragePubSubClientTopic : public
     static bool SyncBookmarkToBookmarkInfo( const PUBSUB::CPubSubBookmark& bookmark ,
                                             CStorageBookmarkInfo& info              );
     
-    void RegisterEventHandlers( void );
+    void RegisterEventHandlers( CORE::PulseGeneratorPtr pulseGenerator );
 
     bool SetupToSubscribe( PUBSUB::CPubSubClientTopicConfig& config );
 

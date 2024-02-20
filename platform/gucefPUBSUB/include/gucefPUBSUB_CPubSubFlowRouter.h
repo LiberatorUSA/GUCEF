@@ -204,9 +204,6 @@ class GUCEF_PUBSUB_EXPORT_CPP CPubSubFlowRouter : public CORE::CTSGNotifier
                                     CORE::PulseGeneratorPtr destPulseGenerator );
         bool MatchTopicRouteConfig( const CPubSubFlowRouteTopicConfigPtr topicRouteConfig );
         bool MatchAllTopicRouteConfigs( void );
-        
-        CRouteTopicLinks* GetTargetTopicLinks( CPubSubClientTopic* fromTopic ,
-                                               bool& errorOccured            );
 
         CRouteInfo( void );
         CRouteInfo( const CRouteInfo& src );
@@ -317,6 +314,10 @@ class GUCEF_PUBSUB_EXPORT_CPP CPubSubFlowRouter : public CORE::CTSGNotifier
     void DetermineFirstActiveRoute( CRouteInfo& routeInfo, bool attemptConnect );
 
     void DetermineActiveRouteDestination( CRouteInfo& routeInfo, bool attemptConnect );
+
+    CRouteTopicLinks* GetTargetTopicLinks( CPubSubClientTopic* fromTopic ,
+                                           CRouteInfo& routeInfo         ,
+                                           bool& errorOccured            );
     
     private:
     
