@@ -272,7 +272,7 @@ CPubSubClientSide::TopicLink::AddInFlightMsgs( const CPubSubClientTopic::TPublis
     size_t max = SMALLEST( publishActionIds.size(), msgs.size() );
     if ( publishActionIds.size() != msgs.size() )
     {
-        GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "PubSubClientSide(" + CORE::PointerToString( this ) +
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "PubSubClientSide(" + CORE::ToString( this ) +
             "):TopicLink:AddInFlightMsgs: Nr of publishActionIds (" + CORE::ToString( publishActionIds.size() ) +
             ") does not match Nr of msgs (" + CORE::ToString( msgs.size() ) + "). Will proceed best effort but this will likely cause issues" );
     }
@@ -296,7 +296,7 @@ CPubSubClientSide::TopicLink::AddInFlightMsgs( const CPubSubClientTopic::TPublis
     size_t max = SMALLEST( publishActionIds.size(), msgs.size() );
     if ( publishActionIds.size() != msgs.size() )
     {
-        GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "PubSubClientSide(" + CORE::PointerToString( this ) +
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "PubSubClientSide(" + CORE::ToString( this ) +
             "):TopicLink:AddInFlightMsgs: Nr of publishActionIds (" + CORE::ToString( publishActionIds.size() ) +
             ") does not match Nr of msgs (" + CORE::ToString( msgs.size() ) + "). Will proceed best effort but this will likely cause issues" );
     }
@@ -700,7 +700,7 @@ CPubSubClientSide::OnTopicAccessDestroyed( CORE::CNotifier* notifier    ,
     if ( pubsubClient != m_pubsubClient )
     {
         // the pointer is suspect, this should not happen
-        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientSide(" + CORE::PointerToString( this ) +
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientSide(" + CORE::ToString( this ) +
             "):OnTopicAccessDestroyed: client pointer doesnt match. Event=" + CORE::ToString( pubsubClient ) + " Ours=" + CORE::ToString( m_pubsubClient.GetPointerAlways() ) );
         return;
     }
@@ -716,7 +716,7 @@ CPubSubClientSide::OnTopicAccessDestroyed( CORE::CNotifier* notifier    ,
         {
             TopicLinkPtr topicLink = (*i).second; 
 
-            GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientSide(" + CORE::PointerToString( this ) +
+            GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientSide(" + CORE::ToString( this ) +
                 "):OnTopicAccessDestroyed: Removing topic link info for destroyed topic " + topicAccess->GetTopicName() +
                 ". There are " + CORE::ToString( topicLink->GetTotalMsgsInFlight() ) + " messages left in-flight" );
 
@@ -726,7 +726,7 @@ CPubSubClientSide::OnTopicAccessDestroyed( CORE::CNotifier* notifier    ,
         }
         else
         {
-            GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientSide(" + CORE::PointerToString( this ) +
+            GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientSide(" + CORE::ToString( this ) +
                 "):OnTopicAccessDestroyed: Cannot find topic link info for destroyed topic " + topicAccess->GetTopicName() );
         }
         
@@ -809,7 +809,7 @@ CPubSubClientSide::OnTopicsAccessAutoDestroyed( CORE::CNotifier* notifier    ,
                 {
                     TopicLinkPtr topicLink = (*i).second; 
 
-                    GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientSide(" + CORE::PointerToString( this ) +
+                    GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientSide(" + CORE::ToString( this ) +
                         "):OnTopicsAccessAutoDestroyed: Removing topic link info for destroyed topic " + topicAccess->GetTopicName() +
                         ". There are " + CORE::ToString( topicLink->GetTotalMsgsInFlight() ) + " messages left in-flight" );
 
@@ -821,7 +821,7 @@ CPubSubClientSide::OnTopicsAccessAutoDestroyed( CORE::CNotifier* notifier    ,
                 }
                 else
                 {
-                    GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientSide(" + CORE::PointerToString( this ) +
+                    GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientSide(" + CORE::ToString( this ) +
                         "):OnTopicAccessDestroyed: Cannot find topic link info for destroyed topic " + topicAccess->GetTopicName() );
                 }
             }
@@ -939,13 +939,13 @@ CPubSubClientSide::BroadcastPublishMsgsSync( const TMsgCollection& msgs )
 
     if ( !totalSuccess )
     {
-        GUCEF_WARNING_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientSide(" + CORE::PointerToString( this ) +
+        GUCEF_WARNING_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientSide(" + CORE::ToString( this ) +
             "):BroadcastPublishMsgsSync: Failures encountered broadcasting messages to " + CORE::ToString( topicsToPublishOn ) + 
             " successfully broadcast to " + CORE::ToString( topicsPublishedOn ) + " topics" );
     }
     else
     {
-        GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientSide(" + CORE::PointerToString( this ) +
+        GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientSide(" + CORE::ToString( this ) +
             "):BroadcastPublishMsgsSync: Successfully broadcasted messages to " + CORE::ToString( topicsPublishedOn ) + " topics, out of " +
             CORE::ToString( topicsToPublishOn ) + " topics available for publishing" );
     }
@@ -994,14 +994,14 @@ CPubSubClientSide::PublishMsgsSync( const TMsgCollection& msgs              ,
                     // depending on thread timings
                     ConfigureTopicLink( m_sideSettings, newTopicObj, true );
 
-                    GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientSide(" + CORE::PointerToString( this ) +
+                    GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientSide(" + CORE::ToString( this ) +
                         "):PublishMsgsASync: specificTargetTopic passed " + CORE::ToString( specificTargetTopic ) +
                         " was not registered yet, will do so now to instance " + CORE::ToString( newTopicObj.GetPointerAlways() ) +
                         " for topic " + newTopicObj->GetTopicName() );
                 }
                 else
                 {
-                    GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientSide(" + CORE::PointerToString( this ) +
+                    GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientSide(" + CORE::ToString( this ) +
                         "):PublishMsgsSync: specificTargetTopic passed " + CORE::ToString( specificTargetTopic ) +
                         " seems to have been replaced by a new instance " + CORE::ToString( newTopicObj.GetPointerAlways() ) +
                         " for topic " + newTopicObj->GetTopicName() );
@@ -1010,7 +1010,7 @@ CPubSubClientSide::PublishMsgsSync( const TMsgCollection& msgs              ,
             }
             else
             {
-                GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientSide(" + CORE::PointerToString( this ) +
+                GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientSide(" + CORE::ToString( this ) +
                     "):PublishMsgsSync: specificTargetTopic passed " + CORE::ToString( specificTargetTopic ) +
                     " is not a known topic nor does a topic by that name exist: " + specificTargetTopic->GetTopicName() );
                 return false;
@@ -1019,7 +1019,7 @@ CPubSubClientSide::PublishMsgsSync( const TMsgCollection& msgs              ,
     }
     catch ( const std::exception& e )
     {
-        GUCEF_EXCEPTION_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientSide(" + CORE::PointerToString( this ) +
+        GUCEF_EXCEPTION_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientSide(" + CORE::ToString( this ) +
             "):PublishMsgsSync: exception occured: " + CORE::ToString( e.what() ) );
     }
 
@@ -1332,19 +1332,19 @@ CPubSubClientSide::PublishMsgs( const CPubSubClientTopic::TPubSubMsgsRefVector& 
                 // depending on thread timings
                 ConfigureTopicLink( m_sideSettings, newTopicObj, true );
 
-                GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientSide(" + CORE::PointerToString( this ) +
+                GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientSide(" + CORE::ToString( this ) +
                     "):PublishMsgs: specificTargetTopic passed " + CORE::ToString( specificTargetTopic ) +
                     " was not registered yet, will do so now to instance " + CORE::ToString( newTopicObj.GetPointerAlways() ) +
                     " for topic " + newTopicObj->GetTopicName() );
 
                 i = m_topicPtrs.find( specificTargetTopic );
-                if ( i == m_topicPtrs.end() )
+                if ( i != m_topicPtrs.end() )
                 {
                     topicLink = (*i).second;
                 }
                 else
                 {
-                    GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientSide(" + CORE::PointerToString( this ) +
+                    GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientSide(" + CORE::ToString( this ) +
                         "):PublishMsgs: specificTargetTopic passed " + CORE::ToString( specificTargetTopic ) +
                         " was not registered yet, failed to register instance " + CORE::ToString( newTopicObj.GetPointerAlways() ) +
                         " for topic " + newTopicObj->GetTopicName() );
@@ -1354,7 +1354,7 @@ CPubSubClientSide::PublishMsgs( const CPubSubClientTopic::TPubSubMsgsRefVector& 
             }
             else
             {
-                GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientSide(" + CORE::PointerToString( this ) +
+                GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientSide(" + CORE::ToString( this ) +
                     "):PublishMsgs: specificTargetTopic passed " + CORE::ToString( specificTargetTopic ) +
                     " seems to have been replaced by a new instance " + CORE::ToString( newTopicObj.GetPointerAlways() ) +
                     " for topic " + newTopicObj->GetTopicName() );
@@ -1362,7 +1362,7 @@ CPubSubClientSide::PublishMsgs( const CPubSubClientTopic::TPubSubMsgsRefVector& 
         }
         else
         {
-            GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientSide(" + CORE::PointerToString( this ) +
+            GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientSide(" + CORE::ToString( this ) +
                 "):PublishMsgs: specificTargetTopic passed " + CORE::ToString( specificTargetTopic ) +
                 " is not a known topic nor does a topic by that name exist: " + specificTargetTopic->GetTopicName() );
             return false;
@@ -1845,7 +1845,7 @@ CPubSubClientSide::TopicLink::RetryPublishFailedMsgs( void )
             }
             if ( discardedMsgs > 0 )
             {
-                GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "TopicLink(" + CORE::PointerToString( this ) +
+                GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "TopicLink(" + CORE::ToString( this ) +
                     "):RetryPublishFailedMsgs: For topic " + topic->GetTopicName() + " we discarded a total of " + CORE::ToString( discardedMsgs ) +
                     " messages due to exceeding the max retry attempts and/or sanity checks" );
             }
@@ -2114,7 +2114,7 @@ CPubSubClientSide::TopicLink::OnPubSubTopicMsgsReceived( CORE::CNotifier* notifi
                         {
                             // Better luck next batch, we will potentially not be able to use bookmarking to cover the current batch in isolation
                             // if derivation of a bookmark from a message is not supported
-                            GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientSide(" + CORE::PointerToString( this ) +
+                            GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientSide(" + CORE::ToString( this ) +
                                 "):OnPubSubTopicMsgsReceived: Current bookmark is temp not available for the current message batch" );
                             break;
                         }
@@ -2122,7 +2122,7 @@ CPubSubClientSide::TopicLink::OnPubSubTopicMsgsReceived( CORE::CNotifier* notifi
                         {
                             // We should not get here, if we do there is some logic error in feature checking here or in
                             // bookmark management in the backend code
-                            GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientSide(" + CORE::PointerToString( this ) +
+                            GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientSide(" + CORE::ToString( this ) +
                                 "):OnPubSubTopicMsgsReceived: Current bookmark obtained from backend came back as not applicable. This should not happen based on the feature set!" );
                             break;
                         }
@@ -2130,7 +2130,7 @@ CPubSubClientSide::TopicLink::OnPubSubTopicMsgsReceived( CORE::CNotifier* notifi
                         {
                             // We should not get here, if we do there is some logic error in feature checking here or in
                             // bookmark management in the backend code
-                            GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientSide(" + CORE::PointerToString( this ) +
+                            GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientSide(" + CORE::ToString( this ) +
                                 "):OnPubSubTopicMsgsReceived: Current bookmark obtained from backend came back as not initialized. This should not happen!" );
                             break;
                         }
@@ -2151,7 +2151,7 @@ CPubSubClientSide::TopicLink::OnPubSubTopicMsgsReceived( CORE::CNotifier* notifi
                                     // Note that entries added here are removed at a later time via calls to CleanupMsgBatchBookmarksUpTo()
                                     bookmarksOnMsgReceived[ lastMsgRef->GetReceiveActionId() ] = currentBookmark;
 
-                                    GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientSide(" + CORE::PointerToString( this ) +
+                                    GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientSide(" + CORE::ToString( this ) +
                                         "):OnPubSubTopicMsgsReceived: Retaining bookmark at recieveActionId " + CORE::ToString( lastMsgRef->GetReceiveActionId() ) );
                                 }
                             }
@@ -2172,7 +2172,7 @@ CPubSubClientSide::TopicLink::OnPubSubTopicMsgsReceived( CORE::CNotifier* notifi
     }
     catch ( const std::exception& e )
     {
-        GUCEF_EXCEPTION_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientSide(" + CORE::PointerToString( this ) + "):OnPubSubTopicMsgsReceived: exception: " + CORE::CString( e.what() ) );
+        GUCEF_EXCEPTION_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientSide(" + CORE::ToString( this ) + "):OnPubSubTopicMsgsReceived: exception: " + CORE::CString( e.what() ) );
     }
 }
 
@@ -2593,7 +2593,7 @@ CPubSubClientSide::TopicLink::OnPubSubTopicMsgsPublishFailure( CORE::CNotifier* 
                 msgTrackingEntry.readyToAckPublishSuccessButAckFailed = false;
                 publishFailedMsgs.insert( publishActionId );
 
-                GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientSide(" + CORE::PointerToString( this ) +
+                GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientSide(" + CORE::ToString( this ) +
                     "):OnPubSubTopicMsgsPublishFailure: Message with publishActionId of " + CORE::ToString( publishActionId ) + " queued for retry, publish failed" +
                     ". receiveActionId=" + CORE::ToString( msgTrackingEntry.msg->GetReceiveActionId() ) );
             }
@@ -2604,7 +2604,7 @@ CPubSubClientSide::TopicLink::OnPubSubTopicMsgsPublishFailure( CORE::CNotifier* 
 
                 // This should not happen
                 // Only understandable reasons are bad eventing from the backend or if the in-flight time-out is configured too aggressively
-                GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "PubSubClientSide(" + CORE::PointerToString( this ) +
+                GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "PubSubClientSide(" + CORE::ToString( this ) +
                     "):OnPubSubTopicMsgsPublishFailure: Failed to locate original in-flight message related to publishActionId " + CORE::ToString( (*n) ) );
             }
             ++n;
@@ -2697,7 +2697,7 @@ CPubSubClientSide::DisconnectPubSubClient( bool destroyClient )
 
     if ( !m_pubsubClient->Disconnect() )
     {
-        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientSide(" + CORE::PointerToString( this ) +
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientSide(" + CORE::ToString( this ) +
             "):ConnectPubSubClient: Failed to disconnect the pub-sub client" );
         return false;
     }
@@ -2898,7 +2898,7 @@ CPubSubClientSide::ConnectPubSubClientTopic( CPubSubClientTopic& topic          
             bool subscribeSuccess = false;
             if ( !clientFeatures.supportsBookmarkingConcept ) // We have no control bookmark wise with this backend, just subscribe and hope for the best
             {
-                GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientSide(" + CORE::PointerToString( this ) +
+                GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientSide(" + CORE::ToString( this ) +
                     "):ConnectPubSubClientTopic: Bookmarking concept is not supported by the backend, we will attempt to subscribe as-is" );
 
                 subscribeSuccess = topic.Subscribe();
@@ -2906,7 +2906,7 @@ CPubSubClientSide::ConnectPubSubClientTopic( CPubSubClientTopic& topic          
             else
             if ( clientFeatures.supportsServerSideBookmarkPersistance ) // first preference is always backend managed bookmarking if available
             {
-                GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientSide(" + CORE::PointerToString( this ) +
+                GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientSide(" + CORE::ToString( this ) +
                     "):ConnectPubSubClientTopic: Bookmarking concept is natively supported and managed by the backend independently and we will attempt to subscribe as such" );
 
                 subscribeSuccess = topic.Subscribe();
@@ -2918,7 +2918,7 @@ CPubSubClientSide::ConnectPubSubClientTopic( CPubSubClientTopic& topic          
                 CPubSubBookmark bookmark;
                 if ( GetLatestBookmark( topic, bookmark ) )
                 {
-                    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientSide(" + CORE::PointerToString( this ) +
+                    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientSide(" + CORE::ToString( this ) +
                         "):ConnectPubSubClientTopic: Bookmarking concept is supported by the backend via a client-side bookmark. Bookmark type=" + CORE::ToString( bookmark.GetBookmarkType() ) + ". Bookmark=" + bookmark.GetBookmarkData().AsString() );
 
                     subscribeSuccess = topic.SubscribeStartingAtBookmark( bookmark );
@@ -2927,7 +2927,7 @@ CPubSubClientSide::ConnectPubSubClientTopic( CPubSubClientTopic& topic          
                 {
                     // GUCEF_ERROR_LOG
                     // This is not fully supported yet, make it a non-error log statement for now
-                    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientSide(" + CORE::PointerToString( this ) +
+                    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientSide(" + CORE::ToString( this ) +
                         "):ConnectPubSubClientTopic: Bookmarking concept is supported by the backend via a client-side message index marker but we failed at obtaining the last used message index" );
 
                     if ( pubSubSideSettings.subscribeWithoutBookmarkIfNoneIsPersisted )
@@ -2935,7 +2935,7 @@ CPubSubClientSide::ConnectPubSubClientTopic( CPubSubClientTopic& topic          
                         subscribeSuccess = topic.Subscribe();
                         if ( !subscribeSuccess )
                         {
-                            GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientSide(" + CORE::PointerToString( this ) +
+                            GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientSide(" + CORE::ToString( this ) +
                                 "):ConnectPubSubClientTopic: Also unable to subscribe using the default bookmark as a fallback" );
                             return false;
                         }
@@ -2947,7 +2947,7 @@ CPubSubClientSide::ConnectPubSubClientTopic( CPubSubClientTopic& topic          
 
             if ( !subscribeSuccess )
             {
-                GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientSide(" + CORE::PointerToString( this ) +
+                GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientSide(" + CORE::ToString( this ) +
                     "):ConnectPubSubClient: Failed to subscribe to topic: " + topic.GetTopicName() );
                 return false;
             }
@@ -3042,12 +3042,12 @@ CPubSubClientSide::PerformPubSubClientSetup( bool hardReset )
                 pubSubConfig.journal = CPubSubGlobal::Instance()->GetPubSubJournalFactory().Create( pubSubConfig.journalConfig.journalType, pubSubConfig.journalConfig );
                 if ( pubSubConfig.journal.IsNULL() )
                 {
-                    GUCEF_ERROR_LOG( CORE::LOGLEVEL_VERY_IMPORTANT, "PubSubClientSide(" + CORE::PointerToString( this ) +
+                    GUCEF_ERROR_LOG( CORE::LOGLEVEL_VERY_IMPORTANT, "PubSubClientSide(" + CORE::ToString( this ) +
                         "):PerformPubSubClientSetup: Failed to create a pub-sub journal of type \"" + pubSubConfig.journalConfig.journalType + "\". No journaling capability" );
                 }
                 else
                 {
-                    GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientSide(" + CORE::PointerToString( this ) +
+                    GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientSide(" + CORE::ToString( this ) +
                         "):PerformPubSubClientSetup: Created a pub-sub journal of type \"" + pubSubConfig.journalConfig.journalType + "\" for side with id " +
                         GetSideId() );
                 }
@@ -3058,7 +3058,7 @@ CPubSubClientSide::PerformPubSubClientSetup( bool hardReset )
 
         if ( m_pubsubClient.IsNULL() )
         {
-            GUCEF_ERROR_LOG( CORE::LOGLEVEL_CRITICAL, "PubSubClientSide(" + CORE::PointerToString( this ) +
+            GUCEF_ERROR_LOG( CORE::LOGLEVEL_CRITICAL, "PubSubClientSide(" + CORE::ToString( this ) +
                 "):PerformPubSubClientSetup: Failed to create a pub-sub client of type \"" + pubSubConfig.pubsubClientType + "\". Cannot proceed" );
             return false;
         }
@@ -3075,7 +3075,7 @@ CPubSubClientSide::PerformPubSubClientSetup( bool hardReset )
     // Refresh our client features cache
     if ( !m_pubsubClient->GetSupportedFeatures( m_clientFeatures ) )
     {
-        GUCEF_ERROR_LOG( CORE::LOGLEVEL_CRITICAL, "PubSubClientSide(" + CORE::PointerToString( this ) +
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_CRITICAL, "PubSubClientSide(" + CORE::ToString( this ) +
             "):PerformPubSubClientSetup: Failed to obtain supported a pub-sub client supported features" );
         return false;
     }
@@ -3087,7 +3087,7 @@ CPubSubClientSide::PerformPubSubClientSetup( bool hardReset )
 
     if ( clientSetupWasNeeded )
     {
-        GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientSide(" + CORE::PointerToString( this ) +
+        GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientSide(" + CORE::ToString( this ) +
             "):PerformPubSubClientSetup: Setup completed for pub-sub client of type \"" + pubSubConfig.pubsubClientType + "\" for side with id " +
             GetSideId() );
 
@@ -3120,7 +3120,7 @@ CPubSubClientSide::ConnectPubSubClient( bool reset )
 
     if ( !IsPubSubClientInfraReadyToConnect() )
     {
-        GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientSide(" + CORE::PointerToString( this ) +
+        GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientSide(" + CORE::ToString( this ) +
             "):ConnectPubSubClient: Deferring pubsub client connect awaiting prereqs" );
 
         m_pubsubClientReconnectTimer.SetEnabled( true );
@@ -3137,7 +3137,7 @@ CPubSubClientSide::ConnectPubSubClient( bool reset )
     if ( GUCEF_NULL != m_flowRouter )
         m_sideSettings.needToTrackInFlightPublishedMsgsForAck = m_flowRouter->IsTrackingInFlightPublishedMsgsForAcksNeeded( this );
 
-    GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "PubSubClientSide(" + CORE::PointerToString( this ) +
+    GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "PubSubClientSide(" + CORE::ToString( this ) +
         "):ConnectPubSubClient: needToTrackInFlightPublishedMsgsForAck=" + CORE::ToString( m_sideSettings.needToTrackInFlightPublishedMsgsForAck ) );
 
     if ( m_pubsubBookmarkPersistence.IsNULL() || reset )
@@ -3147,7 +3147,7 @@ CPubSubClientSide::ConnectPubSubClient( bool reset )
 
         if ( m_pubsubBookmarkPersistence.IsNULL() )
         {
-            GUCEF_ERROR_LOG( CORE::LOGLEVEL_CRITICAL, "PubSubClientSide(" + CORE::PointerToString( this ) +
+            GUCEF_ERROR_LOG( CORE::LOGLEVEL_CRITICAL, "PubSubClientSide(" + CORE::ToString( this ) +
                 "):ConnectPubSubClient: Failed to create bookmark persistance access of type \"" + pubsubBookmarkPersistenceConfig.bookmarkPersistenceType + "\". Cannot proceed" );
             return false;
         }
@@ -3155,7 +3155,7 @@ CPubSubClientSide::ConnectPubSubClient( bool reset )
 
     if ( !m_pubsubClient->Connect( reset ) )
     {
-        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientSide(" + CORE::PointerToString( this ) +
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientSide(" + CORE::ToString( this ) +
             "):ConnectPubSubClient: Failed to connect the pub-sub client" );
         return false;
     }
@@ -3203,14 +3203,14 @@ CPubSubClientSide::ConnectPubSubClient( bool reset )
         {
             if ( !(*i)->isOptional )
             {
-                GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientSide(" + CORE::PointerToString( this ) +
+                GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientSide(" + CORE::ToString( this ) +
                     "):ConnectPubSubClient: Failed to create a pub-sub client topic access for topic \"" + (*i)->topicName + "\". Cannot proceed" );
                 DisconnectPubSubClient( true );
                 return false;
             }
             else
             {
-                GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientSide(" + CORE::PointerToString( this ) +
+                GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientSide(" + CORE::ToString( this ) +
                     "):ConnectPubSubClient: Unable to create a pub-sub client topic access for optional topic \"" + (*i)->topicName + "\". Proceeding" );
             }
         }
@@ -3348,12 +3348,12 @@ CPubSubClientSide::OnTaskStart( CORE::CICloneable* taskData )
         {
             if ( SetCpuAffinityByCpuId( m_sideSettings.cpuAffinityForPubSubThread ) )
             {
-                GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientSide(" + CORE::PointerToString( this ) +
+                GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientSide(" + CORE::ToString( this ) +
                     "):OnTaskStart: Successfully set a CPU affinity for logical CPU " + CORE::UInt32ToString( m_sideSettings.cpuAffinityForPubSubThread ) );
             }
             else
             {
-                GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientSide(" + CORE::PointerToString( this ) +
+                GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientSide(" + CORE::ToString( this ) +
                     "):OnTaskStart: Failed to set a CPU affinity for logical CPU " + CORE::UInt32ToString( m_sideSettings.cpuAffinityForPubSubThread ) +
                     ". Proceeding without affinity");
             }
@@ -3366,14 +3366,14 @@ CPubSubClientSide::OnTaskStart( CORE::CICloneable* taskData )
         {
             if ( !ConnectPubSubClient( false ) )
             {
-                GUCEF_WARNING_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientSide(" + CORE::PointerToString( this ) +
+                GUCEF_WARNING_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientSide(" + CORE::ToString( this ) +
                     "):OnTaskStart: Failed initial connection attempt on task start, will rely on auto-reconnect" );
                 m_pubsubClientReconnectTimer.SetEnabled( true );
             }
         }
         else
         {
-            GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientSide(" + CORE::PointerToString( this ) +
+            GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientSide(" + CORE::ToString( this ) +
                 "):OnTaskStart: Deferring pubsub client connect awaiting prereqs" );
 
             m_pubsubClientReconnectTimer.SetEnabled( true );
