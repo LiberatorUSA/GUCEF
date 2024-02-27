@@ -95,6 +95,7 @@ if (WIN32)
   set( PLATFORM_HEADER_FILES 
     include/mswin/gucefCOMCORE_CWin32NetworkInterface.h
     include/mswin/gucefCOMCORE_CWin32SerialPort.h
+    include/mswin/gucefCOMCORE_IphlpapiApi.h
     include/mswin/gucefCOMCORE_icmpApi.h
   )
 
@@ -104,6 +105,7 @@ if (WIN32)
   set( PLATFORM_SOURCE_FILES 
     src/mswin/gucefCOMCORE_CWin32NetworkInterface.cpp
     src/mswin/gucefCOMCORE_CWin32SerialPort.cpp
+    src/mswin/gucefCOMCORE_IphlpapiApi.cpp
     src/mswin/gucefCOMCORE_icmpApi.cpp
   )
 
@@ -114,6 +116,7 @@ elseif (WIN64)
   set( PLATFORM_HEADER_FILES 
     include/mswin/gucefCOMCORE_CWin32NetworkInterface.h
     include/mswin/gucefCOMCORE_CWin32SerialPort.h
+    include/mswin/gucefCOMCORE_IphlpapiApi.h
     include/mswin/gucefCOMCORE_icmpApi.h
   )
 
@@ -123,6 +126,7 @@ elseif (WIN64)
   set( PLATFORM_SOURCE_FILES 
     src/mswin/gucefCOMCORE_CWin32NetworkInterface.cpp
     src/mswin/gucefCOMCORE_CWin32SerialPort.cpp
+    src/mswin/gucefCOMCORE_IphlpapiApi.cpp
     src/mswin/gucefCOMCORE_icmpApi.cpp
   )
 

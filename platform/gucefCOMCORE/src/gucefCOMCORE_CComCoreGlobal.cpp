@@ -94,6 +94,20 @@
 
 #include "gucefCOMCORE_CComCoreGlobal.h"  /* definition of the class implemented here */
 
+#if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
+
+    #ifndef GUCEF_COMCORE_IPHLPAPI_H
+    #include "gucefCOMCORE_IphlpapiApi.h"
+    #define GUCEF_COMCORE_IPHLPAPI_H
+    #endif /* GUCEF_COMCORE_IPHLPAPI_H ? */
+
+    #ifndef GUCEF_COMCORE_ICMPAPI_H
+    #include "gucefCOMCORE_icmpApi.h"
+    #define GUCEF_COMCORE_ICMPAPI_H
+    #endif /* GUCEF_COMCORE_ICMPAPI_H ? */
+
+#endif
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //
@@ -140,6 +154,8 @@ CComCoreGlobal::Initialize( void )
 
     #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
     InitWinsock( 1 );
+    LinkICMP();
+    LinkLPHLPAPI();
     #endif
 
     CTCPConnection::RegisterEvents();
@@ -193,6 +209,8 @@ CComCoreGlobal::Shutdown( void )
 
 
     #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
+    UnlinkLPHLPAPI();
+    UnlinkICMP();    
     ShutdownWinsock();
     #endif
 }

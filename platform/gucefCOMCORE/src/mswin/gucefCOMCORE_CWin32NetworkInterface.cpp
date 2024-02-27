@@ -53,7 +53,12 @@
 #include <windows.h>
 #include <tchar.h>
 #include <iphlpapi.h>
-#include <ipifcons.h>
+//#include <ipifcons.h>
+
+#ifndef GUCEF_COMCORE_IPHLPAPI_H
+#include "gucefCOMCORE_IphlpapiApi.h"
+#define GUCEF_COMCORE_IPHLPAPI_H
+#endif /* GUCEF_COMCORE_IPHLPAPI_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -452,43 +457,102 @@ bool
 CWin32NetworkInterface::GetMetrics( CNetworkInterfaceMetrics& metrics ) const
 {GUCEF_TRACE;
 
-	MT::CObjectScopeLock lock( this );
-
-    // Make sure the struct is zeroed out
-	::MIB_IFROW interfaceInfo;
-    SecureZeroMemory((PVOID) &interfaceInfo, sizeof(::MIB_IFROW) );
-
-	interfaceInfo.dwIndex = m_nicIndex;
-
-	lock.EarlyUnlock();
-
-	DWORD queryResult = ::GetIfEntry( &interfaceInfo );
-	if ( queryResult == NO_ERROR )
+	if ( GUCEF_NULL != COMCORE::GetIfEntry2 )
 	{
-		metrics.inboundOctets = interfaceInfo.dwInOctets;
-		metrics.hasInboundOctets = true;
-		metrics.inboundErroredPackets = interfaceInfo.dwInErrors;
-		metrics.hasInboundErroredPackets = true;
-		metrics.inboundDiscardedPackets = interfaceInfo.dwInDiscards;
-		metrics.hasInboundDiscardedPackets = true;
-		metrics.inboundUnknownProtocolPackets = interfaceInfo.dwInUnknownProtos;
-		metrics.hasInboundUnknownProtocolPackets = true;
-		metrics.inboundUnicastPackets = interfaceInfo.dwInUcastPkts;
-		metrics.hasInboundUnicastPackets = true;
-		metrics.outboundErroredPackets = interfaceInfo.dwOutErrors;
-		metrics.hasOutboundErroredPackets = true;
-		metrics.outboundDiscardedPackets = interfaceInfo.dwOutDiscards;
-		metrics.hasOutboundDiscardedPackets = true;
-		metrics.outboundOctets = interfaceInfo.dwOutOctets;
-		metrics.hasOutboundOctets = true;
-		metrics.outboundUnicastPackets = interfaceInfo.dwOutUcastPkts;
-		metrics.hasOutboundUnicastPackets = true;
+		MT::CObjectScopeLock lock( this );
 
-		return true;
+		// Make sure the struct is zeroed out
+		COMCORE::MIB_IF_ROW2 interfaceInfo;
+		SecureZeroMemory((PVOID) &interfaceInfo, sizeof(COMCORE::MIB_IF_ROW2) );
+		interfaceInfo.InterfaceIndex = m_nicIndex;
+
+		lock.EarlyUnlock();
+
+		DWORD queryResult = COMCORE::GetIfEntry2( &interfaceInfo );
+		if ( queryResult == NO_ERROR )
+		{
+			metrics.inboundOctets = interfaceInfo.InOctets;
+			metrics.hasInboundOctets = true;
+			metrics.inboundErroredPackets = interfaceInfo.InErrors;
+			metrics.hasInboundErroredPackets = true;
+			metrics.inboundDiscardedPackets = interfaceInfo.InDiscards;
+			metrics.hasInboundDiscardedPackets = true;
+			metrics.inboundUnknownProtocolPackets = interfaceInfo.InUnknownProtos;
+			metrics.hasInboundUnknownProtocolPackets = true;
+			metrics.inboundUnicastPackets = interfaceInfo.InUcastPkts;
+			metrics.hasInboundUnicastPackets = true;
+			metrics.outboundErroredPackets = interfaceInfo.OutErrors;
+			metrics.hasOutboundErroredPackets = true;
+			metrics.outboundDiscardedPackets = interfaceInfo.OutDiscards;
+			metrics.hasOutboundDiscardedPackets = true;
+			metrics.outboundOctets = interfaceInfo.OutOctets;
+			metrics.hasOutboundOctets = true;
+			metrics.outboundUnicastPackets = interfaceInfo.OutUcastPkts;
+			metrics.hasOutboundUnicastPackets = true;
+
+			metrics.transmitLinkSpeedBitsPerSec = interfaceInfo.TransmitLinkSpeed;
+			metrics.hasTransmitLinkSpeedBitsPerSec = true;
+			metrics.receiveLinkSpeedBitsPerSec = interfaceInfo.ReceiveLinkSpeed;
+			metrics.hasReceiveLinkSpeedBitsPerSec = true;
+			metrics.outboundMulticastOctets = interfaceInfo.OutMulticastOctets;
+			metrics.hasOutboundMulticastOctets = true;
+			metrics.inboundMulticastOctets = interfaceInfo.InMulticastOctets;
+			metrics.hasInboundMulticastOctets = true;
+			metrics.outboundBroadcastOctets = interfaceInfo.OutBroadcastOctets;
+			metrics.hasOutboundBroadcastOctets = true;
+			metrics.inboundBroadcastOctets = interfaceInfo.InBroadcastOctets;
+			metrics.hasInboundBroadcastOctets = true;
+			metrics.outboundNonUnicastPackets = interfaceInfo.OutNUcastPkts;
+			metrics.hasOutboundNonUnicastPackets = true;
+			metrics.inboundNonUnicastPackets = interfaceInfo.InNUcastPkts;
+			metrics.hasInboundNonUnicastPackets = true;
+
+			return true;
+		}
+		else
+		{
+			GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "CWin32NetworkInterface: Failed to obtain adapter stats using Win32 GetIfEntry2()" );
+		}
 	}
 	else
 	{
-		GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "CWin32NetworkInterface: Failed to obtain adapter stats using Win32 GetIfEntry()" );
+		MT::CObjectScopeLock lock( this );
+
+		// Make sure the struct is zeroed out
+		::MIB_IFROW interfaceInfo;
+		SecureZeroMemory((PVOID) &interfaceInfo, sizeof(::MIB_IFROW) );
+		interfaceInfo.dwIndex = m_nicIndex;
+
+		lock.EarlyUnlock();
+
+		DWORD queryResult = ::GetIfEntry( &interfaceInfo );
+		if ( queryResult == NO_ERROR )
+		{
+			metrics.inboundOctets = interfaceInfo.dwInOctets;
+			metrics.hasInboundOctets = true;
+			metrics.inboundErroredPackets = interfaceInfo.dwInErrors;
+			metrics.hasInboundErroredPackets = true;
+			metrics.inboundDiscardedPackets = interfaceInfo.dwInDiscards;
+			metrics.hasInboundDiscardedPackets = true;
+			metrics.inboundUnknownProtocolPackets = interfaceInfo.dwInUnknownProtos;
+			metrics.hasInboundUnknownProtocolPackets = true;
+			metrics.inboundUnicastPackets = interfaceInfo.dwInUcastPkts;
+			metrics.hasInboundUnicastPackets = true;
+			metrics.outboundErroredPackets = interfaceInfo.dwOutErrors;
+			metrics.hasOutboundErroredPackets = true;
+			metrics.outboundDiscardedPackets = interfaceInfo.dwOutDiscards;
+			metrics.hasOutboundDiscardedPackets = true;
+			metrics.outboundOctets = interfaceInfo.dwOutOctets;
+			metrics.hasOutboundOctets = true;
+			metrics.outboundUnicastPackets = interfaceInfo.dwOutUcastPkts;
+			metrics.hasOutboundUnicastPackets = true;
+
+			return true;
+		}
+		else
+		{
+			GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "CWin32NetworkInterface: Failed to obtain adapter stats using Win32 GetIfEntry()" );
+		}
 	}
 	return false;
 }

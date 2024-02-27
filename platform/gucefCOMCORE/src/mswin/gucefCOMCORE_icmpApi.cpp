@@ -22,6 +22,11 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+#ifndef GUCEF_MT_CSCOPEMUTEX_H
+#include "gucefMT_CScopeMutex.h"
+#define GUCEF_MT_CSCOPEMUTEX_H
+#endif /* GUCEF_MT_CSCOPEMUTEX_H ? */
+
 #include "gucefCOMCORE_icmpApi.h"
 
 /*-------------------------------------------------------------------------*/
@@ -43,6 +48,11 @@
 #define _STD_USING
 #include <winsock.h>                  /* windows networking API, used here for it's type declarations */
 
+#ifndef GUCEF_COMCORE_IPHLPAPI_H
+#include "gucefCOMCORE_IphlpapiApi.h"
+#define GUCEF_COMCORE_IPHLPAPI_H
+#endif /* GUCEF_COMCORE_IPHLPAPI_H ? */
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //
@@ -58,7 +68,6 @@ namespace COMCORE {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-MT::CMutex globalMutex;
 UInt32 DllRefCount = 0;
 void* DllHandle = NULL;
 TIcmpCreateFilePtr IcmpCreateFile = NULL;
@@ -78,7 +87,7 @@ bool
 LinkICMPModule( const char* moduleName )
 {GUCEF_TRACE;
 
-    globalMutex.Lock();
+    MT::CScopeMutex lock( win32ApiLinkerMutex );
     if ( DllHandle == NULL )
     {
         DllHandle = CORE::LoadModuleDynamicly( moduleName );
@@ -109,8 +118,6 @@ LinkICMPModule( const char* moduleName )
                 CORE::UnloadModuleDynamicly( DllHandle );
                 DllHandle = NULL;
                 DllRefCount = 0;
-                
-                globalMutex.Unlock();
                 return false;            
             }
         
@@ -120,15 +127,11 @@ LinkICMPModule( const char* moduleName )
         {
             DllHandle = NULL;
             DllRefCount = 0;
-            
-            globalMutex.Unlock();
             return false;            
         }
     }
     
     ++DllRefCount;
-    
-    globalMutex.Unlock();
     return true;
 }
 
@@ -156,7 +159,7 @@ void
 UnlinkICMP( void )
 {GUCEF_TRACE;
 
-    globalMutex.Lock();    
+    MT::CScopeMutex lock( win32ApiLinkerMutex );    
     if ( DllHandle != NULL )
     {
         if ( DllRefCount == 1 )
@@ -166,7 +169,6 @@ UnlinkICMP( void )
             --DllRefCount;
         }
     }
-    globalMutex.Unlock();
 }
 
 /*-------------------------------------------------------------------------*/
