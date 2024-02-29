@@ -524,11 +524,13 @@ ProcessMetrics::ProcessMetrics( void )
     , m_gatherGlobalNetworkStatInboundOctets( true )
     , m_gatherGlobalNetworkStatInboundUnicastOctets( true )
     , m_gatherGlobalNetworkStatInboundUnicastPackets( true )
+    , m_gatherGlobalNetworkStatInboundNonUnicastPackets( true )
     , m_gatherGlobalNetworkStatInboundErroredPackets( true )
     , m_gatherGlobalNetworkStatInboundDiscardedPackets( true )
     , m_gatherGlobalNetworkStatOutboundOctets( true )
     , m_gatherGlobalNetworkStatOutboundUnicastOctets( true )
     , m_gatherGlobalNetworkStatOutboundUnicastPackets( true )
+    , m_gatherGlobalNetworkStatOutboundNonUnicastPackets( true )
     , m_gatherGlobalNetworkStatOutboundErroredPackets( true )
     , m_gatherGlobalNetworkStatOutboundDiscardedPackets( true )
     , m_gatherGlobalStorageStats( true )
@@ -537,6 +539,10 @@ ProcessMetrics::ProcessMetrics( void )
     , m_gatherGlobalStorageVolumeBytes( false )
     , m_gatherGlobalStorageVolumeAvailableToCallerPercentage( true )
     , m_gatherGlobalStorageVolumeAvailablePercentage( true )
+    , m_gatherGlobalNetworkStatInboundMulticastOctets( true )
+    , m_gatherGlobalNetworkStatOutboundMulticastOctets( true )
+    , m_gatherGlobalNetworkStatInboundBroadcastOctets( true )
+    , m_gatherGlobalNetworkStatOutboundBroadcastOctets( true )
 {GUCEF_TRACE;
 
     RegisterEventHandlers();
@@ -1203,6 +1209,12 @@ ProcessMetrics::OnMetricsTimerCycle( CORE::CNotifier* notifier    ,
                         GUCEF_METRIC_GAUGE( nicMetricName, nicMetrics.inboundUnicastPackets, 1.0f );
                         ValidateMetricThresholds( CORE::CVariant( nicMetrics.inboundUnicastPackets ), nicMetricName, CORE::CString::Empty );
                     }
+                    if ( m_gatherGlobalNetworkStatInboundNonUnicastPackets && nicMetrics.hasInboundNonUnicastPackets )
+                    {
+                        CORE::CString nicMetricName = nicMetricNamePrefix + nic->GetAdapterName() + ".InboundNonUnicastPackets";
+                        GUCEF_METRIC_GAUGE( nicMetricName, nicMetrics.inboundNonUnicastPackets, 1.0f );
+                        ValidateMetricThresholds( CORE::CVariant( nicMetrics.inboundNonUnicastPackets ), nicMetricName, CORE::CString::Empty );
+                    }
                     if ( m_gatherGlobalNetworkStatInboundErroredPackets && nicMetrics.hasInboundErroredPackets )
                     {
                         CORE::CString nicMetricName = nicMetricNamePrefix + nic->GetAdapterName() + ".InboundErroredPackets";
@@ -1233,6 +1245,12 @@ ProcessMetrics::OnMetricsTimerCycle( CORE::CNotifier* notifier    ,
                         GUCEF_METRIC_GAUGE( nicMetricName, nicMetrics.outboundUnicastPackets, 1.0f );
                         ValidateMetricThresholds( CORE::CVariant( nicMetrics.outboundUnicastPackets ), nicMetricName, CORE::CString::Empty );
                     }
+                    if ( m_gatherGlobalNetworkStatOutboundNonUnicastPackets && nicMetrics.hasOutboundNonUnicastPackets )
+                    {
+                        CORE::CString nicMetricName = nicMetricNamePrefix + nic->GetAdapterName() + ".OutboundNonUnicastPackets";
+                        GUCEF_METRIC_GAUGE( nicMetricName, nicMetrics.outboundNonUnicastPackets, 1.0f );
+                        ValidateMetricThresholds( CORE::CVariant( nicMetrics.outboundNonUnicastPackets ), nicMetricName, CORE::CString::Empty );
+                    }
                     if ( m_gatherGlobalNetworkStatOutboundErroredPackets && nicMetrics.hasOutboundErroredPackets )
                     {
                         CORE::CString nicMetricName = nicMetricNamePrefix + nic->GetAdapterName() + ".OutboundErroredPackets";
@@ -1245,6 +1263,42 @@ ProcessMetrics::OnMetricsTimerCycle( CORE::CNotifier* notifier    ,
                         GUCEF_METRIC_GAUGE( nicMetricName, nicMetrics.outboundDiscardedPackets, 1.0f );
                         ValidateMetricThresholds( CORE::CVariant( nicMetrics.outboundDiscardedPackets ), nicMetricName, CORE::CString::Empty );
                     }
+                    if ( m_gatherGlobalNetworkStatInboundMulticastOctets && nicMetrics.hasInboundMulticastOctets )
+                    {
+                        CORE::CString nicMetricName = nicMetricNamePrefix + nic->GetAdapterName() + ".InboundMulticastOctets";
+                        GUCEF_METRIC_GAUGE( nicMetricName, nicMetrics.inboundMulticastOctets, 1.0f );
+                        ValidateMetricThresholds( CORE::CVariant( nicMetrics.inboundMulticastOctets ), nicMetricName, CORE::CString::Empty );
+                    }
+                    if ( m_gatherGlobalNetworkStatOutboundMulticastOctets && nicMetrics.hasOutboundMulticastOctets )
+                    {
+                        CORE::CString nicMetricName = nicMetricNamePrefix + nic->GetAdapterName() + ".OutboundMulticastOctets";
+                        GUCEF_METRIC_GAUGE( nicMetricName, nicMetrics.outboundMulticastOctets, 1.0f );
+                        ValidateMetricThresholds( CORE::CVariant( nicMetrics.outboundMulticastOctets ), nicMetricName, CORE::CString::Empty );
+                    }
+                    if ( m_gatherGlobalNetworkStatInboundBroadcastOctets && nicMetrics.hasInboundBroadcastOctets )
+                    {
+                        CORE::CString nicMetricName = nicMetricNamePrefix + nic->GetAdapterName() + ".InboundBroadcastOctets";
+                        GUCEF_METRIC_GAUGE( nicMetricName, nicMetrics.inboundBroadcastOctets, 1.0f );
+                        ValidateMetricThresholds( CORE::CVariant( nicMetrics.inboundBroadcastOctets ), nicMetricName, CORE::CString::Empty );
+                    }
+                    if ( m_gatherGlobalNetworkStatOutboundBroadcastOctets && nicMetrics.hasOutboundBroadcastOctets )
+                    {
+                        CORE::CString nicMetricName = nicMetricNamePrefix + nic->GetAdapterName() + ".OutboundBroadcastOctets";
+                        GUCEF_METRIC_GAUGE( nicMetricName, nicMetrics.outboundBroadcastOctets, 1.0f );
+                        ValidateMetricThresholds( CORE::CVariant( nicMetrics.outboundBroadcastOctets ), nicMetricName, CORE::CString::Empty );
+                    }
+                    if ( m_gatherGlobalNetworkStatTransmitLinkSpeedBitsPerSec && nicMetrics.hasTransmitLinkSpeedBitsPerSec )
+                    {
+                        CORE::CString nicMetricName = nicMetricNamePrefix + nic->GetAdapterName() + ".TransmitLinkSpeedBitsPerSec";
+                        GUCEF_METRIC_GAUGE( nicMetricName, nicMetrics.transmitLinkSpeedBitsPerSec, 1.0f );
+                        ValidateMetricThresholds( CORE::CVariant( nicMetrics.transmitLinkSpeedBitsPerSec ), nicMetricName, CORE::CString::Empty );
+                    }
+                    if ( m_gatherGlobalNetworkStatReceiveLinkSpeedBitsPerSec && nicMetrics.hasReceiveLinkSpeedBitsPerSec )
+                    {
+                        CORE::CString nicMetricName = nicMetricNamePrefix + nic->GetAdapterName() + "ReceiveLinkSpeedBitsPerSec";
+                        GUCEF_METRIC_GAUGE( nicMetricName, nicMetrics.receiveLinkSpeedBitsPerSec, 1.0f );
+                        ValidateMetricThresholds( CORE::CVariant( nicMetrics.receiveLinkSpeedBitsPerSec ), nicMetricName, CORE::CString::Empty );
+                    }                    
                 }
                 ++i;
             }
@@ -1456,7 +1510,15 @@ ProcessMetrics::LoadConfig( const CORE::CValueList& appConfig   ,
     m_gatherGlobalNetworkStatOutboundUnicastOctets = appConfig.GetValueAlways( "gatherGlobalNetworkStatOutboundUnicastOctets", m_gatherGlobalNetworkStatOutboundUnicastOctets ).AsBool( m_gatherGlobalNetworkStatOutboundUnicastOctets, true );
     m_gatherGlobalNetworkStatOutboundUnicastPackets = appConfig.GetValueAlways( "gatherGlobalNetworkStatOutboundUnicastPackets", m_gatherGlobalNetworkStatOutboundUnicastPackets ).AsBool( m_gatherGlobalNetworkStatOutboundUnicastPackets, true );
     m_gatherGlobalNetworkStatOutboundErroredPackets = appConfig.GetValueAlways( "gatherGlobalNetworkStatOutboundErroredPackets", m_gatherGlobalNetworkStatOutboundErroredPackets ).AsBool( m_gatherGlobalNetworkStatOutboundErroredPackets, true );
-    m_gatherGlobalNetworkStatOutboundDiscardedPackets = appConfig.GetValueAlways( "gatherGlobalNetworkStatOutboundDiscardedPackets", m_gatherGlobalNetworkStatOutboundDiscardedPackets ).AsBool( m_gatherGlobalNetworkStatOutboundDiscardedPackets, true );
+    m_gatherGlobalNetworkStatOutboundDiscardedPackets = appConfig.GetValueAlways( "gatherGlobalNetworkStatOutboundDiscardedPackets", m_gatherGlobalNetworkStatOutboundDiscardedPackets ).AsBool( m_gatherGlobalNetworkStatOutboundDiscardedPackets, true );    
+    m_gatherGlobalNetworkStatInboundMulticastOctets = appConfig.GetValueAlways( "gatherGlobalNetworkStatInboundMulticastOctets", m_gatherGlobalNetworkStatInboundMulticastOctets ).AsBool( m_gatherGlobalNetworkStatInboundMulticastOctets, true );
+    m_gatherGlobalNetworkStatOutboundMulticastOctets = appConfig.GetValueAlways( "gatherGlobalNetworkStatOutboundMulticastOctets", m_gatherGlobalNetworkStatOutboundMulticastOctets ).AsBool( m_gatherGlobalNetworkStatOutboundMulticastOctets, true );
+    m_gatherGlobalNetworkStatInboundBroadcastOctets = appConfig.GetValueAlways( "gatherGlobalNetworkStatInboundBroadcastOctets", m_gatherGlobalNetworkStatInboundBroadcastOctets ).AsBool( m_gatherGlobalNetworkStatInboundBroadcastOctets, true );
+    m_gatherGlobalNetworkStatOutboundBroadcastOctets = appConfig.GetValueAlways( "gatherGlobalNetworkStatOutboundBroadcastOctets", m_gatherGlobalNetworkStatOutboundBroadcastOctets ).AsBool( m_gatherGlobalNetworkStatOutboundBroadcastOctets, true );
+    m_gatherGlobalNetworkStatOutboundNonUnicastPackets = appConfig.GetValueAlways( "gatherGlobalNetworkStatOutboundNonUnicastPackets", m_gatherGlobalNetworkStatOutboundNonUnicastPackets ).AsBool( m_gatherGlobalNetworkStatOutboundNonUnicastPackets, true );
+    m_gatherGlobalNetworkStatInboundNonUnicastPackets = appConfig.GetValueAlways( "gatherGlobalNetworkStatInboundNonUnicastPackets", m_gatherGlobalNetworkStatInboundNonUnicastPackets ).AsBool( m_gatherGlobalNetworkStatInboundNonUnicastPackets, true );
+    m_gatherGlobalNetworkStatTransmitLinkSpeedBitsPerSec = appConfig.GetValueAlways( "gatherGlobalNetworkStatTransmitLinkSpeedBitsPerSec", m_gatherGlobalNetworkStatTransmitLinkSpeedBitsPerSec ).AsBool( m_gatherGlobalNetworkStatTransmitLinkSpeedBitsPerSec, true );
+    m_gatherGlobalNetworkStatReceiveLinkSpeedBitsPerSec = appConfig.GetValueAlways( "gatherGlobalNetworkStatReceiveLinkSpeedBitsPerSec", m_gatherGlobalNetworkStatReceiveLinkSpeedBitsPerSec ).AsBool( m_gatherGlobalNetworkStatReceiveLinkSpeedBitsPerSec, true );
 
     m_gatherGlobalStorageStats = appConfig.GetValueAlways( "gatherGlobalStorageStats", m_gatherGlobalStorageStats ).AsBool( m_gatherGlobalStorageStats, true );
     m_gatherGlobalStorageVolumeBytesAvailableToCaller = appConfig.GetValueAlways( "gatherGlobalStorageVolumeBytesAvailableToCaller", m_gatherGlobalStorageVolumeBytesAvailableToCaller ).AsBool( m_gatherGlobalStorageVolumeBytesAvailableToCaller, true );

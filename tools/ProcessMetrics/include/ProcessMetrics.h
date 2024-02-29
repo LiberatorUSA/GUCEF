@@ -323,13 +323,21 @@ class ProcessMetrics : public CORE::CObservingNotifier
     bool m_gatherGlobalNetworkStatInboundOctets;
     bool m_gatherGlobalNetworkStatInboundUnicastOctets;
     bool m_gatherGlobalNetworkStatInboundUnicastPackets;
+    bool m_gatherGlobalNetworkStatInboundNonUnicastPackets;
     bool m_gatherGlobalNetworkStatInboundErroredPackets;
     bool m_gatherGlobalNetworkStatInboundDiscardedPackets;
     bool m_gatherGlobalNetworkStatOutboundOctets;
     bool m_gatherGlobalNetworkStatOutboundUnicastOctets;
     bool m_gatherGlobalNetworkStatOutboundUnicastPackets;
+    bool m_gatherGlobalNetworkStatOutboundNonUnicastPackets;
     bool m_gatherGlobalNetworkStatOutboundErroredPackets;
     bool m_gatherGlobalNetworkStatOutboundDiscardedPackets;
+    bool m_gatherGlobalNetworkStatInboundMulticastOctets;
+    bool m_gatherGlobalNetworkStatOutboundMulticastOctets;
+    bool m_gatherGlobalNetworkStatInboundBroadcastOctets;
+    bool m_gatherGlobalNetworkStatOutboundBroadcastOctets;
+    bool m_gatherGlobalNetworkStatTransmitLinkSpeedBitsPerSec;
+    bool m_gatherGlobalNetworkStatReceiveLinkSpeedBitsPerSec;
 
     bool m_gatherGlobalStorageStats;
     bool m_gatherGlobalStorageVolumeBytesAvailableToCaller;
