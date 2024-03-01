@@ -294,6 +294,7 @@ class ProcessMetrics : public CORE::CObservingNotifier
     TMetricsThresholdMapMap m_procMetricsThresholds;
     CORE::TCpuDataPoint* m_globalCpuDataPoint;
     CORE::CString::StringSet m_storageVolumeIds;
+    CORE::CString::StringMap m_storageVolumeIdsToPaths;
 
     bool m_gatherProcPageFaultCountInBytes;
     bool m_gatherProcPageFileUsageInBytes;
@@ -345,6 +346,7 @@ class ProcessMetrics : public CORE::CObservingNotifier
     bool m_gatherGlobalStorageVolumeBytes;
     bool m_gatherGlobalStorageVolumeAvailableToCallerPercentage;
     bool m_gatherGlobalStorageVolumeAvailablePercentage;
+    bool m_convertStorageVolumeIdsToPaths;
 };
 
 /*-------------------------------------------------------------------------*/

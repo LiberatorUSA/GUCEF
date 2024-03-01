@@ -500,6 +500,7 @@ ProcessMetrics::ProcessMetrics( void )
     , m_procMetricsThresholds()
     , m_globalCpuDataPoint( GUCEF_NULL )
     , m_storageVolumeIds()
+    , m_storageVolumeIdsToPaths()
     , m_gatherProcPageFaultCountInBytes( true )
     , m_gatherProcPageFileUsageInBytes( true )
     , m_gatherProcPeakPageFileUsageInBytes( true )
@@ -539,6 +540,7 @@ ProcessMetrics::ProcessMetrics( void )
     , m_gatherGlobalStorageVolumeBytes( false )
     , m_gatherGlobalStorageVolumeAvailableToCallerPercentage( true )
     , m_gatherGlobalStorageVolumeAvailablePercentage( true )
+    , m_convertStorageVolumeIdsToPaths( true )
     , m_gatherGlobalNetworkStatInboundMulticastOctets( true )
     , m_gatherGlobalNetworkStatOutboundMulticastOctets( true )
     , m_gatherGlobalNetworkStatInboundBroadcastOctets( true )
@@ -1322,6 +1324,33 @@ ProcessMetrics::OnMetricsTimerCycle( CORE::CNotifier* notifier    ,
                     m_gatherGlobalStorageStats = false;
                 }
             }
+
+            if ( m_convertStorageVolumeIdsToPaths )
+            {
+                CORE::CString::StringSet::iterator i = m_storageVolumeIds.begin();
+                while ( i != m_storageVolumeIds.end() )
+                {
+                    const CORE::CString& storageVolumeId = (*i);
+                    CORE::CString::StringSet storageVolumePathNames;
+
+                    if ( CORE::GetAllFileSystemPathNamesForVolume( storageVolumeId, storageVolumePathNames ) )
+                    {
+                        CORE::CString::StringSet::iterator j = storageVolumePathNames.begin();
+                        while ( j != storageVolumePathNames.end() )
+                        {
+                            const CORE::CString& pathName = (*j);
+                            GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "ProcessMetrics: Storage volume id: " + storageVolumeId + " has path name " + pathName );
+                            ++j;
+                        }
+                        if ( !storageVolumePathNames.empty() )
+                        {
+                            const CORE::CString& pathName = *storageVolumePathNames.begin();
+                            m_storageVolumeIdsToPaths[ storageVolumeId ] = pathName;
+                        }
+                        ++i;
+                    }
+                }
+            }            
         }
 
         static const CORE::CString storageMetricNamePrefix = "ProcessMetrics.Storage.";
@@ -1330,11 +1359,16 @@ ProcessMetrics::OnMetricsTimerCycle( CORE::CNotifier* notifier    ,
         while ( i != m_storageVolumeIds.end() )
         {
             const CORE::CString& storageVolumeId = (*i);
+            const CORE::CString& storagePath = m_storageVolumeIdsToPaths[ storageVolumeId ];
 
             CORE::TStorageVolumeInformation volumeInfo;
             if ( CORE::GetFileSystemStorageVolumeInformationByVolumeId( volumeInfo, storageVolumeId ) && 0 < volumeInfo.totalNumberOfBytes )
             {
-                CORE::CString metricsStorageVolumeId = GenerateMetricsFriendlyString( storageVolumeId );
+                const CORE::CString* metricStrToUse = &storageVolumeId;
+                if ( m_convertStorageVolumeIdsToPaths && !storagePath.IsNULLOrEmpty() )
+                    metricStrToUse = &storagePath;
+
+                CORE::CString metricsStorageVolumeId = GenerateMetricsFriendlyString( *metricStrToUse );
                 
                 if ( m_gatherGlobalStorageVolumeBytesAvailableToCaller )
                 {
@@ -1526,6 +1560,7 @@ ProcessMetrics::LoadConfig( const CORE::CValueList& appConfig   ,
     m_gatherGlobalStorageVolumeBytes = appConfig.GetValueAlways( "gatherGlobalStorageVolumeBytes", m_gatherGlobalStorageVolumeBytes ).AsBool( m_gatherGlobalStorageVolumeBytes, true );
     m_gatherGlobalStorageVolumeAvailableToCallerPercentage = appConfig.GetValueAlways( "gatherGlobalStorageVolumeAvailableToCallerPercentage", m_gatherGlobalStorageVolumeAvailableToCallerPercentage ).AsBool( m_gatherGlobalStorageVolumeAvailableToCallerPercentage, true );
     m_gatherGlobalStorageVolumeAvailablePercentage = appConfig.GetValueAlways( "gatherGlobalStorageVolumeAvailablePercentage", m_gatherGlobalStorageVolumeAvailablePercentage ).AsBool( m_gatherGlobalStorageVolumeAvailablePercentage, true );
+    m_convertStorageVolumeIdsToPaths = appConfig.GetValueAlways( "convertStorageVolumeIdsToPaths", m_convertStorageVolumeIdsToPaths ).AsBool( m_convertStorageVolumeIdsToPaths, true );
 
     TStringSet exeProcsToWatch = appConfig.GetValueAlways( "exeProcsToWatch" ).AsString().ParseUniqueElements( ';', false );
     TStringSet::iterator i = exeProcsToWatch.begin();

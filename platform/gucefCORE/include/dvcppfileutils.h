@@ -160,6 +160,27 @@ GetFileSystemStorageVolumeIdByDirPath( CString& volumeId, const CString& path );
 GUCEF_CORE_PUBLIC_CPP bool
 GetAllFileSystemStorageVolumes( CString::StringSet& volumeIds );
 
+/*-------------------------------------------------------------------------*/
+
+/**
+ *  Attempts to obtain all filesystem path names for the given volume id
+ *  These are the more human friendly path names that are normally used for accessing files
+ *  Path names returned represent root paths which are garantueed to be backed by the given volume
+ */
+GUCEF_CORE_PUBLIC_CPP bool
+GetAllFileSystemPathNamesForVolume( const CString& volumeId       , 
+                                    CString::StringSet& pathNames );
+
+/*-------------------------------------------------------------------------*/
+
+/**
+ *  Attempts to obtain all filesystem mount points for the given volume id
+ *  These are alternate logical mappings which are in reality mapped to a different underlying volume
+ */
+GUCEF_CORE_PUBLIC_CPP bool
+GetAllFileSystemMountPointsForVolume( const CString& volumeId         , 
+                                      CString::StringSet& mountPoints );
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //

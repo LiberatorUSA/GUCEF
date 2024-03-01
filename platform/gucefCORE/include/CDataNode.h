@@ -89,7 +89,7 @@ class GUCEF_CORE_PUBLIC_CPP CDataNode : public CIEnumerable
     typedef std::list< CDataNode*, basic_allocator< CDataNode* > >                                              TDataNodeList;
     typedef std::vector< CDataNode*, basic_allocator< CDataNode* > >                                            TDataNodeVector;
     typedef std::set< const CDataNode*, std::less< const CDataNode* >, basic_allocator< const CDataNode* > >    TConstDataNodeSet;
-    typedef std::map< CString, CVariant, std::less< CString >, basic_allocator< CString >  >                    TAttributeMap;
+    typedef std::map< CString, CVariant, std::less< CString >, basic_allocator< TKeyValuePair >  >              TAttributeMap;
     typedef CVariant::VariantVector                                                                             TVariantVector;
     typedef CVariant::VariantSet                                                                                TVariantSet;
 

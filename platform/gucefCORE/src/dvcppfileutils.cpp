@@ -34,6 +34,11 @@
 #define GUCEF_CORE_CONFIG_H
 #endif /* GUCEF_CORE_CONFIG_H ? */
 
+#ifndef GUCEF_CORE_LOGGING_H
+#include "gucefCORE_Logging.h"
+#define GUCEF_CORE_LOGGING_H
+#endif /* GUCEF_CORE_LOGGING_H ? */
+
 #include "dvstrutils.h"         /* My own string utils */
 
 #ifndef GUCEF_CORE_DVFILEUTILS_H
@@ -515,12 +520,17 @@ GetAllFileSystemStorageVolumes( CString::StringSet& volumeIds )
 
     #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
 
-    wchar_t volNameBuffer[ MAX_PATH ];
-    DWORD bytes = 0;
+    WCHAR volNameBuffer[ MAX_PATH ];
+    memset( volNameBuffer, 0, sizeof( volNameBuffer ) );
 
     HANDLE volumeFindHandle = ::FindFirstVolumeW( volNameBuffer, MAX_PATH );
-    if ( NULL == volumeFindHandle )
+    if ( INVALID_HANDLE_VALUE == volumeFindHandle )
     {
+        DWORD errorCode = ::GetLastError();
+        if ( ERROR_NO_MORE_FILES == errorCode )
+            return true;
+
+        GUCEF_DEBUG_LOG( LOGLEVEL_NORMAL, "GetAllFileSystemStorageVolumes: FindFirstVolumeW failed with error code: " + ToString( (UInt32) errorCode ) );
         return false;
     }
 
@@ -537,6 +547,141 @@ GetAllFileSystemStorageVolumes( CString::StringSet& volumeIds )
     }
     while ( findMoreVolumes );
     ::FindVolumeClose( volumeFindHandle );
+
+    return true;
+
+    #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
+
+    return false;
+
+    #else
+
+    return false;
+
+    #endif
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+GetAllFileSystemPathNamesForVolume( const CString& volumeId       , 
+                                    CString::StringSet& pathNames )
+{GUCEF_TRACE;
+
+    pathNames.clear();
+
+    #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
+
+    std::wstring volumeIdWide = ToWString( volumeId );
+
+    // first get the size of the buffer we need
+    DWORD requiredBufferLength = 0;
+    BOOL success = ::GetVolumePathNamesForVolumeNameW( volumeIdWide.c_str()  , 
+                                                       NULL                  , 
+                                                       0                     , 
+                                                       &requiredBufferLength );
+    if ( success == TRUE )
+    {
+        // there is nothing to fetch
+        return true;
+    }
+    DWORD errorCode = ::GetLastError();
+    if ( ERROR_MORE_DATA != errorCode )
+    {
+        GUCEF_DEBUG_LOG( LOGLEVEL_NORMAL, "GetAllFileSystemPathNamesForVolume: GetVolumePathNamesForVolumeNameW failed with error code: " + ToString( (UInt32) errorCode ) );
+        return false;
+    }
+
+    UInt32 requiredBufferBytes = requiredBufferLength * sizeof( WCHAR );    
+    CORE::CDynamicBuffer volumePathsBuffer( requiredBufferBytes, true );
+    volumePathsBuffer.SetBytes( 0 );
+    volumePathsBuffer.SetDataSize( requiredBufferBytes );
+    
+    // Get the volume paths
+    success = ::GetVolumePathNamesForVolumeNameW( volumeIdWide.c_str()                 , 
+                                                  volumePathsBuffer.AsTypePtr<WCHAR>() , 
+                                                  volumePathsBuffer.GetBufferSize()    , 
+                                                  &requiredBufferLength                );
+    if ( success == TRUE )
+    {
+        WCHAR nullTerm = 0;
+        Int32 lastOffset = 0;
+        Int32 offset = volumePathsBuffer.Find( &nullTerm, sizeof(nullTerm), 0 );
+        while ( offset > 0 )
+        {
+            const wchar_t* pathNamePtr = volumePathsBuffer.AsConstTypePtr< wchar_t >( (UInt32) lastOffset );
+            if ( GUCEF_NULL != pathNamePtr && *pathNamePtr != 0 )
+                pathNames.insert( ToString( pathNamePtr ) );
+
+            lastOffset = offset;
+            offset = volumePathsBuffer.Find( &nullTerm, sizeof(nullTerm), (UInt32) lastOffset+1 );
+        }
+
+        return true;
+    }
+    else
+    {
+        DWORD errorCode = ::GetLastError();
+        GUCEF_DEBUG_LOG( LOGLEVEL_NORMAL, "GetAllFileSystemPathNamesForVolume: GetVolumePathNamesForVolumeNameW failed with error code: " + ToString( (UInt32) errorCode ) );
+        return false;
+    }
+
+    #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
+
+    return false;
+
+    #else
+
+    return false;
+
+    #endif
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+GetAllFileSystemMountPointsForVolume( const CString& volumeId         , 
+                                      CString::StringSet& mountPoints )
+{GUCEF_TRACE;
+
+    mountPoints.clear();
+
+    #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
+
+    std::wstring volumeIdWide = ToWString( volumeId );
+
+    const DWORD MOUNT_POINT_BUFFER_SIZE = 1024;
+    WCHAR volMountBuffer[ MOUNT_POINT_BUFFER_SIZE ];
+    memset( volMountBuffer, 0, sizeof( volMountBuffer ) );
+
+    // Get the Volume mount points as the windows equivelant of symlink based mounts
+    // Volume mount points are alternative locations in the file system where volumes are mounted, 
+    // providing a way to access volumes indirectly or integrate them into the directory structure of another volume.
+
+    HANDLE mountFindHandle = ::FindFirstVolumeMountPointW( volumeIdWide.c_str(), volMountBuffer, MOUNT_POINT_BUFFER_SIZE );
+    if ( INVALID_HANDLE_VALUE == mountFindHandle )
+    {
+        DWORD errorCode = ::GetLastError();
+        if ( ERROR_NO_MORE_FILES == errorCode )
+            return true;
+
+        GUCEF_DEBUG_LOG( LOGLEVEL_NORMAL, "GetAllFileSystemMountPointsForVolume: FindFirstVolumeMountPointW failed with error code: " + ToString( (UInt32) errorCode ) );
+        return false;
+    }
+
+    bool findMoreMounts = true;
+    do
+    {
+        mountPoints.insert( ToString( volMountBuffer ) );
+
+        if ( 0 == ::FindNextVolumeMountPointW( mountFindHandle, volMountBuffer, MAX_PATH ) )
+        {
+            if ( ERROR_NO_MORE_FILES == ::GetLastError() )
+                findMoreMounts = false;
+        }
+    }
+    while ( findMoreMounts );
+    ::FindVolumeMountPointClose( mountFindHandle );
 
     return true;
 
