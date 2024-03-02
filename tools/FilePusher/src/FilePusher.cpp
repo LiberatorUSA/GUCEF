@@ -182,6 +182,7 @@ FilePushDestinationSettings::FilePushDestinationSettings( void )
     , fileCompressionTempDir()
     , fileTypesToCompress()
     , maxNrOfFilesToPushInParallel( 1 )
+    , maxNrOfFilesToQueueForPushViaScan( 1000 )
     , name()
     , metricsPrefix( "{auto}" )
 {GUCEF_TRACE;
@@ -210,6 +211,7 @@ FilePushDestinationSettings::FilePushDestinationSettings( const FilePushDestinat
     , fileCompressionTempDir( src.fileCompressionTempDir )
     , fileTypesToCompress( src.fileTypesToCompress )
     , maxNrOfFilesToPushInParallel( src.maxNrOfFilesToPushInParallel )
+    , maxNrOfFilesToQueueForPushViaScan( src.maxNrOfFilesToQueueForPushViaScan )
     , name( src.name )
     , metricsPrefix( src.metricsPrefix )
 {GUCEF_TRACE;
@@ -250,6 +252,7 @@ FilePushDestinationSettings::operator=( const FilePushDestinationSettings& src )
         fileCompressionTempDir = src.fileCompressionTempDir;
         fileTypesToCompress = src.fileTypesToCompress;
         maxNrOfFilesToPushInParallel = src.maxNrOfFilesToPushInParallel;
+        maxNrOfFilesToQueueForPushViaScan = src.maxNrOfFilesToQueueForPushViaScan;
         name = src.name;
         metricsPrefix = src.metricsPrefix;
     }
@@ -264,24 +267,25 @@ FilePushDestinationSettings::LoadConfig( const CORE::CValueList& appConfig, bool
 
     transmitMetrics = CORE::StringToBool( appConfig.GetValueAlways( "TransmitMetrics" ), transmitMetrics );
 
-    restingTimeForNewFilesInSecs = CORE::StringToUInt32( CORE::ResolveVars( appConfig.GetValueAlways( "RestingTimeForNewFilesInSecs" ) ), restingTimeForNewFilesInSecs );
+    restingTimeForNewFilesInSecs = appConfig.GetValueAlways( "RestingTimeForNewFilesInSecs", restingTimeForNewFilesInSecs ).AsUInt32( restingTimeForNewFilesInSecs, true );
     deleteFilesAfterSuccessfullPush = appConfig.GetValueAlways( "DeleteFilesAfterSuccessfullPush" ).AsBool( deleteFilesAfterSuccessfullPush, true );
     moveFilesAfterSuccessfullPush = appConfig.GetValueAlways( "MoveFilesAfterSuccessfullPush" ).AsBool( moveFilesAfterSuccessfullPush, true );
     fileMoveDestination = appConfig.GetValueAlways( "FileMoveDestination" ).AsString( fileMoveDestination, true );
     overwriteFilesInFileMoveDestination = appConfig.GetValueAlways( "OverwriteFilesInFileMoveDestination" ).AsBool( overwriteFilesInFileMoveDestination, true );
-    compressFilesBeforePush = CORE::StringToBool( CORE::ResolveVars( appConfig.GetValueAlways( "CompressFilesBeforePush" ) ), compressFilesBeforePush );
-    fileCompressionCodecToUse = CORE::ResolveVars( appConfig.GetValueAlways( "FileCompressionCodecToUse", fileCompressionCodecToUse ) );
-    fileCompressionCodecFileExt = CORE::ResolveVars( appConfig.GetValueAlways( "FileCompressionCodecFileExt", fileCompressionCodecFileExt ) );
-    fileCompressionTempDir = CORE::ResolveVars( appConfig.GetValueAlways( "FileCompressionTempDir", fileCompressionTempDir ) );
+    compressFilesBeforePush = appConfig.GetValueAlways( "CompressFilesBeforePush", compressFilesBeforePush ).AsBool( compressFilesBeforePush, true );
+    fileCompressionCodecToUse = appConfig.GetValueAlways( "FileCompressionCodecToUse", fileCompressionCodecToUse ).AsString( fileCompressionCodecToUse, true );
+    fileCompressionCodecFileExt = appConfig.GetValueAlways( "FileCompressionCodecFileExt", fileCompressionCodecFileExt ).AsString( fileCompressionCodecFileExt, true );
+    fileCompressionTempDir = appConfig.GetValueAlways( "FileCompressionTempDir", fileCompressionTempDir ).AsString( fileCompressionTempDir, true );
     fileTypesToCompress = CORE::ResolveVars( appConfig.GetValueAlways( "FileTypesToCompress" ) ).ParseUniqueElements( ',', false );
-    maxNrOfFilesToPushInParallel = appConfig.GetValueAlways( "MaxNrOfFilesToPushInParallel" ).AsUInt32( maxNrOfFilesToPushInParallel, true );
-    name = appConfig.GetValueAlways( "Name" ).AsString( name, true );
-    metricsPrefix = appConfig.GetValueAlways( "MetricsPrefix" ).AsString( metricsPrefix, true );
+    maxNrOfFilesToPushInParallel = appConfig.GetValueAlways( "MaxNrOfFilesToPushInParallel", maxNrOfFilesToPushInParallel ).AsUInt32( maxNrOfFilesToPushInParallel, true );
+    maxNrOfFilesToQueueForPushViaScan = appConfig.GetValueAlways( "MaxNrOfFilesToQueueForPushViaScan", maxNrOfFilesToQueueForPushViaScan ).AsUInt32( maxNrOfFilesToQueueForPushViaScan, true );
+    name = appConfig.GetValueAlways( "Name", name ).AsString( name, true );
+    metricsPrefix = appConfig.GetValueAlways( "MetricsPrefix", metricsPrefix ).AsString( metricsPrefix, true );
     minAgeOfMovedFilesInSecsBeforePrune = appConfig.GetValueAlways( "MinAgeOfMovedFilesInSecsBeforePrune", minAgeOfMovedFilesInSecsBeforePrune ).AsUInt32( minAgeOfMovedFilesInSecsBeforePrune, true );
     minDiskSpacePercToTriggerPrune = appConfig.GetValueAlways( "MinDiskSpacePercToTriggerPrune", minDiskSpacePercToTriggerPrune ).AsInt8( minDiskSpacePercToTriggerPrune, true );
     pruneMovedFiles = appConfig.GetValueAlways( "PruneMovedFiles", pruneMovedFiles ).AsBool( pruneMovedFiles, true );
 
-    filePushDestinationUri = CORE::ResolveVars( appConfig.GetValueAlways( "FilePushDestinationUri" ) );
+    filePushDestinationUri = appConfig.GetValueAlways( "FilePushDestinationUri", filePushDestinationUri ).AsString( filePushDestinationUri, true );
     if ( filePushDestinationUri.IsNULLOrEmpty() )
     {
         if ( logFailuresAsErrors )
@@ -310,7 +314,7 @@ FilePushDestinationSettings::LoadConfig( const CORE::CValueList& appConfig, bool
             GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "FilePushDestinationSettings: You must specify at least one instance of setting \"DirToWatch\". Currently there are none with a value" );
         return false;
     }
-    watchSubDirsOfDirsToWatch = CORE::StringToBool( CORE::ResolveVars( appConfig.GetValueAlways( "WatchSubDirsOfDirsToWatch" ) ), watchSubDirsOfDirsToWatch );
+    watchSubDirsOfDirsToWatch = appConfig.GetValueAlways( "WatchSubDirsOfDirsToWatch", watchSubDirsOfDirsToWatch ).AsBool( watchSubDirsOfDirsToWatch, true );
 
     settingValues = appConfig.GetValueVectorAlways( "FilePatternForNewFilesWithRestPeriod" );
     n = settingValues.begin();
@@ -361,24 +365,25 @@ FilePushDestinationSettings::LoadConfig( const CORE::CDataNode& rootNode )
 
     transmitMetrics = CORE::StringToBool( rootNode.GetAttributeValueOrChildValueByName( "TransmitMetrics" ), transmitMetrics );
 
-    restingTimeForNewFilesInSecs = CORE::StringToUInt32( CORE::ResolveVars( rootNode.GetAttributeValueOrChildValueByName( "RestingTimeForNewFilesInSecs" ) ), restingTimeForNewFilesInSecs );
-    deleteFilesAfterSuccessfullPush = rootNode.GetAttributeValueOrChildValueByName( "DeleteFilesAfterSuccessfullPush" ).AsBool( deleteFilesAfterSuccessfullPush, true );
-    moveFilesAfterSuccessfullPush = rootNode.GetAttributeValueOrChildValueByName( "MoveFilesAfterSuccessfullPush" ).AsBool( moveFilesAfterSuccessfullPush, true );
-    fileMoveDestination = rootNode.GetAttributeValueOrChildValueByName( "FileMoveDestination" ).AsString( fileMoveDestination, true );
-    overwriteFilesInFileMoveDestination = rootNode.GetAttributeValueOrChildValueByName( "OverwriteFilesInFileMoveDestination" ).AsBool( overwriteFilesInFileMoveDestination, true );
-    compressFilesBeforePush = CORE::StringToBool( CORE::ResolveVars( rootNode.GetAttributeValueOrChildValueByName( "CompressFilesBeforePush" ) ), compressFilesBeforePush );
-    fileCompressionCodecToUse = CORE::ResolveVars( rootNode.GetAttributeValueOrChildValueByName( "FileCompressionCodecToUse", fileCompressionCodecToUse ) );
-    fileCompressionCodecFileExt = CORE::ResolveVars( rootNode.GetAttributeValueOrChildValueByName( "FileCompressionCodecFileExt", fileCompressionCodecFileExt ) );
-    fileCompressionTempDir = CORE::ResolveVars( rootNode.GetAttributeValueOrChildValueByName( "FileCompressionTempDir", fileCompressionCodecFileExt ) );
+    restingTimeForNewFilesInSecs = rootNode.GetAttributeValueOrChildValueByName( "RestingTimeForNewFilesInSecs", restingTimeForNewFilesInSecs ).AsUInt32( restingTimeForNewFilesInSecs, true );
+    deleteFilesAfterSuccessfullPush = rootNode.GetAttributeValueOrChildValueByName( "DeleteFilesAfterSuccessfullPush", deleteFilesAfterSuccessfullPush ).AsBool( deleteFilesAfterSuccessfullPush, true );
+    moveFilesAfterSuccessfullPush = rootNode.GetAttributeValueOrChildValueByName( "MoveFilesAfterSuccessfullPush", moveFilesAfterSuccessfullPush ).AsBool( moveFilesAfterSuccessfullPush, true );
+    fileMoveDestination = rootNode.GetAttributeValueOrChildValueByName( "FileMoveDestination", fileMoveDestination ).AsString( fileMoveDestination, true );
+    overwriteFilesInFileMoveDestination = rootNode.GetAttributeValueOrChildValueByName( "OverwriteFilesInFileMoveDestination", overwriteFilesInFileMoveDestination ).AsBool( overwriteFilesInFileMoveDestination, true );
+    compressFilesBeforePush = rootNode.GetAttributeValueOrChildValueByName( "CompressFilesBeforePush", compressFilesBeforePush ).AsBool( compressFilesBeforePush, true );
+    fileCompressionCodecToUse = rootNode.GetAttributeValueOrChildValueByName( "FileCompressionCodecToUse", fileCompressionCodecToUse ).AsString( fileCompressionCodecToUse, true );
+    fileCompressionCodecFileExt = rootNode.GetAttributeValueOrChildValueByName( "FileCompressionCodecFileExt", fileCompressionCodecFileExt ).AsString( fileCompressionCodecFileExt, true );
+    fileCompressionTempDir = rootNode.GetAttributeValueOrChildValueByName( "FileCompressionTempDir", fileCompressionCodecFileExt ).AsString( fileCompressionCodecFileExt, true );
     fileTypesToCompress = CORE::ResolveVars( rootNode.GetAttributeValueOrChildValueByName( "FileTypesToCompress" ) ).ParseUniqueElements( ',', false );
-    maxNrOfFilesToPushInParallel = rootNode.GetAttributeValueOrChildValueByName( "MaxNrOfFilesToPushInParallel" ).AsUInt32( maxNrOfFilesToPushInParallel, true );
-    name = rootNode.GetAttributeValueOrChildValueByName( "Name" ).AsString( name, true );
-    metricsPrefix = rootNode.GetAttributeValueOrChildValueByName( "MetricsPrefix" ).AsString( metricsPrefix, true );
+    maxNrOfFilesToPushInParallel = rootNode.GetAttributeValueOrChildValueByName( "MaxNrOfFilesToPushInParallel", maxNrOfFilesToPushInParallel ).AsUInt32( maxNrOfFilesToPushInParallel, true );
+    maxNrOfFilesToQueueForPushViaScan = rootNode.GetAttributeValueOrChildValueByName( "MaxNrOfFilesToQueueForPushViaScan", maxNrOfFilesToQueueForPushViaScan ).AsUInt32( maxNrOfFilesToQueueForPushViaScan, true );
+    name = rootNode.GetAttributeValueOrChildValueByName( "Name", name ).AsString( name, true );
+    metricsPrefix = rootNode.GetAttributeValueOrChildValueByName( "MetricsPrefix", metricsPrefix ).AsString( metricsPrefix, true );
     minAgeOfMovedFilesInSecsBeforePrune = rootNode.GetAttributeValueOrChildValueByName( "MinAgeOfMovedFilesInSecsBeforePrune", minAgeOfMovedFilesInSecsBeforePrune ).AsUInt32( minAgeOfMovedFilesInSecsBeforePrune, true );
     minDiskSpacePercToTriggerPrune = rootNode.GetAttributeValueOrChildValueByName( "MinDiskSpacePercToTriggerPrune", minDiskSpacePercToTriggerPrune ).AsInt8( minDiskSpacePercToTriggerPrune, true );
     pruneMovedFiles = rootNode.GetAttributeValueOrChildValueByName( "PruneMovedFiles", pruneMovedFiles ).AsBool( pruneMovedFiles, true );
 
-    filePushDestinationUri = CORE::ResolveVars( rootNode.GetAttributeValueOrChildValueByName( "FilePushDestinationUri" ) );
+    filePushDestinationUri = rootNode.GetAttributeValueOrChildValueByName( "FilePushDestinationUri", filePushDestinationUri ).AsString( filePushDestinationUri, true );
     if ( filePushDestinationUri.IsNULLOrEmpty() )
     {
         GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "FilePushDestinationSettings: You must specify setting \"FilePushDestinationUri\". It currently has no value" );
@@ -787,7 +792,7 @@ FilePushDestination::Start( void )
         if ( !allFilesPatterns.empty() )
         {
             GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "FilePushDestination: Checking for pre-existing files to push matching all-files patterns in dir \"" + (*i) + "\"" );
-            QueueAllPreExistingFilesForDir( (*i) );
+            QueueAllPreExistingFilesForDir( (*i), true );
         }
 
         if ( !rolloverPatterns.empty() )
@@ -1353,7 +1358,6 @@ FilePushDestination::PushFileUsingHttp( PushEntryPtr entry )
     pushUrlForFile = pushUrlForFile.ReplaceSubstr( "{watchedDirSubDirPath}", watchedDirSubDirPath );
     pushUrlForFile = pushUrlForFile.CompactRepeatingChar( '/' );
 
-    m_pushQueue.erase( slot->entryInfo->filePath );
     if ( m_httpClient.Post( pushUrlForFile, contentType, slot->buffer ) )
     {
         GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "FilePushDestination: Commenced HTTP POST for content from file \"" + filename + "\"" );
@@ -1363,7 +1367,6 @@ FilePushDestination::PushFileUsingHttp( PushEntryPtr entry )
     {
         GUCEF_WARNING_LOG( CORE::LOGLEVEL_NORMAL, "FilePushDestination: Failed to HTTP POST bytes from file \"" +
             filename + "\". Skipping the file for now" );
-        m_pushQueue[ slot->entryInfo->filePath ] = slot->entryInfo;
         YieldInFlightSlot( slot );
         return false;
     }
@@ -1458,7 +1461,6 @@ FilePushDestination::PushFileUsingVfs( PushEntryPtr entry )
     pushUrlForFile = pushUrlForFile.CompactRepeatingChar( '/' );
 
     // Store the file as an async operation
-    m_pushQueue.erase( entry->filePath );
     if ( VFS::CVfsGlobal::Instance()->GetVfs().StoreAsFileAsync( pushUrlForFile, slot->buffer, 0, true, GUCEF_NULL, entry->filePath ) )
     {
         GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "FilePushDestination:PushFileUsingVfs: Commenced async push of content from file \"" +
@@ -1469,7 +1471,6 @@ FilePushDestination::PushFileUsingVfs( PushEntryPtr entry )
     {
         GUCEF_WARNING_LOG( CORE::LOGLEVEL_NORMAL, "FilePushDestination:PushFileUsingVfs: Failed to request async push of content from file \"" +
             filename + "\" to VFS path \"" + pushUrlForFile + "\". Skipping the file for now" );
-        m_pushQueue[ entry->filePath ] = entry;
         YieldInFlightSlot( slot );
         return false;
     }
@@ -1808,16 +1809,36 @@ FilePushDestination::OnFilePushTimerCycle( CORE::CNotifier* notifier    ,
 
             if ( 0 == m_settings.filePushDestinationUri.HasSubstr( "http://", true ) )
             {
+                i = m_pushQueue.erase( i );
                 if ( PushFileUsingHttp( entry ) )
-                {
-                    m_pushTimer.RequestImmediateTrigger();
-                    return;
+                {                    
+                    if ( m_inflightFreeSlots.empty() )
+                    {                    
+                        m_pushTimer.RequestImmediateTrigger();
+                        return;
+                    }
+                    else
+                    {
+                        m_pushQueue[ entry->filePath ] = entry;
+                        m_pushTimer.RequestImmediateTrigger();
+                        return;
+                    }
                 }
             }
             if ( 0 == m_settings.filePushDestinationUri.HasSubstr( "vfs://", true ) )
             {
+                i = m_pushQueue.erase( i );
                 if ( PushFileUsingVfs( entry ) )
                 {
+                    if ( m_inflightFreeSlots.empty() )
+                    {                    
+                        m_pushTimer.RequestImmediateTrigger();
+                        return;
+                    }
+                }
+                else
+                {
+                    m_pushQueue[ entry->filePath ] = entry;
                     m_pushTimer.RequestImmediateTrigger();
                     return;
                 }
@@ -1938,19 +1959,38 @@ FilePushDestination::OnAllFilesDirScanTimerCycle( CORE::CNotifier* notifier    ,
                                                   CORE::CICloneable* eventData )
 {GUCEF_TRACE;
 
-    TStringSet::const_iterator i = m_settings.dirsToWatch.begin();
-    while ( i != m_settings.dirsToWatch.end() )
+    if ( ( m_pushQueue.size() + m_newFileRestQueue.size() ) <= m_settings.maxNrOfFilesToQueueForPushViaScan )
+    {    
+        TStringSet::const_iterator i = m_settings.dirsToWatch.begin();
+        while ( i != m_settings.dirsToWatch.end() )
+        {
+            GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "FilePushDestination: Commencing periodic scan for 'all files' style file patterns for dir: \"" + (*i) + "\"" );
+            if ( QueueAllPreExistingFilesForDir( (*i), true ) )
+            {
+                GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "FilePushDestination: Finished scan for 'all files' style file patterns for dir: \"" + (*i) + "\"" );
+            }
+            else
+            {
+                if ( ( m_pushQueue.size() + m_newFileRestQueue.size() ) <= m_settings.maxNrOfFilesToQueueForPushViaScan )
+                {
+                    GUCEF_WARNING_LOG( CORE::LOGLEVEL_NORMAL, "FilePushDestination: Failed scan for 'all files' style file patterns for dir: \"" + (*i) + "\"" );
+                }
+                else
+                {
+                    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "FilePushDestination: Deferring scan for 'all files' style file patterns because " + CORE::ToString( m_pushQueue.size() ) +
+                        " entries are queued out of a configured max of " + CORE::ToString( m_settings.maxNrOfFilesToQueueForPushViaScan ) );
+                    m_allFilesDirScanTimer.RequestImmediateTrigger();
+                    break;
+                }
+            }
+            ++i;
+        }
+    }
+    else
     {
-        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "FilePushDestination: Commencing periodic scan for 'all files' style file patterns for dir: \"" + (*i) + "\"" );
-        if ( QueueAllPreExistingFilesForDir( (*i) ) )
-        {
-            GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "FilePushDestination: Finished scan for 'all files' style file patterns for dir: \"" + (*i) + "\"" );
-        }
-        else
-        {
-            GUCEF_WARNING_LOG( CORE::LOGLEVEL_NORMAL, "FilePushDestination: Failed scan for 'all files' style file patterns for dir: \"" + (*i) + "\"" );
-        }
-        ++i;
+        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "FilePushDestination: Deferring scan for 'all files' style file patterns because " + CORE::ToString( m_pushQueue.size() ) +
+            " entries are queued out of a configured max of " + CORE::ToString( m_settings.maxNrOfFilesToQueueForPushViaScan ) );
+        m_allFilesDirScanTimer.RequestImmediateTrigger();
     }
 }
 
@@ -2013,8 +2053,8 @@ FilePushDestination::GetLatestTimestampForFile( const CORE::CString& filePath )
 
 /*-------------------------------------------------------------------------*/
 
-void
-FilePushDestination::QueueNewFileForPushingAfterUnmodifiedRestPeriod( const CORE::CString& newFilePath )
+bool
+FilePushDestination::QueueNewFileForPushingAfterUnmodifiedRestPeriod( const CORE::CString& newFilePath, bool oppertunistic )
 {GUCEF_TRACE;
 
     // We don't want to add new files to the rest queue by whatever means if the same file has already
@@ -2022,16 +2062,25 @@ FilePushDestination::QueueNewFileForPushingAfterUnmodifiedRestPeriod( const CORE
     TStringPushEntryPtrMap::iterator i = m_pushQueue.find( newFilePath );
     if ( i == m_pushQueue.end() )
     {
-        // Add the file to the list of files to be checked periodically to see if there is no more changes
-        // being made to the file aka a resting period.
-        CORE::CDateTime latestChange = GetLatestTimestampForFile( newFilePath );
-        m_newFileRestQueue[ newFilePath ] = latestChange;
-        GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "FilePushDestination: File with latest timestamp \"" +
-            latestChange.ToIso8601DateTimeString( true, true ) + "\" is queued for pushing: \"" + newFilePath + "\"" );
+        if ( !oppertunistic || ( ( m_pushQueue.size() + m_newFileRestQueue.size() ) <= m_settings.maxNrOfFilesToQueueForPushViaScan ) )
+        {
+            // Add the file to the list of files to be checked periodically to see if there is no more changes
+            // being made to the file aka a resting period.
+            CORE::CDateTime latestChange = GetLatestTimestampForFile( newFilePath );
+            m_newFileRestQueue[ newFilePath ] = latestChange;
+            GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "FilePushDestination: File with latest timestamp \"" +
+                latestChange.ToIso8601DateTimeString( true, true ) + "\" is queued for pushing: \"" + newFilePath + "\"" );
+        
+            return true;
+        }
+
+        GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "FilePushDestination: Defering queueing file \"" + newFilePath + "\" since max are already queued" );
+        return false;
     }
     else
     {
         GUCEF_DEBUG_LOG_EVERYTHING( "FilePushDestination: Not queueing file for rest period as its already rested and queued for pushing: \"" + newFilePath + "\"" );
+        return true;
     }
 }
 
@@ -2148,7 +2197,7 @@ FilePushDestination::OnWatchedLocalDirFileCreation( CORE::CNotifier* notifier   
         case TPushStyle::PUSHSTYLE_MATCHING_ALL_FILES_WITH_REST_PERIOD:
         case TPushStyle::PUSHSTYLE_MATCHING_NEW_FILES_WITH_REST_PERIOD:
         {
-            QueueNewFileForPushingAfterUnmodifiedRestPeriod( newFilePath );
+            QueueNewFileForPushingAfterUnmodifiedRestPeriod( newFilePath, false );
             return;
         }
         case TPushStyle::PUSHSTYLE_UNKNOWN:
@@ -2391,7 +2440,7 @@ FilePushDestination::DiscoverAllPreExistingMovedFilesForDirs( void )
 /*-------------------------------------------------------------------------*/
 
 bool
-FilePushDestination::QueueAllPreExistingFilesForDir( const CORE::CString& dir )
+FilePushDestination::QueueAllPreExistingFilesForDir( const CORE::CString& dir, bool oppertunistic )
 {GUCEF_TRACE;
 
     bool totalSuccess = true;
@@ -2410,7 +2459,8 @@ FilePushDestination::QueueAllPreExistingFilesForDir( const CORE::CString& dir )
                         // In this mode treat the pre-existing file as a new file to push
                         CORE::CString preexistingFilePath = CORE::CombinePath( dir, name );
                         GUCEF_DEBUG_LOG_EVERYTHING( "FilePusher: Matched file \"" + preexistingFilePath + "\" to 'push all files' pattern" );
-                        QueueNewFileForPushingAfterUnmodifiedRestPeriod( preexistingFilePath );
+                        if ( !QueueNewFileForPushingAfterUnmodifiedRestPeriod( preexistingFilePath, oppertunistic ) )
+                            return false;
                     }
                 }
                 else
@@ -2418,7 +2468,9 @@ FilePushDestination::QueueAllPreExistingFilesForDir( const CORE::CString& dir )
                     if ( m_settings.watchSubDirsOfDirsToWatch )
                     {
                         CORE::CString subDir = CORE::CombinePath( dir, name );
-                        totalSuccess = totalSuccess && QueueAllPreExistingFilesForDir( subDir );
+                        totalSuccess = totalSuccess && QueueAllPreExistingFilesForDir( subDir, oppertunistic );
+                        if ( oppertunistic && !totalSuccess )
+                            return false;
                     }
                 }
             }

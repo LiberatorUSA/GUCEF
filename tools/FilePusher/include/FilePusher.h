@@ -185,6 +185,7 @@ class FilePushDestinationSettings
     CORE::CString fileCompressionTempDir;
     TStringSet fileTypesToCompress;
     UInt32 maxNrOfFilesToPushInParallel;
+    UInt32 maxNrOfFilesToQueueForPushViaScan;
     CORE::CString name;
     CORE::CString metricsPrefix;
 };
@@ -335,11 +336,11 @@ class FilePushDestination : public CORE::CObservingNotifier
                                      const CORE::CEvent& eventId  ,
                                      CORE::CICloneable* eventData );
 
-    void
-    QueueNewFileForPushingAfterUnmodifiedRestPeriod( const CORE::CString& newFilePath );
+    bool
+    QueueNewFileForPushingAfterUnmodifiedRestPeriod( const CORE::CString& newFilePath, bool oppertunistic );
 
     bool
-    QueueAllPreExistingFilesForDir( const CORE::CString& dir );
+    QueueAllPreExistingFilesForDir( const CORE::CString& dir, bool oppertunistic );
 
     bool
     DoesFilenameMatchPushAllFilesPattern( const CORE::CString& filename ) const;
