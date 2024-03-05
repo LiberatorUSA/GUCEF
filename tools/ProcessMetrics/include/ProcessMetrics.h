@@ -281,7 +281,7 @@ class ProcessMetrics : public CORE::CObservingNotifier
     CORE::CTimer m_metricsTimer;
     CORE::CTimer m_procIndexTimer;
     PUBSUB::CPubSubClientFactory::TProductPtr m_pubSubClient;
-    PUBSUB::CPubSubClientTopicPtr m_thresholdNotificationPublishTopic;
+    PUBSUB::CPubSubClientTopicBasicPtr m_thresholdNotificationPublishTopic;
     PUBSUB::CPubSubClientFeatures m_pubSubFeatures;
     CORE::CString m_thresholdNotificationPrimaryPayloadCodecType;
     bool m_gatherMemStats;

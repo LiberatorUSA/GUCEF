@@ -667,15 +667,24 @@ CKafkaPubSubClientTopic::SetupBasedOnConfig( void )
         // Check for the mandatory group ID property.
         // This may have already been set by the generic custom property setting that occured above
         std::string confValue;
-        m_kafkaConsumerConf->get( "group.id", confValue );
-        if ( confValue.empty() )
+        RdKafka::Conf::ConfResult configResult = m_kafkaConsumerConf->get( "group.id", confValue );
+        if ( RdKafka::Conf::ConfResult::CONF_OK != configResult ||
+             confValue.empty()                                  ||
+             confValue.size() == 0                               )
         {
-            if ( RdKafka::Conf::CONF_OK != m_kafkaConsumerConf->set( "group.id", m_config.consumerGroupName, errStr ) )
+            if ( !m_config.consumerGroupName.IsNULLOrEmpty() )
             {
-		        GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "KafkaPubSubClientTopic:LoadConfig: Failed to set Kafka consumer group id to \"" +
-                    m_config.consumerGroupName + "\", error message: " + errStr );
-                ++m_kafkaErrorReplies;
-                return false;
+                if ( RdKafka::Conf::CONF_OK != m_kafkaConsumerConf->set( "group.id", m_config.consumerGroupName, errStr ) )
+                {
+		            GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "KafkaPubSubClientTopic:LoadConfig: Failed to set Kafka consumer group id to \"" +
+                        m_config.consumerGroupName + "\", error message: " + errStr );
+                    ++m_kafkaErrorReplies;
+                    return false;
+                }
+            }
+            else
+            {
+                GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "KafkaPubSubClientTopic:LoadConfig: consumerGroupName is mandatory but not configured. check the config" );
             }
         }
 

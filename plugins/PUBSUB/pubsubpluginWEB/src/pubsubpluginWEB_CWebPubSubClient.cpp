@@ -183,7 +183,7 @@ CWebPubSubClient::GetSupportedFeatures( PUBSUB::CPubSubClientFeatures& features 
 
 /*-------------------------------------------------------------------------*/
 
-PUBSUB::CPubSubClientTopicPtr
+PUBSUB::CPubSubClientTopicBasicPtr
 CWebPubSubClient::CreateTopicAccess( PUBSUB::CPubSubClientTopicConfigPtr topicConfig ,
                                      CORE::PulseGeneratorPtr pulseGenerator          )
 {GUCEF_TRACE;
@@ -225,7 +225,7 @@ CWebPubSubClient::GetDefaultTopicConfig( void )
 
 /*-------------------------------------------------------------------------*/
 
-PUBSUB::CPubSubClientTopicPtr
+PUBSUB::CPubSubClientTopicBasicPtr
 CWebPubSubClient::GetTopicAccess( const CORE::CString& topicName )
 {GUCEF_TRACE;
 
@@ -236,7 +236,7 @@ CWebPubSubClient::GetTopicAccess( const CORE::CString& topicName )
     {
         return (*i).second;
     }
-    return PUBSUB::CPubSubClientTopicPtr();
+    return PUBSUB::CPubSubClientTopicBasicPtr();
 }
 
 /*-------------------------------------------------------------------------*/

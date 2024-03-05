@@ -72,9 +72,12 @@ const CORE::CString CKafkaPubSubClient::TypeName = "Kafka";
 
 CKafkaPubSubClient::CKafkaPubSubClient( const PUBSUB::CPubSubClientConfig& config )
     : PUBSUB::CPubSubClient()
+    , m_kafkaProducerConf( GUCEF_NULL )
+    , m_kafkaProducer( GUCEF_NULL )
     , m_config()
     , m_metricsTimer( GUCEF_NULL )
     , m_topicMap()
+    , m_kafkaErrorReplies( 0 ) 
     , m_isHealthy( true )
     , m_lock()
 {GUCEF_TRACE;
@@ -115,6 +118,11 @@ CKafkaPubSubClient::Clear( void )
         ++i;
     }
     m_topicMap.clear();
+
+    GUCEF_DELETE m_kafkaProducer;
+    m_kafkaProducer = GUCEF_NULL;
+    GUCEF_DELETE m_kafkaProducerConf;
+    m_kafkaProducerConf = GUCEF_NULL;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -166,8 +174,8 @@ CKafkaPubSubClient::GetSupportedFeatures( PUBSUB::CPubSubClientFeatures& feature
     features.supportsTopicIndexBasedBookmark = true;      // Offsets (index) is the native Kafka "bookmark"method and thus preferred
     features.supportsMsgDateTimeBasedBookmark = true;     // We support this via code that converts the DateTime to offsets
     features.supportsDerivingBookmarkFromMsg = true;      // Supported via a BSOD on the message's index field currently
-    features.supportsDiscoveryOfAvailableTopics = false;  // @TODO: not implemented yet
-    features.supportsGlobPatternTopicNames = false;
+    features.supportsDiscoveryOfAvailableTopics = true;   // Implemented via RdKafka producer metadata api
+    features.supportsGlobPatternTopicNames = true;
     features.supportsSubscriptionMsgArrivalDelayRequests = true;    // We support a backoff of the consume() event processing
     features.supportsSubscriptionEndOfDataEvent = false;  // @TODO: needs work
     return true;
@@ -175,25 +183,49 @@ CKafkaPubSubClient::GetSupportedFeatures( PUBSUB::CPubSubClientFeatures& feature
 
 /*-------------------------------------------------------------------------*/
 
-PUBSUB::CPubSubClientTopicPtr
+PUBSUB::CPubSubClientTopicBasicPtr
 CKafkaPubSubClient::CreateTopicAccess( PUBSUB::CPubSubClientTopicConfigPtr topicConfig ,
                                        CORE::PulseGeneratorPtr pulseGenerator          )
 {GUCEF_TRACE;
 
-    CKafkaPubSubClientTopicPtr topicAccess;
+    if ( topicConfig.IsNULL() )
+        return PUBSUB::CPubSubClientTopicPtr();
+    
+    PUBSUB::CPubSubClientTopicBasicPtr topicAccess;
     {
         MT::CScopeMutex lock( m_lock );
 
-        topicAccess = ( GUCEF_NEW CKafkaPubSubClientTopic( this ) )->CreateSharedPtr();
-        if ( topicAccess->LoadConfig( *topicConfig ) )
+        // Check to see if this logical/conceptual 'topic' represents multiple pattern matched Kafka topics
+        if ( m_config.desiredFeatures.supportsGlobPatternTopicNames &&
+             topicConfig->topicName.HasChar( '*' ) > -1               )
         {
-            m_topicMap[ topicConfig->topicName ] = topicAccess;
-            RegisterTopicEventHandlers( topicAccess );
+            PubSubClientTopicSet allTopicAccess;
+            if ( CreateMultiTopicAccess( topicConfig, allTopicAccess, pulseGenerator ) && !allTopicAccess.empty() )
+            {
+                // Caller should really use the CreateMultiTopicAccess() variant
+                topicAccess = *(allTopicAccess.begin());
+            }
         }
         else
         {
-            topicAccess->Shutdown();
-            topicAccess.Unlink();
+            CKafkaPubSubClientTopicPtr kafkaTopicAccess = ( GUCEF_NEW CKafkaPubSubClientTopic( this ) )->CreateSharedPtr();
+            if ( kafkaTopicAccess->LoadConfig( *topicConfig ) )
+            {
+                topicAccess = kafkaTopicAccess;
+                m_topicMap[ topicConfig->topicName ] = kafkaTopicAccess;
+
+                ConfigureJournal( topicAccess, topicConfig );
+                PUBSUB::CIPubSubJournalBasicPtr journal = topicAccess->GetJournal();
+                if ( !journal.IsNULL() && topicConfig->journalConfig.useJournal )
+                    journal->AddTopicCreatedJournalEntry();
+
+                RegisterTopicEventHandlers( kafkaTopicAccess );
+            }
+            else
+            {
+                kafkaTopicAccess->Shutdown();
+                kafkaTopicAccess.Unlink();
+            }
         }
     }
 
@@ -208,7 +240,7 @@ CKafkaPubSubClient::CreateTopicAccess( PUBSUB::CPubSubClientTopicConfigPtr topic
 
 /*-------------------------------------------------------------------------*/
 
-PUBSUB::CPubSubClientTopicPtr 
+PUBSUB::CPubSubClientTopicBasicPtr 
 CKafkaPubSubClient::GetTopicAccess( const CORE::CString& topicName )
 {GUCEF_TRACE;
 
@@ -219,7 +251,7 @@ CKafkaPubSubClient::GetTopicAccess( const CORE::CString& topicName )
     {
         return (*i).second;
     }
-    return PUBSUB::CPubSubClientTopicPtr();
+    return PUBSUB::CPubSubClientTopicBasicPtr();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -236,6 +268,189 @@ CKafkaPubSubClient::GetAllCreatedTopicAccess( PubSubClientTopicSet& topicAccess 
         topicAccess.insert( (*i).second );
         ++i;
     }
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CKafkaPubSubClient::GetMultiTopicAccess( const CORE::CString& topicName    ,
+                                         PubSubClientTopicSet& topicAccess )
+{GUCEF_TRACE;
+
+    // Check to see if this logical/conceptual 'topic' name represents multiple pattern matched Redis Streams
+    if ( m_config.desiredFeatures.supportsGlobPatternTopicNames &&
+         topicName.HasChar( '*' ) > -1                           )
+    {
+        // We create the actual topic objects from the wildcard glob pattern topic which is used
+        // as a template. As such we need to match the pattern again to find the various topics that could have been spawned
+        bool matchesFound = false;
+        TTopicMap::iterator i = m_topicMap.begin();
+        while ( i != m_topicMap.end() )
+        {
+            if ( (*i).first.WildcardEquals( topicName, '*', true ) )
+            {
+                topicAccess.insert( (*i).second );
+                matchesFound = true;
+            }
+            ++i;
+        }
+        return matchesFound;
+    }
+    else
+    {
+        TTopicMap::iterator i = m_topicMap.find( topicName );
+        if ( i != m_topicMap.end() )
+        {
+            topicAccess.insert( (*i).second );
+            return true;
+        }
+        return false;
+    }
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CKafkaPubSubClient::GetMultiTopicAccess( const CORE::CString::StringSet& topicNames ,
+                                         PubSubClientTopicSet& topicAccess          )
+{GUCEF_TRACE;
+
+    bool totalSuccess = true;
+    CORE::CString::StringSet::const_iterator i = topicNames.begin();
+    while ( i != topicNames.end() )
+    {
+        totalSuccess = GetMultiTopicAccess( (*i), topicAccess ) && totalSuccess;
+        ++i;
+    }
+    return totalSuccess;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CKafkaPubSubClient::AutoCreateMultiTopicAccess( const TTopicConfigPtrToStringSetMap& topicsToCreate ,
+                                                PubSubClientTopicSet& topicAccess                   ,
+                                                CORE::PulseGeneratorPtr pulseGenerator              )
+{GUCEF_TRACE;
+
+    CORE::UInt32 newTopicAccessCount = 0;
+    bool totalSuccess = true;
+    {
+        MT::CObjectScopeLock lock( this );
+
+        TTopicConfigPtrToStringSetMap::const_iterator m = topicsToCreate.begin();
+        while ( m != topicsToCreate.end() )
+        {
+            PUBSUB::CPubSubClientTopicConfigPtr templateTopicConfig( ((*m).first) );
+            if ( !templateTopicConfig.IsNULL() ) 
+            {
+                const CORE::CString::StringSet& topicNameList = (*m).second;
+
+                CORE::CString::StringSet::const_iterator i = topicNameList.begin();
+                while ( i != topicNameList.end() )
+                {
+                    CKafkaPubSubClientTopicConfigPtr topicConfig = CKafkaPubSubClientTopicConfig::CreateSharedObj();
+                    topicConfig->LoadConfig( *templateTopicConfig.GetPointerAlways() ); 
+                    topicConfig->topicName = (*i);
+
+                    CKafkaPubSubClientTopicPtr tAccess;
+                    {
+                        MT::CObjectScopeLock lock( this );
+
+                        tAccess = ( GUCEF_NEW CKafkaPubSubClientTopic( this ) )->CreateSharedPtr();
+                        if ( tAccess->LoadConfig( *topicConfig ) )
+                        {
+                            m_topicMap[ topicConfig->topicName ] = tAccess;                            
+                            topicAccess.insert( tAccess );
+                            m_config.topics.push_back( topicConfig );
+                            ++newTopicAccessCount;
+
+                            ConfigureJournal( tAccess, topicConfig );
+                            PUBSUB::CIPubSubJournalBasicPtr journal = tAccess->GetJournal();
+                            if ( !journal.IsNULL() && topicConfig->journalConfig.useJournal )
+                                journal->AddTopicCreatedJournalEntry();
+
+                            GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "KafkaPubSubClient(" + CORE::PointerToString( this ) + "):AutoCreateMultiTopicAccess: Auto created topic \"" +
+                                    topicConfig->topicName + "\" based on template config \"" + templateTopicConfig->topicName + "\"" );
+                        }
+                        else
+                        {
+                            tAccess.Unlink();
+                            totalSuccess = false;
+
+                            GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "KafkaPubSubClient(" + CORE::PointerToString( this ) + "):AutoCreateMultiTopicAccess: Failed to load config for topic \"" +
+                                    topicConfig->topicName + "\" based on template config \"" + templateTopicConfig->topicName + "\"" );
+                        }
+                    }
+                    ++i;
+                }
+            }
+            ++m;
+        }
+    }
+
+    if ( newTopicAccessCount > 0 )
+    {
+        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "KafkaPubSubClient(" + CORE::PointerToString( this ) + "):AutoCreateMultiTopicAccess: Auto created " +
+            CORE::ToString( newTopicAccessCount ) + " topics based on template configs" );
+
+        TopicsAccessAutoCreatedEventData eData( topicAccess );
+        NotifyObservers( TopicsAccessAutoCreatedEvent, &eData );
+    }
+
+    return totalSuccess;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CKafkaPubSubClient::AutoCreateMultiTopicAccess( CKafkaPubSubClientTopicConfigPtr templateTopicConfig ,
+                                                const CORE::CString::StringSet& topicNameList        ,
+                                                PubSubClientTopicSet& topicAccess                    ,
+                                                CORE::PulseGeneratorPtr pulseGenerator               )
+{GUCEF_TRACE;
+
+    TTopicConfigPtrToStringSetMap topicToCreate;
+    topicToCreate[ templateTopicConfig ] = topicNameList;
+    return AutoCreateMultiTopicAccess( topicToCreate, topicAccess, pulseGenerator );
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CKafkaPubSubClient::CreateMultiTopicAccess( PUBSUB::CPubSubClientTopicConfigPtr topicConfig ,
+                                            PubSubClientTopicSet& topicAccess               ,
+                                            CORE::PulseGeneratorPtr pulseGenerator          )
+{GUCEF_TRACE;
+
+    if ( m_config.desiredFeatures.supportsGlobPatternTopicNames &&
+         topicConfig->topicName.HasChar( '*' ) > -1               )
+    {
+        CORE::CString::StringSet topicNameList;
+        CORE::CString::StringSet globPatternFilters;
+        
+        globPatternFilters.insert( topicConfig->topicName );
+        
+        if ( BeginTopicDiscovery( globPatternFilters ) )
+        {
+            //m_streamIndexingTimer->SetEnabled( true );
+
+            if ( !topicNameList.empty() )
+                return AutoCreateMultiTopicAccess( topicConfig, topicNameList, topicAccess, pulseGenerator );
+            return true; // Since its pattern based potential creation at a later time also counts as success
+        }
+        return false;
+    }
+    else
+    {
+        PUBSUB::CPubSubClientTopicBasicPtr tAccess = CreateTopicAccess( topicConfig, pulseGenerator );
+        if ( !tAccess.IsNULL() )
+        {
+            topicAccess.insert( tAccess );
+            return true;
+        }
+    }
+    return false;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -320,7 +535,28 @@ bool
 CKafkaPubSubClient::BeginTopicDiscovery( const CORE::CString::StringSet& globPatternFilters )
 {GUCEF_TRACE;
 
-    return false;
+    try
+    {
+        RdKafka::Metadata* metaDataInfo = GUCEF_NULL;
+        RdKafka::ErrorCode errorCode = m_kafkaProducer->metadata( true, NULL, &metaDataInfo, 10000 );
+        if ( RdKafka::ErrorCode::ERR_NO_ERROR == errorCode )
+        {
+                
+        }
+        else
+        {
+            GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "KafkaPubSubClient:BeginTopicDiscovery: Failed to obtain metadata from Kafka" );
+        }
+        
+        delete metaDataInfo;
+        metaDataInfo = GUCEF_NULL;
+
+        return true;
+    }
+    catch ( const std::exception& )
+    {
+        return false;
+    }
 }
 
 /*-------------------------------------------------------------------------*/
@@ -367,6 +603,59 @@ CKafkaPubSubClient::GetType( void ) const
 /*-------------------------------------------------------------------------*/
 
 bool
+CKafkaPubSubClient::SetupKafkaMetaDataAccess( void )
+{GUCEF_TRACE;
+
+    if ( m_config.desiredFeatures.supportsDiscoveryOfAvailableTopics )
+    {
+        // The library wants the addresses as a csv list on its config obj
+        // we convert and prep as such
+        CORE::CString csvKafkaBrokerList;
+        PUBSUB::CPubSubClientConfig::THostAddressVector::const_iterator h = m_config.remoteAddresses.begin();
+        while ( h != m_config.remoteAddresses.end() )
+        {
+            // The RdKafka library will re-resolve DNSs on reconnects so we should feed it DNSs
+            csvKafkaBrokerList += (*h).HostnameAndPortAsString() + ',';
+            ++h;
+        }
+
+        std::string errStr;
+
+        RdKafka::Conf* kafkaConf = RdKafka::Conf::create(RdKafka::Conf::CONF_GLOBAL);
+        kafkaConf->set( "metadata.broker.list", csvKafkaBrokerList, errStr );
+
+        CKafkaPubSubClientConfig::StringMap::const_iterator m = m_config.kafkaProducerGlobalConfigSettings.begin();
+        while ( m != m_config.kafkaProducerGlobalConfigSettings.end() )
+        {
+            if (RdKafka::Conf::CONF_OK != kafkaConf->set((*m).first, (*m).second, errStr ) )
+            {
+                GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "KafkaPubSubClient:LoadConfig: Failed to set Kafka Producer global config entry \"" +
+                    (*m).first + "\"=\"" + (*m).second + "\", error message: " + errStr );
+                ++m_kafkaErrorReplies;
+                return false;
+            }
+            ++m;
+        }
+        GUCEF_DELETE m_kafkaProducerConf;
+        m_kafkaProducerConf = kafkaConf;
+
+        RdKafka::Producer* producer = RdKafka::Producer::create( m_kafkaProducerConf, errStr );
+        if ( producer == GUCEF_NULL )
+        {
+            GUCEF_ERROR_LOG(CORE::LOGLEVEL_IMPORTANT, "KafkaPubSubClient:LoadConfig: Failed to create Kafka producer, error message: " + errStr );
+            ++m_kafkaErrorReplies;
+            return false;
+        }
+        m_kafkaProducer = producer;
+        GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "KafkaPubSubClient:LoadConfig: Successfully created Kafka producer" );
+    }
+
+    return true;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
 CKafkaPubSubClient::SetupBasedOnConfig( void )
 {GUCEF_TRACE;
 
@@ -393,6 +682,8 @@ CKafkaPubSubClient::SetupBasedOnConfig( void )
     }
 
     m_config.metricsPrefix += "kafka.";
+
+    SetupKafkaMetaDataAccess();
 
     return true;
 }

@@ -653,7 +653,7 @@ CPubSubClientSide::OnTopicAccessCreated( CORE::CNotifier* notifier    ,
         return;
 
     CORE::CString topicName = *static_cast< CPubSubClient::TopicAccessCreatedEventData* >( eventData );
-    CPubSubClientTopicPtr topicAccess = pubsubClient->GetTopicAccess( topicName );
+    CPubSubClientTopicBasicPtr topicAccess = pubsubClient->GetTopicAccess( topicName );
     if ( !topicAccess.IsNULL() )
     {
         MT::CScopeWriterLock lock( m_rwdataLock );
@@ -706,7 +706,7 @@ CPubSubClientSide::OnTopicAccessDestroyed( CORE::CNotifier* notifier    ,
     }
 
     CORE::CString topicName = *static_cast< CPubSubClient::TopicAccessCreatedEventData* >( eventData );
-    CPubSubClientTopicPtr topicAccess = pubsubClient->GetTopicAccess( topicName );
+    CPubSubClientTopicBasicPtr topicAccess = pubsubClient->GetTopicAccess( topicName );
     if ( !topicAccess.IsNULL() )
     {
         MT::CScopeWriterLock lock( m_rwdataLock );

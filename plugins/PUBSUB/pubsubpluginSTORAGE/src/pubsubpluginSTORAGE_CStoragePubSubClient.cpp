@@ -318,7 +318,7 @@ CStoragePubSubClient::GetMultiTopicAccess( const CORE::CString::StringSet& topic
 
 /*-------------------------------------------------------------------------*/
 
-PUBSUB::CPubSubClientTopicPtr
+PUBSUB::CPubSubClientTopicBasicPtr
 CStoragePubSubClient::CreateTopicAccess( PUBSUB::CPubSubClientTopicConfigPtr topicConfig ,
                                          CORE::PulseGeneratorPtr pulseGenerator          )
 {GUCEF_TRACE;
@@ -530,7 +530,7 @@ CStoragePubSubClient::CreateMultiTopicAccess( PUBSUB::CPubSubClientTopicConfigPt
     {
         GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "StoragePubSubClient:CreateMultiTopicAccess: Interpreting topic name litterally: " + topicConfig->topicName );
         
-        PUBSUB::CPubSubClientTopicPtr tAccess = CreateTopicAccess( topicConfig, pulseGenerator );
+        PUBSUB::CPubSubClientTopicBasicPtr tAccess = CreateTopicAccess( topicConfig, pulseGenerator );
         if ( !tAccess.IsNULL() )
         {
             topicAccess.insert( tAccess );
@@ -602,7 +602,7 @@ CStoragePubSubClient::AutoDestroyTopicAccess( const CORE::CString::StringSet& to
 
 /*-------------------------------------------------------------------------*/
 
-PUBSUB::CPubSubClientTopicPtr
+PUBSUB::CPubSubClientTopicBasicPtr
 CStoragePubSubClient::GetTopicAccess( const CORE::CString& topicName )
 {GUCEF_TRACE;
 
@@ -613,7 +613,7 @@ CStoragePubSubClient::GetTopicAccess( const CORE::CString& topicName )
     {
         return (*i).second;
     }
-    return PUBSUB::CPubSubClientTopicPtr();
+    return PUBSUB::CPubSubClientTopicBasicPtr();
 }
 
 /*-------------------------------------------------------------------------*/

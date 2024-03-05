@@ -178,7 +178,7 @@ CAwsSqsPubSubClient::GetSupportedFeatures( PUBSUB::CPubSubClientFeatures& featur
 
 /*-------------------------------------------------------------------------*/
 
-PUBSUB::CPubSubClientTopicPtr
+PUBSUB::CPubSubClientTopicBasicPtr
 CAwsSqsPubSubClient::CreateTopicAccess( PUBSUB::CPubSubClientTopicConfigPtr topicConfig ,
                                         CORE::PulseGeneratorPtr pulseGenerator          )
 {GUCEF_TRACE;
@@ -211,7 +211,7 @@ CAwsSqsPubSubClient::CreateTopicAccess( PUBSUB::CPubSubClientTopicConfigPtr topi
 
 /*-------------------------------------------------------------------------*/
 
-PUBSUB::CPubSubClientTopicPtr 
+PUBSUB::CPubSubClientTopicBasicPtr 
 CAwsSqsPubSubClient::GetTopicAccess( const CORE::CString& topicName )
 {GUCEF_TRACE;
         
@@ -222,7 +222,7 @@ CAwsSqsPubSubClient::GetTopicAccess( const CORE::CString& topicName )
     {
         return (*i).second;
     }
-    return PUBSUB::CPubSubClientTopicPtr();
+    return PUBSUB::CPubSubClientTopicBasicPtr();
 }
 
 /*-------------------------------------------------------------------------*/

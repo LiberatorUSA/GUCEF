@@ -207,7 +207,7 @@ CMsmqPubSubClient::GetSupportedFeatures( PUBSUB::CPubSubClientFeatures& features
 
 /*-------------------------------------------------------------------------*/
 
-PUBSUB::CPubSubClientTopicPtr
+PUBSUB::CPubSubClientTopicBasicPtr
 CMsmqPubSubClient::CreateTopicAccess( PUBSUB::CPubSubClientTopicConfigPtr topicConfig ,
                                       CORE::PulseGeneratorPtr pulseGenerator          )
 {GUCEF_TRACE;
@@ -240,7 +240,7 @@ CMsmqPubSubClient::CreateTopicAccess( PUBSUB::CPubSubClientTopicConfigPtr topicC
 
 /*-------------------------------------------------------------------------*/
 
-PUBSUB::CPubSubClientTopicPtr 
+PUBSUB::CPubSubClientTopicBasicPtr 
 CMsmqPubSubClient::GetTopicAccess( const CORE::CString& topicName )
 {GUCEF_TRACE;
 
@@ -251,7 +251,7 @@ CMsmqPubSubClient::GetTopicAccess( const CORE::CString& topicName )
     {
         return (*i).second;
     }
-    return PUBSUB::CPubSubClientTopicPtr();
+    return PUBSUB::CPubSubClientTopicBasicPtr();
 }
 
 /*-------------------------------------------------------------------------*/

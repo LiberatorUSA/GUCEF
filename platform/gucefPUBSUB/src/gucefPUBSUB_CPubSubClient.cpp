@@ -218,14 +218,14 @@ CPubSubClient::SetPulseGenerator( CORE::PulseGeneratorPtr newPulseGenerator )
 
 /*-------------------------------------------------------------------------*/
 
-CPubSubClientTopicPtr
+CPubSubClientTopicBasicPtr
 CPubSubClient::GetOrCreateTopicAccess( const CString& topicName               ,
                                        CORE::PulseGeneratorPtr pulseGenerator )
 {GUCEF_TRACE;
 
     MT::CObjectScopeLock lock( this );
 
-    CPubSubClientTopicPtr topicAccess = GetTopicAccess( topicName );
+    CPubSubClientTopicBasicPtr topicAccess = GetTopicAccess( topicName );
     if ( topicAccess.IsNULL() )
     {
         topicAccess = CreateTopicAccess( topicName, pulseGenerator );
@@ -235,7 +235,7 @@ CPubSubClient::GetOrCreateTopicAccess( const CString& topicName               ,
 
 /*-------------------------------------------------------------------------*/
 
-CPubSubClientTopicPtr
+CPubSubClientTopicBasicPtr
 CPubSubClient::CreateTopicAccess( const CString& topicName               ,
                                   CORE::PulseGeneratorPtr pulseGenerator )
 {GUCEF_TRACE;
@@ -245,7 +245,7 @@ CPubSubClient::CreateTopicAccess( const CString& topicName               ,
     CPubSubClientTopicConfigPtr topicConfig = GetOrCreateTopicConfig( topicName );
     if ( !topicConfig.IsNULL() )
     {
-        CPubSubClientTopicPtr topicAccess = CreateTopicAccess( topicConfig, pulseGenerator );
+        CPubSubClientTopicBasicPtr topicAccess = CreateTopicAccess( topicConfig, pulseGenerator );
         return topicAccess;
     }
     return CPubSubClientTopicPtr();
@@ -275,7 +275,7 @@ CPubSubClient::GetMultiTopicAccess( const CString& topicName          ,
     // As such it redirects to the basic GetTopicAccess()
     // Backends should override this if they support pattern matching access
 
-    CPubSubClientTopicPtr tAccess = GetTopicAccess( topicName );
+    CPubSubClientTopicBasicPtr tAccess = GetTopicAccess( topicName );
     if ( !tAccess.IsNULL() )
     {
         topicAccess.insert( tAccess );
@@ -353,7 +353,7 @@ CPubSubClient::CreateMultiTopicAccess( CPubSubClientTopicConfigPtr topicConfig ,
     // As such it redirects to the basic CreateTopicAccess()
     // Backends should override this if they support pattern matching access
 
-    CPubSubClientTopicPtr tAccess = CreateTopicAccess( topicConfig, pulseGenerator );
+    CPubSubClientTopicBasicPtr tAccess = CreateTopicAccess( topicConfig, pulseGenerator );
     if ( !tAccess.IsNULL() )
     {
         topicAccess.insert( tAccess );
@@ -568,7 +568,7 @@ CPubSubClient::ConfigureJournal( CPubSubClientConfigPtr clientConfig )
 /*-------------------------------------------------------------------------*/
 
 bool
-CPubSubClient::ConfigureJournal( CPubSubClientTopicPtr topic             ,
+CPubSubClient::ConfigureJournal( CPubSubClientTopicBasicPtr topic        ,
                                  CPubSubClientTopicConfigPtr topicConfig )
 {GUCEF_TRACE;
 

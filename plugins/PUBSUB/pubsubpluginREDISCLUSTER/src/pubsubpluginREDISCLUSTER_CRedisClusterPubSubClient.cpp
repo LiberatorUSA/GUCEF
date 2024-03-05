@@ -242,7 +242,7 @@ CRedisClusterPubSubClient::GetSupportedFeatures( PUBSUB::CPubSubClientFeatures& 
 
 /*-------------------------------------------------------------------------*/
 
-PUBSUB::CPubSubClientTopicPtr
+PUBSUB::CPubSubClientTopicBasicPtr
 CRedisClusterPubSubClient::CreateTopicAccess( PUBSUB::CPubSubClientTopicConfigPtr topicConfig ,
                                               CORE::PulseGeneratorPtr pulseGenerator          )
 {GUCEF_TRACE;
@@ -255,7 +255,7 @@ CRedisClusterPubSubClient::CreateTopicAccess( PUBSUB::CPubSubClientTopicConfigPt
         if ( CreateMultiTopicAccess( topicConfig, allTopicAccess, pulseGenerator ) && !allTopicAccess.empty() )
         {
             // Caller should really use the CreateMultiTopicAccess() variant
-            PUBSUB::CPubSubClientTopicPtr tAccess( *(allTopicAccess.begin()) );
+            PUBSUB::CPubSubClientTopicBasicPtr tAccess = *allTopicAccess.begin();
             return tAccess;
         }
         return PUBSUB::CPubSubClientTopicPtr();
@@ -278,6 +278,8 @@ CRedisClusterPubSubClient::CreateTopicAccess( PUBSUB::CPubSubClientTopicConfigPt
 
                 GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "RedisClusterPubSubClient(" + CORE::PointerToString( this ) + "):CreateTopicAccess: created topic access for topic \"" + topicConfig->topicName + "\"" );
 
+                lock.EarlyUnlock();
+
                 TopicAccessCreatedEventData eData( topicConfig->topicName );
                 NotifyObservers( TopicAccessCreatedEvent, &eData );
             }
@@ -292,7 +294,7 @@ CRedisClusterPubSubClient::CreateTopicAccess( PUBSUB::CPubSubClientTopicConfigPt
 
 /*-------------------------------------------------------------------------*/
 
-PUBSUB::CPubSubClientTopicPtr
+PUBSUB::CPubSubClientTopicBasicPtr
 CRedisClusterPubSubClient::GetTopicAccess( const CORE::CString& topicName )
 {GUCEF_TRACE;
 
@@ -303,7 +305,7 @@ CRedisClusterPubSubClient::GetTopicAccess( const CORE::CString& topicName )
     {
         return (*i).second;
     }
-    return PUBSUB::CPubSubClientTopicPtr();
+    return PUBSUB::CPubSubClientTopicBasicPtr();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -491,7 +493,7 @@ CRedisClusterPubSubClient::CreateMultiTopicAccess( PUBSUB::CPubSubClientTopicCon
     }
     else
     {
-        PUBSUB::CPubSubClientTopicPtr tAccess = CreateTopicAccess( topicConfig, pulseGenerator );
+        PUBSUB::CPubSubClientTopicBasicPtr tAccess = CreateTopicAccess( topicConfig, pulseGenerator );
         if ( !tAccess.IsNULL() )
         {
             topicAccess.insert( tAccess );

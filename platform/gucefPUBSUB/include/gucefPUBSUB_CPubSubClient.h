@@ -121,21 +121,21 @@ class GUCEF_PUBSUB_EXPORT_CPP CPubSubClient : public CORE::CTSGNotifier         
 
     virtual bool GetSupportedFeatures( CPubSubClientFeatures& features ) const = 0;
 
-    virtual CPubSubClientTopicPtr CreateTopicAccess( CPubSubClientTopicConfigPtr topicConfig                            ,
-                                                     CORE::PulseGeneratorPtr pulseGenerator = CORE::PulseGeneratorPtr() ) = 0;
+    virtual CPubSubClientTopicBasicPtr CreateTopicAccess( CPubSubClientTopicConfigPtr topicConfig                            ,
+                                                          CORE::PulseGeneratorPtr pulseGenerator = CORE::PulseGeneratorPtr() ) = 0;
 
     /**
      *  Same as the version that takes an entire config except the expectation here is that the topic      
      *  is already configured via a CPubSubClientConfig but not yet instantiated
      *  This would be the typical case when using global app config defined topics and not programatic topic access
      */ 
-    virtual CPubSubClientTopicPtr CreateTopicAccess( const CString& topicName                                           ,
-                                                     CORE::PulseGeneratorPtr pulseGenerator = CORE::PulseGeneratorPtr() );
-
-    virtual CPubSubClientTopicPtr GetTopicAccess( const CString& topicName ) = 0;
-
-    virtual CPubSubClientTopicPtr GetOrCreateTopicAccess( const CString& topicName                                           ,
+    virtual CPubSubClientTopicBasicPtr CreateTopicAccess( const CString& topicName                                           ,
                                                           CORE::PulseGeneratorPtr pulseGenerator = CORE::PulseGeneratorPtr() );
+
+    virtual CPubSubClientTopicBasicPtr GetTopicAccess( const CString& topicName ) = 0;
+
+    virtual CPubSubClientTopicBasicPtr GetOrCreateTopicAccess( const CString& topicName                                           ,
+                                                               CORE::PulseGeneratorPtr pulseGenerator = CORE::PulseGeneratorPtr() );
 
     virtual bool GetMultiTopicAccess( CPubSubClientTopicConfigPtr topicConfig ,
                                       PubSubClientTopicSet& topicAccess       );
@@ -317,7 +317,7 @@ class GUCEF_PUBSUB_EXPORT_CPP CPubSubClient : public CORE::CTSGNotifier         
     
     virtual bool ConfigureJournal( CPubSubClientConfigPtr clientConfig );
 
-    virtual bool ConfigureJournal( CPubSubClientTopicPtr topic             ,
+    virtual bool ConfigureJournal( CPubSubClientTopicBasicPtr topic        ,
                                    CPubSubClientTopicConfigPtr topicConfig );
     
     private:

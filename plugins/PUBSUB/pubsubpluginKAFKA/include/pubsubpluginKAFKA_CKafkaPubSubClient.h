@@ -77,6 +77,8 @@ class PUBSUBPLUGIN_KAFKA_PLUGIN_PRIVATE_CPP CKafkaPubSubClient : public PUBSUB::
 
     static const CORE::CString TypeName; 
 
+    typedef std::map< CKafkaPubSubClientTopicConfigPtr , CORE::CString::StringSet > TTopicConfigPtrToStringSetMap;
+
     CKafkaPubSubClient( const PUBSUB::CPubSubClientConfig& config );
 
     virtual ~CKafkaPubSubClient() GUCEF_VIRTUAL_OVERRIDE;
@@ -89,10 +91,29 @@ class PUBSUBPLUGIN_KAFKA_PLUGIN_PRIVATE_CPP CKafkaPubSubClient : public PUBSUB::
 
     virtual PUBSUB::CPubSubClientTopicConfigPtr GetDefaultTopicConfig( void ) GUCEF_VIRTUAL_OVERRIDE;
 
-    virtual PUBSUB::CPubSubClientTopicPtr CreateTopicAccess( PUBSUB::CPubSubClientTopicConfigPtr topicConfig                    ,
-                                                             CORE::PulseGeneratorPtr pulseGenerator = CORE::PulseGeneratorPtr() ) GUCEF_VIRTUAL_OVERRIDE;
+    virtual PUBSUB::CPubSubClientTopicBasicPtr CreateTopicAccess( PUBSUB::CPubSubClientTopicConfigPtr topicConfig                    ,
+                                                                  CORE::PulseGeneratorPtr pulseGenerator = CORE::PulseGeneratorPtr() ) GUCEF_VIRTUAL_OVERRIDE;
 
-    virtual PUBSUB::CPubSubClientTopicPtr GetTopicAccess( const CORE::CString& topicName ) GUCEF_VIRTUAL_OVERRIDE;
+    virtual PUBSUB::CPubSubClientTopicBasicPtr GetTopicAccess( const CORE::CString& topicName ) GUCEF_VIRTUAL_OVERRIDE;
+
+    virtual bool GetMultiTopicAccess( const CORE::CString& topicName    ,
+                                      PubSubClientTopicSet& topicAccess ) GUCEF_VIRTUAL_OVERRIDE;
+
+    virtual bool GetMultiTopicAccess( const CORE::CString::StringSet& topicNames ,
+                                      PubSubClientTopicSet& topicAccess          ) GUCEF_VIRTUAL_OVERRIDE;
+
+    virtual bool CreateMultiTopicAccess( PUBSUB::CPubSubClientTopicConfigPtr topicConfig                    ,
+                                         PubSubClientTopicSet& topicAccess                                  ,
+                                         CORE::PulseGeneratorPtr pulseGenerator = CORE::PulseGeneratorPtr() ) GUCEF_VIRTUAL_OVERRIDE;
+
+    bool AutoCreateMultiTopicAccess( CKafkaPubSubClientTopicConfigPtr templateTopicConfig ,
+                                     const CORE::CString::StringSet& topicNameList        ,
+                                     PubSubClientTopicSet& topicAccess                    ,
+                                     CORE::PulseGeneratorPtr pulseGenerator               );
+
+    bool AutoCreateMultiTopicAccess( const TTopicConfigPtrToStringSetMap& topicsToCreate ,
+                                     PubSubClientTopicSet& topicAccess                   ,
+                                     CORE::PulseGeneratorPtr pulseGenerator              );
 
     virtual void DestroyTopicAccess( const CORE::CString& topicName ) GUCEF_VIRTUAL_OVERRIDE;
 
@@ -174,15 +195,20 @@ class PUBSUBPLUGIN_KAFKA_PLUGIN_PRIVATE_CPP CKafkaPubSubClient : public PUBSUB::
 
     bool SetupBasedOnConfig( void );
 
+    bool SetupKafkaMetaDataAccess( void );
+
     private:
 
     typedef CORE::CTEventHandlerFunctor< CKafkaPubSubClient > TEventCallback;
     typedef std::map< CORE::CString, CKafkaPubSubClientTopicPtr > TTopicMap;
 
+    RdKafka::Conf* m_kafkaProducerConf;
+    RdKafka::Producer* m_kafkaProducer;
     CKafkaPubSubClientConfig m_config;
     CORE::CTimer* m_metricsTimer;
     TTopicMap m_topicMap;
     CORE::ThreadPoolPtr m_threadPool;
+    CORE::UInt32 m_kafkaErrorReplies;
     mutable bool m_isHealthy;
     MT::CMutex m_lock;
 };

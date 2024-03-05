@@ -102,7 +102,7 @@ CTestPubSubClient::GetConfig( void )
 
 /*-------------------------------------------------------------------------*/
 
-PUBSUB::CPubSubClientTopicPtr
+PUBSUB::CPubSubClientTopicBasicPtr
 CTestPubSubClient::CreateTopicAccess( PUBSUB::CPubSubClientTopicConfigPtr topicConfig ,
                                       CORE::PulseGeneratorPtr pulseGenerator          )
 {GUCEF_TRACE;

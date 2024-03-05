@@ -188,7 +188,7 @@ CUdpPubSubClient::GetSupportedFeatures( PUBSUB::CPubSubClientFeatures& features 
 
 /*-------------------------------------------------------------------------*/
 
-PUBSUB::CPubSubClientTopicPtr
+PUBSUB::CPubSubClientTopicBasicPtr
 CUdpPubSubClient::CreateTopicAccess( PUBSUB::CPubSubClientTopicConfigPtr topicConfig ,
                                      CORE::PulseGeneratorPtr pulseGenerator          )
 {GUCEF_TRACE;
@@ -230,7 +230,7 @@ CUdpPubSubClient::GetDefaultTopicConfig( void )
 
 /*-------------------------------------------------------------------------*/
 
-PUBSUB::CPubSubClientTopicPtr
+PUBSUB::CPubSubClientTopicBasicPtr
 CUdpPubSubClient::GetTopicAccess( const CORE::CString& topicName )
 {GUCEF_TRACE;
 
