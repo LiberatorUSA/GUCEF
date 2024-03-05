@@ -456,17 +456,20 @@ void
 CTimer::SetPulseGenerator( PulseGeneratorPtr newPulseGenerator )
 {GUCEF_TRACE;
 
-    bool wasEnabled = m_enabled;
-    UnsubscribeFrom( m_pulseGenerator.GetPointerAlways() );
+    if ( m_pulseGenerator != newPulseGenerator )
+    {
+        bool wasEnabled = m_enabled;
+        UnsubscribeFrom( m_pulseGenerator.GetPointerAlways() );
 
-    SetEnabled( false );
-    Reset();
+        SetEnabled( false );
+        Reset();
 
-    m_pulseGenerator = newPulseGenerator;
-    RegisterPulseGeneratorEventHandlers();
+        m_pulseGenerator = newPulseGenerator;
+        RegisterPulseGeneratorEventHandlers();
 
-    if ( wasEnabled )
-        SetEnabled( wasEnabled );
+        if ( wasEnabled )
+            SetEnabled( wasEnabled );
+    }
 }
 
 /*-------------------------------------------------------------------------//

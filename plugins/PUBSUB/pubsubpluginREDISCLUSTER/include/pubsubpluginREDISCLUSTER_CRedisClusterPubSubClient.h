@@ -181,6 +181,11 @@ class PUBSUBPLUGIN_REDISCLUSTER_PLUGIN_PRIVATE_CPP CRedisClusterPubSubClient : p
 
     virtual PUBSUB::CIPubSubJournalBasicPtr GetJournal( void ) const;
 
+    virtual void SetPulseGenerator( CORE::PulseGeneratorPtr newPulseGenerator ) GUCEF_VIRTUAL_OVERRIDE;
+
+    virtual void SetPulseGenerator( CORE::PulseGeneratorPtr newPulseGenerator ,
+                                    bool includeTopics                        ) GUCEF_VIRTUAL_OVERRIDE;
+
     CRedisClusterPubSubClientConfig& GetConfig( void );
 
     CORE::ThreadPoolPtr GetThreadPool( void );

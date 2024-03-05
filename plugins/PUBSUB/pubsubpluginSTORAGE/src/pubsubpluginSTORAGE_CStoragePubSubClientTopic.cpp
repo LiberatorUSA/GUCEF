@@ -565,6 +565,19 @@ CStoragePubSubClientTopic::GetClient( void )
 
 /*-------------------------------------------------------------------------*/
 
+void 
+CStoragePubSubClientTopic::RegisterPulseGeneratorEventHandlers( CORE::PulseGeneratorPtr pulseGenerator )
+{GUCEF_TRACE;
+
+    UnsubscribeFrom( GetPulseGenerator().GetPointerAlways() );
+    TEventCallback callback( this, &CStoragePubSubClientTopic::OnPulseCycle );
+    SubscribeTo( pulseGenerator.GetPointerAlways() ,
+                 CORE::CPulseGenerator::PulseEvent ,
+                 callback                         );
+}
+
+/*-------------------------------------------------------------------------*/
+
 void
 CStoragePubSubClientTopic::RegisterEventHandlers( CORE::PulseGeneratorPtr pulseGenerator )
 {GUCEF_TRACE;
@@ -612,11 +625,8 @@ CStoragePubSubClientTopic::RegisterEventHandlers( CORE::PulseGeneratorPtr pulseG
     SubscribeTo( &vfs                           ,
                  VFS::CVFS::ArchiveMountedEvent ,
                  callback2                      );
-
-    TEventCallback callback3( this, &CStoragePubSubClientTopic::OnPulseCycle );
-    SubscribeTo( pulseGenerator.GetPointerAlways() ,
-                 CORE::CPulseGenerator::PulseEvent ,
-                 callback3                         );
+    
+    RegisterPulseGeneratorEventHandlers( pulseGenerator );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -1162,6 +1172,8 @@ CStoragePubSubClientTopic::SetPulseGenerator( CORE::PulseGeneratorPtr newPulseGe
     }
     
     PUBSUB::CPubSubClientTopic::SetPulseGenerator( newPulseGenerator );
+
+    RegisterPulseGeneratorEventHandlers( newPulseGenerator );
 }
 
 /*-------------------------------------------------------------------------*/

@@ -443,6 +443,8 @@ class GUCEF_COMCORE_EXPORT_CPP CUDPSocket : public CSocket
 
     UInt32 GetMaxUpdatesPerCycle( void ) const;
 
+    virtual void SetPulseGenerator( CORE::PulseGeneratorPtr newPulseGenerator );
+
     private:
     typedef CORE::CTEventHandlerFunctor< CUDPSocket > TEventCallback;
 
@@ -455,6 +457,8 @@ class GUCEF_COMCORE_EXPORT_CPP CUDPSocket : public CSocket
     bool PerformRead( void );
 
     bool PerformRead( UInt32 readIndex, UInt32& packetsRead );
+
+    void RegisterEventHandlers( void );
 
     private:
 
@@ -496,15 +500,3 @@ class GUCEF_COMCORE_EXPORT_CPP CUDPSocket : public CSocket
 /*-------------------------------------------------------------------------*/
 
 #endif /* GUCEF_COMCORE_CUDPSOCKET_H ? */
-
-/*-------------------------------------------------------------------------//
-//                                                                         //
-//      Info & Changes                                                     //
-//                                                                         //
-//-------------------------------------------------------------------------//
-
-- 06-05-2005 :
-        - Initial version of the new implementation using winsock directly,
-          got rid of all the SDL crap.
-
------------------------------------------------------------------------------*/

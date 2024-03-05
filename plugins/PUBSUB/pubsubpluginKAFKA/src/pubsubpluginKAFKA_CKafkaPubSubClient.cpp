@@ -71,7 +71,7 @@ const CORE::CString CKafkaPubSubClient::TypeName = "Kafka";
 //-------------------------------------------------------------------------*/
 
 CKafkaPubSubClient::CKafkaPubSubClient( const PUBSUB::CPubSubClientConfig& config )
-    : PUBSUB::CPubSubClient()
+    : PUBSUB::CPubSubClient( config.pulseGenerator )
     , m_kafkaProducerConf( GUCEF_NULL )
     , m_kafkaProducer( GUCEF_NULL )
     , m_config()
@@ -123,6 +123,45 @@ CKafkaPubSubClient::Clear( void )
     m_kafkaProducer = GUCEF_NULL;
     GUCEF_DELETE m_kafkaProducerConf;
     m_kafkaProducerConf = GUCEF_NULL;
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CKafkaPubSubClient::SetPulseGenerator( CORE::PulseGeneratorPtr newPulseGenerator )
+{GUCEF_TRACE;
+
+    return SetPulseGenerator( newPulseGenerator, true );
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CKafkaPubSubClient::SetPulseGenerator( CORE::PulseGeneratorPtr newPulseGenerator ,
+                                       bool includeTopics                        )
+{GUCEF_TRACE;
+
+    MT::CScopeMutex lock( m_lock );
+    
+    CORE::CTSGNotifier::SetPulseGenerator( newPulseGenerator );
+    m_config.pulseGenerator = newPulseGenerator;
+    
+    if ( GUCEF_NULL != m_metricsTimer )
+    {
+        m_metricsTimer->SetPulseGenerator( newPulseGenerator );
+    }
+
+    if ( includeTopics )
+    {
+        m_config.topicPulseGenerator = m_config.pulseGenerator;
+
+        TTopicMap::iterator i = m_topicMap.begin();
+        while ( i != m_topicMap.end() )
+        {
+            (*i).second->SetPulseGenerator( newPulseGenerator );
+            ++i;
+        }
+    }
 }
 
 /*-------------------------------------------------------------------------*/

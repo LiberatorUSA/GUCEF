@@ -223,6 +223,8 @@ class PUBSUBPLUGIN_REDISCLUSTER_PLUGIN_PRIVATE_CPP CRedisClusterPubSubClientTopi
 
     void RegisterEventHandlers( void );
 
+    void RegisterPulseGeneratorEventHandlers( CORE::PulseGeneratorPtr pulseGenerator );
+
     bool PrepStorageForReadMsgs( CORE::UInt32 msgCount );
 
     bool SubscribeImpl( const std::string& readOffset );

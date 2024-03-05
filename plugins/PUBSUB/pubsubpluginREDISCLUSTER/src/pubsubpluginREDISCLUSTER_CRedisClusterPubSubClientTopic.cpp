@@ -174,6 +174,19 @@ CRedisClusterPubSubClientTopic::Shutdown( void )
 
 /*-------------------------------------------------------------------------*/
 
+void 
+CRedisClusterPubSubClientTopic::RegisterPulseGeneratorEventHandlers( CORE::PulseGeneratorPtr pulseGenerator )
+{GUCEF_TRACE;
+
+    UnsubscribeFrom( GetPulseGenerator().GetPointerAlways() );
+    TEventCallback callback( this, &CRedisClusterPubSubClientTopic::OnPulseCycle );
+    SubscribeTo( pulseGenerator.GetPointerAlways() ,
+                 CORE::CPulseGenerator::PulseEvent ,
+                 callback                         );
+}
+
+/*-------------------------------------------------------------------------*/
+
 void
 CRedisClusterPubSubClientTopic::RegisterEventHandlers( void )
 {GUCEF_TRACE;
@@ -185,11 +198,12 @@ CRedisClusterPubSubClientTopic::RegisterEventHandlers( void )
                      CORE::CTimer::TimerUpdateEvent ,
                      callback                       );
     }
-
-    TEventCallback callback( this, &CRedisClusterPubSubClientTopic::OnPulseCycle );
-    SubscribeTo( m_client->GetConfig().pulseGenerator.GetPointerAlways() ,
-                 CORE::CPulseGenerator::PulseEvent                       ,
-                 callback                                                );
+    
+    CORE::PulseGeneratorPtr topicPulseGenerator = m_client->GetConfig().topicPulseGenerator;
+    if ( topicPulseGenerator.IsNULL() )
+        topicPulseGenerator = m_client->GetConfig().pulseGenerator;
+    
+    RegisterPulseGeneratorEventHandlers( topicPulseGenerator );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -1854,6 +1868,8 @@ CRedisClusterPubSubClientTopic::SetPulseGenerator( CORE::PulseGeneratorPtr newPu
     }
     
     PUBSUB::CPubSubClientTopic::SetPulseGenerator( newPulseGenerator );
+
+    RegisterPulseGeneratorEventHandlers( newPulseGenerator );
 }
 
 /*-------------------------------------------------------------------------*/

@@ -76,7 +76,7 @@ const CORE::CString CAwsSqsPubSubClient::TypeName = "AwsSqs";
 //-------------------------------------------------------------------------*/
 
 CAwsSqsPubSubClient::CAwsSqsPubSubClient( const PUBSUB::CPubSubClientConfig& config )
-    : PUBSUB::CPubSubClient()
+    : PUBSUB::CPubSubClient( config.pulseGenerator )
     , m_config( config )
     , m_metricsTimer( GUCEF_NULL )
     , m_topicMap()
@@ -88,21 +88,10 @@ CAwsSqsPubSubClient::CAwsSqsPubSubClient( const PUBSUB::CPubSubClientConfig& con
         GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "AwsSqsPubSubClient: Failed to load config at construction" );
     }
 
-    if ( GUCEF_NULL != config.pulseGenerator )
+    if ( config.desiredFeatures.supportsMetrics )
     {
-        if ( config.desiredFeatures.supportsMetrics )
-        {
-            m_metricsTimer = GUCEF_NEW CORE::CTimer( config.pulseGenerator, 1000 );
-            m_metricsTimer->SetEnabled( config.desiredFeatures.supportsMetrics );
-        }
-    }
-    else
-    {
-        if ( config.desiredFeatures.supportsMetrics )
-        {
-            m_metricsTimer = GUCEF_NEW CORE::CTimer( 1000 );        
-            m_metricsTimer->SetEnabled( config.desiredFeatures.supportsMetrics );
-        }
+        m_metricsTimer = GUCEF_NEW CORE::CTimer( config.pulseGenerator, 1000 );
+        m_metricsTimer->SetEnabled( config.desiredFeatures.supportsMetrics );
     }
 
     m_config.metricsPrefix += "sqs.";
@@ -127,6 +116,45 @@ CAwsSqsPubSubClient::~CAwsSqsPubSubClient()
     }
     m_topicMap.clear();
     SignalUpcomingDestruction();
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CAwsSqsPubSubClient::SetPulseGenerator( CORE::PulseGeneratorPtr newPulseGenerator )
+{GUCEF_TRACE;
+
+    return SetPulseGenerator( newPulseGenerator, true );
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CAwsSqsPubSubClient::SetPulseGenerator( CORE::PulseGeneratorPtr newPulseGenerator ,
+                                        bool includeTopics                        )
+{GUCEF_TRACE;
+
+    //MT::CScopeMutex lock( m_lock );
+    
+    CORE::CTSGNotifier::SetPulseGenerator( newPulseGenerator );
+    m_config.pulseGenerator = newPulseGenerator;
+    
+    if ( GUCEF_NULL != m_metricsTimer )
+    {
+        m_metricsTimer->SetPulseGenerator( newPulseGenerator );
+    }
+
+    if ( includeTopics )
+    {
+        m_config.topicPulseGenerator = m_config.pulseGenerator;
+
+        TTopicMap::iterator i = m_topicMap.begin();
+        while ( i != m_topicMap.end() )
+        {
+            (*i).second->SetPulseGenerator( newPulseGenerator );
+            ++i;
+        }
+    }
 }
 
 /*-------------------------------------------------------------------------*/

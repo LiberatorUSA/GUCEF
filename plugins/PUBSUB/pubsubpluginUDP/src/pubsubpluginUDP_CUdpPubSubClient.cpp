@@ -76,7 +76,7 @@ const CORE::CString CUdpPubSubClient::TypeName = "UDP";
 //-------------------------------------------------------------------------*/
 
 CUdpPubSubClient::CUdpPubSubClient( const PUBSUB::CPubSubClientConfig& config )
-    : PUBSUB::CPubSubClient()
+    : PUBSUB::CPubSubClient( config.pulseGenerator )
     , m_config()
     , m_metricsTimer( GUCEF_NULL )
     , m_topicMap()
@@ -135,6 +135,53 @@ CUdpPubSubClient::~CUdpPubSubClient()
     m_testUdpSocket = GUCEF_NULL;
 
     SignalUpcomingDestruction();
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CUdpPubSubClient::SetPulseGenerator( CORE::PulseGeneratorPtr newPulseGenerator )
+{GUCEF_TRACE;
+
+    return SetPulseGenerator( newPulseGenerator, true );
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CUdpPubSubClient::SetPulseGenerator( CORE::PulseGeneratorPtr newPulseGenerator ,
+                                     bool includeTopics                        )
+{GUCEF_TRACE;
+
+    //MT::CScopeMutex lock( m_lock );
+    
+    CORE::CTSGNotifier::SetPulseGenerator( newPulseGenerator );
+    m_config.pulseGenerator = newPulseGenerator;
+    
+    if ( GUCEF_NULL != m_metricsTimer )
+    {
+        m_metricsTimer->SetPulseGenerator( newPulseGenerator );
+    }
+    if ( GUCEF_NULL != m_testPacketTransmitTimer )
+    {
+        m_testPacketTransmitTimer->SetPulseGenerator( newPulseGenerator );
+    }
+    if ( GUCEF_NULL != m_testUdpSocket )
+    {
+        m_testUdpSocket->SetPulseGenerator( newPulseGenerator );
+    }    
+    
+    if ( includeTopics )
+    {
+        m_config.topicPulseGenerator = m_config.pulseGenerator;
+
+        TTopicMap::iterator i = m_topicMap.begin();
+        while ( i != m_topicMap.end() )
+        {
+            (*i).second->SetPulseGenerator( newPulseGenerator );
+            ++i;
+        }
+    }
 }
 
 /*-------------------------------------------------------------------------*/

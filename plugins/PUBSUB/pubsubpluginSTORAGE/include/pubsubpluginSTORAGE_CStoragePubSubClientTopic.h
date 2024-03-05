@@ -352,6 +352,8 @@ class PUBSUBPLUGIN_STORAGE_PLUGIN_PRIVATE_CPP CStoragePubSubClientTopic : public
     
     void RegisterEventHandlers( CORE::PulseGeneratorPtr pulseGenerator );
 
+    void RegisterPulseGeneratorEventHandlers( CORE::PulseGeneratorPtr pulseGenerator );
+
     bool SetupToSubscribe( PUBSUB::CPubSubClientTopicConfig& config );
 
     static CORE::CString GenerateMetricsFriendlyTopicName( const CORE::CString& topicName );

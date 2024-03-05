@@ -173,6 +173,11 @@ class PUBSUBPLUGIN_STORAGE_PLUGIN_PRIVATE_CPP CStoragePubSubClient : public PUBS
 
     virtual PUBSUB::CIPubSubJournalBasicPtr GetJournal( void ) const;
 
+    virtual void SetPulseGenerator( CORE::PulseGeneratorPtr newPulseGenerator ) GUCEF_VIRTUAL_OVERRIDE;
+
+    virtual void SetPulseGenerator( CORE::PulseGeneratorPtr newPulseGenerator ,
+                                    bool includeTopics                        ) GUCEF_VIRTUAL_OVERRIDE;
+
     CStoragePubSubClientConfig& GetConfig( void );
 
     CORE::ThreadPoolPtr GetThreadPool( void );
@@ -210,6 +215,8 @@ class PUBSUBPLUGIN_STORAGE_PLUGIN_PRIVATE_CPP CStoragePubSubClient : public PUBS
                      CORE::CICloneable* eventData );
     
     void RegisterEventHandlers( void );
+
+    void RegisterPulseGeneratorEventHandlers( void );
 
     void RegisterTopicEventHandlers( CStoragePubSubClientTopicPtr& topic );
 

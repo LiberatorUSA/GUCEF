@@ -76,7 +76,7 @@ const CORE::CString CWebPubSubClient::TypeName = "WEB";
 //-------------------------------------------------------------------------*/
 
 CWebPubSubClient::CWebPubSubClient( const PUBSUB::CPubSubClientConfig& config )
-    : PUBSUB::CPubSubClient()
+    : PUBSUB::CPubSubClient( config.pulseGenerator )
     , m_config()
     , m_metricsTimer( GUCEF_NULL )
     , m_topicMap()
@@ -87,24 +87,13 @@ CWebPubSubClient::CWebPubSubClient( const PUBSUB::CPubSubClientConfig& config )
         GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "WebPubSubClient: Failed to load config at construction" );
     }
 
-    if ( !config.pulseGenerator.IsNULL() )
+    if ( config.desiredFeatures.supportsMetrics )
     {
-        if ( config.desiredFeatures.supportsMetrics )
-        {
-            m_metricsTimer = GUCEF_NEW CORE::CTimer( config.pulseGenerator, 1000 );
-            m_metricsTimer->SetEnabled( config.desiredFeatures.supportsMetrics );
-        }
-    }
-    else
-    {
-        if ( config.desiredFeatures.supportsMetrics )
-        {
-            m_metricsTimer = GUCEF_NEW CORE::CTimer( 1000 );
-            m_metricsTimer->SetEnabled( config.desiredFeatures.supportsMetrics );
-        }
+        m_metricsTimer = GUCEF_NEW CORE::CTimer( config.pulseGenerator, 1000 );
+        m_metricsTimer->SetEnabled( config.desiredFeatures.supportsMetrics );
     }
 
-    m_config.metricsPrefix += "msmq.";
+    m_config.metricsPrefix += "web.";
 
     RegisterEventHandlers();
 }
@@ -129,6 +118,45 @@ CWebPubSubClient::~CWebPubSubClient()
     m_metricsTimer = GUCEF_NULL;
 
     SignalUpcomingDestruction();
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CWebPubSubClient::SetPulseGenerator( CORE::PulseGeneratorPtr newPulseGenerator )
+{GUCEF_TRACE;
+
+    return SetPulseGenerator( newPulseGenerator, true );
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CWebPubSubClient::SetPulseGenerator( CORE::PulseGeneratorPtr newPulseGenerator ,
+                                     bool includeTopics                        )
+{GUCEF_TRACE;
+
+    //MT::CScopeMutex lock( m_lock );
+    
+    CORE::CTSGNotifier::SetPulseGenerator( newPulseGenerator );
+    m_config.pulseGenerator = newPulseGenerator;
+    
+    if ( GUCEF_NULL != m_metricsTimer )
+    {
+        m_metricsTimer->SetPulseGenerator( newPulseGenerator );
+    }
+
+    if ( includeTopics )
+    {
+        m_config.topicPulseGenerator = m_config.pulseGenerator;
+
+        TTopicMap::iterator i = m_topicMap.begin();
+        while ( i != m_topicMap.end() )
+        {
+            (*i).second->SetPulseGenerator( newPulseGenerator );
+            ++i;
+        }
+    }
 }
 
 /*-------------------------------------------------------------------------*/

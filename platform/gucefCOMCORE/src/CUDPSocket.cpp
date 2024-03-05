@@ -149,10 +149,7 @@ CUDPSocket::CUDPSocket( const CORE::PulseGeneratorPtr& pulseGenerator ,
 
     SetNrOfReceiveBuffers( GUCEF_DEFAULT_NR_OF_RECEIVE_PACKET_BUFFERS, GUCEF_DEFAULT_UDP_RECEIVE_PACKET_BUFFER_SIZE );
 
-    TEventCallback callback( this, &CUDPSocket::OnPulse );
-    SubscribeTo( m_pulseGenerator.GetPointerAlways() ,
-                 CORE::CPulseGenerator::PulseEvent   ,
-                 callback                            );
+    RegisterEventHandlers();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -186,10 +183,7 @@ CUDPSocket::CUDPSocket( bool blocking )
 
     SetNrOfReceiveBuffers( GUCEF_DEFAULT_NR_OF_RECEIVE_PACKET_BUFFERS, GUCEF_DEFAULT_UDP_RECEIVE_PACKET_BUFFER_SIZE );
 
-    TEventCallback callback( this, &CUDPSocket::OnPulse );
-    SubscribeTo( m_pulseGenerator.GetPointerAlways() ,
-                 CORE::CPulseGenerator::PulseEvent   ,
-                 callback                            );
+    RegisterEventHandlers();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -214,6 +208,29 @@ CUDPSocket::RegisterEvents( void )
     UDPSocketClosedEvent.Initialize();
     UDPSocketOpenedEvent.Initialize();
     UDPPacketsRecievedEvent.Initialize();
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CUDPSocket::RegisterEventHandlers( void )
+{GUCEF_TRACE;
+
+    UnsubscribeFrom( m_pulseGenerator.GetPointerAlways() );
+    TEventCallback callback( this, &CUDPSocket::OnPulse );
+    SubscribeTo( m_pulseGenerator.GetPointerAlways() ,
+                 CORE::CPulseGenerator::PulseEvent   ,
+                 callback                            );
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CUDPSocket::SetPulseGenerator( CORE::PulseGeneratorPtr newPulseGenerator )
+{GUCEF_TRACE;
+
+    m_pulseGenerator = newPulseGenerator;
+    RegisterEventHandlers();
 }
 
 /*-------------------------------------------------------------------------*/

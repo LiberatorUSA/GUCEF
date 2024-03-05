@@ -160,6 +160,49 @@ CStoragePubSubClient::~CStoragePubSubClient()
 
 /*-------------------------------------------------------------------------*/
 
+void
+CStoragePubSubClient::SetPulseGenerator( CORE::PulseGeneratorPtr newPulseGenerator )
+{GUCEF_TRACE;
+
+    return SetPulseGenerator( newPulseGenerator, true );
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CStoragePubSubClient::SetPulseGenerator( CORE::PulseGeneratorPtr newPulseGenerator ,
+                                         bool includeTopics                        )
+{GUCEF_TRACE;
+
+    MT::CScopeMutex lock( m_lock );
+    
+    CORE::CTSGNotifier::SetPulseGenerator( newPulseGenerator );
+    m_config.pulseGenerator = newPulseGenerator;
+    
+    if ( GUCEF_NULL != m_metricsTimer )
+    {
+        m_metricsTimer->SetPulseGenerator( newPulseGenerator );
+    }
+    if ( !m_threadPool.IsNULL() )
+    {
+        m_threadPool->SetPulseGenerator( newPulseGenerator );
+    }
+
+    if ( includeTopics )
+    {
+        m_config.topicPulseGenerator = m_config.pulseGenerator;
+
+        TTopicMap::iterator i = m_topicMap.begin();
+        while ( i != m_topicMap.end() )
+        {
+            (*i).second->SetPulseGenerator( newPulseGenerator );
+            ++i;
+        }
+    }
+}
+
+/*-------------------------------------------------------------------------*/
+
 CStoragePubSubClientConfig&
 CStoragePubSubClient::GetConfig( void )
 {GUCEF_TRACE;

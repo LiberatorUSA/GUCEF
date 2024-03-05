@@ -76,7 +76,7 @@ const CORE::CString CRedisClusterPubSubClient::TypeName = "ClusteredRedis";
 //-------------------------------------------------------------------------*/
 
 CRedisClusterPubSubClient::CRedisClusterPubSubClient( const PUBSUB::CPubSubClientConfig& config )
-    : PUBSUB::CPubSubClient()
+    : PUBSUB::CPubSubClient( config.pulseGenerator )
     , m_config()
     , m_journal()
     , m_nodeMap()
@@ -168,6 +168,57 @@ CRedisClusterPubSubClient::~CRedisClusterPubSubClient()
     }
 
     SignalUpcomingDestruction();
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CRedisClusterPubSubClient::SetPulseGenerator( CORE::PulseGeneratorPtr newPulseGenerator )
+{GUCEF_TRACE;
+
+    return SetPulseGenerator( newPulseGenerator, true );
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CRedisClusterPubSubClient::SetPulseGenerator( CORE::PulseGeneratorPtr newPulseGenerator ,
+                                              bool includeTopics                        )
+{GUCEF_TRACE;
+
+    MT::CScopeMutex lock( m_lock );
+    
+    CORE::CTSGNotifier::SetPulseGenerator( newPulseGenerator );
+    m_config.pulseGenerator = newPulseGenerator;
+    
+    if ( GUCEF_NULL != m_metricsTimer )
+    {
+        m_metricsTimer->SetPulseGenerator( newPulseGenerator );
+    }
+    if ( GUCEF_NULL != m_redisReconnectTimer )
+    {
+        m_redisReconnectTimer->SetPulseGenerator( newPulseGenerator );
+    }
+    if ( GUCEF_NULL != m_streamIndexingTimer )
+    {
+        m_streamIndexingTimer->SetPulseGenerator( newPulseGenerator );
+    }
+    if ( !m_threadPool.IsNULL() )
+    {
+        m_threadPool->SetPulseGenerator( newPulseGenerator );
+    }
+
+    if ( includeTopics )
+    {
+        m_config.topicPulseGenerator = m_config.pulseGenerator;
+
+        TTopicMap::iterator i = m_topicMap.begin();
+        while ( i != m_topicMap.end() )
+        {
+            (*i).second->SetPulseGenerator( newPulseGenerator );
+            ++i;
+        }
+    }
 }
 
 /*-------------------------------------------------------------------------*/

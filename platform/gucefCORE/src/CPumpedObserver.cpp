@@ -308,17 +308,20 @@ void
 CPumpedObserver::SetPulseGenerator( PulseGeneratorPtr newPulseGenerator )
 {GUCEF_TRACE;
 
-    PulseGeneratorPtr oldPulseGenerator = m_pulseGenerator;
-    m_pulseGenerator.Unlink();
-
-    if ( !oldPulseGenerator.IsNULL() )
+    if ( m_pulseGenerator != newPulseGenerator )
     {
-        oldPulseGenerator->RequestStopOfPeriodicUpdates( this );
-        UnsubscribeFrom( *oldPulseGenerator.GetPointerAlways() );
-    }
+        PulseGeneratorPtr oldPulseGenerator = m_pulseGenerator;
+        m_pulseGenerator.Unlink();
 
-    m_pulseGenerator = newPulseGenerator;
-    RegisterPulseGeneratorEventHandlers();
+        if ( !oldPulseGenerator.IsNULL() )
+        {
+            oldPulseGenerator->RequestStopOfPeriodicUpdates( this );
+            UnsubscribeFrom( *oldPulseGenerator.GetPointerAlways() );
+        }
+
+        m_pulseGenerator = newPulseGenerator;
+        RegisterPulseGeneratorEventHandlers();
+    }
 }
 
 /*-------------------------------------------------------------------------*/
