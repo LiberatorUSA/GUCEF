@@ -62,7 +62,7 @@ class PUBSUBPLUGIN_KAFKA_PLUGIN_PRIVATE_CPP CKafkaPubSubClientTopicConfig : publ
 {
     public:
 
-    typedef std::map< CORE::CString, CORE::CString >   StringMap;
+    typedef CORE::CString::StringMap   StringMap;
     
     StringMap kafkaProducerTopicConfigSettings;
     StringMap kafkaConsumerTopicConfigSettings;

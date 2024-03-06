@@ -820,11 +820,18 @@ bool
 CKafkaPubSubClient::Connect( bool reset )
 {GUCEF_TRACE;
 
-    if ( !reset && IsConnected() )
+    // check if there is any work to do
+    // in the case of a reset we always do all the work
+    if ( !reset && IsConnectedAndSubscribedAsNeeded() )
         return true;
 
-    if ( !Disconnect() )
-        return false;
+    if ( reset )
+    {
+        // Only reset the already connected connections if we are doing a reset
+        // otherwise treat it as an additive connection attempt for topics
+        if ( !Disconnect() )
+            return false;
+    }
     
     MT::CScopeMutex lock( m_lock );
 

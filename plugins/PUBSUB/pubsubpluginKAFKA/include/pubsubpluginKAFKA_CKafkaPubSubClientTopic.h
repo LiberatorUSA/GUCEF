@@ -85,6 +85,7 @@ class PUBSUBPLUGIN_KAFKA_PLUGIN_PRIVATE_CPP CKafkaPubSubClientTopic : public PUB
     public:
 
     static const std::string KafkaMsgHeader_ProducerHostname;
+    static const CORE::CString DefaultOffsetResetValue;
 
     CKafkaPubSubClientTopic( CKafkaPubSubClient* client );
 
@@ -203,6 +204,9 @@ class PUBSUBPLUGIN_KAFKA_PLUGIN_PRIVATE_CPP CKafkaPubSubClientTopic : public PUB
     static bool VariantToPartitionOffsets( const CORE::CVariant& indexBookmarkBlob, TPartitionOffsetMap& offsets );
     static bool VariantToPartitionOffset( const CORE::CVariant& partitionOffsetBlob, TPartitionOffset& offset );
 
+    const CORE::CString& GetConsumerConfigSetting( const CORE::CString& keyName, const CORE::CString& defaultValue = CORE::CString::Empty ) const;
+    Int64 GetConsumerConfigSettingAsInt64( const CORE::CString& keyName, Int64 defaultValue ) const;
+
     static void RdKafkaLogCallback( const rd_kafka_t* rk , 
                                     int level            ,
                                     const char* fac      , 
@@ -221,7 +225,7 @@ class PUBSUBPLUGIN_KAFKA_PLUGIN_PRIVATE_CPP CKafkaPubSubClientTopic : public PUB
 
     bool SetupBasedOnConfig( void );
 
-    bool CommitConsumerOffsets( void );
+    bool CommitConsumerOffsets( bool useAsyncCommit = true );
 
     bool AcknowledgeReceipt( const TPartitionOffset& offset );
 
@@ -313,6 +317,7 @@ class PUBSUBPLUGIN_KAFKA_PLUGIN_PRIVATE_CPP CKafkaPubSubClientTopic : public PUB
     TMsgsPublishFailureEventData m_publishFailureActionEventData;
     TopicMetrics m_metrics;
     bool m_shouldBeConnected;
+    bool m_isSubscribed;
     mutable bool m_isHealthy;
     MT::CMutex m_lock;
 };

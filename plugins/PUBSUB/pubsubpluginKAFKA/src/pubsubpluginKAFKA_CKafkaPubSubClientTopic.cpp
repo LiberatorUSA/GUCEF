@@ -68,6 +68,7 @@ namespace KAFKA {
 //-------------------------------------------------------------------------*/
 
 const std::string CKafkaPubSubClientTopic::KafkaMsgHeader_ProducerHostname = "ProducerHostname";
+const CORE::CString CKafkaPubSubClientTopic::DefaultOffsetResetValue = "beginning";
 
 /*-------------------------------------------------------------------------*/
 
@@ -105,6 +106,7 @@ CKafkaPubSubClientTopic::CKafkaPubSubClientTopic( CKafkaPubSubClient* client )
     , m_publishFailureActionEventData()
     , m_metrics()
     , m_shouldBeConnected( false )
+    , m_isSubscribed( false )
     , m_isHealthy( true )
     , m_lock()
 {GUCEF_TRACE;
@@ -457,19 +459,19 @@ CKafkaPubSubClientTopic::RdKafkaLogCallback( const rd_kafka_t *rk ,
         }
         case RdKafka::Event::EVENT_SEVERITY_INFO:
         {
-            GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Kafka log: " + CORE::ToString( fac ) + " : " + CORE::ToString( buf ) );
+            GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "Kafka log: " + CORE::ToString( fac ) + " : " + CORE::ToString( buf ) );
             break;
         }
         case RdKafka::Event::EVENT_SEVERITY_DEBUG:
         {
-            GUCEF_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "Kafka log: " + CORE::ToString( fac ) + " : " + CORE::ToString( buf ) );
+            GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "Kafka log: " + CORE::ToString( fac ) + " : " + CORE::ToString( buf ) );
             break;
         }
 
         case RdKafka::Event::EVENT_SEVERITY_NOTICE:
         default:
         {
-            GUCEF_LOG( CORE::LOGLEVEL_IMPORTANT, "Kafka log: " + CORE::ToString( fac ) + " : " + CORE::ToString( buf ) );
+            GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_IMPORTANT, "Kafka log: " + CORE::ToString( fac ) + " : " + CORE::ToString( buf ) );
             break;
         }
     }
@@ -558,7 +560,7 @@ CKafkaPubSubClientTopic::SetupBasedOnConfig( void )
             return false;
 	    }
         m_kafkaProducer = producer;
-        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "KafkaPubSubClientTopic:LoadConfig: Successfully created Kafka producer for topic \"" + m_config.topicName + "\"" );
+        GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "KafkaPubSubClientTopic:LoadConfig: Successfully created Kafka producer for topic \"" + m_config.topicName + "\"" );
 
         RdKafka::Topic* topic = RdKafka::Topic::create( m_kafkaProducer, m_config.topicName, m_kafkaProducerTopicConf, errStr );
 	    if ( topic == GUCEF_NULL )
@@ -569,7 +571,7 @@ CKafkaPubSubClientTopic::SetupBasedOnConfig( void )
             return false;
 	    }
         m_kafkaProducerTopic = topic;
-        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "KafkaPubSubClientTopic:LoadConfig: Successfully created Kafka Producer Topic handle for topic: " + m_config.topicName );
+        GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "KafkaPubSubClientTopic:LoadConfig: Successfully created Kafka Producer Topic handle for topic: " + m_config.topicName );
 
     }
 
@@ -696,7 +698,7 @@ CKafkaPubSubClientTopic::SetupBasedOnConfig( void )
             return false;
 	    }
         m_kafkaConsumer = consumer;
-        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "KafkaPubSubClientTopic:LoadConfig: Successfully created Kafka consumer" );
+        GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "KafkaPubSubClientTopic:LoadConfig: Successfully created Kafka consumer" );
     }
 
     return true;
@@ -748,6 +750,10 @@ CKafkaPubSubClientTopic::Disconnect( void )
             ++m_kafkaErrorReplies;
             totalSuccess = false;
         }
+        else
+        {
+            m_isSubscribed = false;
+        }
         response = m_kafkaConsumer->close();
         if ( RdKafka::ERR_NO_ERROR != response )
         {
@@ -766,7 +772,7 @@ CKafkaPubSubClientTopic::Disconnect( void )
         int queuedMsgs = m_kafkaProducer->outq_len();
         while ( queuedMsgs > 0 && waited <= 30000 )
         {
-            GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "KafkaPubSubClientTopic:Disconnect: Waiting on Kafka Producer for topic: \"" +
+            GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "KafkaPubSubClientTopic:Disconnect: Waiting on Kafka Producer for topic: \"" +
                 m_config.topicName + "\" to finish " + CORE::Int32ToString( queuedMsgs ) + " queued messages" );
 
             response = m_kafkaProducer->flush( 1000 );
@@ -815,10 +821,16 @@ CKafkaPubSubClientTopic::Subscribe( void )
     if ( RdKafka::ERR_NO_ERROR != response )
     {
 		std::string errStr = RdKafka::err2str( response );
-        GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "KafkaPubSubClientTopic:LoadConfig: Failed to start Kafka Consumer for topic \"" +
+        GUCEF_ERROR_LOG(CORE::LOGLEVEL_IMPORTANT, "KafkaPubSubClientTopic:Subscribe: Failed to 'subscribe' Kafka Consumer for topic \"" +
             m_config.topicName + ", error message: " + errStr );
         ++m_kafkaErrorReplies;
         return false;
+    }
+    else
+    {
+        m_isSubscribed = true;
+        GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "KafkaPubSubClientTopic:Subscribe: Successfully subscribed Kafka Consumer for topic \"" +
+            m_config.topicName + "\" using Kafka server side bookmark as the starting position" );
     }
     return true;
 }
@@ -1031,6 +1043,7 @@ CKafkaPubSubClientTopic::SubscribeStartingAtTopicIndex( const CORE::CVariant& in
         return false;
     }
 
+    m_isSubscribed = true;
     return true;
 }
 
@@ -1115,6 +1128,7 @@ CKafkaPubSubClientTopic::SubscribeStartingAtMsgDateTime( const CORE::CDateTime& 
         return false;
     }
 
+    m_isSubscribed = true;
     return true;
 }
 
@@ -1308,9 +1322,19 @@ bool
 CKafkaPubSubClientTopic::IsConnected( void ) const
 {GUCEF_TRACE;
 
-    // Snapshot in time as such no lock needed.
-    // note that connected is a very relative term here, more like prepared to connect as needed
-    return ( m_config.needPublishSupport && GUCEF_NULL != m_kafkaProducer ) || ( m_config.needSubscribeSupport && GUCEF_NULL != m_kafkaConsumer );
+    {
+        MT::CScopeMutex lock( m_lock );
+    
+        // note that connected is a very relative term here, more like prepared to connect as needed if you are a producer
+        if ( m_config.needPublishSupport )
+            if ( GUCEF_NULL == m_kafkaProducer )    
+                return false;
+
+        if ( m_config.needSubscribeSupport )
+            if ( ( GUCEF_NULL == m_kafkaConsumer ) || !m_isSubscribed )
+                return false;
+    }
+    return true;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -1319,8 +1343,11 @@ bool
 CKafkaPubSubClientTopic::IsSubscribed( void ) const
 {GUCEF_TRACE;
 
-    // Snapshot in time as such no lock needed.
-    return GUCEF_NULL != m_kafkaConsumer;
+    bool isSubscribed = false;
+    MT::CScopeMutex lock( m_lock );
+    isSubscribed = ( GUCEF_NULL != m_kafkaConsumer ) && m_isSubscribed;
+    lock.EarlyUnlock();
+    return isSubscribed;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -1602,7 +1629,7 @@ CKafkaPubSubClientTopic::ConvertKafkaConsumerStartOffset( CORE::Int64 startOffse
         RdKafka::ErrorCode err = m_kafkaConsumer->query_watermark_offsets( m_config.topicName, partitionId, &low, &high, timeoutInMs );
         if ( RdKafka::ERR_NO_ERROR == err )
         {
-            GUCEF_LOG( CORE::LOGLEVEL_IMPORTANT, "KafkaPubSubClientTopic: Converted offset description \"BEGINNING\" into offset " + CORE::Int64ToString( low ) + " for partition " + CORE::Int32ToString( partitionId ) );
+            GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_IMPORTANT, "KafkaPubSubClientTopic: Converted offset description \"BEGINNING\" into offset " + CORE::Int64ToString( low ) + " for partition " + CORE::Int32ToString( partitionId ) );
             return low;
         }
 
@@ -1618,7 +1645,7 @@ CKafkaPubSubClientTopic::ConvertKafkaConsumerStartOffset( CORE::Int64 startOffse
         RdKafka::ErrorCode err = m_kafkaConsumer->query_watermark_offsets( m_config.topicName, partitionId, &low, &high, timeoutInMs );
         if ( RdKafka::ERR_NO_ERROR == err )
         {
-            GUCEF_LOG( CORE::LOGLEVEL_IMPORTANT, "KafkaPubSubClientTopic: Converted offset description \"END\" into offset " + CORE::Int64ToString( low ) + " for partition " + CORE::Int32ToString( partitionId ) );
+            GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_IMPORTANT, "KafkaPubSubClientTopic: Converted offset description \"END\" into offset " + CORE::Int64ToString( low ) + " for partition " + CORE::Int32ToString( partitionId ) );
             return high;
         }
 
@@ -1658,7 +1685,7 @@ CKafkaPubSubClientTopic::ConvertKafkaConsumerStartOffset( CORE::Int64 startOffse
             if ( (*i)->partition() == partitionId )
             {
                 CORE::Int64 storedOffset = (*i)->offset();
-                GUCEF_LOG( CORE::LOGLEVEL_IMPORTANT, "KafkaPubSubClientTopic: Converted offset description \"STORED\" into offset " +
+                GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_IMPORTANT, "KafkaPubSubClientTopic: Converted offset description \"STORED\" into offset " +
                         CORE::Int64ToString( storedOffset ) + " for partition " + CORE::Int32ToString( partitionId ) );
                 return storedOffset;
             }
@@ -1693,9 +1720,39 @@ CKafkaPubSubClientTopic::ConvertKafkaConsumerStartOffset( CORE::Int64 offset )
 
 /*-------------------------------------------------------------------------*/
 
+const CORE::CString&
+CKafkaPubSubClientTopic::GetConsumerConfigSetting( const CORE::CString& keyName, const CORE::CString& defaultValue ) const
+{GUCEF_TRACE;
+
+    CKafkaPubSubClientTopicConfig::StringMap::const_iterator i = m_config.kafkaConsumerTopicConfigSettings.find( keyName );
+    if ( i != m_config.kafkaConsumerTopicConfigSettings.end() )
+    {
+        const CORE::CString& foundValue = (*i).second;
+        return foundValue;
+    }
+    return defaultValue;
+}
+
+/*-------------------------------------------------------------------------*/
+
+Int64 
+CKafkaPubSubClientTopic::GetConsumerConfigSettingAsInt64( const CORE::CString& keyName, Int64 defaultValue ) const
+{GUCEF_TRACE;
+
+    CKafkaPubSubClientTopicConfig::StringMap::const_iterator i = m_config.kafkaConsumerTopicConfigSettings.find( keyName );
+    if ( i != m_config.kafkaConsumerTopicConfigSettings.end() )
+    {
+        const CORE::CString& foundValue = (*i).second;
+        return CORE::StringToInt64( foundValue, defaultValue );
+    }
+    return defaultValue;
+}
+
+/*-------------------------------------------------------------------------*/
+
 void
-CKafkaPubSubClientTopic::offset_commit_cb( RdKafka::ErrorCode err                         ,
-                                           std::vector<RdKafka::TopicPartition*>& offsets )
+CKafkaPubSubClientTopic::offset_commit_cb( RdKafka::ErrorCode err                            ,
+                                           std::vector<RdKafka::TopicPartition*>& partitions )
 {GUCEF_TRACE;
 
     if ( RdKafka::ERR_NO_ERROR != err && RdKafka::ERR__NO_OFFSET != err )
@@ -1704,24 +1761,57 @@ CKafkaPubSubClientTopic::offset_commit_cb( RdKafka::ErrorCode err               
 
         std::string errStr = RdKafka::err2str( err );
         CORE::CString commitInfo = "KafkaPubSubClientTopic:offset_commit_cb: Member ID \"" + m_kafkaConsumer->memberid() + "\": Code: " + errStr + " : ";
-        for ( unsigned int i=0; i<offsets.size(); ++i )
+        for ( unsigned int i=0; i<partitions.size(); ++i )
         {
-            commitInfo += "Topic \"" + offsets[ i ]->topic() + "\" is at partition \"" + CORE::Int32ToString( offsets[ i ]->partition() ).STL_String() + "\" at offset \"" + ConvertKafkaConsumerStartOffset( offsets[ i ]->offset() ).STL_String() + "\". ";
+            commitInfo += "Topic \"" + partitions[ i ]->topic() + "\" is at partition \"" + CORE::Int32ToString( partitions[ i ]->partition() ).STL_String() + "\" at offset \"" + ConvertKafkaConsumerStartOffset( partitions[ i ]->offset() ).STL_String() + "\". ";
         }
         GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, commitInfo );
-    }
-    #ifdef GUCEF_DEBUG_MODE
+    }    
     else
     {
+        #ifdef GUCEF_DEBUG_MODE
         std::string errStr = RdKafka::err2str( err );
         CORE::CString commitInfo = "KafkaPubSubClientTopic:offset_commit_cb: Member ID \"" + m_kafkaConsumer->memberid() + "\": Code: " + errStr + " : ";
-        for ( unsigned int i=0; i<offsets.size(); ++i )
+        for ( unsigned int i=0; i<partitions.size(); ++i )
         {
-            commitInfo += "Topic \"" + offsets[ i ]->topic() + "\" is at partition \"" + CORE::Int32ToString( offsets[ i ]->partition() ).STL_String() + "\" at offset \"" + ConvertKafkaConsumerStartOffset( offsets[ i ]->offset() ).STL_String() + "\". ";
+            commitInfo += "Topic \"" + partitions[ i ]->topic() + "\" is at partition \"" + CORE::Int32ToString( partitions[ i ]->partition() ).STL_String() + "\" at offset \"" + ConvertKafkaConsumerStartOffset( partitions[ i ]->offset() ).STL_String() + "\". ";
         }
         GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, commitInfo );
-    }
-    #endif
+        #endif
+
+        if ( RdKafka::ERR__NO_OFFSET == err )
+        {
+            GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_IMPORTANT, "KafkaPubSubClientTopic: No offsets are stored server-side for this client id. If this is unexpected check your offset storage health and retention policies. Will switch to using a default initial setting" );
+            
+            // check our config to see how we want to handle this scenario
+            Int64 requestTimeout = GetConsumerConfigSettingAsInt64( "request.timeout.ms", 3000 );
+            const CORE::CString& offsetResetSetting = GetConsumerConfigSetting( "auto.offset.reset", DefaultOffsetResetValue );            
+            GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "KafkaPubSubClientTopic: Using offset reset setting of \"" + offsetResetSetting + "\" with request timeout of " + CORE::ToString( requestTimeout ) );
+
+            // Set the desired new offsets
+            for ( unsigned int i=0; i<partitions.size(); ++i )
+            {
+                int64_t partitionOffset = partitions[ i ]->offset();
+                if ( RdKafka::Topic::OFFSET_INVALID == partitionOffset                                   || 
+                     RdKafka::Topic::OFFSET_INVALID == m_consumerOffsets[ partitions[ i ]->partition() ] )
+                {
+                    Int64 newPartitionOffset = ConvertKafkaConsumerStartOffset( offsetResetSetting, partitions[ i ]->partition(), (Int32) requestTimeout );
+                    m_consumerOffsets[ partitions[ i ]->partition() ] = newPartitionOffset;
+                    partitions[ i ]->set_offset( newPartitionOffset );
+                    GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "KafkaPubSubClientTopic: Resetting local offset administration to " + CORE::ToString( newPartitionOffset ) + " for partition " + CORE::ToString( partitions[ i ]->partition() ) );
+                }
+            }
+
+            if ( CommitConsumerOffsets( false ) )
+            {
+                GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "KafkaPubSubClientTopic: Successfully commited the new offsets" );
+            }
+            else
+            {
+                GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "KafkaPubSubClientTopic: CommitConsumerOffsets failed after reset of offsets" );
+            }
+        }
+    }    
 }
 
 /*-------------------------------------------------------------------------*/
@@ -1740,7 +1830,10 @@ CKafkaPubSubClientTopic::rebalance_cb( RdKafka::KafkaConsumer* consumer         
         {
             if ( m_firstPartitionAssignment || RdKafka::Topic::OFFSET_INVALID == partitions[ i ]->offset() )
             {
-                CORE::Int64 startOffset = ConvertKafkaConsumerStartOffset( m_config.consumerModeStartOffset, partitions[ i ]->partition(), 10000 );
+                Int64 requestTimeout = GetConsumerConfigSettingAsInt64( "request.timeout.ms", 3000 );
+                const CORE::CString& offsetResetSetting = GetConsumerConfigSetting( "auto.offset.reset", m_config.consumerModeStartOffset.IsNULLOrEmpty() ? DefaultOffsetResetValue : m_config.consumerModeStartOffset );
+
+                CORE::Int64 startOffset = ConvertKafkaConsumerStartOffset( offsetResetSetting, partitions[ i ]->partition(), (Int32) requestTimeout );
                 partitions[ i ]->set_offset( startOffset );
                 m_consumerOffsets[ partitions[ i ]->partition() ] = startOffset;
             }
@@ -1748,15 +1841,15 @@ CKafkaPubSubClientTopic::rebalance_cb( RdKafka::KafkaConsumer* consumer         
         if (  m_firstPartitionAssignment )
             m_firstPartitionAssignment = false;
 
-        assignSuccess = consumer->assign( partitions );
-        if ( RdKafka::ERR_NO_ERROR != assignSuccess )
+        if ( CommitConsumerOffsets( false ) )
         {
-            ++m_kafkaErrorReplies;
-            GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "KafkaPubSubClientTopic:rebalance_cb: Failed to assign new partitions" );
+            GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "KafkaPubSubClientTopic: Successfully commited the new offsets" );
+        }
+        else
+        {
+            GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "KafkaPubSubClientTopic: CommitConsumerOffsets failed after reset of offsets" );
         }
 
-        RdKafka::ErrorCode ec = consumer->offsets_store( partitions );
-        RdKafka::ErrorCode ec2 = consumer->commitSync( this );
         actionStr = "ASSIGN_PARTITIONS";
     }
     else
@@ -1780,7 +1873,7 @@ CKafkaPubSubClientTopic::rebalance_cb( RdKafka::KafkaConsumer* consumer         
         RdKafka::ErrorCode err = m_kafkaConsumer->get_watermark_offsets( m_config.topicName, partitions[ i ]->partition(), &low, &high );
         if ( RdKafka::ERR_NO_ERROR == err )
         {
-            GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "KafkaPubSubClientTopic: Offsets for topic \"" + m_config.topicName +
+            GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "KafkaPubSubClientTopic:rebalance_cb: Actual offsets for topic \"" + m_config.topicName +
                     "\" and partition " + CORE::Int32ToString( partitions[ i ]->partition() ) + ": Low=" + ConvertKafkaConsumerStartOffset( low ) +
                     ", High=" + ConvertKafkaConsumerStartOffset( high ) );
         }
@@ -1791,7 +1884,7 @@ CKafkaPubSubClientTopic::rebalance_cb( RdKafka::KafkaConsumer* consumer         
                     "\" and partition " + CORE::Int32ToString( partitions[ i ]->partition() ) );
         }
     }
-    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, partitionInfo );
+    GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, partitionInfo );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -2105,7 +2198,7 @@ CKafkaPubSubClientTopic::event_cb( RdKafka::Event& event )
         }
         case RdKafka::Event::EVENT_STATS:
         {
-	        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Kafka stats: " + event.str() );
+	        GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "Kafka stats: " + event.str() );
 	        break;
         }
         case RdKafka::Event::EVENT_LOG:
@@ -2133,19 +2226,19 @@ CKafkaPubSubClientTopic::event_cb( RdKafka::Event& event )
                 }
                 case RdKafka::Event::EVENT_SEVERITY_INFO:
                 {
-                    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Kafka log: " + event.fac() + " : " + event.str() );
+                    GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "Kafka log: " + event.fac() + " : " + event.str() );
                     break;
                 }
                 case RdKafka::Event::EVENT_SEVERITY_DEBUG:
                 {
-                    GUCEF_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "Kafka log: " + event.fac() + " : " + event.str() );
+                    GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "Kafka log: " + event.fac() + " : " + event.str() );
                     break;
                 }
 
                 case RdKafka::Event::EVENT_SEVERITY_NOTICE:
                 default:
                 {
-                    GUCEF_LOG( CORE::LOGLEVEL_IMPORTANT, "Kafka log: " + event.fac() + " : " + event.str() );
+                    GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_IMPORTANT, "Kafka log: " + event.fac() + " : " + event.str() );
                     break;
                 }
             }
@@ -2153,14 +2246,14 @@ CKafkaPubSubClientTopic::event_cb( RdKafka::Event& event )
         }
         case RdKafka::Event::EVENT_THROTTLE:
         {
-            GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Kafka Throttle event: throttled for " + CORE::Int32ToString( event.throttle_time() ) + "ms by broker " +
+            GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "Kafka Throttle event: throttled for " + CORE::Int32ToString( event.throttle_time() ) + "ms by broker " +
                 event.broker_name() + " with ID " + CORE::Int32ToString( event.broker_id() ) );
             NotifyObservers( PublishThrottleEvent );
             break;
         }
         default:
         {
-            GUCEF_LOG( CORE::LOGLEVEL_IMPORTANT, "Kafka event: " + CORE::Int32ToString( (CORE::Int32) event.type() ) + ", with error code " + RdKafka::err2str( event.err() ) );
+            GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_IMPORTANT, "Kafka event: " + CORE::Int32ToString( (CORE::Int32) event.type() ) + ", with error code " + RdKafka::err2str( event.err() ) );
 	        break;
         }
     }
@@ -2258,7 +2351,7 @@ CKafkaPubSubClientTopic::dr_cb( RdKafka::Message& message )
 /*-------------------------------------------------------------------------*/
 
 bool
-CKafkaPubSubClientTopic::CommitConsumerOffsets( void )
+CKafkaPubSubClientTopic::CommitConsumerOffsets( bool useAsyncCommit )
 {GUCEF_TRACE;
 
     if ( GUCEF_NULL == m_kafkaConsumer )
@@ -2287,23 +2380,47 @@ CKafkaPubSubClientTopic::CommitConsumerOffsets( void )
         if ( RdKafka::ERR_NO_ERROR == err )
         {
             // Now we request to send the local offset bookkeeping to Kafka
-            err = m_kafkaConsumer->commitAsync( partitions );
-            if ( RdKafka::ERR_NO_ERROR == err )
+            if ( useAsyncCommit )
             {
-                // Reset our flag so that we do not commit needlessly
-                m_msgsReceivedSinceLastOffsetCommit = false;
+                err = m_kafkaConsumer->commitAsync( partitions );
+                if ( RdKafka::ERR_NO_ERROR == err )
+                {
+                    // Reset our flag so that we do not commit needlessly
+                    m_msgsReceivedSinceLastOffsetCommit = false;
 
-                GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "KafkaPubSubClientTopic: Successfully triggered async commit of current offsets" );
-                return true;
+                    GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "KafkaPubSubClientTopic: Successfully triggered async commit of current offsets" );
+                    return true;
+                }
+                else
+                {
+                    ++m_kafkaErrorReplies;
+
+                    std::string errStr = RdKafka::err2str( err );
+                    GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "KafkaPubSubClientTopic: Cannot commit consumer offsets: Failed to trigger async commit of current offets. ErrorCode : " + errStr );
+                    UpdateIsHealthyStatus( false );
+                    return false;
+                }
             }
             else
             {
-                ++m_kafkaErrorReplies;
+                err = m_kafkaConsumer->commitSync( partitions );
+                if ( RdKafka::ERR_NO_ERROR == err )
+                {
+                    // Reset our flag so that we do not commit needlessly
+                    m_msgsReceivedSinceLastOffsetCommit = false;
 
-                std::string errStr = RdKafka::err2str( err );
-                GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "KafkaPubSubClientTopic: Cannot commit consumer offsets: Failed to trigger async commit of current offets. ErrorCode : " + errStr );
-                UpdateIsHealthyStatus( false );
-                return false;
+                    GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "KafkaPubSubClientTopic: Successfully triggered sync commit of current offsets" );
+                    return true;
+                }
+                else
+                {
+                    ++m_kafkaErrorReplies;
+
+                    std::string errStr = RdKafka::err2str( err );
+                    GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "KafkaPubSubClientTopic: Cannot commit consumer offsets: Failed to trigger sync commit of current offets. ErrorCode : " + errStr );
+                    UpdateIsHealthyStatus( false );
+                    return false;
+                }
             }
         }
         else

@@ -2822,15 +2822,20 @@ CPubSubClientSide::ConfigureTopicLink( const CPubSubSideChannelSettings& pubSubS
             return false;
         }
 
+        MT::CObjectScopeLock topicLinkLock( topicLink->AsLockable() );
+
         topicLink->SetFlowRouter( m_flowRouter );
         topicLink->SetParentSide( this );
-        topicLink->SetTopic( topic );        
-        topicLink->SetPulseGenerator( pulseGenerator );
+        topicLink->SetTopic( topic );                
         topicLink->ApplySettings( m_sideSettings );
         topicLink->SetClientFeatures( m_clientFeatures );
         topicLink->SetPubsubBookmarkPersistence( pubsubBookmarkPersistence );
         topicLink->SetPubsubBookmarkNamespace( m_bookmarkNamespace );
         topicLink->SetJournal( topic->GetJournal() );
+
+        // Set the pulse generator last because we dont want to still be configuring the topic link 
+        // while the associated thread already starts running updates on the same
+        topicLink->SetPulseGenerator( pulseGenerator );
     }
 
     return true;
