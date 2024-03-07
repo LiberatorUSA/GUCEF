@@ -119,7 +119,7 @@
                 "autoPersistMsgInterval": 1000,
                 "maxNrOfBookmarksToKeep": 10,
                 "CustomConfig": {
-                    "vfsRootPath": "InstallPath/bookmarks",
+                    "vfsRootPath": "DataPath/bookmarks",
                     "persistenceStructure": "{bookmarkNamespace}/clientType/{clientType}/topicName/{topicName}"
                 }
             }
@@ -155,8 +155,8 @@
                     "CustomConfig": {
                         "desiredNrOfBuffers": 3,
                         "desiredMinimalSerializedBlockSize": 52428800,
-                        "desiredMaxTimeToWaitToGrowSerializedBlockSizeInMs": 10000,
-                        "vfsStorageRootPath": "InstallPath/pubsub/storage/{pubsubIdPrefix}/{metricsFriendlyTopicName}",
+                        "desiredMaxTimeToWaitToGrowSerializedBlockSizeInMs": 240000,
+                        "vfsStorageRootPath": "DataPath/pubsub/storage/{pubsubIdPrefix}/{topicName}",
                         "vfsFileExtention": "pubsubcapture",
                         "encodeCodecFamily": "",
                         "encodeCodecName": "",
@@ -180,14 +180,14 @@
                         "treatEveryFullfilledRequestAsEODEvent": false,
                         "deleteContainersWithFullyAckdContent": false,
                         "moveContainersWithFullyAckdContent": true,
-                        "vfsStorageRootPathForFullyAckdContainers": "InstallPath/storage-sink/ackd",
+                        "vfsStorageRootPathForFullyAckdContainers": "DataPath/storage-sink/ackd",
                         "maxCompletedContainerRefsToRetain": 50,
                         "binarySerializerOptions": {
                             "msgDateTimeIncluded": true,
                             "msgDateTimeAsMsSinceUnixEpochInUtc": true,
                             "msgIdIncluded": true,
-                            "msgIndexIncluded": false,
-                            "msgPrimaryPayloadIncluded": false,
+                            "msgIndexIncluded": true,
+                            "msgPrimaryPayloadIncluded": true,
                             "msgKeyValuePairsIncluded": true,
                             "msgMetaDataKeyValuePairsIncluded": true,
                             "topicNameIncluded": false
@@ -254,7 +254,7 @@
                 "autoPersistMsgInterval": 1000,
                 "maxNrOfBookmarksToKeep": 10,
                 "CustomConfig": {
-                    "vfsRootPath": "InstallPath/pubsub/bookmarks",
+                    "vfsRootPath": "DataPath/pubsub/bookmarks",
                     "persistenceStructure": "{bookmarkNamespace}/clientType/{clientType}/topicName/{topicName}"
                 }
             }

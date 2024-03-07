@@ -1785,7 +1785,12 @@ CKafkaPubSubClientTopic::offset_commit_cb( RdKafka::ErrorCode err               
             
             // check our config to see how we want to handle this scenario
             Int64 requestTimeout = GetConsumerConfigSettingAsInt64( "request.timeout.ms", 3000 );
-            const CORE::CString& offsetResetSetting = GetConsumerConfigSetting( "auto.offset.reset", DefaultOffsetResetValue );            
+            CORE::CString offsetResetSetting = GetConsumerConfigSetting( "auto.offset.reset", DefaultOffsetResetValue );            
+            if ( offsetResetSetting.Lowercase() == "stored" )
+            {
+                GUCEF_WARNING_LOG( CORE::LOGLEVEL_NORMAL, "KafkaPubSubClientTopic: The \"auto.offset.reset\" setting is set to \"" + offsetResetSetting + " which is not correct for an invalid/no offset scenario. Overruling to " + DefaultOffsetResetValue );    
+                offsetResetSetting = DefaultOffsetResetValue; 
+            }
             GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "KafkaPubSubClientTopic: Using offset reset setting of \"" + offsetResetSetting + "\" with request timeout of " + CORE::ToString( requestTimeout ) );
 
             // Set the desired new offsets
@@ -1830,10 +1835,20 @@ CKafkaPubSubClientTopic::rebalance_cb( RdKafka::KafkaConsumer* consumer         
         {
             if ( m_firstPartitionAssignment || RdKafka::Topic::OFFSET_INVALID == partitions[ i ]->offset() )
             {
+                CORE::Int64 startOffset = (CORE::Int64) RdKafka::Topic::OFFSET_INVALID;
                 Int64 requestTimeout = GetConsumerConfigSettingAsInt64( "request.timeout.ms", 3000 );
-                const CORE::CString& offsetResetSetting = GetConsumerConfigSetting( "auto.offset.reset", m_config.consumerModeStartOffset.IsNULLOrEmpty() ? DefaultOffsetResetValue : m_config.consumerModeStartOffset );
+                if ( RdKafka::Topic::OFFSET_INVALID == partitions[i]->offset() )
+                {
+                    startOffset = ConvertKafkaConsumerStartOffset( DefaultOffsetResetValue, partitions[ i ]->partition(), (Int32) requestTimeout );
+                }
+                else
+                {
+                    CORE::CString offsetResetValue = m_config.consumerModeStartOffset.IsNULLOrEmpty() ? DefaultOffsetResetValue : m_config.consumerModeStartOffset;
+                    offsetResetValue = GetConsumerConfigSetting( "auto.offset.reset", offsetResetValue ); 
+                    
+                    startOffset = ConvertKafkaConsumerStartOffset( offsetResetValue, partitions[ i ]->partition(), (Int32) requestTimeout );
+                }
 
-                CORE::Int64 startOffset = ConvertKafkaConsumerStartOffset( offsetResetSetting, partitions[ i ]->partition(), (Int32) requestTimeout );
                 partitions[ i ]->set_offset( startOffset );
                 m_consumerOffsets[ partitions[ i ]->partition() ] = startOffset;
             }
