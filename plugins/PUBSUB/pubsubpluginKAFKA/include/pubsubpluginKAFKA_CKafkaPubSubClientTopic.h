@@ -241,7 +241,7 @@ class PUBSUBPLUGIN_KAFKA_PLUGIN_PRIVATE_CPP CKafkaPubSubClientTopic : public PUB
 
     static const std::string& MsgStatusToString( RdKafka::Message::Status status );
 
-    void NotifyOfReceivedMsg( RdKafka::Message& message );
+    void LinkReceivedMsg( RdKafka::Message& message, CORE::UInt32 msgIndex );
 
     void UpdateIsHealthyStatus( bool newStatus );
 
@@ -273,12 +273,15 @@ class PUBSUBPLUGIN_KAFKA_PLUGIN_PRIVATE_CPP CKafkaPubSubClientTopic : public PUB
     virtual void offset_commit_cb( RdKafka::ErrorCode err                         ,
                                    std::vector<RdKafka::TopicPartition*>& offsets ) GUCEF_VIRTUAL_OVERRIDE;
 
+    bool ProcessRdKafkaMessage( RdKafka::Message& message, CORE::UInt32 msgIndex, bool& isFiltered );
+
     private:
 
     typedef CORE::CTEventHandlerFunctor< CKafkaPubSubClientTopic > TEventCallback;
    
     // Types to implement/hook-up topic interface
-    typedef std::vector< PUBSUB::CBasicPubSubMsg >                     TPubSubMsgsVector;
+    typedef std::vector< PUBSUB::CBasicPubSubMsg >                      TPubSubMsgsVector;
+    typedef std::vector< RdKafka::Message* >                            TRdKafkaMsgPtrVector;
     typedef std::pair< CORE::CDynamicBuffer, CORE::CDynamicBuffer >     TBufferPair;
     typedef std::vector< TBufferPair >                                  TBufferVector;
     typedef std::map< CORE::Int32, CORE::Int64 >                        TInt32ToInt64Map;
@@ -288,6 +291,7 @@ class PUBSUBPLUGIN_KAFKA_PLUGIN_PRIVATE_CPP CKafkaPubSubClientTopic : public PUB
     TPubSubMsgsVector m_pubsubMsgs;
     TMsgsRecievedEventData m_pubsubMsgsRefs;
     TBufferVector m_pubsubMsgAttribs;
+    TRdKafkaMsgPtrVector m_rdKafkaMsgs;
     CKafkaPubSubClientTopicConfig m_config;
     RdKafka::Conf* m_kafkaProducerTopicConf;
     RdKafka::Conf* m_kafkaConsumerTopicConf;
@@ -315,6 +319,7 @@ class PUBSUBPLUGIN_KAFKA_PLUGIN_PRIVATE_CPP CKafkaPubSubClientTopic : public PUB
     TMsgsPublishedEventData m_publishSuccessActionEventData;
     TPublishActionIdVector m_publishFailureActionIds;
     TMsgsPublishFailureEventData m_publishFailureActionEventData;
+    CORE::Int32 m_maxTotalMsgsInFlight;
     TopicMetrics m_metrics;
     bool m_shouldBeConnected;
     bool m_isSubscribed;

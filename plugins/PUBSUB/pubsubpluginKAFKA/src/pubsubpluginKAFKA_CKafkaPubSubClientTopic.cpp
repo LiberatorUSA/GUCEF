@@ -77,6 +77,10 @@ CKafkaPubSubClientTopic::CKafkaPubSubClientTopic( CKafkaPubSubClient* client )
     , CORE::CTSharedObjCreator< CKafkaPubSubClientTopic, MT::CMutex >( this )
     , m_client( client )
     , m_metricsTimer( GUCEF_NULL )
+    , m_pubsubMsgs()
+    , m_pubsubMsgsRefs()
+    , m_pubsubMsgAttribs()
+    , m_rdKafkaMsgs()
     , m_config()
     , m_kafkaProducerTopicConf( GUCEF_NULL )
     , m_kafkaConsumerTopicConf( GUCEF_NULL )
@@ -104,6 +108,7 @@ CKafkaPubSubClientTopic::CKafkaPubSubClientTopic( CKafkaPubSubClient* client )
     , m_publishSuccessActionEventData()
     , m_publishFailureActionIds()
     , m_publishFailureActionEventData()
+    , m_maxTotalMsgsInFlight( 1000 )
     , m_metrics()
     , m_shouldBeConnected( false )
     , m_isSubscribed( false )
@@ -701,6 +706,14 @@ CKafkaPubSubClientTopic::SetupBasedOnConfig( void )
         GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "KafkaPubSubClientTopic:LoadConfig: Successfully created Kafka consumer" );
     }
 
+    if ( m_config.useTopicLevelMaxTotalMsgsInFlight )
+        m_maxTotalMsgsInFlight = (Int32) SMALLEST( m_config.maxTotalMsgsInFlight, GUCEF_INT32MAX );
+    else
+        m_maxTotalMsgsInFlight = (Int32) SMALLEST( m_client->GetConfig().maxTotalMsgsInFlight, GUCEF_INT32MAX );
+
+    if ( m_maxTotalMsgsInFlight > 0 )
+        PrepStorageForReadMsgs( (UInt32) m_maxTotalMsgsInFlight );
+    
     return true;
 }
 
@@ -710,6 +723,12 @@ void
 CKafkaPubSubClientTopic::PrepStorageForReadMsgs( CORE::UInt32 msgCount )
 {GUCEF_TRACE;
 
+    if ( msgCount > m_rdKafkaMsgs.size() )
+    {
+        // Add extra slots
+        m_rdKafkaMsgs.resize( msgCount );
+    }
+    
     if ( msgCount > m_pubsubMsgs.size() )
     {
         // Add extra slots
@@ -1921,10 +1940,8 @@ CKafkaPubSubClientTopic::UpdateIsHealthyStatus( bool newStatus )
 /*-------------------------------------------------------------------------*/
 
 void
-CKafkaPubSubClientTopic::NotifyOfReceivedMsg( RdKafka::Message& message )
+CKafkaPubSubClientTopic::LinkReceivedMsg( RdKafka::Message& message, CORE::UInt32 msgIndex )
 {GUCEF_TRACE;
-
-    PrepStorageForReadMsgs( 1 );
 
     // Grab a message wrapper from pre-allocated storage
     PUBSUB::CBasicPubSubMsg& msgWrap = m_pubsubMsgs[ 0 ];
@@ -2011,9 +2028,6 @@ CKafkaPubSubClientTopic::NotifyOfReceivedMsg( RdKafka::Message& message )
     TPubSubMsgsRefVector& msgRefs = m_pubsubMsgsRefs;
     msgRefs.push_back( CPubSubClientTopic::TPubSubMsgRef() );
     msgRefs.back().LinkTo( &msgWrap );
-
-    // Communicate all the messages received via an event notification
-    NotifyObservers( MsgsRecievedEvent, &m_pubsubMsgsRefs );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -2022,6 +2036,19 @@ void
 CKafkaPubSubClientTopic::consume_cb( RdKafka::Message& message, void* opaque )
 {GUCEF_TRACE;
 
+    bool isFiltered = false;
+    ProcessRdKafkaMessage( message, 0, isFiltered );
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CKafkaPubSubClientTopic::ProcessRdKafkaMessage( RdKafka::Message& message , 
+                                                CORE::UInt32 msgIndex     , 
+                                                bool& isFiltered          )
+{GUCEF_TRACE;
+
+    bool success = false;
     switch ( message.err() )
     {
         case RdKafka::ERR__TIMED_OUT:
@@ -2047,7 +2074,7 @@ CKafkaPubSubClientTopic::consume_cb( RdKafka::Message& message, void* opaque )
 
             ++m_kafkaMessagesReceived;
 
-            bool isFiltered = false;
+            isFiltered = false;
             if ( m_config.useKafkaMsgHeadersForConsumerFiltering )
             {
                 const RdKafka::Headers* headers = message.headers();
@@ -2103,7 +2130,9 @@ CKafkaPubSubClientTopic::consume_cb( RdKafka::Message& message, void* opaque )
                         m_msgsReceivedSinceLastOffsetCommit = true;  // Since something was recieved we want to set the flag to ensure we start commiting offsets again
                     }
                 }
-                NotifyOfReceivedMsg( message );
+                
+                LinkReceivedMsg( message, msgIndex );
+                success = true;
             }
             
             // We will consider the ability to receive and process messages as healthy
@@ -2155,6 +2184,8 @@ CKafkaPubSubClientTopic::consume_cb( RdKafka::Message& message, void* opaque )
             break;
         }
     }
+
+    return success;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -2527,8 +2558,16 @@ CKafkaPubSubClientTopic::OnPulseCycle( CORE::CNotifier* notifier    ,
         {        
             m_requestedConsumeDelayInMs = 0;
             
-            int i=0;
-            for ( ; i<50; ++i )
+            UInt32 maxMsgsToRead = 100;
+            if ( m_maxTotalMsgsInFlight > 0 )
+            {
+                maxMsgsToRead = (UInt32) m_maxTotalMsgsInFlight;
+                PrepStorageForReadMsgs( maxMsgsToRead );                
+            }
+
+            // Try to fetch a bunch of messages in one go
+            CORE::Int32 msgRead = -1;
+            for ( CORE::UInt32 i=0; i<maxMsgsToRead; ++i )
             {
                 RdKafka::Message* msg = m_kafkaConsumer->consume( 0 );
                 int errState = msg->err();
@@ -2538,10 +2577,33 @@ CKafkaPubSubClientTopic::OnPulseCycle( CORE::CNotifier* notifier    ,
                     break;
                 }
 
-                consume_cb( *msg, GUCEF_NULL );
-                GUCEF_DELETE msg;
+                bool isFiltered = false;
+                if ( ProcessRdKafkaMessage( *msg, msgRead+1, isFiltered ) && !isFiltered )
+                {
+                    ++msgRead;
+                    m_rdKafkaMsgs[ msgRead ] = msg;                    
+                }
             }
-            if ( i == 50 )
+
+            // Communicate all the messages received via an event notification in bulk
+            // doing a single notification of the set of messages reduced eventing/routing/etc overhead with minimal extra latency
+            if ( !m_pubsubMsgsRefs.empty() )
+            {
+                if ( !NotifyObservers( MsgsRecievedEvent, &m_pubsubMsgsRefs ) )
+                    return;
+            
+                m_pubsubMsgsRefs.clear();
+            }
+
+            // Cleanup all the messages we received from RdKafka            
+            for ( CORE::Int32 i=0; i<=msgRead; ++i )
+            {
+                RdKafka::Message* msg = m_rdKafkaMsgs[ i ];
+                GUCEF_DELETE msg;
+                m_rdKafkaMsgs[ i ] = GUCEF_NULL;
+            }
+
+            if ( msgRead+1 >= m_maxTotalMsgsInFlight )
             {
                 // We have more work to do. Make sure we dont go to sleep
                 GetPulseGenerator()->RequestImmediatePulse();
