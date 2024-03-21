@@ -634,7 +634,7 @@ CPubSubClientSide::TopicLink::OnPulseCycle( CORE::CNotifier* notifier    ,
     ProcessAcknowledgeReceiptsMailbox();
 
     bool retrySuccess = RetryPublishFailedMsgs();
-    if ( retrySuccess || side->GetSideSettings().allowOutOfOrderPublishRetry )
+    if ( retrySuccess || side->GetSideSettings()->allowOutOfOrderPublishRetry )
     {
         PublishMailboxMsgs();
     }
@@ -877,7 +877,7 @@ CPubSubClientSide::HasSubscribersNeedingAcks( void ) const
     if ( m_pubsubClient.IsNULL() )
         return true;
 
-    const CPubSubClientConfig& pubSubConfig = m_sideSettings.pubsubClientConfig;
+    const CPubSubClientConfig& pubSubConfig = m_sideSettings->pubsubClientConfig;
 
     // Whether we need to track successfull message handoff (garanteed handling) depends both on whether we want that extra reliability per the config
     // (optional since nothing is free and this likely degrades performance a bit) but also whether the backend even supports it.
@@ -1038,16 +1038,16 @@ CPubSubClientSide::TopicLink::PublishMsgsSync( const TMsgCollection& msgs )
     
     if ( GUCEF_NULL == side )
         return false;
-    const CPubSubSideChannelSettings& sideSettings = side->GetSideSettings();
+    const CPubSubSideChannelSettingsPtr sideSettings = side->GetSideSettings();
     
     if ( topic->IsPublishingSupported() )
     {
         currentPublishActionIds.clear();
-        if ( topic->Publish( currentPublishActionIds, msgs, sideSettings.needToTrackInFlightPublishedMsgsForAck ) )
+        if ( topic->Publish( currentPublishActionIds, msgs, sideSettings->needToTrackInFlightPublishedMsgsForAck ) )
         {
             totalMsgsInFlight += msgs.size();
 
-            if ( sideSettings.needToTrackInFlightPublishedMsgsForAck )
+            if ( sideSettings->needToTrackInFlightPublishedMsgsForAck )
                 AddInFlightMsgs( currentPublishActionIds, msgs, true );
 
             GUCEF_DEBUG_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "TopicLink(" + CORE::ToString( this ) +
@@ -1061,7 +1061,7 @@ CPubSubClientSide::TopicLink::PublishMsgsSync( const TMsgCollection& msgs )
             GUCEF_WARNING_LOG( CORE::LOGLEVEL_NORMAL, "TopicLink(" + CORE::ToString( this ) +
                 "):PublishMsgsSync: Failed to publish messages to topic " + topic->GetTopicName() );
 
-            if ( sideSettings.retryFailedPublishAttempts )
+            if ( sideSettings->retryFailedPublishAttempts )
             {
                 AddInFlightMsgs( currentPublishActionIds, msgs, false );
                 awaitingFailureReport = true;
@@ -1080,26 +1080,26 @@ CPubSubClientSide::TopicLink::PublishMsgsSync( const TMsgCollection& msgs )
 /*-------------------------------------------------------------------------*/
 
 bool 
-CPubSubClientSide::TopicLink::ApplySettings( const CPubSubSideChannelSettings& sideSettings )
+CPubSubClientSide::TopicLink::ApplySettings( const CPubSubSideChannelSettingsPtr sideSettings )
 {GUCEF_TRACE;
 
     bool totalSuccess = true;
     MT::CScopeMutex lock( m_dataLock );
 
-    metricsPrefix = sideSettings.metricsPrefix;
-    maxASyncPublishMailboxSize = sideSettings.maxASyncPublishMailboxSize;
-    maxASyncPublishMailboxSizeDuringAFR = sideSettings.maxASyncPublishMailboxSizeDuringAFR;
+    metricsPrefix = sideSettings->metricsPrefix;
+    maxASyncPublishMailboxSize = sideSettings->maxASyncPublishMailboxSize;
+    maxASyncPublishMailboxSizeDuringAFR = sideSettings->maxASyncPublishMailboxSizeDuringAFR;
 
-    if ( sideSettings.maxPublishedMsgInFlightTimeInMs > 0 )
+    if ( sideSettings->maxPublishedMsgInFlightTimeInMs > 0 )
     {
-        timedOutInFlightMessagesCheckTimer.SetInterval( (CORE::UInt32) sideSettings.maxPublishedMsgInFlightTimeInMs );
-        totalSuccess = timedOutInFlightMessagesCheckTimer.SetEnabled( sideSettings.maxPublishedMsgInFlightTimeInMs > 0 ) && totalSuccess;
+        timedOutInFlightMessagesCheckTimer.SetInterval( (CORE::UInt32) sideSettings->maxPublishedMsgInFlightTimeInMs );
+        totalSuccess = timedOutInFlightMessagesCheckTimer.SetEnabled( sideSettings->maxPublishedMsgInFlightTimeInMs > 0 ) && totalSuccess;
     }
 
-    if ( sideSettings.collectMetrics )
+    if ( sideSettings->collectMetrics )
     {
-        metricsTimer.SetInterval( sideSettings.metricsIntervalInMs );
-        totalSuccess = metricsTimer.SetEnabled( sideSettings.collectMetrics ) && totalSuccess;
+        metricsTimer.SetInterval( sideSettings->metricsIntervalInMs );
+        totalSuccess = metricsTimer.SetEnabled( sideSettings->collectMetrics ) && totalSuccess;
     }
 
     return totalSuccess;
@@ -1287,10 +1287,10 @@ CPubSubClientSide::PublishMsgs( const CPubSubClientTopic::TPubSubMsgsRefVector& 
     {
         // Without a specific target topic this can only be valid if its a broadcast attempt
         // the mailbox has its own lock, no need for extra locking
-        if ( m_sideSettings.treatPublishWithoutTargetTopicAsBroadcast )
+        if ( m_sideSettings->treatPublishWithoutTargetTopicAsBroadcast )
         {
-            if ( m_sideSettings.maxASyncPublishMailboxSize < 0                                          ||
-                 m_broadcastMailbox.AmountOfMail() < (UInt32) m_sideSettings.maxASyncPublishMailboxSize )
+            if ( m_sideSettings->maxASyncPublishMailboxSize < 0                                          ||
+                 m_broadcastMailbox.AmountOfMail() < (UInt32) m_sideSettings->maxASyncPublishMailboxSize )
             {
                 return m_broadcastMailbox.AddBulkMail< const CPubSubClientTopic::TPubSubMsgsRefVector >( msgs );
             }
@@ -1309,63 +1309,65 @@ CPubSubClientSide::PublishMsgs( const CPubSubClientTopic::TPubSubMsgsRefVector& 
         }
     }
 
-    MT::CScopeReaderLock readerLock( m_rwdataLock );
-
     TopicLinkPtr topicLink;
-    TopicPtrMap::iterator i = m_topicPtrs.find( specificTargetTopic );
-    if ( i != m_topicPtrs.end() )
     {
-        topicLink = (*i).second;
-    }
-    else
-    {
-        // it is possible the underlying implementation was swapped out
-        CPubSubClientTopicBasicPtr newTopicObj = GetCurrentUnderlyingPubSubClientTopicByName( specificTargetTopic->GetTopicName() );
-        if ( !newTopicObj.IsNULL() )
+        MT::CScopeReaderLock readerLock( m_rwdataLock );
+    
+        TopicPtrMap::iterator i = m_topicPtrs.find( specificTargetTopic );
+        if ( i != m_topicPtrs.end() )
         {
-            if ( newTopicObj == specificTargetTopic )
+            topicLink = (*i).second;
+        }
+        else
+        {
+            // it is possible the underlying implementation was swapped out
+            CPubSubClientTopicBasicPtr newTopicObj = GetCurrentUnderlyingPubSubClientTopicByName( specificTargetTopic->GetTopicName() );
+            if ( !newTopicObj.IsNULL() )
             {
-                MT::CScopeWriterLock writeLock( readerLock );
-                
-                // This is a publish on a topic for which we have not received the topic creation event notification yet
-                // in multi-threaded setups the order in which the events arrive vs other event listeners on the same can vary depending
-                // depending on thread timings
-                ConfigureTopicLink( m_sideSettings, newTopicObj, true );
-
-                GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientSide(" + CORE::ToString( this ) +
-                    "):PublishMsgs: specificTargetTopic passed " + CORE::ToString( specificTargetTopic ) +
-                    " was not registered yet, will do so now to instance " + CORE::ToString( newTopicObj.GetPointerAlways() ) +
-                    " for topic " + newTopicObj->GetTopicName() );
-
-                i = m_topicPtrs.find( specificTargetTopic );
-                if ( i != m_topicPtrs.end() )
+                if ( newTopicObj == specificTargetTopic )
                 {
-                    topicLink = (*i).second;
+                    MT::CScopeWriterLock writeLock( readerLock );
+                
+                    // This is a publish on a topic for which we have not received the topic creation event notification yet
+                    // in multi-threaded setups the order in which the events arrive vs other event listeners on the same can vary depending
+                    // depending on thread timings
+                    ConfigureTopicLink( m_sideSettings, newTopicObj, true );
+
+                    GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientSide(" + CORE::ToString( this ) +
+                        "):PublishMsgs: specificTargetTopic passed " + CORE::ToString( specificTargetTopic ) +
+                        " was not registered yet, will do so now to instance " + CORE::ToString( newTopicObj.GetPointerAlways() ) +
+                        " for topic " + newTopicObj->GetTopicName() );
+
+                    i = m_topicPtrs.find( specificTargetTopic );
+                    if ( i != m_topicPtrs.end() )
+                    {
+                        topicLink = (*i).second;
+                    }
+                    else
+                    {
+                        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientSide(" + CORE::ToString( this ) +
+                            "):PublishMsgs: specificTargetTopic passed " + CORE::ToString( specificTargetTopic ) +
+                            " was not registered yet, failed to register instance " + CORE::ToString( newTopicObj.GetPointerAlways() ) +
+                            " for topic " + newTopicObj->GetTopicName() );
+
+                        return false;
+                    }
                 }
                 else
                 {
-                    GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientSide(" + CORE::ToString( this ) +
+                    GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientSide(" + CORE::ToString( this ) +
                         "):PublishMsgs: specificTargetTopic passed " + CORE::ToString( specificTargetTopic ) +
-                        " was not registered yet, failed to register instance " + CORE::ToString( newTopicObj.GetPointerAlways() ) +
+                        " seems to have been replaced by a new instance " + CORE::ToString( newTopicObj.GetPointerAlways() ) +
                         " for topic " + newTopicObj->GetTopicName() );
-
-                    return false;
                 }
             }
             else
             {
-                GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientSide(" + CORE::ToString( this ) +
+                GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientSide(" + CORE::ToString( this ) +
                     "):PublishMsgs: specificTargetTopic passed " + CORE::ToString( specificTargetTopic ) +
-                    " seems to have been replaced by a new instance " + CORE::ToString( newTopicObj.GetPointerAlways() ) +
-                    " for topic " + newTopicObj->GetTopicName() );
+                    " is not a known topic nor does a topic by that name exist: " + specificTargetTopic->GetTopicName() );
+                return false;
             }
-        }
-        else
-        {
-            GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientSide(" + CORE::ToString( this ) +
-                "):PublishMsgs: specificTargetTopic passed " + CORE::ToString( specificTargetTopic ) +
-                " is not a known topic nor does a topic by that name exist: " + specificTargetTopic->GetTopicName() );
-            return false;
         }
     }
 
@@ -1442,7 +1444,7 @@ CPubSubClientSide::TopicLink::OnCheckForTimedOutInFlightMessagesTimerCycle( CORE
 
     if ( !topic.IsNULL() && topic->IsPublishingSupported() && GUCEF_NULL != side )
     {
-        const CPubSubSideChannelSettings& sideSettings = side->GetSideSettings();
+        const CPubSubSideChannelSettingsPtr sideSettings = side->GetSideSettings();
         
         GUCEF_DEBUG_LOG( CORE::LOGLEVEL_IMPORTANT, "TopicLink(" + CORE::ToString( this ) +
         "):OnCheckForTimedOutInFlightMessagesTimerCycle: Topic " + topic->GetTopicName() + " has " + CORE::ToString( inFlightMsgs.size() ) + " messages in flight" );
@@ -1457,12 +1459,12 @@ CPubSubClientSide::TopicLink::OnCheckForTimedOutInFlightMessagesTimerCycle( CORE
                 if ( inFlightEntry.isInFlight && inFlightEntry.waitingForInFlightConfirmation )
                 {
                     CORE::Int64 timeInFlightInMs = inFlightEntry.lastPublishAttempt.GetTimeDifferenceInMillisecondsTowards( cycleNowDt );
-                    if ( timeInFlightInMs > sideSettings.maxPublishedMsgInFlightTimeInMs )
+                    if ( timeInFlightInMs > sideSettings->maxPublishedMsgInFlightTimeInMs )
                     {
                         // Since the max time elapsed we no longer consider the message in-flight
                         inFlightEntry.isInFlight = false;
 
-                        if ( sideSettings.allowTimedOutPublishedInFlightMsgsRetryOutOfOrder )
+                        if ( sideSettings->allowTimedOutPublishedInFlightMsgsRetryOutOfOrder )
                         {
                             // We will act as if we received a notice that publishing failed and will perform the regular
                             // retry routine
@@ -1553,7 +1555,7 @@ CPubSubClientSide::TopicLink::OnCheckForTimedOutInFlightMessagesTimerCycle( CORE
 
             GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "TopicLink(" + CORE::ToString( this ) +
                 "):OnCheckForTimedOutInFlightMessagesTimerCycle: For topic " + topic->GetTopicName() + " we discarded a total of " + CORE::ToString( nrOfDiscardedMsgs ) +
-                " messages due to exceeding the max in-flight time allowed which is configured as " + CORE::ToString( sideSettings.maxPublishedMsgInFlightTimeInMs ) );
+                " messages due to exceeding the max in-flight time allowed which is configured as " + CORE::ToString( sideSettings->maxPublishedMsgInFlightTimeInMs ) );
         }
     }
 
@@ -1568,12 +1570,12 @@ CPubSubClientSide::ProcessMailbox( void )
 {GUCEF_TRACE;
 
     // Are we supporting blanket cross-topic broadcasts?
-    if ( m_sideSettings.treatPublishWithoutTargetTopicAsBroadcast )
+    if ( m_sideSettings->treatPublishWithoutTargetTopicAsBroadcast )
     {
         MT::CScopeReaderLock readerLock( m_rwdataLock );
         bool totalSuccess = true; 
 
-        if ( m_sideSettings.treatPublishWithoutTargetTopicAsBroadcast )
+        if ( m_sideSettings->treatPublishWithoutTargetTopicAsBroadcast )
         {
             UInt64 approxTotalMsgsInFlight = 0;
            
@@ -1589,9 +1591,9 @@ CPubSubClientSide::ProcessMailbox( void )
             }
 
             CORE::Int32 maxMailItemsToGrab = -1;
-            if ( m_sideSettings.pubsubClientConfig.maxTotalMsgsInFlight > 0 )
+            if ( m_sideSettings->pubsubClientConfig.maxTotalMsgsInFlight > 0 )
             {
-                CORE::Int64 remainingForFlight = m_sideSettings.pubsubClientConfig.maxTotalMsgsInFlight - approxTotalMsgsInFlight;
+                CORE::Int64 remainingForFlight = m_sideSettings->pubsubClientConfig.maxTotalMsgsInFlight - approxTotalMsgsInFlight;
                 if ( remainingForFlight > 0 && remainingForFlight < GUCEF_MT_INT32MAX )
                     maxMailItemsToGrab = (CORE::Int32) remainingForFlight;
             }
@@ -1629,8 +1631,8 @@ CPubSubClientSide::TopicLink::RetryPublishFailedMsgs( void )
     // Check if we have a max for messages in-flight, if so dont try to process any more messages right now
     if ( GUCEF_NULL != side )
     {
-        const CPubSubSideChannelSettings& sideSettings = side->GetSideSettings();
-        if ( sideSettings.pubsubClientConfig.maxTotalMsgsInFlight > 0 && totalMsgsInFlight > (CORE::UInt64) sideSettings.pubsubClientConfig.maxTotalMsgsInFlight )
+        const CPubSubSideChannelSettingsPtr sideSettings = side->GetSideSettings();
+        if ( sideSettings->pubsubClientConfig.maxTotalMsgsInFlight > 0 && totalMsgsInFlight > (CORE::UInt64) sideSettings->pubsubClientConfig.maxTotalMsgsInFlight )
         {
             // We already have the max nr of messages in-flight, dont try to add more right now
             return true;
@@ -1667,7 +1669,7 @@ CPubSubClientSide::TopicLink::RetryPublishFailedMsgs( void )
             GUCEF_DEBUG_LOG( CORE::LOGLEVEL_IMPORTANT, "TopicLink(" + CORE::ToString( this ) +
                 "):RetryPublishFailedMsgs: Topic " + topic->GetTopicName() + " has " + CORE::ToString( publishFailedMsgs.size() ) + " messages queued for retry" );
 
-            const CPubSubSideChannelSettings& sideSettings = side->GetSideSettings();
+            const CPubSubSideChannelSettingsPtr sideSettings = side->GetSideSettings();
             
             TopicLink::TUInt64Set inFlightDiscardList;
             TopicLink::TUInt64Set::iterator n = publishFailedMsgs.begin();
@@ -1688,8 +1690,8 @@ CPubSubClientSide::TopicLink::RetryPublishFailedMsgs( void )
                                 // We are retrying a publish success ack for this message
 
                                 // Check if we are applying a max nr of retries and if we are in violation if so
-                                if ( sideSettings.maxMsgPublishAckRetryAttempts >= 0                                    &&
-                                        retryEntry.retryCount >= (CORE::UInt32) sideSettings.maxMsgPublishAckRetryAttempts )
+                                if ( sideSettings->maxMsgPublishAckRetryAttempts >= 0                                    &&
+                                        retryEntry.retryCount >= (CORE::UInt32) sideSettings->maxMsgPublishAckRetryAttempts )
                                 {
                                     GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "TopicLink(" + CORE::ToString( this ) +
                                         "):RetryPublishFailedMsgs: Topic " + topic->GetTopicName() + " has reached max nr of ack retries (" + CORE::ToString( retryEntry.retryCount ) +
@@ -1703,10 +1705,10 @@ CPubSubClientSide::TopicLink::RetryPublishFailedMsgs( void )
                                     continue;
                                 }
                                 else
-                                if ( sideSettings.maxMsgPublishRetryTotalTimeInMs >= 0 ) // Are we checking for max retry time?
+                                if ( sideSettings->maxMsgPublishRetryTotalTimeInMs >= 0 ) // Are we checking for max retry time?
                                 {
                                     CORE::Int64 timeDiffInMs = retryEntry.firstPublishAttempt.GetTimeDifferenceInMillisecondsTowards( retryEntry.lastPublishAttempt );
-                                    if ( timeDiffInMs >= sideSettings.maxMsgPublishRetryTotalTimeInMs )
+                                    if ( timeDiffInMs >= sideSettings->maxMsgPublishRetryTotalTimeInMs )
                                     {
                                         GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "TopicLink(" + CORE::ToString( this ) +
                                             "):RetryPublishFailedMsgs: Topic " + topic->GetTopicName() + " has reached amount of ack retry time in ms (" + CORE::ToString( timeDiffInMs ) +
@@ -1749,8 +1751,8 @@ CPubSubClientSide::TopicLink::RetryPublishFailedMsgs( void )
                                 // We are retrying a backend publish of the message
 
                                 // Check if we are applying a max nr of retries and if we are in violation if so
-                                if ( sideSettings.maxMsgPublishRetryAttempts >= 0                                    &&
-                                     retryEntry.retryCount >= (CORE::UInt32) sideSettings.maxMsgPublishRetryAttempts )
+                                if ( sideSettings->maxMsgPublishRetryAttempts >= 0                                    &&
+                                     retryEntry.retryCount >= (CORE::UInt32) sideSettings->maxMsgPublishRetryAttempts )
                                 {
                                     GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "TopicLink(" + CORE::ToString( this ) +
                                         "):RetryPublishFailedMsgs: Topic " + topic->GetTopicName() + " has reached max nr of publish retries (" + CORE::ToString( retryEntry.retryCount ) +
@@ -1764,10 +1766,10 @@ CPubSubClientSide::TopicLink::RetryPublishFailedMsgs( void )
                                     continue;
                                 }
                                 else
-                                if ( sideSettings.maxMsgPublishRetryTotalTimeInMs >= 0 ) // Are we checking for max retry time?
+                                if ( sideSettings->maxMsgPublishRetryTotalTimeInMs >= 0 ) // Are we checking for max retry time?
                                 {
                                     CORE::Int64 timeDiffInMs = retryEntry.firstPublishAttempt.GetTimeDifferenceInMillisecondsTowards( retryEntry.lastPublishAttempt );
-                                    if ( timeDiffInMs >= sideSettings.maxMsgPublishRetryTotalTimeInMs )
+                                    if ( timeDiffInMs >= sideSettings->maxMsgPublishRetryTotalTimeInMs )
                                     {
                                         GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "TopicLink(" + CORE::ToString( this ) +
                                             "):RetryPublishFailedMsgs: Topic " + topic->GetTopicName() + " has reached amount of publish retry time in ms (" + CORE::ToString( timeDiffInMs ) +
@@ -1790,7 +1792,7 @@ CPubSubClientSide::TopicLink::RetryPublishFailedMsgs( void )
                                 CORE::UInt64 publishActionId = retryEntry.publishActionId;
                                 retryEntry.isInFlight = true;
                                 retryEntry.waitingForInFlightConfirmation = true;
-                                if ( topic->Publish( publishActionId, *retryEntry.msg.GetPointerAlways(), sideSettings.needToTrackInFlightPublishedMsgsForAck ) )
+                                if ( topic->Publish( publishActionId, *retryEntry.msg.GetPointerAlways(), sideSettings->needToTrackInFlightPublishedMsgsForAck ) )
                                 {
                                     // It worked this time!
 
@@ -1815,7 +1817,7 @@ CPubSubClientSide::TopicLink::RetryPublishFailedMsgs( void )
                                         ". output publishActionId=" + CORE::ToString( publishActionId ) + ". input PublishActionId=" + CORE::ToString( retryEntry.publishActionId ) + ". " +
                                         CPubSubClientSide::GetMsgAttributesForLog( *retryEntry.msg ) );
 
-                                    if ( !sideSettings.allowOutOfOrderPublishRetry )
+                                    if ( !sideSettings->allowOutOfOrderPublishRetry )
                                     {
                                         break;
                                     }
@@ -1869,11 +1871,11 @@ CPubSubClientSide::TopicLink::PublishMailboxMsgs( void )
     if ( !topic.IsNULL() && GUCEF_NULL != side )
     {
         CORE::Int32 maxMailItemsToGrab = -1;
-        CPubSubSideChannelSettings& sideSettings = side->GetSideSettings();
+        CPubSubSideChannelSettingsPtr sideSettings = side->GetSideSettings();
 
-        if ( sideSettings.pubsubClientConfig.maxTotalMsgsInFlight > 0 )
+        if ( sideSettings->pubsubClientConfig.maxTotalMsgsInFlight > 0 )
         {
-            CORE::Int64 remainingForFlight = sideSettings.pubsubClientConfig.maxTotalMsgsInFlight - inFlightMsgs.size();
+            CORE::Int64 remainingForFlight = sideSettings->pubsubClientConfig.maxTotalMsgsInFlight - inFlightMsgs.size();
             if ( remainingForFlight > 0 && remainingForFlight < GUCEF_MT_INT32MAX )
                 maxMailItemsToGrab = (CORE::Int32) remainingForFlight;
         }
@@ -2141,7 +2143,7 @@ CPubSubClientSide::TopicLink::OnPubSubTopicMsgsReceived( CORE::CNotifier* notifi
                             // As such even if the backend does not support deriving a bookmark from a message we can still use bookmarks
                             // we just need perform some extra administration to keep track of them. Its the extra admin needs that make
                             // the derivation of a bookmark directly from a message the preferred route as its likely to be more efficient
-                            if ( side->GetSideSettings().needToTrackInFlightPublishedMsgsForAck )
+                            if ( side->GetSideSettings()->needToTrackInFlightPublishedMsgsForAck )
                             {
                                 if ( !clientFeatures.supportsDerivingBookmarkFromMsg )
                                 {
@@ -2192,11 +2194,11 @@ CPubSubClientSide::TopicLink::UpdateReceivedMessagesBookmarkAsNeeded( const CIPu
     MT::CScopeMutex lock( m_dataLock );
     
     // Check criterea for our generic bookmark persistance
-    const CPubSubSideChannelSettings& sideSettings = side->GetSideSettings();
+    const CPubSubSideChannelSettingsPtr sideSettings = side->GetSideSettings();
     if ( !pubsubBookmarkPersistence.IsNULL() &&
             (
-                ( sideSettings.pubsubBookmarkPersistenceConfig.autoPersistMsgInterval > 0 && msgsSinceLastBookmarkPersist >= sideSettings.pubsubBookmarkPersistenceConfig.autoPersistMsgInterval ) ||
-                ( sideSettings.pubsubBookmarkPersistenceConfig.autoPersistIntervalInMs > 0 && lastBookmarkPersistSuccess.GetTimeDifferenceInMillisecondsToNow() >= sideSettings.pubsubBookmarkPersistenceConfig.autoPersistIntervalInMs )
+                ( sideSettings->pubsubBookmarkPersistenceConfig.autoPersistMsgInterval > 0 && msgsSinceLastBookmarkPersist >= sideSettings->pubsubBookmarkPersistenceConfig.autoPersistMsgInterval ) ||
+                ( sideSettings->pubsubBookmarkPersistenceConfig.autoPersistIntervalInMs > 0 && lastBookmarkPersistSuccess.GetTimeDifferenceInMillisecondsToNow() >= sideSettings->pubsubBookmarkPersistenceConfig.autoPersistIntervalInMs )
             ) )
     {
         CPubSubClientPtr client = side->GetCurrentUnderlyingPubSubClient();
@@ -2458,7 +2460,7 @@ CPubSubClientSide::TopicLink::OnPubSubTopicMsgsPublished( CORE::CNotifier* notif
     if ( GUCEF_NULL == eventData || GUCEF_NULL == notifier || GUCEF_NULL == side )
         return;
 
-    if ( !side->GetSideSettings().needToTrackInFlightPublishedMsgsForAck )
+    if ( !side->GetSideSettings()->needToTrackInFlightPublishedMsgsForAck )
     {
         return;
     }
@@ -2566,7 +2568,7 @@ CPubSubClientSide::TopicLink::OnPubSubTopicMsgsPublishFailure( CORE::CNotifier* 
                                                                CORE::CICloneable* eventData )
 {GUCEF_TRACE;
 
-    if ( GUCEF_NULL == eventData || GUCEF_NULL == notifier || GUCEF_NULL == side || !side->GetSideSettings().retryFailedPublishAttempts )
+    if ( GUCEF_NULL == eventData || GUCEF_NULL == notifier || GUCEF_NULL == side || !side->GetSideSettings()->retryFailedPublishAttempts )
         return;
 
     const CPubSubClientTopic::TMsgsPublishedEventData& eData = *static_cast< CPubSubClientTopic::TMsgsPublishedEventData* >( eventData );
@@ -2713,11 +2715,17 @@ CPubSubClientSide::DisconnectPubSubClient( bool destroyClient )
 /*-------------------------------------------------------------------------*/
 
 bool
-CPubSubClientSide::ConfigureTopicLink( const CPubSubSideChannelSettings& pubSubSideSettings ,
-                                       CPubSubClientTopicBasicPtr topic                     ,
-                                       bool reset                                           )
+CPubSubClientSide::ConfigureTopicLink( const CPubSubSideChannelSettingsPtr pubSubSideSettings ,
+                                       CPubSubClientTopicBasicPtr topic                       ,
+                                       bool reset                                             )
 {GUCEF_TRACE;
 
+    if ( pubSubSideSettings.IsNULL() )
+    {
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientSide(" + CORE::ToString( this ) +
+            "):ConfigureTopicLink: NULL pubSubSideSettings passed. SideId=" + m_sideId );
+        return false;
+    }
     if ( topic.IsNULL() )
     {
         GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientSide(" + CORE::ToString( this ) +
@@ -2727,7 +2735,7 @@ CPubSubClientSide::ConfigureTopicLink( const CPubSubSideChannelSettings& pubSubS
 
     const CORE::CString& topicName = topic->GetTopicName();
     
-    CPubSubClientTopicConfigPtr topicConfig = pubSubSideSettings.GetTopicConfig( topicName );
+    CPubSubClientTopicConfigPtr topicConfig = pubSubSideSettings->GetTopicConfig( topicName );
     if ( topicConfig.IsNULL() )
     {
         // Considering the backend was able to make a topic but we don't have a config for it
@@ -2737,7 +2745,7 @@ CPubSubClientSide::ConfigureTopicLink( const CPubSubSideChannelSettings& pubSubS
         topicConfig = CPubSubClientTopicConfigPtr( GUCEF_NEW CPubSubClientTopicConfig() );
         if ( topic->SaveConfig( *topicConfig ) )
         {
-            m_sideSettings.pubsubClientConfig.topics.push_back( topicConfig );
+            m_sideSettings->pubsubClientConfig.topics.push_back( topicConfig );
 
             GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientSide(" + CORE::ToString( this ) +
                 "):ConfigureTopicLink: Obtained a copy of the topic config from the topic itself for topic which has no predefined config. topicName=" + topicName + " SideId=" + m_sideId  );
@@ -2750,7 +2758,7 @@ CPubSubClientSide::ConfigureTopicLink( const CPubSubSideChannelSettings& pubSubS
     }
 
     CORE::PulseGeneratorPtr pulseGenerator;
-    if ( m_sideSettings.useBackendTopicThreadForTopicIfAvailable )
+    if ( m_sideSettings->useBackendTopicThreadForTopicIfAvailable )
         pulseGenerator = topic->GetPulseGenerator();
     if ( pulseGenerator.IsNULL() )
         pulseGenerator = GetPulseGenerator();
@@ -2813,7 +2821,7 @@ CPubSubClientSide::ConfigureTopicLink( const CPubSubSideChannelSettings& pubSubS
 
         // Create and configure the pub-sub bookmark persistence
         // we create a private copy per topic link to minimize potential contention across threads
-        CPubSubBookmarkPersistenceConfig& pubsubBookmarkPersistenceConfig = m_sideSettings.pubsubBookmarkPersistenceConfig;
+        CPubSubBookmarkPersistenceConfig& pubsubBookmarkPersistenceConfig = m_sideSettings->pubsubBookmarkPersistenceConfig;
         TIPubSubBookmarkPersistenceBasicPtr pubsubBookmarkPersistence = CPubSubGlobal::Instance()->GetPubSubBookmarkPersistenceFactory().Create( pubsubBookmarkPersistenceConfig.bookmarkPersistenceType, pubsubBookmarkPersistenceConfig );
         if ( pubsubBookmarkPersistence.IsNULL() )
         {
@@ -2859,10 +2867,10 @@ CPubSubClientSide::GetLatestBookmark( const CPubSubClientTopic& topic ,
 /*-------------------------------------------------------------------------*/
 
 bool
-CPubSubClientSide::ConnectPubSubClientTopic( CPubSubClientTopic& topic                             ,
-                                             const CPubSubClientFeatures& clientFeatures           ,
-                                             const CPubSubSideChannelSettings& pubSubSideSettings  ,
-                                             bool reset                                            )
+CPubSubClientSide::ConnectPubSubClientTopic( CPubSubClientTopic& topic                              ,
+                                             const CPubSubClientFeatures& clientFeatures            ,
+                                             const CPubSubSideChannelSettingsPtr pubSubSideSettings ,
+                                             bool reset                                             )
 {GUCEF_TRACE;
 
     if ( topic.InitializeConnectivity( reset ) )
@@ -2935,7 +2943,7 @@ CPubSubClientSide::ConnectPubSubClientTopic( CPubSubClientTopic& topic          
                     GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientSide(" + CORE::ToString( this ) +
                         "):ConnectPubSubClientTopic: Bookmarking concept is supported by the backend via a client-side message index marker but we failed at obtaining the last used message index" );
 
-                    if ( pubSubSideSettings.subscribeWithoutBookmarkIfNoneIsPersisted )
+                    if ( pubSubSideSettings->subscribeWithoutBookmarkIfNoneIsPersisted )
                     {
                         subscribeSuccess = topic.Subscribe();
                         if ( !subscribeSuccess )
@@ -3010,22 +3018,22 @@ CPubSubClientSide::PerformPubSubClientSetup( bool hardReset )
             return false;
     }
 
-    CPubSubClientConfig& pubSubConfig = m_sideSettings.pubsubClientConfig;
-    CPubSubBookmarkPersistenceConfig& pubsubBookmarkPersistenceConfig = m_sideSettings.pubsubBookmarkPersistenceConfig;
+    CPubSubClientConfig& pubSubConfig = m_sideSettings->pubsubClientConfig;
+    CPubSubBookmarkPersistenceConfig& pubsubBookmarkPersistenceConfig = m_sideSettings->pubsubBookmarkPersistenceConfig;
 
     // Set the bookmark namespace:
     // Depending on the context in which pubsub is used you'd want a different namespace
     // In this case we need to take care to account for the channel and side relationship to provide a unique storage area or rely on config
-    if ( !m_sideSettings.pubsubBookmarkPersistenceConfig.bookmarkNamespace.IsNULLOrEmpty() )
-        m_bookmarkNamespace = m_sideSettings.pubsubBookmarkPersistenceConfig.bookmarkNamespace;
+    if ( !m_sideSettings->pubsubBookmarkPersistenceConfig.bookmarkNamespace.IsNULLOrEmpty() )
+        m_bookmarkNamespace = m_sideSettings->pubsubBookmarkPersistenceConfig.bookmarkNamespace;
     else
-        m_bookmarkNamespace = m_sideSettings.pubsubIdPrefix + '.' + m_sideId;
+        m_bookmarkNamespace = m_sideSettings->pubsubIdPrefix + '.' + m_sideId;
 
     // Set the pubsub ID prefix automatically if so desired:
     // Depending on the context in which pubsub is used you'd want a different namespace
     // In this case we need to take care to account for the channel and side relationship to provide a unique storage area / namespace / prefix or rely on config
     if ( pubSubConfig.pubsubIdPrefix.IsNULLOrEmpty() || pubSubConfig.pubsubIdPrefix == "{auto}"  )
-        pubSubConfig.pubsubIdPrefix = m_sideSettings.pubsubIdPrefix + '.' + m_sideId;
+        pubSubConfig.pubsubIdPrefix = m_sideSettings->pubsubIdPrefix + '.' + m_sideId;
 
     bool clientSetupWasNeeded = false;
     if ( hardReset || m_pubsubClient.IsNULL() )
@@ -3038,7 +3046,7 @@ CPubSubClientSide::PerformPubSubClientSetup( bool hardReset )
         
         // Create and configure the pub-sub client
         pubSubConfig.pulseGenerator = GetPulseGenerator();
-        pubSubConfig.metricsPrefix = m_sideSettings.metricsPrefix;
+        pubSubConfig.metricsPrefix = m_sideSettings->metricsPrefix;
 
         if ( pubSubConfig.journalConfig.useJournal )
         {
@@ -3132,18 +3140,18 @@ CPubSubClientSide::ConnectPubSubClient( bool reset )
         return false;
     }
 
-    CPubSubClientConfig& pubSubConfig = m_sideSettings.pubsubClientConfig;
-    CPubSubBookmarkPersistenceConfig& pubsubBookmarkPersistenceConfig = m_sideSettings.pubsubBookmarkPersistenceConfig;
+    CPubSubClientConfig& pubSubConfig = m_sideSettings->pubsubClientConfig;
+    CPubSubBookmarkPersistenceConfig& pubsubBookmarkPersistenceConfig = m_sideSettings->pubsubBookmarkPersistenceConfig;
 
     // Whether we need to track successfull message handoff (garanteed handling) depends on various factors outside the scope of any one side
     // as such we need to ask the overarching infra to come up with a conclusion on this need
     // We will cache the outcome as a side local setting to negate locking needs
-    m_sideSettings.needToTrackInFlightPublishedMsgsForAck = false;
+    m_sideSettings->needToTrackInFlightPublishedMsgsForAck = false;
     if ( GUCEF_NULL != m_flowRouter )
-        m_sideSettings.needToTrackInFlightPublishedMsgsForAck = m_flowRouter->IsTrackingInFlightPublishedMsgsForAcksNeeded( this );
+        m_sideSettings->needToTrackInFlightPublishedMsgsForAck = m_flowRouter->IsTrackingInFlightPublishedMsgsForAcksNeeded( this );
 
     GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "PubSubClientSide(" + CORE::ToString( this ) +
-        "):ConnectPubSubClient: needToTrackInFlightPublishedMsgsForAck=" + CORE::ToString( m_sideSettings.needToTrackInFlightPublishedMsgsForAck ) );
+        "):ConnectPubSubClient: needToTrackInFlightPublishedMsgsForAck=" + CORE::ToString( m_sideSettings->needToTrackInFlightPublishedMsgsForAck ) );
 
     if ( m_pubsubBookmarkPersistence.IsNULL() || reset )
     {
@@ -3331,35 +3339,35 @@ CPubSubClientSide::OnTaskStart( CORE::CICloneable* taskData )
 
 
     CORE::PulseGeneratorPtr pulseGenerator = GetPulseGenerator();
-    CPubSubClientConfig& pubSubConfig = m_sideSettings.pubsubClientConfig;
+    CPubSubClientConfig& pubSubConfig = m_sideSettings->pubsubClientConfig;
 
     m_pubsubClientReconnectTimer.SetPulseGenerator( pulseGenerator );
 
-    m_metricsTimer.SetInterval( m_sideSettings.metricsIntervalInMs );
+    m_metricsTimer.SetInterval( m_sideSettings->metricsIntervalInMs );
     m_metricsTimer.SetPulseGenerator( pulseGenerator );
-    m_metricsTimer.SetEnabled( m_sideSettings.collectMetrics );
+    m_metricsTimer.SetEnabled( m_sideSettings->collectMetrics );
 
-    if ( m_sideSettings.performPubSubInDedicatedThread )
+    if ( m_sideSettings->performPubSubInDedicatedThread )
     {
         // Set the minimum number of cycles we will go full speed if a single cycle was not enough to handle
         // all the processing. This will cause a bypass of CPU yielding if/when the situation arises.
         // In such a case the thread will run at max speed for a least the below set nr of cycles.
-        GetPulseGenerator()->RequestPulsesPerImmediatePulseRequest( m_sideSettings.ticketRefillOnBusyCycle );
+        GetPulseGenerator()->RequestPulsesPerImmediatePulseRequest( m_sideSettings->ticketRefillOnBusyCycle );
 
         // Default smallest pulse delta at 25ms
         GetPulseGenerator()->RequestPeriodicPulses( this, 25 );
 
-        if ( m_sideSettings.applyThreadCpuAffinity )
+        if ( m_sideSettings->applyThreadCpuAffinity )
         {
-            if ( SetCpuAffinityByCpuId( m_sideSettings.cpuAffinityForPubSubThread ) )
+            if ( SetCpuAffinityByCpuId( m_sideSettings->cpuAffinityForPubSubThread ) )
             {
                 GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientSide(" + CORE::ToString( this ) +
-                    "):OnTaskStart: Successfully set a CPU affinity for logical CPU " + CORE::UInt32ToString( m_sideSettings.cpuAffinityForPubSubThread ) );
+                    "):OnTaskStart: Successfully set a CPU affinity for logical CPU " + CORE::UInt32ToString( m_sideSettings->cpuAffinityForPubSubThread ) );
             }
             else
             {
                 GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientSide(" + CORE::ToString( this ) +
-                    "):OnTaskStart: Failed to set a CPU affinity for logical CPU " + CORE::UInt32ToString( m_sideSettings.cpuAffinityForPubSubThread ) +
+                    "):OnTaskStart: Failed to set a CPU affinity for logical CPU " + CORE::UInt32ToString( m_sideSettings->cpuAffinityForPubSubThread ) +
                     ". Proceeding without affinity");
             }
         }
@@ -3396,7 +3404,7 @@ bool
 CPubSubClientSide::IsRunningInDedicatedThread( void ) const
 {GUCEF_TRACE;
 
-    return m_sideSettings.performPubSubInDedicatedThread;
+    return m_sideSettings->performPubSubInDedicatedThread;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -3466,15 +3474,24 @@ CPubSubClientSide::OnTaskEnded( CORE::CICloneable* taskData ,
 /*-------------------------------------------------------------------------*/
 
 bool
-CPubSubClientSide::LoadConfig( const CPubSubSideChannelSettings& sideSettings )
+CPubSubClientSide::LoadConfig( const CPubSubSideChannelSettingsPtr sideSettings )
 {GUCEF_TRACE;
+
+    if ( sideSettings.IsNULL() )
+        return false;
+    
+    GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientSide(" + CORE::ToString( this ) +
+        "):LoadConfig: Loading new side settings for side: " + m_sideId );
 
     // (re)loading the side settings could have many reprecussions for the pubsub client it uses
     // as such we get rid of the client if we need to (re)load the config
     MT::CObjectScopeLock lock( this );
     if ( DisconnectPubSubClient( true ) )
     {
-        m_sideSettings = sideSettings;
+        m_sideSettings = CPubSubSideChannelSettings::CreateSharedObjWithParam( *sideSettings.GetPointerAlways() );
+        GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientSide(" + CORE::ToString( this ) +
+            "):LoadConfig: New side settings for side \"" + m_sideId + "\": " + CORE::ToString( m_sideSettings.GetPointerAlways() ) );
+
         return true;
     }
     return false;
@@ -3482,16 +3499,7 @@ CPubSubClientSide::LoadConfig( const CPubSubSideChannelSettings& sideSettings )
 
 /*-------------------------------------------------------------------------*/
 
-CPubSubSideChannelSettings&
-CPubSubClientSide::GetSideSettings( void )
-{GUCEF_TRACE;
-
-    return m_sideSettings;
-}
-
-/*-------------------------------------------------------------------------*/
-
-const CPubSubSideChannelSettings&
+CPubSubSideChannelSettingsPtr
 CPubSubClientSide::GetSideSettings( void ) const
 {GUCEF_TRACE;
 
@@ -3516,12 +3524,15 @@ CPubSubClientSide::GetCurrentTopicNames( CORE::CString::StringSet& topicNames ) 
 
     MT::CScopeReaderLock lock( m_rwdataLock );
 
-    CPubSubClientConfig::TPubSubClientTopicConfigPtrVector::const_iterator t = m_sideSettings.pubsubClientConfig.topics.begin();
-    while ( t != m_sideSettings.pubsubClientConfig.topics.end() )
+    if ( !m_sideSettings.IsNULL() )
     {
-        CPubSubClientTopicConfigPtr topicConfig( (*t) );
-        topicNames.insert( topicConfig->topicName );
-        ++t;
+        CPubSubClientConfig::TPubSubClientTopicConfigPtrVector::const_iterator t = m_sideSettings->pubsubClientConfig.topics.begin();
+        while ( t != m_sideSettings->pubsubClientConfig.topics.end() )
+        {
+            CPubSubClientTopicConfigPtr topicConfig( (*t) );
+            topicNames.insert( topicConfig->topicName );
+            ++t;
+        }
     }
 
     return true;

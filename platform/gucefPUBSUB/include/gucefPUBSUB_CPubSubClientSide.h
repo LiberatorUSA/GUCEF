@@ -165,11 +165,9 @@ class GUCEF_PUBSUB_EXPORT_CPP CPubSubClientSide : public CORE::CTaskConsumer
 
     virtual CORE::CString GetType( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
-    virtual bool LoadConfig( const CPubSubSideChannelSettings& sideSettings );
+    virtual bool LoadConfig( const CPubSubSideChannelSettingsPtr sideSettings );
 
-    CPubSubSideChannelSettings& GetSideSettings( void );
-
-    const CPubSubSideChannelSettings& GetSideSettings( void ) const;
+    CPubSubSideChannelSettingsPtr GetSideSettings( void ) const;
 
     CORE::CString GetSideId( void ) const;
 
@@ -284,14 +282,14 @@ class GUCEF_PUBSUB_EXPORT_CPP CPubSubClientSide : public CORE::CTaskConsumer
                                        const CORE::CEvent& eventId  ,
                                        CORE::CICloneable* eventData );
 
-    bool ConfigureTopicLink( const CPubSubSideChannelSettings& pubSubSideSettings ,
-                             CPubSubClientTopicBasicPtr topic                     ,
-                             bool reset                                           );
+    bool ConfigureTopicLink( const CPubSubSideChannelSettingsPtr pubSubSideSettings ,
+                             CPubSubClientTopicBasicPtr topic                       ,
+                             bool reset                                             );
 
-    bool ConnectPubSubClientTopic( CPubSubClientTopic& topic                            ,
-                                   const CPubSubClientFeatures& clientFeatures          ,
-                                   const CPubSubSideChannelSettings& pubSubSideSettings ,
-                                   bool reset                                           );
+    bool ConnectPubSubClientTopic( CPubSubClientTopic& topic                              ,
+                                   const CPubSubClientFeatures& clientFeatures            ,
+                                   const CPubSubSideChannelSettingsPtr pubSubSideSettings ,
+                                   bool reset                                             );
 
     template < typename TMsgCollection >
     bool BroadcastPublishMsgsSync( const TMsgCollection& msgs );
@@ -322,7 +320,7 @@ class GUCEF_PUBSUB_EXPORT_CPP CPubSubClientSide : public CORE::CTaskConsumer
         TopicLink( CPubSubClientTopicBasicPtr t );
         virtual ~TopicLink();
 
-        bool ApplySettings( const CPubSubSideChannelSettings& sideSettings );
+        bool ApplySettings( const CPubSubSideChannelSettingsPtr sideSettings );
 
         void Clear( void );
 
@@ -518,7 +516,7 @@ class GUCEF_PUBSUB_EXPORT_CPP CPubSubClientSide : public CORE::CTaskConsumer
     CORE::CString m_bookmarkNamespace;
     TopicPtrMap m_topicPtrs;
     TopicNameMap m_topics;
-    CPubSubSideChannelSettings m_sideSettings;
+    CPubSubSideChannelSettingsPtr m_sideSettings;
     TPubSubMsgMailbox m_broadcastMailbox;
     CORE::CTimer m_metricsTimer;
     CORE::CTimer m_pubsubClientReconnectTimer;

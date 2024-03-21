@@ -344,6 +344,7 @@ CPubSubSideChannelConfig::GetTopicConfig( const CORE::CString& topicName ) const
 
 CPubSubSideChannelSettings::CPubSubSideChannelSettings( void )
     : CPubSubSideChannelConfig()
+    , CORE::CTSharedObjCreator< CPubSubSideChannelSettings, MT::CMutex >( this )
     , needToTrackInFlightPublishedMsgsForAck( false )  // composite cached value: based on backend features plus desired behaviour
     , metricsPrefix()
 {GUCEF_TRACE;
@@ -354,6 +355,7 @@ CPubSubSideChannelSettings::CPubSubSideChannelSettings( void )
 
 CPubSubSideChannelSettings::CPubSubSideChannelSettings( const CPubSubSideChannelSettings& src )
     : CPubSubSideChannelConfig( src )
+    , CORE::CTSharedObjCreator< CPubSubSideChannelSettings, MT::CMutex >( this )
     , needToTrackInFlightPublishedMsgsForAck( src.needToTrackInFlightPublishedMsgsForAck )
     , metricsPrefix( src.metricsPrefix )
 {GUCEF_TRACE;

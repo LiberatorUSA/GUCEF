@@ -133,16 +133,16 @@ CPubSubChannelConfig::operator=( const CPubSubChannelConfig& src )
 
 /*-------------------------------------------------------------------------*/
 
-CPubSubSideChannelSettings*
+CPubSubSideChannelSettingsPtr
 CPubSubChannelConfig::GetPubSubSideSettings( const CORE::CString& sideId )
 {GUCEF_TRACE;
 
     TStringToPubSubSideChannelSettingsMap::iterator i = pubSubSideChannelSettingsMap.find( sideId );
     if ( i != pubSubSideChannelSettingsMap.end() )
     {
-        return &(*i).second;
+        return (*i).second;
     }
-    return GUCEF_NULL;
+    return CPubSubSideChannelSettingsPtr();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -163,9 +163,9 @@ CPubSubChannelConfig::SaveConfig( CORE::CDataNode& cfg ) const
     TStringToPubSubSideChannelSettingsMap::const_iterator i = pubSubSideChannelSettingsMap.begin();
     while ( i != pubSubSideChannelSettingsMap.end() )
     {
-        const CPubSubSideChannelSettings& sideSettings = (*i).second;
+        const CPubSubSideChannelSettingsPtr& sideSettings = (*i).second;
         CORE::CDataNode* sideSettingsNode = pubSubSidesCollection->FindOrAddChild( "PubSubSideChannelSettings" );
-        if ( !sideSettings.SaveConfig( *sideSettingsNode ) )
+        if ( !sideSettings->SaveConfig( *sideSettingsNode ) )
         {
             GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "PubSubChannelConfig:SaveConfig: config is malformed, failed to save a mandatory PubSubSideChannelSettings section" );
             return false;
@@ -211,8 +211,8 @@ CPubSubChannelConfig::LoadConfig( const CORE::CDataNode& cfg )
         CORE::CDataNode::const_iterator n = pubSubSidesCollection->ConstBegin();
         while ( n != pubSubSidesCollection->ConstEnd() )
         {
-            CPubSubSideChannelSettings sideSettings;
-            if ( !sideSettings.LoadConfig( *(*n) ) )
+            CPubSubSideChannelSettingsPtr sideSettings = CPubSubSideChannelSettings::CreateSharedObj();
+            if ( !sideSettings->LoadConfig( *(*n) ) )
             {
                 GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "PubSubChannelConfig:LoadConfig: Side config entry failed to load from collection entry" );
                 return false;
@@ -220,7 +220,7 @@ CPubSubChannelConfig::LoadConfig( const CORE::CDataNode& cfg )
 
             // There is no sane default of pubsubClientType since it depends on the clients loaded into the application
             // as such this is a mandatory setting to provide
-            if ( sideSettings.pubsubClientConfig.pubsubClientType.IsNULLOrEmpty() )
+            if ( sideSettings->pubsubClientConfig.pubsubClientType.IsNULLOrEmpty() )
             {
                 GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "PubSubChannelConfig:LoadConfig: Side config is malformed, \"pubsubClientType\" was not provided" );
                 return false;
@@ -360,9 +360,11 @@ CPubSubChannelSettings::UpdateDerivedSettings( void )
     TStringToPubSubSideChannelSettingsMap::iterator i = pubSubSideChannelSettingsMap.begin();
     while ( i != pubSubSideChannelSettingsMap.end() )
     {
-        CPubSubSideChannelSettings& sideSettings = (*i).second;
-
-        sideSettings.metricsPrefix = metricsPrefix + "side." + (*i).first + ".";
+        CPubSubSideChannelSettingsPtr sideSettings = (*i).second;
+        if ( !sideSettings.IsNULL() )
+        {
+            sideSettings->metricsPrefix = metricsPrefix + "side." + (*i).first + ".";
+        }
         ++i;
     }
 }

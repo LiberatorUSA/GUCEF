@@ -159,8 +159,8 @@ CPubSubClientChannel::Clear( void )
     while ( i != m_sides.end() )
     {
         CPubSubClientSidePtr side = (*i);
-        CPubSubSideChannelSettings& sideSettings = side->GetSideSettings();
-        if ( sideSettings.performPubSubInDedicatedThread )
+        CPubSubSideChannelSettingsPtr sideSettings = side->GetSideSettings();
+        if ( sideSettings->performPubSubInDedicatedThread )
         {
             side->RequestTaskToStop( true );
         }
@@ -263,9 +263,9 @@ CPubSubClientChannel::InitializeChannel( bool force )
     while ( c != m_channelSettings.pubSubSideChannelSettingsMap.end() )
     {
         const CORE::CString& sideId = (*c).first;
-        CPubSubSideChannelSettings sideSettings = (*c).second;
-        if ( sideSettings.pubsubIdPrefix.IsNULLOrEmpty() )
-            sideSettings.pubsubIdPrefix = CORE::ToString( m_channelSettings.channelId );
+        CPubSubSideChannelSettingsPtr sideSettings = (*c).second;
+        if ( sideSettings->pubsubIdPrefix.IsNULLOrEmpty() )
+            sideSettings->pubsubIdPrefix = CORE::ToString( m_channelSettings.channelId );
 
         CPubSubClientSidePtr side( GUCEF_NEW CPubSubClientSide( sideId, &m_flowRouter ) );        
         if ( !side->LoadConfig( sideSettings ) )
@@ -287,8 +287,8 @@ CPubSubClientChannel::InitializeChannel( bool force )
             {
                 // As a fallback we support trying run as part of the channel thread instead
                 GUCEF_ERROR_LOG( CORE::LOGLEVEL_CRITICAL, "PubSubClientChannel:InitializeChannel: Failed to setup dedicated thread for side with id " + side->GetSideId() + ". Falling back to using main channel thread" );
-                CPubSubSideChannelSettings& sideSettings = side->GetSideSettings();
-                sideSettings.performPubSubInDedicatedThread = false;
+                CPubSubSideChannelSettingsPtr sideSettings = side->GetSideSettings();
+                sideSettings->performPubSubInDedicatedThread = false;
                 side->SetTaskDelegator( GetTaskDelegator() );
             }
         }
@@ -343,8 +343,8 @@ CPubSubClientChannel::InitializeChannel( bool force )
                 
                 // As a fallback we support trying run as part of the channel thread instead
 
-                CPubSubSideChannelSettings& sideSettings = side->GetSideSettings();
-                sideSettings.performPubSubInDedicatedThread = false;
+                CPubSubSideChannelSettingsPtr sideSettings = side->GetSideSettings();
+                sideSettings->performPubSubInDedicatedThread = false;
                 side->SetTaskDelegator( GetTaskDelegator() );
 
                 if ( !side->OnTaskStart( GUCEF_NULL ) )

@@ -109,6 +109,9 @@ void mtx_destroy(mtx_t *mtx)
 
 int mtx_lock(mtx_t *mtx)
 {
+    if ( 0 == mtx )
+        return thrd_error;
+
 #if defined(_TTHREAD_WIN32_)
   if (!mtx->mTimed)
   {
@@ -116,12 +119,19 @@ int mtx_lock(mtx_t *mtx)
   }
   else
   {
-    switch (WaitForSingleObject(mtx->mHandle.mut, INFINITE))
+    if ( 0 != mtx->mHandle.mut )
     {
-      case WAIT_OBJECT_0:
-        break;
-      case WAIT_ABANDONED:
-      default:
+        switch (WaitForSingleObject(mtx->mHandle.mut, INFINITE))
+        {
+          case WAIT_OBJECT_0:
+            break;
+          case WAIT_ABANDONED:
+          default:
+            return thrd_error;
+        }
+    }
+    else
+    {
         return thrd_error;
     }
   }

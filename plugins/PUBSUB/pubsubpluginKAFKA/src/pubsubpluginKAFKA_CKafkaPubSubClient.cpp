@@ -110,10 +110,18 @@ CKafkaPubSubClient::Clear( void )
     GUCEF_DELETE m_metricsTimer;
     m_metricsTimer = GUCEF_NULL;
 
+    // first shut down all topics
     TTopicMap::iterator i = m_topicMap.begin();
     while ( i != m_topicMap.end() )
     {
         (*i).second->Shutdown();
+        ++i;
+    }
+    
+    // now clean up the associated resources
+    i = m_topicMap.begin();
+    while ( i != m_topicMap.end() )
+    {
         (*i).second.Unlink();
         ++i;
     }

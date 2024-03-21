@@ -1046,8 +1046,8 @@ PubSub2PubSubConfig::NormalizeConfig( void )
             while ( s != overlayConfig.sides.end() )
             {
                 ExplicitChannelSideOverlayConfig& sideOverlayConfig = (*s);
-                CPubSubSideChannelSettings* sideConfig = channelConfig.GetPubSubSideSettings( sideOverlayConfig.sideId );
-                if ( GUCEF_NULL != sideConfig )
+                CPubSubSideChannelSettingsPtr sideConfig = channelConfig.GetPubSubSideSettings( sideOverlayConfig.sideId );
+                if ( !sideConfig.IsNULL() )
                 {
                     if ( !sideOverlayConfig.remoteAddresses.empty() )
                         sideConfig->pubsubClientConfig.remoteAddresses = sideOverlayConfig.remoteAddresses;
@@ -1169,19 +1169,21 @@ PubSub2PubSubConfig::NormalizeConfig( void )
         CPubSubChannelSettings::TStringToPubSubSideChannelSettingsMap::iterator n = channelConfig.pubSubSideChannelSettingsMap.begin();
         while ( n != channelConfig.pubSubSideChannelSettingsMap.end() )
         {
-            CPubSubSideChannelSettings& sideSettings = (*n).second;
-            if ( sideSettings.applyThreadCpuAffinity || applyCpuThreadAffinityByDefault )
+            CPubSubSideChannelSettingsPtr sideSettings = (*n).second;
+            if ( !sideSettings.IsNULL() )
             {
-                if ( sideSettings.performPubSubInDedicatedThread )
+                if ( sideSettings->applyThreadCpuAffinity || applyCpuThreadAffinityByDefault )
                 {
-                    sideSettings.cpuAffinityForPubSubThread = currentCpu;
+                    if ( sideSettings->performPubSubInDedicatedThread )
+                    {
+                        sideSettings->cpuAffinityForPubSubThread = currentCpu;
 
-                    ++currentCpu;
-                    if ( currentCpu >= logicalCpuCount ) // Wrap around if we run out of CPUs
-                        currentCpu = 0;
+                        ++currentCpu;
+                        if ( currentCpu >= logicalCpuCount ) // Wrap around if we run out of CPUs
+                            currentCpu = 0;
+                    }
                 }
             }
-
             ++n;
         }
         ++c;

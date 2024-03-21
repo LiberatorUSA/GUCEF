@@ -124,7 +124,9 @@ class GUCEF_PUBSUB_EXPORT_CPP CPubSubSideChannelConfig : public CORE::CIConfigur
 /**
  *  Class that conveys runtime relevant settings and config for a pub sub channel's side
  */
-class GUCEF_PUBSUB_EXPORT_CPP CPubSubSideChannelSettings : public CPubSubSideChannelConfig
+class GUCEF_PUBSUB_EXPORT_CPP CPubSubSideChannelSettings : public CPubSubSideChannelConfig ,
+                                                           public CORE::CTSharedObjCreator< CPubSubSideChannelSettings, MT::CMutex >
+
 {
     public:
 
@@ -140,6 +142,9 @@ class GUCEF_PUBSUB_EXPORT_CPP CPubSubSideChannelSettings : public CPubSubSideCha
 
     virtual const CORE::CString& GetClassTypeName( void ) const GUCEF_VIRTUAL_OVERRIDE;
 };
+
+typedef CPubSubSideChannelSettings::TSharedPtrType          CPubSubSideChannelSettingsPtr;
+typedef CPubSubSideChannelSettings::TBasicSharedPtrType     CPubSubSideChannelSettingsBasicPtr;
 
 /*-------------------------------------------------------------------------//
 //                                                                         //

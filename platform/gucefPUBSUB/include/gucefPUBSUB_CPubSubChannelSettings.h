@@ -62,14 +62,14 @@ class GUCEF_PUBSUB_EXPORT_CPP CPubSubChannelConfig : public CORE::CIConfigurable
 {
     public:
 
-    typedef std::map< CORE::CString, CPubSubSideChannelSettings > TStringToPubSubSideChannelSettingsMap;
+    typedef std::map< CORE::CString, CPubSubSideChannelSettingsPtr > TStringToPubSubSideChannelSettingsMap;
 
     CPubSubChannelConfig( void );
     CPubSubChannelConfig( const CPubSubChannelConfig& src );
     virtual ~CPubSubChannelConfig();
     CPubSubChannelConfig& operator=( const CPubSubChannelConfig& src );
 
-    CPubSubSideChannelSettings* GetPubSubSideSettings( const CORE::CString& sideId );
+    CPubSubSideChannelSettingsPtr GetPubSubSideSettings( const CORE::CString& sideId );
 
     TStringToPubSubSideChannelSettingsMap pubSubSideChannelSettingsMap;
     CPubSubFlowRouterConfig flowRouterConfig;
@@ -95,8 +95,6 @@ class GUCEF_PUBSUB_EXPORT_CPP CPubSubChannelConfig : public CORE::CIConfigurable
 class GUCEF_PUBSUB_EXPORT_CPP CPubSubChannelSettings : public CPubSubChannelConfig
 {
     public:
-
-    typedef std::map< CORE::CString, CPubSubSideChannelSettings > TStringToPubSubSideChannelSettingsMap;
 
     CPubSubChannelSettings( void );
     CPubSubChannelSettings( const CPubSubChannelSettings& src );

@@ -1818,7 +1818,6 @@ CPubSubFlowRouter::IsTrackingInFlightPublishedMsgsForAcksNeededForSide( const CP
 
     if ( GUCEF_NULL != side )
     {
-        const CPubSubSideChannelSettings& sideSettings = side->GetSideSettings();
         if ( side->HasSubscribersNeedingAcks() )
             return true;
     }
@@ -1975,16 +1974,16 @@ CPubSubFlowRouter::ConfigureSpillover( CPubSubClientSide* spilloverSide, bool fl
 {GUCEF_TRACE;
 
     // pull a copy of the config
-    CPubSubSideChannelSettings sideSettings = spilloverSide->GetSideSettings();
+    CPubSubSideChannelSettingsPtr sideSettings = spilloverSide->GetSideSettings();
 
     // (Re)Configure for the intended flow direction
     if ( flowIntoSpillover ) 
     {
         // Configure for ingress aka publishing
-        sideSettings.pubsubClientConfig.desiredFeatures.supportsPublishing = true;
-        sideSettings.pubsubClientConfig.desiredFeatures.supportsSubscribing = false;
+        sideSettings->pubsubClientConfig.desiredFeatures.supportsPublishing = true;
+        sideSettings->pubsubClientConfig.desiredFeatures.supportsSubscribing = false;
         
-        CPubSubClientConfig::TPubSubClientTopicConfigPtrVector& topicConfigs = sideSettings.pubsubClientConfig.topics;
+        CPubSubClientConfig::TPubSubClientTopicConfigPtrVector& topicConfigs = sideSettings->pubsubClientConfig.topics;
         CPubSubClientConfig::TPubSubClientTopicConfigPtrVector::iterator t = topicConfigs.begin();
         while ( t != topicConfigs.end() )
         {
@@ -1999,10 +1998,10 @@ CPubSubFlowRouter::ConfigureSpillover( CPubSubClientSide* spilloverSide, bool fl
     else
     {
         // Configure for egress aka subscribing
-        sideSettings.pubsubClientConfig.desiredFeatures.supportsPublishing = false;
-        sideSettings.pubsubClientConfig.desiredFeatures.supportsSubscribing = true;
+        sideSettings->pubsubClientConfig.desiredFeatures.supportsPublishing = false;
+        sideSettings->pubsubClientConfig.desiredFeatures.supportsSubscribing = true;
 
-        CPubSubClientConfig::TPubSubClientTopicConfigPtrVector& topicConfigs = sideSettings.pubsubClientConfig.topics;
+        CPubSubClientConfig::TPubSubClientTopicConfigPtrVector& topicConfigs = sideSettings->pubsubClientConfig.topics;
         CPubSubClientConfig::TPubSubClientTopicConfigPtrVector::iterator t = topicConfigs.begin();
         while ( t != topicConfigs.end() )
         {
