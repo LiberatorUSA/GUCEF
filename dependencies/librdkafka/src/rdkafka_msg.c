@@ -288,6 +288,64 @@ static rd_kafka_msg_t *rd_kafka_msg_new0(rd_kafka_topic_t *rkt,
         return rkm;
 }
 
+/* DV Edit: Custom version to pass along headers */
+int dvcustom_rd_kafka_msg_new( rd_kafka_topic_t *rkt, int32_t force_partition,
+		      int msgflags,
+		      char *payload, size_t len,
+		      const void *key, size_t keylen,
+		      rd_kafka_headers_t *app_hdrs,
+              void *msg_opaque) {
+	rd_kafka_msg_t *rkm;
+	rd_kafka_resp_err_t err;
+	int errnox;
+
+        if (unlikely((err = rd_kafka_fatal_error_code(rkt->rkt_rk)))) {
+                rd_kafka_set_last_error(err, ECANCELED);
+                return -1;
+        }
+
+        /* Create message */
+        rkm = rd_kafka_msg_new0(rkt, force_partition, msgflags,
+                                payload, len, key, keylen, msg_opaque,
+                                &err, &errnox, app_hdrs, 0, rd_clock());
+        if (unlikely(!rkm)) {
+                /* errno is already set by msg_new() */
+		rd_kafka_set_last_error(err, errnox);
+                return -1;
+        }
+
+
+        /* Partition the message */
+	err = rd_kafka_msg_partitioner(rkt, rkm, 1);
+	if (likely(!err)) {
+		rd_kafka_set_last_error(0, 0);
+		return 0;
+	}
+
+        /* Interceptor: unroll failing messages by triggering on_ack.. */
+        rkm->rkm_err = err;
+        rd_kafka_interceptors_on_acknowledgement(rkt->rkt_rk,
+                                                 &rkm->rkm_rkmessage);
+
+	/* Handle partitioner failures: it only fails when the application
+	 * attempts to force a destination partition that does not exist
+	 * in the cluster.  Note we must clear the RD_KAFKA_MSG_F_FREE
+	 * flag since our contract says we don't free the payload on
+	 * failure. */
+
+	rkm->rkm_flags &= ~RD_KAFKA_MSG_F_FREE;
+	rd_kafka_msg_destroy(rkt->rkt_rk, rkm);
+
+	/* Translate error codes to errnos. */
+	if (err == RD_KAFKA_RESP_ERR__UNKNOWN_PARTITION)
+		rd_kafka_set_last_error(err, ESRCH);
+	else if (err == RD_KAFKA_RESP_ERR__UNKNOWN_TOPIC)
+		rd_kafka_set_last_error(err, ENOENT);
+	else
+		rd_kafka_set_last_error(err, EINVAL); /* NOTREACHED */
+
+	return -1;
+}
 
 /**
  * @brief Produce: creates a new message, runs the partitioner and enqueues
@@ -686,6 +744,18 @@ int rd_kafka_produce(rd_kafka_topic_t *rkt,
                      void *msg_opaque) {
         return rd_kafka_msg_new(rkt, partition, msgflags, payload, len, key,
                                 keylen, msg_opaque);
+}
+
+/* DV Edit: Custom version to pass along headers */
+int dvcustom_rd_kafka_produce (rd_kafka_topic_t *rkt, int32_t partition,
+                      int msgflags,
+                      void *payload, size_t len,
+                      const void *key, size_t keylen,
+                      rd_kafka_headers_t *app_hdrs,
+                      void *msg_opaque) {
+        return dvcustom_rd_kafka_msg_new(rkt, partition,
+                                msgflags, payload, len,
+                                key, keylen, app_hdrs, msg_opaque);
 }
 
 
