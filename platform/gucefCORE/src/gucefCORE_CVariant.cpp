@@ -38,6 +38,11 @@
 
 #include "gucefCORE_CVariant.h"
 
+#ifndef GUCEF_CORE_LOGGING_H
+#include "gucefCORE_Logging.h"
+#define GUCEF_CORE_LOGGING_H
+#endif /* GUCEF_CORE_LOGGING_H ? */
+
 #ifndef GUCEF_CORE_ESSENTIALS_H
 #include "gucef_essentials.h"
 #define GUCEF_CORE_ESSENTIALS_H
@@ -617,6 +622,15 @@ CVariant::IsNULLOrEmpty( void ) const
 
 /*-------------------------------------------------------------------------*/
 
+void
+CVariant::OverrideTypeId( UInt8 typeId )
+{GUCEF_TRACE;
+
+    m_variantData.containedType = typeId;
+}
+
+/*-------------------------------------------------------------------------*/
+
 UInt8
 CVariant::GetTypeId( void ) const
 {GUCEF_TRACE;
@@ -1075,6 +1089,15 @@ CVariant::AsVoidPtr( const void* defaultIfNeeded ) const
 
 /*-------------------------------------------------------------------------*/
 
+UInt32 
+CVariant::ByteSizeOfFixedSizeType( UInt8 varType )
+{GUCEF_TRACE;
+
+    return GucefByteSizeOfFixedSizeType( varType );
+}
+
+/*-------------------------------------------------------------------------*/
+
 UInt32
 CVariant::ByteSize( bool includeNullTerm ) const
 {GUCEF_TRACE;
@@ -1491,7 +1514,11 @@ CVariant::Set( const void* data, UInt32 dataSize, UInt8 varType, bool linkOnlyFo
         case GUCEF_DATATYPE_BINARY_BSOB:
         {
             if ( GUCEF_NULL == data || dataSize > sizeof(m_variantData.union_data.bsob_data) )
+            {
+                GUCEF_WARNING_LOG( CORE::LOGLEVEL_NORMAL, "Variant(" + CORE::ToString( this ) +
+                    "):Set: Refusing to set BSOB data with ptr " + ToString( data ) + " and size " + ToString( dataSize ) );
                 return false;
+            }
             memset( m_variantData.union_data.bsob_data, 0, sizeof( m_variantData.union_data.bsob_data ) );
             memcpy( m_variantData.union_data.bsob_data, data, dataSize );
             m_variantData.containedType = GUCEF_DATATYPE_BINARY_BSOB;

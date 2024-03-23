@@ -282,9 +282,9 @@ class GUCEF_PUBSUB_EXPORT_CPP CPubSubClientSide : public CORE::CTaskConsumer
                                        const CORE::CEvent& eventId  ,
                                        CORE::CICloneable* eventData );
 
-    bool ConfigureTopicLink( const CPubSubSideChannelSettingsPtr pubSubSideSettings ,
-                             CPubSubClientTopicBasicPtr topic                       ,
-                             bool reset                                             );
+    bool ConfigureTopicLink( CPubSubSideChannelSettingsPtr pubSubSideSettings ,
+                             CPubSubClientTopicBasicPtr topic                 ,
+                             bool reset                                       );
 
     bool ConnectPubSubClientTopic( CPubSubClientTopic& topic                              ,
                                    const CPubSubClientFeatures& clientFeatures            ,
@@ -380,6 +380,8 @@ class GUCEF_PUBSUB_EXPORT_CPP CPubSubClientSide : public CORE::CTaskConsumer
         void SetClientFeatures( const CPubSubClientFeatures& clientFeatures );
 
         bool AcknowledgeReceipt( CIPubSubMsg::TNoLockSharedPtr& msg );
+
+        void SetNeedToTrackInFlightPublishedMsgsForAck( bool isNeeded );
 
         virtual const CString& GetClassTypeName( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
@@ -495,6 +497,8 @@ class GUCEF_PUBSUB_EXPORT_CPP CPubSubClientSide : public CORE::CTaskConsumer
         CPubSubFlowRouter* flowRouter;
         CPubSubClientSide* side;
         CPubSubClientFeatures clientFeatures;
+        bool needToTrackInFlightPublishedMsgsForAck;
+        bool retryFailedPublishAttempts;
         TIPubSubBookmarkPersistenceBasicPtr pubsubBookmarkPersistence;
         bool awaitingFailureReport;
         CORE::UInt64 totalMsgsInFlight;

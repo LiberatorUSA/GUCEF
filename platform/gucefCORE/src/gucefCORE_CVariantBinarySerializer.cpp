@@ -163,7 +163,7 @@ CVariantBinarySerializer::Deserialize( CVariant& var, UInt32 currentSourceOffset
         }
         else
         {
-            bool result = var.Set( source.GetConstBufferPtr( currentSourceOffset ), source.GetDataSize() - currentSourceOffset, typeId, linkWherePossible );
+            bool result = var.Set( source.GetConstBufferPtr( currentSourceOffset ), GucefByteSizeOfFixedSizeType( typeId ), typeId, linkWherePossible );
             bytesRead += var.ByteSize();
             return result;            
         }

@@ -1974,7 +1974,8 @@ CPubSubFlowRouter::ConfigureSpillover( CPubSubClientSide* spilloverSide, bool fl
 {GUCEF_TRACE;
 
     // pull a copy of the config
-    CPubSubSideChannelSettingsPtr sideSettings = spilloverSide->GetSideSettings();
+    CPubSubSideChannelSettingsPtr originalSideSettings = spilloverSide->GetSideSettings();
+    CPubSubSideChannelSettingsPtr sideSettings = CPubSubSideChannelSettings::CreateSharedObjWithParam( *originalSideSettings );
 
     // (Re)Configure for the intended flow direction
     if ( flowIntoSpillover ) 

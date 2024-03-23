@@ -181,6 +181,8 @@ CPubSubClientSide::TopicLink::TopicLink( void )
     , inFlightMsgs()
     , publishFailedMsgs()
     , publishAckdMsgsMailbox()
+    , maxASyncPublishMailboxSize( 1000 )
+    , maxASyncPublishMailboxSizeDuringAFR( 1000 )
     , metricFriendlyTopicName()
     , metricsPrefix()
     , metrics( CPubSubClientSideMetrics::CreateSharedObj() )
@@ -191,6 +193,8 @@ CPubSubClientSide::TopicLink::TopicLink( void )
     , flowRouter( GUCEF_NULL )
     , side( GUCEF_NULL )
     , clientFeatures()
+    , needToTrackInFlightPublishedMsgsForAck( true ) // safer default even through its less performant
+    , retryFailedPublishAttempts( true )             // safer default even through its less performant
     , pubsubBookmarkPersistence()
     , awaitingFailureReport( false )
     , totalMsgsInFlight( 0 )
@@ -212,6 +216,8 @@ CPubSubClientSide::TopicLink::TopicLink( CPubSubClientTopicBasicPtr t )
     , inFlightMsgs()
     , publishFailedMsgs()
     , publishAckdMsgsMailbox()
+    , maxASyncPublishMailboxSize( 1000 )
+    , maxASyncPublishMailboxSizeDuringAFR( 1000 )
     , metricFriendlyTopicName()
     , metricsPrefix()
     , metrics( CPubSubClientSideMetrics::CreateSharedObj() )
@@ -222,6 +228,8 @@ CPubSubClientSide::TopicLink::TopicLink( CPubSubClientTopicBasicPtr t )
     , flowRouter( GUCEF_NULL )
     , side( GUCEF_NULL )
     , clientFeatures()
+    , needToTrackInFlightPublishedMsgsForAck( true ) // safer default even through its less performant
+    , retryFailedPublishAttempts( true )             // safer default even through its less performant
     , pubsubBookmarkPersistence()
     , awaitingFailureReport( false )
     , totalMsgsInFlight( 0 )
@@ -248,6 +256,15 @@ CPubSubClientSide::TopicLink::GetClassTypeName( void ) const
 
     static const CString typeName = "GUCEF::PUBSUB::CPubSubClientSide::TopicLink";
     return typeName;
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CPubSubClientSide::TopicLink::SetNeedToTrackInFlightPublishedMsgsForAck( bool isNeeded )
+{GUCEF_TRACE;
+
+    needToTrackInFlightPublishedMsgsForAck = isNeeded;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -1043,11 +1060,11 @@ CPubSubClientSide::TopicLink::PublishMsgsSync( const TMsgCollection& msgs )
     if ( topic->IsPublishingSupported() )
     {
         currentPublishActionIds.clear();
-        if ( topic->Publish( currentPublishActionIds, msgs, sideSettings->needToTrackInFlightPublishedMsgsForAck ) )
+        if ( topic->Publish( currentPublishActionIds, msgs, needToTrackInFlightPublishedMsgsForAck ) )
         {
             totalMsgsInFlight += msgs.size();
 
-            if ( sideSettings->needToTrackInFlightPublishedMsgsForAck )
+            if ( needToTrackInFlightPublishedMsgsForAck )
                 AddInFlightMsgs( currentPublishActionIds, msgs, true );
 
             GUCEF_DEBUG_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "TopicLink(" + CORE::ToString( this ) +
@@ -1089,6 +1106,8 @@ CPubSubClientSide::TopicLink::ApplySettings( const CPubSubSideChannelSettingsPtr
     metricsPrefix = sideSettings->metricsPrefix;
     maxASyncPublishMailboxSize = sideSettings->maxASyncPublishMailboxSize;
     maxASyncPublishMailboxSizeDuringAFR = sideSettings->maxASyncPublishMailboxSizeDuringAFR;
+    needToTrackInFlightPublishedMsgsForAck = sideSettings->needToTrackInFlightPublishedMsgsForAck;
+    retryFailedPublishAttempts = sideSettings->retryFailedPublishAttempts;
 
     if ( sideSettings->maxPublishedMsgInFlightTimeInMs > 0 )
     {
@@ -2460,8 +2479,10 @@ CPubSubClientSide::TopicLink::OnPubSubTopicMsgsPublished( CORE::CNotifier* notif
     if ( GUCEF_NULL == eventData || GUCEF_NULL == notifier || GUCEF_NULL == side )
         return;
 
-    if ( !side->GetSideSettings()->needToTrackInFlightPublishedMsgsForAck )
+    if ( !needToTrackInFlightPublishedMsgsForAck )
     {
+        GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "TopicLink(" + CORE::ToString( this ) +
+                            "):OnPubSubTopicMsgsPublished: Ignoring msg acks from client because we are not tracking msgs for acks" );
         return;
     }
     
@@ -2715,9 +2736,9 @@ CPubSubClientSide::DisconnectPubSubClient( bool destroyClient )
 /*-------------------------------------------------------------------------*/
 
 bool
-CPubSubClientSide::ConfigureTopicLink( const CPubSubSideChannelSettingsPtr pubSubSideSettings ,
-                                       CPubSubClientTopicBasicPtr topic                       ,
-                                       bool reset                                             )
+CPubSubClientSide::ConfigureTopicLink( CPubSubSideChannelSettingsPtr pubSubSideSettings ,
+                                       CPubSubClientTopicBasicPtr topic                 ,
+                                       bool reset                                       )
 {GUCEF_TRACE;
 
     if ( pubSubSideSettings.IsNULL() )
@@ -2745,7 +2766,7 @@ CPubSubClientSide::ConfigureTopicLink( const CPubSubSideChannelSettingsPtr pubSu
         topicConfig = CPubSubClientTopicConfigPtr( GUCEF_NEW CPubSubClientTopicConfig() );
         if ( topic->SaveConfig( *topicConfig ) )
         {
-            m_sideSettings->pubsubClientConfig.topics.push_back( topicConfig );
+            pubSubSideSettings->pubsubClientConfig.topics.push_back( topicConfig );
 
             GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientSide(" + CORE::ToString( this ) +
                 "):ConfigureTopicLink: Obtained a copy of the topic config from the topic itself for topic which has no predefined config. topicName=" + topicName + " SideId=" + m_sideId  );
@@ -2758,7 +2779,7 @@ CPubSubClientSide::ConfigureTopicLink( const CPubSubSideChannelSettingsPtr pubSu
     }
 
     CORE::PulseGeneratorPtr pulseGenerator;
-    if ( m_sideSettings->useBackendTopicThreadForTopicIfAvailable )
+    if ( pubSubSideSettings->useBackendTopicThreadForTopicIfAvailable )
         pulseGenerator = topic->GetPulseGenerator();
     if ( pulseGenerator.IsNULL() )
         pulseGenerator = GetPulseGenerator();
@@ -2821,7 +2842,7 @@ CPubSubClientSide::ConfigureTopicLink( const CPubSubSideChannelSettingsPtr pubSu
 
         // Create and configure the pub-sub bookmark persistence
         // we create a private copy per topic link to minimize potential contention across threads
-        CPubSubBookmarkPersistenceConfig& pubsubBookmarkPersistenceConfig = m_sideSettings->pubsubBookmarkPersistenceConfig;
+        CPubSubBookmarkPersistenceConfig& pubsubBookmarkPersistenceConfig = pubSubSideSettings->pubsubBookmarkPersistenceConfig;
         TIPubSubBookmarkPersistenceBasicPtr pubsubBookmarkPersistence = CPubSubGlobal::Instance()->GetPubSubBookmarkPersistenceFactory().Create( pubsubBookmarkPersistenceConfig.bookmarkPersistenceType, pubsubBookmarkPersistenceConfig );
         if ( pubsubBookmarkPersistence.IsNULL() )
         {
@@ -2835,7 +2856,7 @@ CPubSubClientSide::ConfigureTopicLink( const CPubSubSideChannelSettingsPtr pubSu
         topicLink->SetFlowRouter( m_flowRouter );
         topicLink->SetParentSide( this );
         topicLink->SetTopic( topic );                
-        topicLink->ApplySettings( m_sideSettings );
+        topicLink->ApplySettings( pubSubSideSettings );
         topicLink->SetClientFeatures( m_clientFeatures );
         topicLink->SetPubsubBookmarkPersistence( pubsubBookmarkPersistence );
         topicLink->SetPubsubBookmarkNamespace( m_bookmarkNamespace );
@@ -3146,7 +3167,7 @@ CPubSubClientSide::ConnectPubSubClient( bool reset )
     // Whether we need to track successfull message handoff (garanteed handling) depends on various factors outside the scope of any one side
     // as such we need to ask the overarching infra to come up with a conclusion on this need
     // We will cache the outcome as a side local setting to negate locking needs
-    m_sideSettings->needToTrackInFlightPublishedMsgsForAck = false;
+    m_sideSettings->needToTrackInFlightPublishedMsgsForAck = m_sideSettings->needToTrackInFlightPublishedMsgsForAckDefault;
     if ( GUCEF_NULL != m_flowRouter )
         m_sideSettings->needToTrackInFlightPublishedMsgsForAck = m_flowRouter->IsTrackingInFlightPublishedMsgsForAcksNeeded( this );
 

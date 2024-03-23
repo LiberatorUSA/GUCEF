@@ -115,6 +115,7 @@ CPubSubSideChannelConfig::CPubSubSideChannelConfig( void )
     , treatPublishWithoutTargetTopicAsBroadcast( true )                                                 // for simpler side to side operation where topic mappings are not provided
     , retryFailedPublishAttempts( true )                                                                // safer default, assume we don't want fire-and-forget but want the extra safegaurds
     , allowOutOfOrderPublishRetry( false )                                                              // safer default, assume we don't want out-of-order messages. this reduces performance if there are publish errors
+    , needToTrackInFlightPublishedMsgsForAckDefault( true )                                             // less performant but safest default if we dont know the context of the flow
     , maxMsgPublishRetryAttempts( -1 )                                                                  // safer default is no max nr of publish retries
     , maxMsgPublishRetryTotalTimeInMs( -1 )                                                             // safer default is no max time for publish retries
     , maxPublishedMsgInFlightTimeInMs( GUCEF_DEFAULT_PUBSUB_MAX_PUBLISHED_MSG_INFLIGHT_TIME_IN_MS )     // we want a large but not infinite max time on this as a safe default. ensures we dont run out of memory due to in flight messages
@@ -145,6 +146,7 @@ CPubSubSideChannelConfig::CPubSubSideChannelConfig( const CPubSubSideChannelConf
     , treatPublishWithoutTargetTopicAsBroadcast( src.treatPublishWithoutTargetTopicAsBroadcast )
     , retryFailedPublishAttempts( src.retryFailedPublishAttempts )
     , allowOutOfOrderPublishRetry( src.allowOutOfOrderPublishRetry )
+    , needToTrackInFlightPublishedMsgsForAckDefault( src.needToTrackInFlightPublishedMsgsForAckDefault )
     , maxMsgPublishRetryAttempts( src.maxMsgPublishRetryAttempts )
     , maxMsgPublishRetryTotalTimeInMs( src.maxMsgPublishRetryTotalTimeInMs )
     , maxPublishedMsgInFlightTimeInMs( src.maxPublishedMsgInFlightTimeInMs )
@@ -188,6 +190,7 @@ CPubSubSideChannelConfig::operator=( const CPubSubSideChannelConfig& src )
         treatPublishWithoutTargetTopicAsBroadcast = src.treatPublishWithoutTargetTopicAsBroadcast;
         retryFailedPublishAttempts = src.retryFailedPublishAttempts;
         allowOutOfOrderPublishRetry = src.allowOutOfOrderPublishRetry;
+        needToTrackInFlightPublishedMsgsForAckDefault = src.needToTrackInFlightPublishedMsgsForAckDefault;
         maxMsgPublishRetryAttempts = src.maxMsgPublishRetryAttempts;
         maxMsgPublishRetryTotalTimeInMs = src.maxMsgPublishRetryTotalTimeInMs;
         maxPublishedMsgInFlightTimeInMs = src.maxPublishedMsgInFlightTimeInMs;
@@ -233,6 +236,7 @@ CPubSubSideChannelConfig::SaveConfig( CORE::CDataNode& cfg ) const
     totalSuccess = cfg.SetAttribute( "treatPublishWithoutTargetTopicAsBroadcast", treatPublishWithoutTargetTopicAsBroadcast ) && totalSuccess;    
     totalSuccess = cfg.SetAttribute( "retryFailedPublishAttempts", retryFailedPublishAttempts ) && totalSuccess;
     totalSuccess = cfg.SetAttribute( "allowOutOfOrderPublishRetry", allowOutOfOrderPublishRetry ) && totalSuccess;
+    totalSuccess = cfg.SetAttribute( "needToTrackInFlightPublishedMsgsForAckDefault", needToTrackInFlightPublishedMsgsForAckDefault ) && totalSuccess;    
     totalSuccess = cfg.SetAttribute( "maxMsgPublishRetryAttempts", maxMsgPublishRetryAttempts ) && totalSuccess;
     totalSuccess = cfg.SetAttribute( "maxMsgPublishRetryTotalTimeInMs", maxMsgPublishRetryTotalTimeInMs ) && totalSuccess;
     totalSuccess = cfg.SetAttribute( "maxPublishedMsgInFlightTimeInMs", maxPublishedMsgInFlightTimeInMs ) && totalSuccess;
@@ -300,6 +304,7 @@ CPubSubSideChannelConfig::LoadConfig( const CORE::CDataNode& cfg )
     treatPublishWithoutTargetTopicAsBroadcast = cfg.GetAttributeValueOrChildValueByName( "treatPublishWithoutTargetTopicAsBroadcast" ).AsBool( treatPublishWithoutTargetTopicAsBroadcast, true );
     retryFailedPublishAttempts = cfg.GetAttributeValueOrChildValueByName( "retryFailedPublishAttempts" ).AsBool( retryFailedPublishAttempts, true );
     allowOutOfOrderPublishRetry = cfg.GetAttributeValueOrChildValueByName( "allowOutOfOrderPublishRetry" ).AsBool( allowOutOfOrderPublishRetry, true );
+    needToTrackInFlightPublishedMsgsForAckDefault = cfg.GetAttributeValueOrChildValueByName( "needToTrackInFlightPublishedMsgsForAckDefault" ).AsBool( needToTrackInFlightPublishedMsgsForAckDefault, true ); 
     maxMsgPublishRetryAttempts = cfg.GetAttributeValueOrChildValueByName( "maxMsgPublishRetryAttempts" ).AsInt32( maxMsgPublishRetryAttempts, true );
     maxMsgPublishRetryTotalTimeInMs = cfg.GetAttributeValueOrChildValueByName( "maxMsgPublishRetryTotalTimeInMs" ).AsInt32( maxMsgPublishRetryTotalTimeInMs, true );
     maxPublishedMsgInFlightTimeInMs = cfg.GetAttributeValueOrChildValueByName( "maxPublishedMsgInFlightTimeInMs" ).AsInt32( maxPublishedMsgInFlightTimeInMs, true );
@@ -345,10 +350,11 @@ CPubSubSideChannelConfig::GetTopicConfig( const CORE::CString& topicName ) const
 CPubSubSideChannelSettings::CPubSubSideChannelSettings( void )
     : CPubSubSideChannelConfig()
     , CORE::CTSharedObjCreator< CPubSubSideChannelSettings, MT::CMutex >( this )
-    , needToTrackInFlightPublishedMsgsForAck( false )  // composite cached value: based on backend features plus desired behaviour
+    , needToTrackInFlightPublishedMsgsForAck( true )  // composite cached value: based on backend features plus desired behaviour
     , metricsPrefix()
 {GUCEF_TRACE;
 
+    needToTrackInFlightPublishedMsgsForAck = needToTrackInFlightPublishedMsgsForAckDefault;
 }
 
 /*-------------------------------------------------------------------------*/

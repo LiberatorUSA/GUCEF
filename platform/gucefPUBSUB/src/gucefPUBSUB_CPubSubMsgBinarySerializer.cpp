@@ -423,7 +423,7 @@ CPubSubMsgBinarySerializer::Deserialize( const CPubSubMsgBinarySerializerOptions
 
         if ( options.msgIdIncluded )
         {
-            // Write the ID using the variable length variant serializer
+            // Read the ID using the variable length variant serializer
             UInt32 varByteSize = 0;
             if ( !CORE::CVariantBinarySerializer::Deserialize( msg.GetMsgId(), currentSourceOffset, source, linkWherePossible, varByteSize ) )
                 return false;
@@ -433,7 +433,7 @@ CPubSubMsgBinarySerializer::Deserialize( const CPubSubMsgBinarySerializerOptions
 
         if ( options.msgIndexIncluded )
         {
-            // Write the msg index using the variable length variant serializer
+            // Read the msg index using the variable length variant serializer
             UInt32 varByteSize = 0;
             if ( !CORE::CVariantBinarySerializer::Deserialize( msg.GetMsgIndex(), currentSourceOffset, source, linkWherePossible, varByteSize ) )
                 return false;

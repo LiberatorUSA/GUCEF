@@ -97,6 +97,7 @@ class GUCEF_PUBSUB_EXPORT_CPP CPubSubSideChannelConfig : public CORE::CIConfigur
     bool treatPublishWithoutTargetTopicAsBroadcast;
     bool retryFailedPublishAttempts;
     bool allowOutOfOrderPublishRetry;
+    bool needToTrackInFlightPublishedMsgsForAckDefault;
     CORE::Int32 maxMsgPublishRetryAttempts;
     CORE::Int32 maxMsgPublishRetryTotalTimeInMs;
     CORE::Int32 maxPublishedMsgInFlightTimeInMs;

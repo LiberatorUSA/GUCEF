@@ -160,6 +160,45 @@ GucefTypeIdForTypeName( const char* typeName )
     return GUCEF_DATATYPE_UNKNOWN;
 }
 
+/*-------------------------------------------------------------------------*/
+
+UInt32 
+GucefByteSizeOfFixedSizeType( UInt8 varType )
+{
+    switch ( varType )
+    {
+        case GUCEF_DATATYPE_INT8: return sizeof( Int8 );
+        case GUCEF_DATATYPE_UINT8: return sizeof( UInt8 );
+        case GUCEF_DATATYPE_LE_INT16: return sizeof( Int16 );
+        case GUCEF_DATATYPE_BE_INT16: return sizeof( Int16 );
+        case GUCEF_DATATYPE_LE_UINT16: return sizeof( UInt16 );
+        case GUCEF_DATATYPE_BE_UINT16: return sizeof( UInt16 );
+        case GUCEF_DATATYPE_LE_INT32: return sizeof( Int32 );
+        case GUCEF_DATATYPE_BE_INT32: return sizeof( Int32 );
+        case GUCEF_DATATYPE_LE_UINT32: return sizeof( UInt32 );
+        case GUCEF_DATATYPE_BE_UINT32: return sizeof( UInt32 );
+        case GUCEF_DATATYPE_LE_INT64: return sizeof( Int64 );
+        case GUCEF_DATATYPE_BE_INT64: return sizeof( Int64 );
+        case GUCEF_DATATYPE_LE_UINT64: return sizeof( UInt64 );
+        case GUCEF_DATATYPE_BE_UINT64: return sizeof( UInt64 );
+        case GUCEF_DATATYPE_LE_FLOAT32: return sizeof( Float32 );
+        case GUCEF_DATATYPE_BE_FLOAT32: return sizeof( Float32 );
+        case GUCEF_DATATYPE_LE_FLOAT64: return sizeof( Float64 );
+        case GUCEF_DATATYPE_BE_FLOAT64: return sizeof( Float64 );
+        case GUCEF_DATATYPE_BOOLEAN_INT32: return sizeof( Int32 );
+        case GUCEF_DATATYPE_LE_TIMESTAMP_IN_SECS_SINCE_UNIX_EPOCH: return sizeof( UInt64 );
+        case GUCEF_DATATYPE_BE_TIMESTAMP_IN_SECS_SINCE_UNIX_EPOCH: return sizeof( UInt64 );
+        case GUCEF_DATATYPE_LE_TIMESTAMP_IN_MS_SINCE_UNIX_EPOCH: return sizeof( UInt64 );
+        case GUCEF_DATATYPE_BE_TIMESTAMP_IN_MS_SINCE_UNIX_EPOCH: return sizeof( UInt64 );
+
+        case GUCEF_DATATYPE_BINARY_BSOB: return GUCEF_VARIANT_BSOB_SIZE;
+
+        case GUCEF_DATATYPE_NULL:
+        case GUCEF_DATATYPE_NIL:
+        default: return 0;
+    }
+}
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //

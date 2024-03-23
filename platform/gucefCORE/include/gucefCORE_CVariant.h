@@ -176,6 +176,14 @@ class GUCEF_CORE_PUBLIC_CPP CVariant
     bool IsInitialized( void ) const;
     bool IsNULLOrEmpty( void ) const; 
     
+    /**
+     *  This member function allows you to set the type ID
+     *  In most cases you should not need this as setting/assigning/linking automatically sets the correct type id
+     *  However there can be cases where more direct manipulation of the underlying variant data is needed or occurs
+     *  In such use cases this member function can be used to 'correct' the type to make the class aware of such changes.
+     */
+    void OverrideTypeId( UInt8 typeId );
+
     UInt8 GetTypeId( void ) const;
     const char* GetTypeNameC( void ) const;
     CString GetTypeName( void ) const;
@@ -222,6 +230,7 @@ class GUCEF_CORE_PUBLIC_CPP CVariant
      *  Returns the size of the storage used in bytes by the stored type
      */
     UInt32 ByteSize( bool includeNullTerm = true ) const;
+    static UInt32 ByteSizeOfFixedSizeType( UInt8 varType );
 
     bool operator==( const CVariant& other ) const;
     bool operator!=( const CVariant& other ) const;

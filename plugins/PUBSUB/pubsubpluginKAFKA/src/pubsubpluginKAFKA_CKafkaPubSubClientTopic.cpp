@@ -1963,9 +1963,11 @@ CKafkaPubSubClientTopic::LinkReceivedMsg( RdKafka::Message& message, CORE::UInt3
         }
     }
 
-    TPartitionOffset* partitionOffset = msgWrap.GetMsgIndex().AsBsobPtr< TPartitionOffset >();
+    CORE::CVariant& msgIndexVar = msgWrap.GetMsgIndex();
+    TPartitionOffset* partitionOffset = msgIndexVar.AsBsobPtr< TPartitionOffset >();
     partitionOffset->partitionId = message.partition();
     partitionOffset->partitionOffset = message.offset();
+    msgIndexVar.OverrideTypeId( GUCEF_DATATYPE_BINARY_BSOB );
 
     msgWrap.GetPrimaryPayload().LinkTo( message.payload(), (CORE::UInt32) message.len() );
 

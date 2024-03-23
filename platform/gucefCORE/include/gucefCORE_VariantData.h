@@ -101,6 +101,15 @@ TypeNameForGucefTypeId( UInt8 typeId );
 GUCEF_CORE_PUBLIC_C UInt8
 GucefTypeIdForTypeName( const char* typeName );
 
+/*-------------------------------------------------------------------------*/
+
+/**
+ *  Returns the size of fixed size types based on their type id
+ *  if the type id given is not known or not that of a fixed size type 0 will be returned as the size
+ */
+GUCEF_CORE_PUBLIC_C UInt32 
+GucefByteSizeOfFixedSizeType( UInt8 varType );
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //
