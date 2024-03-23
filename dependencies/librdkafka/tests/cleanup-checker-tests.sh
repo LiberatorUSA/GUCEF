@@ -9,12 +9,12 @@ CNT=0
 while true ; do
     for T in $ALL; do
 	echo "#################### Test $T run #$CNT #################"
-	TESTS=$(printf %04d $T)	./run-test.sh "./merged -p" valgrind || exit 1
+	TESTS=$(printf %04d $T)	./run-test.sh -p valgrind || exit 1
 	CNT=$(expr $CNT + 1)
     done
     echo "################## Cleaning up"
     rm -f *.offset
-    ./delete-test-topics.sh 0 ~/src/kafka/bin/kafka-topics.sh
+    ./delete-test-topics.sh 0
 done
 done
 

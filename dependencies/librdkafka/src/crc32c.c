@@ -50,7 +50,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
-#ifndef _MSC_VER
+#ifndef _WIN32
 #include <unistd.h>
 #endif
 
@@ -105,16 +105,10 @@ static uint32_t crc32c_sw(uint32_t crci, const void *buf, size_t len)
         len--;
     }
     while (len >= 8) {
-#if defined(__sparc) || defined(__sparc__) || defined(__APPLE__) || defined(__mips__) || defined(__arm__)
-        /* Alignment-safe alternative.
-         * This is also needed on Apple to avoid compilation warnings for
-         * non-appearant alignment reasons. */
+        /* Alignment-safe */
         uint64_t ncopy;
         memcpy(&ncopy, next, sizeof(ncopy));
         crc ^= le64toh(ncopy);
-#else
-        crc ^= le64toh(*(uint64_t *)next);
-#endif
         crc = crc32c_table[7][crc & 0xff] ^
               crc32c_table[6][(crc >> 8) & 0xff] ^
               crc32c_table[5][(crc >> 16) & 0xff] ^
@@ -357,7 +351,7 @@ static uint32_t crc32c_hw(uint32_t crc, const void *buf, size_t len)
 
 /* Compute a CRC-32C.  If the crc32 instruction is available, use the hardware
    version.  Otherwise, use the software version. */
-uint32_t crc32c(uint32_t crc, const void *buf, size_t len)
+uint32_t rd_crc32c(uint32_t crc, const void *buf, size_t len)
 {
 #if WITH_CRC32C_HW
         if (sse42)
@@ -375,7 +369,7 @@ uint32_t crc32c(uint32_t crc, const void *buf, size_t len)
 /**
  * @brief Populate shift tables once
  */
-void crc32c_global_init (void) {
+void rd_crc32c_global_init (void) {
 #if WITH_CRC32C_HW
         SSE42(sse42);
         if (sse42)
@@ -385,7 +379,7 @@ void crc32c_global_init (void) {
                 crc32c_init_sw();
 }
 
-int unittest_crc32c (void) {
+int unittest_rd_crc32c (void) {
         const char *buf =
 "  This software is provided 'as-is', without any express or implied\n"
 "  warranty.  In no event will the author be held liable for any damages\n"
@@ -406,8 +400,6 @@ int unittest_crc32c (void) {
         uint32_t crc;
         const char *how;
 
-        crc32c_global_init();
-
 #if WITH_CRC32C_HW
         if (sse42)
                 how = "hardware (SSE42)";
@@ -418,7 +410,7 @@ int unittest_crc32c (void) {
 #endif
         RD_UT_SAY("Calculate CRC32C using %s", how);
 
-        crc = crc32c(0, buf, strlen(buf));
+        crc = rd_crc32c(0, buf, strlen(buf));
         RD_UT_ASSERT(crc == expected_crc,
                      "Calculated CRC (%s) 0x%"PRIx32
                      " not matching expected CRC 0x%"PRIx32,

@@ -1,7 +1,11 @@
 
 KAFKA_JARS?=$(KAFKA_PATH)/libs
 
-Murmur2Cli.class: Murmur2Cli.java
+CLASSES=Murmur2Cli.class TransactionProducerCli.class IncrementalRebalanceCli.class
+
+all: $(CLASSES)
+
+%.class: %.java
 	javac -classpath $(KAFKA_JARS)/kafka-clients-*.jar $^
 
 clean:

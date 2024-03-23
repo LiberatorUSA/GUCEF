@@ -15,7 +15,7 @@ The stats are provided as a JSON object string.
 
 ## General structure
 
-All fields that contain sizes are are in bytes unless otherwise noted.
+All fields that contain sizes are in bytes unless otherwise noted.
 
 ```
 {
@@ -52,17 +52,18 @@ Field | Type | Example | Description
 name | string | `"rdkafka#producer-1"` | Handle instance name
 client_id | string | `"rdkafka"` | The configured (or default) `client.id`
 type | string | `"producer"` | Instance type (producer or consumer)
-ts | int | 12345678912345 | librdkafka's internal monotonic clock (micro seconds)
+ts | int | 12345678912345 | librdkafka's internal monotonic clock (microseconds)
 time | int | | Wall clock time in seconds since the epoch
+age | int | | Time since this client instance was created (microseconds)
 replyq | int gauge | | Number of ops (callbacks, events, etc) waiting in queue for application to serve with rd_kafka_poll()
 msg_cnt | int gauge | | Current number of messages in producer queues
 msg_size | int gauge | | Current total size of messages in producer queues
 msg_max | int | | Threshold: maximum number of messages allowed allowed on the producer queues
 msg_size_max | int | | Threshold: maximum total size of messages allowed on the producer queues
 tx | int | | Total number of requests sent to Kafka brokers
-txbytes | int | | Total number of bytes transmitted to Kafka brokers
+tx_bytes | int | | Total number of bytes transmitted to Kafka brokers
 rx | int | | Total number of responses received from Kafka brokers
-rxbytes | int | | Total number of bytes received from Kafka brokers
+rx_bytes | int | | Total number of bytes received from Kafka brokers
 txmsgs | int | | Total number of messages transmitted (produced) to Kafka brokers
 txmsg_bytes | int | | Total number of message bytes (including framing, such as per-Message framing and MessageSet/batch framing) transmitted to Kafka brokers
 rxmsgs | int | | Total number of messages consumed, not including ignored messages (due to offset, etc), from Kafka brokers.
@@ -89,21 +90,23 @@ stateage | int gauge | | Time since last broker state change (microseconds)
 outbuf_cnt | int gauge | | Number of requests awaiting transmission to broker
 outbuf_msg_cnt | int gauge | | Number of messages awaiting transmission to broker
 waitresp_cnt | int gauge | | Number of requests in-flight to broker awaiting response
-waitresp_msg_cnt | int gauge | | Number of messages in-flight to broker awaitign response
+waitresp_msg_cnt | int gauge | | Number of messages in-flight to broker awaiting response
 tx | int | | Total number of requests sent
 txbytes | int | | Total number of bytes sent
 txerrs | int | | Total number of transmission errors
 txretries | int | | Total number of request retries
+txidle | int | | Microseconds since last socket send (or -1 if no sends yet for current connection).
 req_timeouts | int | | Total number of requests timed out
 rx | int | | Total number of responses received
 rxbytes | int | | Total number of bytes received
 rxerrs | int | | Total number of receive errors
 rxcorriderrs | int | | Total number of unmatched correlation ids in response (typically for timed out requests)
-rxpartial | int | | Total number of partial MessageSets received. The broker may return partial responses if the full MessageSet could not fit in remaining Fetch response size.
+rxpartial | int | | Total number of partial MessageSets received. The broker may return partial responses if the full MessageSet could not fit in the remaining Fetch response size.
+rxidle | int | | Microseconds since last socket receive (or -1 if no receives yet for current connection).
 req | object | | Request type counters. Object key is the request name, value is the number of requests sent.
 zbuf_grow | int | | Total number of decompression buffer size increases
 buf_grow | int | | Total number of buffer size increases (deprecated, unused)
-wakeups | int | | Broker thread poll wakeups
+wakeups | int | | Broker thread poll loop wakeups
 connects | int | | Number of connection attempts, including successful and failed, and name resolution failures.
 disconnects | int | | Number of disconnects (triggered by broker, network, load-balancer, etc.).
 int_latency | object | | Internal producer queue latency in microseconds. See *Window stats* below
@@ -149,6 +152,7 @@ partition | int | 3 | Partition id
 Field | Type | Example | Description
 ----- | ---- | ------- | -----------
 topic | string | `"myatopic"` | Topic name
+age   | int gauge | | Age of client's topic object (milliseconds)
 metadata_age | int gauge | | Age of metadata from broker for this topic (milliseconds)
 batchsize | object | | Batch sizes in bytes. See *Window stats*·
 batchcnt | object | | Batch message counts. See *Window stats*·
@@ -160,6 +164,7 @@ partitions | object | | Partitions dict, key is partition id. See **partitions**
 Field | Type | Example | Description
 ----- | ---- | ------- | -----------
 partition | int | 3 | Partition Id (-1 for internal UA/UnAssigned partition)
+broker | int | | The id of the broker that messages are currently being fetched from
 leader | int | | Current leader broker id
 desired | bool | | Partition is explicitly desired by application
 unknown | bool | | Partition not seen in topic metadata from broker
@@ -174,11 +179,16 @@ query_offset | int gauge | | Current/Last logical offset query
 next_offset | int gauge | | Next offset to fetch
 app_offset | int gauge | | Offset of last message passed to application + 1
 stored_offset | int gauge | | Offset to be committed
+stored_leader_epoch | int | | Partition leader epoch of stored offset
 committed_offset | int gauge | | Last committed offset
+committed_leader_epoch | int | | Partition leader epoch of committed offset
 eof_offset | int gauge | | Last PARTITION_EOF signaled offset
 lo_offset | int gauge | | Partition's low watermark offset on broker
 hi_offset | int gauge | | Partition's high watermark offset on broker
-consumer_lag | int gauge | | Difference between hi_offset - max(app_offset, committed_offset)
+ls_offset | int gauge | | Partition's last stable offset on broker, or same as hi_offset is broker version is less than 0.11.0.0.
+consumer_lag | int gauge | | Difference between (hi_offset or ls_offset) and committed_offset). hi_offset is used when isolation.level=read_uncommitted, otherwise ls_offset.
+consumer_lag_stored | int gauge | | Difference between (hi_offset or ls_offset) and stored_offset. See consumer_lag and stored_offset.
+leader_epoch | int | | Last known partition leader epoch, or -1 if unknown.
 txmsgs | int | | Total number of messages transmitted (produced)
 txbytes | int | | Total number of bytes transmitted for txmsgs
 rxmsgs | int | | Total number of messages consumed, not including ignored messages (due to offset, etc).
@@ -196,7 +206,7 @@ Field | Type | Example | Description
 ----- | ---- | ------- | -----------
 state | string | "up"    | Local consumer group handler's state.
 stateage | int gauge | | Time elapsed since last state change (milliseconds).
-joinstate | string | "assigned" | Local consumer group handler's join state.
+join_state | string | "assigned" | Local consumer group handler's join state.
 rebalance_age | int gauge | | Time elapsed since last rebalance (assign or revoke) (milliseconds).
 rebalance_cnt | int | | Total number of rebalances (assign or revoke).
 rebalance_reason | string | | Last rebalance reason, or empty string.
@@ -207,11 +217,14 @@ assignment_size | int gauge | | Current assignment's partition count.
 
 Field | Type | Example | Description
 ----- | ---- | ------- | -----------
-idemp_state | string | "Assigned" | Current idempotent producer id state
-idemp_stateage | int gauge | | Time elapsed since last idemp_state change (milliseconds)
-producer_id | int gauge | | The currently assigned Producer ID (or -1)
-producer_epoch | int gauge | | The current epoch (or -1)
-epoch_cnt | int | | The number of Producer ID assignments since start
+idemp_state | string | "Assigned" | Current idempotent producer id state.
+idemp_stateage | int gauge | | Time elapsed since last idemp_state change (milliseconds).
+txn_state | string | "InTransaction" | Current transactional producer state.
+txn_stateage | int gauge | | Time elapsed since last txn_state change (milliseconds).
+txn_may_enq | bool | | Transactional state allows enqueuing (producing) new messages.
+producer_id | int gauge | | The currently assigned Producer ID (or -1).
+producer_epoch | int gauge | | The current epoch (or -1).
+epoch_cnt | int | | The number of Producer ID assignments since start.
 
 
 # Example output
@@ -508,6 +521,7 @@ Note: this output is prettified using `jq .`, the JSON object emitted by librdka
       "partitions": {
         "0": {
           "partition": 0,
+          "broker": 3,
           "leader": 3,
           "desired": false,
           "unknown": false,
@@ -537,6 +551,7 @@ Note: this output is prettified using `jq .`, the JSON object emitted by librdka
         },
         "1": {
           "partition": 1,
+          "broker": 2,
           "leader": 2,
           "desired": false,
           "unknown": false,
@@ -566,6 +581,7 @@ Note: this output is prettified using `jq .`, the JSON object emitted by librdka
         },
         "-1": {
           "partition": -1,
+          "broker": -1,
           "leader": -1,
           "desired": false,
           "unknown": false,

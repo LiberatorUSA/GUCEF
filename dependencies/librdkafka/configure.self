@@ -4,7 +4,7 @@
 mkl_meta_set "description" "name"      "librdkafka"
 mkl_meta_set "description" "oneline"   "The Apache Kafka C/C++ library"
 mkl_meta_set "description" "long"      "Full Apache Kafka protocol support, including producer and consumer"
-mkl_meta_set "description" "copyright" "Copyright (c) 2012-2015 Magnus Edenhill"
+mkl_meta_set "description" "copyright" "Copyright (c) 2012-2022, Magnus Edenhill, 2023, Confluent Inc."
 
 # Enable generation of pkg-config .pc file
 mkl_mkvar_set "" GEN_PKG_CONFIG y
@@ -16,9 +16,11 @@ mkl_require pic
 mkl_require atomics
 mkl_require good_cflags
 mkl_require socket
+mkl_require zlib
 mkl_require libzstd
 mkl_require libssl
 mkl_require libsasl2
+mkl_require libcurl
 
 # Generate version variables from rdkafka.h hex version define
 # so we can use it as string version when generating a pkg-config file.
@@ -32,10 +34,17 @@ mkl_toggle_option "Development" ENABLE_VALGRIND "--enable-valgrind" "Enable in-c
 
 mkl_toggle_option "Development" ENABLE_REFCNT_DEBUG "--enable-refcnt-debug" "Enable refcnt debugging" "n"
 
-mkl_toggle_option "Development" ENABLE_SHAREDPTR_DEBUG "--enable-sharedptr-debug" "Enable sharedptr debugging" "n"
-
-mkl_toggle_option "Feature" ENABLE_LZ4_EXT "--enable-lz4-ext" "Enable external LZ4 library support" "y"
+mkl_toggle_option "Feature" ENABLE_LZ4_EXT "--enable-lz4-ext" "Enable external LZ4 library support (builtin version 1.9.3)" "y"
 mkl_toggle_option "Feature" ENABLE_LZ4_EXT "--enable-lz4" "Deprecated: alias for --enable-lz4-ext" "y"
+
+mkl_toggle_option "Feature" ENABLE_REGEX_EXT "--enable-regex-ext" "Enable external (libc) regex (else use builtin)" "y"
+
+# librdkafka with TSAN won't work with glibc C11 threads on Ubuntu 19.04.
+# This option allows disabling libc-based C11 threads and instead
+# use the builtin tinycthread alternative.
+mkl_toggle_option "Feature" ENABLE_C11THREADS "--enable-c11threads" "Enable detection of C11 threads support in libc" "try"
+
+mkl_toggle_option "Feature" ENABLE_SYSLOG "--enable-syslog" "Enable logging to syslog" "y"
 
 
 function checks {
@@ -47,10 +56,16 @@ function checks {
     mkl_lib_check "libpthread" "" fail CC "-lpthread" \
                   "#include <pthread.h>"
 
-    # Use internal tinycthread if C11 threads not available.
-    # Requires -lpthread on glibc c11 threads, thus the use of $LIBS.
-    mkl_lib_check "c11threads" WITH_C11THREADS disable CC "$LIBS" \
-                  "
+    if [[ $ENABLE_C11THREADS != n ]]; then
+        case "$ENABLE_C11THREADS" in
+            y) local action=fail ;;
+            try) local action=disable ;;
+            *) mkl_err "mklove internal error: invalid value for ENABLE_C11THREADS: $ENABLE_C11THREADS"; exit 1 ;;
+        esac
+        # Use internal tinycthread if C11 threads not available.
+        # Requires -lpthread on glibc c11 threads, thus the use of $LIBS.
+        mkl_lib_check "c11threads" WITH_C11THREADS $action CC "$LIBS" \
+                      "
 #include <threads.h>
 
 
@@ -67,6 +82,7 @@ void foo (void) {
     }
 }
 "
+    fi
 
     # Check if dlopen() is available
     mkl_lib_check "libdl" "WITH_LIBDL" disable CC "-ldl" \
@@ -86,25 +102,31 @@ void foo (void) {
     fi
 
     # optional libs
-    mkl_meta_set "zlib" "deb" "zlib1g-dev"
-    mkl_meta_set "zlib" "apk" "zlib-dev"
-    mkl_meta_set "zlib" "static" "libz.a"
-    mkl_lib_check "zlib" "WITH_ZLIB" disable CC "-lz" \
-                  "#include <zlib.h>"
-    mkl_check "libssl" disable
-    mkl_check "libsasl2" disable
-    mkl_check "libzstd" disable
+    mkl_check "zlib"
+    mkl_check "libssl"
+    mkl_check "libsasl2"
+    mkl_check "libzstd"
+    mkl_check "libcurl"
 
     if mkl_lib_check "libm" "" disable CC "-lm" \
                      "#include <math.h>"; then
         mkl_allvar_set WITH_HDRHISTOGRAM WITH_HDRHISTOGRAM y
     fi
 
-    # Use builtin lz4 if linking statically or if --disable-lz4 is used.
+    # Use builtin lz4 if linking statically or if --disable-lz4-ext is used.
     if [[ $MKL_SOURCE_DEPS_ONLY != y ]] && [[ $WITH_STATIC_LINKING != y ]] && [[ $ENABLE_LZ4_EXT == y ]]; then
         mkl_meta_set "liblz4" "static" "liblz4.a"
         mkl_lib_check "liblz4" "WITH_LZ4_EXT" disable CC "-llz4" \
                       "#include <lz4frame.h>"
+    fi
+
+    if [[ $ENABLE_SYSLOG == y ]]; then
+        mkl_compile_check "syslog" "WITH_SYSLOG" disable CC "" \
+                          '
+#include <syslog.h>
+void foo (void) {
+    syslog(LOG_INFO, "test");
+}'
     fi
 
     # rapidjson (>=1.1.0) is used in tests to verify statistics data, not used
@@ -118,21 +140,16 @@ void foo (void) {
     # Enable sockem (tests)
     mkl_allvar_set WITH_SOCKEM WITH_SOCKEM y
 
-    if [[ "$ENABLE_SASL" == "y" ]]; then
-        mkl_meta_set "libsasl2" "deb" "libsasl2-dev"
-        mkl_meta_set "libsasl2" "rpm" "cyrus-sasl"
-        if ! mkl_lib_check "libsasl2" "WITH_SASL_CYRUS" disable CC "-lsasl2" "#include <sasl/sasl.h>" ; then
-            mkl_lib_check "libsasl" "WITH_SASL_CYRUS" disable CC "-lsasl" \
-                          "#include <sasl/sasl.h>"
-        fi
-    fi
-
     if [[ "$WITH_SSL" == "y" ]]; then
         # SASL SCRAM requires base64 encoding from OpenSSL
         mkl_allvar_set WITH_SASL_SCRAM WITH_SASL_SCRAM y
         # SASL OAUTHBEARER's default unsecured JWS implementation
         # requires base64 encoding from OpenSSL
         mkl_allvar_set WITH_SASL_OAUTHBEARER WITH_SASL_OAUTHBEARER y
+
+        if [[ $WITH_CURL == y ]]; then
+            mkl_allvar_set WITH_OAUTHBEARER_OIDC WITH_OAUTHBEARER_OIDC y
+        fi
     fi
 
     # CRC32C: check for crc32 instruction support.
@@ -167,7 +184,8 @@ void foo (void) {
 
 
     # Check for libc regex
-    mkl_compile_check "regex" "HAVE_REGEX" disable CC "" \
+    if [[ $ENABLE_REGEX_EXT == y ]]; then
+        mkl_compile_check "regex" "HAVE_REGEX" disable CC "" \
 "
 #include <stddef.h>
 #include <regex.h>
@@ -177,7 +195,7 @@ void foo (void) {
    regerror(0, NULL, NULL, 0);
    regfree(NULL);
 }"
-
+    fi
 
     # Older g++ (<=4.1?) gives invalid warnings for the C++ code.
     mkl_mkvar_append CXXFLAGS CXXFLAGS "-Wno-non-virtual-dtor"
@@ -190,11 +208,29 @@ void foo (void) {
 	mkl_mkvar_append CFLAGS CFLAGS "-std=c99"
     fi
 
+    # Check if rand_r() is available
+    mkl_compile_check "rand_r" "HAVE_RAND_R" disable CC "" \
+"#include <stdlib.h>
+void foo (void) {
+   unsigned int seed = 0xbeaf;
+   (void)rand_r(&seed);
+}"
+
     # Check if strndup() is available (isn't on Solaris 10)
     mkl_compile_check "strndup" "HAVE_STRNDUP" disable CC "" \
 "#include <string.h>
 int foo (void) {
    return strndup(\"hi\", 2) ? 0 : 1;
+}"
+
+    # Check if strlcpy() is available
+    mkl_compile_check "strlcpy" "HAVE_STRLCPY" disable CC "" \
+"
+#define _DARWIN_C_SOURCE
+#include <string.h>
+int foo (void) {
+    char dest[4];
+   return strlcpy(dest, \"something\", sizeof(dest));
 }"
 
     # Check if strerror_r() is available.
@@ -208,6 +244,15 @@ const char *foo (void) {
    return buf;
 }"
 
+    # Check if strcasestr() is available.
+    mkl_compile_check "strcasestr" "HAVE_STRCASESTR" disable CC "" \
+"
+#define _GNU_SOURCE
+#include <string.h>
+char *foo (const char *needle) {
+   return strcasestr(\"the hay\", needle);
+}"
+
 
     # See if GNU's pthread_setname_np() is available, and in what form.
     mkl_compile_check "pthread_setname_gnu" "HAVE_PTHREAD_SETNAME_GNU" disable CC "-D_GNU_SOURCE -lpthread" \
@@ -216,6 +261,23 @@ const char *foo (void) {
 
 void foo (void) {
   pthread_setname_np(pthread_self(), "abc");
+}
+' || \
+    mkl_compile_check "pthread_setname_darwin" "HAVE_PTHREAD_SETNAME_DARWIN" disable CC "-D_DARWIN_C_SOURCE -lpthread" \
+'
+#include <pthread.h>
+
+void foo (void) {
+  pthread_setname_np("abc");
+}
+' || \
+    mkl_compile_check "pthread_setname_freebsd" "HAVE_PTHREAD_SETNAME_FREEBSD" disable CC "-lpthread" \
+'
+#include <pthread.h>
+#include <pthread_np.h>
+
+void foo (void) {
+  pthread_set_name_np(pthread_self(), "abc");
 }
 '
 
@@ -233,17 +295,37 @@ void foo (void) {
 	mkl_mkvar_set SYMDUMPER SYMDUMPER 'echo'
     fi
 
-    # The linker-script generator (lds-gen.py) requires python
+    # The linker-script generator (lds-gen.py) requires python3
     if [[ $WITH_LDS == y ]]; then
-        if ! mkl_command_check python "HAVE_PYTHON" "disable" "python -V"; then
-            mkl_err "disabling linker-script since python is not available"
+        if ! mkl_command_check python3 "HAVE_PYTHON" "disable" "python3 -V"; then
+            mkl_err "disabling linker-script since python3 is not available"
             mkl_mkvar_set WITH_LDS WITH_LDS "n"
         fi
     fi
 
     if [[ "$ENABLE_VALGRIND" == "y" ]]; then
-	mkl_compile_check valgrind WITH_VALGRIND disable CC "" \
+	mkl_compile_check valgrind WITH_VALGRIND fail CC "" \
 			  "#include <valgrind/memcheck.h>"
     fi
+
+    # getrusage() is used by the test framework
+    mkl_compile_check "getrusage" "HAVE_GETRUSAGE" disable CC "" \
+'
+#include <stdio.h>
+#include <sys/time.h>
+#include <sys/resource.h>
+
+
+void foo (void) {
+  struct rusage ru;
+  if (getrusage(RUSAGE_SELF, &ru) == -1)
+    return;
+  printf("ut %ld, st %ld, maxrss %ld, nvcsw %ld\n",
+         (long int)ru.ru_utime.tv_usec,
+         (long int)ru.ru_stime.tv_usec,
+         (long int)ru.ru_maxrss,
+         (long int)ru.ru_nvcsw);
+}'
+
 }
 

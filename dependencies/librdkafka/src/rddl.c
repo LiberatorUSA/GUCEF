@@ -1,7 +1,7 @@
 /*
  * librdkafka - The Apache Kafka C/C++ library
  *
- * Copyright (c) 2017 Magnus Edenhill
+ * Copyright (c) 2017-2022, Magnus Edenhill
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -32,7 +32,7 @@
 #if WITH_LIBDL
 #include <dlfcn.h>
 
-#elif defined( _MSC_VER)
+#elif defined(_WIN32)
 
 #else
 #error "Dynamic library loading not supported on this platform"
@@ -44,7 +44,7 @@
  * @brief Latest thread-local dl error, normalized to suit our logging.
  * @returns a newly allocated string that must be freed
  */
-static char *rd_dl_error (void) {
+static char *rd_dl_error(void) {
 #if WITH_LIBDL
         char *errstr;
         char *s;
@@ -59,7 +59,7 @@ static char *rd_dl_error (void) {
 
         return errstr;
 
-#elif defined(_MSC_VER)
+#elif defined(_WIN32)
         char buf[1024];
         rd_strerror_w32(GetLastError(), buf, sizeof(buf));
         return rd_strdup(buf);
@@ -72,20 +72,20 @@ static char *rd_dl_error (void) {
  *          else NULL.
  */
 static rd_dl_hnd_t *
-rd_dl_open0 (const char *path, char *errstr, size_t errstr_size) {
+rd_dl_open0(const char *path, char *errstr, size_t errstr_size) {
         void *handle;
         const char *loadfunc;
 #if WITH_LIBDL
         loadfunc = "dlopen()";
-        handle = dlopen(path, RTLD_NOW | RTLD_LOCAL);
-#elif defined(_MSC_VER)
+        handle   = dlopen(path, RTLD_NOW | RTLD_LOCAL);
+#elif defined(_WIN32)
         loadfunc = "LoadLibrary()";
-        handle = (void *)LoadLibraryA(path);
+        handle   = (void *)LoadLibraryA(path);
 #endif
         if (!handle) {
                 char *dlerrstr = rd_dl_error();
-                rd_snprintf(errstr, errstr_size, "%s failed: %s",
-                            loadfunc, dlerrstr);
+                rd_snprintf(errstr, errstr_size, "%s failed: %s", loadfunc,
+                            dlerrstr);
                 rd_free(dlerrstr);
         }
         return (rd_dl_hnd_t *)handle;
@@ -98,7 +98,7 @@ rd_dl_open0 (const char *path, char *errstr, size_t errstr_size) {
  * @returns the library handle (platform dependent, thus opaque) on success,
  *          else NULL.
  */
-rd_dl_hnd_t *rd_dl_open (const char *path, char *errstr, size_t errstr_size) {
+rd_dl_hnd_t *rd_dl_open(const char *path, char *errstr, size_t errstr_size) {
         rd_dl_hnd_t *handle;
         char *extpath;
         size_t pathlen;
@@ -116,7 +116,7 @@ rd_dl_hnd_t *rd_dl_open (const char *path, char *errstr, size_t errstr_size) {
         /* Get filename and filename extension.
          * We can't rely on basename(3) since it is not portable */
         fname = strrchr(path, '/');
-#ifdef _MSC_VER
+#ifdef _WIN32
         td = strrchr(path, '\\');
         if (td > fname)
                 fname = td;
@@ -135,7 +135,7 @@ rd_dl_hnd_t *rd_dl_open (const char *path, char *errstr, size_t errstr_size) {
         pathlen = strlen(path);
         extpath = rd_alloca(pathlen + strlen(solib_ext) + 1);
         memcpy(extpath, path, pathlen);
-        memcpy(extpath+pathlen, solib_ext, strlen(solib_ext) + 1);
+        memcpy(extpath + pathlen, solib_ext, strlen(solib_ext) + 1);
 
         /* Try again with extension */
         return rd_dl_open0(extpath, errstr, errstr_size);
@@ -146,10 +146,10 @@ rd_dl_hnd_t *rd_dl_open (const char *path, char *errstr, size_t errstr_size) {
  * @brief Close handle previously returned by rd_dl_open()
  * @remark errors are ignored (what can we do anyway?)
  */
-void rd_dl_close (rd_dl_hnd_t *handle) {
+void rd_dl_close(rd_dl_hnd_t *handle) {
 #if WITH_LIBDL
         dlclose((void *)handle);
-#elif defined(_MSC_VER)
+#elif defined(_WIN32)
         FreeLibrary((HMODULE)handle);
 #endif
 }
@@ -158,22 +158,22 @@ void rd_dl_close (rd_dl_hnd_t *handle) {
  * @brief look up address of \p symbol in library handle \p handle
  * @returns the function pointer on success or NULL on error.
  */
-void *
-rd_dl_sym (rd_dl_hnd_t *handle, const char *symbol,
-           char *errstr, size_t errstr_size) {
+void *rd_dl_sym(rd_dl_hnd_t *handle,
+                const char *symbol,
+                char *errstr,
+                size_t errstr_size) {
         void *func;
 #if WITH_LIBDL
         func = dlsym((void *)handle, symbol);
-#elif defined(_MSC_VER)
+#elif defined(_WIN32)
         func = GetProcAddress((HMODULE)handle, symbol);
 #endif
         if (!func) {
                 char *dlerrstr = rd_dl_error();
                 rd_snprintf(errstr, errstr_size,
-                            "Failed to load symbol \"%s\": %s",
-                            symbol, dlerrstr);
+                            "Failed to load symbol \"%s\": %s", symbol,
+                            dlerrstr);
                 rd_free(dlerrstr);
         }
         return func;
 }
-

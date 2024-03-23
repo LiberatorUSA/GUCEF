@@ -1,5 +1,15 @@
 #!/bin/bash
 #
+#
+# Run tests, one by one, until a failure.
+#
+# Usage:
+#   ./until-fail.sh [test-runner args] [mode]
+#
+# mode := bare valgrind helgrind gdb ..
+#
+# Logs for the last test run is written to _until-fail_<PID>.log.
+#
 
 [[ -z "$DELETE_TOPICS" ]] && DELETE_TOPICS=y
 
@@ -8,6 +18,7 @@ if [[ -z $ZK_ADDRESS ]]; then
 fi
 
 set -e
+set -o pipefail  # to have 'run-test.sh | tee' fail if run-test.sh fails.
 
 ARGS=
 while [[ $1 == -* ]]; do
@@ -25,6 +36,12 @@ if [[ -z "$TESTS" ]]; then
 else
     tests="$TESTS"
 fi
+
+if [[ $modes != gdb ]]; then
+    ARGS="-p1 $ARGS"
+fi
+
+LOG_FILE="_until_fail_$$.log"
 
 iter=0
 while true ; do
@@ -48,7 +65,7 @@ while true ; do
             else
                 export TESTS=$t
             fi
-            ./run-test.sh $ARGS ./merged $mode || (echo "Failed on iteration $iter, test $t, mode $mode" ; exit 1)
+            (./run-test.sh $ARGS $mode 2>&1 | tee $LOG_FILE) || (echo "Failed on iteration $iter, test $t, mode $mode, logs in $LOG_FILE" ; exit 1)
         done
     done
 
@@ -63,7 +80,7 @@ while true ; do
         # Delete topic-by-topic using kafka-topics for each one,
         # very slow but topics are properly deleted before the script
         # returns.
-        ./delete-test-topics.sh $ZK_ADDRESS ~/src/kafka/bin/kafka-topics.sh || true
+        ./delete-test-topics.sh $ZK_ADDRESS || true
     fi
 done
 

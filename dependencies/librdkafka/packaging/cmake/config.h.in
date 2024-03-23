@@ -1,7 +1,6 @@
 #cmakedefine01 WITHOUT_OPTIMIZATION
 #cmakedefine01 ENABLE_DEVEL
 #cmakedefine01 ENABLE_REFCNT_DEBUG
-#cmakedefine01 ENABLE_SHAREDPTR_DEBUG
 
 #cmakedefine01 HAVE_ATOMICS_32
 #cmakedefine01 HAVE_ATOMICS_32_SYNC
@@ -28,6 +27,8 @@
 #cmakedefine01 WITH_PKGCONFIG
 #cmakedefine01 WITH_HDRHISTOGRAM
 #cmakedefine01 WITH_ZLIB
+#cmakedefine01 WITH_CURL
+#cmakedefine01 WITH_OAUTHBEARER_OIDC
 #cmakedefine01 WITH_ZSTD
 #cmakedefine01 WITH_LIBDL
 #cmakedefine01 WITH_PLUGINS
@@ -41,7 +42,10 @@
 #cmakedefine01 WITH_LZ4_EXT
 #cmakedefine01 HAVE_REGEX
 #cmakedefine01 HAVE_STRNDUP
+#cmakedefine01 HAVE_RAND_R
 #cmakedefine01 HAVE_PTHREAD_SETNAME_GNU
+#cmakedefine01 HAVE_PTHREAD_SETNAME_DARWIN
+#cmakedefine01 HAVE_PTHREAD_SETNAME_FREEBSD
 #cmakedefine01 WITH_C11THREADS
 #cmakedefine01 WITH_CRC32C_HW
 #define SOLIB_EXT "${CMAKE_SHARED_LIBRARY_SUFFIX}"

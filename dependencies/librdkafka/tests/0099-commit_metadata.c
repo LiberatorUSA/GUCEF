@@ -1,7 +1,7 @@
 /*
  * librdkafka - Apache Kafka C library
  *
- * Copyright (c) 2012-2013, Magnus Edenhill
+ * Copyright (c) 2012-2022, Magnus Edenhill
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -28,73 +28,67 @@
 
 #include "test.h"
 
-static RD_UNUSED
-void print_toppar_list (const rd_kafka_topic_partition_list_t *list) {
+static RD_UNUSED void
+print_toppar_list(const rd_kafka_topic_partition_list_t *list) {
         int i;
 
         TEST_SAY("List count: %d\n", list->cnt);
 
-        for (i = 0 ; i < list->cnt ; i++) {
+        for (i = 0; i < list->cnt; i++) {
                 const rd_kafka_topic_partition_t *a = &list->elems[i];
 
-                TEST_SAY(" #%d/%d: "
-                         "%s [%"PRId32"] @ %"PRId64": "
-                         "(%"PRIusz") \"%*s\"\n",
-                         i, list->cnt,
-                         a->topic,
-                         a->partition,
-                         a->offset,
-                         a->metadata_size,
-                         (int)a->metadata_size,
-                         (const char *)a->metadata);
+                TEST_SAY(
+                    " #%d/%d: "
+                    "%s [%" PRId32 "] @ %" PRId64
+                    ": "
+                    "(%" PRIusz ") \"%*s\"\n",
+                    i, list->cnt, a->topic, a->partition, a->offset,
+                    a->metadata_size, (int)a->metadata_size,
+                    (const char *)a->metadata);
         }
 }
 
 
-static void compare_toppar_lists (
-        const rd_kafka_topic_partition_list_t *lista,
-        const rd_kafka_topic_partition_list_t *listb) {
+static void compare_toppar_lists(const rd_kafka_topic_partition_list_t *lista,
+                                 const rd_kafka_topic_partition_list_t *listb) {
         int i;
 
         TEST_ASSERT(lista->cnt == listb->cnt,
-                    "different list lengths: %d != %d",
-                    lista->cnt, listb->cnt);
+                    "different list lengths: %d != %d", lista->cnt, listb->cnt);
 
-        for (i = 0 ; i < lista->cnt ; i++) {
+        for (i = 0; i < lista->cnt; i++) {
                 const rd_kafka_topic_partition_t *a = &lista->elems[i];
                 const rd_kafka_topic_partition_t *b = &listb->elems[i];
 
                 if (a->offset != b->offset ||
                     a->metadata_size != b->metadata_size ||
                     memcmp(a->metadata, b->metadata, a->metadata_size))
-                        TEST_FAIL("Lists did not match at element %d/%d:\n"
-                                  " a: %s [%"PRId32"] @ %"PRId64": "
-                                  "(%"PRIusz") \"%*s\"\n"
-                                  " b: %s [%"PRId32"] @ %"PRId64": "
-                                  "(%"PRIusz") \"%*s\"",
-                                  i, lista->cnt,
-                                  a->topic,
-                                  a->partition,
-                                  a->offset,
-                                  a->metadata_size,
-                                  (int)a->metadata_size,
-                                  (const char *)a->metadata,
-                                  b->topic,
-                                  b->partition,
-                                  b->offset,
-                                  b->metadata_size,
-                                  (int)b->metadata_size,
-                                  (const char *)b->metadata);
+                        TEST_FAIL_LATER(
+                            "Lists did not match at element %d/%d:\n"
+                            " a: %s [%" PRId32 "] @ %" PRId64
+                            ": "
+                            "(%" PRIusz
+                            ") \"%*s\"\n"
+                            " b: %s [%" PRId32 "] @ %" PRId64
+                            ": "
+                            "(%" PRIusz ") \"%*s\"",
+                            i, lista->cnt, a->topic, a->partition, a->offset,
+                            a->metadata_size, (int)a->metadata_size,
+                            (const char *)a->metadata, b->topic, b->partition,
+                            b->offset, b->metadata_size, (int)b->metadata_size,
+                            (const char *)b->metadata);
         }
+
+        TEST_LATER_CHECK();
 }
 
 
 static int commit_cb_cnt = 0;
 
-static void offset_commit_cb (rd_kafka_t *rk,
-                              rd_kafka_resp_err_t err,
-                              rd_kafka_topic_partition_list_t *list,
-                              void *opaque) {
+static void offset_commit_cb(rd_kafka_t *rk,
+                             rd_kafka_resp_err_t err,
+                             rd_kafka_topic_partition_list_t *list,
+                             void *opaque) {
         commit_cb_cnt++;
         TEST_ASSERT(!err, "offset_commit_cb failure: %s",
                     rd_kafka_err2str(err));
@@ -102,13 +96,13 @@ static void offset_commit_cb (rd_kafka_t *rk,
 
 
 static void
-commit_metadata (const char *group_id,
-                 const rd_kafka_topic_partition_list_t *toppar_to_commit) {
+commit_metadata(const char *group_id,
+                const rd_kafka_topic_partition_list_t *toppar_to_commit) {
         rd_kafka_resp_err_t err;
         rd_kafka_t *rk;
         rd_kafka_conf_t *conf;
 
-        test_conf_init(&conf, NULL, 20/*timeout*/);
+        test_conf_init(&conf, NULL, 20 /*timeout*/);
 
         test_conf_set(conf, "group.id", group_id);
 
@@ -131,15 +125,15 @@ commit_metadata (const char *group_id,
 
 
 static void
-get_committed_metadata (const char *group_id,
-                        const rd_kafka_topic_partition_list_t *toppar_to_check,
-                        const rd_kafka_topic_partition_list_t *expected_toppar) {
+get_committed_metadata(const char *group_id,
+                       const rd_kafka_topic_partition_list_t *toppar_to_check,
+                       const rd_kafka_topic_partition_list_t *expected_toppar) {
         rd_kafka_resp_err_t err;
         rd_kafka_t *rk;
         rd_kafka_conf_t *conf;
         rd_kafka_topic_partition_list_t *committed_toppar;
 
-        test_conf_init(&conf, NULL, 20/*timeout*/);
+        test_conf_init(&conf, NULL, 20 /*timeout*/);
 
         test_conf_set(conf, "group.id", group_id);
 
@@ -154,16 +148,20 @@ get_committed_metadata (const char *group_id,
 
         compare_toppar_lists(committed_toppar, expected_toppar);
 
+        rd_kafka_topic_partition_list_destroy(committed_toppar);
+
         rd_kafka_destroy(rk);
 }
 
-int main_0099_commit_metadata (int argc, char **argv) {
+int main_0099_commit_metadata(int argc, char **argv) {
         rd_kafka_topic_partition_list_t *origin_toppar;
         rd_kafka_topic_partition_list_t *expected_toppar;
         const char *topic = test_mk_topic_name("0099-commit_metadata", 0);
-        const char *group_id = topic;
+        char group_id[16];
 
-        test_conf_init(NULL, NULL, 20/*timeout*/);
+        test_conf_init(NULL, NULL, 20 /*timeout*/);
+
+        test_str_id_generate(group_id, sizeof(group_id));
 
         test_create_topic(NULL, topic, 1, 1);
 
@@ -173,10 +171,10 @@ int main_0099_commit_metadata (int argc, char **argv) {
 
         expected_toppar = rd_kafka_topic_partition_list_copy(origin_toppar);
 
-        expected_toppar->elems[0].offset = 42;
+        expected_toppar->elems[0].offset   = 42;
         expected_toppar->elems[0].metadata = rd_strdup("Hello world!");
         expected_toppar->elems[0].metadata_size =
-                strlen(expected_toppar->elems[0].metadata);
+            strlen(expected_toppar->elems[0].metadata);
 
         get_committed_metadata(group_id, origin_toppar, origin_toppar);
 
@@ -189,5 +187,3 @@ int main_0099_commit_metadata (int argc, char **argv) {
 
         return 0;
 }
-
-
