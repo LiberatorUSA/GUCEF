@@ -125,7 +125,6 @@ set( SOURCE_FILES
   src/rdfnv1a.c
   src/rdgz.c
   src/rdhdrhistogram.c
-  src/rdhttp.c
   src/rdkafka.c
   src/rdkafka_admin.c
   src/rdkafka_assignment.c
@@ -164,7 +163,6 @@ set( SOURCE_FILES
   src/rdkafka_request.c
   src/rdkafka_roundrobin_assignor.c
   src/rdkafka_sasl.c
-  src/rdkafka_sasl_oauthbearer_oidc.c
   src/rdkafka_sasl_plain.c
   src/rdkafka_sticky_assignor.c
   src/rdkafka_subscription.c

@@ -2,10 +2,12 @@
     <EXCLUDES PLATFORM="ALL">
         <ITEM NAME="rdkafka_sasl_cyrus.c" TYPE="FILE" />
         <ITEM NAME="rdkafka_sasl_oauthbearer.c" TYPE="FILE" />
+		<ITEM NAME="rdkafka_sasl_oauthbearer_oidc.c" TYPE="FILE" />
         <ITEM NAME="rdkafka_sasl_scram.c" TYPE="FILE" />
         <ITEM NAME="rdkafka_sasl_win32.c" TYPE="FILE" />
         <ITEM NAME="rdkafka_ssl.c" TYPE="FILE" />
         <ITEM NAME="rdkafka_zstd.c" TYPE="FILE" />
+		<ITEM NAME="rdhttp.c" TYPE="FILE" />
     </EXCLUDES>
     <INCLUDES PLATFORM="mswin">
       <ITEM NAME="rdkafka_sasl_win32.c" TYPE="FILE" />
