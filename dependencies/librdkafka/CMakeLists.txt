@@ -12,6 +12,7 @@
 # Configuration for module: RdKafka
 
 set( HEADER_FILES 
+  config.h
   src/cJSON.h
   src/crc32c.h
   src/lz4.h
@@ -244,7 +245,7 @@ if ( LINUX64 )
   set_property( TARGET ${MODULE_NAME} APPEND_STRING PROPERTY COMPILE_DEFINITIONS "WITH_LIBDL" )
 endif( LINUX64 )
 
-include_directories( src src-cpp )
+include_directories( ../librdkafka src src-cpp )
 
 if ( LINUX32 )
   include_directories( ../zlib )
