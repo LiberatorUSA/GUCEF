@@ -75,11 +75,12 @@ CORE::Int32 GUCEF_PLUGIN_CALLSPEC_PREFIX
 GUCEFPlugin_Load( CORE::UInt32 argc, const char** argv ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
 {GUCEF_TRACE;
 
-    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Load called on PUBSUB plugin KAFKA" );
-    
+    GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "Load called on PUBSUB plugin KAFKA" );
+    GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "Using librdkafka " + RdKafka::version_str() );
+
     PUBSUB::CPubSubGlobal::Instance()->GetPubSubClientFactory().RegisterConcreteFactory( CKafkaPubSubClient::TypeName, &g_kafkaClusterPubSubClientFactory );
     
-    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Load finished for PUBSUB plugin KAFKA" );
+    GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "Load finished for PUBSUB plugin KAFKA" );
     return 1;
 }
 
@@ -89,11 +90,13 @@ void GUCEF_PLUGIN_CALLSPEC_PREFIX
 GUCEFPlugin_Unload( void ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
 {GUCEF_TRACE;
 
-    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Unload called on PUBSUB plugin KAFKA" );
+    GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "Unload called on PUBSUB plugin KAFKA" );
 
     PUBSUB::CPubSubGlobal::Instance()->GetPubSubClientFactory().UnregisterConcreteFactory( CKafkaPubSubClient::TypeName );
 
-    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Unload finished for PUBSUB plugin KAFKA" );
+    RdKafka::wait_destroyed( 5000 );
+
+    GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "Unload finished for PUBSUB plugin KAFKA" );
 }
 
 /*--------------------------------------------------------------------------*/
@@ -126,7 +129,7 @@ const char* GUCEF_PLUGIN_CALLSPEC_PREFIX
 GUCEFPlugin_GetDescription( void ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
 {GUCEF_TRACE;
 
-    return "Generic GUCEF plugin for COMCORE \"Kafka\" pubsub connectivity";
+    return "Generic GUCEF plugin for PUBSUB \"Kafka\" connectivity";
 }
 
 /*-------------------------------------------------------------------------//

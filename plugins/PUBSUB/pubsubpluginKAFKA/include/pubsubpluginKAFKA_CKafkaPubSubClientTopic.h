@@ -155,6 +155,8 @@ class PUBSUBPLUGIN_KAFKA_PLUGIN_PRIVATE_CPP CKafkaPubSubClientTopic : public PUB
     CORE::UInt32 GetKafkaMsgsReceivedCounter( bool resetCounter );
 
     CORE::UInt32 GetKafkaMsgsFilteredCounter( bool resetCounter );
+
+    bool UpdateKafkaMsgsReceiveLag( void );
     
     class TopicMetrics
     {
@@ -167,7 +169,17 @@ class PUBSUBPLUGIN_KAFKA_PLUGIN_PRIVATE_CPP CKafkaPubSubClientTopic : public PUB
         CORE::UInt32 kafkaTransmitOverflowQueueSize;
 
         CORE::UInt32 kafkaMessagesReceived;
-        CORE::UInt32 kafkaMessagesFiltered;
+        
+        bool hasKafkaMessagesReceiveLag;
+        CORE::UInt64 kafkaMessagesReceiveLagMin;
+        CORE::UInt64 kafkaMessagesReceiveLagAvg;
+        CORE::UInt64 kafkaMessagesReceiveLagMax;
+        bool hasKafkaMessagesReceiveCommitLag;
+        CORE::UInt64 kafkaMessagesReceiveCommitLagMin;
+        CORE::UInt64 kafkaMessagesReceiveCommitLagAvg;
+        CORE::UInt64 kafkaMessagesReceiveCommitLagMax;
+
+        CORE::UInt32 kafkaMessagesFiltered;        
 
         CORE::UInt32 kafkaErrorReplies;
         CORE::UInt32 kafkaConnectionErrors;
@@ -285,6 +297,7 @@ class PUBSUBPLUGIN_KAFKA_PLUGIN_PRIVATE_CPP CKafkaPubSubClientTopic : public PUB
     typedef std::pair< CORE::CDynamicBuffer, CORE::CDynamicBuffer >     TBufferPair;
     typedef std::vector< TBufferPair >                                  TBufferVector;
     typedef std::map< CORE::Int32, CORE::Int64 >                        TInt32ToInt64Map;
+    typedef std::vector< RdKafka::TopicPartition* >                     TRdKafkaTopicPartitionPtrVector;
 
     CKafkaPubSubClient* m_client;
     CORE::CTimer* m_metricsTimer;
@@ -300,6 +313,7 @@ class PUBSUBPLUGIN_KAFKA_PLUGIN_PRIVATE_CPP CKafkaPubSubClientTopic : public PUB
     RdKafka::Producer* m_kafkaProducer;
     RdKafka::Topic* m_kafkaProducerTopic;
     RdKafka::KafkaConsumer* m_kafkaConsumer;
+    TInt32ToInt64Map m_kafkaCommitedConsumerOffsets;
     CORE::UInt32 m_kafkaErrorReplies;
     CORE::UInt32 m_kafkaConnectionErrors;
     CORE::UInt32 m_kafkaMsgsTransmitted;

@@ -130,7 +130,7 @@ CKafkaPubSubClient::Clear( void )
     GUCEF_DELETE m_kafkaProducer;
     m_kafkaProducer = GUCEF_NULL;
     GUCEF_DELETE m_kafkaProducerConf;
-    m_kafkaProducerConf = GUCEF_NULL;
+    m_kafkaProducerConf = GUCEF_NULL;    
 }
 
 /*-------------------------------------------------------------------------*/
@@ -1005,6 +1005,19 @@ CKafkaPubSubClient::OnMetricsTimerCycle( CORE::CNotifier* notifier    ,
         {
             GUCEF_METRIC_COUNT( m_config.metricsPrefix + topicName + ".kafkaMessagesReceived", metrics.kafkaMessagesReceived, 1.0f );
             GUCEF_METRIC_COUNT( m_config.metricsPrefix + topicName + ".kafkaMessagesFiltered", metrics.kafkaMessagesFiltered, 1.0f );
+
+            if ( metrics.hasKafkaMessagesReceiveLag )
+            {
+                GUCEF_METRIC_COUNT( m_config.metricsPrefix + topicName + ".kafkaMessagesReceiveLag.min", metrics.kafkaMessagesReceiveLagMin, 1.0f );
+                GUCEF_METRIC_COUNT( m_config.metricsPrefix + topicName + ".kafkaMessagesReceiveLag.avg", metrics.kafkaMessagesReceiveLagAvg, 1.0f );
+                GUCEF_METRIC_COUNT( m_config.metricsPrefix + topicName + ".kafkaMessagesReceiveLag.max", metrics.kafkaMessagesReceiveLagMax, 1.0f );
+            }
+            if ( metrics.hasKafkaMessagesReceiveCommitLag )
+            {
+                GUCEF_METRIC_COUNT( m_config.metricsPrefix + topicName + ".kafkaMessagesReceiveCommitLag.min", metrics.kafkaMessagesReceiveCommitLagMin, 1.0f );
+                GUCEF_METRIC_COUNT( m_config.metricsPrefix + topicName + ".kafkaMessagesReceiveCommitLag.avg", metrics.kafkaMessagesReceiveCommitLagAvg, 1.0f );
+                GUCEF_METRIC_COUNT( m_config.metricsPrefix + topicName + ".kafkaMessagesReceiveCommitLag.max", metrics.kafkaMessagesReceiveCommitLagMax, 1.0f );
+            }
         }
 
         ++i;

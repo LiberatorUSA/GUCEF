@@ -126,7 +126,7 @@ const char* GUCEF_PLUGIN_CALLSPEC_PREFIX
 GUCEFPlugin_GetDescription( void ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
 {GUCEF_TRACE;
 
-    return "Generic GUCEF plugin for COMCORE pubsub approximation using UDP";
+    return "Generic GUCEF plugin for PUBSUB approximation using UDP";
 }
 
 /*-------------------------------------------------------------------------//

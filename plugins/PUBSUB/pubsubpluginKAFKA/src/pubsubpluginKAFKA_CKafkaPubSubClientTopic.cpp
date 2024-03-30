@@ -89,6 +89,7 @@ CKafkaPubSubClientTopic::CKafkaPubSubClientTopic( CKafkaPubSubClient* client )
     , m_kafkaProducer( GUCEF_NULL )
     , m_kafkaProducerTopic( GUCEF_NULL )
     , m_kafkaConsumer( GUCEF_NULL )
+    , m_kafkaCommitedConsumerOffsets()
     , m_kafkaErrorReplies( 0 )
     , m_kafkaConnectionErrors( 0 )
     , m_kafkaMsgsTransmitted( 0 )
@@ -522,8 +523,20 @@ CKafkaPubSubClientTopic::SetupBasedOnConfig( void )
 	    kafkaConf->set( "event_cb", static_cast< RdKafka::EventCb* >( this ), errStr );
 	    kafkaConf->set( "dr_cb", static_cast< RdKafka::DeliveryReportCb* >( this ), errStr );
         kafkaConf->set( "rebalance_cb", static_cast< RdKafka::RebalanceCb* >( this ), errStr );
+        kafkaConf->set( "offset_commit_cb", static_cast< RdKafka::OffsetCommitCb* >( this ), errStr );
 
         rd_kafka_conf_set_log_cb( kafkaConf->c_ptr_global(), &RdKafkaLogCallback );  
+
+        if ( m_maxTotalMsgsInFlight > 0 )
+        {
+            std::string maxTotalMsgsInFlightStr = CORE::ToString( m_maxTotalMsgsInFlight );
+            m_kafkaConsumerConf->set( "max.in.flight", maxTotalMsgsInFlightStr, errStr );
+        }
+        if ( GUCEF_NULL != m_client )
+        {
+            std::string reconnectBackoffMsStr = CORE::ToString( m_client->GetConfig().reconnectDelayInMs );
+            kafkaConf->set( "reconnect.backoff.ms", reconnectBackoffMsStr, errStr );
+        }
 
         CKafkaPubSubClientConfig::StringMap::const_iterator m = clientConfig.kafkaProducerGlobalConfigSettings.begin();
         while ( m != clientConfig.kafkaProducerGlobalConfigSettings.end() )
@@ -589,6 +602,7 @@ CKafkaPubSubClientTopic::SetupBasedOnConfig( void )
 	    kafkaConf->set( "event_cb", static_cast< RdKafka::EventCb* >( this ), errStr );
 	    kafkaConf->set( "dr_cb", static_cast< RdKafka::DeliveryReportCb* >( this ), errStr );
         kafkaConf->set( "rebalance_cb", static_cast< RdKafka::RebalanceCb* >( this ), errStr );
+        kafkaConf->set( "offset_commit_cb", static_cast< RdKafka::OffsetCommitCb* >( this ), errStr );
 
         rd_kafka_conf_set_log_cb( kafkaConf->c_ptr_global(), &RdKafkaLogCallback );
         rd_kafka_conf_set_stats_cb( kafkaConf->c_ptr_global(), &RdKafkaStatsCallback );
@@ -614,6 +628,17 @@ CKafkaPubSubClientTopic::SetupBasedOnConfig( void )
         bool tracePartitionEof = clientConfig.desiredFeatures.supportsSubscriptionEndOfDataEvent;
         #endif
         m_kafkaConsumerConf->set( "enable.partition.eof", tracePartitionEof ? "true" : "false", errStr );
+
+        if ( m_maxTotalMsgsInFlight > 0 )
+        {
+            std::string maxTotalMsgsInFlightStr = CORE::ToString( m_maxTotalMsgsInFlight );
+            m_kafkaConsumerConf->set( "max.in.flight", maxTotalMsgsInFlightStr, errStr );
+        }
+        if ( GUCEF_NULL != m_client )
+        {
+            std::string reconnectBackoffMsStr = CORE::ToString( m_client->GetConfig().reconnectDelayInMs );
+            kafkaConf->set( "reconnect.backoff.ms", reconnectBackoffMsStr, errStr );
+        }
 
         // Apply default client level topic config as an overlay
         RdKafka::Conf* kafkaConsumerTopicConfig = RdKafka::Conf::create( RdKafka::Conf::CONF_TOPIC );
@@ -694,6 +719,29 @@ CKafkaPubSubClientTopic::SetupBasedOnConfig( void )
                 GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "KafkaPubSubClientTopic:LoadConfig: consumerGroupName is mandatory but not configured. check the config" );
             }
         }
+
+        // Check for the mandatory group member ID property.
+        // This may have already been set by the generic custom property setting that occured above
+        configResult = m_kafkaConsumerConf->get( "group.instance.id", confValue );
+        if ( RdKafka::Conf::ConfResult::CONF_OK != configResult ||
+             confValue.empty()                                  ||
+             confValue.size() == 0                               )
+        {
+            if ( !m_config.consumerName.IsNULLOrEmpty() )
+            {
+                if ( RdKafka::Conf::CONF_OK != m_kafkaConsumerConf->set( "group.instance.id", m_config.consumerName, errStr ) )
+                {
+		            GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "KafkaPubSubClientTopic:LoadConfig: Failed to set Kafka consumer instance id to \"" +
+                        m_config.consumerName + "\", error message: " + errStr );
+                    ++m_kafkaErrorReplies;
+                    return false;
+                }
+            }
+            else
+            {
+                GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "KafkaPubSubClientTopic:LoadConfig: consumerName is mandatory but not configured. check the config" );
+            }
+        }        
 
         RdKafka::KafkaConsumer* consumer = RdKafka::KafkaConsumer::create( m_kafkaConsumerConf, errStr );
 	    if ( consumer == GUCEF_NULL )
@@ -833,25 +881,62 @@ CKafkaPubSubClientTopic::Subscribe( void )
     if ( !IsConnected() )
         if ( !SetupBasedOnConfig() )
             return false;
+                                   
+    if ( GUCEF_NULL != m_kafkaConsumer )
+    {
+        // First obtain the currently commited offsets if possible
+        // this is optional but desired as it helps with troubleshooting and helps init the stats earlier
+        TRdKafkaTopicPartitionPtrVector partitions;
+        RdKafka::ErrorCode err = m_kafkaConsumer->committed( partitions, 10000 );
+        if ( RdKafka::ERR_NO_ERROR == err )
+        {
+            CORE::CString commitInfo = "KafkaPubSubClientTopic:Subscribe: Group \"" + m_config.consumerGroupName + "\", Member ID \"" + m_kafkaConsumer->memberid() + "\": ";
+            if ( !partitions.empty() )
+            {
+                for ( unsigned int i=0; i<partitions.size(); ++i )
+                {
+                    RdKafka::TopicPartition* partition = partitions[ i ];
+                    commitInfo += "Topic \"" + CORE::ToString( partition->topic() ) + "\" has partition \"" + CORE::Int32ToString( partition->partition() ) + "\" with committed offset \"" + CORE::ToString( partition->offset() ) + "\". ";
 
-    std::vector< std::string > topics;
-    topics.push_back( m_config.topicName );
-    RdKafka::ErrorCode response = m_kafkaConsumer->subscribe( topics );
-    if ( RdKafka::ERR_NO_ERROR != response )
-    {
-		std::string errStr = RdKafka::err2str( response );
-        GUCEF_ERROR_LOG(CORE::LOGLEVEL_IMPORTANT, "KafkaPubSubClientTopic:Subscribe: Failed to 'subscribe' Kafka Consumer for topic \"" +
-            m_config.topicName + ", error message: " + errStr );
-        ++m_kafkaErrorReplies;
-        return false;
+                    m_kafkaCommitedConsumerOffsets[ partition->partition() ] = partition->offset();
+                }
+            }
+            else
+            {
+                commitInfo += "has no known server-side commited offsets";
+            }
+            GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, commitInfo );
+        }
+        else
+        {
+            ++m_kafkaErrorReplies;
+            std::string errStr = RdKafka::err2str( err );
+            GUCEF_WARNING_LOG( CORE::LOGLEVEL_IMPORTANT, "KafkaPubSubClientTopic: Failed to obtain currently commited offsets for member \"" + m_kafkaConsumer->memberid() + "\". ErrorCode : " + errStr );
+        }
+
+        // Perform the actual subscribe
+        std::vector< std::string > topics;
+        topics.push_back( m_config.topicName );
+        RdKafka::ErrorCode response = m_kafkaConsumer->subscribe( topics );
+        if ( RdKafka::ERR_NO_ERROR == response )
+        {
+            m_isSubscribed = true;
+
+            GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "KafkaPubSubClientTopic:Subscribe: Successfully subscribed Kafka Consumer for topic \"" +
+                m_config.topicName + "\" using Kafka server side bookmark as the starting position" );
+        }
+        else
+        {
+		    std::string errStr = RdKafka::err2str( response );
+            GUCEF_ERROR_LOG(CORE::LOGLEVEL_IMPORTANT, "KafkaPubSubClientTopic:Subscribe: Failed to 'subscribe' Kafka Consumer for topic \"" +
+                m_config.topicName + ", error message: " + errStr );
+            ++m_kafkaErrorReplies;
+            return false;
+        }
+
+        return true;
     }
-    else
-    {
-        m_isSubscribed = true;
-        GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "KafkaPubSubClientTopic:Subscribe: Successfully subscribed Kafka Consumer for topic \"" +
-            m_config.topicName + "\" using Kafka server side bookmark as the starting position" );
-    }
-    return true;
+    return false;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -933,6 +1018,10 @@ CKafkaPubSubClientTopic::SubscribeStartingAtTopicIndex( const CORE::CVariant& in
     std::string errStr;
     RdKafka::ErrorCode response;
 
+    MT::CScopeMutex lock( m_lock );
+    
+    m_shouldBeConnected = true;
+    
     // First we need to set up RdKafka with the relevant internal stuctures for our topics
     std::vector< std::string > topics;
     topics.push_back( m_config.topicName );
@@ -1072,6 +1161,10 @@ bool
 CKafkaPubSubClientTopic::SubscribeStartingAtMsgDateTime( const CORE::CDateTime& msgDtBookmark )
 {GUCEF_TRACE;
 
+    MT::CScopeMutex lock( m_lock );
+    
+    m_shouldBeConnected = true;
+    
     std::string errStr;
     RdKafka::ErrorCode response = RdKafka::ERR_NO_ERROR;
     CORE::UInt64 ticksSinceEpoch = msgDtBookmark.ToUnixEpochBasedTicksInMillisecs();
@@ -1530,6 +1623,117 @@ CKafkaPubSubClientTopic::GetKafkaMsgsFilteredCounter( bool resetCounter )
         return m_kafkaMessagesFiltered;
 }
 
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CKafkaPubSubClientTopic::UpdateKafkaMsgsReceiveLag( void )
+{GUCEF_TRACE;
+
+    bool totalSuccess = true;
+    
+    m_metrics.hasKafkaMessagesReceiveLag = false;
+    m_metrics.kafkaMessagesReceiveLagAvg = 0;
+    m_metrics.kafkaMessagesReceiveLagMin = 0;
+    m_metrics.kafkaMessagesReceiveLagMax = 0;
+    m_metrics.hasKafkaMessagesReceiveCommitLag = false;
+    m_metrics.kafkaMessagesReceiveCommitLagAvg = 0;
+    m_metrics.kafkaMessagesReceiveCommitLagMin = 0;
+    m_metrics.kafkaMessagesReceiveCommitLagMax = 0;
+
+    if ( GUCEF_NULL != m_kafkaConsumer )
+    {        
+        RdKafka::ErrorCode response = RdKafka::ERR_NO_ERROR;
+
+        TRdKafkaTopicPartitionPtrVector kafkaPartitions;
+        response = m_kafkaConsumer->assignment( kafkaPartitions );    
+        if ( response != RdKafka::ERR_NO_ERROR )
+                return false;
+
+        if ( !kafkaPartitions.empty() )
+        {
+            CORE::Int64 minLag = GUCEF_INT64MAX;
+            CORE::Int64 maxLag = GUCEF_INT64MIN;        
+            CORE::Int64 lag = 0;
+        
+            CORE::Int64 commitMinLag = GUCEF_INT64MAX;
+            CORE::Int64 commitMaxLag = GUCEF_INT64MIN;        
+            CORE::Int64 commitLag = 0;
+
+            TRdKafkaTopicPartitionPtrVector::iterator i = kafkaPartitions.begin();
+            while ( i != kafkaPartitions.end() )
+            {
+                RdKafka::TopicPartition* partition = (*i);
+                if ( GUCEF_NULL != partition )
+                {
+                    CORE::Int64 lowOffset = 0;
+                    CORE::Int64 highOffset = 0;
+                    response = m_kafkaConsumer->get_watermark_offsets( partition->topic(), partition->partition(), &lowOffset, &highOffset );
+                    if ( response == RdKafka::ERR_NO_ERROR )
+                    {
+                        if ( RdKafka::Topic::OFFSET_INVALID != highOffset )
+                        {
+                            TInt32ToInt64Map::iterator n = m_consumerOffsets.find( partition->partition() );
+                            if ( n != m_consumerOffsets.end() )
+                            {
+                                CORE::Int64 currentReadCursorOffset = (*n).second;
+                                CORE::Int64 currentReadCursorLag = highOffset - currentReadCursorOffset;
+
+                                if ( currentReadCursorLag < minLag )
+                                    minLag = currentReadCursorLag;
+                                if ( currentReadCursorLag > maxLag )
+                                    maxLag = currentReadCursorLag;                        
+                            
+                                lag += currentReadCursorLag;
+
+                                TInt32ToInt64Map::iterator m = m_kafkaCommitedConsumerOffsets.find( partition->partition() );
+                                if ( m != m_kafkaCommitedConsumerOffsets.end() )
+                                {
+                                    CORE::Int64 currentReadCursorCommitedOffset = (*m).second;
+                                    if ( 0 < currentReadCursorCommitedOffset )
+                                    {
+                                        CORE::Int64 currentReadCursorCommitedOffsetLag = highOffset - currentReadCursorCommitedOffset;
+
+                                        if ( currentReadCursorCommitedOffsetLag < commitMinLag )
+                                            commitMinLag = currentReadCursorCommitedOffsetLag;
+                                        if ( currentReadCursorCommitedOffsetLag > commitMaxLag )
+                                            commitMaxLag = currentReadCursorCommitedOffsetLag;   
+
+                                        commitLag += currentReadCursorCommitedOffsetLag;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+                ++i;
+            }
+
+            if ( minLag != GUCEF_INT64MAX && maxLag != GUCEF_INT64MIN )
+            {
+                m_metrics.hasKafkaMessagesReceiveLag = true;
+                m_metrics.kafkaMessagesReceiveLagAvg = (CORE::UInt64) round( ( 1.0 * lag ) / ( 1.0 * kafkaPartitions.size() ) );
+                m_metrics.kafkaMessagesReceiveLagMin = (CORE::UInt64) minLag;
+                m_metrics.kafkaMessagesReceiveLagMax = (CORE::UInt64) maxLag;
+            }
+            else
+                totalSuccess = false;
+
+            if ( commitMinLag != GUCEF_INT64MAX && commitMaxLag != GUCEF_INT64MIN )
+            {
+                m_metrics.hasKafkaMessagesReceiveCommitLag = true;
+                m_metrics.kafkaMessagesReceiveCommitLagAvg = (CORE::UInt64) round( ( 1.0 * commitLag ) / ( 1.0 * kafkaPartitions.size() ) );
+                m_metrics.kafkaMessagesReceiveCommitLagMin = (CORE::UInt64) commitMinLag;
+                m_metrics.kafkaMessagesReceiveCommitLagMax = (CORE::UInt64) commitMaxLag;
+            }
+            else
+                totalSuccess = false;
+        }
+    }
+
+    return totalSuccess;
+}
+
 /*-------------------------------------------------------------------------*/
 
 CKafkaPubSubClientTopic::TopicMetrics::TopicMetrics( void )
@@ -1537,8 +1741,17 @@ CKafkaPubSubClientTopic::TopicMetrics::TopicMetrics( void )
     , kafkaTransmitQueueSize( 0 )
     , kafkaTransmitOverflowQueueSize( 0 )
     , kafkaMessagesReceived( 0 )
+    , hasKafkaMessagesReceiveLag( false )
+    , kafkaMessagesReceiveLagMin( 0 )
+    , kafkaMessagesReceiveLagAvg( 0 )
+    , kafkaMessagesReceiveLagMax( 0 )
+    , hasKafkaMessagesReceiveCommitLag( false )
+    , kafkaMessagesReceiveCommitLagMin( 0 )
+    , kafkaMessagesReceiveCommitLagAvg( 0 )
+    , kafkaMessagesReceiveCommitLagMax( 0 )
     , kafkaMessagesFiltered( 0 )
     , kafkaErrorReplies( 0 )
+    , kafkaConnectionErrors( 0 )
 {GUCEF_TRACE;
 
 }
@@ -1563,6 +1776,8 @@ CKafkaPubSubClientTopic::OnMetricsTimerCycle( CORE::CNotifier* notifier    ,
     }
     if ( clientConfig.desiredFeatures.supportsSubscribing )
     {
+        UpdateKafkaMsgsReceiveLag();
+
         m_metrics.kafkaMessagesReceived = GetKafkaMsgsReceivedCounter( true );
         m_metrics.kafkaMessagesFiltered = GetKafkaMsgsFilteredCounter( true );
     }
@@ -1835,6 +2050,19 @@ CKafkaPubSubClientTopic::offset_commit_cb( RdKafka::ErrorCode err               
                 GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "KafkaPubSubClientTopic: CommitConsumerOffsets failed after reset of offsets" );
             }
         }
+        else
+        if ( RdKafka::ERR_NO_ERROR == err )
+        {
+            for ( unsigned int i=0; i<partitions.size(); ++i )
+            {
+                int64_t partitionOffset = partitions[ i ]->offset();
+                if ( 0 <= partitionOffset )
+                {
+                    m_kafkaCommitedConsumerOffsets[ partitions[ i ]->partition() ] = partitionOffset; 
+                }
+                
+            }
+        }
     }    
 }
 
@@ -1875,6 +2103,8 @@ CKafkaPubSubClientTopic::rebalance_cb( RdKafka::KafkaConsumer* consumer         
         if (  m_firstPartitionAssignment )
             m_firstPartitionAssignment = false;
 
+        m_kafkaCommitedConsumerOffsets.clear();
+
         if ( CommitConsumerOffsets( false ) )
         {
             GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "KafkaPubSubClientTopic: Successfully commited the new offsets" );
@@ -1893,7 +2123,9 @@ CKafkaPubSubClientTopic::rebalance_cb( RdKafka::KafkaConsumer* consumer         
         for ( unsigned int i=0; i<partitions.size(); ++i )
         {
             m_consumerOffsets.erase( partitions[ i ]->partition() );
+            m_kafkaCommitedConsumerOffsets.erase( partitions[ i ]->partition() );
         }
+
         actionStr = "REVOKE_PARTITIONS";
     }
 
@@ -2405,70 +2637,82 @@ CKafkaPubSubClientTopic::CommitConsumerOffsets( bool useAsyncCommit )
     if ( GUCEF_NULL == m_kafkaConsumer )
         return false;
 
-    // Now commit the latest offsets
+    // First get the assigned partitions for the consumer
     std::vector<RdKafka::TopicPartition*> partitions;
     RdKafka::ErrorCode err = m_kafkaConsumer->assignment( partitions );
     if ( RdKafka::ERR_NO_ERROR == err )
     {
-        // Match the current Topic objects with our simplistic bookkeeping and sync them
-        std::vector<RdKafka::TopicPartition*>::iterator p = partitions.begin();
-        while ( p != partitions.end() )
+        if ( !partitions.empty() )
         {
-            CORE::Int32 partitionId = (*p)->partition();
-            TInt32ToInt64Map::iterator o = m_consumerOffsets.find( partitionId );
-            if ( o != m_consumerOffsets.end() )
+            // Match the current Topic objects with our simplistic bookkeeping and sync them
+            std::vector<RdKafka::TopicPartition*>::iterator p = partitions.begin();
+            while ( p != partitions.end() )
             {
-                (*p)->set_offset( (*o).second );
-            }
-            ++p;
-        }
-
-        // Now we actually tell the client library locally about the new offsets
-        err = m_kafkaConsumer->offsets_store( partitions );
-        if ( RdKafka::ERR_NO_ERROR == err )
-        {
-            // Now we request to send the local offset bookkeeping to Kafka
-            if ( useAsyncCommit )
-            {
-                err = m_kafkaConsumer->commitAsync( partitions );
-                if ( RdKafka::ERR_NO_ERROR == err )
+                CORE::Int32 partitionId = (*p)->partition();
+                TInt32ToInt64Map::iterator o = m_consumerOffsets.find( partitionId );
+                if ( o != m_consumerOffsets.end() )
                 {
-                    // Reset our flag so that we do not commit needlessly
-                    m_msgsReceivedSinceLastOffsetCommit = false;
+                    (*p)->set_offset( (*o).second );
+                }
+                ++p;
+            }
 
-                    GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "KafkaPubSubClientTopic: Successfully triggered async commit of current offsets" );
-                    return true;
+            // Now we actually tell the client library locally about the new offsets
+            err = m_kafkaConsumer->offsets_store( partitions );
+            if ( RdKafka::ERR_NO_ERROR == err )
+            {
+                // Now we request to send the local offset bookkeeping to Kafka
+                if ( useAsyncCommit )
+                {
+                    err = m_kafkaConsumer->commitAsync( partitions );
+                    if ( RdKafka::ERR_NO_ERROR == err )
+                    {
+                        // Reset our flag so that we do not commit needlessly
+                        m_msgsReceivedSinceLastOffsetCommit = false;
+
+                        GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "KafkaPubSubClientTopic: Successfully triggered async commit of current offsets" );
+                        return true;
+                    }
+                    else
+                    {
+                        ++m_kafkaErrorReplies;
+
+                        std::string errStr = RdKafka::err2str( err );
+                        GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "KafkaPubSubClientTopic: Cannot commit consumer offsets: Failed to trigger async commit of current offets. ErrorCode : " + errStr );
+                        UpdateIsHealthyStatus( false );
+                        return false;
+                    }
                 }
                 else
                 {
-                    ++m_kafkaErrorReplies;
+                    err = m_kafkaConsumer->commitSync( partitions );
+                    if ( RdKafka::ERR_NO_ERROR == err )
+                    {
+                        // Reset our flag so that we do not commit needlessly
+                        m_msgsReceivedSinceLastOffsetCommit = false;
 
-                    std::string errStr = RdKafka::err2str( err );
-                    GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "KafkaPubSubClientTopic: Cannot commit consumer offsets: Failed to trigger async commit of current offets. ErrorCode : " + errStr );
-                    UpdateIsHealthyStatus( false );
-                    return false;
+                        GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "KafkaPubSubClientTopic: Successfully triggered sync commit of current offsets" );
+                        return true;
+                    }
+                    else
+                    {
+                        ++m_kafkaErrorReplies;
+
+                        std::string errStr = RdKafka::err2str( err );
+                        GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "KafkaPubSubClientTopic: Cannot commit consumer offsets: Failed to trigger sync commit of current offets. ErrorCode : " + errStr );
+                        UpdateIsHealthyStatus( false );
+                        return false;
+                    }
                 }
             }
             else
             {
-                err = m_kafkaConsumer->commitSync( partitions );
-                if ( RdKafka::ERR_NO_ERROR == err )
-                {
-                    // Reset our flag so that we do not commit needlessly
-                    m_msgsReceivedSinceLastOffsetCommit = false;
+                GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "KafkaPubSubClientTopic: No partitions are currently assigned to the consumer" );
 
-                    GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "KafkaPubSubClientTopic: Successfully triggered sync commit of current offsets" );
-                    return true;
-                }
-                else
-                {
-                    ++m_kafkaErrorReplies;
+                // Obtain the relevant partitions for our topic
+                err = m_kafkaConsumer->position( partitions );
 
-                    std::string errStr = RdKafka::err2str( err );
-                    GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "KafkaPubSubClientTopic: Cannot commit consumer offsets: Failed to trigger sync commit of current offets. ErrorCode : " + errStr );
-                    UpdateIsHealthyStatus( false );
-                    return false;
-                }
+                return true;
             }
         }
         else
@@ -2553,7 +2797,7 @@ CKafkaPubSubClientTopic::OnPulseCycle( CORE::CNotifier* notifier    ,
         }
     }
 
-    if ( GUCEF_NULL != m_kafkaConsumer )
+    if ( GUCEF_NULL != m_kafkaConsumer && m_isSubscribed )
     {
         if ( m_requestedConsumeDelayInMs == 0 || 
              m_requestedConsumeDelayInMs <= GetPulseGenerator()->GetTimeSinceTickCountInMilliSecs( m_tickCountAtConsumeDelayRequest ) )

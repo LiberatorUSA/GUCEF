@@ -44,10 +44,10 @@
                     "preferDedicatedConnection": false,
                     "topicName": "ExampleKafkaTopicName",
                     "consumerGroupName": "pubsubcapture",
-                    "consumerName": "",					
+                    "consumerName": "$HOSTNAME$",					
                     "CustomConfig": {
                         "addProducerHostnameAsKafkaMsgHeader": false,
-                        "consumerModeStartOffset": "",
+                        "consumerModeStartOffset": "stored",
                         "kafkaMsgHeaderUsedForFiltering": "",
                         "kafkaMsgValuesUsedForFiltering": "",
                         "prefixToAddForKvPairs": "",

@@ -128,7 +128,7 @@ const char* GUCEF_PLUGIN_CALLSPEC_PREFIX
 GUCEFPlugin_GetDescription( void ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
 {GUCEF_TRACE;
 
-    return "Generic GUCEF plugin for COMCORE \"MS Windows MSMQ\" pubsub connectivity";
+    return "Generic GUCEF plugin for PUBSUB \"MS Windows MSMQ\" connectivity";
 }
 
 /*-------------------------------------------------------------------------//

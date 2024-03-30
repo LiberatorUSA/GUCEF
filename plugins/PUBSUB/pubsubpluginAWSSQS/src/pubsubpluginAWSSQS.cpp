@@ -134,7 +134,7 @@ const char* GUCEF_PLUGIN_CALLSPEC_PREFIX
 GUCEFPlugin_GetDescription( void ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
 {GUCEF_TRACE;
 
-    return "Generic GUCEF plugin for COMCORE \"AWS's SQS\" pubsub connectivity";
+    return "Generic GUCEF plugin for PUBSUB \"AWS's SQS\" connectivity";
 }
 
 /*-------------------------------------------------------------------------//
