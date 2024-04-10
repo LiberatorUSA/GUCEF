@@ -319,6 +319,8 @@ class ProcessMetrics : public CORE::CObservingNotifier
     bool m_gatherGlobalCpuCurrentFrequencyInMhz;
     bool m_gatherGlobalCpuSpecMaxFrequencyInMhz;
     bool m_gatherGlobalCpuMaxFrequencyInMhz;
+    bool m_gatherGlobalCpuOverallPercentage;
+    bool m_gatherGlobalCpuOverallPercentagePerCore;
 
     bool m_gatherGlobalNetworkStats;
     bool m_gatherGlobalNetworkStatInboundOctets;

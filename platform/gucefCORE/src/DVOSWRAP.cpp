@@ -405,7 +405,13 @@ struct SCpuDataPoint
     TCpuStats cpuStats;
 
     #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
+    UInt32 logicalCpuCount; // we keep a copy here in the private stucture for fast and safe access. Someone could alter the one in cpuStats
     PPROCESSOR_POWER_INFORMATION cpuPowerInfo;
+    SYSTEM_PROCESSOR_PERFORMANCE_INFORMATION* cpuPerfInfo;
+    SYSTEM_PROCESSOR_PERFORMANCE_INFORMATION* prevCpuPerfInfo;
+    FILETIME globalUserTime;
+    FILETIME globalKernelTime;
+    FILETIME globalIdleTime;
     #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
     AllLinuxProcCpuInfo infoFromProcCpu;
     #else
@@ -1791,6 +1797,8 @@ GetProcessCpuUsage( TProcessId* pid                             ,
         UInt64 globalCpuTotal = GetFiletimeAsUInt64( &globalKernelTime ) + GetFiletimeAsUInt64( &globalUserTime );
         UInt64 prevGlobalCpuTotal = GetFiletimeAsUInt64( &previousCpuDataDataPoint->globalKernelTime ) + GetFiletimeAsUInt64( &previousCpuDataDataPoint->globalUserTime );
         Float64 globalCpuUseDelta = (Float64) ( globalCpuTotal - prevGlobalCpuTotal );
+        if ( globalCpuUseDelta == 0 )
+            globalCpuUseDelta = 0.01;
 
         UInt64 procCpuTotal = GetFiletimeAsUInt64( &kernelTime ) + GetFiletimeAsUInt64( &userTime );
         UInt64 prevProcCpuTotal = GetFiletimeAsUInt64( &previousCpuDataDataPoint->procKernelTime ) + GetFiletimeAsUInt64( &previousCpuDataDataPoint->procUserTime );
@@ -1866,6 +1874,7 @@ CreateCpuDataPoint( void )
     memset( dataPoint, 0, sizeof( TCpuDataPoint ) );
 
     dataPoint->cpuStats.logicalCpuCount = GetLogicalCPUCount();
+    dataPoint->logicalCpuCount = dataPoint->cpuStats.logicalCpuCount;
 
     UInt32 cpuStatsDataSize = sizeof( TLogicalCpuStats ) * dataPoint->cpuStats.logicalCpuCount;
     dataPoint->cpuStats.logicalCpuStats = (TLogicalCpuStats*) malloc( cpuStatsDataSize );
@@ -1888,6 +1897,27 @@ CreateCpuDataPoint( void )
     }
     memset( dataPoint->cpuPowerInfo, 0, cpuPowerInfoDataSize );
 
+    UInt32 cpuPerfInfoDataSize = sizeof( SYSTEM_PROCESSOR_PERFORMANCE_INFORMATION ) * dataPoint->cpuStats.logicalCpuCount;
+    dataPoint->cpuPerfInfo = (SYSTEM_PROCESSOR_PERFORMANCE_INFORMATION*) malloc( cpuPerfInfoDataSize );
+    if ( GUCEF_NULL == dataPoint->cpuPerfInfo )
+    {
+        free( dataPoint->cpuPowerInfo );
+        free( dataPoint->cpuStats.logicalCpuStats );        
+        free( dataPoint );
+        return GUCEF_NULL;
+    }
+    memset( dataPoint->cpuPerfInfo, 0, cpuPerfInfoDataSize );
+    dataPoint->prevCpuPerfInfo = (SYSTEM_PROCESSOR_PERFORMANCE_INFORMATION*) malloc( cpuPerfInfoDataSize );
+    if ( GUCEF_NULL == dataPoint->prevCpuPerfInfo )
+    {
+        free( dataPoint->cpuPerfInfo );
+        free( dataPoint->cpuPowerInfo );
+        free( dataPoint->cpuStats.logicalCpuStats );        
+        free( dataPoint );
+        return GUCEF_NULL;
+    }
+    memset( dataPoint->prevCpuPerfInfo, 0, cpuPerfInfoDataSize );
+
     #endif
 
     return dataPoint;
@@ -1908,6 +1938,10 @@ FreeCpuDataPoint( TCpuDataPoint* cpuDataPoint )
 
         if ( GUCEF_NULL != cpuDataPoint->cpuPowerInfo )
             free( cpuDataPoint->cpuPowerInfo );
+        if ( GUCEF_NULL != cpuDataPoint->cpuPerfInfo )
+            free( cpuDataPoint->cpuPerfInfo );
+        if ( GUCEF_NULL != cpuDataPoint->prevCpuPerfInfo )
+            free( cpuDataPoint->prevCpuPerfInfo );
 
         #endif
 
@@ -1928,22 +1962,94 @@ GetCpuStats( TCpuDataPoint* previousCpuDataDataPoint ,
 
     #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
 
+    // For getting the overall CPU usage the recommended way is to "Use GetSystemTimes instead to retrieve this information."
+    // Do note that while the below follows said recommendation from Microsoft, it is not the most accurate way to get the CPU usage relative to 
+    // the per core CPU usage which is also obtained and thus there may be some discrepancies between the two values.
+    // Then again the NtQuerySystemInformation call is not garantueed to work as its an undocumented API call.
+    FILETIME globalIdleTime;
+    FILETIME globalKernelTime;
+    FILETIME globalUserTime;
+    if ( ::GetSystemTimes( &globalIdleTime, &globalKernelTime, &globalUserTime ) != TRUE )
+        return OSWRAP_FALSE;
+
+    UInt64 globalCpuIdle = GetFiletimeAsUInt64( &globalIdleTime );
+    UInt64 prevGlobalCpuIdle = GetFiletimeAsUInt64( &previousCpuDataDataPoint->globalIdleTime );
+    UInt64 globalCpuKernel = GetFiletimeAsUInt64( &globalKernelTime );
+    UInt64 prevGlobalCpuKernel = GetFiletimeAsUInt64( &previousCpuDataDataPoint->globalKernelTime );
+    UInt64 globalCpuUser = GetFiletimeAsUInt64( &globalUserTime );
+    UInt64 prevGlobalCpuUser = GetFiletimeAsUInt64( &previousCpuDataDataPoint->globalUserTime );
+
+    UInt64 globalCpuKernelDelta = globalCpuKernel - prevGlobalCpuKernel;
+    UInt64 globalCpuUserDelta = globalCpuUser - prevGlobalCpuUser;
+    UInt64 globalCpuIdleDelta = globalCpuIdle - prevGlobalCpuIdle;    
+    UInt64 globalCpuSystemDelta = globalCpuKernelDelta + globalCpuUserDelta;
+    if ( 0 == globalCpuSystemDelta )
+        globalCpuSystemDelta = 1;
+
+    previousCpuDataDataPoint->cpuStats.cpuUsePercentage = ( (globalCpuSystemDelta - globalCpuIdleDelta) * 100 ) / ( globalCpuSystemDelta * 1.0 );
+
+    // make the current info the 'previous' info to prepare for the next call to this function
+    previousCpuDataDataPoint->globalIdleTime = globalIdleTime;
+    previousCpuDataDataPoint->globalKernelTime = globalKernelTime;
+    previousCpuDataDataPoint->globalUserTime = globalUserTime;
+    
+    NTSTATUS ntStatus = TryNtQuerySystemInformation( SystemProcessorPerformanceInformation                                                        , 
+                                                     previousCpuDataDataPoint->cpuPerfInfo                                                        , 
+                                                     sizeof(SYSTEM_PROCESSOR_PERFORMANCE_INFORMATION) * previousCpuDataDataPoint->logicalCpuCount , 
+                                                     NULL                                                                                         );
+    if ( WIN32_NT_SUCCESS( ntStatus ) )
+    {
+        for ( UInt32 i=0; i<previousCpuDataDataPoint->logicalCpuCount; ++i )
+        {
+            SYSTEM_PROCESSOR_PERFORMANCE_INFORMATION& corePerfInfo = previousCpuDataDataPoint->cpuPerfInfo[ i ];
+            SYSTEM_PROCESSOR_PERFORMANCE_INFORMATION& prevCorePerfInfo = previousCpuDataDataPoint->prevCpuPerfInfo[ i ];
+
+            UInt64 coreIdle = corePerfInfo.IdleTime.QuadPart;
+            UInt64 prevCoreIdle = prevCorePerfInfo.IdleTime.QuadPart;
+            UInt64 coreKernel = corePerfInfo.KernelTime.QuadPart;
+            UInt64 prevCoreKernel = prevCorePerfInfo.KernelTime.QuadPart;
+            UInt64 coreUser = corePerfInfo.UserTime.QuadPart;
+            UInt64 prevCoreUser = prevCorePerfInfo.UserTime.QuadPart;
+
+            UInt64 coreKernelDelta = coreKernel - prevCoreKernel;
+            UInt64 coreUserDelta = coreUser - prevCoreUser;
+            UInt64 coreIdleDelta = coreIdle - prevCoreIdle;    
+            UInt64 coreSystemDelta = coreKernelDelta + coreUserDelta;
+            if ( 0 == coreSystemDelta )
+                coreSystemDelta = 1;
+    
+            Float64 coreUsePercentage = ( (coreSystemDelta - coreIdleDelta) * 100 ) / ( coreSystemDelta * 1.0 );
+            previousCpuDataDataPoint->cpuStats.logicalCpuStats[ i ].cpuUsePercentage = coreUsePercentage;
+        }
+
+        // make the current info the 'previous' info to prepare for the next call to this function
+        memcpy( previousCpuDataDataPoint->prevCpuPerfInfo, previousCpuDataDataPoint->cpuPerfInfo, sizeof(SYSTEM_PROCESSOR_PERFORMANCE_INFORMATION) * previousCpuDataDataPoint->logicalCpuCount );
+    }
+    else
+    {
+        GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "GetCpuStats: call to TryNtQuerySystemInformation failed with NTSTATUS " + ToString( ntStatus ) );
+    }
+
     LONG retVal = ::CallNtPowerInformation( ProcessorInformation,
                                             NULL,
                                             0,
                                             previousCpuDataDataPoint->cpuPowerInfo,
-                                            sizeof(PROCESSOR_POWER_INFORMATION) * previousCpuDataDataPoint->cpuStats.logicalCpuCount );
+                                            sizeof(PROCESSOR_POWER_INFORMATION) * previousCpuDataDataPoint->logicalCpuCount );
     if ( 0 == retVal )
     {
-        for ( UInt32 i=0; i<previousCpuDataDataPoint->cpuStats.logicalCpuCount; ++i )
+        for ( UInt32 i=0; i<previousCpuDataDataPoint->logicalCpuCount; ++i )
         {
             PROCESSOR_POWER_INFORMATION* powerInfo = &previousCpuDataDataPoint->cpuPowerInfo[ i ];
             TLogicalCpuStats* lCpuStats = &previousCpuDataDataPoint->cpuStats.logicalCpuStats[ i ];
-            memset( lCpuStats, 0, sizeof(TLogicalCpuStats) );
+
             lCpuStats->cpuCurrentFrequencyInMhz = (Float32) powerInfo->CurrentMhz;
             lCpuStats->cpuMaxFrequencyInMhz = (Float32) powerInfo->MhzLimit;
             lCpuStats->cpuSpecMaxFrequencyInMhz = (Float32) powerInfo->MaxMhz;
         }
+    }
+    else
+    {
+        GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "GetCpuStats: call to CallNtPowerInformation failed with status " + ToString( retVal ) );
     }
 
     #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
@@ -1955,6 +2061,7 @@ GetCpuStats( TCpuDataPoint* previousCpuDataDataPoint ,
             LinuxLogicalCpuInfo* linuxLCpuInfo = &previousCpuDataDataPoint->infoFromProcCpu.allCpuInfo[ i ];
             TLogicalCpuStats* lCpuStats = &previousCpuDataDataPoint->cpuStats.logicalCpuStats[ i ];
             memset( lCpuStats, 0, sizeof(TLogicalCpuStats) );
+
             lCpuStats->cpuCurrentFrequencyInMhz = linuxLCpuInfo->cpuMhz;
             lCpuStats->cpuMaxFrequencyInMhz = 0.0;
             lCpuStats->cpuSpecMaxFrequencyInMhz = 0.0;

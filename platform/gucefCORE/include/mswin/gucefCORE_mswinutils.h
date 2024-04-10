@@ -159,6 +159,69 @@ typedef OBJECT_ATTRIBUTES *POBJECT_ATTRIBUTES;
 
 /*-------------------------------------------------------------------------*/
 
+typedef enum _SYSTEM_INFORMATION_CLASS {
+    SystemBasicInformation,
+    SystemProcessorInformation,
+    SystemPerformanceInformation,
+    SystemTimeOfDayInformation,
+    SystemPathInformation,
+    SystemProcessInformation,
+    SystemCallCountInformation,
+    SystemDeviceInformation,
+    SystemProcessorPerformanceInformation,
+    SystemFlagsInformation,
+    SystemCallTimeInformation,
+    SystemModuleInformation,
+    SystemLocksInformation,
+    SystemStackTraceInformation,
+    SystemPagedPoolInformation,
+    SystemNonPagedPoolInformation,
+    SystemHandleInformation,
+    SystemObjectInformation,
+    SystemPageFileInformation,
+    SystemVdmInstemulInformation,
+    SystemVdmBopInformation,
+    SystemFileCacheInformation,
+    SystemPoolTagInformation,
+    SystemInterruptInformation,
+    SystemDpcBehaviorInformation,
+    SystemFullMemoryInformation,
+    SystemLoadGdiDriverInformation,
+    SystemUnloadGdiDriverInformation,
+    SystemTimeAdjustmentInformation,
+    SystemSummaryMemoryInformation,
+    SystemNextEventIdInformation,
+    SystemEventIdsInformation,
+    SystemCrashDumpInformation,
+    SystemExceptionInformation,
+    SystemCrashDumpStateInformation,
+    SystemKernelDebuggerInformation,
+    SystemContextSwitchInformation,
+    SystemRegistryQuotaInformation,
+    SystemExtendServiceTableInformation,
+    SystemPrioritySeperation,
+    SystemPlugPlayBusInformation,
+    SystemDockInformation,
+    SystemPowerInformation,
+    SystemProcessorSpeedInformation,
+    SystemCurrentTimeZoneInformation,
+    SystemLookasideInformation
+
+} SYSTEM_INFORMATION_CLASS, *PSYSTEM_INFORMATION_CLASS;
+
+/*-------------------------------------------------------------------------*/
+
+typedef struct
+_SYSTEM_PROCESSOR_PERFORMANCE_INFORMATION {
+    LARGE_INTEGER IdleTime;
+    LARGE_INTEGER KernelTime;
+    LARGE_INTEGER UserTime;
+    LARGE_INTEGER Reserved1[2];
+    ULONG Reserved2;
+} SYSTEM_PROCESSOR_PERFORMANCE_INFORMATION;
+
+/*-------------------------------------------------------------------------*/
+
 /**
  *  Windows implementation of the ProcessId structure
  */
@@ -224,6 +287,23 @@ TryNtQueryInformationProcess( HANDLE ProcessHandle                     ,
                               PVOID ProcessInformation                 ,
                               ULONG ProcessInformationLength           ,
                               PULONG ReturnLength                      );
+
+/*-------------------------------------------------------------------------*/
+
+/**
+ *  The Windows NT kernel has an unofficial function called NtQuerySystemInformation
+ *  This provides some access to process information that is hard/impossible to access otherwise
+ *  Since this is not officially a public function we have our own NtQuerySystemInformation version
+ *  which will attempt to use said function if it exists / can be accessed.
+ *  
+ *  Use WIN32_NT_SUCCESS to evaluate the return value
+ *  Returns NTSTATUS_NOT_SUPPORTED if the function could not be dynamicallly linked and is thus unsupported
+ */
+GUCEF_CORE_PUBLIC_C NTSTATUS 
+TryNtQuerySystemInformation( SYSTEM_INFORMATION_CLASS SystemInformationClass ,
+                             PVOID SystemInformation                         ,
+                             ULONG SystemInformationLength                   ,
+                             PULONG ReturnLength                             );
 
 /*-------------------------------------------------------------------------*/
 

@@ -60,6 +60,7 @@ namespace CORE {
 typedef NTSTATUS ( WINAPI *pNtOP )( PHANDLE, ACCESS_MASK, POBJECT_ATTRIBUTES, PCLIENT_ID );
 typedef NTSTATUS ( WINAPI *pNtRVM )( HANDLE, PVOID, PVOID, SIZE_T, PSIZE_T );
 typedef NTSTATUS ( WINAPI *pNtQIP )( HANDLE, PROCESSINFOCLASS, PVOID, ULONG, PULONG );
+typedef NTSTATUS ( WINAPI *pNtQSI )( SYSTEM_INFORMATION_CLASS, PVOID, ULONG, PULONG );
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -133,7 +134,7 @@ TryNtOpenProcess( PHANDLE ProcessHandle               ,
                   PCLIENT_ID ClientId                 )
 {GUCEF_TRACE;
 
-    static pNtOP NtOpenProcess = (pNtOP) GetProcAddress( GetModuleHandle("ntdll.dll"), "NtOpenProcess" );
+    static pNtOP NtOpenProcess = (pNtOP) ::GetProcAddress( GetModuleHandle("ntdll.dll"), "NtOpenProcess" );
 	if ( NULL == NtOpenProcess ) 
         return NTSTATUS_NOT_SUPPORTED;
 
@@ -150,11 +151,27 @@ TryNtQueryInformationProcess ( HANDLE ProcessHandle                     ,
                                PULONG ReturnLength                      )
 {GUCEF_TRACE;
 
-    static pNtQIP NtQueryInformationProcess = (pNtQIP) GetProcAddress( GetModuleHandle("ntdll.dll"), "NtQueryInformationProcess" );
+    static pNtQIP NtQueryInformationProcess = (pNtQIP) ::GetProcAddress( GetModuleHandle("ntdll.dll"), "NtQueryInformationProcess" );
 	if ( NULL == NtQueryInformationProcess ) 
         return NTSTATUS_NOT_SUPPORTED;
 
     return NtQueryInformationProcess( ProcessHandle, ProcessInformationClass, ProcessInformation, ProcessInformationLength, ReturnLength );
+}
+
+/*-------------------------------------------------------------------------*/
+
+NTSTATUS
+TryNtQuerySystemInformation( SYSTEM_INFORMATION_CLASS SystemInformationClass ,
+                             PVOID SystemInformation                         ,
+                             ULONG SystemInformationLength                   ,
+                             PULONG ReturnLength                             )
+{GUCEF_TRACE;
+
+    static pNtQSI NtQuerySystemInformation = (pNtQSI) ::GetProcAddress( GetModuleHandle("ntdll.dll"), "NtQuerySystemInformation" );
+	if ( NULL == NtQuerySystemInformation ) 
+        return NTSTATUS_NOT_SUPPORTED;
+
+    return NtQuerySystemInformation( SystemInformationClass, SystemInformation, SystemInformationLength, ReturnLength );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -167,7 +184,7 @@ TryNtReadVirtualMemory( HANDLE ThreadHandle        ,
                         PSIZE_T NumberOfBytesRead  )
 {GUCEF_TRACE;
 
-    static pNtRVM NtReadVirtualMemory = (pNtRVM) GetProcAddress( GetModuleHandle("ntdll.dll"), "NtReadVirtualMemory" );
+    static pNtRVM NtReadVirtualMemory = (pNtRVM) ::GetProcAddress( GetModuleHandle("ntdll.dll"), "NtReadVirtualMemory" );
 	if ( NULL == NtReadVirtualMemory ) 
         return NTSTATUS_NOT_SUPPORTED;
 

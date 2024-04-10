@@ -521,6 +521,8 @@ ProcessMetrics::ProcessMetrics( void )
     , m_gatherGlobalCpuCurrentFrequencyInMhz( true )
     , m_gatherGlobalCpuSpecMaxFrequencyInMhz( false )
     , m_gatherGlobalCpuMaxFrequencyInMhz( false )
+    , m_gatherGlobalCpuOverallPercentage( true )
+    , m_gatherGlobalCpuOverallPercentagePerCore( true )
     , m_gatherGlobalNetworkStats( true )
     , m_gatherGlobalNetworkStatInboundOctets( true )
     , m_gatherGlobalNetworkStatInboundUnicastOctets( true )
@@ -1023,9 +1025,18 @@ ProcessMetrics::OnMetricsTimerCycle( CORE::CNotifier* notifier    ,
         CORE::TCpuStats* cpuStats = GUCEF_NULL;
         if ( OSWRAP_TRUE == CORE::GetCpuStats( m_globalCpuDataPoint, &cpuStats ) && GUCEF_NULL != cpuStats )
         {
+            CORE::CString lCpuMetricPrefix = "ProcessMetrics.Cpu.";
+
+            if ( m_gatherGlobalCpuOverallPercentage )
+            {
+                static const CORE::CString metricName = "CpuUsePercentage";
+                GUCEF_METRIC_GAUGE( lCpuMetricPrefix + metricName, cpuStats->cpuUsePercentage, 1.0f );
+                ValidateMetricThresholds( CORE::CVariant( cpuStats->cpuUsePercentage ), metricName, CORE::CString::Empty );                
+            }
+
             for ( CORE::UInt32 i=0; i<cpuStats->logicalCpuCount; ++i )
             {
-                CORE::CString lCpuMetricPrefix = "ProcessMetrics.Cpu." + CORE::ToString( i ) +  ".";
+                lCpuMetricPrefix = "ProcessMetrics.Cpu." + CORE::ToString( i ) +  ".";
                 CORE::TLogicalCpuStats* lCpuStats = &cpuStats->logicalCpuStats[ i ];
 
                 if ( m_gatherGlobalCpuCurrentFrequencyInMhz )
@@ -1072,6 +1083,12 @@ ProcessMetrics::OnMetricsTimerCycle( CORE::CNotifier* notifier    ,
                     {
                         m_gatherGlobalCpuMaxFrequencyInMhz = false;
                     }
+                }
+                if ( m_gatherGlobalCpuOverallPercentagePerCore )
+                {
+                    static const CORE::CString metricName = "CpuUsePercentage";
+                    GUCEF_METRIC_GAUGE( lCpuMetricPrefix + metricName, lCpuStats->cpuUsePercentage, 1.0f );
+                    ValidateMetricThresholds( CORE::CVariant( lCpuStats->cpuUsePercentage ), metricName, CORE::CString::Empty );                
                 }
             }
         }
@@ -1529,10 +1546,12 @@ ProcessMetrics::LoadConfig( const CORE::CValueList& appConfig   ,
     m_gatherProcCpuUptime = CORE::StringToBool( appConfig.GetValueAlways( "gatherProcCPUUptime" ), m_gatherProcCpuUptime );
     m_gatherProcCpuOverallPercentage = CORE::StringToBool( appConfig.GetValueAlways( "gatherProcCpuOverallPercentage" ), m_gatherProcCpuOverallPercentage );
 
-    m_gatherGlobalCpuStats = CORE::StringToBool( appConfig.GetValueAlways( "gatherGlobalCpuStats" ), m_gatherGlobalCpuStats );
-    m_gatherGlobalCpuCurrentFrequencyInMhz = CORE::StringToBool( appConfig.GetValueAlways( "gatherGlobalCpuCurrentFrequencyInMhz" ), m_gatherGlobalCpuCurrentFrequencyInMhz );
-    m_gatherGlobalCpuSpecMaxFrequencyInMhz = CORE::StringToBool( appConfig.GetValueAlways( "gatherGlobalCpuSpecMaxFrequencyInMhz" ), m_gatherGlobalCpuSpecMaxFrequencyInMhz );
-    m_gatherGlobalCpuMaxFrequencyInMhz = CORE::StringToBool( appConfig.GetValueAlways( "gatherGlobalCpuMaxFrequencyInMhz" ), m_gatherGlobalCpuMaxFrequencyInMhz );
+    m_gatherGlobalCpuStats = appConfig.GetValueAlways( "gatherGlobalCpuStats", m_gatherGlobalCpuStats ).AsBool( m_gatherGlobalCpuStats, true );
+    m_gatherGlobalCpuCurrentFrequencyInMhz = appConfig.GetValueAlways( "gatherGlobalCpuCurrentFrequencyInMhz", m_gatherGlobalCpuCurrentFrequencyInMhz ).AsBool( m_gatherGlobalCpuCurrentFrequencyInMhz, true );
+    m_gatherGlobalCpuSpecMaxFrequencyInMhz = appConfig.GetValueAlways( "gatherGlobalCpuSpecMaxFrequencyInMhz", m_gatherGlobalCpuSpecMaxFrequencyInMhz ).AsBool( m_gatherGlobalCpuSpecMaxFrequencyInMhz, true );
+    m_gatherGlobalCpuMaxFrequencyInMhz = appConfig.GetValueAlways( "gatherGlobalCpuMaxFrequencyInMhz", m_gatherGlobalCpuMaxFrequencyInMhz ).AsBool( m_gatherGlobalCpuMaxFrequencyInMhz, true );
+    m_gatherGlobalCpuOverallPercentage = appConfig.GetValueAlways( "gatherGlobalCpuOverallPercentage", m_gatherGlobalCpuOverallPercentage ).AsBool( m_gatherGlobalCpuOverallPercentage, true );
+    m_gatherGlobalCpuOverallPercentagePerCore = appConfig.GetValueAlways( "gatherGlobalCpuOverallPercentagePerCore", m_gatherGlobalCpuOverallPercentagePerCore ).AsBool( m_gatherGlobalCpuOverallPercentagePerCore, true );   
 
     m_gatherGlobalNetworkStats = appConfig.GetValueAlways( "gatherGlobalNetworkStats", m_gatherGlobalNetworkStats ).AsBool( m_gatherGlobalNetworkStats, true );
     m_gatherGlobalNetworkStatInboundOctets = appConfig.GetValueAlways( "gatherGlobalNetworkStatInboundOctets", m_gatherGlobalNetworkStatInboundOctets ).AsBool( m_gatherGlobalNetworkStatInboundOctets, true );

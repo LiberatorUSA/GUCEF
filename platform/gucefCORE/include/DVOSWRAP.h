@@ -181,7 +181,7 @@ struct SLogicalCpuStats
     Float32 cpuCurrentFrequencyInMhz;
     Float32 cpuSpecMaxFrequencyInMhz;
     Float32 cpuMaxFrequencyInMhz;
-    Float64 overallCpuConsumptionPercentage;
+    Float64 cpuUsePercentage;
 };
 typedef struct SLogicalCpuStats TLogicalCpuStats;
 
@@ -193,6 +193,7 @@ struct SCpuStats
 {
     UInt32 logicalCpuCount;
     TLogicalCpuStats* logicalCpuStats;
+    Float64 cpuUsePercentage;
 };
 typedef struct SCpuStats TCpuStats;
 

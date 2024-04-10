@@ -62,6 +62,7 @@ CPubSubFlowRouter::CPubSubFlowRouter( void )
     , m_usedInRouteMap()
     , m_spilloverInfoMap()
     , m_spilloverInfoForTargetsMap()
+    , m_busyDeterminingActiveRoutes( false )
     , m_lock( true )
 {GUCEF_TRACE;
 
@@ -2450,19 +2451,27 @@ CPubSubFlowRouter::DetermineActiveRoutes( bool attemptConnect )
 
     MT::CScopeWriterLock lock( m_lock );
 
-    TSidePtrToRouteInfoVectorMap::iterator r = m_routeMap.begin();
-    while ( r != m_routeMap.end() )
+    // check to prevent causing a recursive loop via an eventing chain
+    if ( !m_busyDeterminingActiveRoutes )
     {
-        TRouteInfoVector& multiRouteInfo = (*r).second;
-        TRouteInfoVector::iterator n = multiRouteInfo.begin();
-        while ( n != multiRouteInfo.end() )
+        m_busyDeterminingActiveRoutes = true;
+        
+        TSidePtrToRouteInfoVectorMap::iterator r = m_routeMap.begin();
+        while ( r != m_routeMap.end() )
         {
-            CRouteInfo& routeInfo = (*n);
-            DetermineActiveRoute( routeInfo, attemptConnect );
-            ++n;
+            TRouteInfoVector& multiRouteInfo = (*r).second;
+            TRouteInfoVector::iterator n = multiRouteInfo.begin();
+            while ( n != multiRouteInfo.end() )
+            {
+                CRouteInfo& routeInfo = (*n);
+                DetermineActiveRoute( routeInfo, attemptConnect );
+                ++n;
+            }
+
+            ++r;
         }
 
-        ++r;
+        m_busyDeterminingActiveRoutes = false;
     }
 }
 

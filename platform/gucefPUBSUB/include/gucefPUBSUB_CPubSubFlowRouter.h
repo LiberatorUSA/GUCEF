@@ -327,6 +327,7 @@ class GUCEF_PUBSUB_EXPORT_CPP CPubSubFlowRouter : public CORE::CTSGNotifier
     TSidePtrToRouteInfoPtrVectorMap m_usedInRouteMap;
     TSidePtrToSpilloverInfoMap m_spilloverInfoMap;
     TSidePtrToSpilloverInfoPtrMap m_spilloverInfoForTargetsMap;
+    bool m_busyDeterminingActiveRoutes;
     MT::CReadWriteLock m_lock;
 };
 
