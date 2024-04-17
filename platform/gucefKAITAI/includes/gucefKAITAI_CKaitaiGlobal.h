@@ -16,8 +16,8 @@
  *  limitations under the License.
  */
 
-#ifndef GUCEF_KAITAI_CKAITAISCHEMAREGISTRY_H
-#define GUCEF_KAITAI_CKAITAISCHEMAREGISTRY_H
+#ifndef GUCEF_KAITAI_CKAITAIGLOBAL_H
+#define GUCEF_KAITAI_CKAITAIGLOBAL_H
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -30,25 +30,10 @@
 #define GUCEF_MT_CMUTEX_H
 #endif /* GUCEF_MT_CMUTEX_H ? */
 
-#ifndef GUCEF_CORE_CTONREGISTRY_H
-#include "CTONRegistry.h"
-#define GUCEF_CORE_CTONREGISTRY_H
-#endif /* GUCEF_CORE_CTONREGISTRY_H ? */
-
-#ifndef GUCEF_CORE_CURI_H
-#include "gucefCORE_CUri.h"
-#define GUCEF_CORE_CURI_H
-#endif /* GUCEF_CORE_CURI_H ? */
-
 #ifndef GUCEF_KAITAI_MACROS_H
-#include "gucefKAITAI_macros.h"
+#include "gucefKAITAI_macros.h"   
 #define GUCEF_KAITAI_MACROS_H
 #endif /* GUCEF_KAITAI_MACROS_H ? */
-
-#ifndef GUCEF_KAITAI_CKAITAISCHEMA_H
-#include "gucefKAITAI_CKaitaiSchema.h"
-#define GUCEF_KAITAI_CKAITAISCHEMA_H
-#endif /* GUCEF_KAITAI_CKAITAISCHEMA_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -65,44 +50,34 @@ namespace KAITAI {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-class GUCEF_KAITAI_PUBLIC_CPP CKaitaiSchemaRegistry : public CORE::CTONRegistry< CORE::CTONRegistry< CKaitaiSchema, MT::CMutex >, MT::CMutex >
+class CKaitaiSchemaRegistry;
+
+class GUCEF_KAITAI_PUBLIC_CPP CKaitaiGlobal
 {
     public:
 
-    typedef CORE::CTONRegistry< CKaitaiSchema, MT::CMutex >         TSchemaFamilyRegistry;
-    typedef CORE::CTSharedPtr< TSchemaFamilyRegistry, MT::CMutex >  TSchemaFamilyRegistryPtr;
-    typedef TSchemaFamilyRegistry::TStringList                      TStringList;
-    typedef TSchemaFamilyRegistry::TRegisteredObjPtr                TSchemaPtr;
-    
-    virtual const MT::CILockable* AsLockable( void ) const GUCEF_VIRTUAL_OVERRIDE;
+    static CKaitaiGlobal* Instance( void );
 
-    TSchemaPtr TryGetSchema( const CORE::CString& schemaFamily , 
-                             const CORE::CString& schemaName   ) const;
-
-    
-    bool LoadSchema( const CORE::CUri& schemaResource  ,
-                     const CORE::CString& schemaFamily );
-
-    protected:
-
-    virtual MT::TLockStatus Lock( UInt32 lockWaitTimeoutInMs = GUCEF_MT_DEFAULT_LOCK_TIMEOUT_IN_MS ) const GUCEF_VIRTUAL_OVERRIDE;
-
-    virtual MT::TLockStatus Unlock( void ) const GUCEF_VIRTUAL_OVERRIDE;
+    CKaitaiSchemaRegistry& GetKaitaiSchemaRegistry( void );
 
     private:
-    friend class CKaitaiGlobal;
+    friend class CModule;
 
-    CKaitaiSchemaRegistry( void );
+    static void Deinstance( void );
 
-    virtual ~CKaitaiSchemaRegistry();
+    void Initialize( void );
+
+    CKaitaiGlobal( void );
+    CKaitaiGlobal( const CKaitaiGlobal& src );
+    ~CKaitaiGlobal();
+    CKaitaiGlobal& operator=( const CKaitaiGlobal& src );
 
     private:
-    
-    CKaitaiSchemaRegistry( const CKaitaiSchemaRegistry& src );              /**< not implemented, don't use */
-    CKaitaiSchemaRegistry& operator=( const CKaitaiSchemaRegistry& src );   /**< not implemented, don't use */
 
-    private:
-    MT::CMutex m_dataLock;
+    CKaitaiSchemaRegistry* m_kaitaiSchemaRegistry;
+
+    static MT::CMutex g_dataLock;
+    static CKaitaiGlobal* g_instance;
 };
 
 /*-------------------------------------------------------------------------//
@@ -116,4 +91,4 @@ class GUCEF_KAITAI_PUBLIC_CPP CKaitaiSchemaRegistry : public CORE::CTONRegistry<
 
 /*-------------------------------------------------------------------------*/
 
-#endif /* GUCEF_KAITAI_CKAITAISCHEMAREGISTRY_H ? */
+#endif /* GUCEF_KAITAI_CKAITAIGLOBAL_H ? */

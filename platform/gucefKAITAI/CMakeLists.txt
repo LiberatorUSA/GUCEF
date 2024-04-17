@@ -13,21 +13,26 @@
 
 set( HEADER_FILES 
   includes/gucefKAITAI.h
+  includes/gucefKAITAI_CKaitaiGlobal.h
   includes/gucefKAITAI_CKaitaiReader.h
   includes/gucefKAITAI_CKaitaiSchema.h
   includes/gucefKAITAI_CKaitaiSchemaEnumDefinition.h
   includes/gucefKAITAI_CKaitaiSchemaFieldDefinition.h
   includes/gucefKAITAI_CKaitaiSchemaRegistry.h
+  includes/gucefKAITAI_CModule.h
+  includes/gucefKAITAI_ETypes.h
   includes/gucefKAITAI_config.h
   includes/gucefKAITAI_macros.h
 )
 
 set( SOURCE_FILES 
+  src/gucefKAITAI_CKaitaiGlobal.cpp
   src/gucefKAITAI_CKaitaiReader.cpp
   src/gucefKAITAI_CKaitaiSchema.cpp
   src/gucefKAITAI_CKaitaiSchemaEnumDefinition.cpp
   src/gucefKAITAI_CKaitaiSchemaFieldDefinition.cpp
   src/gucefKAITAI_CKaitaiSchemaRegistry.cpp
+  src/gucefKAITAI_CModule.cpp
 )
 
 # Make sure the PLATFORM_HEADER_FILES variable is always defined

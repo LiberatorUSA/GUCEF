@@ -57,6 +57,8 @@ class CTMultiRegistry : public MT::CILockable
 {
     public:
 
+    typedef LockType                                                TLockType;
+    typedef T                                                       TRegistryType;
     typedef CTRegistry< T, LockType >                               TSubRegistry;
     typedef CTSharedPtr< CTRegistry< T, LockType >, LockType >      TSubRegistryPtr;
     typedef typename CTRegistry< T, LockType >::TRegisteredObjPtr   TRegisteredObjPtr;

@@ -35,6 +35,11 @@
 #define GUCEF_CORE_CIDATANODESERIALIZABLE_H
 #endif /* GUCEF_CORE_CIDATANODESERIALIZABLE_H ? */
 
+#ifndef GUCEF_CORE_CURI_H
+#include "gucefCORE_CUri.h"
+#define GUCEF_CORE_CURI_H
+#endif /* GUCEF_CORE_CURI_H ? */
+
 #ifndef GUCEF_KAITAI_MACROS_H
 #include "gucefKAITAI_macros.h"
 #define GUCEF_KAITAI_MACROS_H
@@ -66,7 +71,8 @@ namespace KAITAI {
 //-------------------------------------------------------------------------*/
 
 
-class GUCEF_KAITAI_PUBLIC_CPP CKaitaiSchema : public CORE::CIDataNodeSerializable
+class GUCEF_KAITAI_PUBLIC_CPP CKaitaiSchema : public CORE::CIDataNodeSerializable ,
+                                              public CORE::CTSharedObjCreator< CKaitaiSchema, MT::CMutex >
 {
     public:
 
@@ -84,6 +90,11 @@ class GUCEF_KAITAI_PUBLIC_CPP CKaitaiSchema : public CORE::CIDataNodeSerializabl
     CKaitaiSchema( void );
     CKaitaiSchema( const CKaitaiSchema& src );   
     CKaitaiSchema& operator=( const CKaitaiSchema& src ); 
+
+    /*
+     *  Utility function for loading a Kaitai schema
+     */
+    bool LoadSchema( const CORE::CUri& schemaResource ); 
 
     virtual CORE::CICloneable* Clone( void ) const GUCEF_VIRTUAL_OVERRIDE;
     virtual const CORE::CString& GetClassTypeName( void ) const GUCEF_VIRTUAL_OVERRIDE;

@@ -22,6 +22,21 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+#ifndef GUCEF_CORE_CCOREGLOBAL_H
+#include "gucefCORE_CCoreGlobal.h"
+#define GUCEF_CORE_CCOREGLOBAL_H
+#endif /* GUCEF_CORE_CCOREGLOBAL_H ? */
+
+#ifndef GUCEF_CORE_CURIRESOURCEACCESSORFACTORY_H
+#include "gucefCORE_CUriResourceAccessorFactory.h"
+#define GUCEF_CORE_CURIRESOURCEACCESSORFACTORY_H
+#endif /* GUCEF_CORE_CURIRESOURCEACCESSORFACTORY_H ? */
+
+#ifndef GUCEF_CORE_CDSTORECODECREGISTRY_H
+#include "CDStoreCodecRegistry.h"
+#define GUCEF_CORE_CDSTORECODECREGISTRY_H
+#endif /* GUCEF_CORE_CDSTORECODECREGISTRY_H ? */
+
 #ifndef GUCEF_CORE_CDATANODE_H
 #include "CDataNode.h"
 #define GUCEF_CORE_CDATANODE_H
@@ -59,6 +74,7 @@ const CORE::CString CKaitaiSchema::ClassTypeName = "GUCEF::KAITAI::CKaitaiSchema
 
 CKaitaiSchema::CKaitaiSchema( void )
     : CORE::CIDataNodeSerializable()
+    , CORE::CTSharedObjCreator< CKaitaiSchema, MT::CMutex >( this )
     , id()
     , imports()
     , endianess( GUCEF_BYTEORDER_UNKNOWN_ENDIAN )
@@ -72,6 +88,7 @@ CKaitaiSchema::CKaitaiSchema( void )
 
 CKaitaiSchema::CKaitaiSchema( const CKaitaiSchema& src )
     : CORE::CIDataNodeSerializable( src )
+    , CORE::CTSharedObjCreator< CKaitaiSchema, MT::CMutex >( this )
     , id( src.id )
     , imports( src.imports )
     , endianess( src.endianess )
@@ -231,6 +248,47 @@ CKaitaiSchema::Deserialize( const CORE::CDataNode& domRootNode, const CORE::CDat
         totalSuccess = DeserializeEnumDefinitions( domRootNode, settings ) && totalSuccess;
         return totalSuccess;
     }
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool 
+CKaitaiSchema::LoadSchema( const CORE::CUri& schemaResource )
+{GUCEF_TRACE;
+
+    CORE::CCoreGlobal* coreGlobal = CORE::CCoreGlobal::Instance();
+    CORE::CUriResourceAccessorFactory& raFactory = coreGlobal->GetUriResourceAccessorFactory();
+    
+    // first see if we can get access to the resource identified by the uri
+    CORE::IOAccessPtr ioAccess;
+    if ( raFactory.GetResourceAccess( schemaResource                                           , 
+                                      ioAccess                                                 , 
+                                      CORE::CUriResourceAccessor::URI_RESOURCEACCESS_MODE_READ ) && ioAccess )
+    {
+        // now grab a YAML codec since Kaitai uses the yaml format
+        CORE::CDStoreCodecRegistry& dstoreCodecRegistry = coreGlobal->GetDStoreCodecRegistry();
+        CORE::CDStoreCodecRegistry::TDStoreCodecPtr yamlCodec;
+        if ( dstoreCodecRegistry.TryLookup( "yaml", yamlCodec, false ) && yamlCodec )
+        {
+            // using the codec parse the resource into a usable document
+            CORE::CDataNode schemaDocument;
+            if ( yamlCodec->BuildDataTree( &schemaDocument, ioAccess.GetPointerAlways() ) )
+            {
+                // now deserialize the document into the strongly typed class
+                CORE::CDataNodeSerializableSettings deserializerSettings;
+                return Deserialize( schemaDocument, deserializerSettings );
+            }
+
+            GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "KaitaiSchema:LoadSchema: Failed to build document using YAML codec for resource " + CORE::ToString( schemaResource ) );
+            return false;
+        }
+
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "KaitaiSchema:LoadSchema: Failed to locate a YAML codec. Needed for resource " + CORE::ToString( schemaResource ) );
+        return false;
+    }
+
+    GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "KaitaiSchema:LoadSchema: Failed to obtain access to resource " + CORE::ToString( schemaResource ) );
     return false;
 }
 
