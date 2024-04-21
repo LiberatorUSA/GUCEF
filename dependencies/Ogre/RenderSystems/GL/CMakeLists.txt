@@ -167,6 +167,23 @@ if (ANDROID)
   set( PLATFORM_SOURCE_INSTALL "ANDROID" )
   source_group( "Platform Source Files" FILES ${PLATFORM_SOURCE_FILES} )
 
+elseif (ARDUINO)
+  set( PLATFORM_HEADER_FILES 
+    src/StateCacheManager/OgreGLNullStateCacheManagerImp.h
+    src/StateCacheManager/OgreGLNullUniformCacheImp.h
+  )
+
+  set( PLATFORM_HEADER_INSTALL "ARDUINO" )
+  source_group( "Platform Header Files" FILES ${PLATFORM_HEADER_FILES} )
+
+  set( PLATFORM_SOURCE_FILES 
+    src/StateCacheManager/OgreGLNullStateCacheManagerImp.cpp
+    src/StateCacheManager/OgreGLNullUniformCacheImp.cpp
+  )
+
+  set( PLATFORM_SOURCE_INSTALL "ARDUINO" )
+  source_group( "Platform Source Files" FILES ${PLATFORM_SOURCE_FILES} )
+
 elseif (EMSCRIPTEN)
   set( PLATFORM_HEADER_FILES 
     src/StateCacheManager/OgreGLNullStateCacheManagerImp.h
@@ -484,6 +501,10 @@ if ( ANDROID )
   include_directories( ../../OgreMain/include/Android src/StateCacheManager )
 endif( ANDROID )
 
+if ( ARDUINO )
+  include_directories( src/StateCacheManager )
+endif( ARDUINO )
+
 if ( EMSCRIPTEN )
   include_directories( ../../OgreMain/include/Emscripten src/StateCacheManager )
 endif( EMSCRIPTEN )
@@ -548,6 +569,8 @@ endif( WIN64 )
 
 
 if (ANDROID)
+GUCEF_config_lib( ${MODULE_NAME} )
+elseif (ARDUINO)
 GUCEF_config_lib( ${MODULE_NAME} )
 elseif (EMSCRIPTEN)
 GUCEF_config_lib( ${MODULE_NAME} )

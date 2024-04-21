@@ -62,6 +62,25 @@ if (ANDROID)
   set( PLATFORM_SOURCE_INSTALL "ANDROID" )
   source_group( "Platform Source Files" FILES ${PLATFORM_SOURCE_FILES} )
 
+elseif (ARDUINO)
+  set( PLATFORM_HEADER_FILES 
+    ../../../tools/redisinfo/include/redisinfo_CRedisClusterKeyCache.h
+    ../../../tools/redisinfo/include/redisinfo_CRedisClusterKeyCacheUpdateTask.h
+    ../../../tools/redisinfo/include/redisinfo_CRedisClusterKeyPrunerTask.h
+  )
+
+  set( PLATFORM_HEADER_INSTALL "ARDUINO" )
+  source_group( "Platform Header Files" FILES ${PLATFORM_HEADER_FILES} )
+
+  set( PLATFORM_SOURCE_FILES 
+    ../../../tools/redisinfo/src/redisinfo_CRedisClusterKeyCache.cpp
+    ../../../tools/redisinfo/src/redisinfo_CRedisClusterKeyCacheUpdateTask.cpp
+    ../../../tools/redisinfo/src/redisinfo_CRedisClusterKeyPrunerTask.cpp
+  )
+
+  set( PLATFORM_SOURCE_INSTALL "ARDUINO" )
+  source_group( "Platform Source Files" FILES ${PLATFORM_SOURCE_FILES} )
+
 elseif (EMSCRIPTEN)
   set( PLATFORM_HEADER_FILES 
     ../../../tools/redisinfo/include/redisinfo_CRedisClusterKeyCache.h
@@ -345,6 +364,10 @@ if ( ANDROID )
   include_directories( ../../../dependencies/hiredis ../../../platform/gucefCORE/include/android ../../../tools/redisinfo/include/ )
 endif( ANDROID )
 
+if ( ARDUINO )
+  include_directories( ../../../dependencies/hiredis ../../../tools/redisinfo/include/ )
+endif( ARDUINO )
+
 if ( EMSCRIPTEN )
   include_directories( ../../../dependencies/hiredis ../../../tools/redisinfo/include/ )
 endif( EMSCRIPTEN )
@@ -409,6 +432,8 @@ endif( WIN64 )
 
 
 if (ANDROID)
+GUCEF_config_lib( ${MODULE_NAME} )
+elseif (ARDUINO)
 GUCEF_config_lib( ${MODULE_NAME} )
 elseif (EMSCRIPTEN)
 GUCEF_config_lib( ${MODULE_NAME} )

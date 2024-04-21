@@ -1,0 +1,2 @@
+- premake4 generator: Needs to have a solution for dirs that hold multiple projects. Currently last wins /dependencies/external/ suffers from this
+- premake5 generator: Needs to have a solution for dirs that hold multiple projects. Currently last wins /dependencies/external/ suffers from this

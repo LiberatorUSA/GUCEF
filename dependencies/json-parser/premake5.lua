@@ -58,6 +58,19 @@ configuration( { "ANDROID" } )
 
 
 
+configuration( { "ARDUINO" } )
+    vpaths { ["Platform Headers"] = { "**.h", "**.hpp", "**.hxx" } }
+    files( {
+      "json.h"
+    } )
+
+    vpaths { ["Platform Source"] = { "**.c", "**.cpp", "**.cs", "**.asm" } }
+    files( {
+      "json.c"
+    } )
+
+
+
 configuration( { "EMSCRIPTEN" } )
     vpaths { ["Platform Headers"] = { "**.h", "**.hpp", "**.hxx" } }
     files( {

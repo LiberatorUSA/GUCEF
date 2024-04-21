@@ -64,6 +64,35 @@ if (ANDROID)
   set( PLATFORM_SOURCE_INSTALL "ANDROID" )
   source_group( "Platform Source Files" FILES ${PLATFORM_SOURCE_FILES} )
 
+elseif (ARDUINO)
+  set( PLATFORM_HEADER_FILES 
+    alloc.h
+    async.h
+    dict.h
+    hiredis.h
+    net.h
+    read.h
+    sds.h
+    sockcompat.h
+  )
+
+  set( PLATFORM_HEADER_INSTALL "ARDUINO" )
+  source_group( "Platform Header Files" FILES ${PLATFORM_HEADER_FILES} )
+
+  set( PLATFORM_SOURCE_FILES 
+    alloc.c
+    async.c
+    dict.c
+    hiredis.c
+    net.c
+    read.c
+    sds.c
+    sockcompat.c
+  )
+
+  set( PLATFORM_SOURCE_INSTALL "ARDUINO" )
+  source_group( "Platform Source Files" FILES ${PLATFORM_SOURCE_FILES} )
+
 elseif (EMSCRIPTEN)
   set( PLATFORM_HEADER_FILES 
     alloc.h
@@ -495,6 +524,8 @@ endif( WIN64 )
 
 
 if (ANDROID)
+GUCEF_config_lib( ${MODULE_NAME} )
+elseif (ARDUINO)
 GUCEF_config_lib( ${MODULE_NAME} )
 elseif (EMSCRIPTEN)
 GUCEF_config_lib( ${MODULE_NAME} )

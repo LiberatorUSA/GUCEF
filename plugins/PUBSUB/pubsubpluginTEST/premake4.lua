@@ -9,10 +9,10 @@
 --------------------------------------------------------------------
 --
 
--- Configuration for module: vfspluginZIP
+-- Configuration for module: pubsubpluginTEST
 
 
-project( "vfspluginZIP" )
+project( "pubsubpluginTEST" )
 
 configuration( {} )
   location( os.getenv( "PM4OUTPUTDIR" ) )
@@ -29,35 +29,32 @@ configuration( {} )
 kind( "SharedLib" )
 
 configuration( {} )
-links( { "gucefCORE", "gucefMT", "gucefVFS", "zziplib" } )
-links( { "gucefCORE", "gucefMT", "gucefVFS", "zziplib" } )
+links( { "gucefCOMCORE", "gucefCORE", "gucefMT", "gucefPUBSUB", "gucefVFS", "gucefWEB" } )
+links( { "gucefCOMCORE", "gucefCORE", "gucefMT", "gucefPUBSUB", "gucefVFS", "gucefWEB", "pubsubpluginSTORAGE_Integrated" } )
 
 
 configuration( {} )
-defines( { "GUCEF_VFSPLUGIN_ZIP_BUILD_MODULE", "ZZIP_HAVE_STDINT_H" } )
-  links( { "z" } )
-  
-configuration( { LINUX } )
-links( { "zlib" } )
-  links( { "zlib" } )
-  
-configuration( { WIN32 } )
-links( { "zlib" } )
-  links( { "zlib" } )
-  
-configuration( { WIN64 } )
-links( { "zlib" } )
-  links( { "zlib" } )
+defines( { "PUBSUBPLUGIN_STORAGE_EMBED_CODE", "PUBSUBPLUGIN_TEST_BUILD_PLUGIN_DLL" } )
 
 
 configuration( {} )
 vpaths { ["Headers"] = { "**.h", "**.hpp", "**.hxx" } }
 files( {
-  "include/vfspluginZIP.h",
-  "include/vfspluginZIP_config.h",
-  "include/vfspluginZIP_CZIPArchive.h",
-  "include/vfspluginZIP_CZipIOAccess.h",
-  "include/vfspluginZIP_macros.h"
+  "../pubsubpluginSTORAGE/include/pubsubpluginSTORAGE.h",
+  "../pubsubpluginSTORAGE/include/pubsubpluginSTORAGE_CStoragePubSubClient.h",
+  "../pubsubpluginSTORAGE/include/pubsubpluginSTORAGE_CStoragePubSubClientConfig.h",
+  "../pubsubpluginSTORAGE/include/pubsubpluginSTORAGE_CStoragePubSubClientTopic.h",
+  "../pubsubpluginSTORAGE/include/pubsubpluginSTORAGE_CStoragePubSubClientTopicConfig.h",
+  "../pubsubpluginSTORAGE/include/pubsubpluginSTORAGE_CStoragePubSubClientTopicVfsTask.h",
+  "../pubsubpluginSTORAGE/include/pubsubpluginSTORAGE_config.h",
+  "../pubsubpluginSTORAGE/include/pubsubpluginSTORAGE_macros.h",
+  "include/pubsubpluginTEST.h",
+  "include/pubsubpluginTEST_CTestPubSubClient.h",
+  "include/pubsubpluginTEST_CTestPubSubClientConfig.h",
+  "include/pubsubpluginTEST_CTestPubSubClientTopic.h",
+  "include/pubsubpluginTEST_CTestPubSubClientTopicConfig.h",
+  "include/pubsubpluginTEST_config.h",
+  "include/pubsubpluginTEST_macros.h"
  } )
 
 
@@ -65,23 +62,34 @@ files( {
 configuration( {} )
 vpaths { ["Source"] = { "**.c", "**.cpp", "**.cs", "**.asm" } }
 files( {
-  "src/vfspluginZIP.cpp",
-  "src/vfspluginZIP_CZIPArchive.cpp",
-  "src/vfspluginZIP_CZipIOAccess.cpp"
+  "../pubsubpluginSTORAGE/src/pubsubpluginSTORAGE.cpp",
+  "../pubsubpluginSTORAGE/src/pubsubpluginSTORAGE_CStoragePubSubClient.cpp",
+  "../pubsubpluginSTORAGE/src/pubsubpluginSTORAGE_CStoragePubSubClientConfig.cpp",
+  "../pubsubpluginSTORAGE/src/pubsubpluginSTORAGE_CStoragePubSubClientTopic.cpp",
+  "../pubsubpluginSTORAGE/src/pubsubpluginSTORAGE_CStoragePubSubClientTopicConfig.cpp",
+  "../pubsubpluginSTORAGE/src/pubsubpluginSTORAGE_CStoragePubSubClientTopicVfsTask.cpp",
+  "src/pubsubpluginTEST.cpp",
+  "src/pubsubpluginTEST_CTestPubSubClient.cpp",
+  "src/pubsubpluginTEST_CTestPubSubClientConfig.cpp",
+  "src/pubsubpluginTEST_CTestPubSubClientTopic.cpp",
+  "src/pubsubpluginTEST_CTestPubSubClientTopicConfig.cpp"
  } )
 
 
 configuration( {} )
-includedirs( { "../../../common/include", "../../../dependencies/zziplib", "../../../dependencies/zziplib/zzip", "../../../gucefCORE/include", "../../../gucefMT/include", "../../../gucefVFS/include", "include" } )
+includedirs( { "../../../common/include", "../../../platform/gucefCOM/include", "../../../platform/gucefCOMCORE/include", "../../../platform/gucefCORE/include", "../../../platform/gucefMT/include", "../../../platform/gucefPUBSUB/include", "../../../platform/gucefVFS/include", "../../../platform/gucefWEB/include", "../pubsubpluginSTORAGE/include", "include" } )
 
 configuration( { "ANDROID" } )
-includedirs( { "../../../gucefCORE/include/android" } )
+includedirs( { "../../../platform/gucefCORE/include/android" } )
 
-configuration( { "LINUX" } )
-includedirs( { "../../../dependencies/zlib", "../../../gucefCORE/include/linux" } )
+configuration( { "LINUX32" } )
+includedirs( { "../../../platform/gucefCORE/include/linux" } )
+
+configuration( { "LINUX64" } )
+includedirs( { "../../../platform/gucefCORE/include/linux" } )
 
 configuration( { "WIN32" } )
-includedirs( { "../../../dependencies/zlib", "../../../gucefCORE/include/mswin" } )
+includedirs( { "../../../platform/gucefCOMCORE/include/mswin", "../../../platform/gucefCORE/include/mswin", "../../../platform/gucefMT/include/mswin" } )
 
 configuration( { "WIN64" } )
-includedirs( { "../../../dependencies/zlib", "../../../gucefCORE/include/mswin" } )
+includedirs( { "../../../platform/gucefCOMCORE/include/mswin", "../../../platform/gucefCORE/include/mswin", "../../../platform/gucefMT/include/mswin" } )

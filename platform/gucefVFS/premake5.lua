@@ -42,15 +42,16 @@ vpaths { ["Headers"] = { "**.h", "**.hpp", "**.hxx" } }
 files( {
   "include/gucefVFS.h",
   "include/gucefVFS_AsyncVfsTaskData.h",
+  "include/gucefVFS_CArchive.h",
   "include/gucefVFS_CArchiveSettings.h",
   "include/gucefVFS_CAsyncVfsOperation.h",
   "include/gucefVFS_CFileSystemArchive.h",
-  "include/gucefVFS_CIArchive.h",
   "include/gucefVFS_CModule.h",
   "include/gucefVFS_CVFS.h",
   "include/gucefVFS_CVFSHandle.h",
   "include/gucefVFS_CVFSURLHandler.h",
   "include/gucefVFS_CVfsGlobal.h",
+  "include/gucefVFS_CVfsUriResourceAccessor.h",
   "include/gucefVFS_ETypes.h",
   "include/gucefVFS_config.h",
   "include/gucefVFS_macros.h"
@@ -63,15 +64,16 @@ vpaths { ["Source"] = { "**.c", "**.cpp", "**.cs", "**.asm" } }
 files( {
   "src/gucefVFS.cpp",
   "src/gucefVFS_AsyncVfsTaskData.cpp",
+  "src/gucefVFS_CArchive.cpp",
   "src/gucefVFS_CArchiveSettings.cpp",
   "src/gucefVFS_CAsyncVfsOperation.cpp",
   "src/gucefVFS_CFileSystemArchive.cpp",
-  "src/gucefVFS_CIArchive.cpp",
   "src/gucefVFS_CModule.cpp",
   "src/gucefVFS_CVFS.cpp",
   "src/gucefVFS_CVFSHandle.cpp",
   "src/gucefVFS_CVFSURLHandler.cpp",
-  "src/gucefVFS_CVfsGlobal.cpp"
+  "src/gucefVFS_CVfsGlobal.cpp",
+  "src/gucefVFS_CVfsUriResourceAccessor.cpp"
  } )
 
 
@@ -88,7 +90,7 @@ configuration( { "LINUX64" } )
 includedirs( { "../gucefCORE/include/linux" } )
 
 configuration( { "WIN32" } )
-includedirs( { "../gucefCORE/include/mswin" } )
+includedirs( { "../gucefCORE/include/mswin", "../gucefMT/include/mswin" } )
 
 configuration( { "WIN64" } )
-includedirs( { "../gucefCORE/include/mswin" } )
+includedirs( { "../gucefCORE/include/mswin", "../gucefMT/include/mswin" } )

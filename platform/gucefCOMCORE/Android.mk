@@ -25,7 +25,6 @@ LOCAL_SRC_FILES := \
   src/CCom.cpp \
   src/CGUCEFCOMCOREModule.cpp \
   src/CHostAddress.cpp \
-  src/CIPAddress.cpp \
   src/CIPInfo.cpp \
   src/CPing.cpp \
   src/CSocket.cpp \
@@ -40,12 +39,20 @@ LOCAL_SRC_FILES := \
   src/gucefCOMCORE.cpp \
   src/gucefCOMCORE_CComCoreGlobal.cpp \
   src/gucefCOMCORE_CDiscoveryManager.cpp \
+  src/gucefCOMCORE_CDnsCache.cpp \
+  src/gucefCOMCORE_CDnsCacheEntry.cpp \
+  src/gucefCOMCORE_CDnsCacheRefreshTaskConsumer.cpp \
+  src/gucefCOMCORE_CDnsResolver.cpp \
   src/gucefCOMCORE_CICommunicationInterface.cpp \
   src/gucefCOMCORE_CIDiscovery.cpp \
   src/gucefCOMCORE_CIDiscoveryCapability.cpp \
   src/gucefCOMCORE_CIDiscoveryClient.cpp \
   src/gucefCOMCORE_CIDiscoveryEntry.cpp \
+  src/gucefCOMCORE_CIMessage.cpp \
   src/gucefCOMCORE_CINetworkInterface.cpp \
+  src/gucefCOMCORE_CIPv4Address.cpp \
+  src/gucefCOMCORE_CIPv6Address.cpp \
+  src/gucefCOMCORE_CMessageSerializer.cpp \
   src/gucefCOMCORE_CPingTaskConsumer.cpp \
   src/gucefCOMCORE_CSerialPort.cpp \
   src/socketutils.cpp

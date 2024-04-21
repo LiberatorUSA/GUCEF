@@ -12,7 +12,17 @@
 -- Configuration for module: gucefINPUT_TestApp
 
 
-project( "gucefINPUT_TestApp" )
+configuration( { "LINUX32" } )
+  project( "gucefINPUT_TestApp" )
+
+configuration( { "LINUX64" } )
+  project( "gucefINPUT_TestApp" )
+
+configuration( { "WIN32" } )
+  project( "gucefINPUT_TestApp" )
+
+configuration( { "WIN64" } )
+  project( "gucefINPUT_TestApp" )
 
 configuration( {} )
   location( os.getenv( "PM4OUTPUTDIR" ) )
@@ -21,42 +31,127 @@ configuration( {} )
   targetdir( os.getenv( "PM4TARGETDIR" ) )
 
 configuration( {} )
+language( "C" )
+
+configuration( { "ANDROID" } )
 language( "C++" )
 
+configuration( { "LINUX32" } )
+language( "C++" )
+
+configuration( { "LINUX64" } )
+language( "C++" )
+
+configuration( { "WIN32" } )
+language( "C++" )
+
+configuration( { "WIN64" } )
+language( "C++" )
+
+configuration( { "LINUX32" } )
+
+
+configuration( { LINUX32 } )
+kind( "ConsoleApp" )
+configuration( { "LINUX64" } )
+
+
+configuration( { LINUX64 } )
+kind( "ConsoleApp" )
 configuration( { "WIN32" } )
 
 
 configuration( { WIN32 } )
 kind( "WindowedApp" )
-configuration( { "NOT WIN32" } )
+configuration( { "WIN64" } )
+
+
+configuration( { WIN64 } )
+kind( "WindowedApp" )
+  
+configuration( { LINUX32 } )
+links( { "gucefCORE", "gucefINPUT", "gucefMT" } )
+  links( { "gucefCORE", "gucefINPUT", "gucefMT" } )
   
 
-configuration( {} )
-kind( "ConsoleApp" )
-
-configuration( {} )
+configuration( { LINUX32 } )
+defines( { "GUCEF_INPUT_TESTAPP_BUILD_MODULE" } )
+  
+configuration( { LINUX64 } )
 links( { "gucefCORE", "gucefINPUT", "gucefMT" } )
+  links( { "gucefCORE", "gucefINPUT", "gucefMT" } )
+  
+
+configuration( { LINUX64 } )
+defines( { "GUCEF_INPUT_TESTAPP_BUILD_MODULE" } )
+  
+configuration( { WIN32 } )
 links( { "gucefCORE", "gucefINPUT", "gucefMT" } )
+  links( { "gucefCORE", "gucefINPUT", "gucefMT" } )
+  
 
+configuration( { WIN32 } )
+defines( { "GUCEF_INPUT_TESTAPP_BUILD_MODULE" } )
+  
+configuration( { WIN64 } )
+links( { "gucefCORE", "gucefINPUT", "gucefMT" } )
+  links( { "gucefCORE", "gucefINPUT", "gucefMT" } )
+  
 
-configuration( {} )
-vpaths { ["Source"] = { "**.c", "**.cpp", "**.cs", "**.asm" } }
-files( {
-  "src/gucefINPUT_TestApp.cpp"
- } )
+configuration( { WIN64 } )
+defines( { "GUCEF_INPUT_TESTAPP_BUILD_MODULE" } )
 
-
-configuration( {} )
-includedirs( { "../../common/include", "../../gucefCORE/include", "../../gucefINPUT/include", "../../gucefMT/include" } )
 
 configuration( { "ANDROID" } )
-includedirs( { "../../gucefCORE/include/android" } )
+    vpaths { ["Platform Source"] = { "**.c", "**.cpp", "**.cs", "**.asm" } }
+    files( {
+      "src/gucefINPUT_TestApp.cpp"
+    } )
 
-configuration( { "LINUX" } )
-includedirs( { "../../gucefCORE/include/linux" } )
+
+
+configuration( { "LINUX32" } )
+    vpaths { ["Platform Source"] = { "**.c", "**.cpp", "**.cs", "**.asm" } }
+    files( {
+      "src/gucefINPUT_TestApp.cpp"
+    } )
+
+
+
+configuration( { "LINUX64" } )
+    vpaths { ["Platform Source"] = { "**.c", "**.cpp", "**.cs", "**.asm" } }
+    files( {
+      "src/gucefINPUT_TestApp.cpp"
+    } )
+
+
 
 configuration( { "WIN32" } )
-includedirs( { "../../gucefCORE/include/mswin" } )
+    vpaths { ["Platform Source"] = { "**.c", "**.cpp", "**.cs", "**.asm" } }
+    files( {
+      "src/gucefINPUT_TestApp.cpp"
+    } )
+
+
 
 configuration( { "WIN64" } )
-includedirs( { "../../gucefCORE/include/mswin" } )
+    vpaths { ["Platform Source"] = { "**.c", "**.cpp", "**.cs", "**.asm" } }
+    files( {
+      "src/gucefINPUT_TestApp.cpp"
+    } )
+
+
+configuration( {} )
+includedirs( { "../../common/include", "../../platform/gucefCORE/include", "../../platform/gucefINPUT/include", "../../platform/gucefMT/include" } )
+
+configuration( { "LINUX32" } )
+includedirs( { "../../platform/gucefCORE/include/linux" } )
+
+configuration( { "LINUX64" } )
+includedirs( { "../../platform/gucefCORE/include/linux" } )
+
+configuration( { "WIN32" } )
+includedirs( { "../../platform/gucefCORE/include/mswin", "../../platform/gucefMT/include/mswin" } )
+
+configuration( { "WIN64" } )
+includedirs( { "../../platform/gucefCORE/include/mswin", "../../platform/gucefMT/include/mswin" } )

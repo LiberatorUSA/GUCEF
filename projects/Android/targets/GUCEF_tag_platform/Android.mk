@@ -51,6 +51,9 @@ include $(MY_MODULE_PATH)/Android.mk
 MY_MODULE_PATH := $(PROJECT_ROOT_PATH)/../../../../platform/gucefVFS
 include $(MY_MODULE_PATH)/Android.mk
 
+MY_MODULE_PATH := $(PROJECT_ROOT_PATH)/../../../../platform/gucefKAITAI
+include $(MY_MODULE_PATH)/Android.mk
+
 MY_MODULE_PATH := $(PROJECT_ROOT_PATH)/../../../../platform/gucefGUI
 include $(MY_MODULE_PATH)/Android.mk
 
@@ -64,6 +67,9 @@ MY_MODULE_PATH := $(PROJECT_ROOT_PATH)/../../../../platform/gucefWEB
 include $(MY_MODULE_PATH)/Android.mk
 
 MY_MODULE_PATH := $(PROJECT_ROOT_PATH)/../../../../platform/gucefPRODMAN
+include $(MY_MODULE_PATH)/Android.mk
+
+MY_MODULE_PATH := $(PROJECT_ROOT_PATH)/../../../../platform/gucefPUBSUB
 include $(MY_MODULE_PATH)/Android.mk
 
 MY_MODULE_PATH := $(PROJECT_ROOT_PATH)/../../../../platform/gucefSMDRN

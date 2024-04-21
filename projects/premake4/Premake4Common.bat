@@ -73,10 +73,4 @@ IF DEFINED PM4TARGETSUBDIR (
 
 cd "%BATCHSTARTDIR%"
 
-IF NOT DEFINED SKIP_GUCEF_PREMAKE4INFOGENERATION (
-  ECHO *** Generate Premake4 files ***
-  CALL GeneratePremake4Info.bat
-) ELSE (
-  ECHO Skipping GUCEF's Premake4 file generation
-)
 

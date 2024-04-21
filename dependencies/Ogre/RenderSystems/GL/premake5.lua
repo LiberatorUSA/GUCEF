@@ -201,6 +201,21 @@ configuration( { "ANDROID" } )
 
 
 
+configuration( { "ARDUINO" } )
+    vpaths { ["Platform Headers"] = { "**.h", "**.hpp", "**.hxx" } }
+    files( {
+      "src/StateCacheManager/OgreGLNullStateCacheManagerImp.h",
+      "src/StateCacheManager/OgreGLNullUniformCacheImp.h"
+    } )
+
+    vpaths { ["Platform Source"] = { "**.c", "**.cpp", "**.cs", "**.asm" } }
+    files( {
+      "src/StateCacheManager/OgreGLNullStateCacheManagerImp.cpp",
+      "src/StateCacheManager/OgreGLNullUniformCacheImp.cpp"
+    } )
+
+
+
 configuration( { "EMSCRIPTEN" } )
     vpaths { ["Platform Headers"] = { "**.h", "**.hpp", "**.hxx" } }
     files( {
@@ -461,6 +476,9 @@ includedirs( { "../../../freetype/include", "../../../freetype/include/freetype"
 
 configuration( { "ANDROID" } )
 includedirs( { "../../OgreMain/include/Android", "src/StateCacheManager" } )
+
+configuration( { "ARDUINO" } )
+includedirs( { "src/StateCacheManager" } )
 
 configuration( { "EMSCRIPTEN" } )
 includedirs( { "../../OgreMain/include/Emscripten", "src/StateCacheManager" } )

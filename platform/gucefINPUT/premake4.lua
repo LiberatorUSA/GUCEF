@@ -55,15 +55,15 @@ files( {
   "include/gucefINPUT_CInputDriverPluginManager.h",
   "include/gucefINPUT_CInputGlobal.h",
   "include/gucefINPUT_CInputObserverSwitch.h",
-  "include/gucefINPUT_CKeyboard.h",
   "include/gucefINPUT_CKeyModStateChangedEventData.h",
   "include/gucefINPUT_CKeyStateChangedEventData.h",
+  "include/gucefINPUT_CKeyboard.h",
   "include/gucefINPUT_CMouse.h",
   "include/gucefINPUT_CMouseButtonEventData.h",
   "include/gucefINPUT_CMouseMovedEventData.h",
-  "include/gucefINPUT_config.h",
   "include/gucefINPUT_CTConcreteActionEventData.h",
   "include/gucefINPUT_ETypes.h",
+  "include/gucefINPUT_config.h",
   "include/gucefINPUT_keyboard.h",
   "include/gucefINPUT_macros.h",
   "include/inputdriverpluginstructs.h"
@@ -86,9 +86,9 @@ files( {
   "src/gucefINPUT_CInputDriverPluginManager.cpp",
   "src/gucefINPUT_CInputGlobal.cpp",
   "src/gucefINPUT_CInputObserverSwitch.cpp",
-  "src/gucefINPUT_CKeyboard.cpp",
   "src/gucefINPUT_CKeyModStateChangedEventData.cpp",
   "src/gucefINPUT_CKeyStateChangedEventData.cpp",
+  "src/gucefINPUT_CKeyboard.cpp",
   "src/gucefINPUT_CMouse.cpp",
   "src/gucefINPUT_CMouseButtonEventData.cpp",
   "src/gucefINPUT_CMouseMovedEventData.cpp",
@@ -97,16 +97,19 @@ files( {
 
 
 configuration( {} )
-includedirs( { "../common/include", "../gucefCORE/include", "../gucefMT/include", "include" } )
+includedirs( { "../../common/include", "../gucefCORE/include", "../gucefMT/include", "include" } )
 
 configuration( { "ANDROID" } )
 includedirs( { "../gucefCORE/include/android" } )
 
-configuration( { "LINUX" } )
+configuration( { "LINUX32" } )
+includedirs( { "../gucefCORE/include/linux" } )
+
+configuration( { "LINUX64" } )
 includedirs( { "../gucefCORE/include/linux" } )
 
 configuration( { "WIN32" } )
-includedirs( { "../gucefCORE/include/mswin" } )
+includedirs( { "../gucefCORE/include/mswin", "../gucefMT/include/mswin" } )
 
 configuration( { "WIN64" } )
-includedirs( { "../gucefCORE/include/mswin" } )
+includedirs( { "../gucefCORE/include/mswin", "../gucefMT/include/mswin" } )

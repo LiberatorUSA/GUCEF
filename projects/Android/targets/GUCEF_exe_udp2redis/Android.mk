@@ -48,6 +48,9 @@ include $(MY_MODULE_PATH)/Android.mk
 MY_MODULE_PATH := $(PROJECT_ROOT_PATH)/../../../../platform/gucefVFS
 include $(MY_MODULE_PATH)/Android.mk
 
+MY_MODULE_PATH := $(PROJECT_ROOT_PATH)/../../../../plugins/CORE/codecspluginZLIB
+include $(MY_MODULE_PATH)/Android.mk
+
 MY_MODULE_PATH := $(PROJECT_ROOT_PATH)/../../../../plugins/CORE/dstorepluginPARSIFALXML
 include $(MY_MODULE_PATH)/Android.mk
 

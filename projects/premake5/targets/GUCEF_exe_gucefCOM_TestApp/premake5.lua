@@ -12,7 +12,7 @@
 
 workspace( "GUCEF_exe_gucefCOM_TestApp" )
 
-  platforms( { "ALL" } )
+  platforms( { "ALL", "WIN32", "WIN64" } )
 
   location( "projects\premake5\targets" )
 
@@ -26,3 +26,19 @@ filter "ALL"
   include( "platform/gucefCORE" )
   include( "platform/gucefMT" )
   include( "tests/gucefCOM_TestApp" )
+
+filter "WIN32"
+  include( "platform/gucefCOM" )
+  include( "platform/gucefCOMCORE" )
+  include( "platform/gucefCORE" )
+  include( "platform/gucefMT" )
+  include( "tests/gucefCOM_TestApp" )
+  include( "tools/MemoryLeakFinder" )
+
+filter "WIN64"
+  include( "platform/gucefCOM" )
+  include( "platform/gucefCOMCORE" )
+  include( "platform/gucefCORE" )
+  include( "platform/gucefMT" )
+  include( "tests/gucefCOM_TestApp" )
+  include( "tools/MemoryLeakFinder" )

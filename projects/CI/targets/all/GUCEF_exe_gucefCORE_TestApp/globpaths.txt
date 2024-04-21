@@ -2,8 +2,10 @@ common/include/*
 dependencies/json-builder/*
 dependencies/json-parser/*
 dependencies/libparsifal/*
+dependencies/libyaml/*
 platform/gucefCORE/*
 platform/gucefMT/*
 plugins/CORE/dstorepluginJSONPARSER/*
 plugins/CORE/dstorepluginPARSIFALXML/*
+plugins/CORE/dstorepluginYAML/*
 tests/gucefCORE_TestApp/*

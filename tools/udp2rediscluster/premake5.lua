@@ -58,10 +58,13 @@ files( {
 
 
 configuration( {} )
-includedirs( { "../../common/include", "../../dependencies", "../../dependencies/hiredis", "../../dependencies/redis-plus-plus/src/sw/redis++", "../../platform/gucefCOM/include", "../../platform/gucefCOMCORE/include", "../../platform/gucefCORE/include", "../../platform/gucefMT/include", "../../platform/gucefVFS/include", "../../platform/gucefWEB/include", "include" } )
+includedirs( { "../../common/include", "../../dependencies/hiredis", "../../dependencies/redis-plus-plus/../", "../../dependencies/redis-plus-plus/src/sw/../", "../../dependencies/redis-plus-plus/src/sw/redis++", "../../dependencies/redis-plus-plus/src/sw/redis++/cxx11", "../../dependencies/redis-plus-plus/src/sw/redis++/cxx11/sw", "../../dependencies/redis-plus-plus/src/sw/redis++/cxx11/sw/redis++", "../../dependencies/redis-plus-plus/src/sw/redis++/no_tls", "../../dependencies/redis-plus-plus/src/sw/redis++/no_tls/sw", "../../dependencies/redis-plus-plus/src/sw/redis++/no_tls/sw/redis++", "../../dependencies/redis-plus-plus/src/sw/redis++/patterns", "../../platform/gucefCOM/include", "../../platform/gucefCOMCORE/include", "../../platform/gucefCORE/include", "../../platform/gucefMT/include", "../../platform/gucefVFS/include", "../../platform/gucefWEB/include", "include" } )
 
 configuration( { "ANDROID" } )
 includedirs( { "../../dependencies/hiredis", "../../platform/gucefCORE/include/android" } )
+
+configuration( { "ARDUINO" } )
+includedirs( { "../../dependencies/hiredis" } )
 
 configuration( { "EMSCRIPTEN" } )
 includedirs( { "../../dependencies/hiredis" } )
@@ -100,7 +103,7 @@ configuration( { "UNIX" } )
 includedirs( { "../../dependencies/hiredis" } )
 
 configuration( { "WIN32" } )
-includedirs( { "../../dependencies/hiredis", "../../platform/gucefCOMCORE/include/mswin", "../../platform/gucefCORE/include/mswin" } )
+includedirs( { "../../dependencies/hiredis", "../../platform/gucefCOMCORE/include/mswin", "../../platform/gucefCORE/include/mswin", "../../platform/gucefMT/include/mswin" } )
 
 configuration( { "WIN64" } )
-includedirs( { "../../dependencies/hiredis", "../../platform/gucefCOMCORE/include/mswin", "../../platform/gucefCORE/include/mswin" } )
+includedirs( { "../../dependencies/hiredis", "../../platform/gucefCOMCORE/include/mswin", "../../platform/gucefCORE/include/mswin", "../../platform/gucefMT/include/mswin" } )

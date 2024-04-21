@@ -12,7 +12,7 @@
 
 workspace( "GUCEF_tag_platform" )
 
-  platforms( { "ALL", "EMSCRIPTEN", "GLX", "GTK", "IOS", "NACL", "POSIX", "SDL", "SYMBIAN", "UNIX" } )
+  platforms( { "ALL", "ARDUINO", "EMSCRIPTEN", "GLX", "GTK", "IOS", "NACL", "POSIX", "SDL", "SYMBIAN", "UNIX" } )
 
   location( "projects\premake5\targets" )
 
@@ -28,15 +28,22 @@ filter "ALL"
   include( "platform/gucefGUI" )
   include( "platform/gucefIMAGE" )
   include( "platform/gucefINPUT" )
+  include( "platform/gucefKAITAI" )
   include( "platform/gucefLOADER" )
   include( "platform/gucefMATH" )
   include( "platform/gucefMT" )
   include( "platform/gucefMULTIPLAY" )
   include( "platform/gucefPATCHER" )
   include( "platform/gucefPRODMAN" )
+  include( "platform/gucefPUBSUB" )
   include( "platform/gucefSMDRN" )
   include( "platform/gucefVFS" )
   include( "platform/gucefWEB" )
+
+filter "ARDUINO"
+  include( "platform/gucefCORE" )
+  include( "platform/gucefLOADER" )
+  include( "platform/gucefMT" )
 
 filter "EMSCRIPTEN"
   include( "platform/gucefCORE" )

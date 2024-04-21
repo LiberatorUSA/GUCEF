@@ -9,10 +9,10 @@
 --------------------------------------------------------------------
 --
 
--- Configuration for module: guidriverMyGUIOpenGL
+-- Configuration for module: guidriverMyGUIOgre
 
 
-project( "guidriverMyGUIOpenGL" )
+project( "guidriverMyGUIOgre" )
 
 configuration( {} )
   location( os.getenv( "PM4OUTPUTDIR" ) )
@@ -29,40 +29,24 @@ configuration( {} )
 kind( "SharedLib" )
 
 configuration( {} )
-links( { "MyGUI.Engine", "freetype", "gucefCORE", "gucefGUI", "gucefIMAGE", "gucefINPUT", "gucefMT", "gucefVFS", "guidriverMyGUI" } )
-links( { "MyGUI.Engine", "freetype", "gucefCORE", "gucefGUI", "gucefIMAGE", "gucefINPUT", "gucefMT", "gucefVFS", "guidriverMyGUI" } )
+links( { "MyGUI.Engine", "MyGUI.OgrePlatform", "Ogre", "freetype", "gucefCORE", "gucefGUI", "gucefIMAGE", "gucefINPUT", "gucefMT", "gucefVFS", "guidriverMyGUI" } )
+links( { "MyGUI.Engine", "MyGUI.OgrePlatform", "Ogre", "freetype", "gucefCORE", "gucefGUI", "gucefIMAGE", "gucefINPUT", "gucefMT", "gucefVFS", "guidriverMyGUI" } )
 
 
 configuration( {} )
-defines( { "GUIDRIVERMYGUIOPENGL_BUILD_MODULE" } )
-  
-configuration( { ANDROID } )
-links( { "MyGUI.OpenGLESPlatform" } )
-  links( { "GLESv1_CM", "MyGUI.OpenGLESPlatform" } )
-  
-configuration( { LINUX } )
-links( { "MyGUI.OpenGLPlatform" } )
-  links( { "GL", "MyGUI.OpenGLPlatform" } )
-  
-configuration( { WIN32 } )
-links( { "MyGUI.OpenGLPlatform" } )
-  links( { "MyGUI.OpenGLPlatform", "OpenGL32" } )
-  
-configuration( { WIN64 } )
-links( { "MyGUI.OpenGLPlatform" } )
-  links( { "MyGUI.OpenGLPlatform", "OpenGL32" } )
+defines( { "GUIDRIVERMYGUIOGRE_BUILD_MODULE" } )
 
 
 configuration( {} )
 vpaths { ["Headers"] = { "**.h", "**.hpp", "**.hxx" } }
 files( {
-  "include/guidriverMyGUIOpenGL.h",
-  "include/guidriverMyGUIOpenGL_CGUIContextGL.h",
-  "include/guidriverMyGUIOpenGL_CGUIDriverGL.h",
-  "include/guidriverMyGUIOpenGL_CImageLoader.h",
-  "include/guidriverMyGUIOpenGL_config.h",
-  "include/guidriverMyGUIOpenGL_macros.h",
-  "include/guidriverMyGUIOpenGL_pluginAPI.h"
+  "include/guidriverMyGUIOgre.h",
+  "include/guidriverMyGUIOgre_CGUIContextOgre.h",
+  "include/guidriverMyGUIOgre_CGUIDriverOgre.h",
+  "include/guidriverMyGUIOgre_CImageLoader.h",
+  "include/guidriverMyGUIOgre_config.h",
+  "include/guidriverMyGUIOgre_macros.h",
+  "include/guidriverMyGUIOgre_pluginAPI.h"
  } )
 
 
@@ -70,25 +54,43 @@ files( {
 configuration( {} )
 vpaths { ["Source"] = { "**.c", "**.cpp", "**.cs", "**.asm" } }
 files( {
-  "src/guidriverMyGUIOpenGL.cpp",
-  "src/guidriverMyGUIOpenGL_CGUIContextGL.cpp",
-  "src/guidriverMyGUIOpenGL_CGUIDriverGL.cpp",
-  "src/guidriverMyGUIOpenGL_CImageLoader.cpp",
-  "src/guidriverMyGUIOpenGL_pluginAPI.cpp"
+  "src/guidriverMyGUIOgre.cpp",
+  "src/guidriverMyGUIOgre_CGUIContextOgre.cpp",
+  "src/guidriverMyGUIOgre_CGUIDriverOgre.cpp",
+  "src/guidriverMyGUIOgre_CImageLoader.cpp",
+  "src/guidriverMyGUIOgre_pluginAPI.cpp"
  } )
 
 
 configuration( {} )
-includedirs( { "../../../common/include", "../../../dependencies/MyGui/Common/FileSystemInfo", "../../../dependencies/MyGui/MyGUIEngine/include", "../../../dependencies/MyGui/Platforms/OpenGL/OpenGLPlatform/include", "../../../dependencies/MyGui/Platforms/OpenGL/OpenGLPlatform/include/GL", "../../../dependencies/freetype/include", "../../../dependencies/freetype/include/freetype", "../../../dependencies/freetype/include/freetype/config", "../../../dependencies/freetype/include/freetype/internal", "../../../dependencies/freetype/include/freetype/internal/services", "../../../dependencies/freetype/src/winfonts", "../../../gucefCORE/include", "../../../gucefGUI/include", "../../../gucefIMAGE/include", "../../../gucefINPUT/include", "../../../gucefMT/include", "../../../gucefVFS/include", "../guidriverMyGUI/include", "include" } )
+includedirs( { "../../../common/include", "../../../dependencies/MyGui/MyGUIEngine/include", "../../../dependencies/Ogre/OgreMain/include", "../../../dependencies/Ogre/OgreMain/include/Hash", "../../../dependencies/Ogre/OgreMain/include/Threading", "../../../dependencies/Ogre/OgreMain/src", "../../../dependencies/Ogre/OgreMain/src/nedmalloc", "../../../dependencies/Ogre/OgreMain/src/stbi", "../../../dependencies/Ogre/include", "../../../dependencies/freetype/include", "../../../dependencies/freetype/include/freetype", "../../../dependencies/freetype/include/freetype/config", "../../../dependencies/freetype/include/freetype/internal", "../../../dependencies/freetype/include/freetype/internal/services", "../../../dependencies/freetype/src", "../../../dependencies/freetype/src/winfonts", "../../../platform/gucefCORE/include", "../../../platform/gucefGUI/include", "../../../platform/gucefIMAGE/include", "../../../platform/gucefINPUT/include", "../../../platform/gucefMT/include", "../../../platform/gucefVFS/include", "../guidriverMyGUI/include", "include" } )
 
 configuration( { "ANDROID" } )
-includedirs( { "../../../dependencies/MyGui/Common/FileSystemInfo", "../../../gucefCORE/include/android", "OpenGLESPlatform/include" } )
+includedirs( { "../../../dependencies/Ogre/OgreMain/include/Android", "../../../platform/gucefCORE/include/android" } )
 
-configuration( { "LINUX" } )
-includedirs( { "../../../gucefCORE/include/linux" } )
+configuration( { "EMSCRIPTEN" } )
+includedirs( { "../../../dependencies/Ogre/OgreMain/include/Emscripten" } )
+
+configuration( { "GLX" } )
+includedirs( { "../../../dependencies/Ogre/OgreMain/src/GLX" } )
+
+configuration( { "GTK" } )
+includedirs( { "../../../dependencies/Ogre/OgreMain/include/gtk", "../../../dependencies/Ogre/OgreMain/src/gtk" } )
+
+configuration( { "IOS" } )
+includedirs( { "../../../dependencies/Ogre/OgreMain/include/iOS" } )
+
+configuration( { "LINUX32" } )
+includedirs( { "../../../dependencies/MyGui/Common/FileSystemInfo", "../../../dependencies/MyGui/Platforms/Ogre/OgrePlatform/include", "../../../platform/gucefCORE/include/linux" } )
+
+configuration( { "LINUX64" } )
+includedirs( { "../../../dependencies/MyGui/Common/FileSystemInfo", "../../../dependencies/MyGui/Platforms/Ogre/OgrePlatform/include", "../../../platform/gucefCORE/include/linux" } )
+
+configuration( { "OSX" } )
+includedirs( { "../../../dependencies/Ogre/OgreMain/include/OSX" } )
 
 configuration( { "WIN32" } )
-includedirs( { "../../../gucefCORE/include/mswin" } )
+includedirs( { "../../../dependencies/MyGui/Common/FileSystemInfo", "../../../dependencies/MyGui/Platforms/Ogre/OgrePlatform/include", "../../../dependencies/Ogre/OgreMain/include/WIN32", "../../../dependencies/Ogre/OgreMain/src/WIN32", "../../../platform/gucefCORE/include/mswin", "../../../platform/gucefMT/include/mswin" } )
 
 configuration( { "WIN64" } )
-includedirs( { "../../../gucefCORE/include/mswin" } )
+includedirs( { "../../../platform/gucefCORE/include/mswin", "../../../platform/gucefMT/include/mswin" } )

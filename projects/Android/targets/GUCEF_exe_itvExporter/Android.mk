@@ -21,6 +21,24 @@ endif
 
 include $(CLEAR_VARS)
 
+MY_MODULE_PATH := $(PROJECT_ROOT_PATH)/../../../../dependencies/flic
+include $(MY_MODULE_PATH)/Android.mk
+
+MY_MODULE_PATH := $(PROJECT_ROOT_PATH)/../../../../dependencies/json-parser
+include $(MY_MODULE_PATH)/Android.mk
+
+MY_MODULE_PATH := $(PROJECT_ROOT_PATH)/../../../../dependencies/libparsifal
+include $(MY_MODULE_PATH)/Android.mk
+
+MY_MODULE_PATH := $(PROJECT_ROOT_PATH)/../../../../dependencies/libyaml
+include $(MY_MODULE_PATH)/Android.mk
+
+MY_MODULE_PATH := $(PROJECT_ROOT_PATH)/../../../../dependencies/stbrumme-hash-library
+include $(MY_MODULE_PATH)/Android.mk
+
+MY_MODULE_PATH := $(PROJECT_ROOT_PATH)/../../../../dependencies/json-builder
+include $(MY_MODULE_PATH)/Android.mk
+
 MY_MODULE_PATH := $(PROJECT_ROOT_PATH)/../../../../platform/gucefCORE
 include $(MY_MODULE_PATH)/Android.mk
 
@@ -31,6 +49,30 @@ MY_MODULE_PATH := $(PROJECT_ROOT_PATH)/../../../../platform/gucefIMAGE
 include $(MY_MODULE_PATH)/Android.mk
 
 MY_MODULE_PATH := $(PROJECT_ROOT_PATH)/../../../../platform/gucefVFS
+include $(MY_MODULE_PATH)/Android.mk
+
+MY_MODULE_PATH := $(PROJECT_ROOT_PATH)/../../../../plugins/CORE/codecspluginSTBRUMMEHASH
+include $(MY_MODULE_PATH)/Android.mk
+
+MY_MODULE_PATH := $(PROJECT_ROOT_PATH)/../../../../plugins/CORE/codecspluginZLIB
+include $(MY_MODULE_PATH)/Android.mk
+
+MY_MODULE_PATH := $(PROJECT_ROOT_PATH)/../../../../plugins/IMAGE/imgpluginITV
+include $(MY_MODULE_PATH)/Android.mk
+
+MY_MODULE_PATH := $(PROJECT_ROOT_PATH)/../../../../plugins/VFS/vfspluginITV
+include $(MY_MODULE_PATH)/Android.mk
+
+MY_MODULE_PATH := $(PROJECT_ROOT_PATH)/../../../../plugins/CORE/dstorepluginPARSIFALXML
+include $(MY_MODULE_PATH)/Android.mk
+
+MY_MODULE_PATH := $(PROJECT_ROOT_PATH)/../../../../plugins/CORE/dstorepluginYAML
+include $(MY_MODULE_PATH)/Android.mk
+
+MY_MODULE_PATH := $(PROJECT_ROOT_PATH)/../../../../plugins/IMAGE/imgpluginFLIC
+include $(MY_MODULE_PATH)/Android.mk
+
+MY_MODULE_PATH := $(PROJECT_ROOT_PATH)/../../../../plugins/CORE/dstorepluginJSONPARSER
 include $(MY_MODULE_PATH)/Android.mk
 
 MY_MODULE_PATH := $(PROJECT_ROOT_PATH)/../../../../tools/itvExporter

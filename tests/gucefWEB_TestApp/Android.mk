@@ -17,13 +17,13 @@ LOCAL_PATH := $(MY_MODULE_PATH)
 include $(CLEAR_VARS)
 
 @echo Module path: $(MY_MODULE_PATH)
-LOCAL_MODULE := gucefCOM_TestApp
+LOCAL_MODULE := gucefWEB_TestApp
 @echo Module name: $(LOCAL_MODULE)
 
 LOCAL_SRC_FILES := \
   src/TestCode_CHTTPClient.cpp \
   src/TestCode_CHTTPServer.cpp \
-  src/gucefCOM_TestApp_main.cpp
+  src/gucefWEB_TestApp_main.cpp
 
 LOCAL_C_INCLUDES := \
   $(MY_MODULE_PATH)/include \
@@ -32,14 +32,17 @@ LOCAL_C_INCLUDES := \
   $(MY_MODULE_PATH)/../../platform/gucefCOMCORE/include \
   $(MY_MODULE_PATH)/../../platform/gucefCORE/include \
   $(MY_MODULE_PATH)/../../platform/gucefCORE/include/android \
-  $(MY_MODULE_PATH)/../../platform/gucefMT/include
+  $(MY_MODULE_PATH)/../../platform/gucefMT/include \
+  $(MY_MODULE_PATH)/../../platform/gucefVFS/include \
+  $(MY_MODULE_PATH)/../../platform/gucefWEB/include
 
 
 LOCAL_SHARED_LIBRARIES := \
   gucefCOM \
   gucefCOMCORE \
   gucefCORE \
-  gucefMT
+  gucefMT \
+  gucefWEB
 
 include $(BUILD_EXECUTABLE)
 

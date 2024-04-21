@@ -36,21 +36,51 @@ configuration( {} )
 defines( { "GUCEF_CORE_EMBED_CODE", "GUCEF_LOADER_BUILD_MODULE", "GUCEF_MT_EMBED_CODE", "GUCEF_NO_LOGGING" } )
   links( { "dl", "log" } )
   links( { "dl", "rt" } )
+  links( { "dl", "rt" } )
+  links( { "PowrProf.lib", "Ws2_32.lib", "winmm.lib" } )
+  links( { "PowrProf.lib", "Ws2_32.lib", "winmm.lib" } )
 
 
 configuration( {} )
 vpaths { ["Headers"] = { "**.h", "**.hpp", "**.hxx" } }
 files( {
+  "../gucefCORE/include/CDynamicBuffer.h",
+  "../gucefCORE/include/CException.h",
+  "../gucefCORE/include/CICloneable.h",
+  "../gucefCORE/include/CIOAccess.h",
+  "../gucefCORE/include/CMsgException.h",
+  "../gucefCORE/include/DVCPPOSWRAP.h",
   "../gucefCORE/include/DVOSWRAP.h",
-  "../gucefCORE/include/dvstrutils.h",
-  "../gucefCORE/include/CDVString.h",
-  "../gucefCORE/include/dvfileutils.h",
+  "../gucefCORE/include/IOACCESS.h",
+  "../gucefCORE/include/MFILE.h",
+  "../gucefCORE/include/PAFILE.h",
+  "../gucefCORE/include/dvcppfileutils.h",
   "../gucefCORE/include/dvcppstringutils.h",
-  "../gucefCORE/include/md5.h",
+  "../gucefCORE/include/dvfileutils.h",
   "../gucefCORE/include/dvmd5utils.h",
+  "../gucefCORE/include/dvstrutils.h",
+  "../gucefCORE/include/gucefCORE_CAsciiString.h",
+  "../gucefCORE/include/gucefCORE_CDate.h",
+  "../gucefCORE/include/gucefCORE_CDateTime.h",
+  "../gucefCORE/include/gucefCORE_CIDate.h",
+  "../gucefCORE/include/gucefCORE_CITime.h",
+  "../gucefCORE/include/gucefCORE_CResourceMetaData.h",
+  "../gucefCORE/include/gucefCORE_CString.h",
+  "../gucefCORE/include/gucefCORE_CTime.h",
+  "../gucefCORE/include/gucefCORE_CUtf8String.h",
+  "../gucefCORE/include/gucefCORE_CVariant.h",
+  "../gucefCORE/include/gucefCORE_VariantData.h",
+  "../gucefCORE/include/md5.h",
+  "../gucefMT/include/gucefMT_CICloneable.h",
+  "../gucefMT/include/gucefMT_CILockable.h",
+  "../gucefMT/include/gucefMT_CMutex.h",
+  "../gucefMT/include/gucefMT_CScopeMutex.h",
+  "../gucefMT/include/gucefMT_ThreadStatus.h",
+  "../gucefMT/include/gucefMT_dvmtoswrap.h",
+  "../gucefMT/include/gucefMT_mutex.h",
   "include/gucefLOADER.h",
-  "include/gucefLOADER_config.h",
   "include/gucefLOADER_ETypes.h",
+  "include/gucefLOADER_config.h",
   "include/gucefLOADER_macros.h"
  } )
 
@@ -59,13 +89,39 @@ files( {
 configuration( {} )
 vpaths { ["Source"] = { "**.c", "**.cpp", "**.cs", "**.asm" } }
 files( {
+  "../gucefCORE/src/CDynamicBuffer.cpp",
+  "../gucefCORE/src/CException.cpp",
+  "../gucefCORE/src/CICloneable.cpp",
+  "../gucefCORE/src/CIOAccess.cpp",
+  "../gucefCORE/src/CMsgException.cpp",
+  "../gucefCORE/src/DVCPPOSWRAP.cpp",
   "../gucefCORE/src/DVOSWRAP.cpp",
-  "../gucefCORE/src/dvstrutils.c",
-  "../gucefCORE/src/CDVString.cpp",
-  "../gucefCORE/src/dvfileutils.c",
+  "../gucefCORE/src/IOACCESS.c",
+  "../gucefCORE/src/MFILE.c",
+  "../gucefCORE/src/PAFILE.c",
+  "../gucefCORE/src/dvcppfileutils.cpp",
   "../gucefCORE/src/dvcppstringutils.cpp",
-  "../gucefCORE/src/md5.c",
+  "../gucefCORE/src/dvfileutils.cpp",
   "../gucefCORE/src/dvmd5utils.c",
+  "../gucefCORE/src/dvstrutils.cpp",
+  "../gucefCORE/src/gucefCORE_CAsciiString.cpp",
+  "../gucefCORE/src/gucefCORE_CDate.cpp",
+  "../gucefCORE/src/gucefCORE_CDateTime.cpp",
+  "../gucefCORE/src/gucefCORE_CIDate.cpp",
+  "../gucefCORE/src/gucefCORE_CITime.cpp",
+  "../gucefCORE/src/gucefCORE_CResourceMetaData.cpp",
+  "../gucefCORE/src/gucefCORE_CTime.cpp",
+  "../gucefCORE/src/gucefCORE_CUtf8String.cpp",
+  "../gucefCORE/src/gucefCORE_CVariant.cpp",
+  "../gucefCORE/src/gucefCORE_VariantData.c",
+  "../gucefCORE/src/md5.c",
+  "../gucefMT/src/gucefMT_CICloneable.cpp",
+  "../gucefMT/src/gucefMT_CILockable.cpp",
+  "../gucefMT/src/gucefMT_CMutex.cpp",
+  "../gucefMT/src/gucefMT_CScopeMutex.cpp",
+  "../gucefMT/src/gucefMT_ThreadStatus.cpp",
+  "../gucefMT/src/gucefMT_dvmtoswrap.c",
+  "../gucefMT/src/gucefMT_mutex.c",
   "src/gucefLOADER.cpp"
  } )
 
@@ -74,24 +130,233 @@ files( {
 configuration( { "ANDROID" } )
     vpaths { ["Platform Headers"] = { "**.h", "**.hpp", "**.hxx" } }
     files( {
+      "../gucefCORE/include/CDynamicBuffer.h",
+      "../gucefCORE/include/CException.h",
+      "../gucefCORE/include/CICloneable.h",
+      "../gucefCORE/include/CIOAccess.h",
+      "../gucefCORE/include/CMsgException.h",
+      "../gucefCORE/include/DVCPPOSWRAP.h",
       "../gucefCORE/include/DVOSWRAP.h",
-      "../gucefCORE/include/dvstrutils.h",
-      "../gucefCORE/include/CDVString.h",
-      "../gucefCORE/include/dvfileutils.h",
+      "../gucefCORE/include/IOACCESS.h",
+      "../gucefCORE/include/MFILE.h",
+      "../gucefCORE/include/PAFILE.h",
+      "../gucefCORE/include/dvcppfileutils.h",
       "../gucefCORE/include/dvcppstringutils.h",
+      "../gucefCORE/include/dvfileutils.h",
+      "../gucefCORE/include/dvmd5utils.h",
+      "../gucefCORE/include/dvstrutils.h",
+      "../gucefCORE/include/gucefCORE_CAsciiString.h",
+      "../gucefCORE/include/gucefCORE_CDate.h",
+      "../gucefCORE/include/gucefCORE_CDateTime.h",
+      "../gucefCORE/include/gucefCORE_CIDate.h",
+      "../gucefCORE/include/gucefCORE_CITime.h",
+      "../gucefCORE/include/gucefCORE_CResourceMetaData.h",
+      "../gucefCORE/include/gucefCORE_CString.h",
+      "../gucefCORE/include/gucefCORE_CTime.h",
+      "../gucefCORE/include/gucefCORE_CUtf8String.h",
+      "../gucefCORE/include/gucefCORE_CVariant.h",
+      "../gucefCORE/include/gucefCORE_VariantData.h",
       "../gucefCORE/include/md5.h",
-      "../gucefCORE/include/dvmd5utils.h"
+      "../gucefMT/include/gucefMT_CICloneable.h",
+      "../gucefMT/include/gucefMT_CILockable.h",
+      "../gucefMT/include/gucefMT_CMutex.h",
+      "../gucefMT/include/gucefMT_CScopeMutex.h",
+      "../gucefMT/include/gucefMT_ThreadStatus.h",
+      "../gucefMT/include/gucefMT_dvmtoswrap.h",
+      "../gucefMT/include/gucefMT_mutex.h"
     } )
 
     vpaths { ["Platform Source"] = { "**.c", "**.cpp", "**.cs", "**.asm" } }
     files( {
+      "../gucefCORE/src/CDynamicBuffer.cpp",
+      "../gucefCORE/src/CException.cpp",
+      "../gucefCORE/src/CICloneable.cpp",
+      "../gucefCORE/src/CIOAccess.cpp",
+      "../gucefCORE/src/CMsgException.cpp",
+      "../gucefCORE/src/DVCPPOSWRAP.cpp",
       "../gucefCORE/src/DVOSWRAP.cpp",
-      "../gucefCORE/src/dvstrutils.c",
-      "../gucefCORE/src/CDVString.cpp",
-      "../gucefCORE/src/dvfileutils.c",
+      "../gucefCORE/src/IOACCESS.c",
+      "../gucefCORE/src/MFILE.c",
+      "../gucefCORE/src/PAFILE.c",
+      "../gucefCORE/src/dvcppfileutils.cpp",
       "../gucefCORE/src/dvcppstringutils.cpp",
+      "../gucefCORE/src/dvfileutils.cpp",
+      "../gucefCORE/src/dvmd5utils.c",
+      "../gucefCORE/src/dvstrutils.cpp",
+      "../gucefCORE/src/gucefCORE_CAsciiString.cpp",
+      "../gucefCORE/src/gucefCORE_CDate.cpp",
+      "../gucefCORE/src/gucefCORE_CDateTime.cpp",
+      "../gucefCORE/src/gucefCORE_CIDate.cpp",
+      "../gucefCORE/src/gucefCORE_CITime.cpp",
+      "../gucefCORE/src/gucefCORE_CResourceMetaData.cpp",
+      "../gucefCORE/src/gucefCORE_CTime.cpp",
+      "../gucefCORE/src/gucefCORE_CUtf8String.cpp",
+      "../gucefCORE/src/gucefCORE_CVariant.cpp",
+      "../gucefCORE/src/gucefCORE_VariantData.c",
       "../gucefCORE/src/md5.c",
-      "../gucefCORE/src/dvmd5utils.c"
+      "../gucefMT/src/gucefMT_CICloneable.cpp",
+      "../gucefMT/src/gucefMT_CILockable.cpp",
+      "../gucefMT/src/gucefMT_CMutex.cpp",
+      "../gucefMT/src/gucefMT_CScopeMutex.cpp",
+      "../gucefMT/src/gucefMT_ThreadStatus.cpp",
+      "../gucefMT/src/gucefMT_dvmtoswrap.c",
+      "../gucefMT/src/gucefMT_mutex.c"
+    } )
+
+
+
+configuration( { "ARDUINO" } )
+    vpaths { ["Platform Headers"] = { "**.h", "**.hpp", "**.hxx" } }
+    files( {
+      "../gucefCORE/include/CDynamicBuffer.h",
+      "../gucefCORE/include/CException.h",
+      "../gucefCORE/include/CICloneable.h",
+      "../gucefCORE/include/CIOAccess.h",
+      "../gucefCORE/include/CMsgException.h",
+      "../gucefCORE/include/DVCPPOSWRAP.h",
+      "../gucefCORE/include/DVOSWRAP.h",
+      "../gucefCORE/include/IOACCESS.h",
+      "../gucefCORE/include/MFILE.h",
+      "../gucefCORE/include/PAFILE.h",
+      "../gucefCORE/include/dvcppfileutils.h",
+      "../gucefCORE/include/dvcppstringutils.h",
+      "../gucefCORE/include/dvfileutils.h",
+      "../gucefCORE/include/dvmd5utils.h",
+      "../gucefCORE/include/dvstrutils.h",
+      "../gucefCORE/include/gucefCORE_CAsciiString.h",
+      "../gucefCORE/include/gucefCORE_CDate.h",
+      "../gucefCORE/include/gucefCORE_CDateTime.h",
+      "../gucefCORE/include/gucefCORE_CIDate.h",
+      "../gucefCORE/include/gucefCORE_CITime.h",
+      "../gucefCORE/include/gucefCORE_CResourceMetaData.h",
+      "../gucefCORE/include/gucefCORE_CString.h",
+      "../gucefCORE/include/gucefCORE_CTime.h",
+      "../gucefCORE/include/gucefCORE_CUtf8String.h",
+      "../gucefCORE/include/gucefCORE_CVariant.h",
+      "../gucefCORE/include/gucefCORE_VariantData.h",
+      "../gucefCORE/include/md5.h",
+      "../gucefMT/include/gucefMT_CICloneable.h",
+      "../gucefMT/include/gucefMT_CILockable.h",
+      "../gucefMT/include/gucefMT_CMutex.h",
+      "../gucefMT/include/gucefMT_CScopeMutex.h",
+      "../gucefMT/include/gucefMT_ThreadStatus.h",
+      "../gucefMT/include/gucefMT_dvmtoswrap.h",
+      "../gucefMT/include/gucefMT_mutex.h"
+    } )
+
+    vpaths { ["Platform Source"] = { "**.c", "**.cpp", "**.cs", "**.asm" } }
+    files( {
+      "../gucefCORE/src/CDynamicBuffer.cpp",
+      "../gucefCORE/src/CException.cpp",
+      "../gucefCORE/src/CICloneable.cpp",
+      "../gucefCORE/src/CIOAccess.cpp",
+      "../gucefCORE/src/CMsgException.cpp",
+      "../gucefCORE/src/DVCPPOSWRAP.cpp",
+      "../gucefCORE/src/DVOSWRAP.cpp",
+      "../gucefCORE/src/IOACCESS.c",
+      "../gucefCORE/src/MFILE.c",
+      "../gucefCORE/src/PAFILE.c",
+      "../gucefCORE/src/dvcppfileutils.cpp",
+      "../gucefCORE/src/dvcppstringutils.cpp",
+      "../gucefCORE/src/dvfileutils.cpp",
+      "../gucefCORE/src/dvmd5utils.c",
+      "../gucefCORE/src/dvstrutils.cpp",
+      "../gucefCORE/src/gucefCORE_CAsciiString.cpp",
+      "../gucefCORE/src/gucefCORE_CDate.cpp",
+      "../gucefCORE/src/gucefCORE_CDateTime.cpp",
+      "../gucefCORE/src/gucefCORE_CIDate.cpp",
+      "../gucefCORE/src/gucefCORE_CITime.cpp",
+      "../gucefCORE/src/gucefCORE_CResourceMetaData.cpp",
+      "../gucefCORE/src/gucefCORE_CTime.cpp",
+      "../gucefCORE/src/gucefCORE_CUtf8String.cpp",
+      "../gucefCORE/src/gucefCORE_CVariant.cpp",
+      "../gucefCORE/src/gucefCORE_VariantData.c",
+      "../gucefCORE/src/md5.c",
+      "../gucefMT/src/gucefMT_CICloneable.cpp",
+      "../gucefMT/src/gucefMT_CILockable.cpp",
+      "../gucefMT/src/gucefMT_CMutex.cpp",
+      "../gucefMT/src/gucefMT_CScopeMutex.cpp",
+      "../gucefMT/src/gucefMT_ThreadStatus.cpp",
+      "../gucefMT/src/gucefMT_dvmtoswrap.c",
+      "../gucefMT/src/gucefMT_mutex.c"
+    } )
+
+
+
+configuration( { "EMSCRIPTEN" } )
+    vpaths { ["Platform Headers"] = { "**.h", "**.hpp", "**.hxx" } }
+    files( {
+      "../gucefCORE/include/CDynamicBuffer.h",
+      "../gucefCORE/include/CException.h",
+      "../gucefCORE/include/CICloneable.h",
+      "../gucefCORE/include/CIOAccess.h",
+      "../gucefCORE/include/CMsgException.h",
+      "../gucefCORE/include/DVCPPOSWRAP.h",
+      "../gucefCORE/include/DVOSWRAP.h",
+      "../gucefCORE/include/IOACCESS.h",
+      "../gucefCORE/include/MFILE.h",
+      "../gucefCORE/include/PAFILE.h",
+      "../gucefCORE/include/dvcppfileutils.h",
+      "../gucefCORE/include/dvcppstringutils.h",
+      "../gucefCORE/include/dvfileutils.h",
+      "../gucefCORE/include/dvmd5utils.h",
+      "../gucefCORE/include/dvstrutils.h",
+      "../gucefCORE/include/gucefCORE_CAsciiString.h",
+      "../gucefCORE/include/gucefCORE_CDate.h",
+      "../gucefCORE/include/gucefCORE_CDateTime.h",
+      "../gucefCORE/include/gucefCORE_CIDate.h",
+      "../gucefCORE/include/gucefCORE_CITime.h",
+      "../gucefCORE/include/gucefCORE_CResourceMetaData.h",
+      "../gucefCORE/include/gucefCORE_CString.h",
+      "../gucefCORE/include/gucefCORE_CTime.h",
+      "../gucefCORE/include/gucefCORE_CUtf8String.h",
+      "../gucefCORE/include/gucefCORE_CVariant.h",
+      "../gucefCORE/include/gucefCORE_VariantData.h",
+      "../gucefCORE/include/md5.h",
+      "../gucefMT/include/gucefMT_CICloneable.h",
+      "../gucefMT/include/gucefMT_CILockable.h",
+      "../gucefMT/include/gucefMT_CMutex.h",
+      "../gucefMT/include/gucefMT_CScopeMutex.h",
+      "../gucefMT/include/gucefMT_ThreadStatus.h",
+      "../gucefMT/include/gucefMT_dvmtoswrap.h",
+      "../gucefMT/include/gucefMT_mutex.h"
+    } )
+
+    vpaths { ["Platform Source"] = { "**.c", "**.cpp", "**.cs", "**.asm" } }
+    files( {
+      "../gucefCORE/src/CDynamicBuffer.cpp",
+      "../gucefCORE/src/CException.cpp",
+      "../gucefCORE/src/CICloneable.cpp",
+      "../gucefCORE/src/CIOAccess.cpp",
+      "../gucefCORE/src/CMsgException.cpp",
+      "../gucefCORE/src/DVCPPOSWRAP.cpp",
+      "../gucefCORE/src/DVOSWRAP.cpp",
+      "../gucefCORE/src/IOACCESS.c",
+      "../gucefCORE/src/MFILE.c",
+      "../gucefCORE/src/PAFILE.c",
+      "../gucefCORE/src/dvcppfileutils.cpp",
+      "../gucefCORE/src/dvcppstringutils.cpp",
+      "../gucefCORE/src/dvfileutils.cpp",
+      "../gucefCORE/src/dvmd5utils.c",
+      "../gucefCORE/src/dvstrutils.cpp",
+      "../gucefCORE/src/gucefCORE_CAsciiString.cpp",
+      "../gucefCORE/src/gucefCORE_CDate.cpp",
+      "../gucefCORE/src/gucefCORE_CDateTime.cpp",
+      "../gucefCORE/src/gucefCORE_CIDate.cpp",
+      "../gucefCORE/src/gucefCORE_CITime.cpp",
+      "../gucefCORE/src/gucefCORE_CResourceMetaData.cpp",
+      "../gucefCORE/src/gucefCORE_CTime.cpp",
+      "../gucefCORE/src/gucefCORE_CUtf8String.cpp",
+      "../gucefCORE/src/gucefCORE_CVariant.cpp",
+      "../gucefCORE/src/gucefCORE_VariantData.c",
+      "../gucefCORE/src/md5.c",
+      "../gucefMT/src/gucefMT_CICloneable.cpp",
+      "../gucefMT/src/gucefMT_CILockable.cpp",
+      "../gucefMT/src/gucefMT_CMutex.cpp",
+      "../gucefMT/src/gucefMT_CScopeMutex.cpp",
+      "../gucefMT/src/gucefMT_ThreadStatus.cpp",
+      "../gucefMT/src/gucefMT_dvmtoswrap.c",
+      "../gucefMT/src/gucefMT_mutex.c"
     } )
 
 
@@ -99,24 +364,77 @@ configuration( { "ANDROID" } )
 configuration( { "GLX" } )
     vpaths { ["Platform Headers"] = { "**.h", "**.hpp", "**.hxx" } }
     files( {
+      "../gucefCORE/include/CDynamicBuffer.h",
+      "../gucefCORE/include/CException.h",
+      "../gucefCORE/include/CICloneable.h",
+      "../gucefCORE/include/CIOAccess.h",
+      "../gucefCORE/include/CMsgException.h",
+      "../gucefCORE/include/DVCPPOSWRAP.h",
       "../gucefCORE/include/DVOSWRAP.h",
-      "../gucefCORE/include/dvstrutils.h",
-      "../gucefCORE/include/CDVString.h",
-      "../gucefCORE/include/dvfileutils.h",
+      "../gucefCORE/include/IOACCESS.h",
+      "../gucefCORE/include/MFILE.h",
+      "../gucefCORE/include/PAFILE.h",
+      "../gucefCORE/include/dvcppfileutils.h",
       "../gucefCORE/include/dvcppstringutils.h",
+      "../gucefCORE/include/dvfileutils.h",
+      "../gucefCORE/include/dvmd5utils.h",
+      "../gucefCORE/include/dvstrutils.h",
+      "../gucefCORE/include/gucefCORE_CAsciiString.h",
+      "../gucefCORE/include/gucefCORE_CDate.h",
+      "../gucefCORE/include/gucefCORE_CDateTime.h",
+      "../gucefCORE/include/gucefCORE_CIDate.h",
+      "../gucefCORE/include/gucefCORE_CITime.h",
+      "../gucefCORE/include/gucefCORE_CResourceMetaData.h",
+      "../gucefCORE/include/gucefCORE_CString.h",
+      "../gucefCORE/include/gucefCORE_CTime.h",
+      "../gucefCORE/include/gucefCORE_CUtf8String.h",
+      "../gucefCORE/include/gucefCORE_CVariant.h",
+      "../gucefCORE/include/gucefCORE_VariantData.h",
       "../gucefCORE/include/md5.h",
-      "../gucefCORE/include/dvmd5utils.h"
+      "../gucefMT/include/gucefMT_CICloneable.h",
+      "../gucefMT/include/gucefMT_CILockable.h",
+      "../gucefMT/include/gucefMT_CMutex.h",
+      "../gucefMT/include/gucefMT_CScopeMutex.h",
+      "../gucefMT/include/gucefMT_ThreadStatus.h",
+      "../gucefMT/include/gucefMT_dvmtoswrap.h",
+      "../gucefMT/include/gucefMT_mutex.h"
     } )
 
     vpaths { ["Platform Source"] = { "**.c", "**.cpp", "**.cs", "**.asm" } }
     files( {
+      "../gucefCORE/src/CDynamicBuffer.cpp",
+      "../gucefCORE/src/CException.cpp",
+      "../gucefCORE/src/CICloneable.cpp",
+      "../gucefCORE/src/CIOAccess.cpp",
+      "../gucefCORE/src/CMsgException.cpp",
+      "../gucefCORE/src/DVCPPOSWRAP.cpp",
       "../gucefCORE/src/DVOSWRAP.cpp",
-      "../gucefCORE/src/dvstrutils.c",
-      "../gucefCORE/src/CDVString.cpp",
-      "../gucefCORE/src/dvfileutils.c",
+      "../gucefCORE/src/IOACCESS.c",
+      "../gucefCORE/src/MFILE.c",
+      "../gucefCORE/src/PAFILE.c",
+      "../gucefCORE/src/dvcppfileutils.cpp",
       "../gucefCORE/src/dvcppstringutils.cpp",
+      "../gucefCORE/src/dvfileutils.cpp",
+      "../gucefCORE/src/dvmd5utils.c",
+      "../gucefCORE/src/dvstrutils.cpp",
+      "../gucefCORE/src/gucefCORE_CAsciiString.cpp",
+      "../gucefCORE/src/gucefCORE_CDate.cpp",
+      "../gucefCORE/src/gucefCORE_CDateTime.cpp",
+      "../gucefCORE/src/gucefCORE_CIDate.cpp",
+      "../gucefCORE/src/gucefCORE_CITime.cpp",
+      "../gucefCORE/src/gucefCORE_CResourceMetaData.cpp",
+      "../gucefCORE/src/gucefCORE_CTime.cpp",
+      "../gucefCORE/src/gucefCORE_CUtf8String.cpp",
+      "../gucefCORE/src/gucefCORE_CVariant.cpp",
+      "../gucefCORE/src/gucefCORE_VariantData.c",
       "../gucefCORE/src/md5.c",
-      "../gucefCORE/src/dvmd5utils.c"
+      "../gucefMT/src/gucefMT_CICloneable.cpp",
+      "../gucefMT/src/gucefMT_CILockable.cpp",
+      "../gucefMT/src/gucefMT_CMutex.cpp",
+      "../gucefMT/src/gucefMT_CScopeMutex.cpp",
+      "../gucefMT/src/gucefMT_ThreadStatus.cpp",
+      "../gucefMT/src/gucefMT_dvmtoswrap.c",
+      "../gucefMT/src/gucefMT_mutex.c"
     } )
 
 
@@ -124,74 +442,389 @@ configuration( { "GLX" } )
 configuration( { "GTK" } )
     vpaths { ["Platform Headers"] = { "**.h", "**.hpp", "**.hxx" } }
     files( {
+      "../gucefCORE/include/CDynamicBuffer.h",
+      "../gucefCORE/include/CException.h",
+      "../gucefCORE/include/CICloneable.h",
+      "../gucefCORE/include/CIOAccess.h",
+      "../gucefCORE/include/CMsgException.h",
+      "../gucefCORE/include/DVCPPOSWRAP.h",
       "../gucefCORE/include/DVOSWRAP.h",
-      "../gucefCORE/include/dvstrutils.h",
-      "../gucefCORE/include/CDVString.h",
-      "../gucefCORE/include/dvfileutils.h",
+      "../gucefCORE/include/IOACCESS.h",
+      "../gucefCORE/include/MFILE.h",
+      "../gucefCORE/include/PAFILE.h",
+      "../gucefCORE/include/dvcppfileutils.h",
       "../gucefCORE/include/dvcppstringutils.h",
+      "../gucefCORE/include/dvfileutils.h",
+      "../gucefCORE/include/dvmd5utils.h",
+      "../gucefCORE/include/dvstrutils.h",
+      "../gucefCORE/include/gucefCORE_CAsciiString.h",
+      "../gucefCORE/include/gucefCORE_CDate.h",
+      "../gucefCORE/include/gucefCORE_CDateTime.h",
+      "../gucefCORE/include/gucefCORE_CIDate.h",
+      "../gucefCORE/include/gucefCORE_CITime.h",
+      "../gucefCORE/include/gucefCORE_CResourceMetaData.h",
+      "../gucefCORE/include/gucefCORE_CString.h",
+      "../gucefCORE/include/gucefCORE_CTime.h",
+      "../gucefCORE/include/gucefCORE_CUtf8String.h",
+      "../gucefCORE/include/gucefCORE_CVariant.h",
+      "../gucefCORE/include/gucefCORE_VariantData.h",
       "../gucefCORE/include/md5.h",
-      "../gucefCORE/include/dvmd5utils.h"
+      "../gucefMT/include/gucefMT_CICloneable.h",
+      "../gucefMT/include/gucefMT_CILockable.h",
+      "../gucefMT/include/gucefMT_CMutex.h",
+      "../gucefMT/include/gucefMT_CScopeMutex.h",
+      "../gucefMT/include/gucefMT_ThreadStatus.h",
+      "../gucefMT/include/gucefMT_dvmtoswrap.h",
+      "../gucefMT/include/gucefMT_mutex.h"
     } )
 
     vpaths { ["Platform Source"] = { "**.c", "**.cpp", "**.cs", "**.asm" } }
     files( {
+      "../gucefCORE/src/CDynamicBuffer.cpp",
+      "../gucefCORE/src/CException.cpp",
+      "../gucefCORE/src/CICloneable.cpp",
+      "../gucefCORE/src/CIOAccess.cpp",
+      "../gucefCORE/src/CMsgException.cpp",
+      "../gucefCORE/src/DVCPPOSWRAP.cpp",
       "../gucefCORE/src/DVOSWRAP.cpp",
-      "../gucefCORE/src/dvstrutils.c",
-      "../gucefCORE/src/CDVString.cpp",
-      "../gucefCORE/src/dvfileutils.c",
+      "../gucefCORE/src/IOACCESS.c",
+      "../gucefCORE/src/MFILE.c",
+      "../gucefCORE/src/PAFILE.c",
+      "../gucefCORE/src/dvcppfileutils.cpp",
       "../gucefCORE/src/dvcppstringutils.cpp",
+      "../gucefCORE/src/dvfileutils.cpp",
+      "../gucefCORE/src/dvmd5utils.c",
+      "../gucefCORE/src/dvstrutils.cpp",
+      "../gucefCORE/src/gucefCORE_CAsciiString.cpp",
+      "../gucefCORE/src/gucefCORE_CDate.cpp",
+      "../gucefCORE/src/gucefCORE_CDateTime.cpp",
+      "../gucefCORE/src/gucefCORE_CIDate.cpp",
+      "../gucefCORE/src/gucefCORE_CITime.cpp",
+      "../gucefCORE/src/gucefCORE_CResourceMetaData.cpp",
+      "../gucefCORE/src/gucefCORE_CTime.cpp",
+      "../gucefCORE/src/gucefCORE_CUtf8String.cpp",
+      "../gucefCORE/src/gucefCORE_CVariant.cpp",
+      "../gucefCORE/src/gucefCORE_VariantData.c",
       "../gucefCORE/src/md5.c",
-      "../gucefCORE/src/dvmd5utils.c"
+      "../gucefMT/src/gucefMT_CICloneable.cpp",
+      "../gucefMT/src/gucefMT_CILockable.cpp",
+      "../gucefMT/src/gucefMT_CMutex.cpp",
+      "../gucefMT/src/gucefMT_CScopeMutex.cpp",
+      "../gucefMT/src/gucefMT_ThreadStatus.cpp",
+      "../gucefMT/src/gucefMT_dvmtoswrap.c",
+      "../gucefMT/src/gucefMT_mutex.c"
     } )
 
 
 
-configuration( { "IPHONEOS" } )
+configuration( { "IOS" } )
     vpaths { ["Platform Headers"] = { "**.h", "**.hpp", "**.hxx" } }
     files( {
+      "../gucefCORE/include/CDynamicBuffer.h",
+      "../gucefCORE/include/CException.h",
+      "../gucefCORE/include/CICloneable.h",
+      "../gucefCORE/include/CIOAccess.h",
+      "../gucefCORE/include/CMsgException.h",
+      "../gucefCORE/include/DVCPPOSWRAP.h",
       "../gucefCORE/include/DVOSWRAP.h",
-      "../gucefCORE/include/dvstrutils.h",
-      "../gucefCORE/include/CDVString.h",
-      "../gucefCORE/include/dvfileutils.h",
+      "../gucefCORE/include/IOACCESS.h",
+      "../gucefCORE/include/MFILE.h",
+      "../gucefCORE/include/PAFILE.h",
+      "../gucefCORE/include/dvcppfileutils.h",
       "../gucefCORE/include/dvcppstringutils.h",
+      "../gucefCORE/include/dvfileutils.h",
+      "../gucefCORE/include/dvmd5utils.h",
+      "../gucefCORE/include/dvstrutils.h",
+      "../gucefCORE/include/gucefCORE_CAsciiString.h",
+      "../gucefCORE/include/gucefCORE_CDate.h",
+      "../gucefCORE/include/gucefCORE_CDateTime.h",
+      "../gucefCORE/include/gucefCORE_CIDate.h",
+      "../gucefCORE/include/gucefCORE_CITime.h",
+      "../gucefCORE/include/gucefCORE_CResourceMetaData.h",
+      "../gucefCORE/include/gucefCORE_CString.h",
+      "../gucefCORE/include/gucefCORE_CTime.h",
+      "../gucefCORE/include/gucefCORE_CUtf8String.h",
+      "../gucefCORE/include/gucefCORE_CVariant.h",
+      "../gucefCORE/include/gucefCORE_VariantData.h",
       "../gucefCORE/include/md5.h",
-      "../gucefCORE/include/dvmd5utils.h"
+      "../gucefMT/include/gucefMT_CICloneable.h",
+      "../gucefMT/include/gucefMT_CILockable.h",
+      "../gucefMT/include/gucefMT_CMutex.h",
+      "../gucefMT/include/gucefMT_CScopeMutex.h",
+      "../gucefMT/include/gucefMT_ThreadStatus.h",
+      "../gucefMT/include/gucefMT_dvmtoswrap.h",
+      "../gucefMT/include/gucefMT_mutex.h"
     } )
 
     vpaths { ["Platform Source"] = { "**.c", "**.cpp", "**.cs", "**.asm" } }
     files( {
+      "../gucefCORE/src/CDynamicBuffer.cpp",
+      "../gucefCORE/src/CException.cpp",
+      "../gucefCORE/src/CICloneable.cpp",
+      "../gucefCORE/src/CIOAccess.cpp",
+      "../gucefCORE/src/CMsgException.cpp",
+      "../gucefCORE/src/DVCPPOSWRAP.cpp",
       "../gucefCORE/src/DVOSWRAP.cpp",
-      "../gucefCORE/src/dvstrutils.c",
-      "../gucefCORE/src/CDVString.cpp",
-      "../gucefCORE/src/dvfileutils.c",
+      "../gucefCORE/src/IOACCESS.c",
+      "../gucefCORE/src/MFILE.c",
+      "../gucefCORE/src/PAFILE.c",
+      "../gucefCORE/src/dvcppfileutils.cpp",
       "../gucefCORE/src/dvcppstringutils.cpp",
+      "../gucefCORE/src/dvfileutils.cpp",
+      "../gucefCORE/src/dvmd5utils.c",
+      "../gucefCORE/src/dvstrutils.cpp",
+      "../gucefCORE/src/gucefCORE_CAsciiString.cpp",
+      "../gucefCORE/src/gucefCORE_CDate.cpp",
+      "../gucefCORE/src/gucefCORE_CDateTime.cpp",
+      "../gucefCORE/src/gucefCORE_CIDate.cpp",
+      "../gucefCORE/src/gucefCORE_CITime.cpp",
+      "../gucefCORE/src/gucefCORE_CResourceMetaData.cpp",
+      "../gucefCORE/src/gucefCORE_CTime.cpp",
+      "../gucefCORE/src/gucefCORE_CUtf8String.cpp",
+      "../gucefCORE/src/gucefCORE_CVariant.cpp",
+      "../gucefCORE/src/gucefCORE_VariantData.c",
       "../gucefCORE/src/md5.c",
-      "../gucefCORE/src/dvmd5utils.c"
+      "../gucefMT/src/gucefMT_CICloneable.cpp",
+      "../gucefMT/src/gucefMT_CILockable.cpp",
+      "../gucefMT/src/gucefMT_CMutex.cpp",
+      "../gucefMT/src/gucefMT_CScopeMutex.cpp",
+      "../gucefMT/src/gucefMT_ThreadStatus.cpp",
+      "../gucefMT/src/gucefMT_dvmtoswrap.c",
+      "../gucefMT/src/gucefMT_mutex.c"
     } )
 
 
 
-configuration( { "LINUX" } )
+configuration( { "LINUX32" } )
     vpaths { ["Platform Headers"] = { "**.h", "**.hpp", "**.hxx" } }
     files( {
+      "../gucefCORE/include/CDynamicBuffer.h",
+      "../gucefCORE/include/CException.h",
+      "../gucefCORE/include/CICloneable.h",
+      "../gucefCORE/include/CIOAccess.h",
+      "../gucefCORE/include/CMsgException.h",
+      "../gucefCORE/include/DVCPPOSWRAP.h",
       "../gucefCORE/include/DVOSWRAP.h",
-      "../gucefCORE/include/dvstrutils.h",
-      "../gucefCORE/include/CDVString.h",
-      "../gucefCORE/include/dvfileutils.h",
+      "../gucefCORE/include/IOACCESS.h",
+      "../gucefCORE/include/MFILE.h",
+      "../gucefCORE/include/PAFILE.h",
+      "../gucefCORE/include/dvcppfileutils.h",
       "../gucefCORE/include/dvcppstringutils.h",
+      "../gucefCORE/include/dvfileutils.h",
+      "../gucefCORE/include/dvmd5utils.h",
+      "../gucefCORE/include/dvstrutils.h",
+      "../gucefCORE/include/gucefCORE_CAsciiString.h",
+      "../gucefCORE/include/gucefCORE_CDate.h",
+      "../gucefCORE/include/gucefCORE_CDateTime.h",
+      "../gucefCORE/include/gucefCORE_CIDate.h",
+      "../gucefCORE/include/gucefCORE_CITime.h",
+      "../gucefCORE/include/gucefCORE_CResourceMetaData.h",
+      "../gucefCORE/include/gucefCORE_CString.h",
+      "../gucefCORE/include/gucefCORE_CTime.h",
+      "../gucefCORE/include/gucefCORE_CUtf8String.h",
+      "../gucefCORE/include/gucefCORE_CVariant.h",
+      "../gucefCORE/include/gucefCORE_VariantData.h",
       "../gucefCORE/include/md5.h",
-      "../gucefCORE/include/dvmd5utils.h"
+      "../gucefMT/include/gucefMT_CICloneable.h",
+      "../gucefMT/include/gucefMT_CILockable.h",
+      "../gucefMT/include/gucefMT_CMutex.h",
+      "../gucefMT/include/gucefMT_CScopeMutex.h",
+      "../gucefMT/include/gucefMT_ThreadStatus.h",
+      "../gucefMT/include/gucefMT_dvmtoswrap.h",
+      "../gucefMT/include/gucefMT_mutex.h"
     } )
 
     vpaths { ["Platform Source"] = { "**.c", "**.cpp", "**.cs", "**.asm" } }
     files( {
+      "../gucefCORE/src/CDynamicBuffer.cpp",
+      "../gucefCORE/src/CException.cpp",
+      "../gucefCORE/src/CICloneable.cpp",
+      "../gucefCORE/src/CIOAccess.cpp",
+      "../gucefCORE/src/CMsgException.cpp",
+      "../gucefCORE/src/DVCPPOSWRAP.cpp",
       "../gucefCORE/src/DVOSWRAP.cpp",
-      "../gucefCORE/src/dvstrutils.c",
-      "../gucefCORE/src/CDVString.cpp",
-      "../gucefCORE/src/dvfileutils.c",
+      "../gucefCORE/src/IOACCESS.c",
+      "../gucefCORE/src/MFILE.c",
+      "../gucefCORE/src/PAFILE.c",
+      "../gucefCORE/src/dvcppfileutils.cpp",
       "../gucefCORE/src/dvcppstringutils.cpp",
+      "../gucefCORE/src/dvfileutils.cpp",
+      "../gucefCORE/src/dvmd5utils.c",
+      "../gucefCORE/src/dvstrutils.cpp",
+      "../gucefCORE/src/gucefCORE_CAsciiString.cpp",
+      "../gucefCORE/src/gucefCORE_CDate.cpp",
+      "../gucefCORE/src/gucefCORE_CDateTime.cpp",
+      "../gucefCORE/src/gucefCORE_CIDate.cpp",
+      "../gucefCORE/src/gucefCORE_CITime.cpp",
+      "../gucefCORE/src/gucefCORE_CResourceMetaData.cpp",
+      "../gucefCORE/src/gucefCORE_CTime.cpp",
+      "../gucefCORE/src/gucefCORE_CUtf8String.cpp",
+      "../gucefCORE/src/gucefCORE_CVariant.cpp",
+      "../gucefCORE/src/gucefCORE_VariantData.c",
       "../gucefCORE/src/md5.c",
-      "../gucefCORE/src/dvmd5utils.c"
+      "../gucefMT/src/gucefMT_CICloneable.cpp",
+      "../gucefMT/src/gucefMT_CILockable.cpp",
+      "../gucefMT/src/gucefMT_CMutex.cpp",
+      "../gucefMT/src/gucefMT_CScopeMutex.cpp",
+      "../gucefMT/src/gucefMT_ThreadStatus.cpp",
+      "../gucefMT/src/gucefMT_dvmtoswrap.c",
+      "../gucefMT/src/gucefMT_mutex.c"
+    } )
+
+
+
+configuration( { "LINUX64" } )
+    vpaths { ["Platform Headers"] = { "**.h", "**.hpp", "**.hxx" } }
+    files( {
+      "../gucefCORE/include/CDynamicBuffer.h",
+      "../gucefCORE/include/CException.h",
+      "../gucefCORE/include/CICloneable.h",
+      "../gucefCORE/include/CIOAccess.h",
+      "../gucefCORE/include/CMsgException.h",
+      "../gucefCORE/include/DVCPPOSWRAP.h",
+      "../gucefCORE/include/DVOSWRAP.h",
+      "../gucefCORE/include/IOACCESS.h",
+      "../gucefCORE/include/MFILE.h",
+      "../gucefCORE/include/PAFILE.h",
+      "../gucefCORE/include/dvcppfileutils.h",
+      "../gucefCORE/include/dvcppstringutils.h",
+      "../gucefCORE/include/dvfileutils.h",
+      "../gucefCORE/include/dvmd5utils.h",
+      "../gucefCORE/include/dvstrutils.h",
+      "../gucefCORE/include/gucefCORE_CAsciiString.h",
+      "../gucefCORE/include/gucefCORE_CDate.h",
+      "../gucefCORE/include/gucefCORE_CDateTime.h",
+      "../gucefCORE/include/gucefCORE_CIDate.h",
+      "../gucefCORE/include/gucefCORE_CITime.h",
+      "../gucefCORE/include/gucefCORE_CResourceMetaData.h",
+      "../gucefCORE/include/gucefCORE_CString.h",
+      "../gucefCORE/include/gucefCORE_CTime.h",
+      "../gucefCORE/include/gucefCORE_CUtf8String.h",
+      "../gucefCORE/include/gucefCORE_CVariant.h",
+      "../gucefCORE/include/gucefCORE_VariantData.h",
+      "../gucefCORE/include/md5.h",
+      "../gucefMT/include/gucefMT_CICloneable.h",
+      "../gucefMT/include/gucefMT_CILockable.h",
+      "../gucefMT/include/gucefMT_CMutex.h",
+      "../gucefMT/include/gucefMT_CScopeMutex.h",
+      "../gucefMT/include/gucefMT_ThreadStatus.h",
+      "../gucefMT/include/gucefMT_dvmtoswrap.h",
+      "../gucefMT/include/gucefMT_mutex.h"
+    } )
+
+    vpaths { ["Platform Source"] = { "**.c", "**.cpp", "**.cs", "**.asm" } }
+    files( {
+      "../gucefCORE/src/CDynamicBuffer.cpp",
+      "../gucefCORE/src/CException.cpp",
+      "../gucefCORE/src/CICloneable.cpp",
+      "../gucefCORE/src/CIOAccess.cpp",
+      "../gucefCORE/src/CMsgException.cpp",
+      "../gucefCORE/src/DVCPPOSWRAP.cpp",
+      "../gucefCORE/src/DVOSWRAP.cpp",
+      "../gucefCORE/src/IOACCESS.c",
+      "../gucefCORE/src/MFILE.c",
+      "../gucefCORE/src/PAFILE.c",
+      "../gucefCORE/src/dvcppfileutils.cpp",
+      "../gucefCORE/src/dvcppstringutils.cpp",
+      "../gucefCORE/src/dvfileutils.cpp",
+      "../gucefCORE/src/dvmd5utils.c",
+      "../gucefCORE/src/dvstrutils.cpp",
+      "../gucefCORE/src/gucefCORE_CAsciiString.cpp",
+      "../gucefCORE/src/gucefCORE_CDate.cpp",
+      "../gucefCORE/src/gucefCORE_CDateTime.cpp",
+      "../gucefCORE/src/gucefCORE_CIDate.cpp",
+      "../gucefCORE/src/gucefCORE_CITime.cpp",
+      "../gucefCORE/src/gucefCORE_CResourceMetaData.cpp",
+      "../gucefCORE/src/gucefCORE_CTime.cpp",
+      "../gucefCORE/src/gucefCORE_CUtf8String.cpp",
+      "../gucefCORE/src/gucefCORE_CVariant.cpp",
+      "../gucefCORE/src/gucefCORE_VariantData.c",
+      "../gucefCORE/src/md5.c",
+      "../gucefMT/src/gucefMT_CICloneable.cpp",
+      "../gucefMT/src/gucefMT_CILockable.cpp",
+      "../gucefMT/src/gucefMT_CMutex.cpp",
+      "../gucefMT/src/gucefMT_CScopeMutex.cpp",
+      "../gucefMT/src/gucefMT_ThreadStatus.cpp",
+      "../gucefMT/src/gucefMT_dvmtoswrap.c",
+      "../gucefMT/src/gucefMT_mutex.c"
+    } )
+
+
+
+configuration( { "NACL" } )
+    vpaths { ["Platform Headers"] = { "**.h", "**.hpp", "**.hxx" } }
+    files( {
+      "../gucefCORE/include/CDynamicBuffer.h",
+      "../gucefCORE/include/CException.h",
+      "../gucefCORE/include/CICloneable.h",
+      "../gucefCORE/include/CIOAccess.h",
+      "../gucefCORE/include/CMsgException.h",
+      "../gucefCORE/include/DVCPPOSWRAP.h",
+      "../gucefCORE/include/DVOSWRAP.h",
+      "../gucefCORE/include/IOACCESS.h",
+      "../gucefCORE/include/MFILE.h",
+      "../gucefCORE/include/PAFILE.h",
+      "../gucefCORE/include/dvcppfileutils.h",
+      "../gucefCORE/include/dvcppstringutils.h",
+      "../gucefCORE/include/dvfileutils.h",
+      "../gucefCORE/include/dvmd5utils.h",
+      "../gucefCORE/include/dvstrutils.h",
+      "../gucefCORE/include/gucefCORE_CAsciiString.h",
+      "../gucefCORE/include/gucefCORE_CDate.h",
+      "../gucefCORE/include/gucefCORE_CDateTime.h",
+      "../gucefCORE/include/gucefCORE_CIDate.h",
+      "../gucefCORE/include/gucefCORE_CITime.h",
+      "../gucefCORE/include/gucefCORE_CResourceMetaData.h",
+      "../gucefCORE/include/gucefCORE_CString.h",
+      "../gucefCORE/include/gucefCORE_CTime.h",
+      "../gucefCORE/include/gucefCORE_CUtf8String.h",
+      "../gucefCORE/include/gucefCORE_CVariant.h",
+      "../gucefCORE/include/gucefCORE_VariantData.h",
+      "../gucefCORE/include/md5.h",
+      "../gucefMT/include/gucefMT_CICloneable.h",
+      "../gucefMT/include/gucefMT_CILockable.h",
+      "../gucefMT/include/gucefMT_CMutex.h",
+      "../gucefMT/include/gucefMT_CScopeMutex.h",
+      "../gucefMT/include/gucefMT_ThreadStatus.h",
+      "../gucefMT/include/gucefMT_dvmtoswrap.h",
+      "../gucefMT/include/gucefMT_mutex.h"
+    } )
+
+    vpaths { ["Platform Source"] = { "**.c", "**.cpp", "**.cs", "**.asm" } }
+    files( {
+      "../gucefCORE/src/CDynamicBuffer.cpp",
+      "../gucefCORE/src/CException.cpp",
+      "../gucefCORE/src/CICloneable.cpp",
+      "../gucefCORE/src/CIOAccess.cpp",
+      "../gucefCORE/src/CMsgException.cpp",
+      "../gucefCORE/src/DVCPPOSWRAP.cpp",
+      "../gucefCORE/src/DVOSWRAP.cpp",
+      "../gucefCORE/src/IOACCESS.c",
+      "../gucefCORE/src/MFILE.c",
+      "../gucefCORE/src/PAFILE.c",
+      "../gucefCORE/src/dvcppfileutils.cpp",
+      "../gucefCORE/src/dvcppstringutils.cpp",
+      "../gucefCORE/src/dvfileutils.cpp",
+      "../gucefCORE/src/dvmd5utils.c",
+      "../gucefCORE/src/dvstrutils.cpp",
+      "../gucefCORE/src/gucefCORE_CAsciiString.cpp",
+      "../gucefCORE/src/gucefCORE_CDate.cpp",
+      "../gucefCORE/src/gucefCORE_CDateTime.cpp",
+      "../gucefCORE/src/gucefCORE_CIDate.cpp",
+      "../gucefCORE/src/gucefCORE_CITime.cpp",
+      "../gucefCORE/src/gucefCORE_CResourceMetaData.cpp",
+      "../gucefCORE/src/gucefCORE_CTime.cpp",
+      "../gucefCORE/src/gucefCORE_CUtf8String.cpp",
+      "../gucefCORE/src/gucefCORE_CVariant.cpp",
+      "../gucefCORE/src/gucefCORE_VariantData.c",
+      "../gucefCORE/src/md5.c",
+      "../gucefMT/src/gucefMT_CICloneable.cpp",
+      "../gucefMT/src/gucefMT_CILockable.cpp",
+      "../gucefMT/src/gucefMT_CMutex.cpp",
+      "../gucefMT/src/gucefMT_CScopeMutex.cpp",
+      "../gucefMT/src/gucefMT_ThreadStatus.cpp",
+      "../gucefMT/src/gucefMT_dvmtoswrap.c",
+      "../gucefMT/src/gucefMT_mutex.c"
     } )
 
 
@@ -199,24 +832,155 @@ configuration( { "LINUX" } )
 configuration( { "OSX" } )
     vpaths { ["Platform Headers"] = { "**.h", "**.hpp", "**.hxx" } }
     files( {
+      "../gucefCORE/include/CDynamicBuffer.h",
+      "../gucefCORE/include/CException.h",
+      "../gucefCORE/include/CICloneable.h",
+      "../gucefCORE/include/CIOAccess.h",
+      "../gucefCORE/include/CMsgException.h",
+      "../gucefCORE/include/DVCPPOSWRAP.h",
       "../gucefCORE/include/DVOSWRAP.h",
-      "../gucefCORE/include/dvstrutils.h",
-      "../gucefCORE/include/CDVString.h",
-      "../gucefCORE/include/dvfileutils.h",
+      "../gucefCORE/include/IOACCESS.h",
+      "../gucefCORE/include/MFILE.h",
+      "../gucefCORE/include/PAFILE.h",
+      "../gucefCORE/include/dvcppfileutils.h",
       "../gucefCORE/include/dvcppstringutils.h",
+      "../gucefCORE/include/dvfileutils.h",
+      "../gucefCORE/include/dvmd5utils.h",
+      "../gucefCORE/include/dvstrutils.h",
+      "../gucefCORE/include/gucefCORE_CAsciiString.h",
+      "../gucefCORE/include/gucefCORE_CDate.h",
+      "../gucefCORE/include/gucefCORE_CDateTime.h",
+      "../gucefCORE/include/gucefCORE_CIDate.h",
+      "../gucefCORE/include/gucefCORE_CITime.h",
+      "../gucefCORE/include/gucefCORE_CResourceMetaData.h",
+      "../gucefCORE/include/gucefCORE_CString.h",
+      "../gucefCORE/include/gucefCORE_CTime.h",
+      "../gucefCORE/include/gucefCORE_CUtf8String.h",
+      "../gucefCORE/include/gucefCORE_CVariant.h",
+      "../gucefCORE/include/gucefCORE_VariantData.h",
       "../gucefCORE/include/md5.h",
-      "../gucefCORE/include/dvmd5utils.h"
+      "../gucefMT/include/gucefMT_CICloneable.h",
+      "../gucefMT/include/gucefMT_CILockable.h",
+      "../gucefMT/include/gucefMT_CMutex.h",
+      "../gucefMT/include/gucefMT_CScopeMutex.h",
+      "../gucefMT/include/gucefMT_ThreadStatus.h",
+      "../gucefMT/include/gucefMT_dvmtoswrap.h",
+      "../gucefMT/include/gucefMT_mutex.h"
     } )
 
     vpaths { ["Platform Source"] = { "**.c", "**.cpp", "**.cs", "**.asm" } }
     files( {
+      "../gucefCORE/src/CDynamicBuffer.cpp",
+      "../gucefCORE/src/CException.cpp",
+      "../gucefCORE/src/CICloneable.cpp",
+      "../gucefCORE/src/CIOAccess.cpp",
+      "../gucefCORE/src/CMsgException.cpp",
+      "../gucefCORE/src/DVCPPOSWRAP.cpp",
       "../gucefCORE/src/DVOSWRAP.cpp",
-      "../gucefCORE/src/dvstrutils.c",
-      "../gucefCORE/src/CDVString.cpp",
-      "../gucefCORE/src/dvfileutils.c",
+      "../gucefCORE/src/IOACCESS.c",
+      "../gucefCORE/src/MFILE.c",
+      "../gucefCORE/src/PAFILE.c",
+      "../gucefCORE/src/dvcppfileutils.cpp",
       "../gucefCORE/src/dvcppstringutils.cpp",
+      "../gucefCORE/src/dvfileutils.cpp",
+      "../gucefCORE/src/dvmd5utils.c",
+      "../gucefCORE/src/dvstrutils.cpp",
+      "../gucefCORE/src/gucefCORE_CAsciiString.cpp",
+      "../gucefCORE/src/gucefCORE_CDate.cpp",
+      "../gucefCORE/src/gucefCORE_CDateTime.cpp",
+      "../gucefCORE/src/gucefCORE_CIDate.cpp",
+      "../gucefCORE/src/gucefCORE_CITime.cpp",
+      "../gucefCORE/src/gucefCORE_CResourceMetaData.cpp",
+      "../gucefCORE/src/gucefCORE_CTime.cpp",
+      "../gucefCORE/src/gucefCORE_CUtf8String.cpp",
+      "../gucefCORE/src/gucefCORE_CVariant.cpp",
+      "../gucefCORE/src/gucefCORE_VariantData.c",
       "../gucefCORE/src/md5.c",
-      "../gucefCORE/src/dvmd5utils.c"
+      "../gucefMT/src/gucefMT_CICloneable.cpp",
+      "../gucefMT/src/gucefMT_CILockable.cpp",
+      "../gucefMT/src/gucefMT_CMutex.cpp",
+      "../gucefMT/src/gucefMT_CScopeMutex.cpp",
+      "../gucefMT/src/gucefMT_ThreadStatus.cpp",
+      "../gucefMT/src/gucefMT_dvmtoswrap.c",
+      "../gucefMT/src/gucefMT_mutex.c"
+    } )
+
+
+
+configuration( { "POSIX" } )
+    vpaths { ["Platform Headers"] = { "**.h", "**.hpp", "**.hxx" } }
+    files( {
+      "../gucefCORE/include/CDynamicBuffer.h",
+      "../gucefCORE/include/CException.h",
+      "../gucefCORE/include/CICloneable.h",
+      "../gucefCORE/include/CIOAccess.h",
+      "../gucefCORE/include/CMsgException.h",
+      "../gucefCORE/include/DVCPPOSWRAP.h",
+      "../gucefCORE/include/DVOSWRAP.h",
+      "../gucefCORE/include/IOACCESS.h",
+      "../gucefCORE/include/MFILE.h",
+      "../gucefCORE/include/PAFILE.h",
+      "../gucefCORE/include/dvcppfileutils.h",
+      "../gucefCORE/include/dvcppstringutils.h",
+      "../gucefCORE/include/dvfileutils.h",
+      "../gucefCORE/include/dvmd5utils.h",
+      "../gucefCORE/include/dvstrutils.h",
+      "../gucefCORE/include/gucefCORE_CAsciiString.h",
+      "../gucefCORE/include/gucefCORE_CDate.h",
+      "../gucefCORE/include/gucefCORE_CDateTime.h",
+      "../gucefCORE/include/gucefCORE_CIDate.h",
+      "../gucefCORE/include/gucefCORE_CITime.h",
+      "../gucefCORE/include/gucefCORE_CResourceMetaData.h",
+      "../gucefCORE/include/gucefCORE_CString.h",
+      "../gucefCORE/include/gucefCORE_CTime.h",
+      "../gucefCORE/include/gucefCORE_CUtf8String.h",
+      "../gucefCORE/include/gucefCORE_CVariant.h",
+      "../gucefCORE/include/gucefCORE_VariantData.h",
+      "../gucefCORE/include/md5.h",
+      "../gucefMT/include/gucefMT_CICloneable.h",
+      "../gucefMT/include/gucefMT_CILockable.h",
+      "../gucefMT/include/gucefMT_CMutex.h",
+      "../gucefMT/include/gucefMT_CScopeMutex.h",
+      "../gucefMT/include/gucefMT_ThreadStatus.h",
+      "../gucefMT/include/gucefMT_dvmtoswrap.h",
+      "../gucefMT/include/gucefMT_mutex.h"
+    } )
+
+    vpaths { ["Platform Source"] = { "**.c", "**.cpp", "**.cs", "**.asm" } }
+    files( {
+      "../gucefCORE/src/CDynamicBuffer.cpp",
+      "../gucefCORE/src/CException.cpp",
+      "../gucefCORE/src/CICloneable.cpp",
+      "../gucefCORE/src/CIOAccess.cpp",
+      "../gucefCORE/src/CMsgException.cpp",
+      "../gucefCORE/src/DVCPPOSWRAP.cpp",
+      "../gucefCORE/src/DVOSWRAP.cpp",
+      "../gucefCORE/src/IOACCESS.c",
+      "../gucefCORE/src/MFILE.c",
+      "../gucefCORE/src/PAFILE.c",
+      "../gucefCORE/src/dvcppfileutils.cpp",
+      "../gucefCORE/src/dvcppstringutils.cpp",
+      "../gucefCORE/src/dvfileutils.cpp",
+      "../gucefCORE/src/dvmd5utils.c",
+      "../gucefCORE/src/dvstrutils.cpp",
+      "../gucefCORE/src/gucefCORE_CAsciiString.cpp",
+      "../gucefCORE/src/gucefCORE_CDate.cpp",
+      "../gucefCORE/src/gucefCORE_CDateTime.cpp",
+      "../gucefCORE/src/gucefCORE_CIDate.cpp",
+      "../gucefCORE/src/gucefCORE_CITime.cpp",
+      "../gucefCORE/src/gucefCORE_CResourceMetaData.cpp",
+      "../gucefCORE/src/gucefCORE_CTime.cpp",
+      "../gucefCORE/src/gucefCORE_CUtf8String.cpp",
+      "../gucefCORE/src/gucefCORE_CVariant.cpp",
+      "../gucefCORE/src/gucefCORE_VariantData.c",
+      "../gucefCORE/src/md5.c",
+      "../gucefMT/src/gucefMT_CICloneable.cpp",
+      "../gucefMT/src/gucefMT_CILockable.cpp",
+      "../gucefMT/src/gucefMT_CMutex.cpp",
+      "../gucefMT/src/gucefMT_CScopeMutex.cpp",
+      "../gucefMT/src/gucefMT_ThreadStatus.cpp",
+      "../gucefMT/src/gucefMT_dvmtoswrap.c",
+      "../gucefMT/src/gucefMT_mutex.c"
     } )
 
 
@@ -224,24 +988,77 @@ configuration( { "OSX" } )
 configuration( { "SDL" } )
     vpaths { ["Platform Headers"] = { "**.h", "**.hpp", "**.hxx" } }
     files( {
+      "../gucefCORE/include/CDynamicBuffer.h",
+      "../gucefCORE/include/CException.h",
+      "../gucefCORE/include/CICloneable.h",
+      "../gucefCORE/include/CIOAccess.h",
+      "../gucefCORE/include/CMsgException.h",
+      "../gucefCORE/include/DVCPPOSWRAP.h",
       "../gucefCORE/include/DVOSWRAP.h",
-      "../gucefCORE/include/dvstrutils.h",
-      "../gucefCORE/include/CDVString.h",
-      "../gucefCORE/include/dvfileutils.h",
+      "../gucefCORE/include/IOACCESS.h",
+      "../gucefCORE/include/MFILE.h",
+      "../gucefCORE/include/PAFILE.h",
+      "../gucefCORE/include/dvcppfileutils.h",
       "../gucefCORE/include/dvcppstringutils.h",
+      "../gucefCORE/include/dvfileutils.h",
+      "../gucefCORE/include/dvmd5utils.h",
+      "../gucefCORE/include/dvstrutils.h",
+      "../gucefCORE/include/gucefCORE_CAsciiString.h",
+      "../gucefCORE/include/gucefCORE_CDate.h",
+      "../gucefCORE/include/gucefCORE_CDateTime.h",
+      "../gucefCORE/include/gucefCORE_CIDate.h",
+      "../gucefCORE/include/gucefCORE_CITime.h",
+      "../gucefCORE/include/gucefCORE_CResourceMetaData.h",
+      "../gucefCORE/include/gucefCORE_CString.h",
+      "../gucefCORE/include/gucefCORE_CTime.h",
+      "../gucefCORE/include/gucefCORE_CUtf8String.h",
+      "../gucefCORE/include/gucefCORE_CVariant.h",
+      "../gucefCORE/include/gucefCORE_VariantData.h",
       "../gucefCORE/include/md5.h",
-      "../gucefCORE/include/dvmd5utils.h"
+      "../gucefMT/include/gucefMT_CICloneable.h",
+      "../gucefMT/include/gucefMT_CILockable.h",
+      "../gucefMT/include/gucefMT_CMutex.h",
+      "../gucefMT/include/gucefMT_CScopeMutex.h",
+      "../gucefMT/include/gucefMT_ThreadStatus.h",
+      "../gucefMT/include/gucefMT_dvmtoswrap.h",
+      "../gucefMT/include/gucefMT_mutex.h"
     } )
 
     vpaths { ["Platform Source"] = { "**.c", "**.cpp", "**.cs", "**.asm" } }
     files( {
+      "../gucefCORE/src/CDynamicBuffer.cpp",
+      "../gucefCORE/src/CException.cpp",
+      "../gucefCORE/src/CICloneable.cpp",
+      "../gucefCORE/src/CIOAccess.cpp",
+      "../gucefCORE/src/CMsgException.cpp",
+      "../gucefCORE/src/DVCPPOSWRAP.cpp",
       "../gucefCORE/src/DVOSWRAP.cpp",
-      "../gucefCORE/src/dvstrutils.c",
-      "../gucefCORE/src/CDVString.cpp",
-      "../gucefCORE/src/dvfileutils.c",
+      "../gucefCORE/src/IOACCESS.c",
+      "../gucefCORE/src/MFILE.c",
+      "../gucefCORE/src/PAFILE.c",
+      "../gucefCORE/src/dvcppfileutils.cpp",
       "../gucefCORE/src/dvcppstringutils.cpp",
+      "../gucefCORE/src/dvfileutils.cpp",
+      "../gucefCORE/src/dvmd5utils.c",
+      "../gucefCORE/src/dvstrutils.cpp",
+      "../gucefCORE/src/gucefCORE_CAsciiString.cpp",
+      "../gucefCORE/src/gucefCORE_CDate.cpp",
+      "../gucefCORE/src/gucefCORE_CDateTime.cpp",
+      "../gucefCORE/src/gucefCORE_CIDate.cpp",
+      "../gucefCORE/src/gucefCORE_CITime.cpp",
+      "../gucefCORE/src/gucefCORE_CResourceMetaData.cpp",
+      "../gucefCORE/src/gucefCORE_CTime.cpp",
+      "../gucefCORE/src/gucefCORE_CUtf8String.cpp",
+      "../gucefCORE/src/gucefCORE_CVariant.cpp",
+      "../gucefCORE/src/gucefCORE_VariantData.c",
       "../gucefCORE/src/md5.c",
-      "../gucefCORE/src/dvmd5utils.c"
+      "../gucefMT/src/gucefMT_CICloneable.cpp",
+      "../gucefMT/src/gucefMT_CILockable.cpp",
+      "../gucefMT/src/gucefMT_CMutex.cpp",
+      "../gucefMT/src/gucefMT_CScopeMutex.cpp",
+      "../gucefMT/src/gucefMT_ThreadStatus.cpp",
+      "../gucefMT/src/gucefMT_dvmtoswrap.c",
+      "../gucefMT/src/gucefMT_mutex.c"
     } )
 
 
@@ -249,24 +1066,77 @@ configuration( { "SDL" } )
 configuration( { "SYMBIAN" } )
     vpaths { ["Platform Headers"] = { "**.h", "**.hpp", "**.hxx" } }
     files( {
+      "../gucefCORE/include/CDynamicBuffer.h",
+      "../gucefCORE/include/CException.h",
+      "../gucefCORE/include/CICloneable.h",
+      "../gucefCORE/include/CIOAccess.h",
+      "../gucefCORE/include/CMsgException.h",
+      "../gucefCORE/include/DVCPPOSWRAP.h",
       "../gucefCORE/include/DVOSWRAP.h",
-      "../gucefCORE/include/dvstrutils.h",
-      "../gucefCORE/include/CDVString.h",
-      "../gucefCORE/include/dvfileutils.h",
+      "../gucefCORE/include/IOACCESS.h",
+      "../gucefCORE/include/MFILE.h",
+      "../gucefCORE/include/PAFILE.h",
+      "../gucefCORE/include/dvcppfileutils.h",
       "../gucefCORE/include/dvcppstringutils.h",
+      "../gucefCORE/include/dvfileutils.h",
+      "../gucefCORE/include/dvmd5utils.h",
+      "../gucefCORE/include/dvstrutils.h",
+      "../gucefCORE/include/gucefCORE_CAsciiString.h",
+      "../gucefCORE/include/gucefCORE_CDate.h",
+      "../gucefCORE/include/gucefCORE_CDateTime.h",
+      "../gucefCORE/include/gucefCORE_CIDate.h",
+      "../gucefCORE/include/gucefCORE_CITime.h",
+      "../gucefCORE/include/gucefCORE_CResourceMetaData.h",
+      "../gucefCORE/include/gucefCORE_CString.h",
+      "../gucefCORE/include/gucefCORE_CTime.h",
+      "../gucefCORE/include/gucefCORE_CUtf8String.h",
+      "../gucefCORE/include/gucefCORE_CVariant.h",
+      "../gucefCORE/include/gucefCORE_VariantData.h",
       "../gucefCORE/include/md5.h",
-      "../gucefCORE/include/dvmd5utils.h"
+      "../gucefMT/include/gucefMT_CICloneable.h",
+      "../gucefMT/include/gucefMT_CILockable.h",
+      "../gucefMT/include/gucefMT_CMutex.h",
+      "../gucefMT/include/gucefMT_CScopeMutex.h",
+      "../gucefMT/include/gucefMT_ThreadStatus.h",
+      "../gucefMT/include/gucefMT_dvmtoswrap.h",
+      "../gucefMT/include/gucefMT_mutex.h"
     } )
 
     vpaths { ["Platform Source"] = { "**.c", "**.cpp", "**.cs", "**.asm" } }
     files( {
+      "../gucefCORE/src/CDynamicBuffer.cpp",
+      "../gucefCORE/src/CException.cpp",
+      "../gucefCORE/src/CICloneable.cpp",
+      "../gucefCORE/src/CIOAccess.cpp",
+      "../gucefCORE/src/CMsgException.cpp",
+      "../gucefCORE/src/DVCPPOSWRAP.cpp",
       "../gucefCORE/src/DVOSWRAP.cpp",
-      "../gucefCORE/src/dvstrutils.c",
-      "../gucefCORE/src/CDVString.cpp",
-      "../gucefCORE/src/dvfileutils.c",
+      "../gucefCORE/src/IOACCESS.c",
+      "../gucefCORE/src/MFILE.c",
+      "../gucefCORE/src/PAFILE.c",
+      "../gucefCORE/src/dvcppfileutils.cpp",
       "../gucefCORE/src/dvcppstringutils.cpp",
+      "../gucefCORE/src/dvfileutils.cpp",
+      "../gucefCORE/src/dvmd5utils.c",
+      "../gucefCORE/src/dvstrutils.cpp",
+      "../gucefCORE/src/gucefCORE_CAsciiString.cpp",
+      "../gucefCORE/src/gucefCORE_CDate.cpp",
+      "../gucefCORE/src/gucefCORE_CDateTime.cpp",
+      "../gucefCORE/src/gucefCORE_CIDate.cpp",
+      "../gucefCORE/src/gucefCORE_CITime.cpp",
+      "../gucefCORE/src/gucefCORE_CResourceMetaData.cpp",
+      "../gucefCORE/src/gucefCORE_CTime.cpp",
+      "../gucefCORE/src/gucefCORE_CUtf8String.cpp",
+      "../gucefCORE/src/gucefCORE_CVariant.cpp",
+      "../gucefCORE/src/gucefCORE_VariantData.c",
       "../gucefCORE/src/md5.c",
-      "../gucefCORE/src/dvmd5utils.c"
+      "../gucefMT/src/gucefMT_CICloneable.cpp",
+      "../gucefMT/src/gucefMT_CILockable.cpp",
+      "../gucefMT/src/gucefMT_CMutex.cpp",
+      "../gucefMT/src/gucefMT_CScopeMutex.cpp",
+      "../gucefMT/src/gucefMT_ThreadStatus.cpp",
+      "../gucefMT/src/gucefMT_dvmtoswrap.c",
+      "../gucefMT/src/gucefMT_mutex.c"
     } )
 
 
@@ -274,24 +1144,77 @@ configuration( { "SYMBIAN" } )
 configuration( { "UNIX" } )
     vpaths { ["Platform Headers"] = { "**.h", "**.hpp", "**.hxx" } }
     files( {
+      "../gucefCORE/include/CDynamicBuffer.h",
+      "../gucefCORE/include/CException.h",
+      "../gucefCORE/include/CICloneable.h",
+      "../gucefCORE/include/CIOAccess.h",
+      "../gucefCORE/include/CMsgException.h",
+      "../gucefCORE/include/DVCPPOSWRAP.h",
       "../gucefCORE/include/DVOSWRAP.h",
-      "../gucefCORE/include/dvstrutils.h",
-      "../gucefCORE/include/CDVString.h",
-      "../gucefCORE/include/dvfileutils.h",
+      "../gucefCORE/include/IOACCESS.h",
+      "../gucefCORE/include/MFILE.h",
+      "../gucefCORE/include/PAFILE.h",
+      "../gucefCORE/include/dvcppfileutils.h",
       "../gucefCORE/include/dvcppstringutils.h",
+      "../gucefCORE/include/dvfileutils.h",
+      "../gucefCORE/include/dvmd5utils.h",
+      "../gucefCORE/include/dvstrutils.h",
+      "../gucefCORE/include/gucefCORE_CAsciiString.h",
+      "../gucefCORE/include/gucefCORE_CDate.h",
+      "../gucefCORE/include/gucefCORE_CDateTime.h",
+      "../gucefCORE/include/gucefCORE_CIDate.h",
+      "../gucefCORE/include/gucefCORE_CITime.h",
+      "../gucefCORE/include/gucefCORE_CResourceMetaData.h",
+      "../gucefCORE/include/gucefCORE_CString.h",
+      "../gucefCORE/include/gucefCORE_CTime.h",
+      "../gucefCORE/include/gucefCORE_CUtf8String.h",
+      "../gucefCORE/include/gucefCORE_CVariant.h",
+      "../gucefCORE/include/gucefCORE_VariantData.h",
       "../gucefCORE/include/md5.h",
-      "../gucefCORE/include/dvmd5utils.h"
+      "../gucefMT/include/gucefMT_CICloneable.h",
+      "../gucefMT/include/gucefMT_CILockable.h",
+      "../gucefMT/include/gucefMT_CMutex.h",
+      "../gucefMT/include/gucefMT_CScopeMutex.h",
+      "../gucefMT/include/gucefMT_ThreadStatus.h",
+      "../gucefMT/include/gucefMT_dvmtoswrap.h",
+      "../gucefMT/include/gucefMT_mutex.h"
     } )
 
     vpaths { ["Platform Source"] = { "**.c", "**.cpp", "**.cs", "**.asm" } }
     files( {
+      "../gucefCORE/src/CDynamicBuffer.cpp",
+      "../gucefCORE/src/CException.cpp",
+      "../gucefCORE/src/CICloneable.cpp",
+      "../gucefCORE/src/CIOAccess.cpp",
+      "../gucefCORE/src/CMsgException.cpp",
+      "../gucefCORE/src/DVCPPOSWRAP.cpp",
       "../gucefCORE/src/DVOSWRAP.cpp",
-      "../gucefCORE/src/dvstrutils.c",
-      "../gucefCORE/src/CDVString.cpp",
-      "../gucefCORE/src/dvfileutils.c",
+      "../gucefCORE/src/IOACCESS.c",
+      "../gucefCORE/src/MFILE.c",
+      "../gucefCORE/src/PAFILE.c",
+      "../gucefCORE/src/dvcppfileutils.cpp",
       "../gucefCORE/src/dvcppstringutils.cpp",
+      "../gucefCORE/src/dvfileutils.cpp",
+      "../gucefCORE/src/dvmd5utils.c",
+      "../gucefCORE/src/dvstrutils.cpp",
+      "../gucefCORE/src/gucefCORE_CAsciiString.cpp",
+      "../gucefCORE/src/gucefCORE_CDate.cpp",
+      "../gucefCORE/src/gucefCORE_CDateTime.cpp",
+      "../gucefCORE/src/gucefCORE_CIDate.cpp",
+      "../gucefCORE/src/gucefCORE_CITime.cpp",
+      "../gucefCORE/src/gucefCORE_CResourceMetaData.cpp",
+      "../gucefCORE/src/gucefCORE_CTime.cpp",
+      "../gucefCORE/src/gucefCORE_CUtf8String.cpp",
+      "../gucefCORE/src/gucefCORE_CVariant.cpp",
+      "../gucefCORE/src/gucefCORE_VariantData.c",
       "../gucefCORE/src/md5.c",
-      "../gucefCORE/src/dvmd5utils.c"
+      "../gucefMT/src/gucefMT_CICloneable.cpp",
+      "../gucefMT/src/gucefMT_CILockable.cpp",
+      "../gucefMT/src/gucefMT_CMutex.cpp",
+      "../gucefMT/src/gucefMT_CScopeMutex.cpp",
+      "../gucefMT/src/gucefMT_ThreadStatus.cpp",
+      "../gucefMT/src/gucefMT_dvmtoswrap.c",
+      "../gucefMT/src/gucefMT_mutex.c"
     } )
 
 
@@ -299,24 +1222,81 @@ configuration( { "UNIX" } )
 configuration( { "WIN32" } )
     vpaths { ["Platform Headers"] = { "**.h", "**.hpp", "**.hxx" } }
     files( {
+      "../gucefCORE/include/CDynamicBuffer.h",
+      "../gucefCORE/include/CException.h",
+      "../gucefCORE/include/CICloneable.h",
+      "../gucefCORE/include/CIOAccess.h",
+      "../gucefCORE/include/CMsgException.h",
+      "../gucefCORE/include/DVCPPOSWRAP.h",
       "../gucefCORE/include/DVOSWRAP.h",
-      "../gucefCORE/include/dvstrutils.h",
-      "../gucefCORE/include/CDVString.h",
-      "../gucefCORE/include/dvfileutils.h",
+      "../gucefCORE/include/IOACCESS.h",
+      "../gucefCORE/include/MFILE.h",
+      "../gucefCORE/include/PAFILE.h",
+      "../gucefCORE/include/dvcppfileutils.h",
       "../gucefCORE/include/dvcppstringutils.h",
+      "../gucefCORE/include/dvfileutils.h",
+      "../gucefCORE/include/dvmd5utils.h",
+      "../gucefCORE/include/dvstrutils.h",
+      "../gucefCORE/include/gucefCORE_CAsciiString.h",
+      "../gucefCORE/include/gucefCORE_CDate.h",
+      "../gucefCORE/include/gucefCORE_CDateTime.h",
+      "../gucefCORE/include/gucefCORE_CIDate.h",
+      "../gucefCORE/include/gucefCORE_CITime.h",
+      "../gucefCORE/include/gucefCORE_CResourceMetaData.h",
+      "../gucefCORE/include/gucefCORE_CString.h",
+      "../gucefCORE/include/gucefCORE_CTime.h",
+      "../gucefCORE/include/gucefCORE_CUtf8String.h",
+      "../gucefCORE/include/gucefCORE_CVariant.h",
+      "../gucefCORE/include/gucefCORE_VariantData.h",
       "../gucefCORE/include/md5.h",
-      "../gucefCORE/include/dvmd5utils.h"
+      "../gucefCORE/include/mswin/gucefCORE_mswinutils.h",
+      "../gucefMT/include/gucefMT_CICloneable.h",
+      "../gucefMT/include/gucefMT_CILockable.h",
+      "../gucefMT/include/gucefMT_CMutex.h",
+      "../gucefMT/include/gucefMT_CScopeMutex.h",
+      "../gucefMT/include/gucefMT_ThreadStatus.h",
+      "../gucefMT/include/gucefMT_dvmtoswrap.h",
+      "../gucefMT/include/gucefMT_mutex.h",
+      "../gucefMT/include/mswin/gucefMT_mswinutils.h"
     } )
 
     vpaths { ["Platform Source"] = { "**.c", "**.cpp", "**.cs", "**.asm" } }
     files( {
+      "../gucefCORE/src/CDynamicBuffer.cpp",
+      "../gucefCORE/src/CException.cpp",
+      "../gucefCORE/src/CICloneable.cpp",
+      "../gucefCORE/src/CIOAccess.cpp",
+      "../gucefCORE/src/CMsgException.cpp",
+      "../gucefCORE/src/DVCPPOSWRAP.cpp",
       "../gucefCORE/src/DVOSWRAP.cpp",
-      "../gucefCORE/src/dvstrutils.c",
-      "../gucefCORE/src/CDVString.cpp",
-      "../gucefCORE/src/dvfileutils.c",
+      "../gucefCORE/src/IOACCESS.c",
+      "../gucefCORE/src/MFILE.c",
+      "../gucefCORE/src/PAFILE.c",
+      "../gucefCORE/src/dvcppfileutils.cpp",
       "../gucefCORE/src/dvcppstringutils.cpp",
+      "../gucefCORE/src/dvfileutils.cpp",
+      "../gucefCORE/src/dvmd5utils.c",
+      "../gucefCORE/src/dvstrutils.cpp",
+      "../gucefCORE/src/gucefCORE_CAsciiString.cpp",
+      "../gucefCORE/src/gucefCORE_CDate.cpp",
+      "../gucefCORE/src/gucefCORE_CDateTime.cpp",
+      "../gucefCORE/src/gucefCORE_CIDate.cpp",
+      "../gucefCORE/src/gucefCORE_CITime.cpp",
+      "../gucefCORE/src/gucefCORE_CResourceMetaData.cpp",
+      "../gucefCORE/src/gucefCORE_CTime.cpp",
+      "../gucefCORE/src/gucefCORE_CUtf8String.cpp",
+      "../gucefCORE/src/gucefCORE_CVariant.cpp",
+      "../gucefCORE/src/gucefCORE_VariantData.c",
       "../gucefCORE/src/md5.c",
-      "../gucefCORE/src/dvmd5utils.c"
+      "../gucefCORE/src/mswin/gucefCORE_mswinutils.cpp",
+      "../gucefMT/src/gucefMT_CICloneable.cpp",
+      "../gucefMT/src/gucefMT_CILockable.cpp",
+      "../gucefMT/src/gucefMT_CMutex.cpp",
+      "../gucefMT/src/gucefMT_CScopeMutex.cpp",
+      "../gucefMT/src/gucefMT_ThreadStatus.cpp",
+      "../gucefMT/src/gucefMT_dvmtoswrap.c",
+      "../gucefMT/src/gucefMT_mutex.c",
+      "../gucefMT/src/mswin/gucefMT_mswinutils.cpp"
     } )
 
 
@@ -324,59 +1304,131 @@ configuration( { "WIN32" } )
 configuration( { "WIN64" } )
     vpaths { ["Platform Headers"] = { "**.h", "**.hpp", "**.hxx" } }
     files( {
+      "../gucefCORE/include/CDynamicBuffer.h",
+      "../gucefCORE/include/CException.h",
+      "../gucefCORE/include/CICloneable.h",
+      "../gucefCORE/include/CIOAccess.h",
+      "../gucefCORE/include/CMsgException.h",
+      "../gucefCORE/include/DVCPPOSWRAP.h",
       "../gucefCORE/include/DVOSWRAP.h",
-      "../gucefCORE/include/dvstrutils.h",
-      "../gucefCORE/include/CDVString.h",
-      "../gucefCORE/include/dvfileutils.h",
+      "../gucefCORE/include/IOACCESS.h",
+      "../gucefCORE/include/MFILE.h",
+      "../gucefCORE/include/PAFILE.h",
+      "../gucefCORE/include/dvcppfileutils.h",
       "../gucefCORE/include/dvcppstringutils.h",
+      "../gucefCORE/include/dvfileutils.h",
+      "../gucefCORE/include/dvmd5utils.h",
+      "../gucefCORE/include/dvstrutils.h",
+      "../gucefCORE/include/gucefCORE_CAsciiString.h",
+      "../gucefCORE/include/gucefCORE_CDate.h",
+      "../gucefCORE/include/gucefCORE_CDateTime.h",
+      "../gucefCORE/include/gucefCORE_CIDate.h",
+      "../gucefCORE/include/gucefCORE_CITime.h",
+      "../gucefCORE/include/gucefCORE_CResourceMetaData.h",
+      "../gucefCORE/include/gucefCORE_CString.h",
+      "../gucefCORE/include/gucefCORE_CTime.h",
+      "../gucefCORE/include/gucefCORE_CUtf8String.h",
+      "../gucefCORE/include/gucefCORE_CVariant.h",
+      "../gucefCORE/include/gucefCORE_VariantData.h",
       "../gucefCORE/include/md5.h",
-      "../gucefCORE/include/dvmd5utils.h"
+      "../gucefCORE/include/mswin/gucefCORE_mswinutils.h",
+      "../gucefMT/include/gucefMT_CICloneable.h",
+      "../gucefMT/include/gucefMT_CILockable.h",
+      "../gucefMT/include/gucefMT_CMutex.h",
+      "../gucefMT/include/gucefMT_CScopeMutex.h",
+      "../gucefMT/include/gucefMT_ThreadStatus.h",
+      "../gucefMT/include/gucefMT_dvmtoswrap.h",
+      "../gucefMT/include/gucefMT_mutex.h",
+      "../gucefMT/include/mswin/gucefMT_mswinutils.h"
     } )
 
     vpaths { ["Platform Source"] = { "**.c", "**.cpp", "**.cs", "**.asm" } }
     files( {
+      "../gucefCORE/src/CDynamicBuffer.cpp",
+      "../gucefCORE/src/CException.cpp",
+      "../gucefCORE/src/CICloneable.cpp",
+      "../gucefCORE/src/CIOAccess.cpp",
+      "../gucefCORE/src/CMsgException.cpp",
+      "../gucefCORE/src/DVCPPOSWRAP.cpp",
       "../gucefCORE/src/DVOSWRAP.cpp",
-      "../gucefCORE/src/dvstrutils.c",
-      "../gucefCORE/src/CDVString.cpp",
-      "../gucefCORE/src/dvfileutils.c",
+      "../gucefCORE/src/IOACCESS.c",
+      "../gucefCORE/src/MFILE.c",
+      "../gucefCORE/src/PAFILE.c",
+      "../gucefCORE/src/dvcppfileutils.cpp",
       "../gucefCORE/src/dvcppstringutils.cpp",
+      "../gucefCORE/src/dvfileutils.cpp",
+      "../gucefCORE/src/dvmd5utils.c",
+      "../gucefCORE/src/dvstrutils.cpp",
+      "../gucefCORE/src/gucefCORE_CAsciiString.cpp",
+      "../gucefCORE/src/gucefCORE_CDate.cpp",
+      "../gucefCORE/src/gucefCORE_CDateTime.cpp",
+      "../gucefCORE/src/gucefCORE_CIDate.cpp",
+      "../gucefCORE/src/gucefCORE_CITime.cpp",
+      "../gucefCORE/src/gucefCORE_CResourceMetaData.cpp",
+      "../gucefCORE/src/gucefCORE_CTime.cpp",
+      "../gucefCORE/src/gucefCORE_CUtf8String.cpp",
+      "../gucefCORE/src/gucefCORE_CVariant.cpp",
+      "../gucefCORE/src/gucefCORE_VariantData.c",
       "../gucefCORE/src/md5.c",
-      "../gucefCORE/src/dvmd5utils.c"
+      "../gucefCORE/src/mswin/gucefCORE_mswinutils.cpp",
+      "../gucefMT/src/gucefMT_CICloneable.cpp",
+      "../gucefMT/src/gucefMT_CILockable.cpp",
+      "../gucefMT/src/gucefMT_CMutex.cpp",
+      "../gucefMT/src/gucefMT_CScopeMutex.cpp",
+      "../gucefMT/src/gucefMT_ThreadStatus.cpp",
+      "../gucefMT/src/gucefMT_dvmtoswrap.c",
+      "../gucefMT/src/gucefMT_mutex.c",
+      "../gucefMT/src/mswin/gucefMT_mswinutils.cpp"
     } )
 
 
 configuration( {} )
-includedirs( { "../common/include", "../gucefCORE/include", "../gucefMT/include", "../gucefCORE/include/", "include" } )
+includedirs( { "..", "../../common/include", "../gucefCORE", "../gucefCORE/include", "../gucefMT", "../gucefMT/include", "../gucefCORE/include/", "../gucefMT/include/", "include" } )
 
 configuration( { "ANDROID" } )
-includedirs( { "../gucefCORE/include/android", "../gucefCORE/include/" } )
+includedirs( { "../gucefCORE/include/android", "../gucefCORE/include/", "../gucefMT/include/" } )
+
+configuration( { "ARDUINO" } )
+includedirs( { "../gucefCORE/include/", "../gucefMT/include/" } )
+
+configuration( { "EMSCRIPTEN" } )
+includedirs( { "../gucefCORE/include/", "../gucefMT/include/" } )
 
 configuration( { "GLX" } )
-includedirs( { "../gucefCORE/include/" } )
+includedirs( { "../gucefCORE/include/", "../gucefMT/include/" } )
 
 configuration( { "GTK" } )
-includedirs( { "../gucefCORE/include/" } )
+includedirs( { "../gucefCORE/include/", "../gucefMT/include/" } )
 
-configuration( { "IPHONEOS" } )
-includedirs( { "../gucefCORE/include/" } )
+configuration( { "IOS" } )
+includedirs( { "../gucefCORE/include/", "../gucefMT/include/" } )
 
-configuration( { "LINUX" } )
-includedirs( { "../gucefCORE/include/linux", "../gucefCORE/include/" } )
+configuration( { "LINUX32" } )
+includedirs( { "../gucefCORE/include/linux", "../gucefCORE/include/", "../gucefMT/include/" } )
+
+configuration( { "LINUX64" } )
+includedirs( { "../gucefCORE/include/linux", "../gucefCORE/include/", "../gucefMT/include/" } )
+
+configuration( { "NACL" } )
+includedirs( { "../gucefCORE/include/", "../gucefMT/include/" } )
 
 configuration( { "OSX" } )
-includedirs( { "../gucefCORE/include/" } )
+includedirs( { "../gucefCORE/include/", "../gucefMT/include/" } )
+
+configuration( { "POSIX" } )
+includedirs( { "../gucefCORE/include/", "../gucefMT/include/" } )
 
 configuration( { "SDL" } )
-includedirs( { "../gucefCORE/include/" } )
+includedirs( { "../gucefCORE/include/", "../gucefMT/include/" } )
 
 configuration( { "SYMBIAN" } )
-includedirs( { "../gucefCORE/include/" } )
+includedirs( { "../gucefCORE/include/", "../gucefMT/include/" } )
 
 configuration( { "UNIX" } )
-includedirs( { "../gucefCORE/include/" } )
+includedirs( { "../gucefCORE/include/", "../gucefMT/include/" } )
 
 configuration( { "WIN32" } )
-includedirs( { "../gucefCORE/include/mswin", "../gucefCORE/include/" } )
+includedirs( { "../gucefCORE/include/mswin", "../gucefMT/include/mswin", "../gucefCORE/include/", "../gucefCORE/include/mswin/", "../gucefMT/include/", "../gucefMT/include/mswin/" } )
 
 configuration( { "WIN64" } )
-includedirs( { "../gucefCORE/include/mswin", "../gucefCORE/include/" } )
+includedirs( { "../gucefCORE/include/mswin", "../gucefMT/include/mswin", "../gucefCORE/include/", "../gucefCORE/include/mswin/", "../gucefMT/include/", "../gucefMT/include/mswin/" } )

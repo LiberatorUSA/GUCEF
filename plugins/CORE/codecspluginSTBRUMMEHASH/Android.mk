@@ -17,16 +17,17 @@ LOCAL_PATH := $(MY_MODULE_PATH)
 include $(CLEAR_VARS)
 
 @echo Module path: $(MY_MODULE_PATH)
-LOCAL_MODULE := compressioncodecZLIB
-LOCAL_MODULE_FILENAME := libcompressioncodecZLIB
+LOCAL_MODULE := codecspluginSTBRUMMEHASH
+LOCAL_MODULE_FILENAME := libcodecspluginSTBRUMMEHASH
 @echo Module name: $(LOCAL_MODULE)
 
 LOCAL_SRC_FILES := \
-  src/compressioncodecZLIB.c
+  src/codecspluginSTBRUMMEHASH.cpp
 
 LOCAL_C_INCLUDES := \
   $(MY_MODULE_PATH)/include \
   $(MY_MODULE_PATH)/../../../common/include \
+  $(MY_MODULE_PATH)/../../../dependencies/stbrumme-hash-library \
   $(MY_MODULE_PATH)/../../../platform/gucefCORE/include \
   $(MY_MODULE_PATH)/../../../platform/gucefCORE/include/android \
   $(MY_MODULE_PATH)/../../../platform/gucefMT/include
@@ -34,8 +35,8 @@ LOCAL_C_INCLUDES := \
 LOCAL_CFLAGS := -DGUCEF_CODECPLUGIN_BUILD_MODULE
 
 
-LOCAL_LDLIBS := \
-  -lz
+LOCAL_STATIC_LIBRARIES := \
+  stbrumme-hash
 
 include $(BUILD_SHARED_LIBRARY)
 

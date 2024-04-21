@@ -87,7 +87,6 @@ files( {
   "LayoutLineBox.h",
   "PluginRegistry.h",
   "Pool.h",
-  "precompiled.h",
   "PropertyParserColour.h",
   "PropertyParserKeyword.h",
   "PropertyParserNumber.h",
@@ -125,7 +124,8 @@ files( {
   "XMLNodeHandlerDefault.h",
   "XMLNodeHandlerHead.h",
   "XMLNodeHandlerTemplate.h",
-  "XMLParseTools.h"
+  "XMLParseTools.h",
+  "precompiled.h"
  } )
 
 
@@ -205,7 +205,6 @@ files( {
   "Log.cpp",
   "Plugin.cpp",
   "PluginRegistry.cpp",
-  "precompiled.cpp",
   "Property.cpp",
   "PropertyDefinition.cpp",
   "PropertyDictionary.cpp",
@@ -251,22 +250,23 @@ files( {
   "TextureLayoutRow.cpp",
   "TextureLayoutTexture.cpp",
   "TextureResource.cpp",
-  "UnicodeRange.cpp",
   "URL.cpp",
+  "UnicodeRange.cpp",
   "Variant.cpp",
   "Vector2.cpp",
+  "WString.cpp",
   "WidgetSlider.cpp",
   "WidgetSliderScroll.cpp",
-  "WString.cpp",
   "XMLNodeHandler.cpp",
   "XMLNodeHandlerBody.cpp",
   "XMLNodeHandlerDefault.cpp",
   "XMLNodeHandlerHead.cpp",
   "XMLNodeHandlerTemplate.cpp",
+  "XMLParseTools.cpp",
   "XMLParser.cpp",
-  "XMLParseTools.cpp"
+  "precompiled.cpp"
  } )
 
 
 configuration( {} )
-includedirs( { "../../../freetype/include", "../../../freetype/include/freetype", "../../../freetype/include/freetype/config", "../../../freetype/include/freetype/internal", "../../../freetype/include/freetype/internal/services", "../../../freetype/src/winfonts", "../../Include", "../../Include/Rocket", "../../Include/Rocket/Controls", "../../Include/Rocket/Core", "../../Include/Rocket/Core/Python", "../../Include/Rocket/Debugger" } )
+includedirs( { "../../../freetype/include", "../../../freetype/include/freetype", "../../../freetype/include/freetype/config", "../../../freetype/include/freetype/internal", "../../../freetype/include/freetype/internal/services", "../../../freetype/src", "../../../freetype/src/winfonts", "../../Include", "../../Include/Rocket", "../../Include/Rocket/Controls", "../../Include/Rocket/Core", "../../Include/Rocket/Core/Python", "../../Include/Rocket/Debugger" } )

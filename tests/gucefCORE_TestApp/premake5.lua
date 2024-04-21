@@ -12,17 +12,7 @@
 -- Configuration for module: gucefCORE_TestApp
 
 
-configuration( { "LINUX32" } )
-  project( "gucefCORE_TestApp" )
-
-configuration( { "LINUX64" } )
-  project( "gucefCORE_TestApp" )
-
-configuration( { "WIN32" } )
-  project( "gucefCORE_TestApp" )
-
-configuration( { "WIN64" } )
-  project( "gucefCORE_TestApp" )
+project( "gucefCORE_TestApp" )
 
 configuration( {} )
   location( os.getenv( "PM5OUTPUTDIR" ) )
@@ -31,172 +21,80 @@ configuration( {} )
   targetdir( os.getenv( "PM5TARGETDIR" ) )
 
 configuration( {} )
-language( "C" )
-
-configuration( { "LINUX32" } )
 language( "C++" )
 
-configuration( { "LINUX64" } )
-language( "C++" )
-
-configuration( { "WIN32" } )
-language( "C++" )
-
-configuration( { "WIN64" } )
-language( "C++" )
-
-configuration( { "LINUX32" } )
-
-
-configuration( { LINUX32 } )
-kind( "ConsoleApp" )
-configuration( { "LINUX64" } )
-
-
-configuration( { LINUX64 } )
-kind( "ConsoleApp" )
 configuration( { "WIN32" } )
 
 
 configuration( { WIN32 } )
 kind( "WindowedApp" )
-configuration( { "WIN64" } )
-
-
-configuration( { WIN64 } )
-kind( "WindowedApp" )
+configuration( { "NOT WIN32" } )
   
-configuration( { LINUX32 } )
+
+configuration( {} )
+kind( "ConsoleApp" )
+
+configuration( {} )
 links( { "gucefCORE", "gucefMT" } )
-  links( { "gucefCORE", "gucefMT" } )
-  
-
-configuration( { LINUX32 } )
-defines( { "GUCEF_CORE_TESTAPP_BUILD_MODULE" } )
-  
-configuration( { LINUX64 } )
 links( { "gucefCORE", "gucefMT" } )
-  links( { "gucefCORE", "gucefMT" } )
-  
-
-configuration( { LINUX64 } )
-defines( { "GUCEF_CORE_TESTAPP_BUILD_MODULE" } )
-  
-configuration( { WIN32 } )
-links( { "gucefCORE", "gucefMT" } )
-  links( { "gucefCORE", "gucefMT" } )
-  
-
-configuration( { WIN32 } )
-defines( { "GUCEF_CORE_TESTAPP_BUILD_MODULE" } )
-  
-configuration( { WIN64 } )
-links( { "gucefCORE", "gucefMT" } )
-  links( { "gucefCORE", "gucefMT" } )
-  
-
-configuration( { WIN64 } )
-defines( { "GUCEF_CORE_TESTAPP_BUILD_MODULE" } )
-
-
-configuration( { "LINUX32" } )
-    vpaths { ["Platform Headers"] = { "**.h", "**.hpp", "**.hxx" } }
-    files( {
-      "include/TestCyclicDynamicBuffer.h",
-      "include/TestIniParser.h",
-      "include/TestNotifierObserver.h",
-      "include/TestSharedPtr.h",
-      "include/TestString.h"
-    } )
-
-    vpaths { ["Platform Source"] = { "**.c", "**.cpp", "**.cs", "**.asm" } }
-    files( {
-      "src/TestCyclicDynamicBuffer.cpp",
-      "src/TestIniParser.cpp",
-      "src/TestNotifierObserver.cpp",
-      "src/TestSharedPtr.cpp",
-      "src/TestString.cpp",
-      "src/gucefCORE_TestApp_main.cpp"
-    } )
-
-
-
-configuration( { "LINUX64" } )
-    vpaths { ["Platform Headers"] = { "**.h", "**.hpp", "**.hxx" } }
-    files( {
-      "include/TestCyclicDynamicBuffer.h",
-      "include/TestIniParser.h",
-      "include/TestNotifierObserver.h",
-      "include/TestSharedPtr.h",
-      "include/TestString.h"
-    } )
-
-    vpaths { ["Platform Source"] = { "**.c", "**.cpp", "**.cs", "**.asm" } }
-    files( {
-      "src/TestCyclicDynamicBuffer.cpp",
-      "src/TestIniParser.cpp",
-      "src/TestNotifierObserver.cpp",
-      "src/TestSharedPtr.cpp",
-      "src/TestString.cpp",
-      "src/gucefCORE_TestApp_main.cpp"
-    } )
-
-
-
-configuration( { "WIN32" } )
-    vpaths { ["Platform Headers"] = { "**.h", "**.hpp", "**.hxx" } }
-    files( {
-      "include/TestCyclicDynamicBuffer.h",
-      "include/TestIniParser.h",
-      "include/TestNotifierObserver.h",
-      "include/TestSharedPtr.h",
-      "include/TestString.h"
-    } )
-
-    vpaths { ["Platform Source"] = { "**.c", "**.cpp", "**.cs", "**.asm" } }
-    files( {
-      "src/TestCyclicDynamicBuffer.cpp",
-      "src/TestIniParser.cpp",
-      "src/TestNotifierObserver.cpp",
-      "src/TestSharedPtr.cpp",
-      "src/TestString.cpp",
-      "src/gucefCORE_TestApp_main.cpp"
-    } )
-
-
-
-configuration( { "WIN64" } )
-    vpaths { ["Platform Headers"] = { "**.h", "**.hpp", "**.hxx" } }
-    files( {
-      "include/TestCyclicDynamicBuffer.h",
-      "include/TestIniParser.h",
-      "include/TestNotifierObserver.h",
-      "include/TestSharedPtr.h",
-      "include/TestString.h"
-    } )
-
-    vpaths { ["Platform Source"] = { "**.c", "**.cpp", "**.cs", "**.asm" } }
-    files( {
-      "src/TestCyclicDynamicBuffer.cpp",
-      "src/TestIniParser.cpp",
-      "src/TestNotifierObserver.cpp",
-      "src/TestSharedPtr.cpp",
-      "src/TestString.cpp",
-      "src/gucefCORE_TestApp_main.cpp"
-    } )
 
 
 configuration( {} )
-includedirs( { "../../common/include", "../../platform/gucefCORE/include", "../../platform/gucefMT/include" } )
+defines( { "GUCEF_CORE_TESTAPP_BUILD_MODULE" } )
+
+
+configuration( {} )
+vpaths { ["Headers"] = { "**.h", "**.hpp", "**.hxx" } }
+files( {
+  "include/TestCyclicDynamicBuffer.h",
+  "include/TestDataNodeBinarySerializer.h",
+  "include/TestDynamicBufferStringStream.h",
+  "include/TestDynamicBufferSwap.h",
+  "include/TestIniParser.h",
+  "include/TestNotifierObserver.h",
+  "include/TestSharedPtr.h",
+  "include/TestString.h",
+  "include/TestUri.h",
+  "include/TestVariant.h",
+  "include/TestVariantBinarySerializer.h",
+  "include/TestVars.h"
+ } )
+
+
+
+configuration( {} )
+vpaths { ["Source"] = { "**.c", "**.cpp", "**.cs", "**.asm" } }
+files( {
+  "src/TestCyclicDynamicBuffer.cpp",
+  "src/TestDataNodeBinarySerializer.cpp",
+  "src/TestDynamicBufferStringStream.cpp",
+  "src/TestDynamicBufferSwap.cpp",
+  "src/TestIniParser.cpp",
+  "src/TestNotifierObserver.cpp",
+  "src/TestSharedPtr.cpp",
+  "src/TestString.cpp",
+  "src/TestUri.cpp",
+  "src/TestVariant.cpp",
+  "src/TestVariantBinarySerializer.cpp",
+  "src/TestVars.cpp",
+  "src/gucefCORE_TestApp_main.cpp"
+ } )
+
+
+configuration( {} )
+includedirs( { "../../common/include", "../../platform/gucefCORE/include", "../../platform/gucefMT/include", "include" } )
+
+configuration( { "ANDROID" } )
+includedirs( { "../../platform/gucefCORE/include/android" } )
 
 configuration( { "LINUX32" } )
-includedirs( { "../../platform/gucefCORE/include/linux", "include" } )
+includedirs( { "../../platform/gucefCORE/include/linux" } )
 
 configuration( { "LINUX64" } )
-includedirs( { "../../platform/gucefCORE/include/linux", "include" } )
+includedirs( { "../../platform/gucefCORE/include/linux" } )
 
 configuration( { "WIN32" } )
-includedirs( { "../../platform/gucefCORE/include/mswin", "include" } )
+includedirs( { "../../platform/gucefCORE/include/mswin", "../../platform/gucefMT/include/mswin" } )
 
 configuration( { "WIN64" } )
-includedirs( { "../../platform/gucefCORE/include/mswin", "include" } )
+includedirs( { "../../platform/gucefCORE/include/mswin", "../../platform/gucefMT/include/mswin" } )

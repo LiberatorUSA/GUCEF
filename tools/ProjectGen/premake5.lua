@@ -41,6 +41,8 @@ configuration( {} )
 vpaths { ["Headers"] = { "**.h", "**.hpp", "**.hxx" } }
 files( {
   "include/gucefProjectGen_CAndroidMakefileGenerator.h",
+  "include/gucefProjectGen_CArduinoCLIGenerator.h",
+  "include/gucefProjectGen_CCIHelperGenerator.h",
   "include/gucefProjectGen_CCMakeProjectGenerator.h",
   "include/gucefProjectGen_CDirCrawlingProjectInfoGatherer.h",
   "include/gucefProjectGen_CDirPreprocessorManager.h",
@@ -65,6 +67,8 @@ configuration( {} )
 vpaths { ["Source"] = { "**.c", "**.cpp", "**.cs", "**.asm" } }
 files( {
   "src/gucefProjectGen_CAndroidMakefileGenerator.cpp",
+  "src/gucefProjectGen_CArduinoCLIGenerator.cpp",
+  "src/gucefProjectGen_CCIHelperGenerator.cpp",
   "src/gucefProjectGen_CCMakeProjectGenerator.cpp",
   "src/gucefProjectGen_CDirCrawlingProjectInfoGatherer.cpp",
   "src/gucefProjectGen_CDirPreprocessorManager.cpp",
@@ -94,7 +98,7 @@ configuration( { "LINUX64" } )
 includedirs( { "../../platform/gucefCORE/include/linux" } )
 
 configuration( { "WIN32" } )
-includedirs( { "../../platform/gucefCORE/include/mswin" } )
+includedirs( { "../../platform/gucefCORE/include/mswin", "../../platform/gucefMT/include/mswin" } )
 
 configuration( { "WIN64" } )
-includedirs( { "../../platform/gucefCORE/include/mswin" } )
+includedirs( { "../../platform/gucefCORE/include/mswin", "../../platform/gucefMT/include/mswin" } )

@@ -9,10 +9,10 @@
 --------------------------------------------------------------------
 --
 
--- Configuration for module: vfspluginZIP
+-- Configuration for module: pubsubpluginKAFKA
 
 
-project( "vfspluginZIP" )
+project( "pubsubpluginKAFKA" )
 
 configuration( {} )
   location( os.getenv( "PM4OUTPUTDIR" ) )
@@ -29,35 +29,24 @@ configuration( {} )
 kind( "SharedLib" )
 
 configuration( {} )
-links( { "gucefCORE", "gucefMT", "gucefVFS", "zziplib" } )
-links( { "gucefCORE", "gucefMT", "gucefVFS", "zziplib" } )
+links( { "RdKafka", "gucefCOMCORE", "gucefCORE", "gucefMT", "gucefPUBSUB" } )
+links( { "RdKafka", "gucefCOMCORE", "gucefCORE", "gucefMT", "gucefPUBSUB" } )
 
 
 configuration( {} )
-defines( { "GUCEF_VFSPLUGIN_ZIP_BUILD_MODULE", "ZZIP_HAVE_STDINT_H" } )
-  links( { "z" } )
-  
-configuration( { LINUX } )
-links( { "zlib" } )
-  links( { "zlib" } )
-  
-configuration( { WIN32 } )
-links( { "zlib" } )
-  links( { "zlib" } )
-  
-configuration( { WIN64 } )
-links( { "zlib" } )
-  links( { "zlib" } )
+defines( { "PUBSUBPLUGIN_KAFKA_BUILD_PLUGIN_DLL" } )
 
 
 configuration( {} )
 vpaths { ["Headers"] = { "**.h", "**.hpp", "**.hxx" } }
 files( {
-  "include/vfspluginZIP.h",
-  "include/vfspluginZIP_config.h",
-  "include/vfspluginZIP_CZIPArchive.h",
-  "include/vfspluginZIP_CZipIOAccess.h",
-  "include/vfspluginZIP_macros.h"
+  "include/pubsubpluginKAFKA.h",
+  "include/pubsubpluginKAFKA_CKafkaPubSubClient.h",
+  "include/pubsubpluginKAFKA_CKafkaPubSubClientConfig.h",
+  "include/pubsubpluginKAFKA_CKafkaPubSubClientTopic.h",
+  "include/pubsubpluginKAFKA_CKafkaPubSubClientTopicConfig.h",
+  "include/pubsubpluginKAFKA_config.h",
+  "include/pubsubpluginKAFKA_macros.h"
  } )
 
 
@@ -65,23 +54,28 @@ files( {
 configuration( {} )
 vpaths { ["Source"] = { "**.c", "**.cpp", "**.cs", "**.asm" } }
 files( {
-  "src/vfspluginZIP.cpp",
-  "src/vfspluginZIP_CZIPArchive.cpp",
-  "src/vfspluginZIP_CZipIOAccess.cpp"
+  "src/pubsubpluginKAFKA.cpp",
+  "src/pubsubpluginKAFKA_CKafkaPubSubClient.cpp",
+  "src/pubsubpluginKAFKA_CKafkaPubSubClientConfig.cpp",
+  "src/pubsubpluginKAFKA_CKafkaPubSubClientTopic.cpp",
+  "src/pubsubpluginKAFKA_CKafkaPubSubClientTopicConfig.cpp"
  } )
 
 
 configuration( {} )
-includedirs( { "../../../common/include", "../../../dependencies/zziplib", "../../../dependencies/zziplib/zzip", "../../../gucefCORE/include", "../../../gucefMT/include", "../../../gucefVFS/include", "include" } )
+includedirs( { "../../../common/include", "../../../dependencies/librdkafka", "../../../dependencies/librdkafka/src", "../../../dependencies/librdkafka/src-cpp", "../../../platform/gucefCOM/include", "../../../platform/gucefCOMCORE/include", "../../../platform/gucefCORE/include", "../../../platform/gucefMT/include", "../../../platform/gucefPUBSUB/include", "../../../platform/gucefVFS/include", "../../../platform/gucefWEB/include", "include" } )
 
 configuration( { "ANDROID" } )
-includedirs( { "../../../gucefCORE/include/android" } )
+includedirs( { "../../../platform/gucefCORE/include/android" } )
 
-configuration( { "LINUX" } )
-includedirs( { "../../../dependencies/zlib", "../../../gucefCORE/include/linux" } )
+configuration( { "LINUX32" } )
+includedirs( { "../../../platform/gucefCORE/include/linux" } )
+
+configuration( { "LINUX64" } )
+includedirs( { "../../../platform/gucefCORE/include/linux" } )
 
 configuration( { "WIN32" } )
-includedirs( { "../../../dependencies/zlib", "../../../gucefCORE/include/mswin" } )
+includedirs( { "../../../platform/gucefCOMCORE/include/mswin", "../../../platform/gucefCORE/include/mswin", "../../../platform/gucefMT/include/mswin" } )
 
 configuration( { "WIN64" } )
-includedirs( { "../../../dependencies/zlib", "../../../gucefCORE/include/mswin" } )
+includedirs( { "../../../platform/gucefCOMCORE/include/mswin", "../../../platform/gucefCORE/include/mswin", "../../../platform/gucefMT/include/mswin" } )

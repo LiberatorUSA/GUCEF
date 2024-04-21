@@ -40,25 +40,14 @@ links( { "gucefCOM", "gucefCOMCORE", "gucefCORE", "gucefMT" } )
 
 
 configuration( {} )
-vpaths { ["Headers"] = { "**.h", "**.hpp", "**.hxx" } }
-files( {
-  "include/TestCode_CHTTPClient.h",
-  "include/TestCode_CHTTPServer.h"
- } )
-
-
-
-configuration( {} )
 vpaths { ["Source"] = { "**.c", "**.cpp", "**.cs", "**.asm" } }
 files( {
-  "src/TestCode_CHTTPClient.cpp",
-  "src/TestCode_CHTTPServer.cpp",
   "src/gucefCOM_TestApp_main.cpp"
  } )
 
 
 configuration( {} )
-includedirs( { "../../common/include", "../../platform/gucefCOM/include", "../../platform/gucefCOMCORE/include", "../../platform/gucefCORE/include", "../../platform/gucefMT/include", "include" } )
+includedirs( { "../../common/include", "../../platform/gucefCOM/include", "../../platform/gucefCOMCORE/include", "../../platform/gucefCORE/include", "../../platform/gucefMT/include" } )
 
 configuration( { "ANDROID" } )
 includedirs( { "../../platform/gucefCORE/include/android" } )
@@ -70,7 +59,7 @@ configuration( { "LINUX64" } )
 includedirs( { "../../platform/gucefCORE/include/linux" } )
 
 configuration( { "WIN32" } )
-includedirs( { "../../platform/gucefCOMCORE/include/mswin", "../../platform/gucefCORE/include/mswin" } )
+includedirs( { "../../platform/gucefCOMCORE/include/mswin", "../../platform/gucefCORE/include/mswin", "../../platform/gucefMT/include/mswin" } )
 
 configuration( { "WIN64" } )
-includedirs( { "../../platform/gucefCOMCORE/include/mswin", "../../platform/gucefCORE/include/mswin" } )
+includedirs( { "../../platform/gucefCOMCORE/include/mswin", "../../platform/gucefCORE/include/mswin", "../../platform/gucefMT/include/mswin" } )

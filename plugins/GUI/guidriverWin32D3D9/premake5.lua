@@ -104,7 +104,7 @@ configuration( {} )
 includedirs( { "../../../common/include", "../../../platform/gucefCORE/include", "../../../platform/gucefGUI/include", "../../../platform/gucefIMAGE/include", "../../../platform/gucefMT/include", "../../../platform/gucefVFS/include" } )
 
 configuration( { "WIN32" } )
-includedirs( { "#$#ENVVAR:DXSDK_DIR#$#/Include", "../../../dependencies/external", "../../../platform/gucefCORE/include/mswin", "include" } )
+includedirs( { "#$#ENVVAR:DXSDK_DIR#$#/Include", "../../../dependencies/external", "../../../platform/gucefCORE/include/mswin", "../../../platform/gucefMT/include/mswin", "include" } )
 
 configuration( { "WIN64" } )
-includedirs( { "#$#ENVVAR:DXSDK_DIR#$#/Include", "../../../dependencies/external", "../../../platform/gucefCORE/include/mswin", "include" } )
+includedirs( { "#$#ENVVAR:DXSDK_DIR#$#/Include", "../../../dependencies/external", "../../../platform/gucefCORE/include/mswin", "../../../platform/gucefMT/include/mswin", "include" } )

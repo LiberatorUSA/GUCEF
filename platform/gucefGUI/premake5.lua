@@ -146,7 +146,7 @@ configuration( { "LINUX64" } )
 includedirs( { "../gucefCORE/include/linux" } )
 
 configuration( { "WIN32" } )
-includedirs( { "../gucefCORE/include/mswin" } )
+includedirs( { "../gucefCORE/include/mswin", "../gucefMT/include/mswin" } )
 
 configuration( { "WIN64" } )
-includedirs( { "../gucefCORE/include/mswin" } )
+includedirs( { "../gucefCORE/include/mswin", "../gucefMT/include/mswin" } )

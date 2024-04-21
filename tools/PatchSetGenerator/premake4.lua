@@ -77,10 +77,10 @@ configuration( { "WIN64" } )
 
 
 configuration( {} )
-includedirs( { "../../common/include", "../../gucefCOM/include", "../../gucefCOMCORE/include", "../../gucefCORE/include", "../../gucefMT/include", "../../gucefPATCHER/include" } )
+includedirs( { "../../common/include", "../../platform/gucefCOM/include", "../../platform/gucefCOMCORE/include", "../../platform/gucefCORE/include", "../../platform/gucefMT/include", "../../platform/gucefPATCHER/include" } )
 
 configuration( { "WIN32" } )
-includedirs( { "../../gucefCORE/include/mswin" } )
+includedirs( { "../../platform/gucefCORE/include/mswin", "../../platform/gucefMT/include/mswin" } )
 
 configuration( { "WIN64" } )
-includedirs( { "../../gucefCORE/include/mswin" } )
+includedirs( { "../../platform/gucefCORE/include/mswin", "../../platform/gucefMT/include/mswin" } )

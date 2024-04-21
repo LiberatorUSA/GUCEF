@@ -9,10 +9,10 @@
 --------------------------------------------------------------------
 --
 
--- Configuration for module: vfspluginZIP
+-- Configuration for module: codecspluginZLIB
 
 
-project( "vfspluginZIP" )
+project( "codecspluginZLIB" )
 
 configuration( {} )
   location( os.getenv( "PM4OUTPUTDIR" ) )
@@ -21,7 +21,7 @@ configuration( {} )
   targetdir( os.getenv( "PM4TARGETDIR" ) )
 
 configuration( {} )
-language( "C++" )
+language( "C" )
 
 
 
@@ -29,15 +29,18 @@ configuration( {} )
 kind( "SharedLib" )
 
 configuration( {} )
-links( { "gucefCORE", "gucefMT", "gucefVFS", "zziplib" } )
-links( { "gucefCORE", "gucefMT", "gucefVFS", "zziplib" } )
+links( { "gucefCORE", "gucefMT", "zlib" } )
 
 
 configuration( {} )
-defines( { "GUCEF_VFSPLUGIN_ZIP_BUILD_MODULE", "ZZIP_HAVE_STDINT_H" } )
+defines( { "GUCEF_CODECPLUGIN_BUILD_MODULE" } )
   links( { "z" } )
   
-configuration( { LINUX } )
+configuration( { LINUX32 } )
+links( { "zlib" } )
+  links( { "zlib" } )
+  
+configuration( { LINUX64 } )
 links( { "zlib" } )
   links( { "zlib" } )
   
@@ -53,11 +56,9 @@ links( { "zlib" } )
 configuration( {} )
 vpaths { ["Headers"] = { "**.h", "**.hpp", "**.hxx" } }
 files( {
-  "include/vfspluginZIP.h",
-  "include/vfspluginZIP_config.h",
-  "include/vfspluginZIP_CZIPArchive.h",
-  "include/vfspluginZIP_CZipIOAccess.h",
-  "include/vfspluginZIP_macros.h"
+  "include/codecspluginZLIB.h",
+  "include/codecspluginZLIB_config.h",
+  "include/codecspluginZLIB_macros.h"
  } )
 
 
@@ -65,23 +66,24 @@ files( {
 configuration( {} )
 vpaths { ["Source"] = { "**.c", "**.cpp", "**.cs", "**.asm" } }
 files( {
-  "src/vfspluginZIP.cpp",
-  "src/vfspluginZIP_CZIPArchive.cpp",
-  "src/vfspluginZIP_CZipIOAccess.cpp"
+  "src/codecspluginZLIB.c"
  } )
 
 
 configuration( {} )
-includedirs( { "../../../common/include", "../../../dependencies/zziplib", "../../../dependencies/zziplib/zzip", "../../../gucefCORE/include", "../../../gucefMT/include", "../../../gucefVFS/include", "include" } )
+includedirs( { "../../../common/include", "../../../platform/gucefCORE/include", "../../../platform/gucefMT/include", "include" } )
 
 configuration( { "ANDROID" } )
-includedirs( { "../../../gucefCORE/include/android" } )
+includedirs( { "../../../platform/gucefCORE/include/android" } )
 
-configuration( { "LINUX" } )
-includedirs( { "../../../dependencies/zlib", "../../../gucefCORE/include/linux" } )
+configuration( { "LINUX32" } )
+includedirs( { "../../../dependencies/zlib", "../../../platform/gucefCORE/include/linux" } )
+
+configuration( { "LINUX64" } )
+includedirs( { "../../../dependencies/zlib", "../../../platform/gucefCORE/include/linux" } )
 
 configuration( { "WIN32" } )
-includedirs( { "../../../dependencies/zlib", "../../../gucefCORE/include/mswin" } )
+includedirs( { "../../../dependencies/zlib", "../../../platform/gucefCORE/include/mswin", "../../../platform/gucefMT/include/mswin" } )
 
 configuration( { "WIN64" } )
-includedirs( { "../../../dependencies/zlib", "../../../gucefCORE/include/mswin" } )
+includedirs( { "../../../dependencies/zlib", "../../../platform/gucefCORE/include/mswin", "../../../platform/gucefMT/include/mswin" } )

@@ -9,10 +9,10 @@
 --------------------------------------------------------------------
 --
 
--- Configuration for module: dstorepluginPARSIFALXML
+-- Configuration for module: dstorepluginJSONPARSER
 
 
-project( "dstorepluginPARSIFALXML" )
+project( "dstorepluginJSONPARSER" )
 
 configuration( {} )
   location( os.getenv( "PM4OUTPUTDIR" ) )
@@ -29,18 +29,18 @@ configuration( {} )
 kind( "SharedLib" )
 
 configuration( {} )
-links( { "gucefCORE", "gucefMT", "libparsifal" } )
-links( { "libparsifal" } )
+links( { "gucefCORE", "gucefMT", "jsonbuilder", "jsonparser" } )
+links( { "jsonbuilder", "jsonparser" } )
 
 
 configuration( {} )
-defines( { "DSTOREPLUGINPARSIFALXML_BUILD_MODULE" } )
+defines( { "DSTOREPLUGINJSONPARSER_BUILD_MODULE" } )
 
 
 configuration( {} )
 vpaths { ["Headers"] = { "**.h", "**.hpp", "**.hxx" } }
 files( {
-  "include/DLLMainDSTOREpluginPARSIFALXML.h"
+  "include/DLLMainDSTOREpluginJSONPARSER.h"
  } )
 
 
@@ -48,21 +48,57 @@ files( {
 configuration( {} )
 vpaths { ["Source"] = { "**.c", "**.cpp", "**.cs", "**.asm" } }
 files( {
-  "src/DLLMainDSTOREpluginPARSIFALXML.c"
+  "src/DLLMainDSTOREpluginJSONPARSER.c"
  } )
 
 
 configuration( {} )
-includedirs( { "../../../common/include", "../../../dependencies/libparsifal/include/libparsifal", "../../../gucefCORE/include", "../../../gucefMT/include", "include" } )
+includedirs( { "../../../common/include", "../../../dependencies/json-builder", "../../../dependencies/json-parser", "../../../platform/gucefCORE/include", "../../../platform/gucefMT/include", "include" } )
 
 configuration( { "ANDROID" } )
-includedirs( { "../../../gucefCORE/include/android" } )
+includedirs( { "../../../dependencies/json-builder", "../../../dependencies/json-parser", "../../../platform/gucefCORE/include/android" } )
 
-configuration( { "LINUX" } )
-includedirs( { "../../../gucefCORE/include/linux" } )
+configuration( { "ARDUINO" } )
+includedirs( { "../../../dependencies/json-builder", "../../../dependencies/json-parser" } )
+
+configuration( { "EMSCRIPTEN" } )
+includedirs( { "../../../dependencies/json-builder", "../../../dependencies/json-parser" } )
+
+configuration( { "GLX" } )
+includedirs( { "../../../dependencies/json-builder", "../../../dependencies/json-parser" } )
+
+configuration( { "GTK" } )
+includedirs( { "../../../dependencies/json-builder", "../../../dependencies/json-parser" } )
+
+configuration( { "IOS" } )
+includedirs( { "../../../dependencies/json-builder", "../../../dependencies/json-parser" } )
+
+configuration( { "LINUX32" } )
+includedirs( { "../../../dependencies/json-builder", "../../../dependencies/json-parser", "../../../platform/gucefCORE/include/linux" } )
+
+configuration( { "LINUX64" } )
+includedirs( { "../../../dependencies/json-builder", "../../../dependencies/json-parser", "../../../platform/gucefCORE/include/linux" } )
+
+configuration( { "NACL" } )
+includedirs( { "../../../dependencies/json-builder", "../../../dependencies/json-parser" } )
+
+configuration( { "OSX" } )
+includedirs( { "../../../dependencies/json-builder", "../../../dependencies/json-parser" } )
+
+configuration( { "POSIX" } )
+includedirs( { "../../../dependencies/json-builder", "../../../dependencies/json-parser" } )
+
+configuration( { "SDL" } )
+includedirs( { "../../../dependencies/json-builder", "../../../dependencies/json-parser" } )
+
+configuration( { "SYMBIAN" } )
+includedirs( { "../../../dependencies/json-builder", "../../../dependencies/json-parser" } )
+
+configuration( { "UNIX" } )
+includedirs( { "../../../dependencies/json-builder", "../../../dependencies/json-parser" } )
 
 configuration( { "WIN32" } )
-includedirs( { "../../../gucefCORE/include/mswin" } )
+includedirs( { "../../../dependencies/json-builder", "../../../dependencies/json-parser", "../../../platform/gucefCORE/include/mswin", "../../../platform/gucefMT/include/mswin" } )
 
 configuration( { "WIN64" } )
-includedirs( { "../../../gucefCORE/include/mswin" } )
+includedirs( { "../../../dependencies/json-builder", "../../../dependencies/json-parser", "../../../platform/gucefCORE/include/mswin", "../../../platform/gucefMT/include/mswin" } )

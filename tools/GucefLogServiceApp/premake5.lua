@@ -35,8 +35,8 @@ configuration( {} )
 kind( "ConsoleApp" )
 
 configuration( {} )
-links( { "GucefLogServiceLib", "gucefCOM", "gucefCOMCORE", "gucefCORE", "gucefMT", "gucefWEB" } )
-links( { "GucefLogServiceLib", "gucefCOM", "gucefCOMCORE", "gucefCORE", "gucefMT", "gucefWEB" } )
+links( { "GucefLogServiceLib", "gucefCOM", "gucefCOMCORE", "gucefCORE", "gucefMT", "gucefVFS", "gucefWEB" } )
+links( { "GucefLogServiceLib", "gucefCOM", "gucefCOMCORE", "gucefCORE", "gucefMT", "gucefVFS", "gucefWEB" } )
 
 
 configuration( {} )
@@ -63,7 +63,7 @@ configuration( { "LINUX64" } )
 includedirs( { "../../platform/gucefCORE/include/linux" } )
 
 configuration( { "WIN32" } )
-includedirs( { "../../platform/gucefCOMCORE/include/mswin", "../../platform/gucefCORE/include/mswin" } )
+includedirs( { "../../platform/gucefCOMCORE/include/mswin", "../../platform/gucefCORE/include/mswin", "../../platform/gucefMT/include/mswin" } )
 
 configuration( { "WIN64" } )
-includedirs( { "../../platform/gucefCOMCORE/include/mswin", "../../platform/gucefCORE/include/mswin" } )
+includedirs( { "../../platform/gucefCOMCORE/include/mswin", "../../platform/gucefCORE/include/mswin", "../../platform/gucefMT/include/mswin" } )

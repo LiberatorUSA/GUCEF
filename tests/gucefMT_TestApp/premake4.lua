@@ -35,16 +35,44 @@ configuration( {} )
 kind( "ConsoleApp" )
 
 configuration( {} )
-links( { "gucefMT" } )
-links( { "gucefMT" } )
+links( { "gucefCORE", "gucefMT" } )
+links( { "gucefCORE", "gucefMT" } )
+
+
+configuration( {} )
+defines( { "GUCEF_MT_TESTAPP_BUILD_MODULE" } )
+
+
+configuration( {} )
+vpaths { ["Headers"] = { "**.h", "**.hpp", "**.hxx" } }
+files( {
+  "include/TestReaderWriterLock.h"
+ } )
+
 
 
 configuration( {} )
 vpaths { ["Source"] = { "**.c", "**.cpp", "**.cs", "**.asm" } }
 files( {
+  "src/TestReaderWriterLock.cpp",
   "src/gucefMT_TestApp.cpp"
  } )
 
 
 configuration( {} )
-includedirs( { "../../common/include", "../../gucefMT/include" } )
+includedirs( { "../../common/include", "../../platform/gucefCORE/include", "../../platform/gucefMT/include", "include" } )
+
+configuration( { "ANDROID" } )
+includedirs( { "../../platform/gucefCORE/include/android" } )
+
+configuration( { "LINUX32" } )
+includedirs( { "../../platform/gucefCORE/include/linux" } )
+
+configuration( { "LINUX64" } )
+includedirs( { "../../platform/gucefCORE/include/linux" } )
+
+configuration( { "WIN32" } )
+includedirs( { "../../platform/gucefCORE/include/mswin", "../../platform/gucefMT/include/mswin" } )
+
+configuration( { "WIN64" } )
+includedirs( { "../../platform/gucefCORE/include/mswin", "../../platform/gucefMT/include/mswin" } )

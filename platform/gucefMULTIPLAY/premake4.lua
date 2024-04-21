@@ -42,13 +42,13 @@ vpaths { ["Headers"] = { "**.h", "**.hpp", "**.hxx" } }
 files( {
   "include/gucefMULTIPLAY.h",
   "include/gucefMULTIPLAY_CMultiPlayControl.h",
-  "include/gucefMULTIPLAY_config.h",
   "include/gucefMULTIPLAY_CPassiveURLServerListProvider.h",
   "include/gucefMULTIPLAY_CServerList.h",
   "include/gucefMULTIPLAY_CServerListProvider.h",
   "include/gucefMULTIPLAY_DLLInit.h",
-  "include/gucefMULTIPLAY_macros.h",
-  "include/gucefMULTIPLAY_Types.h"
+  "include/gucefMULTIPLAY_Types.h",
+  "include/gucefMULTIPLAY_config.h",
+  "include/gucefMULTIPLAY_macros.h"
  } )
 
 
@@ -64,16 +64,19 @@ files( {
 
 
 configuration( {} )
-includedirs( { "../common/include", "../gucefCOM/include", "../gucefCOMCORE/include", "../gucefCORE/include", "../gucefMT/include", "include" } )
+includedirs( { "../../common/include", "../gucefCOM/include", "../gucefCOMCORE/include", "../gucefCORE/include", "../gucefMT/include", "include" } )
 
 configuration( { "ANDROID" } )
 includedirs( { "../gucefCORE/include/android" } )
 
-configuration( { "LINUX" } )
+configuration( { "LINUX32" } )
+includedirs( { "../gucefCORE/include/linux" } )
+
+configuration( { "LINUX64" } )
 includedirs( { "../gucefCORE/include/linux" } )
 
 configuration( { "WIN32" } )
-includedirs( { "../gucefCOMCORE/include/mswin", "../gucefCORE/include/mswin" } )
+includedirs( { "../gucefCOMCORE/include/mswin", "../gucefCORE/include/mswin", "../gucefMT/include/mswin" } )
 
 configuration( { "WIN64" } )
-includedirs( { "../gucefCOMCORE/include/mswin", "../gucefCORE/include/mswin" } )
+includedirs( { "../gucefCOMCORE/include/mswin", "../gucefCORE/include/mswin", "../gucefMT/include/mswin" } )

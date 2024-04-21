@@ -61,6 +61,19 @@ configuration( { "ANDROID" } )
 
 
 
+configuration( { "ARDUINO" } )
+    vpaths { ["Platform Headers"] = { "**.h", "**.hpp", "**.hxx" } }
+    files( {
+      "json-builder.h"
+    } )
+
+    vpaths { ["Platform Source"] = { "**.c", "**.cpp", "**.cs", "**.asm" } }
+    files( {
+      "json-builder.c"
+    } )
+
+
+
 configuration( { "EMSCRIPTEN" } )
     vpaths { ["Platform Headers"] = { "**.h", "**.hpp", "**.hxx" } }
     files( {
@@ -246,6 +259,9 @@ configuration( {} )
 includedirs( { "../json-parser" } )
 
 configuration( { "ANDROID" } )
+includedirs( { "../json-parser" } )
+
+configuration( { "ARDUINO" } )
 includedirs( { "../json-parser" } )
 
 configuration( { "EMSCRIPTEN" } )

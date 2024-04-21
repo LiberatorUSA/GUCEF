@@ -12,7 +12,10 @@
 -- Configuration for module: guidriverXWinGL
 
 
-configuration( { "LINUX" } )
+configuration( { "LINUX32" } )
+  project( "guidriverXWinGL" )
+
+configuration( { "LINUX64" } )
   project( "guidriverXWinGL" )
 
 configuration( {} )
@@ -24,31 +27,67 @@ configuration( {} )
 configuration( {} )
 language( "C" )
 
-configuration( { "LINUX" } )
+configuration( { "LINUX32" } )
 language( "C++" )
 
-configuration( { "LINUX" } )
+configuration( { "LINUX64" } )
+language( "C++" )
+
+configuration( { "LINUX32" } )
 
 
-configuration( { LINUX } )
+configuration( { LINUX32 } )
+kind( "SharedLib" )
+configuration( { "LINUX64" } )
+
+
+configuration( { LINUX64 } )
 kind( "SharedLib" )
   
-configuration( { LINUX } )
+configuration( { LINUX32 } )
 links( { "gucefCORE", "gucefGUI", "gucefMT" } )
   links( { "GL", "X11", "gucefCORE", "gucefGUI", "gucefMT" } )
   
 
-configuration( { LINUX } )
+configuration( { LINUX32 } )
+defines( { "GUIDRIVERXWINGL_BUILD_MODULE" } )
+  
+configuration( { LINUX64 } )
+links( { "gucefCORE", "gucefGUI", "gucefMT" } )
+  links( { "GL", "X11", "gucefCORE", "gucefGUI", "gucefMT" } )
+  
+
+configuration( { LINUX64 } )
 defines( { "GUIDRIVERXWINGL_BUILD_MODULE" } )
 
 
-configuration( { "LINUX" } )
+configuration( { "LINUX32" } )
     vpaths { ["Platform Headers"] = { "**.h", "**.hpp", "**.hxx" } }
     files( {
       "include/guidriverXWinGL.h",
-      "include/guidriverXWinGL_config.h",
       "include/guidriverXWinGL_CXWinGLWindowContext.h",
       "include/guidriverXWinGL_CXWinGLWindowManagerImp.h",
+      "include/guidriverXWinGL_config.h",
+      "include/guidriverXWinGL_macros.h",
+      "include/guidriverXWinGL_pluginAPI.h"
+    } )
+
+    vpaths { ["Platform Source"] = { "**.c", "**.cpp", "**.cs", "**.asm" } }
+    files( {
+      "src/guidriverXWinGL_CXWinGLWindowContext.cpp",
+      "src/guidriverXWinGL_CXWinGLWindowManagerImp.cpp",
+      "src/guidriverXWinGL_pluginAPI.cpp"
+    } )
+
+
+
+configuration( { "LINUX64" } )
+    vpaths { ["Platform Headers"] = { "**.h", "**.hpp", "**.hxx" } }
+    files( {
+      "include/guidriverXWinGL.h",
+      "include/guidriverXWinGL_CXWinGLWindowContext.h",
+      "include/guidriverXWinGL_CXWinGLWindowManagerImp.h",
+      "include/guidriverXWinGL_config.h",
       "include/guidriverXWinGL_macros.h",
       "include/guidriverXWinGL_pluginAPI.h"
     } )
@@ -62,7 +101,10 @@ configuration( { "LINUX" } )
 
 
 configuration( {} )
-includedirs( { "../../../common/include", "../../../gucefCORE/include", "../../../gucefGUI/include", "../../../gucefIMAGE/include", "../../../gucefMT/include", "../../../gucefVFS/include" } )
+includedirs( { "../../../common/include", "../../../platform/gucefCORE/include", "../../../platform/gucefGUI/include", "../../../platform/gucefIMAGE/include", "../../../platform/gucefMT/include", "../../../platform/gucefVFS/include" } )
 
-configuration( { "LINUX" } )
-includedirs( { "../../../gucefCORE/include/linux", "include" } )
+configuration( { "LINUX32" } )
+includedirs( { "../../../platform/gucefCORE/include/linux", "include" } )
+
+configuration( { "LINUX64" } )
+includedirs( { "../../../platform/gucefCORE/include/linux", "include" } )

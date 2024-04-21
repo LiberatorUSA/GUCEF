@@ -50,10 +50,10 @@ files( {
   "include/gucefGUI_CFormBackend.h",
   "include/gucefGUI_CFormEx.h",
   "include/gucefGUI_CFormFactory.h",
-  "include/gucefGUI_CGridView.h",
   "include/gucefGUI_CGUIDriver.h",
-  "include/gucefGUI_CGuiGlobal.h",
   "include/gucefGUI_CGUIManager.h",
+  "include/gucefGUI_CGridView.h",
+  "include/gucefGUI_CGuiGlobal.h",
   "include/gucefGUI_CIFileSystemInfoProvider.h",
   "include/gucefGUI_CIGUIContext.h",
   "include/gucefGUI_CImageFrame.h",
@@ -61,7 +61,6 @@ files( {
   "include/gucefGUI_CListBox.h",
   "include/gucefGUI_CMenuBar.h",
   "include/gucefGUI_CModule.h",
-  "include/gucefGUI_config.h",
   "include/gucefGUI_CPopupMenu.h",
   "include/gucefGUI_CProgressBar.h",
   "include/gucefGUI_CPushButton.h",
@@ -82,6 +81,7 @@ files( {
   "include/gucefGUI_CWindowManager.h",
   "include/gucefGUI_CWindowManagerBackend.h",
   "include/gucefGUI_ETypes.h",
+  "include/gucefGUI_config.h",
   "include/gucefGUI_macros.h"
  } )
 
@@ -100,10 +100,10 @@ files( {
   "src/gucefGUI_CFormBackend.cpp",
   "src/gucefGUI_CFormEx.cpp",
   "src/gucefGUI_CFormFactory.cpp",
-  "src/gucefGUI_CGridView.cpp",
   "src/gucefGUI_CGUIDriver.cpp",
-  "src/gucefGUI_CGuiGlobal.cpp",
   "src/gucefGUI_CGUIManager.cpp",
+  "src/gucefGUI_CGridView.cpp",
+  "src/gucefGUI_CGuiGlobal.cpp",
   "src/gucefGUI_CIFileSystemInfoProvider.cpp",
   "src/gucefGUI_CIGUIContext.cpp",
   "src/gucefGUI_CImageFrame.cpp",
@@ -134,16 +134,19 @@ files( {
 
 
 configuration( {} )
-includedirs( { "../common/include", "../gucefCORE/include", "../gucefIMAGE/include", "../gucefMT/include", "../gucefVFS/include", "include" } )
+includedirs( { "../../common/include", "../gucefCORE/include", "../gucefIMAGE/include", "../gucefMT/include", "../gucefVFS/include", "include" } )
 
 configuration( { "ANDROID" } )
 includedirs( { "../gucefCORE/include/android" } )
 
-configuration( { "LINUX" } )
+configuration( { "LINUX32" } )
+includedirs( { "../gucefCORE/include/linux" } )
+
+configuration( { "LINUX64" } )
 includedirs( { "../gucefCORE/include/linux" } )
 
 configuration( { "WIN32" } )
-includedirs( { "../gucefCORE/include/mswin" } )
+includedirs( { "../gucefCORE/include/mswin", "../gucefMT/include/mswin" } )
 
 configuration( { "WIN64" } )
-includedirs( { "../gucefCORE/include/mswin" } )
+includedirs( { "../gucefCORE/include/mswin", "../gucefMT/include/mswin" } )

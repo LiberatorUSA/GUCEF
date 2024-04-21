@@ -5,6 +5,7 @@ platform/gucefDRN/*
 platform/gucefGUI/*
 platform/gucefIMAGE/*
 platform/gucefINPUT/*
+platform/gucefKAITAI/*
 platform/gucefLOADER/*
 platform/gucefMATH/*
 platform/gucefMT/*

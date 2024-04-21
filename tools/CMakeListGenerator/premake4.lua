@@ -12,7 +12,10 @@
 -- Configuration for module: CMakeListGenerator
 
 
-configuration( { "LINUX" } )
+configuration( { "LINUX32" } )
+  project( "CMakeListGenerator" )
+
+configuration( { "LINUX64" } )
   project( "CMakeListGenerator" )
 
 configuration( { "WIN32" } )
@@ -30,7 +33,10 @@ configuration( {} )
 configuration( {} )
 language( "C" )
 
-configuration( { "LINUX" } )
+configuration( { "LINUX32" } )
+language( "C++" )
+
+configuration( { "LINUX64" } )
 language( "C++" )
 
 configuration( { "WIN32" } )
@@ -39,10 +45,15 @@ language( "C++" )
 configuration( { "WIN64" } )
 language( "C++" )
 
-configuration( { "LINUX" } )
+configuration( { "LINUX32" } )
 
 
-configuration( { LINUX } )
+configuration( { LINUX32 } )
+kind( "ConsoleApp" )
+configuration( { "LINUX64" } )
+
+
+configuration( { LINUX64 } )
 kind( "ConsoleApp" )
 configuration( { "WIN32" } )
 
@@ -55,12 +66,20 @@ configuration( { "WIN64" } )
 configuration( { WIN64 } )
 kind( "WindowedApp" )
   
-configuration( { LINUX } )
+configuration( { LINUX32 } )
 links( { "gucefCORE", "gucefMT" } )
   links( { "gucefCORE", "gucefMT" } )
   
 
-configuration( { LINUX } )
+configuration( { LINUX32 } )
+defines( { "CMAKELISTGENERATOR_BUILD_MODULE" } )
+  
+configuration( { LINUX64 } )
+links( { "gucefCORE", "gucefMT" } )
+  links( { "gucefCORE", "gucefMT" } )
+  
+
+configuration( { LINUX64 } )
 defines( { "CMAKELISTGENERATOR_BUILD_MODULE" } )
   
 configuration( { WIN32 } )
@@ -80,7 +99,15 @@ configuration( { WIN64 } )
 defines( { "CMAKELISTGENERATOR_BUILD_MODULE" } )
 
 
-configuration( { "LINUX" } )
+configuration( { "LINUX32" } )
+    vpaths { ["Platform Source"] = { "**.c", "**.cpp", "**.cs", "**.asm" } }
+    files( {
+      "src/main.cpp"
+    } )
+
+
+
+configuration( { "LINUX64" } )
     vpaths { ["Platform Source"] = { "**.c", "**.cpp", "**.cs", "**.asm" } }
     files( {
       "src/main.cpp"
@@ -104,13 +131,16 @@ configuration( { "WIN64" } )
 
 
 configuration( {} )
-includedirs( { "../../common/include", "../../gucefCORE/include", "../../gucefMT/include" } )
+includedirs( { "../../common/include", "../../platform/gucefCORE/include", "../../platform/gucefMT/include" } )
 
-configuration( { "LINUX" } )
-includedirs( { "../../gucefCORE/include/linux" } )
+configuration( { "LINUX32" } )
+includedirs( { "../../platform/gucefCORE/include/linux" } )
+
+configuration( { "LINUX64" } )
+includedirs( { "../../platform/gucefCORE/include/linux" } )
 
 configuration( { "WIN32" } )
-includedirs( { "../../gucefCORE/include/mswin" } )
+includedirs( { "../../platform/gucefCORE/include/mswin", "../../platform/gucefMT/include/mswin" } )
 
 configuration( { "WIN64" } )
-includedirs( { "../../gucefCORE/include/mswin" } )
+includedirs( { "../../platform/gucefCORE/include/mswin", "../../platform/gucefMT/include/mswin" } )

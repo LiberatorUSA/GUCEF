@@ -21,12 +21,9 @@ LOCAL_MODULE := gucefCOM_TestApp
 @echo Module name: $(LOCAL_MODULE)
 
 LOCAL_SRC_FILES := \
-  src/TestCode_CHTTPClient.cpp \
-  src/TestCode_CHTTPServer.cpp \
   src/gucefCOM_TestApp_main.cpp
 
 LOCAL_C_INCLUDES := \
-  $(MY_MODULE_PATH)/include \
   $(MY_MODULE_PATH)/../../common/include \
   $(MY_MODULE_PATH)/../../platform/gucefCOM/include \
   $(MY_MODULE_PATH)/../../platform/gucefCOMCORE/include \

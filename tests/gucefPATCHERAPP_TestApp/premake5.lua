@@ -52,6 +52,9 @@ includedirs( { "../../common/include", "../../platform/gucefCORE", "../../platfo
 configuration( { "ANDROID" } )
 includedirs( { "../../platform/gucefCORE/include/", "../../platform/gucefCORE/include/android", "../../platform/gucefMT/include/" } )
 
+configuration( { "ARDUINO" } )
+includedirs( { "../../platform/gucefCORE/include/", "../../platform/gucefMT/include/" } )
+
 configuration( { "EMSCRIPTEN" } )
 includedirs( { "../../platform/gucefCORE/include/", "../../platform/gucefMT/include/" } )
 
@@ -89,7 +92,7 @@ configuration( { "UNIX" } )
 includedirs( { "../../platform/gucefCORE/include/", "../../platform/gucefMT/include/" } )
 
 configuration( { "WIN32" } )
-includedirs( { "../../platform/gucefCORE/include/", "../../platform/gucefCORE/include/mswin", "../../platform/gucefMT/include/" } )
+includedirs( { "../../platform/gucefCORE/include/", "../../platform/gucefCORE/include/mswin", "../../platform/gucefCORE/include/mswin/", "../../platform/gucefMT/include/", "../../platform/gucefMT/include/mswin", "../../platform/gucefMT/include/mswin/" } )
 
 configuration( { "WIN64" } )
-includedirs( { "../../platform/gucefCORE/include/", "../../platform/gucefCORE/include/mswin", "../../platform/gucefMT/include/" } )
+includedirs( { "../../platform/gucefCORE/include/", "../../platform/gucefCORE/include/mswin", "../../platform/gucefCORE/include/mswin/", "../../platform/gucefMT/include/", "../../platform/gucefMT/include/mswin", "../../platform/gucefMT/include/mswin/" } )

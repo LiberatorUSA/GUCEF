@@ -40,6 +40,10 @@ links( { "gucefCOMCORE", "gucefCORE", "gucefMT" } )
 
 
 configuration( {} )
+defines( { "SERVERPORTEXTENDER_BUILD_MODULE" } )
+
+
+configuration( {} )
 vpaths { ["Headers"] = { "**.h", "**.hpp", "**.hxx" } }
 files( {
   "include/CServerPortExtender.h",
@@ -59,16 +63,19 @@ files( {
 
 
 configuration( {} )
-includedirs( { "../../common/include", "../../gucefCOMCORE/include", "../../gucefCORE/include", "../../gucefMT/include", "include" } )
+includedirs( { "../../common/include", "../../platform/gucefCOMCORE/include", "../../platform/gucefCORE/include", "../../platform/gucefMT/include", "include" } )
 
 configuration( { "ANDROID" } )
-includedirs( { "../../gucefCORE/include/android" } )
+includedirs( { "../../platform/gucefCORE/include/android" } )
 
-configuration( { "LINUX" } )
-includedirs( { "../../gucefCORE/include/linux" } )
+configuration( { "LINUX32" } )
+includedirs( { "../../platform/gucefCORE/include/linux" } )
+
+configuration( { "LINUX64" } )
+includedirs( { "../../platform/gucefCORE/include/linux" } )
 
 configuration( { "WIN32" } )
-includedirs( { "../../gucefCOMCORE/include/mswin", "../../gucefCORE/include/mswin" } )
+includedirs( { "../../platform/gucefCOMCORE/include/mswin", "../../platform/gucefCORE/include/mswin", "../../platform/gucefMT/include/mswin" } )
 
 configuration( { "WIN64" } )
-includedirs( { "../../gucefCOMCORE/include/mswin", "../../gucefCORE/include/mswin" } )
+includedirs( { "../../platform/gucefCOMCORE/include/mswin", "../../platform/gucefCORE/include/mswin", "../../platform/gucefMT/include/mswin" } )

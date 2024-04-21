@@ -73,10 +73,3 @@ IF DEFINED PM5TARGETSUBDIR (
 
 cd "%BATCHSTARTDIR%"
 
-IF NOT DEFINED SKIP_GUCEF_PREMAKE5INFOGENERATION (
-  ECHO *** Generate Premake5 files ***
-  CALL GeneratePremake5Info.bat
-) ELSE (
-  ECHO Skipping GUCEF's Premake5 file generation
-)
-

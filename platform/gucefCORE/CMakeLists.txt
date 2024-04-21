@@ -157,6 +157,8 @@ set( HEADER_FILES
   include/gucefCORE_CDynamicBufferSwap.h
   include/gucefCORE_CEnumerator.h
   include/gucefCORE_CEventBasedTaskConsumer.h
+  include/gucefCORE_CExecutionPlan.h
+  include/gucefCORE_CExecutionPlanRunner.h
   include/gucefCORE_CFileSystemDirectoryWatcher.h
   include/gucefCORE_CFileSystemUriResourceAccessor.h
   include/gucefCORE_CForwardingNotifier.h
@@ -609,6 +611,8 @@ add_library( ${MODULE_NAME} ${ALL_FILES} )
 add_dependencies( ${MODULE_NAME} gucefMT )
 target_link_libraries( ${MODULE_NAME} gucefMT )
 set_property( TARGET ${MODULE_NAME} APPEND_STRING PROPERTY COMPILE_DEFINITIONS "GUCEF_CORE_BUILD_MODULE" )
+set_property( TARGET ${MODULE_NAME} APPEND_STRING PROPERTY VERSION 0.1.0.0 )
+set_property( TARGET ${MODULE_NAME} APPEND_STRING PROPERTY SOVERSION 0.1.0.0 )
 
 if ( ANDROID )
   target_link_libraries( ${MODULE_NAME} dl )

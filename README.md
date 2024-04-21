@@ -147,13 +147,10 @@ If you get into trouble for whatever reason with stale/bad output files (disk is
 ## TODO list
 - Short term: Add basic websocket support native to the platform
 - Short term: Add proper parameter support for codecs
-- Short term: Allow better async flow towards VFS plugins that can handle multi-threading
 - Short term: Add StringView support
-- Short term: Complete initial pass at pubsub2pubsub 'storage' plugin
 - Short term: Complete initial pass at pubsub2pubsub 'web' plugin
 - Short term: Complete initial pass at pubsub2pubsub 'aws sns' plugin
 - Short term: Complete initial pass at pubsub2pubsub 'aws sqs' plugin
-- Short term: Refactor the way the /projects folder content is stuctured to allow the various outputs (CMake/Premake/Android) to be kept in sync more easily.
 - Short term: Add config driven CodecChain class
 - Mid term: Fix the GitHub CI integration. The auto build trigger link is broken.
 - Mid term: Add DataNode schema system

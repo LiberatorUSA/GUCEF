@@ -24,9 +24,6 @@ include $(CLEAR_VARS)
 MY_MODULE_PATH := $(PROJECT_ROOT_PATH)/../../../../dependencies/Little-CMS
 include $(MY_MODULE_PATH)/Android.mk
 
-MY_MODULE_PATH := $(PROJECT_ROOT_PATH)/../../../../dependencies/aws-checksums
-include $(MY_MODULE_PATH)/Android.mk
-
 MY_MODULE_PATH := $(PROJECT_ROOT_PATH)/../../../../dependencies/curl
 include $(MY_MODULE_PATH)/Android.mk
 
@@ -51,6 +48,9 @@ include $(MY_MODULE_PATH)/Android.mk
 MY_MODULE_PATH := $(PROJECT_ROOT_PATH)/../../../../dependencies/libsquish
 include $(MY_MODULE_PATH)/Android.mk
 
+MY_MODULE_PATH := $(PROJECT_ROOT_PATH)/../../../../dependencies/libyaml
+include $(MY_MODULE_PATH)/Android.mk
+
 MY_MODULE_PATH := $(PROJECT_ROOT_PATH)/../../../../dependencies/lua
 include $(MY_MODULE_PATH)/Android.mk
 
@@ -58,6 +58,9 @@ MY_MODULE_PATH := $(PROJECT_ROOT_PATH)/../../../../dependencies/miniupnpc
 include $(MY_MODULE_PATH)/Android.mk
 
 MY_MODULE_PATH := $(PROJECT_ROOT_PATH)/../../../../dependencies/pcre
+include $(MY_MODULE_PATH)/Android.mk
+
+MY_MODULE_PATH := $(PROJECT_ROOT_PATH)/../../../../dependencies/stbrumme-hash-library
 include $(MY_MODULE_PATH)/Android.mk
 
 MY_MODULE_PATH := $(PROJECT_ROOT_PATH)/../../../../dependencies/zookeeper-client-c
@@ -72,7 +75,10 @@ include $(MY_MODULE_PATH)/Android.mk
 MY_MODULE_PATH := $(PROJECT_ROOT_PATH)/../../../../dependencies/MyGui/Platforms/OpenGL/OpenGLPlatform
 include $(MY_MODULE_PATH)/Android.mk
 
-MY_MODULE_PATH := $(PROJECT_ROOT_PATH)/../../../../dependencies/aws-c-common
+MY_MODULE_PATH := $(PROJECT_ROOT_PATH)/../../../../dependencies/aws-crt-cpp/crt/aws-c-common
+include $(MY_MODULE_PATH)/Android.mk
+
+MY_MODULE_PATH := $(PROJECT_ROOT_PATH)/../../../../dependencies/aws-lambda-runtime
 include $(MY_MODULE_PATH)/Android.mk
 
 MY_MODULE_PATH := $(PROJECT_ROOT_PATH)/../../../../dependencies/glew
@@ -102,9 +108,6 @@ include $(MY_MODULE_PATH)/Android.mk
 MY_MODULE_PATH := $(PROJECT_ROOT_PATH)/../../../../plugins/GUI/guidriverMyGUIOpenGL/OpenGLESPlatform
 include $(MY_MODULE_PATH)/Android.mk
 
-MY_MODULE_PATH := $(PROJECT_ROOT_PATH)/../../../../tests/gucefMT_TestApp
-include $(MY_MODULE_PATH)/Android.mk
-
 MY_MODULE_PATH := $(PROJECT_ROOT_PATH)/../../../../dependencies/Ogre/OgreMain
 include $(MY_MODULE_PATH)/Android.mk
 
@@ -120,9 +123,6 @@ include $(MY_MODULE_PATH)/Android.mk
 MY_MODULE_PATH := $(PROJECT_ROOT_PATH)/../../../../dependencies/libRocket/Source/Core
 include $(MY_MODULE_PATH)/Android.mk
 
-MY_MODULE_PATH := $(PROJECT_ROOT_PATH)/../../../../dependencies/redis-plus-plus/src/sw/redis++
-include $(MY_MODULE_PATH)/Android.mk
-
 MY_MODULE_PATH := $(PROJECT_ROOT_PATH)/../../../../dependencies/tiff/libtiff
 include $(MY_MODULE_PATH)/Android.mk
 
@@ -130,6 +130,12 @@ MY_MODULE_PATH := $(PROJECT_ROOT_PATH)/../../../../dependencies/toluapp
 include $(MY_MODULE_PATH)/Android.mk
 
 MY_MODULE_PATH := $(PROJECT_ROOT_PATH)/../../../../platform/gucefCOMCORE
+include $(MY_MODULE_PATH)/Android.mk
+
+MY_MODULE_PATH := $(PROJECT_ROOT_PATH)/../../../../tests/gucefCORE_TestApp
+include $(MY_MODULE_PATH)/Android.mk
+
+MY_MODULE_PATH := $(PROJECT_ROOT_PATH)/../../../../tests/gucefMT_TestApp
 include $(MY_MODULE_PATH)/Android.mk
 
 MY_MODULE_PATH := $(PROJECT_ROOT_PATH)/../../../../tools/DuplicateFileFinder
@@ -145,6 +151,18 @@ MY_MODULE_PATH := $(PROJECT_ROOT_PATH)/../../../../tools/ReferenceUpdater
 include $(MY_MODULE_PATH)/Android.mk
 
 MY_MODULE_PATH := $(PROJECT_ROOT_PATH)/../../../../dependencies/DVPACKSYS
+include $(MY_MODULE_PATH)/Android.mk
+
+MY_MODULE_PATH := $(PROJECT_ROOT_PATH)/../../../../dependencies/aws-crt-cpp/crt/aws-c-cal
+include $(MY_MODULE_PATH)/Android.mk
+
+MY_MODULE_PATH := $(PROJECT_ROOT_PATH)/../../../../dependencies/aws-crt-cpp/crt/aws-c-compression
+include $(MY_MODULE_PATH)/Android.mk
+
+MY_MODULE_PATH := $(PROJECT_ROOT_PATH)/../../../../dependencies/aws-crt-cpp/crt/aws-c-sdkutils
+include $(MY_MODULE_PATH)/Android.mk
+
+MY_MODULE_PATH := $(PROJECT_ROOT_PATH)/../../../../dependencies/aws-crt-cpp/crt/aws-checksums
 include $(MY_MODULE_PATH)/Android.mk
 
 MY_MODULE_PATH := $(PROJECT_ROOT_PATH)/../../../../dependencies/cegui/cegui
@@ -172,6 +190,9 @@ MY_MODULE_PATH := $(PROJECT_ROOT_PATH)/../../../../dependencies/libRocket/Source
 include $(MY_MODULE_PATH)/Android.mk
 
 MY_MODULE_PATH := $(PROJECT_ROOT_PATH)/../../../../dependencies/libmng
+include $(MY_MODULE_PATH)/Android.mk
+
+MY_MODULE_PATH := $(PROJECT_ROOT_PATH)/../../../../dependencies/redis-plus-plus/src/sw/redis++
 include $(MY_MODULE_PATH)/Android.mk
 
 MY_MODULE_PATH := $(PROJECT_ROOT_PATH)/../../../../platform/gucefCOM
@@ -204,7 +225,13 @@ include $(MY_MODULE_PATH)/Android.mk
 MY_MODULE_PATH := $(PROJECT_ROOT_PATH)/../../../../platform/gucefVFS
 include $(MY_MODULE_PATH)/Android.mk
 
-MY_MODULE_PATH := $(PROJECT_ROOT_PATH)/../../../../plugins/CORE/compressioncodecZLIB
+MY_MODULE_PATH := $(PROJECT_ROOT_PATH)/../../../../plugins/COMCORE/comcorepluginDBL
+include $(MY_MODULE_PATH)/Android.mk
+
+MY_MODULE_PATH := $(PROJECT_ROOT_PATH)/../../../../plugins/CORE/codecspluginSTBRUMMEHASH
+include $(MY_MODULE_PATH)/Android.mk
+
+MY_MODULE_PATH := $(PROJECT_ROOT_PATH)/../../../../plugins/CORE/codecspluginZLIB
 include $(MY_MODULE_PATH)/Android.mk
 
 MY_MODULE_PATH := $(PROJECT_ROOT_PATH)/../../../../plugins/IMAGE/imgpluginITV
@@ -240,10 +267,13 @@ include $(MY_MODULE_PATH)/Android.mk
 MY_MODULE_PATH := $(PROJECT_ROOT_PATH)/../../../../tools/SocketSink
 include $(MY_MODULE_PATH)/Android.mk
 
-MY_MODULE_PATH := $(PROJECT_ROOT_PATH)/../../../../dependencies/aws-c-event-stream
+MY_MODULE_PATH := $(PROJECT_ROOT_PATH)/../../../../platform/gucefKAITAI
 include $(MY_MODULE_PATH)/Android.mk
 
 MY_MODULE_PATH := $(PROJECT_ROOT_PATH)/../../../../plugins/CORE/dstorepluginPARSIFALXML
+include $(MY_MODULE_PATH)/Android.mk
+
+MY_MODULE_PATH := $(PROJECT_ROOT_PATH)/../../../../plugins/CORE/dstorepluginYAML
 include $(MY_MODULE_PATH)/Android.mk
 
 MY_MODULE_PATH := $(PROJECT_ROOT_PATH)/../../../../plugins/IMAGE/imgpluginFLIC
@@ -264,7 +294,7 @@ include $(MY_MODULE_PATH)/Android.mk
 MY_MODULE_PATH := $(PROJECT_ROOT_PATH)/../../../../tests/gucefDRN_TestApp
 include $(MY_MODULE_PATH)/Android.mk
 
-MY_MODULE_PATH := $(PROJECT_ROOT_PATH)/../../../../tools/GucefArchiver
+MY_MODULE_PATH := $(PROJECT_ROOT_PATH)/../../../../tests/gucefKAITAI_TestApp
 include $(MY_MODULE_PATH)/Android.mk
 
 MY_MODULE_PATH := $(PROJECT_ROOT_PATH)/../../../../tools/GucefLogServiceLib
@@ -280,6 +310,9 @@ MY_MODULE_PATH := $(PROJECT_ROOT_PATH)/../../../../tools/ProjectGen/plugins/Proj
 include $(MY_MODULE_PATH)/Android.mk
 
 MY_MODULE_PATH := $(PROJECT_ROOT_PATH)/../../../../tools/ProjectGenerator
+include $(MY_MODULE_PATH)/Android.mk
+
+MY_MODULE_PATH := $(PROJECT_ROOT_PATH)/../../../../dependencies/aws-crt-cpp/crt/aws-c-io
 include $(MY_MODULE_PATH)/Android.mk
 
 MY_MODULE_PATH := $(PROJECT_ROOT_PATH)/../../../../dependencies/cegui/cegui/src/RendererModules/OpenGL
@@ -315,13 +348,19 @@ include $(MY_MODULE_PATH)/Android.mk
 MY_MODULE_PATH := $(PROJECT_ROOT_PATH)/../../../../plugins/CORE/dstorepluginJSONPARSER
 include $(MY_MODULE_PATH)/Android.mk
 
+MY_MODULE_PATH := $(PROJECT_ROOT_PATH)/../../../../tests/gucefWEB_TestApp
+include $(MY_MODULE_PATH)/Android.mk
+
+MY_MODULE_PATH := $(PROJECT_ROOT_PATH)/../../../../tools/GucefArchiver
+include $(MY_MODULE_PATH)/Android.mk
+
 MY_MODULE_PATH := $(PROJECT_ROOT_PATH)/../../../../tools/GucefLogServiceClientPlugin
 include $(MY_MODULE_PATH)/Android.mk
 
 MY_MODULE_PATH := $(PROJECT_ROOT_PATH)/../../../../tools/GucefLogService_TestApp
 include $(MY_MODULE_PATH)/Android.mk
 
-MY_MODULE_PATH := $(PROJECT_ROOT_PATH)/../../../../tools/ProcessMetrics
+MY_MODULE_PATH := $(PROJECT_ROOT_PATH)/../../../../tools/UdpTransformer
 include $(MY_MODULE_PATH)/Android.mk
 
 MY_MODULE_PATH := $(PROJECT_ROOT_PATH)/../../../../tools/UdpViaTcp
@@ -330,40 +369,61 @@ include $(MY_MODULE_PATH)/Android.mk
 MY_MODULE_PATH := $(PROJECT_ROOT_PATH)/../../../../tools/itvExporter
 include $(MY_MODULE_PATH)/Android.mk
 
-MY_MODULE_PATH := $(PROJECT_ROOT_PATH)/../../../../dependencies/aws-cpp-sdk-core
-include $(MY_MODULE_PATH)/Android.mk
-
-MY_MODULE_PATH := $(PROJECT_ROOT_PATH)/../../../../plugins/SHARED/pluginglueAWSSDK
-include $(MY_MODULE_PATH)/Android.mk
-
-MY_MODULE_PATH := $(PROJECT_ROOT_PATH)/../../../../dependencies/aws-cpp-sdk-s3
-include $(MY_MODULE_PATH)/Android.mk
-
 MY_MODULE_PATH := $(PROJECT_ROOT_PATH)/../../../../platform/gucefPRODMAN
 include $(MY_MODULE_PATH)/Android.mk
 
 MY_MODULE_PATH := $(PROJECT_ROOT_PATH)/../../../../apps/gucefPRODMANAPP
 include $(MY_MODULE_PATH)/Android.mk
 
+MY_MODULE_PATH := $(PROJECT_ROOT_PATH)/../../../../platform/gucefPUBSUB
+include $(MY_MODULE_PATH)/Android.mk
+
+MY_MODULE_PATH := $(PROJECT_ROOT_PATH)/../../../../plugins/PUBSUB/pubsubpluginSTORAGE
+include $(MY_MODULE_PATH)/Android.mk
+
+MY_MODULE_PATH := $(PROJECT_ROOT_PATH)/../../../../plugins/PUBSUB/pubsubpluginKAFKA
+include $(MY_MODULE_PATH)/Android.mk
+
+MY_MODULE_PATH := $(PROJECT_ROOT_PATH)/../../../../plugins/PUBSUB/pubsubpluginUDP
+include $(MY_MODULE_PATH)/Android.mk
+
+MY_MODULE_PATH := $(PROJECT_ROOT_PATH)/../../../../plugins/PUBSUB/pubsubpluginMSMQ
+include $(MY_MODULE_PATH)/Android.mk
+
 MY_MODULE_PATH := $(PROJECT_ROOT_PATH)/../../../../platform/gucefSMDRN
 include $(MY_MODULE_PATH)/Android.mk
 
-MY_MODULE_PATH := $(PROJECT_ROOT_PATH)/../../../../plugins/VFS/vfspluginAWSS3
+MY_MODULE_PATH := $(PROJECT_ROOT_PATH)/../../../../plugins/PUBSUB/pubsubpluginREDISCLUSTER
+include $(MY_MODULE_PATH)/Android.mk
+
+MY_MODULE_PATH := $(PROJECT_ROOT_PATH)/../../../../plugins/PUBSUB/pubsubpluginTEST
+include $(MY_MODULE_PATH)/Android.mk
+
+MY_MODULE_PATH := $(PROJECT_ROOT_PATH)/../../../../plugins/PUBSUB/pubsubpluginWEB
 include $(MY_MODULE_PATH)/Android.mk
 
 MY_MODULE_PATH := $(PROJECT_ROOT_PATH)/../../../../tests/gucefGUI_TestApp
 include $(MY_MODULE_PATH)/Android.mk
 
+MY_MODULE_PATH := $(PROJECT_ROOT_PATH)/../../../../tests/gucefPUBSUB_TestApp
+include $(MY_MODULE_PATH)/Android.mk
+
 MY_MODULE_PATH := $(PROJECT_ROOT_PATH)/../../../../tools/FilePusher
 include $(MY_MODULE_PATH)/Android.mk
 
-MY_MODULE_PATH := $(PROJECT_ROOT_PATH)/../../../../tools/GucefLogServiceApp
+MY_MODULE_PATH := $(PROJECT_ROOT_PATH)/../../../../tools/ProcessMetrics
 include $(MY_MODULE_PATH)/Android.mk
 
 MY_MODULE_PATH := $(PROJECT_ROOT_PATH)/../../../../tools/udp2kafka
 include $(MY_MODULE_PATH)/Android.mk
 
 MY_MODULE_PATH := $(PROJECT_ROOT_PATH)/../../../../tools/udp2redis
+include $(MY_MODULE_PATH)/Android.mk
+
+MY_MODULE_PATH := $(PROJECT_ROOT_PATH)/../../../../dependencies/aws-crt-cpp/crt/aws-c-http
+include $(MY_MODULE_PATH)/Android.mk
+
+MY_MODULE_PATH := $(PROJECT_ROOT_PATH)/../../../../dependencies/aws-crt-cpp/crt/aws-c-mqtt
 include $(MY_MODULE_PATH)/Android.mk
 
 MY_MODULE_PATH := $(PROJECT_ROOT_PATH)/../../../../plugins/GUI/guidriverMyGUI
@@ -378,6 +438,15 @@ include $(MY_MODULE_PATH)/Android.mk
 MY_MODULE_PATH := $(PROJECT_ROOT_PATH)/../../../../tests/gucefPRODMAN_TestApp
 include $(MY_MODULE_PATH)/Android.mk
 
+MY_MODULE_PATH := $(PROJECT_ROOT_PATH)/../../../../tools/GucefLogServiceApp
+include $(MY_MODULE_PATH)/Android.mk
+
+MY_MODULE_PATH := $(PROJECT_ROOT_PATH)/../../../../tools/pubsub2pubsub
+include $(MY_MODULE_PATH)/Android.mk
+
+MY_MODULE_PATH := $(PROJECT_ROOT_PATH)/../../../../tools/pubsub2storage
+include $(MY_MODULE_PATH)/Android.mk
+
 MY_MODULE_PATH := $(PROJECT_ROOT_PATH)/../../../../tools/udp2rediscluster
 include $(MY_MODULE_PATH)/Android.mk
 
@@ -388,6 +457,12 @@ MY_MODULE_PATH := $(PROJECT_ROOT_PATH)/../../../../tools/redisinfo
 include $(MY_MODULE_PATH)/Android.mk
 
 MY_MODULE_PATH := $(PROJECT_ROOT_PATH)/../../../../apps/gucefPATCHERAPP
+include $(MY_MODULE_PATH)/Android.mk
+
+MY_MODULE_PATH := $(PROJECT_ROOT_PATH)/../../../../dependencies/aws-crt-cpp/crt/aws-c-auth
+include $(MY_MODULE_PATH)/Android.mk
+
+MY_MODULE_PATH := $(PROJECT_ROOT_PATH)/../../../../dependencies/aws-crt-cpp/crt/aws-c-event-stream
 include $(MY_MODULE_PATH)/Android.mk
 
 MY_MODULE_PATH := $(PROJECT_ROOT_PATH)/../../../../dependencies/DevIL/DevIL
@@ -403,5 +478,32 @@ MY_MODULE_PATH := $(PROJECT_ROOT_PATH)/../../../../plugins/GUI/guidriverCEGUIOgr
 include $(MY_MODULE_PATH)/Android.mk
 
 MY_MODULE_PATH := $(PROJECT_ROOT_PATH)/../../../../plugins/GUI/guidriverMyGUIOgre
+include $(MY_MODULE_PATH)/Android.mk
+
+MY_MODULE_PATH := $(PROJECT_ROOT_PATH)/../../../../dependencies/aws-crt-cpp/crt/aws-c-s3
+include $(MY_MODULE_PATH)/Android.mk
+
+MY_MODULE_PATH := $(PROJECT_ROOT_PATH)/../../../../dependencies/aws-crt-cpp
+include $(MY_MODULE_PATH)/Android.mk
+
+MY_MODULE_PATH := $(PROJECT_ROOT_PATH)/../../../../dependencies/aws-cpp-sdk-core
+include $(MY_MODULE_PATH)/Android.mk
+
+MY_MODULE_PATH := $(PROJECT_ROOT_PATH)/../../../../plugins/SHARED/pluginglueAWSSDK
+include $(MY_MODULE_PATH)/Android.mk
+
+MY_MODULE_PATH := $(PROJECT_ROOT_PATH)/../../../../plugins/PUBSUB/pubsubpluginAWSSNS
+include $(MY_MODULE_PATH)/Android.mk
+
+MY_MODULE_PATH := $(PROJECT_ROOT_PATH)/../../../../dependencies/aws-cpp-sdk-s3
+include $(MY_MODULE_PATH)/Android.mk
+
+MY_MODULE_PATH := $(PROJECT_ROOT_PATH)/../../../../plugins/VFS/vfspluginAWSS3
+include $(MY_MODULE_PATH)/Android.mk
+
+MY_MODULE_PATH := $(PROJECT_ROOT_PATH)/../../../../dependencies/aws-cpp-sdk-sqs
+include $(MY_MODULE_PATH)/Android.mk
+
+MY_MODULE_PATH := $(PROJECT_ROOT_PATH)/../../../../plugins/PUBSUB/pubsubpluginAWSSQS
 include $(MY_MODULE_PATH)/Android.mk
 

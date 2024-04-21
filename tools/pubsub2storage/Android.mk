@@ -17,25 +17,22 @@ LOCAL_PATH := $(MY_MODULE_PATH)
 include $(CLEAR_VARS)
 
 @echo Module path: $(MY_MODULE_PATH)
-LOCAL_MODULE := udp2rediscluster
+LOCAL_MODULE := pubsub2storage
 @echo Module name: $(LOCAL_MODULE)
 
 LOCAL_SRC_FILES := \
-  src/crc16.cpp \
   src/main.cpp \
-  src/udp2rediscluster.cpp
+  src/pubsub2storage.cpp
 
 LOCAL_C_INCLUDES := \
   $(MY_MODULE_PATH)/include \
   $(MY_MODULE_PATH)/../../common/include \
-  $(MY_MODULE_PATH)/../../dependencies \
-  $(MY_MODULE_PATH)/../../dependencies/hiredis \
-  $(MY_MODULE_PATH)/../../dependencies/redis-plus-plus/src/sw/redis++ \
   $(MY_MODULE_PATH)/../../platform/gucefCOM/include \
   $(MY_MODULE_PATH)/../../platform/gucefCOMCORE/include \
   $(MY_MODULE_PATH)/../../platform/gucefCORE/include \
   $(MY_MODULE_PATH)/../../platform/gucefCORE/include/android \
   $(MY_MODULE_PATH)/../../platform/gucefMT/include \
+  $(MY_MODULE_PATH)/../../platform/gucefPUBSUB/include \
   $(MY_MODULE_PATH)/../../platform/gucefVFS/include \
   $(MY_MODULE_PATH)/../../platform/gucefWEB/include
 
@@ -45,12 +42,9 @@ LOCAL_SHARED_LIBRARIES := \
   gucefCOMCORE \
   gucefCORE \
   gucefMT \
+  gucefPUBSUB \
+  gucefVFS \
   gucefWEB
-
-
-LOCAL_STATIC_LIBRARIES := \
-  hiredis \
-  redis-plus-plus
 
 include $(BUILD_EXECUTABLE)
 

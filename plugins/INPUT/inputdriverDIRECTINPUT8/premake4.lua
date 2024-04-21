@@ -45,14 +45,16 @@ configuration( { WIN64 } )
 kind( "SharedLib" )
   
 configuration( { WIN32 } )
-links( { "gucefCORE", "gucefINPUT", "gucefMT" } )
+links( { "DirectInput8", "gucefCORE", "gucefINPUT", "gucefMT" } )
+  links( { "dinput8", "dxguid" } )
   
 
 configuration( { WIN32 } )
 defines( { "BUILD_GUCEF_INPUT_PLUGIN_DLL", "INPUTDRIVERDIRECTINPUT8_BUILD_MODULE" } )
   
 configuration( { WIN64 } )
-links( { "gucefCORE", "gucefINPUT", "gucefMT" } )
+links( { "DirectInput8", "gucefCORE", "gucefINPUT", "gucefMT" } )
+  links( { "dinput8", "dxguid" } )
   
 
 configuration( { WIN64 } )
@@ -85,10 +87,10 @@ configuration( { "WIN64" } )
 
 
 configuration( {} )
-includedirs( { "../../../common/include", "../../../gucefCORE/include", "../../../gucefINPUT/include", "../../../gucefMT/include" } )
+includedirs( { "../../../common/include", "../../../platform/gucefCORE/include", "../../../platform/gucefINPUT/include", "../../../platform/gucefMT/include" } )
 
 configuration( { "WIN32" } )
-includedirs( { "../../../gucefCORE/include/mswin", "include" } )
+includedirs( { "#$#ENVVAR:DXSDK_DIR#$#/Include", "../../../dependencies/external", "../../../platform/gucefCORE/include/mswin", "../../../platform/gucefMT/include/mswin", "include" } )
 
 configuration( { "WIN64" } )
-includedirs( { "../../../gucefCORE/include/mswin", "include" } )
+includedirs( { "../../../platform/gucefCORE/include/mswin", "../../../platform/gucefMT/include/mswin", "include" } )

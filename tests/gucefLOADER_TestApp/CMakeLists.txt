@@ -39,6 +39,10 @@ if ( ANDROID )
   include_directories( ../../platform/gucefCORE/include/ ../../platform/gucefCORE/include/android ../../platform/gucefMT/include/ )
 endif( ANDROID )
 
+if ( ARDUINO )
+  include_directories( ../../platform/gucefCORE/include/ ../../platform/gucefMT/include/ )
+endif( ARDUINO )
+
 if ( EMSCRIPTEN )
   include_directories( ../../platform/gucefCORE/include/ ../../platform/gucefMT/include/ )
 endif( EMSCRIPTEN )
@@ -103,6 +107,8 @@ endif( WIN64 )
 
 
 if (ANDROID)
+GUCEF_config_app( ${MODULE_NAME} )
+elseif (ARDUINO)
 GUCEF_config_app( ${MODULE_NAME} )
 elseif (EMSCRIPTEN)
 GUCEF_config_app( ${MODULE_NAME} )

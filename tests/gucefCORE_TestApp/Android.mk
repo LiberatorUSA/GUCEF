@@ -21,19 +21,28 @@ LOCAL_MODULE := gucefCORE_TestApp
 @echo Module name: $(LOCAL_MODULE)
 
 LOCAL_SRC_FILES := \
-  src/gucefCORE_TestApp_main.cpp \
   src/TestCyclicDynamicBuffer.cpp \
+  src/TestDataNodeBinarySerializer.cpp \
+  src/TestDynamicBufferStringStream.cpp \
+  src/TestDynamicBufferSwap.cpp \
   src/TestIniParser.cpp \
   src/TestNotifierObserver.cpp \
   src/TestSharedPtr.cpp \
-  src/TestString.cpp
+  src/TestString.cpp \
+  src/TestUri.cpp \
+  src/TestVariant.cpp \
+  src/TestVariantBinarySerializer.cpp \
+  src/TestVars.cpp \
+  src/gucefCORE_TestApp_main.cpp
 
 LOCAL_C_INCLUDES := \
   $(MY_MODULE_PATH)/include \
   $(MY_MODULE_PATH)/../../common/include \
-  $(MY_MODULE_PATH)/../../gucefCORE/include \
-  $(MY_MODULE_PATH)/../../gucefCORE/include/android \
-  $(MY_MODULE_PATH)/../../gucefMT/include
+  $(MY_MODULE_PATH)/../../platform/gucefCORE/include \
+  $(MY_MODULE_PATH)/../../platform/gucefCORE/include/android \
+  $(MY_MODULE_PATH)/../../platform/gucefMT/include
+
+LOCAL_CFLAGS := -DGUCEF_CORE_TESTAPP_BUILD_MODULE
 
 
 LOCAL_SHARED_LIBRARIES := \

@@ -12,7 +12,10 @@
 -- Configuration for module: MyGUI.ImageSetViewer
 
 
-configuration( { "LINUX" } )
+configuration( { "LINUX32" } )
+  project( "MyGUI.ImageSetViewer" )
+
+configuration( { "LINUX64" } )
   project( "MyGUI.ImageSetViewer" )
 
 configuration( { "WIN32" } )
@@ -30,7 +33,10 @@ configuration( {} )
 configuration( {} )
 language( "C" )
 
-configuration( { "LINUX" } )
+configuration( { "LINUX32" } )
+language( "C++" )
+
+configuration( { "LINUX64" } )
 language( "C++" )
 
 configuration( { "WIN32" } )
@@ -39,10 +45,15 @@ language( "C++" )
 configuration( { "WIN64" } )
 language( "C++" )
 
-configuration( { "LINUX" } )
+configuration( { "LINUX32" } )
 
 
-configuration( { LINUX } )
+configuration( { LINUX32 } )
+kind( "ConsoleApp" )
+configuration( { "LINUX64" } )
+
+
+configuration( { LINUX64 } )
 kind( "ConsoleApp" )
 configuration( { "WIN32" } )
 
@@ -55,17 +66,25 @@ configuration( { "WIN64" } )
 configuration( { WIN64 } )
 kind( "WindowedApp" )
   
-configuration( { LINUX } )
+configuration( { LINUX32 } )
 links( { "MyGUI.Engine", "MyGUI.OpenGLPlatform", "freetype" } )
   links( { "MyGUI.Engine", "MyGUI.OpenGLPlatform", "freetype" } )
   
 
-configuration( { LINUX } )
+configuration( { LINUX32 } )
+defines( { "MYGUI_USE_FREETYPE" } )
+  
+configuration( { LINUX64 } )
+links( { "MyGUI.Engine", "MyGUI.OpenGLPlatform", "freetype" } )
+  links( { "MyGUI.Engine", "MyGUI.OpenGLPlatform", "freetype" } )
+  
+
+configuration( { LINUX64 } )
 defines( { "MYGUI_USE_FREETYPE" } )
   
 configuration( { WIN32 } )
 links( { "MyGUI.Engine", "MyGUI.OpenGLPlatform", "freetype" } )
-  links( { "MyGUI.Engine", "MyGUI.OpenGLPlatform", "freetype" } )
+  links( { "MyGUI.Engine", "MyGUI.OpenGLPlatform", "freetype", "glu32.lib" } )
   
 
 configuration( { WIN32 } )
@@ -73,24 +92,22 @@ defines( { "MYGUI_USE_FREETYPE" } )
   
 configuration( { WIN64 } )
 links( { "MyGUI.Engine", "MyGUI.OpenGLPlatform", "freetype" } )
-  links( { "MyGUI.Engine", "MyGUI.OpenGLPlatform", "freetype" } )
+  links( { "MyGUI.Engine", "MyGUI.OpenGLPlatform", "freetype", "glu32.lib" } )
   
 
 configuration( { WIN64 } )
 defines( { "MYGUI_USE_FREETYPE" } )
 
 
-configuration( { "LINUX" } )
+configuration( { "LINUX32" } )
     vpaths { ["Platform Headers"] = { "**.h", "**.hpp", "**.hxx" } }
     files( {
       "Controller.h",
       "View.h",
-      "../../Common/Precompiled.h",
       "../../Common/Base/InputFocusInfo.h",
       "../../Common/Base/Main.h",
       "../../Common/Base/StatisticInfo.h",
       "../../Common/Base/OpenGL/BaseManager.h",
-      "../../Common/Input/InputConverter.h",
       "../../Common/Input/OIS/InputManager.h",
       "../../Common/Input/OIS/PointerManager.h"
     } )
@@ -99,7 +116,30 @@ configuration( { "LINUX" } )
     files( {
       "Controller.cpp",
       "View.cpp",
-      "../../Common/Precompiled.cpp",
+      "../../Common/Base/OpenGL/BaseManager.cpp",
+      "../../Common/Input/OIS/InputManager.cpp",
+      "../../Common/Input/OIS/PointerManager.cpp"
+    } )
+
+
+
+configuration( { "LINUX64" } )
+    vpaths { ["Platform Headers"] = { "**.h", "**.hpp", "**.hxx" } }
+    files( {
+      "Controller.h",
+      "View.h",
+      "../../Common/Base/InputFocusInfo.h",
+      "../../Common/Base/Main.h",
+      "../../Common/Base/StatisticInfo.h",
+      "../../Common/Base/OpenGL/BaseManager.h",
+      "../../Common/Input/OIS/InputManager.h",
+      "../../Common/Input/OIS/PointerManager.h"
+    } )
+
+    vpaths { ["Platform Source"] = { "**.c", "**.cpp", "**.cs", "**.asm" } }
+    files( {
+      "Controller.cpp",
+      "View.cpp",
       "../../Common/Base/OpenGL/BaseManager.cpp",
       "../../Common/Input/OIS/InputManager.cpp",
       "../../Common/Input/OIS/PointerManager.cpp"
@@ -112,12 +152,10 @@ configuration( { "WIN32" } )
     files( {
       "Controller.h",
       "View.h",
-      "../../Common/Precompiled.h",
       "../../Common/Base/InputFocusInfo.h",
       "../../Common/Base/Main.h",
       "../../Common/Base/StatisticInfo.h",
       "../../Common/Base/OpenGL/BaseManager.h",
-      "../../Common/Input/InputConverter.h",
       "../../Common/Input/Win32API/InputManager.h",
       "../../Common/Input/Win32API/PointerManager.h"
     } )
@@ -126,7 +164,6 @@ configuration( { "WIN32" } )
     files( {
       "Controller.cpp",
       "View.cpp",
-      "../../Common/Precompiled.cpp",
       "../../Common/Base/OpenGL/BaseManager.cpp",
       "../../Common/Input/Win32API/InputManager.cpp",
       "../../Common/Input/Win32API/PointerManager.cpp"
@@ -139,12 +176,10 @@ configuration( { "WIN64" } )
     files( {
       "Controller.h",
       "View.h",
-      "../../Common/Precompiled.h",
       "../../Common/Base/InputFocusInfo.h",
       "../../Common/Base/Main.h",
       "../../Common/Base/StatisticInfo.h",
       "../../Common/Base/OpenGL/BaseManager.h",
-      "../../Common/Input/InputConverter.h",
       "../../Common/Input/Win32API/InputManager.h",
       "../../Common/Input/Win32API/PointerManager.h"
     } )
@@ -153,7 +188,6 @@ configuration( { "WIN64" } )
     files( {
       "Controller.cpp",
       "View.cpp",
-      "../../Common/Precompiled.cpp",
       "../../Common/Base/OpenGL/BaseManager.cpp",
       "../../Common/Input/Win32API/InputManager.cpp",
       "../../Common/Input/Win32API/PointerManager.cpp"
@@ -161,13 +195,16 @@ configuration( { "WIN64" } )
 
 
 configuration( {} )
-includedirs( { "../../../freetype/include", "../../../freetype/include/freetype", "../../../freetype/include/freetype/config", "../../../freetype/include/freetype/internal", "../../../freetype/include/freetype/internal/services", "../../../freetype/src/winfonts", "../../Common/FileSystemInfo", "../../MyGUIEngine/include", "../../Platforms/OpenGL/OpenGLPlatform/include", "../../Platforms/OpenGL/OpenGLPlatform/include/GL" } )
+includedirs( { "../../../freetype/include", "../../../freetype/include/freetype", "../../../freetype/include/freetype/config", "../../../freetype/include/freetype/internal", "../../../freetype/include/freetype/internal/services", "../../../freetype/src", "../../../freetype/src/winfonts", "../../Common", "../../Common/FileSystemInfo", "../../Common/Input", "../../MyGUIEngine/include", "../../Platforms/OpenGL/OpenGLPlatform/include", "../../Platforms/OpenGL/OpenGLPlatform/include/GL" } )
 
-configuration( { "LINUX" } )
-includedirs( { "../ImageSetViewer", "../../Common", "../../Common/Base", "../../Common/Base/OpenGL", "../../Common/Input", "../../Common/Input/OIS" } )
+configuration( { "LINUX32" } )
+includedirs( { "../ImageSetViewer", "../../Common/Base", "../../Common/Base/OpenGL", "../../Common/Input/OIS" } )
+
+configuration( { "LINUX64" } )
+includedirs( { "../ImageSetViewer", "../../Common/Base", "../../Common/Base/OpenGL", "../../Common/Input/OIS" } )
 
 configuration( { "WIN32" } )
-includedirs( { "../ImageSetViewer", "../../Common", "../../Common/Base", "../../Common/Base/OpenGL", "../../Common/Input", "../../Common/Input/Win32API" } )
+includedirs( { "../ImageSetViewer", "../../Common/Base", "../../Common/Base/OpenGL", "../../Common/Input/Win32API" } )
 
 configuration( { "WIN64" } )
-includedirs( { "../ImageSetViewer", "../../Common", "../../Common/Base", "../../Common/Base/OpenGL", "../../Common/Input", "../../Common/Input/Win32API" } )
+includedirs( { "../ImageSetViewer", "../../Common/Base", "../../Common/Base/OpenGL", "../../Common/Input/Win32API" } )

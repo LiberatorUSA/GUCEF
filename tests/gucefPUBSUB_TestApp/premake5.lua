@@ -9,10 +9,10 @@
 --------------------------------------------------------------------
 --
 
--- Configuration for module: gucefCOMCORE_TestApp
+-- Configuration for module: gucefPUBSUB_TestApp
 
 
-project( "gucefCOMCORE_TestApp" )
+project( "gucefPUBSUB_TestApp" )
 
 configuration( {} )
   location( os.getenv( "PM5OUTPUTDIR" ) )
@@ -35,16 +35,14 @@ configuration( {} )
 kind( "ConsoleApp" )
 
 configuration( {} )
-links( { "gucefCOMCORE", "gucefCORE", "gucefMT" } )
-links( { "gucefCOMCORE", "gucefCORE", "gucefMT" } )
+links( { "gucefCOMCORE", "gucefCORE", "gucefMT", "gucefPUBSUB", "gucefVFS", "gucefWEB" } )
+links( { "gucefCOMCORE", "gucefCORE", "gucefMT", "gucefPUBSUB", "gucefVFS", "gucefWEB" } )
 
 
 configuration( {} )
 vpaths { ["Headers"] = { "**.h", "**.hpp", "**.hxx" } }
 files( {
-  "include/TestCode_ClientServer.h",
-  "include/TestCode_PingTest.h",
-  "include/TestCode_SimpleTCPClient.h"
+  "include/TestCode_PubSubMsgBinaryStorageTest.h"
  } )
 
 
@@ -52,15 +50,13 @@ files( {
 configuration( {} )
 vpaths { ["Source"] = { "**.c", "**.cpp", "**.cs", "**.asm" } }
 files( {
-  "src/TestCode_ClientServer.cpp",
-  "src/TestCode_PingTest.cpp",
-  "src/TestCode_SimpleTCPClient.cpp",
-  "src/gucefCOMCORE_TestApp.cpp"
+  "src/TestCode_PubSubMsgBinaryStorageTest.cpp",
+  "src/gucefPUBSUB_TestApp.cpp"
  } )
 
 
 configuration( {} )
-includedirs( { "../../common/include", "../../platform/gucefCOMCORE/include", "../../platform/gucefCORE/include", "../../platform/gucefMT/include", "include" } )
+includedirs( { "../../common/include", "../../platform/gucefCOM/include", "../../platform/gucefCOMCORE/include", "../../platform/gucefCORE/include", "../../platform/gucefMT/include", "../../platform/gucefPUBSUB/include", "../../platform/gucefVFS/include", "../../platform/gucefWEB/include", "include" } )
 
 configuration( { "ANDROID" } )
 includedirs( { "../../platform/gucefCORE/include/android" } )
@@ -72,7 +68,7 @@ configuration( { "LINUX64" } )
 includedirs( { "../../platform/gucefCORE/include/linux" } )
 
 configuration( { "WIN32" } )
-includedirs( { "../../platform/gucefCOMCORE/include/mswin", "../../platform/gucefCORE/include/mswin" } )
+includedirs( { "../../platform/gucefCOMCORE/include/mswin", "../../platform/gucefCORE/include/mswin", "../../platform/gucefMT/include/mswin" } )
 
 configuration( { "WIN64" } )
-includedirs( { "../../platform/gucefCOMCORE/include/mswin", "../../platform/gucefCORE/include/mswin" } )
+includedirs( { "../../platform/gucefCOMCORE/include/mswin", "../../platform/gucefCORE/include/mswin", "../../platform/gucefMT/include/mswin" } )

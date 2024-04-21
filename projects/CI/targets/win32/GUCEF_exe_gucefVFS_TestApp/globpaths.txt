@@ -1,10 +1,8 @@
 common/include/*
 dependencies/DVPACKSYS/*
-dependencies/aws-c-common/*
-dependencies/aws-c-event-stream/*
-dependencies/aws-checksums/*
 dependencies/aws-cpp-sdk-core/*
 dependencies/aws-cpp-sdk-s3/*
+dependencies/aws-crt-cpp/*
 dependencies/curl/*
 dependencies/zlib/*
 dependencies/zziplib/*

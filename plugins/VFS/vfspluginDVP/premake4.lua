@@ -57,16 +57,19 @@ files( {
 
 
 configuration( {} )
-includedirs( { "../../../common/include", "../../../dependencies/DVPACKSYS/include", "../../../gucefCORE/include", "../../../gucefMT/include", "../../../gucefVFS/include", "include" } )
+includedirs( { "../../../common/include", "../../../dependencies/DVPACKSYS/include", "../../../platform/gucefCORE/include", "../../../platform/gucefMT/include", "../../../platform/gucefVFS/include", "include" } )
 
 configuration( { "ANDROID" } )
-includedirs( { "../../../gucefCORE/include/android" } )
+includedirs( { "../../../platform/gucefCORE/include/android" } )
 
-configuration( { "LINUX" } )
-includedirs( { "../../../gucefCORE/include/linux" } )
+configuration( { "LINUX32" } )
+includedirs( { "../../../platform/gucefCORE/include/linux" } )
+
+configuration( { "LINUX64" } )
+includedirs( { "../../../platform/gucefCORE/include/linux" } )
 
 configuration( { "WIN32" } )
-includedirs( { "../../../gucefCORE/include/mswin" } )
+includedirs( { "../../../platform/gucefCORE/include/mswin", "../../../platform/gucefMT/include/mswin" } )
 
 configuration( { "WIN64" } )
-includedirs( { "../../../gucefCORE/include/mswin" } )
+includedirs( { "../../../platform/gucefCORE/include/mswin", "../../../platform/gucefMT/include/mswin" } )

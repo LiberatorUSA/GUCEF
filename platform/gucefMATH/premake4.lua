@@ -42,7 +42,6 @@ vpaths { ["Headers"] = { "**.h", "**.hpp", "**.hxx" } }
 files( {
   "include/gucefMATH.h",
   "include/gucefMATH_CModule.h",
-  "include/gucefMATH_config.h",
   "include/gucefMATH_CTDirectionVector2D.h",
   "include/gucefMATH_CTDirectionVector3D.h",
   "include/gucefMATH_CTMatrix3D.h",
@@ -54,6 +53,7 @@ files( {
   "include/gucefMATH_CTVector2D.h",
   "include/gucefMATH_CTVector3D.h",
   "include/gucefMATH_ETypes.h",
+  "include/gucefMATH_config.h",
   "include/gucefMATH_macros.h",
   "include/gucefMATH_points.h",
   "include/gucefMATH_vectors.h"
@@ -69,16 +69,19 @@ files( {
 
 
 configuration( {} )
-includedirs( { "../common/include", "../gucefCORE/include", "../gucefMT/include", "include" } )
+includedirs( { "../../common/include", "../gucefCORE/include", "../gucefMT/include", "include" } )
 
 configuration( { "ANDROID" } )
 includedirs( { "../gucefCORE/include/android" } )
 
-configuration( { "LINUX" } )
+configuration( { "LINUX32" } )
+includedirs( { "../gucefCORE/include/linux" } )
+
+configuration( { "LINUX64" } )
 includedirs( { "../gucefCORE/include/linux" } )
 
 configuration( { "WIN32" } )
-includedirs( { "../gucefCORE/include/mswin" } )
+includedirs( { "../gucefCORE/include/mswin", "../gucefMT/include/mswin" } )
 
 configuration( { "WIN64" } )
-includedirs( { "../gucefCORE/include/mswin" } )
+includedirs( { "../gucefCORE/include/mswin", "../gucefMT/include/mswin" } )

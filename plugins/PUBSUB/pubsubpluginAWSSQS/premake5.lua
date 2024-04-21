@@ -9,10 +9,10 @@
 --------------------------------------------------------------------
 --
 
--- Configuration for module: codecspluginZLIB
+-- Configuration for module: pubsubpluginAWSSQS
 
 
-project( "codecspluginZLIB" )
+project( "pubsubpluginAWSSQS" )
 
 configuration( {} )
   location( os.getenv( "PM5OUTPUTDIR" ) )
@@ -21,7 +21,7 @@ configuration( {} )
   targetdir( os.getenv( "PM5TARGETDIR" ) )
 
 configuration( {} )
-language( "C" )
+language( "C++" )
 
 
 
@@ -29,36 +29,23 @@ configuration( {} )
 kind( "SharedLib" )
 
 configuration( {} )
-links( { "gucefCORE", "gucefMT", "zlib" } )
+links( { "aws-cpp-sdk-sqs", "gucefCOMCORE", "gucefCORE", "gucefMT", "gucefPUBSUB", "pluginglueAWSSDK" } )
+links( { "aws-cpp-sdk-sqs", "gucefCOMCORE", "gucefCORE", "gucefMT", "gucefPUBSUB", "pluginglueAWSSDK" } )
 
 
 configuration( {} )
-defines( { "GUCEF_CODECPLUGIN_BUILD_MODULE" } )
-  links( { "z" } )
-  
-configuration( { LINUX32 } )
-links( { "zlib" } )
-  links( { "zlib" } )
-  
-configuration( { LINUX64 } )
-links( { "zlib" } )
-  links( { "zlib" } )
-  
-configuration( { WIN32 } )
-links( { "zlib" } )
-  links( { "zlib" } )
-  
-configuration( { WIN64 } )
-links( { "zlib" } )
-  links( { "zlib" } )
+defines( { "PUBSUBPLUGIN_AWSSQS_BUILD_PLUGIN_DLL", "USE_IMPORT_EXPORT" } )
 
 
 configuration( {} )
 vpaths { ["Headers"] = { "**.h", "**.hpp", "**.hxx" } }
 files( {
-  "include/codecspluginZLIB.h",
-  "include/codecspluginZLIB_config.h",
-  "include/codecspluginZLIB_macros.h"
+  "include/pubsubpluginAWSSQS.h",
+  "include/pubsubpluginAWSSQS_CAwsSqsPubSubClient.h",
+  "include/pubsubpluginAWSSQS_CAwsSqsPubSubClientTopic.h",
+  "include/pubsubpluginAWSSQS_CAwsSqsPubSubClientTopicConfig.h",
+  "include/pubsubpluginAWSSQS_config.h",
+  "include/pubsubpluginAWSSQS_macros.h"
  } )
 
 
@@ -66,24 +53,27 @@ files( {
 configuration( {} )
 vpaths { ["Source"] = { "**.c", "**.cpp", "**.cs", "**.asm" } }
 files( {
-  "src/codecspluginZLIB.c"
+  "src/pubsubpluginAWSSQS.cpp",
+  "src/pubsubpluginAWSSQS_CAwsSqsPubSubClient.cpp",
+  "src/pubsubpluginAWSSQS_CAwsSqsPubSubClientTopic.cpp",
+  "src/pubsubpluginAWSSQS_CAwsSqsPubSubClientTopicConfig.cpp"
  } )
 
 
 configuration( {} )
-includedirs( { "../../../common/include", "../../../platform/gucefCORE/include", "../../../platform/gucefMT/include", "include" } )
+includedirs( { "../../../common/include", "../../../dependencies/aws-cpp-sdk-core/include", "../../../dependencies/aws-cpp-sdk-core/include/aws", "../../../dependencies/aws-cpp-sdk-core/include/aws/core", "../../../dependencies/aws-cpp-sdk-core/include/aws/core/auth", "../../../dependencies/aws-cpp-sdk-core/include/aws/core/auth/bearer-token-provider", "../../../dependencies/aws-cpp-sdk-core/include/aws/core/auth/signer", "../../../dependencies/aws-cpp-sdk-core/include/aws/core/auth/signer-provider", "../../../dependencies/aws-cpp-sdk-core/include/aws/core/client", "../../../dependencies/aws-cpp-sdk-core/include/aws/core/config", "../../../dependencies/aws-cpp-sdk-core/include/aws/core/config/defaults", "../../../dependencies/aws-cpp-sdk-core/include/aws/core/endpoint", "../../../dependencies/aws-cpp-sdk-core/include/aws/core/endpoint/internal", "../../../dependencies/aws-cpp-sdk-core/include/aws/core/external", "../../../dependencies/aws-cpp-sdk-core/include/aws/core/external/cjson", "../../../dependencies/aws-cpp-sdk-core/include/aws/core/external/tinyxml2", "../../../dependencies/aws-cpp-sdk-core/include/aws/core/http", "../../../dependencies/aws-cpp-sdk-core/include/aws/core/http/curl", "../../../dependencies/aws-cpp-sdk-core/include/aws/core/http/standard", "../../../dependencies/aws-cpp-sdk-core/include/aws/core/internal", "../../../dependencies/aws-cpp-sdk-core/include/aws/core/monitoring", "../../../dependencies/aws-cpp-sdk-core/include/aws/core/net", "../../../dependencies/aws-cpp-sdk-core/include/aws/core/platform", "../../../dependencies/aws-cpp-sdk-core/include/aws/core/platform/refs", "../../../dependencies/aws-cpp-sdk-core/include/aws/core/utils", "../../../dependencies/aws-cpp-sdk-core/include/aws/core/utils/base64", "../../../dependencies/aws-cpp-sdk-core/include/aws/core/utils/crypto", "../../../dependencies/aws-cpp-sdk-core/include/aws/core/utils/crypto/bcrypt", "../../../dependencies/aws-cpp-sdk-core/include/aws/core/utils/crypto/commoncrypto", "../../../dependencies/aws-cpp-sdk-core/include/aws/core/utils/crypto/openssl", "../../../dependencies/aws-cpp-sdk-core/include/aws/core/utils/event", "../../../dependencies/aws-cpp-sdk-core/include/aws/core/utils/json", "../../../dependencies/aws-cpp-sdk-core/include/aws/core/utils/logging", "../../../dependencies/aws-cpp-sdk-core/include/aws/core/utils/memory", "../../../dependencies/aws-cpp-sdk-core/include/aws/core/utils/memory/stl", "../../../dependencies/aws-cpp-sdk-core/include/aws/core/utils/ratelimiter", "../../../dependencies/aws-cpp-sdk-core/include/aws/core/utils/stream", "../../../dependencies/aws-cpp-sdk-core/include/aws/core/utils/threading", "../../../dependencies/aws-cpp-sdk-core/include/aws/core/utils/xml", "../../../dependencies/aws-cpp-sdk-sqs/include", "../../../dependencies/aws-cpp-sdk-sqs/include/aws", "../../../dependencies/aws-cpp-sdk-sqs/include/aws/sqs", "../../../dependencies/aws-cpp-sdk-sqs/include/aws/sqs/model", "../../../dependencies/aws-crt-cpp/crt/aws-c-auth/include", "../../../dependencies/aws-crt-cpp/crt/aws-c-cal/include", "../../../dependencies/aws-crt-cpp/crt/aws-c-common/include", "../../../dependencies/aws-crt-cpp/crt/aws-c-compression/include", "../../../dependencies/aws-crt-cpp/crt/aws-c-event-stream/include", "../../../dependencies/aws-crt-cpp/crt/aws-c-http/include", "../../../dependencies/aws-crt-cpp/crt/aws-c-io/include", "../../../dependencies/aws-crt-cpp/crt/aws-c-io/source", "../../../dependencies/aws-crt-cpp/crt/aws-c-mqtt/include", "../../../dependencies/aws-crt-cpp/crt/aws-c-s3/include", "../../../dependencies/aws-crt-cpp/crt/aws-c-sdkutils/include", "../../../dependencies/aws-crt-cpp/crt/aws-checksums/include", "../../../dependencies/aws-crt-cpp/include", "../../../dependencies/curl/include", "../../../dependencies/curl/include/curl", "../../../dependencies/curl/lib", "../../../dependencies/curl/lib/vauth", "../../../dependencies/curl/lib/vquic", "../../../dependencies/curl/lib/vssh", "../../../dependencies/curl/lib/vtls", "../../../platform/gucefCOM/include", "../../../platform/gucefCOMCORE/include", "../../../platform/gucefCORE/include", "../../../platform/gucefMT/include", "../../../platform/gucefPUBSUB/include", "../../../platform/gucefVFS/include", "../../../platform/gucefWEB/include", "../../SHARED/pluginglueAWSSDK/include", "include" } )
 
 configuration( { "ANDROID" } )
 includedirs( { "../../../platform/gucefCORE/include/android" } )
 
 configuration( { "LINUX32" } )
-includedirs( { "../../../dependencies/zlib", "../../../platform/gucefCORE/include/linux" } )
+includedirs( { "../../../platform/gucefCORE/include/linux" } )
 
 configuration( { "LINUX64" } )
-includedirs( { "../../../dependencies/zlib", "../../../platform/gucefCORE/include/linux" } )
+includedirs( { "../../../platform/gucefCORE/include/linux" } )
 
 configuration( { "WIN32" } )
-includedirs( { "../../../dependencies/zlib", "../../../platform/gucefCORE/include/mswin" } )
+includedirs( { "../../../platform/gucefCOMCORE/include/mswin", "../../../platform/gucefCORE/include/mswin", "../../../platform/gucefMT/include/mswin" } )
 
 configuration( { "WIN64" } )
-includedirs( { "../../../dependencies/zlib", "../../../platform/gucefCORE/include/mswin" } )
+includedirs( { "../../../platform/gucefCOMCORE/include/mswin", "../../../platform/gucefCORE/include/mswin", "../../../platform/gucefMT/include/mswin" } )

@@ -35,8 +35,8 @@ configuration( {} )
 kind( "ConsoleApp" )
 
 configuration( {} )
-links( { "gucefCOM", "gucefCOMCORE", "gucefCORE", "gucefMT", "gucefWEB" } )
-links( { "gucefCOM", "gucefCOMCORE", "gucefCORE", "gucefMT", "gucefWEB" } )
+links( { "gucefCOM", "gucefCOMCORE", "gucefCORE", "gucefMT", "gucefPUBSUB", "gucefWEB" } )
+links( { "gucefCOM", "gucefCOMCORE", "gucefCORE", "gucefMT", "gucefPUBSUB", "gucefWEB" } )
 
 
 configuration( {} )
@@ -56,7 +56,7 @@ files( {
 
 
 configuration( {} )
-includedirs( { "../../common/include", "../../platform/gucefCOM/include", "../../platform/gucefCOMCORE/include", "../../platform/gucefCORE/include", "../../platform/gucefMT/include", "../../platform/gucefVFS/include", "../../platform/gucefWEB/include", "include" } )
+includedirs( { "../../common/include", "../../platform/gucefCOM/include", "../../platform/gucefCOMCORE/include", "../../platform/gucefCORE/include", "../../platform/gucefMT/include", "../../platform/gucefPUBSUB/include", "../../platform/gucefVFS/include", "../../platform/gucefWEB/include", "include" } )
 
 configuration( { "ANDROID" } )
 includedirs( { "../../platform/gucefCORE/include/android" } )
@@ -68,7 +68,7 @@ configuration( { "LINUX64" } )
 includedirs( { "../../platform/gucefCORE/include/linux" } )
 
 configuration( { "WIN32" } )
-includedirs( { "../../platform/gucefCOMCORE/include/mswin", "../../platform/gucefCORE/include/mswin" } )
+includedirs( { "../../platform/gucefCOMCORE/include/mswin", "../../platform/gucefCORE/include/mswin", "../../platform/gucefMT/include/mswin" } )
 
 configuration( { "WIN64" } )
-includedirs( { "../../platform/gucefCOMCORE/include/mswin", "../../platform/gucefCORE/include/mswin" } )
+includedirs( { "../../platform/gucefCOMCORE/include/mswin", "../../platform/gucefCORE/include/mswin", "../../platform/gucefMT/include/mswin" } )

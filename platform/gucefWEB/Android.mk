@@ -27,6 +27,7 @@ LOCAL_SRC_FILES := \
   src/gucefWEB_CAsyncHttpServerResponseHandler.cpp \
   src/gucefWEB_CCodecBasedHTTPServerResource.cpp \
   src/gucefWEB_CConfigurableHttpServerResource.cpp \
+  src/gucefWEB_CDataNodeSerializableHttpServerResource.cpp \
   src/gucefWEB_CDefaultHTTPServerResource.cpp \
   src/gucefWEB_CDefaultHTTPServerRouter.cpp \
   src/gucefWEB_CDefaultHTTPServerRouterController.cpp \
@@ -37,6 +38,7 @@ LOCAL_SRC_FILES := \
   src/gucefWEB_CHTTPServer.cpp \
   src/gucefWEB_CHTTPURLHandler.cpp \
   src/gucefWEB_CHttpCodecLinks.cpp \
+  src/gucefWEB_CHttpEncodingTypes.cpp \
   src/gucefWEB_CHttpMimeTypes.cpp \
   src/gucefWEB_CHttpRequestData.cpp \
   src/gucefWEB_CHttpResponseData.cpp \
@@ -45,6 +47,13 @@ LOCAL_SRC_FILES := \
   src/gucefWEB_CIHTTPServerRouterController.cpp \
   src/gucefWEB_CIHttpServerRequestHandler.cpp \
   src/gucefWEB_CModule.cpp \
+  src/gucefWEB_CStdParamParser.cpp \
+  src/gucefWEB_CTDataNodeSerializableHttpServerResourceExpansion.cpp \
+  src/gucefWEB_CTDataNodeSerializableMapHttpServerResource.cpp \
+  src/gucefWEB_CTReadableMapIndexHttpServerResource.cpp \
+  src/gucefWEB_CTaskDataCollectionServerResource.cpp \
+  src/gucefWEB_CTaskManagerServerResource.cpp \
+  src/gucefWEB_CVfsHttpServerResource.cpp \
   src/gucefWEB_CWebGlobal.cpp
 
 LOCAL_C_INCLUDES := \

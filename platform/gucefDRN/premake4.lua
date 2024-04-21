@@ -51,9 +51,9 @@ files( {
   "include/gucefDRN_CGUCEFDRNModule.h",
   "include/gucefDRN_CIDRNPeerLinkCrypter.h",
   "include/gucefDRN_CIDRNPeerValidator.h",
-  "include/gucefDRN_config.h",
   "include/gucefDRN_DRNProtocol.h",
   "include/gucefDRN_ETypes.h",
+  "include/gucefDRN_config.h",
   "include/gucefDRN_macros.h"
  } )
 
@@ -76,16 +76,19 @@ files( {
 
 
 configuration( {} )
-includedirs( { "../common/include", "../gucefCOMCORE/include", "../gucefCORE/include", "../gucefMT/include", "include" } )
+includedirs( { "../../common/include", "../gucefCOMCORE/include", "../gucefCORE/include", "../gucefMT/include", "include" } )
 
 configuration( { "ANDROID" } )
 includedirs( { "../gucefCORE/include/android" } )
 
-configuration( { "LINUX" } )
+configuration( { "LINUX32" } )
+includedirs( { "../gucefCORE/include/linux" } )
+
+configuration( { "LINUX64" } )
 includedirs( { "../gucefCORE/include/linux" } )
 
 configuration( { "WIN32" } )
-includedirs( { "../gucefCOMCORE/include/mswin", "../gucefCORE/include/mswin" } )
+includedirs( { "../gucefCOMCORE/include/mswin", "../gucefCORE/include/mswin", "../gucefMT/include/mswin" } )
 
 configuration( { "WIN64" } )
-includedirs( { "../gucefCOMCORE/include/mswin", "../gucefCORE/include/mswin" } )
+includedirs( { "../gucefCOMCORE/include/mswin", "../gucefCORE/include/mswin", "../gucefMT/include/mswin" } )

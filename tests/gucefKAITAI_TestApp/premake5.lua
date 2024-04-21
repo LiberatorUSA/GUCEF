@@ -9,10 +9,10 @@
 --------------------------------------------------------------------
 --
 
--- Configuration for module: gucefVFS_TestApp
+-- Configuration for module: gucefKAITAI_TestApp
 
 
-project( "gucefVFS_TestApp" )
+project( "gucefKAITAI_TestApp" )
 
 configuration( {} )
   location( os.getenv( "PM5OUTPUTDIR" ) )
@@ -35,18 +35,18 @@ configuration( {} )
 kind( "ConsoleApp" )
 
 configuration( {} )
-links( { "gucefCORE", "gucefMT", "gucefVFS" } )
-links( { "gucefCORE", "gucefMT", "gucefVFS" } )
+links( { "gucefCORE", "gucefKAITAI", "gucefMT", "gucefVFS" } )
+links( { "gucefCORE", "gucefKAITAI", "gucefMT", "gucefVFS" } )
 
 
 configuration( {} )
-defines( { "GUCEF_VFS_TESTAPP_BUILD_MODULE" } )
+defines( { "GUCEF_KAITAI_TESTAPP_BUILD_MODULE" } )
 
 
 configuration( {} )
 vpaths { ["Headers"] = { "**.h", "**.hpp", "**.hxx" } }
 files( {
-  "include/TestCode_VFSFileLoadUnloadTest.h"
+  "include/TestCode_KaitaiSchemaLoadTest.h"
  } )
 
 
@@ -54,13 +54,13 @@ files( {
 configuration( {} )
 vpaths { ["Source"] = { "**.c", "**.cpp", "**.cs", "**.asm" } }
 files( {
-  "src/TestCode_VFSFileLoadUnloadTest.cpp",
-  "src/gucefVFS_TestApp.cpp"
+  "src/TestCode_KaitaiSchemaLoadTest.cpp",
+  "src/gucefKAITAI_TestApp.cpp"
  } )
 
 
 configuration( {} )
-includedirs( { "../../common/include", "../../platform/gucefCORE/include", "../../platform/gucefMT/include", "../../platform/gucefVFS/include", "include" } )
+includedirs( { "../../common/include", "../../platform/gucefCORE/include", "../../platform/gucefKAITAI/includes", "../../platform/gucefMT/include", "../../platform/gucefVFS/include", "include" } )
 
 configuration( { "ANDROID" } )
 includedirs( { "../../platform/gucefCORE/include/android" } )
@@ -72,7 +72,7 @@ configuration( { "LINUX64" } )
 includedirs( { "../../platform/gucefCORE/include/linux" } )
 
 configuration( { "WIN32" } )
-includedirs( { "../../platform/gucefCORE/include/mswin" } )
+includedirs( { "../../platform/gucefCORE/include/mswin", "../../platform/gucefMT/include/mswin" } )
 
 configuration( { "WIN64" } )
-includedirs( { "../../platform/gucefCORE/include/mswin" } )
+includedirs( { "../../platform/gucefCORE/include/mswin", "../../platform/gucefMT/include/mswin" } )

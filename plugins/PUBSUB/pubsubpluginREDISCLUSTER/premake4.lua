@@ -9,10 +9,10 @@
 --------------------------------------------------------------------
 --
 
--- Configuration for module: vfspluginZIP
+-- Configuration for module: pubsubpluginREDISCLUSTER
 
 
-project( "vfspluginZIP" )
+project( "pubsubpluginREDISCLUSTER" )
 
 configuration( {} )
   location( os.getenv( "PM4OUTPUTDIR" ) )
@@ -29,35 +29,30 @@ configuration( {} )
 kind( "SharedLib" )
 
 configuration( {} )
-links( { "gucefCORE", "gucefMT", "gucefVFS", "zziplib" } )
-links( { "gucefCORE", "gucefMT", "gucefVFS", "zziplib" } )
+links( { "gucefCOMCORE", "gucefCORE", "gucefMT", "gucefPUBSUB", "hiredis", "redis-plus-plus" } )
+links( { "gucefCOMCORE", "gucefCORE", "gucefMT", "gucefPUBSUB", "hiredis", "redis-plus-plus" } )
 
 
 configuration( {} )
-defines( { "GUCEF_VFSPLUGIN_ZIP_BUILD_MODULE", "ZZIP_HAVE_STDINT_H" } )
-  links( { "z" } )
-  
-configuration( { LINUX } )
-links( { "zlib" } )
-  links( { "zlib" } )
-  
-configuration( { WIN32 } )
-links( { "zlib" } )
-  links( { "zlib" } )
-  
-configuration( { WIN64 } )
-links( { "zlib" } )
-  links( { "zlib" } )
+defines( { "PUBSUBPLUGIN_REDISCLUSTER_BUILD_PLUGIN_DLL" } )
 
 
 configuration( {} )
 vpaths { ["Headers"] = { "**.h", "**.hpp", "**.hxx" } }
 files( {
-  "include/vfspluginZIP.h",
-  "include/vfspluginZIP_config.h",
-  "include/vfspluginZIP_CZIPArchive.h",
-  "include/vfspluginZIP_CZipIOAccess.h",
-  "include/vfspluginZIP_macros.h"
+  "../../../tools/redisinfo/include/redisinfo_CRedisClusterKeyCache.h",
+  "../../../tools/redisinfo/include/redisinfo_CRedisClusterKeyCacheUpdateTask.h",
+  "../../../tools/redisinfo/include/redisinfo_CRedisClusterKeyPrunerTask.h",
+  "include/crc16.h",
+  "include/pubsubpluginREDISCLUSTER.h",
+  "include/pubsubpluginREDISCLUSTER_CRedisClusterPubSubClient.h",
+  "include/pubsubpluginREDISCLUSTER_CRedisClusterPubSubClientConfig.h",
+  "include/pubsubpluginREDISCLUSTER_CRedisClusterPubSubClientTopic.h",
+  "include/pubsubpluginREDISCLUSTER_CRedisClusterPubSubClientTopicConfig.h",
+  "include/pubsubpluginREDISCLUSTER_CRedisClusterPubSubClientTopicReader.h",
+  "include/pubsubpluginREDISCLUSTER_RedisNode.h",
+  "include/pubsubpluginREDISCLUSTER_config.h",
+  "include/pubsubpluginREDISCLUSTER_macros.h"
  } )
 
 
@@ -65,23 +60,339 @@ files( {
 configuration( {} )
 vpaths { ["Source"] = { "**.c", "**.cpp", "**.cs", "**.asm" } }
 files( {
-  "src/vfspluginZIP.cpp",
-  "src/vfspluginZIP_CZIPArchive.cpp",
-  "src/vfspluginZIP_CZipIOAccess.cpp"
+  "../../../tools/redisinfo/src/redisinfo_CRedisClusterKeyCache.cpp",
+  "../../../tools/redisinfo/src/redisinfo_CRedisClusterKeyCacheUpdateTask.cpp",
+  "../../../tools/redisinfo/src/redisinfo_CRedisClusterKeyPrunerTask.cpp",
+  "src/crc16.cpp",
+  "src/pubsubpluginREDISCLUSTER.cpp",
+  "src/pubsubpluginREDISCLUSTER_CRedisClusterPubSubClient.cpp",
+  "src/pubsubpluginREDISCLUSTER_CRedisClusterPubSubClientConfig.cpp",
+  "src/pubsubpluginREDISCLUSTER_CRedisClusterPubSubClientTopic.cpp",
+  "src/pubsubpluginREDISCLUSTER_CRedisClusterPubSubClientTopicConfig.cpp",
+  "src/pubsubpluginREDISCLUSTER_CRedisClusterPubSubClientTopicReader.cpp",
+  "src/pubsubpluginREDISCLUSTER_RedisNode.cpp"
  } )
 
 
-configuration( {} )
-includedirs( { "../../../common/include", "../../../dependencies/zziplib", "../../../dependencies/zziplib/zzip", "../../../gucefCORE/include", "../../../gucefMT/include", "../../../gucefVFS/include", "include" } )
 
 configuration( { "ANDROID" } )
-includedirs( { "../../../gucefCORE/include/android" } )
+    vpaths { ["Platform Headers"] = { "**.h", "**.hpp", "**.hxx" } }
+    files( {
+      "../../../tools/redisinfo/include/redisinfo_CRedisClusterKeyCache.h",
+      "../../../tools/redisinfo/include/redisinfo_CRedisClusterKeyCacheUpdateTask.h",
+      "../../../tools/redisinfo/include/redisinfo_CRedisClusterKeyPrunerTask.h"
+    } )
 
-configuration( { "LINUX" } )
-includedirs( { "../../../dependencies/zlib", "../../../gucefCORE/include/linux" } )
+    vpaths { ["Platform Source"] = { "**.c", "**.cpp", "**.cs", "**.asm" } }
+    files( {
+      "../../../tools/redisinfo/src/redisinfo_CRedisClusterKeyCache.cpp",
+      "../../../tools/redisinfo/src/redisinfo_CRedisClusterKeyCacheUpdateTask.cpp",
+      "../../../tools/redisinfo/src/redisinfo_CRedisClusterKeyPrunerTask.cpp"
+    } )
+
+
+
+configuration( { "ARDUINO" } )
+    vpaths { ["Platform Headers"] = { "**.h", "**.hpp", "**.hxx" } }
+    files( {
+      "../../../tools/redisinfo/include/redisinfo_CRedisClusterKeyCache.h",
+      "../../../tools/redisinfo/include/redisinfo_CRedisClusterKeyCacheUpdateTask.h",
+      "../../../tools/redisinfo/include/redisinfo_CRedisClusterKeyPrunerTask.h"
+    } )
+
+    vpaths { ["Platform Source"] = { "**.c", "**.cpp", "**.cs", "**.asm" } }
+    files( {
+      "../../../tools/redisinfo/src/redisinfo_CRedisClusterKeyCache.cpp",
+      "../../../tools/redisinfo/src/redisinfo_CRedisClusterKeyCacheUpdateTask.cpp",
+      "../../../tools/redisinfo/src/redisinfo_CRedisClusterKeyPrunerTask.cpp"
+    } )
+
+
+
+configuration( { "EMSCRIPTEN" } )
+    vpaths { ["Platform Headers"] = { "**.h", "**.hpp", "**.hxx" } }
+    files( {
+      "../../../tools/redisinfo/include/redisinfo_CRedisClusterKeyCache.h",
+      "../../../tools/redisinfo/include/redisinfo_CRedisClusterKeyCacheUpdateTask.h",
+      "../../../tools/redisinfo/include/redisinfo_CRedisClusterKeyPrunerTask.h"
+    } )
+
+    vpaths { ["Platform Source"] = { "**.c", "**.cpp", "**.cs", "**.asm" } }
+    files( {
+      "../../../tools/redisinfo/src/redisinfo_CRedisClusterKeyCache.cpp",
+      "../../../tools/redisinfo/src/redisinfo_CRedisClusterKeyCacheUpdateTask.cpp",
+      "../../../tools/redisinfo/src/redisinfo_CRedisClusterKeyPrunerTask.cpp"
+    } )
+
+
+
+configuration( { "GLX" } )
+    vpaths { ["Platform Headers"] = { "**.h", "**.hpp", "**.hxx" } }
+    files( {
+      "../../../tools/redisinfo/include/redisinfo_CRedisClusterKeyCache.h",
+      "../../../tools/redisinfo/include/redisinfo_CRedisClusterKeyCacheUpdateTask.h",
+      "../../../tools/redisinfo/include/redisinfo_CRedisClusterKeyPrunerTask.h"
+    } )
+
+    vpaths { ["Platform Source"] = { "**.c", "**.cpp", "**.cs", "**.asm" } }
+    files( {
+      "../../../tools/redisinfo/src/redisinfo_CRedisClusterKeyCache.cpp",
+      "../../../tools/redisinfo/src/redisinfo_CRedisClusterKeyCacheUpdateTask.cpp",
+      "../../../tools/redisinfo/src/redisinfo_CRedisClusterKeyPrunerTask.cpp"
+    } )
+
+
+
+configuration( { "GTK" } )
+    vpaths { ["Platform Headers"] = { "**.h", "**.hpp", "**.hxx" } }
+    files( {
+      "../../../tools/redisinfo/include/redisinfo_CRedisClusterKeyCache.h",
+      "../../../tools/redisinfo/include/redisinfo_CRedisClusterKeyCacheUpdateTask.h",
+      "../../../tools/redisinfo/include/redisinfo_CRedisClusterKeyPrunerTask.h"
+    } )
+
+    vpaths { ["Platform Source"] = { "**.c", "**.cpp", "**.cs", "**.asm" } }
+    files( {
+      "../../../tools/redisinfo/src/redisinfo_CRedisClusterKeyCache.cpp",
+      "../../../tools/redisinfo/src/redisinfo_CRedisClusterKeyCacheUpdateTask.cpp",
+      "../../../tools/redisinfo/src/redisinfo_CRedisClusterKeyPrunerTask.cpp"
+    } )
+
+
+
+configuration( { "IOS" } )
+    vpaths { ["Platform Headers"] = { "**.h", "**.hpp", "**.hxx" } }
+    files( {
+      "../../../tools/redisinfo/include/redisinfo_CRedisClusterKeyCache.h",
+      "../../../tools/redisinfo/include/redisinfo_CRedisClusterKeyCacheUpdateTask.h",
+      "../../../tools/redisinfo/include/redisinfo_CRedisClusterKeyPrunerTask.h"
+    } )
+
+    vpaths { ["Platform Source"] = { "**.c", "**.cpp", "**.cs", "**.asm" } }
+    files( {
+      "../../../tools/redisinfo/src/redisinfo_CRedisClusterKeyCache.cpp",
+      "../../../tools/redisinfo/src/redisinfo_CRedisClusterKeyCacheUpdateTask.cpp",
+      "../../../tools/redisinfo/src/redisinfo_CRedisClusterKeyPrunerTask.cpp"
+    } )
+
+
+
+configuration( { "LINUX32" } )
+    vpaths { ["Platform Headers"] = { "**.h", "**.hpp", "**.hxx" } }
+    files( {
+      "../../../tools/redisinfo/include/redisinfo_CRedisClusterKeyCache.h",
+      "../../../tools/redisinfo/include/redisinfo_CRedisClusterKeyCacheUpdateTask.h",
+      "../../../tools/redisinfo/include/redisinfo_CRedisClusterKeyPrunerTask.h"
+    } )
+
+    vpaths { ["Platform Source"] = { "**.c", "**.cpp", "**.cs", "**.asm" } }
+    files( {
+      "../../../tools/redisinfo/src/redisinfo_CRedisClusterKeyCache.cpp",
+      "../../../tools/redisinfo/src/redisinfo_CRedisClusterKeyCacheUpdateTask.cpp",
+      "../../../tools/redisinfo/src/redisinfo_CRedisClusterKeyPrunerTask.cpp"
+    } )
+
+
+
+configuration( { "LINUX64" } )
+    vpaths { ["Platform Headers"] = { "**.h", "**.hpp", "**.hxx" } }
+    files( {
+      "../../../tools/redisinfo/include/redisinfo_CRedisClusterKeyCache.h",
+      "../../../tools/redisinfo/include/redisinfo_CRedisClusterKeyCacheUpdateTask.h",
+      "../../../tools/redisinfo/include/redisinfo_CRedisClusterKeyPrunerTask.h"
+    } )
+
+    vpaths { ["Platform Source"] = { "**.c", "**.cpp", "**.cs", "**.asm" } }
+    files( {
+      "../../../tools/redisinfo/src/redisinfo_CRedisClusterKeyCache.cpp",
+      "../../../tools/redisinfo/src/redisinfo_CRedisClusterKeyCacheUpdateTask.cpp",
+      "../../../tools/redisinfo/src/redisinfo_CRedisClusterKeyPrunerTask.cpp"
+    } )
+
+
+
+configuration( { "NACL" } )
+    vpaths { ["Platform Headers"] = { "**.h", "**.hpp", "**.hxx" } }
+    files( {
+      "../../../tools/redisinfo/include/redisinfo_CRedisClusterKeyCache.h",
+      "../../../tools/redisinfo/include/redisinfo_CRedisClusterKeyCacheUpdateTask.h",
+      "../../../tools/redisinfo/include/redisinfo_CRedisClusterKeyPrunerTask.h"
+    } )
+
+    vpaths { ["Platform Source"] = { "**.c", "**.cpp", "**.cs", "**.asm" } }
+    files( {
+      "../../../tools/redisinfo/src/redisinfo_CRedisClusterKeyCache.cpp",
+      "../../../tools/redisinfo/src/redisinfo_CRedisClusterKeyCacheUpdateTask.cpp",
+      "../../../tools/redisinfo/src/redisinfo_CRedisClusterKeyPrunerTask.cpp"
+    } )
+
+
+
+configuration( { "OSX" } )
+    vpaths { ["Platform Headers"] = { "**.h", "**.hpp", "**.hxx" } }
+    files( {
+      "../../../tools/redisinfo/include/redisinfo_CRedisClusterKeyCache.h",
+      "../../../tools/redisinfo/include/redisinfo_CRedisClusterKeyCacheUpdateTask.h",
+      "../../../tools/redisinfo/include/redisinfo_CRedisClusterKeyPrunerTask.h"
+    } )
+
+    vpaths { ["Platform Source"] = { "**.c", "**.cpp", "**.cs", "**.asm" } }
+    files( {
+      "../../../tools/redisinfo/src/redisinfo_CRedisClusterKeyCache.cpp",
+      "../../../tools/redisinfo/src/redisinfo_CRedisClusterKeyCacheUpdateTask.cpp",
+      "../../../tools/redisinfo/src/redisinfo_CRedisClusterKeyPrunerTask.cpp"
+    } )
+
+
+
+configuration( { "POSIX" } )
+    vpaths { ["Platform Headers"] = { "**.h", "**.hpp", "**.hxx" } }
+    files( {
+      "../../../tools/redisinfo/include/redisinfo_CRedisClusterKeyCache.h",
+      "../../../tools/redisinfo/include/redisinfo_CRedisClusterKeyCacheUpdateTask.h",
+      "../../../tools/redisinfo/include/redisinfo_CRedisClusterKeyPrunerTask.h"
+    } )
+
+    vpaths { ["Platform Source"] = { "**.c", "**.cpp", "**.cs", "**.asm" } }
+    files( {
+      "../../../tools/redisinfo/src/redisinfo_CRedisClusterKeyCache.cpp",
+      "../../../tools/redisinfo/src/redisinfo_CRedisClusterKeyCacheUpdateTask.cpp",
+      "../../../tools/redisinfo/src/redisinfo_CRedisClusterKeyPrunerTask.cpp"
+    } )
+
+
+
+configuration( { "SDL" } )
+    vpaths { ["Platform Headers"] = { "**.h", "**.hpp", "**.hxx" } }
+    files( {
+      "../../../tools/redisinfo/include/redisinfo_CRedisClusterKeyCache.h",
+      "../../../tools/redisinfo/include/redisinfo_CRedisClusterKeyCacheUpdateTask.h",
+      "../../../tools/redisinfo/include/redisinfo_CRedisClusterKeyPrunerTask.h"
+    } )
+
+    vpaths { ["Platform Source"] = { "**.c", "**.cpp", "**.cs", "**.asm" } }
+    files( {
+      "../../../tools/redisinfo/src/redisinfo_CRedisClusterKeyCache.cpp",
+      "../../../tools/redisinfo/src/redisinfo_CRedisClusterKeyCacheUpdateTask.cpp",
+      "../../../tools/redisinfo/src/redisinfo_CRedisClusterKeyPrunerTask.cpp"
+    } )
+
+
+
+configuration( { "SYMBIAN" } )
+    vpaths { ["Platform Headers"] = { "**.h", "**.hpp", "**.hxx" } }
+    files( {
+      "../../../tools/redisinfo/include/redisinfo_CRedisClusterKeyCache.h",
+      "../../../tools/redisinfo/include/redisinfo_CRedisClusterKeyCacheUpdateTask.h",
+      "../../../tools/redisinfo/include/redisinfo_CRedisClusterKeyPrunerTask.h"
+    } )
+
+    vpaths { ["Platform Source"] = { "**.c", "**.cpp", "**.cs", "**.asm" } }
+    files( {
+      "../../../tools/redisinfo/src/redisinfo_CRedisClusterKeyCache.cpp",
+      "../../../tools/redisinfo/src/redisinfo_CRedisClusterKeyCacheUpdateTask.cpp",
+      "../../../tools/redisinfo/src/redisinfo_CRedisClusterKeyPrunerTask.cpp"
+    } )
+
+
+
+configuration( { "UNIX" } )
+    vpaths { ["Platform Headers"] = { "**.h", "**.hpp", "**.hxx" } }
+    files( {
+      "../../../tools/redisinfo/include/redisinfo_CRedisClusterKeyCache.h",
+      "../../../tools/redisinfo/include/redisinfo_CRedisClusterKeyCacheUpdateTask.h",
+      "../../../tools/redisinfo/include/redisinfo_CRedisClusterKeyPrunerTask.h"
+    } )
+
+    vpaths { ["Platform Source"] = { "**.c", "**.cpp", "**.cs", "**.asm" } }
+    files( {
+      "../../../tools/redisinfo/src/redisinfo_CRedisClusterKeyCache.cpp",
+      "../../../tools/redisinfo/src/redisinfo_CRedisClusterKeyCacheUpdateTask.cpp",
+      "../../../tools/redisinfo/src/redisinfo_CRedisClusterKeyPrunerTask.cpp"
+    } )
+
+
 
 configuration( { "WIN32" } )
-includedirs( { "../../../dependencies/zlib", "../../../gucefCORE/include/mswin" } )
+    vpaths { ["Platform Headers"] = { "**.h", "**.hpp", "**.hxx" } }
+    files( {
+      "../../../tools/redisinfo/include/redisinfo_CRedisClusterKeyCache.h",
+      "../../../tools/redisinfo/include/redisinfo_CRedisClusterKeyCacheUpdateTask.h",
+      "../../../tools/redisinfo/include/redisinfo_CRedisClusterKeyPrunerTask.h"
+    } )
+
+    vpaths { ["Platform Source"] = { "**.c", "**.cpp", "**.cs", "**.asm" } }
+    files( {
+      "../../../tools/redisinfo/src/redisinfo_CRedisClusterKeyCache.cpp",
+      "../../../tools/redisinfo/src/redisinfo_CRedisClusterKeyCacheUpdateTask.cpp",
+      "../../../tools/redisinfo/src/redisinfo_CRedisClusterKeyPrunerTask.cpp"
+    } )
+
+
 
 configuration( { "WIN64" } )
-includedirs( { "../../../dependencies/zlib", "../../../gucefCORE/include/mswin" } )
+    vpaths { ["Platform Headers"] = { "**.h", "**.hpp", "**.hxx" } }
+    files( {
+      "../../../tools/redisinfo/include/redisinfo_CRedisClusterKeyCache.h",
+      "../../../tools/redisinfo/include/redisinfo_CRedisClusterKeyCacheUpdateTask.h",
+      "../../../tools/redisinfo/include/redisinfo_CRedisClusterKeyPrunerTask.h"
+    } )
+
+    vpaths { ["Platform Source"] = { "**.c", "**.cpp", "**.cs", "**.asm" } }
+    files( {
+      "../../../tools/redisinfo/src/redisinfo_CRedisClusterKeyCache.cpp",
+      "../../../tools/redisinfo/src/redisinfo_CRedisClusterKeyCacheUpdateTask.cpp",
+      "../../../tools/redisinfo/src/redisinfo_CRedisClusterKeyPrunerTask.cpp"
+    } )
+
+
+configuration( {} )
+includedirs( { "..", "../..", "../../..", "../../../common/include", "../../../dependencies/hiredis", "../../../dependencies/redis-plus-plus/../", "../../../dependencies/redis-plus-plus/src/sw/../", "../../../dependencies/redis-plus-plus/src/sw/redis++", "../../../dependencies/redis-plus-plus/src/sw/redis++/cxx11", "../../../dependencies/redis-plus-plus/src/sw/redis++/cxx11/sw", "../../../dependencies/redis-plus-plus/src/sw/redis++/cxx11/sw/redis++", "../../../dependencies/redis-plus-plus/src/sw/redis++/no_tls", "../../../dependencies/redis-plus-plus/src/sw/redis++/no_tls/sw", "../../../dependencies/redis-plus-plus/src/sw/redis++/no_tls/sw/redis++", "../../../dependencies/redis-plus-plus/src/sw/redis++/patterns", "../../../platform/gucefCOM/include", "../../../platform/gucefCOMCORE/include", "../../../platform/gucefCORE/include", "../../../platform/gucefMT/include", "../../../platform/gucefPUBSUB/include", "../../../platform/gucefVFS/include", "../../../platform/gucefWEB/include", "../../../tools", "../../../tools/redisinfo", "../../../tools/redisinfo/include", "../../../tools/redisinfo/include/", "include" } )
+
+configuration( { "ANDROID" } )
+includedirs( { "../../../dependencies/hiredis", "../../../platform/gucefCORE/include/android", "../../../tools/redisinfo/include/" } )
+
+configuration( { "ARDUINO" } )
+includedirs( { "../../../dependencies/hiredis", "../../../tools/redisinfo/include/" } )
+
+configuration( { "EMSCRIPTEN" } )
+includedirs( { "../../../dependencies/hiredis", "../../../tools/redisinfo/include/" } )
+
+configuration( { "GLX" } )
+includedirs( { "../../../dependencies/hiredis", "../../../tools/redisinfo/include/" } )
+
+configuration( { "GTK" } )
+includedirs( { "../../../dependencies/hiredis", "../../../tools/redisinfo/include/" } )
+
+configuration( { "IOS" } )
+includedirs( { "../../../dependencies/hiredis", "../../../tools/redisinfo/include/" } )
+
+configuration( { "LINUX32" } )
+includedirs( { "../../../dependencies/hiredis", "../../../platform/gucefCORE/include/linux", "../../../tools/redisinfo/include/" } )
+
+configuration( { "LINUX64" } )
+includedirs( { "../../../dependencies/hiredis", "../../../platform/gucefCORE/include/linux", "../../../tools/redisinfo/include/" } )
+
+configuration( { "NACL" } )
+includedirs( { "../../../dependencies/hiredis", "../../../tools/redisinfo/include/" } )
+
+configuration( { "OSX" } )
+includedirs( { "../../../dependencies/hiredis", "../../../tools/redisinfo/include/" } )
+
+configuration( { "POSIX" } )
+includedirs( { "../../../dependencies/hiredis", "../../../tools/redisinfo/include/" } )
+
+configuration( { "SDL" } )
+includedirs( { "../../../dependencies/hiredis", "../../../tools/redisinfo/include/" } )
+
+configuration( { "SYMBIAN" } )
+includedirs( { "../../../dependencies/hiredis", "../../../tools/redisinfo/include/" } )
+
+configuration( { "UNIX" } )
+includedirs( { "../../../dependencies/hiredis", "../../../tools/redisinfo/include/" } )
+
+configuration( { "WIN32" } )
+includedirs( { "../../../dependencies/hiredis", "../../../platform/gucefCOMCORE/include/mswin", "../../../platform/gucefCORE/include/mswin", "../../../platform/gucefMT/include/mswin", "../../../tools/redisinfo/include/" } )
+
+configuration( { "WIN64" } )
+includedirs( { "../../../dependencies/hiredis", "../../../platform/gucefCOMCORE/include/mswin", "../../../platform/gucefCORE/include/mswin", "../../../platform/gucefMT/include/mswin", "../../../tools/redisinfo/include/" } )

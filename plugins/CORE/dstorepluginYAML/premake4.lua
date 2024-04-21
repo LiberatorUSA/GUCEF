@@ -9,10 +9,10 @@
 --------------------------------------------------------------------
 --
 
--- Configuration for module: dstorepluginPARSIFALXML
+-- Configuration for module: dstorepluginYAML
 
 
-project( "dstorepluginPARSIFALXML" )
+project( "dstorepluginYAML" )
 
 configuration( {} )
   location( os.getenv( "PM4OUTPUTDIR" ) )
@@ -29,18 +29,18 @@ configuration( {} )
 kind( "SharedLib" )
 
 configuration( {} )
-links( { "gucefCORE", "gucefMT", "libparsifal" } )
-links( { "libparsifal" } )
+links( { "gucefCORE", "gucefMT", "yaml" } )
+links( { "yaml" } )
 
 
 configuration( {} )
-defines( { "DSTOREPLUGINPARSIFALXML_BUILD_MODULE" } )
+defines( { "DSTOREPLUGINYAML_BUILD_MODULE" } )
 
 
 configuration( {} )
 vpaths { ["Headers"] = { "**.h", "**.hpp", "**.hxx" } }
 files( {
-  "include/DLLMainDSTOREpluginPARSIFALXML.h"
+  "include/DLLMainDSTOREpluginYAML.h"
  } )
 
 
@@ -48,21 +48,24 @@ files( {
 configuration( {} )
 vpaths { ["Source"] = { "**.c", "**.cpp", "**.cs", "**.asm" } }
 files( {
-  "src/DLLMainDSTOREpluginPARSIFALXML.c"
+  "src/DLLMainDSTOREpluginYAML.c"
  } )
 
 
 configuration( {} )
-includedirs( { "../../../common/include", "../../../dependencies/libparsifal/include/libparsifal", "../../../gucefCORE/include", "../../../gucefMT/include", "include" } )
+includedirs( { "../../../common/include", "../../../dependencies/libyaml/include", "../../../dependencies/libyaml/src", "../../../platform/gucefCORE/include", "../../../platform/gucefMT/include", "include" } )
 
 configuration( { "ANDROID" } )
-includedirs( { "../../../gucefCORE/include/android" } )
+includedirs( { "../../../platform/gucefCORE/include/android" } )
 
-configuration( { "LINUX" } )
-includedirs( { "../../../gucefCORE/include/linux" } )
+configuration( { "LINUX32" } )
+includedirs( { "../../../platform/gucefCORE/include/linux" } )
+
+configuration( { "LINUX64" } )
+includedirs( { "../../../platform/gucefCORE/include/linux" } )
 
 configuration( { "WIN32" } )
-includedirs( { "../../../gucefCORE/include/mswin" } )
+includedirs( { "../../../platform/gucefCORE/include/mswin", "../../../platform/gucefMT/include/mswin" } )
 
 configuration( { "WIN64" } )
-includedirs( { "../../../gucefCORE/include/mswin" } )
+includedirs( { "../../../platform/gucefCORE/include/mswin", "../../../platform/gucefMT/include/mswin" } )

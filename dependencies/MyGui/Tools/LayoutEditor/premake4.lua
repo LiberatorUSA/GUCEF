@@ -12,7 +12,10 @@
 -- Configuration for module: MyGUI.LayoutEditor
 
 
-configuration( { "LINUX" } )
+configuration( { "LINUX32" } )
+  project( "MyGUI.LayoutEditor" )
+
+configuration( { "LINUX64" } )
   project( "MyGUI.LayoutEditor" )
 
 configuration( { "WIN32" } )
@@ -30,7 +33,10 @@ configuration( {} )
 configuration( {} )
 language( "C" )
 
-configuration( { "LINUX" } )
+configuration( { "LINUX32" } )
+language( "C++" )
+
+configuration( { "LINUX64" } )
 language( "C++" )
 
 configuration( { "WIN32" } )
@@ -39,10 +45,15 @@ language( "C++" )
 configuration( { "WIN64" } )
 language( "C++" )
 
-configuration( { "LINUX" } )
+configuration( { "LINUX32" } )
 
 
-configuration( { LINUX } )
+configuration( { LINUX32 } )
+kind( "ConsoleApp" )
+configuration( { "LINUX64" } )
+
+
+configuration( { LINUX64 } )
 kind( "ConsoleApp" )
 configuration( { "WIN32" } )
 
@@ -55,12 +66,20 @@ configuration( { "WIN64" } )
 configuration( { WIN64 } )
 kind( "WindowedApp" )
   
-configuration( { LINUX } )
+configuration( { LINUX32 } )
 links( { "MyGUI.Engine", "MyGUI.OpenGLPlatform", "freetype" } )
   links( { "MyGUI.Engine", "MyGUI.OpenGLPlatform", "OIS", "freetype" } )
   
 
-configuration( { LINUX } )
+configuration( { LINUX32 } )
+defines( { "MYGUI_USE_FREETYPE" } )
+  
+configuration( { LINUX64 } )
+links( { "MyGUI.Engine", "MyGUI.OpenGLPlatform", "freetype" } )
+  links( { "MyGUI.Engine", "MyGUI.OpenGLPlatform", "OIS", "freetype" } )
+  
+
+configuration( { LINUX64 } )
 defines( { "MYGUI_USE_FREETYPE" } )
   
 configuration( { WIN32 } )
@@ -80,7 +99,7 @@ configuration( { WIN64 } )
 defines( { "MYGUI_USE_FREETYPE" } )
 
 
-configuration( { "LINUX" } )
+configuration( { "LINUX32" } )
     vpaths { ["Platform Headers"] = { "**.h", "**.hpp", "**.hxx" } }
     files( {
       "Application.h",
@@ -135,7 +154,6 @@ configuration( { "LINUX" } )
       "PropertyFieldSkin.h",
       "PropertyFieldType.h",
       "RecentFilesManager.h",
-      "resource.h",
       "SelectorControl.h",
       "SeparatorPartControl.h",
       "SettingsGeneralControl.h",
@@ -159,15 +177,14 @@ configuration( { "LINUX" } )
       "WidgetCreatorManager.h",
       "WidgetSelectorManager.h",
       "WidgetStyle.h",
-      "WidgetsWindow.h",
       "WidgetTypes.h",
+      "WidgetsWindow.h",
       "WorkspaceControl.h",
-      "../../Common/Precompiled.h",
+      "resource.h",
       "../../Common/Base/InputFocusInfo.h",
       "../../Common/Base/Main.h",
       "../../Common/Base/StatisticInfo.h",
       "../../Common/Base/OpenGL/BaseManager.h",
-      "../../Common/Input/InputConverter.h",
       "../../Common/Input/OIS/InputManager.h",
       "../../Common/Input/OIS/PointerManager.h",
       "../../Common/Tools/Dialog.h",
@@ -240,10 +257,180 @@ configuration( { "LINUX" } )
       "UndoManager.cpp",
       "WidgetCreatorManager.cpp",
       "WidgetSelectorManager.cpp",
-      "WidgetsWindow.cpp",
       "WidgetTypes.cpp",
+      "WidgetsWindow.cpp",
       "WorkspaceControl.cpp",
-      "../../Common/Precompiled.cpp",
+      "../../Common/Base/OpenGL/BaseManager.cpp",
+      "../../Common/Input/OIS/InputManager.cpp",
+      "../../Common/Input/OIS/PointerManager.cpp",
+      "../../Common/Tools/Dialog.cpp",
+      "../../Common/Tools/DialogManager.cpp",
+      "../../Common/Tools/OpenSaveFileDialog.cpp"
+    } )
+
+
+
+configuration( { "LINUX64" } )
+    vpaths { ["Platform Headers"] = { "**.h", "**.hpp", "**.hxx" } }
+    files( {
+      "Application.h",
+      "AreaSelectorControl.h",
+      "BackgroundControl.h",
+      "BackwardCompatibilityManager.h",
+      "CodeGenerator.h",
+      "ColourManager.h",
+      "ColourPanel.h",
+      "CommandManager.h",
+      "Common.h",
+      "CyclicBuffer.h",
+      "EditorState.h",
+      "EditorToolTip.h",
+      "EditorWidgets.h",
+      "GroupMessage.h",
+      "HotKeyCommand.h",
+      "HotKeyManager.h",
+      "IPropertyField.h",
+      "Localise.h",
+      "MainMenuControl.h",
+      "MainPaneControl.h",
+      "MainWorkspaceControl.h",
+      "MessageBoxFadeControl.h",
+      "MessageBoxManager.h",
+      "MyGUI_FilterNoneSkin.h",
+      "MyGUI_RTTLayer.h",
+      "PanelControllers.h",
+      "PanelExtensionProperties.h",
+      "PanelItems.h",
+      "PanelMainProperties.h",
+      "PanelProperties.h",
+      "PanelTemplateProperties.h",
+      "PanelUserData.h",
+      "PanelView.h",
+      "PanelViewCell.h",
+      "Parse.h",
+      "PositionSelectorControl.h",
+      "PossibleValue.h",
+      "ProjectControl.h",
+      "PropertiesPanelView.h",
+      "PropertyFieldAlpha.h",
+      "PropertyFieldColour.h",
+      "PropertyFieldComboBox.h",
+      "PropertyFieldEditBox.h",
+      "PropertyFieldFileName.h",
+      "PropertyFieldFont.h",
+      "PropertyFieldManager.h",
+      "PropertyFieldName.h",
+      "PropertyFieldNumeric.h",
+      "PropertyFieldPosition.h",
+      "PropertyFieldSkin.h",
+      "PropertyFieldType.h",
+      "RecentFilesManager.h",
+      "SelectorControl.h",
+      "SeparatorPartControl.h",
+      "SettingsGeneralControl.h",
+      "SettingsManager.h",
+      "SettingsResourcePathsControl.h",
+      "SettingsResourcesControl.h",
+      "SettingsSector.h",
+      "SettingsUpdateResourcesControl.h",
+      "SettingsWidgetsControl.h",
+      "SettingsWindow.h",
+      "SkinInfo.h",
+      "StateController.h",
+      "StateManager.h",
+      "TestState.h",
+      "TextFieldControl.h",
+      "TextureControl.h",
+      "TextureToolControl.h",
+      "ToolsControl.h",
+      "UndoManager.h",
+      "WidgetContainer.h",
+      "WidgetCreatorManager.h",
+      "WidgetSelectorManager.h",
+      "WidgetStyle.h",
+      "WidgetTypes.h",
+      "WidgetsWindow.h",
+      "WorkspaceControl.h",
+      "resource.h",
+      "../../Common/Base/InputFocusInfo.h",
+      "../../Common/Base/Main.h",
+      "../../Common/Base/StatisticInfo.h",
+      "../../Common/Base/OpenGL/BaseManager.h",
+      "../../Common/Input/OIS/InputManager.h",
+      "../../Common/Input/OIS/PointerManager.h",
+      "../../Common/Tools/Dialog.h",
+      "../../Common/Tools/DialogManager.h",
+      "../../Common/Tools/OpenSaveFileDialog.h"
+    } )
+
+    vpaths { ["Platform Source"] = { "**.c", "**.cpp", "**.cs", "**.asm" } }
+    files( {
+      "Application.cpp",
+      "AreaSelectorControl.cpp",
+      "BackgroundControl.cpp",
+      "BackwardCompatibilityManager.cpp",
+      "CodeGenerator.cpp",
+      "ColourManager.cpp",
+      "ColourPanel.cpp",
+      "CommandManager.cpp",
+      "EditorState.cpp",
+      "EditorToolTip.cpp",
+      "EditorWidgets.cpp",
+      "GroupMessage.cpp",
+      "HotKeyManager.cpp",
+      "MainMenuControl.cpp",
+      "MainPaneControl.cpp",
+      "MainWorkspaceControl.cpp",
+      "MessageBoxFadeControl.cpp",
+      "MessageBoxManager.cpp",
+      "MyGUI_FilterNoneSkin.cpp",
+      "MyGUI_RTTLayer.cpp",
+      "PanelControllers.cpp",
+      "PanelExtensionProperties.cpp",
+      "PanelItems.cpp",
+      "PanelMainProperties.cpp",
+      "PanelProperties.cpp",
+      "PanelTemplateProperties.cpp",
+      "PanelUserData.cpp",
+      "Parse.cpp",
+      "PositionSelectorControl.cpp",
+      "ProjectControl.cpp",
+      "PropertiesPanelView.cpp",
+      "PropertyFieldAlpha.cpp",
+      "PropertyFieldColour.cpp",
+      "PropertyFieldComboBox.cpp",
+      "PropertyFieldEditBox.cpp",
+      "PropertyFieldFileName.cpp",
+      "PropertyFieldFont.cpp",
+      "PropertyFieldManager.cpp",
+      "PropertyFieldName.cpp",
+      "PropertyFieldNumeric.cpp",
+      "PropertyFieldPosition.cpp",
+      "PropertyFieldSkin.cpp",
+      "PropertyFieldType.cpp",
+      "RecentFilesManager.cpp",
+      "SelectorControl.cpp",
+      "SeparatorPartControl.cpp",
+      "SettingsGeneralControl.cpp",
+      "SettingsManager.cpp",
+      "SettingsResourcePathsControl.cpp",
+      "SettingsResourcesControl.cpp",
+      "SettingsSector.cpp",
+      "SettingsUpdateResourcesControl.cpp",
+      "SettingsWidgetsControl.cpp",
+      "SettingsWindow.cpp",
+      "StateManager.cpp",
+      "TestState.cpp",
+      "TextFieldControl.cpp",
+      "TextureControl.cpp",
+      "TextureToolControl.cpp",
+      "ToolsControl.cpp",
+      "UndoManager.cpp",
+      "WidgetCreatorManager.cpp",
+      "WidgetSelectorManager.cpp",
+      "WidgetTypes.cpp",
+      "WidgetsWindow.cpp",
+      "WorkspaceControl.cpp",
       "../../Common/Base/OpenGL/BaseManager.cpp",
       "../../Common/Input/OIS/InputManager.cpp",
       "../../Common/Input/OIS/PointerManager.cpp",
@@ -309,7 +496,6 @@ configuration( { "WIN32" } )
       "PropertyFieldSkin.h",
       "PropertyFieldType.h",
       "RecentFilesManager.h",
-      "resource.h",
       "SelectorControl.h",
       "SeparatorPartControl.h",
       "SettingsGeneralControl.h",
@@ -333,15 +519,14 @@ configuration( { "WIN32" } )
       "WidgetCreatorManager.h",
       "WidgetSelectorManager.h",
       "WidgetStyle.h",
-      "WidgetsWindow.h",
       "WidgetTypes.h",
+      "WidgetsWindow.h",
       "WorkspaceControl.h",
-      "../../Common/Precompiled.h",
+      "resource.h",
       "../../Common/Base/InputFocusInfo.h",
       "../../Common/Base/Main.h",
       "../../Common/Base/StatisticInfo.h",
       "../../Common/Base/OpenGL/BaseManager.h",
-      "../../Common/Input/InputConverter.h",
       "../../Common/Input/Win32API/InputManager.h",
       "../../Common/Input/Win32API/PointerManager.h",
       "../../Common/Tools/Dialog.h",
@@ -414,10 +599,9 @@ configuration( { "WIN32" } )
       "UndoManager.cpp",
       "WidgetCreatorManager.cpp",
       "WidgetSelectorManager.cpp",
-      "WidgetsWindow.cpp",
       "WidgetTypes.cpp",
+      "WidgetsWindow.cpp",
       "WorkspaceControl.cpp",
-      "../../Common/Precompiled.cpp",
       "../../Common/Base/OpenGL/BaseManager.cpp",
       "../../Common/Input/Win32API/InputManager.cpp",
       "../../Common/Input/Win32API/PointerManager.cpp",
@@ -483,7 +667,6 @@ configuration( { "WIN64" } )
       "PropertyFieldSkin.h",
       "PropertyFieldType.h",
       "RecentFilesManager.h",
-      "resource.h",
       "SelectorControl.h",
       "SeparatorPartControl.h",
       "SettingsGeneralControl.h",
@@ -507,15 +690,14 @@ configuration( { "WIN64" } )
       "WidgetCreatorManager.h",
       "WidgetSelectorManager.h",
       "WidgetStyle.h",
-      "WidgetsWindow.h",
       "WidgetTypes.h",
+      "WidgetsWindow.h",
       "WorkspaceControl.h",
-      "../../Common/Precompiled.h",
+      "resource.h",
       "../../Common/Base/InputFocusInfo.h",
       "../../Common/Base/Main.h",
       "../../Common/Base/StatisticInfo.h",
       "../../Common/Base/OpenGL/BaseManager.h",
-      "../../Common/Input/InputConverter.h",
       "../../Common/Input/Win32API/InputManager.h",
       "../../Common/Input/Win32API/PointerManager.h",
       "../../Common/Tools/Dialog.h",
@@ -588,10 +770,9 @@ configuration( { "WIN64" } )
       "UndoManager.cpp",
       "WidgetCreatorManager.cpp",
       "WidgetSelectorManager.cpp",
-      "WidgetsWindow.cpp",
       "WidgetTypes.cpp",
+      "WidgetsWindow.cpp",
       "WorkspaceControl.cpp",
-      "../../Common/Precompiled.cpp",
       "../../Common/Base/OpenGL/BaseManager.cpp",
       "../../Common/Input/Win32API/InputManager.cpp",
       "../../Common/Input/Win32API/PointerManager.cpp",
@@ -602,13 +783,16 @@ configuration( { "WIN64" } )
 
 
 configuration( {} )
-includedirs( { "../../../freetype/include", "../../../freetype/include/freetype", "../../../freetype/include/freetype/config", "../../../freetype/include/freetype/internal", "../../../freetype/include/freetype/internal/services", "../../../freetype/src/winfonts", "../../Common/FileSystemInfo", "../../MyGUIEngine/include", "../../Platforms/OpenGL/OpenGLPlatform/include", "../../Platforms/OpenGL/OpenGLPlatform/include/GL" } )
+includedirs( { "../../../freetype/include", "../../../freetype/include/freetype", "../../../freetype/include/freetype/config", "../../../freetype/include/freetype/internal", "../../../freetype/include/freetype/internal/services", "../../../freetype/src", "../../../freetype/src/winfonts", "../../Common", "../../Common/FileSystemInfo", "../../Common/Input", "../../MyGUIEngine/include", "../../Platforms/OpenGL/OpenGLPlatform/include", "../../Platforms/OpenGL/OpenGLPlatform/include/GL" } )
 
-configuration( { "LINUX" } )
-includedirs( { "../LayoutEditor", "../../Common", "../../Common/Base", "../../Common/Base/OpenGL", "../../Common/Input", "../../Common/Input/OIS", "../../Common/Tools" } )
+configuration( { "LINUX32" } )
+includedirs( { "../LayoutEditor", "../../Common/Base", "../../Common/Base/OpenGL", "../../Common/Input/OIS", "../../Common/Tools" } )
+
+configuration( { "LINUX64" } )
+includedirs( { "../LayoutEditor", "../../Common/Base", "../../Common/Base/OpenGL", "../../Common/Input/OIS", "../../Common/Tools" } )
 
 configuration( { "WIN32" } )
-includedirs( { "../LayoutEditor", "../../Common", "../../Common/Base", "../../Common/Base/OpenGL", "../../Common/Input", "../../Common/Input/Win32API", "../../Common/Tools" } )
+includedirs( { "../LayoutEditor", "../../Common/Base", "../../Common/Base/OpenGL", "../../Common/Input/Win32API", "../../Common/Tools" } )
 
 configuration( { "WIN64" } )
-includedirs( { "../LayoutEditor", "../../Common", "../../Common/Base", "../../Common/Base/OpenGL", "../../Common/Input", "../../Common/Input/Win32API", "../../Common/Tools" } )
+includedirs( { "../LayoutEditor", "../../Common/Base", "../../Common/Base/OpenGL", "../../Common/Input/Win32API", "../../Common/Tools" } )

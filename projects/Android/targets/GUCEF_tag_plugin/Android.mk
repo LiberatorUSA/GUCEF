@@ -21,9 +21,6 @@ endif
 
 include $(CLEAR_VARS)
 
-MY_MODULE_PATH := $(PROJECT_ROOT_PATH)/../../../../dependencies/aws-checksums
-include $(MY_MODULE_PATH)/Android.mk
-
 MY_MODULE_PATH := $(PROJECT_ROOT_PATH)/../../../../dependencies/curl
 include $(MY_MODULE_PATH)/Android.mk
 
@@ -33,13 +30,22 @@ include $(MY_MODULE_PATH)/Android.mk
 MY_MODULE_PATH := $(PROJECT_ROOT_PATH)/../../../../dependencies/freetype
 include $(MY_MODULE_PATH)/Android.mk
 
+MY_MODULE_PATH := $(PROJECT_ROOT_PATH)/../../../../dependencies/hiredis
+include $(MY_MODULE_PATH)/Android.mk
+
 MY_MODULE_PATH := $(PROJECT_ROOT_PATH)/../../../../dependencies/json-parser
 include $(MY_MODULE_PATH)/Android.mk
 
 MY_MODULE_PATH := $(PROJECT_ROOT_PATH)/../../../../dependencies/libparsifal
 include $(MY_MODULE_PATH)/Android.mk
 
+MY_MODULE_PATH := $(PROJECT_ROOT_PATH)/../../../../dependencies/libyaml
+include $(MY_MODULE_PATH)/Android.mk
+
 MY_MODULE_PATH := $(PROJECT_ROOT_PATH)/../../../../dependencies/pcre
+include $(MY_MODULE_PATH)/Android.mk
+
+MY_MODULE_PATH := $(PROJECT_ROOT_PATH)/../../../../dependencies/stbrumme-hash-library
 include $(MY_MODULE_PATH)/Android.mk
 
 MY_MODULE_PATH := $(PROJECT_ROOT_PATH)/../../../../dependencies/zziplib
@@ -48,10 +54,13 @@ include $(MY_MODULE_PATH)/Android.mk
 MY_MODULE_PATH := $(PROJECT_ROOT_PATH)/../../../../dependencies/MyGui/MyGUIEngine
 include $(MY_MODULE_PATH)/Android.mk
 
-MY_MODULE_PATH := $(PROJECT_ROOT_PATH)/../../../../dependencies/aws-c-common
+MY_MODULE_PATH := $(PROJECT_ROOT_PATH)/../../../../dependencies/aws-crt-cpp/crt/aws-c-common
 include $(MY_MODULE_PATH)/Android.mk
 
 MY_MODULE_PATH := $(PROJECT_ROOT_PATH)/../../../../dependencies/json-builder
+include $(MY_MODULE_PATH)/Android.mk
+
+MY_MODULE_PATH := $(PROJECT_ROOT_PATH)/../../../../dependencies/librdkafka
 include $(MY_MODULE_PATH)/Android.mk
 
 MY_MODULE_PATH := $(PROJECT_ROOT_PATH)/../../../../platform/gucefCORE
@@ -69,7 +78,22 @@ include $(MY_MODULE_PATH)/Android.mk
 MY_MODULE_PATH := $(PROJECT_ROOT_PATH)/../../../../dependencies/libRocket/Source/Core
 include $(MY_MODULE_PATH)/Android.mk
 
+MY_MODULE_PATH := $(PROJECT_ROOT_PATH)/../../../../platform/gucefCOMCORE
+include $(MY_MODULE_PATH)/Android.mk
+
 MY_MODULE_PATH := $(PROJECT_ROOT_PATH)/../../../../dependencies/DVPACKSYS
+include $(MY_MODULE_PATH)/Android.mk
+
+MY_MODULE_PATH := $(PROJECT_ROOT_PATH)/../../../../dependencies/aws-crt-cpp/crt/aws-c-cal
+include $(MY_MODULE_PATH)/Android.mk
+
+MY_MODULE_PATH := $(PROJECT_ROOT_PATH)/../../../../dependencies/aws-crt-cpp/crt/aws-c-compression
+include $(MY_MODULE_PATH)/Android.mk
+
+MY_MODULE_PATH := $(PROJECT_ROOT_PATH)/../../../../dependencies/aws-crt-cpp/crt/aws-c-sdkutils
+include $(MY_MODULE_PATH)/Android.mk
+
+MY_MODULE_PATH := $(PROJECT_ROOT_PATH)/../../../../dependencies/aws-crt-cpp/crt/aws-checksums
 include $(MY_MODULE_PATH)/Android.mk
 
 MY_MODULE_PATH := $(PROJECT_ROOT_PATH)/../../../../dependencies/cegui/cegui
@@ -84,6 +108,12 @@ include $(MY_MODULE_PATH)/Android.mk
 MY_MODULE_PATH := $(PROJECT_ROOT_PATH)/../../../../dependencies/libRocket/Source/Controls
 include $(MY_MODULE_PATH)/Android.mk
 
+MY_MODULE_PATH := $(PROJECT_ROOT_PATH)/../../../../dependencies/redis-plus-plus/src/sw/redis++
+include $(MY_MODULE_PATH)/Android.mk
+
+MY_MODULE_PATH := $(PROJECT_ROOT_PATH)/../../../../platform/gucefCOM
+include $(MY_MODULE_PATH)/Android.mk
+
 MY_MODULE_PATH := $(PROJECT_ROOT_PATH)/../../../../platform/gucefIMAGE
 include $(MY_MODULE_PATH)/Android.mk
 
@@ -93,7 +123,13 @@ include $(MY_MODULE_PATH)/Android.mk
 MY_MODULE_PATH := $(PROJECT_ROOT_PATH)/../../../../platform/gucefVFS
 include $(MY_MODULE_PATH)/Android.mk
 
-MY_MODULE_PATH := $(PROJECT_ROOT_PATH)/../../../../plugins/CORE/compressioncodecZLIB
+MY_MODULE_PATH := $(PROJECT_ROOT_PATH)/../../../../plugins/COMCORE/comcorepluginDBL
+include $(MY_MODULE_PATH)/Android.mk
+
+MY_MODULE_PATH := $(PROJECT_ROOT_PATH)/../../../../plugins/CORE/codecspluginSTBRUMMEHASH
+include $(MY_MODULE_PATH)/Android.mk
+
+MY_MODULE_PATH := $(PROJECT_ROOT_PATH)/../../../../plugins/CORE/codecspluginZLIB
 include $(MY_MODULE_PATH)/Android.mk
 
 MY_MODULE_PATH := $(PROJECT_ROOT_PATH)/../../../../plugins/IMAGE/imgpluginITV
@@ -105,10 +141,10 @@ include $(MY_MODULE_PATH)/Android.mk
 MY_MODULE_PATH := $(PROJECT_ROOT_PATH)/../../../../plugins/VFS/vfspluginITV
 include $(MY_MODULE_PATH)/Android.mk
 
-MY_MODULE_PATH := $(PROJECT_ROOT_PATH)/../../../../dependencies/aws-c-event-stream
+MY_MODULE_PATH := $(PROJECT_ROOT_PATH)/../../../../plugins/CORE/dstorepluginPARSIFALXML
 include $(MY_MODULE_PATH)/Android.mk
 
-MY_MODULE_PATH := $(PROJECT_ROOT_PATH)/../../../../plugins/CORE/dstorepluginPARSIFALXML
+MY_MODULE_PATH := $(PROJECT_ROOT_PATH)/../../../../plugins/CORE/dstorepluginYAML
 include $(MY_MODULE_PATH)/Android.mk
 
 MY_MODULE_PATH := $(PROJECT_ROOT_PATH)/../../../../plugins/IMAGE/imgpluginFLIC
@@ -123,6 +159,9 @@ include $(MY_MODULE_PATH)/Android.mk
 MY_MODULE_PATH := $(PROJECT_ROOT_PATH)/../../../../plugins/VFS/vfspluginZIP
 include $(MY_MODULE_PATH)/Android.mk
 
+MY_MODULE_PATH := $(PROJECT_ROOT_PATH)/../../../../dependencies/aws-crt-cpp/crt/aws-c-io
+include $(MY_MODULE_PATH)/Android.mk
+
 MY_MODULE_PATH := $(PROJECT_ROOT_PATH)/../../../../platform/gucefGUI
 include $(MY_MODULE_PATH)/Android.mk
 
@@ -132,19 +171,40 @@ include $(MY_MODULE_PATH)/Android.mk
 MY_MODULE_PATH := $(PROJECT_ROOT_PATH)/../../../../plugins/GUI/guidriverAndroidGLES
 include $(MY_MODULE_PATH)/Android.mk
 
+MY_MODULE_PATH := $(PROJECT_ROOT_PATH)/../../../../platform/gucefWEB
+include $(MY_MODULE_PATH)/Android.mk
+
 MY_MODULE_PATH := $(PROJECT_ROOT_PATH)/../../../../plugins/CORE/dstorepluginJSONPARSER
 include $(MY_MODULE_PATH)/Android.mk
 
-MY_MODULE_PATH := $(PROJECT_ROOT_PATH)/../../../../dependencies/aws-cpp-sdk-core
+MY_MODULE_PATH := $(PROJECT_ROOT_PATH)/../../../../platform/gucefPUBSUB
 include $(MY_MODULE_PATH)/Android.mk
 
-MY_MODULE_PATH := $(PROJECT_ROOT_PATH)/../../../../plugins/SHARED/pluginglueAWSSDK
+MY_MODULE_PATH := $(PROJECT_ROOT_PATH)/../../../../plugins/PUBSUB/pubsubpluginSTORAGE
 include $(MY_MODULE_PATH)/Android.mk
 
-MY_MODULE_PATH := $(PROJECT_ROOT_PATH)/../../../../dependencies/aws-cpp-sdk-s3
+MY_MODULE_PATH := $(PROJECT_ROOT_PATH)/../../../../plugins/PUBSUB/pubsubpluginKAFKA
 include $(MY_MODULE_PATH)/Android.mk
 
-MY_MODULE_PATH := $(PROJECT_ROOT_PATH)/../../../../plugins/VFS/vfspluginAWSS3
+MY_MODULE_PATH := $(PROJECT_ROOT_PATH)/../../../../plugins/PUBSUB/pubsubpluginUDP
+include $(MY_MODULE_PATH)/Android.mk
+
+MY_MODULE_PATH := $(PROJECT_ROOT_PATH)/../../../../plugins/PUBSUB/pubsubpluginMSMQ
+include $(MY_MODULE_PATH)/Android.mk
+
+MY_MODULE_PATH := $(PROJECT_ROOT_PATH)/../../../../plugins/PUBSUB/pubsubpluginREDISCLUSTER
+include $(MY_MODULE_PATH)/Android.mk
+
+MY_MODULE_PATH := $(PROJECT_ROOT_PATH)/../../../../plugins/PUBSUB/pubsubpluginTEST
+include $(MY_MODULE_PATH)/Android.mk
+
+MY_MODULE_PATH := $(PROJECT_ROOT_PATH)/../../../../plugins/PUBSUB/pubsubpluginWEB
+include $(MY_MODULE_PATH)/Android.mk
+
+MY_MODULE_PATH := $(PROJECT_ROOT_PATH)/../../../../dependencies/aws-crt-cpp/crt/aws-c-http
+include $(MY_MODULE_PATH)/Android.mk
+
+MY_MODULE_PATH := $(PROJECT_ROOT_PATH)/../../../../dependencies/aws-crt-cpp/crt/aws-c-mqtt
 include $(MY_MODULE_PATH)/Android.mk
 
 MY_MODULE_PATH := $(PROJECT_ROOT_PATH)/../../../../plugins/GUI/guidriverMyGUI
@@ -159,6 +219,12 @@ include $(MY_MODULE_PATH)/Android.mk
 MY_MODULE_PATH := $(PROJECT_ROOT_PATH)/../../../../plugins/GUI/guidriverCEGUI
 include $(MY_MODULE_PATH)/Android.mk
 
+MY_MODULE_PATH := $(PROJECT_ROOT_PATH)/../../../../dependencies/aws-crt-cpp/crt/aws-c-auth
+include $(MY_MODULE_PATH)/Android.mk
+
+MY_MODULE_PATH := $(PROJECT_ROOT_PATH)/../../../../dependencies/aws-crt-cpp/crt/aws-c-event-stream
+include $(MY_MODULE_PATH)/Android.mk
+
 MY_MODULE_PATH := $(PROJECT_ROOT_PATH)/../../../../plugins/GUI/guidriverCEGUIOpenGL
 include $(MY_MODULE_PATH)/Android.mk
 
@@ -169,5 +235,29 @@ MY_MODULE_PATH := $(PROJECT_ROOT_PATH)/../../../../plugins/GUI/guidriverCEGUIOgr
 include $(MY_MODULE_PATH)/Android.mk
 
 MY_MODULE_PATH := $(PROJECT_ROOT_PATH)/../../../../plugins/GUI/guidriverMyGUIOgre
+include $(MY_MODULE_PATH)/Android.mk
+
+MY_MODULE_PATH := $(PROJECT_ROOT_PATH)/../../../../dependencies/aws-crt-cpp/crt/aws-c-s3
+include $(MY_MODULE_PATH)/Android.mk
+
+MY_MODULE_PATH := $(PROJECT_ROOT_PATH)/../../../../dependencies/aws-crt-cpp
+include $(MY_MODULE_PATH)/Android.mk
+
+MY_MODULE_PATH := $(PROJECT_ROOT_PATH)/../../../../dependencies/aws-cpp-sdk-core
+include $(MY_MODULE_PATH)/Android.mk
+
+MY_MODULE_PATH := $(PROJECT_ROOT_PATH)/../../../../plugins/SHARED/pluginglueAWSSDK
+include $(MY_MODULE_PATH)/Android.mk
+
+MY_MODULE_PATH := $(PROJECT_ROOT_PATH)/../../../../dependencies/aws-cpp-sdk-s3
+include $(MY_MODULE_PATH)/Android.mk
+
+MY_MODULE_PATH := $(PROJECT_ROOT_PATH)/../../../../plugins/VFS/vfspluginAWSS3
+include $(MY_MODULE_PATH)/Android.mk
+
+MY_MODULE_PATH := $(PROJECT_ROOT_PATH)/../../../../dependencies/aws-cpp-sdk-sqs
+include $(MY_MODULE_PATH)/Android.mk
+
+MY_MODULE_PATH := $(PROJECT_ROOT_PATH)/../../../../plugins/PUBSUB/pubsubpluginAWSSQS
 include $(MY_MODULE_PATH)/Android.mk
 

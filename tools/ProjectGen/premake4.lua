@@ -41,6 +41,8 @@ configuration( {} )
 vpaths { ["Headers"] = { "**.h", "**.hpp", "**.hxx" } }
 files( {
   "include/gucefProjectGen_CAndroidMakefileGenerator.h",
+  "include/gucefProjectGen_CArduinoCLIGenerator.h",
+  "include/gucefProjectGen_CCIHelperGenerator.h",
   "include/gucefProjectGen_CCMakeProjectGenerator.h",
   "include/gucefProjectGen_CDirCrawlingProjectInfoGatherer.h",
   "include/gucefProjectGen_CDirPreprocessorManager.h",
@@ -48,13 +50,14 @@ files( {
   "include/gucefProjectGen_CIProjectGenerator.h",
   "include/gucefProjectGen_CIProjectInfoGatherer.h",
   "include/gucefProjectGen_CIProjectPreprocessor.h",
-  "include/gucefProjectGen_config.h",
   "include/gucefProjectGen_CPremake4ProjectGenerator.h",
+  "include/gucefProjectGen_CPremake5ProjectGenerator.h",
   "include/gucefProjectGen_CProjectGenGlobal.h",
   "include/gucefProjectGen_CProjectPreprocessorManager.h",
   "include/gucefProjectGen_CXmlProjectGenerator.h",
   "include/gucefProjectGen_DataTypes.h",
   "include/gucefProjectGen_ETypes.h",
+  "include/gucefProjectGen_config.h",
   "include/gucefProjectGen_macros.h"
  } )
 
@@ -64,6 +67,8 @@ configuration( {} )
 vpaths { ["Source"] = { "**.c", "**.cpp", "**.cs", "**.asm" } }
 files( {
   "src/gucefProjectGen_CAndroidMakefileGenerator.cpp",
+  "src/gucefProjectGen_CArduinoCLIGenerator.cpp",
+  "src/gucefProjectGen_CCIHelperGenerator.cpp",
   "src/gucefProjectGen_CCMakeProjectGenerator.cpp",
   "src/gucefProjectGen_CDirCrawlingProjectInfoGatherer.cpp",
   "src/gucefProjectGen_CDirPreprocessorManager.cpp",
@@ -72,6 +77,7 @@ files( {
   "src/gucefProjectGen_CIProjectInfoGatherer.cpp",
   "src/gucefProjectGen_CIProjectPreprocessor.cpp",
   "src/gucefProjectGen_CPremake4ProjectGenerator.cpp",
+  "src/gucefProjectGen_CPremake5ProjectGenerator.cpp",
   "src/gucefProjectGen_CProjectGenGlobal.cpp",
   "src/gucefProjectGen_CProjectPreprocessorManager.cpp",
   "src/gucefProjectGen_CXmlProjectGenerator.cpp",
@@ -80,16 +86,19 @@ files( {
 
 
 configuration( {} )
-includedirs( { "../../common/include", "../../gucefCORE/include", "../../gucefMT/include", "include" } )
+includedirs( { "../../common/include", "../../platform/gucefCORE/include", "../../platform/gucefMT/include", "include" } )
 
 configuration( { "ANDROID" } )
-includedirs( { "../../gucefCORE/include/android" } )
+includedirs( { "../../platform/gucefCORE/include/android" } )
 
-configuration( { "LINUX" } )
-includedirs( { "../../gucefCORE/include/linux" } )
+configuration( { "LINUX32" } )
+includedirs( { "../../platform/gucefCORE/include/linux" } )
+
+configuration( { "LINUX64" } )
+includedirs( { "../../platform/gucefCORE/include/linux" } )
 
 configuration( { "WIN32" } )
-includedirs( { "../../gucefCORE/include/mswin" } )
+includedirs( { "../../platform/gucefCORE/include/mswin", "../../platform/gucefMT/include/mswin" } )
 
 configuration( { "WIN64" } )
-includedirs( { "../../gucefCORE/include/mswin" } )
+includedirs( { "../../platform/gucefCORE/include/mswin", "../../platform/gucefMT/include/mswin" } )

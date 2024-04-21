@@ -83,7 +83,7 @@ configuration( { "LINUX64" } )
 includedirs( { "../../../dependencies/zlib", "../../../platform/gucefCORE/include/linux" } )
 
 configuration( { "WIN32" } )
-includedirs( { "../../../dependencies/zlib", "../../../platform/gucefCORE/include/mswin" } )
+includedirs( { "../../../dependencies/zlib", "../../../platform/gucefCORE/include/mswin", "../../../platform/gucefMT/include/mswin" } )
 
 configuration( { "WIN64" } )
-includedirs( { "../../../dependencies/zlib", "../../../platform/gucefCORE/include/mswin" } )
+includedirs( { "../../../dependencies/zlib", "../../../platform/gucefCORE/include/mswin", "../../../platform/gucefMT/include/mswin" } )

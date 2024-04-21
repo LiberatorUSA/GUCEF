@@ -5,9 +5,9 @@ platform/gucefCORE/*
 platform/gucefMT/*
 platform/gucefVFS/*
 platform/gucefWEB/*
+plugins/CORE/codecspluginSTBRUMMEHASH/*
 plugins/CORE/codecspluginZLIB/*
 plugins/CORE/dstorepluginJSONPARSER/*
 plugins/CORE/dstorepluginPARSIFALXML/*
-plugins/SHARED/pluginglueAWSSDK/*
-plugins/VFS/vfspluginAWSS3/*
+plugins/CORE/dstorepluginYAML/*
 tools/redisinfo/*

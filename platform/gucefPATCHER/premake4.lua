@@ -42,7 +42,6 @@ vpaths { ["Headers"] = { "**.h", "**.hpp", "**.hxx" } }
 files( {
   "include/gucefPATCHER.h",
   "include/gucefPATCHER_CModule.h",
-  "include/gucefPATCHER_config.h",
   "include/gucefPATCHER_CPatchConfig.h",
   "include/gucefPATCHER_CPatchEngine.h",
   "include/gucefPATCHER_CPatchListEngine.h",
@@ -60,6 +59,7 @@ files( {
   "include/gucefPATCHER_CPatchTaskConsumer.h",
   "include/gucefPATCHER_CPatchTaskData.h",
   "include/gucefPATCHER_ETypes.h",
+  "include/gucefPATCHER_config.h",
   "include/gucefPATCHER_macros.h"
  } )
 
@@ -90,16 +90,19 @@ files( {
 
 
 configuration( {} )
-includedirs( { "../common/include", "../gucefCOM/include", "../gucefCOMCORE/include", "../gucefCORE/include", "../gucefMT/include", "include" } )
+includedirs( { "../../common/include", "../gucefCOM/include", "../gucefCOMCORE/include", "../gucefCORE/include", "../gucefMT/include", "include" } )
 
 configuration( { "ANDROID" } )
 includedirs( { "../gucefCORE/include/android" } )
 
-configuration( { "LINUX" } )
+configuration( { "LINUX32" } )
+includedirs( { "../gucefCORE/include/linux" } )
+
+configuration( { "LINUX64" } )
 includedirs( { "../gucefCORE/include/linux" } )
 
 configuration( { "WIN32" } )
-includedirs( { "../gucefCOMCORE/include/mswin", "../gucefCORE/include/mswin" } )
+includedirs( { "../gucefCOMCORE/include/mswin", "../gucefCORE/include/mswin", "../gucefMT/include/mswin" } )
 
 configuration( { "WIN64" } )
-includedirs( { "../gucefCOMCORE/include/mswin", "../gucefCORE/include/mswin" } )
+includedirs( { "../gucefCOMCORE/include/mswin", "../gucefCORE/include/mswin", "../gucefMT/include/mswin" } )

@@ -17,25 +17,101 @@ LOCAL_PATH := $(MY_MODULE_PATH)
 include $(CLEAR_VARS)
 
 @echo Module path: $(MY_MODULE_PATH)
-LOCAL_MODULE := compressioncodecZLIB
-LOCAL_MODULE_FILENAME := libcompressioncodecZLIB
+LOCAL_MODULE := pubsubpluginAWSSQS
+LOCAL_MODULE_FILENAME := libpubsubpluginAWSSQS
 @echo Module name: $(LOCAL_MODULE)
 
 LOCAL_SRC_FILES := \
-  src/compressioncodecZLIB.c
+  src/pubsubpluginAWSSQS.cpp \
+  src/pubsubpluginAWSSQS_CAwsSqsPubSubClient.cpp \
+  src/pubsubpluginAWSSQS_CAwsSqsPubSubClientTopic.cpp \
+  src/pubsubpluginAWSSQS_CAwsSqsPubSubClientTopicConfig.cpp
 
 LOCAL_C_INCLUDES := \
   $(MY_MODULE_PATH)/include \
   $(MY_MODULE_PATH)/../../../common/include \
+  $(MY_MODULE_PATH)/../../../dependencies/aws-cpp-sdk-core/include \
+  $(MY_MODULE_PATH)/../../../dependencies/aws-cpp-sdk-core/include/aws \
+  $(MY_MODULE_PATH)/../../../dependencies/aws-cpp-sdk-core/include/aws/core \
+  $(MY_MODULE_PATH)/../../../dependencies/aws-cpp-sdk-core/include/aws/core/auth \
+  $(MY_MODULE_PATH)/../../../dependencies/aws-cpp-sdk-core/include/aws/core/auth/bearer-token-provider \
+  $(MY_MODULE_PATH)/../../../dependencies/aws-cpp-sdk-core/include/aws/core/auth/signer \
+  $(MY_MODULE_PATH)/../../../dependencies/aws-cpp-sdk-core/include/aws/core/auth/signer-provider \
+  $(MY_MODULE_PATH)/../../../dependencies/aws-cpp-sdk-core/include/aws/core/client \
+  $(MY_MODULE_PATH)/../../../dependencies/aws-cpp-sdk-core/include/aws/core/config \
+  $(MY_MODULE_PATH)/../../../dependencies/aws-cpp-sdk-core/include/aws/core/config/defaults \
+  $(MY_MODULE_PATH)/../../../dependencies/aws-cpp-sdk-core/include/aws/core/endpoint \
+  $(MY_MODULE_PATH)/../../../dependencies/aws-cpp-sdk-core/include/aws/core/endpoint/internal \
+  $(MY_MODULE_PATH)/../../../dependencies/aws-cpp-sdk-core/include/aws/core/external \
+  $(MY_MODULE_PATH)/../../../dependencies/aws-cpp-sdk-core/include/aws/core/external/cjson \
+  $(MY_MODULE_PATH)/../../../dependencies/aws-cpp-sdk-core/include/aws/core/external/tinyxml2 \
+  $(MY_MODULE_PATH)/../../../dependencies/aws-cpp-sdk-core/include/aws/core/http \
+  $(MY_MODULE_PATH)/../../../dependencies/aws-cpp-sdk-core/include/aws/core/http/curl \
+  $(MY_MODULE_PATH)/../../../dependencies/aws-cpp-sdk-core/include/aws/core/http/standard \
+  $(MY_MODULE_PATH)/../../../dependencies/aws-cpp-sdk-core/include/aws/core/internal \
+  $(MY_MODULE_PATH)/../../../dependencies/aws-cpp-sdk-core/include/aws/core/monitoring \
+  $(MY_MODULE_PATH)/../../../dependencies/aws-cpp-sdk-core/include/aws/core/net \
+  $(MY_MODULE_PATH)/../../../dependencies/aws-cpp-sdk-core/include/aws/core/platform \
+  $(MY_MODULE_PATH)/../../../dependencies/aws-cpp-sdk-core/include/aws/core/platform/refs \
+  $(MY_MODULE_PATH)/../../../dependencies/aws-cpp-sdk-core/include/aws/core/utils \
+  $(MY_MODULE_PATH)/../../../dependencies/aws-cpp-sdk-core/include/aws/core/utils/base64 \
+  $(MY_MODULE_PATH)/../../../dependencies/aws-cpp-sdk-core/include/aws/core/utils/crypto \
+  $(MY_MODULE_PATH)/../../../dependencies/aws-cpp-sdk-core/include/aws/core/utils/crypto/bcrypt \
+  $(MY_MODULE_PATH)/../../../dependencies/aws-cpp-sdk-core/include/aws/core/utils/crypto/commoncrypto \
+  $(MY_MODULE_PATH)/../../../dependencies/aws-cpp-sdk-core/include/aws/core/utils/crypto/openssl \
+  $(MY_MODULE_PATH)/../../../dependencies/aws-cpp-sdk-core/include/aws/core/utils/event \
+  $(MY_MODULE_PATH)/../../../dependencies/aws-cpp-sdk-core/include/aws/core/utils/json \
+  $(MY_MODULE_PATH)/../../../dependencies/aws-cpp-sdk-core/include/aws/core/utils/logging \
+  $(MY_MODULE_PATH)/../../../dependencies/aws-cpp-sdk-core/include/aws/core/utils/memory \
+  $(MY_MODULE_PATH)/../../../dependencies/aws-cpp-sdk-core/include/aws/core/utils/memory/stl \
+  $(MY_MODULE_PATH)/../../../dependencies/aws-cpp-sdk-core/include/aws/core/utils/ratelimiter \
+  $(MY_MODULE_PATH)/../../../dependencies/aws-cpp-sdk-core/include/aws/core/utils/stream \
+  $(MY_MODULE_PATH)/../../../dependencies/aws-cpp-sdk-core/include/aws/core/utils/threading \
+  $(MY_MODULE_PATH)/../../../dependencies/aws-cpp-sdk-core/include/aws/core/utils/xml \
+  $(MY_MODULE_PATH)/../../../dependencies/aws-cpp-sdk-sqs/include \
+  $(MY_MODULE_PATH)/../../../dependencies/aws-cpp-sdk-sqs/include/aws \
+  $(MY_MODULE_PATH)/../../../dependencies/aws-cpp-sdk-sqs/include/aws/sqs \
+  $(MY_MODULE_PATH)/../../../dependencies/aws-cpp-sdk-sqs/include/aws/sqs/model \
+  $(MY_MODULE_PATH)/../../../dependencies/aws-crt-cpp/crt/aws-c-auth/include \
+  $(MY_MODULE_PATH)/../../../dependencies/aws-crt-cpp/crt/aws-c-cal/include \
+  $(MY_MODULE_PATH)/../../../dependencies/aws-crt-cpp/crt/aws-c-common/include \
+  $(MY_MODULE_PATH)/../../../dependencies/aws-crt-cpp/crt/aws-c-compression/include \
+  $(MY_MODULE_PATH)/../../../dependencies/aws-crt-cpp/crt/aws-c-event-stream/include \
+  $(MY_MODULE_PATH)/../../../dependencies/aws-crt-cpp/crt/aws-c-http/include \
+  $(MY_MODULE_PATH)/../../../dependencies/aws-crt-cpp/crt/aws-c-io/include \
+  $(MY_MODULE_PATH)/../../../dependencies/aws-crt-cpp/crt/aws-c-io/source \
+  $(MY_MODULE_PATH)/../../../dependencies/aws-crt-cpp/crt/aws-c-mqtt/include \
+  $(MY_MODULE_PATH)/../../../dependencies/aws-crt-cpp/crt/aws-c-s3/include \
+  $(MY_MODULE_PATH)/../../../dependencies/aws-crt-cpp/crt/aws-c-sdkutils/include \
+  $(MY_MODULE_PATH)/../../../dependencies/aws-crt-cpp/crt/aws-checksums/include \
+  $(MY_MODULE_PATH)/../../../dependencies/aws-crt-cpp/include \
+  $(MY_MODULE_PATH)/../../../dependencies/curl/include \
+  $(MY_MODULE_PATH)/../../../dependencies/curl/include/curl \
+  $(MY_MODULE_PATH)/../../../dependencies/curl/lib \
+  $(MY_MODULE_PATH)/../../../dependencies/curl/lib/vauth \
+  $(MY_MODULE_PATH)/../../../dependencies/curl/lib/vquic \
+  $(MY_MODULE_PATH)/../../../dependencies/curl/lib/vssh \
+  $(MY_MODULE_PATH)/../../../dependencies/curl/lib/vtls \
+  $(MY_MODULE_PATH)/../../../platform/gucefCOM/include \
+  $(MY_MODULE_PATH)/../../../platform/gucefCOMCORE/include \
   $(MY_MODULE_PATH)/../../../platform/gucefCORE/include \
   $(MY_MODULE_PATH)/../../../platform/gucefCORE/include/android \
-  $(MY_MODULE_PATH)/../../../platform/gucefMT/include
+  $(MY_MODULE_PATH)/../../../platform/gucefMT/include \
+  $(MY_MODULE_PATH)/../../../platform/gucefPUBSUB/include \
+  $(MY_MODULE_PATH)/../../../platform/gucefVFS/include \
+  $(MY_MODULE_PATH)/../../../platform/gucefWEB/include \
+  $(MY_MODULE_PATH)/../../SHARED/pluginglueAWSSDK/include
 
-LOCAL_CFLAGS := -DGUCEF_CODECPLUGIN_BUILD_MODULE
+LOCAL_CFLAGS := -DPUBSUBPLUGIN_AWSSQS_BUILD_PLUGIN_DLL -DUSE_IMPORT_EXPORT
 
 
-LOCAL_LDLIBS := \
-  -lz
+LOCAL_SHARED_LIBRARIES := \
+  aws-cpp-sdk-sqs \
+  gucefCOMCORE \
+  gucefCORE \
+  gucefMT \
+  gucefPUBSUB \
+  pluginglueAWSSDK
 
 include $(BUILD_SHARED_LIBRARY)
 

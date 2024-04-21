@@ -68,5 +68,13 @@ files( {
  } )
 
 
+
+configuration( { "WIN32" } )
+    vpaths { ["Platform Source"] = { "**.c", "**.cpp", "**.cs", "**.asm" } }
+    files( {
+      "win32/vc6/dllmain.c"
+    } )
+
+
 configuration( {} )
-includedirs( { "include/libparsifal" } )
+includedirs( { "include", "include/libparsifal" } )

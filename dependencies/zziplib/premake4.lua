@@ -37,12 +37,20 @@ defines( { "ZZIP_DLL" } )
 configuration( { ANDROID } )
 defines( { "ZZIP_HAVE_STDINT_H" } )
   
-configuration( { LINUX } )
+configuration( { LINUX32 } )
 links( { "zlib" } )
   links( { "zlib" } )
   
 
-configuration( { LINUX } )
+configuration( { LINUX32 } )
+defines( { "ZZIP_HAVE_STDINT_H" } )
+  
+configuration( { LINUX64 } )
+links( { "zlib" } )
+  links( { "zlib" } )
+  
+
+configuration( { LINUX64 } )
 defines( { "ZZIP_HAVE_STDINT_H" } )
   
 configuration( { WIN32 } )
@@ -58,6 +66,13 @@ configuration( {} )
 vpaths { ["Headers"] = { "**.h", "**.hpp", "**.hxx" } }
 files( {
   "dummy.h",
+  "zzip/__debug.h",
+  "zzip/__dirent.h",
+  "zzip/__fnmatch.h",
+  "zzip/__hints.h",
+  "zzip/__mmap.h",
+  "zzip/_config.h",
+  "zzip/_msvc.h",
   "zzip/autoconf.h",
   "zzip/conf.h",
   "zzip/fetch.h",
@@ -72,14 +87,7 @@ files( {
   "zzip/write.h",
   "zzip/zzip.h",
   "zzip/zzip_stdint.h",
-  "zzip/zzip_types.h",
-  "zzip/_config.h",
-  "zzip/_msvc.h",
-  "zzip/__debug.h",
-  "zzip/__dirent.h",
-  "zzip/__fnmatch.h",
-  "zzip/__hints.h",
-  "zzip/__mmap.h"
+  "zzip/zzip_types.h"
  } )
 
 
@@ -105,7 +113,10 @@ files( {
 configuration( {} )
 includedirs( { "../zziplib", "zzip" } )
 
-configuration( { "LINUX" } )
+configuration( { "LINUX32" } )
+includedirs( { "../zlib" } )
+
+configuration( { "LINUX64" } )
 includedirs( { "../zlib" } )
 
 configuration( { "WIN32" } )

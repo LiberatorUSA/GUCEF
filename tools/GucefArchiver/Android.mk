@@ -27,6 +27,7 @@ LOCAL_C_INCLUDES := \
   $(MY_MODULE_PATH)/../../common/include \
   $(MY_MODULE_PATH)/../../platform/gucefCORE/include \
   $(MY_MODULE_PATH)/../../platform/gucefCORE/include/android \
+  $(MY_MODULE_PATH)/../../platform/gucefKAITAI/includes \
   $(MY_MODULE_PATH)/../../platform/gucefMT/include \
   $(MY_MODULE_PATH)/../../platform/gucefVFS/include
 
@@ -35,6 +36,7 @@ LOCAL_CFLAGS := -DGUCEF_ARCHIVER_BUILD_MODULE
 
 LOCAL_SHARED_LIBRARIES := \
   gucefCORE \
+  gucefKAITAI \
   gucefMT \
   gucefVFS
 

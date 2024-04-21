@@ -9,10 +9,10 @@
 --------------------------------------------------------------------
 --
 
--- Configuration for module: gucefCOMCORE
+-- Configuration for module: gucefPUBSUB
 
 
-project( "gucefCOMCORE" )
+project( "gucefPUBSUB" )
 
 configuration( {} )
   location( os.getenv( "PM4OUTPUTDIR" ) )
@@ -29,43 +29,52 @@ configuration( {} )
 kind( "SharedLib" )
 
 configuration( {} )
-links( { "gucefCORE", "gucefMT" } )
-links( { "gucefCORE", "gucefMT" } )
+links( { "gucefCOM", "gucefCOMCORE", "gucefCORE", "gucefMT", "gucefVFS", "gucefWEB" } )
+links( { "gucefCOM", "gucefCOMCORE", "gucefCORE", "gucefMT", "gucefVFS", "gucefWEB" } )
 
 
 configuration( {} )
-defines( { "GUCEF_COMCORE_BUILD_MODULE" } )
-  links( { "Advapi32.lib", "Ws2_32.lib" } )
-  links( { "Advapi32.lib", "Ws2_32.lib" } )
+defines( { "GUCEF_PUBSUB_BUILD_MODULE" } )
 
 
 configuration( {} )
 vpaths { ["Headers"] = { "**.h", "**.hpp", "**.hxx" } }
 files( {
-  "include/CCom.h",
-  "include/CGUCEFCOMCOREModule.h",
-  "include/CHostAddress.h",
-  "include/CIPAddress.h",
-  "include/CPing.h",
-  "include/CSocket.h",
-  "include/CTCPClientSocket.h",
-  "include/CTCPConnection.h",
-  "include/CTCPServerConnection.h",
-  "include/CTCPServerSocket.h",
-  "include/CUDPChannel.h",
-  "include/CUDPMasterSocket.h",
-  "include/CUDPSocket.h",
-  "include/dvwinsock.h",
-  "include/gucefCOMCORE.h",
-  "include/gucefCOMCORE_CComCoreGlobal.h",
-  "include/gucefCOMCORE_CICommunicationPort.h",
-  "include/gucefCOMCORE_config.h",
-  "include/gucefCOMCORE_CPingTaskConsumer.h",
-  "include/gucefCOMCORE_CSerialPort.h",
-  "include/gucefCOMCORE_ETypes.h",
-  "include/gucefCOMCORE_macros.h",
-  "include/socketerrors.h",
-  "include/socketutils.h"
+  "include/gucefPUBSUB.h",
+  "include/gucefPUBSUB_CBasicPubSubMsg.h",
+  "include/gucefPUBSUB_CBinaryPubSubJournal.h",
+  "include/gucefPUBSUB_CIPubSubBookmarkPersistence.h",
+  "include/gucefPUBSUB_CIPubSubJournal.h",
+  "include/gucefPUBSUB_CIPubSubMsg.h",
+  "include/gucefPUBSUB_CModule.h",
+  "include/gucefPUBSUB_CPubSub2PubSub.h",
+  "include/gucefPUBSUB_CPubSubBookmark.h",
+  "include/gucefPUBSUB_CPubSubBookmarkBinarySerializer.h",
+  "include/gucefPUBSUB_CPubSubBookmarkPersistenceFactory.h",
+  "include/gucefPUBSUB_CPubSubChannelSettings.h",
+  "include/gucefPUBSUB_CPubSubClient.h",
+  "include/gucefPUBSUB_CPubSubClientChannel.h",
+  "include/gucefPUBSUB_CPubSubClientConfig.h",
+  "include/gucefPUBSUB_CPubSubClientFactory.h",
+  "include/gucefPUBSUB_CPubSubClientFeatures.h",
+  "include/gucefPUBSUB_CPubSubClientSide.h",
+  "include/gucefPUBSUB_CPubSubClientTopic.h",
+  "include/gucefPUBSUB_CPubSubClientTopicConfig.h",
+  "include/gucefPUBSUB_CPubSubFlowRouteConfig.h",
+  "include/gucefPUBSUB_CPubSubFlowRouter.h",
+  "include/gucefPUBSUB_CPubSubFlowRouterConfig.h",
+  "include/gucefPUBSUB_CPubSubGlobal.h",
+  "include/gucefPUBSUB_CPubSubJournalConfig.h",
+  "include/gucefPUBSUB_CPubSubJournalFactory.h",
+  "include/gucefPUBSUB_CPubSubMsgBinarySerializer.h",
+  "include/gucefPUBSUB_CPubSubMsgContainerBinarySerializer.h",
+  "include/gucefPUBSUB_CPubSubMsgSerializer.h",
+  "include/gucefPUBSUB_CPubSubSideChannelSettings.h",
+  "include/gucefPUBSUB_CVfsPubSubBookmarkPersistence.h",
+  "include/gucefPUBSUB_ETypes.h",
+  "include/gucefPUBSUB_PubSubRouteTypes.h",
+  "include/gucefPUBSUB_config.h",
+  "include/gucefPUBSUB_macros.h"
  } )
 
 
@@ -73,70 +82,53 @@ files( {
 configuration( {} )
 vpaths { ["Source"] = { "**.c", "**.cpp", "**.cs", "**.asm" } }
 files( {
-  "src/CCom.cpp",
-  "src/CGUCEFCOMCOREModule.cpp",
-  "src/CHostAddress.cpp",
-  "src/CIPAddress.cpp",
-  "src/CPing.cpp",
-  "src/CSocket.cpp",
-  "src/CTCPClientSocket.cpp",
-  "src/CTCPConnection.cpp",
-  "src/CTCPServerConnection.cpp",
-  "src/CTCPServerSocket.cpp",
-  "src/CUDPChannel.cpp",
-  "src/CUDPMasterSocket.cpp",
-  "src/CUDPSocket.cpp",
-  "src/dvwinsock.c",
-  "src/gucefCOMCORE.cpp",
-  "src/gucefCOMCORE_CComCoreGlobal.cpp",
-  "src/gucefCOMCORE_CICommunicationPort.cpp",
-  "src/gucefCOMCORE_CPingTaskConsumer.cpp",
-  "src/gucefCOMCORE_CSerialPort.cpp",
-  "src/socketutils.cpp"
+  "src/gucefPUBSUB.cpp",
+  "src/gucefPUBSUB_CBasicPubSubMsg.cpp",
+  "src/gucefPUBSUB_CBinaryPubSubJournal.cpp",
+  "src/gucefPUBSUB_CIPubSubBookmarkPersistence.cpp",
+  "src/gucefPUBSUB_CIPubSubJournal.cpp",
+  "src/gucefPUBSUB_CIPubSubMsg.cpp",
+  "src/gucefPUBSUB_CModule.cpp",
+  "src/gucefPUBSUB_CPubSub2PubSub.cpp",
+  "src/gucefPUBSUB_CPubSubBookmark.cpp",
+  "src/gucefPUBSUB_CPubSubBookmarkBinarySerializer.cpp",
+  "src/gucefPUBSUB_CPubSubChannelSettings.cpp",
+  "src/gucefPUBSUB_CPubSubClient.cpp",
+  "src/gucefPUBSUB_CPubSubClientChannel.cpp",
+  "src/gucefPUBSUB_CPubSubClientConfig.cpp",
+  "src/gucefPUBSUB_CPubSubClientFactory.cpp",
+  "src/gucefPUBSUB_CPubSubClientFeatures.cpp",
+  "src/gucefPUBSUB_CPubSubClientSide.cpp",
+  "src/gucefPUBSUB_CPubSubClientTopic.cpp",
+  "src/gucefPUBSUB_CPubSubClientTopicConfig.cpp",
+  "src/gucefPUBSUB_CPubSubFlowRouteConfig.cpp",
+  "src/gucefPUBSUB_CPubSubFlowRouter.cpp",
+  "src/gucefPUBSUB_CPubSubFlowRouterConfig.cpp",
+  "src/gucefPUBSUB_CPubSubGlobal.cpp",
+  "src/gucefPUBSUB_CPubSubJournalConfig.cpp",
+  "src/gucefPUBSUB_CPubSubMsgBinarySerializer.cpp",
+  "src/gucefPUBSUB_CPubSubMsgContainerBinarySerializer.cpp",
+  "src/gucefPUBSUB_CPubSubMsgSerializer.cpp",
+  "src/gucefPUBSUB_CPubSubSideChannelSettings.cpp",
+  "src/gucefPUBSUB_CVfsPubSubBookmarkPersistence.cpp",
+  "src/gucefPUBSUB_PubSubRouteTypes.cpp"
  } )
 
 
-
-configuration( { "WIN32" } )
-    vpaths { ["Platform Headers"] = { "**.h", "**.hpp", "**.hxx" } }
-    files( {
-      "include/mswin/gucefCOMCORE_CWin32SerialPort.h",
-      "include/mswin/gucefCOMCORE_icmpApi.h"
-    } )
-
-    vpaths { ["Platform Source"] = { "**.c", "**.cpp", "**.cs", "**.asm" } }
-    files( {
-      "src/mswin/gucefCOMCORE_CWin32SerialPort.cpp",
-      "src/mswin/gucefCOMCORE_icmpApi.cpp"
-    } )
-
-
-
-configuration( { "WIN64" } )
-    vpaths { ["Platform Headers"] = { "**.h", "**.hpp", "**.hxx" } }
-    files( {
-      "include/mswin/gucefCOMCORE_CWin32SerialPort.h",
-      "include/mswin/gucefCOMCORE_icmpApi.h"
-    } )
-
-    vpaths { ["Platform Source"] = { "**.c", "**.cpp", "**.cs", "**.asm" } }
-    files( {
-      "src/mswin/gucefCOMCORE_CWin32SerialPort.cpp",
-      "src/mswin/gucefCOMCORE_icmpApi.cpp"
-    } )
-
-
 configuration( {} )
-includedirs( { "../common/include", "../gucefCORE/include", "../gucefMT/include", "include" } )
+includedirs( { "../../common/include", "../gucefCOM/include", "../gucefCOMCORE/include", "../gucefCORE/include", "../gucefMT/include", "../gucefVFS/include", "../gucefWEB/include", "include" } )
 
 configuration( { "ANDROID" } )
 includedirs( { "../gucefCORE/include/android" } )
 
-configuration( { "LINUX" } )
+configuration( { "LINUX32" } )
+includedirs( { "../gucefCORE/include/linux" } )
+
+configuration( { "LINUX64" } )
 includedirs( { "../gucefCORE/include/linux" } )
 
 configuration( { "WIN32" } )
-includedirs( { "../gucefCORE/include/mswin", "include/mswin" } )
+includedirs( { "../gucefCOMCORE/include/mswin", "../gucefCORE/include/mswin", "../gucefMT/include/mswin" } )
 
 configuration( { "WIN64" } )
-includedirs( { "../gucefCORE/include/mswin", "include/mswin" } )
+includedirs( { "../gucefCOMCORE/include/mswin", "../gucefCORE/include/mswin", "../gucefMT/include/mswin" } )

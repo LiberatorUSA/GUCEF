@@ -34,6 +34,7 @@ kind( "StaticLib" )
 configuration( {} )
 vpaths { ["Headers"] = { "**.h", "**.hpp", "**.hxx" } }
 files( {
+  "alloc.h",
   "async.h",
   "dict.h",
   "hiredis.h",
@@ -48,6 +49,7 @@ files( {
 configuration( {} )
 vpaths { ["Source"] = { "**.c", "**.cpp", "**.cs", "**.asm" } }
 files( {
+  "alloc.c",
   "async.c",
   "dict.c",
   "hiredis.c",
@@ -62,6 +64,7 @@ files( {
 configuration( { "ANDROID" } )
     vpaths { ["Platform Headers"] = { "**.h", "**.hpp", "**.hxx" } }
     files( {
+      "alloc.h",
       "async.h",
       "dict.h",
       "hiredis.h",
@@ -73,6 +76,34 @@ configuration( { "ANDROID" } )
 
     vpaths { ["Platform Source"] = { "**.c", "**.cpp", "**.cs", "**.asm" } }
     files( {
+      "alloc.c",
+      "async.c",
+      "dict.c",
+      "hiredis.c",
+      "net.c",
+      "read.c",
+      "sds.c",
+      "sockcompat.c"
+    } )
+
+
+
+configuration( { "ARDUINO" } )
+    vpaths { ["Platform Headers"] = { "**.h", "**.hpp", "**.hxx" } }
+    files( {
+      "alloc.h",
+      "async.h",
+      "dict.h",
+      "hiredis.h",
+      "net.h",
+      "read.h",
+      "sds.h",
+      "sockcompat.h"
+    } )
+
+    vpaths { ["Platform Source"] = { "**.c", "**.cpp", "**.cs", "**.asm" } }
+    files( {
+      "alloc.c",
       "async.c",
       "dict.c",
       "hiredis.c",
@@ -87,6 +118,7 @@ configuration( { "ANDROID" } )
 configuration( { "EMSCRIPTEN" } )
     vpaths { ["Platform Headers"] = { "**.h", "**.hpp", "**.hxx" } }
     files( {
+      "alloc.h",
       "async.h",
       "dict.h",
       "hiredis.h",
@@ -98,6 +130,7 @@ configuration( { "EMSCRIPTEN" } )
 
     vpaths { ["Platform Source"] = { "**.c", "**.cpp", "**.cs", "**.asm" } }
     files( {
+      "alloc.c",
       "async.c",
       "dict.c",
       "hiredis.c",
@@ -112,6 +145,7 @@ configuration( { "EMSCRIPTEN" } )
 configuration( { "GLX" } )
     vpaths { ["Platform Headers"] = { "**.h", "**.hpp", "**.hxx" } }
     files( {
+      "alloc.h",
       "async.h",
       "dict.h",
       "hiredis.h",
@@ -123,6 +157,7 @@ configuration( { "GLX" } )
 
     vpaths { ["Platform Source"] = { "**.c", "**.cpp", "**.cs", "**.asm" } }
     files( {
+      "alloc.c",
       "async.c",
       "dict.c",
       "hiredis.c",
@@ -137,6 +172,7 @@ configuration( { "GLX" } )
 configuration( { "GTK" } )
     vpaths { ["Platform Headers"] = { "**.h", "**.hpp", "**.hxx" } }
     files( {
+      "alloc.h",
       "async.h",
       "dict.h",
       "hiredis.h",
@@ -148,6 +184,7 @@ configuration( { "GTK" } )
 
     vpaths { ["Platform Source"] = { "**.c", "**.cpp", "**.cs", "**.asm" } }
     files( {
+      "alloc.c",
       "async.c",
       "dict.c",
       "hiredis.c",
@@ -162,6 +199,7 @@ configuration( { "GTK" } )
 configuration( { "IOS" } )
     vpaths { ["Platform Headers"] = { "**.h", "**.hpp", "**.hxx" } }
     files( {
+      "alloc.h",
       "async.h",
       "dict.h",
       "hiredis.h",
@@ -173,6 +211,7 @@ configuration( { "IOS" } )
 
     vpaths { ["Platform Source"] = { "**.c", "**.cpp", "**.cs", "**.asm" } }
     files( {
+      "alloc.c",
       "async.c",
       "dict.c",
       "hiredis.c",
@@ -187,6 +226,7 @@ configuration( { "IOS" } )
 configuration( { "LINUX32" } )
     vpaths { ["Platform Headers"] = { "**.h", "**.hpp", "**.hxx" } }
     files( {
+      "alloc.h",
       "async.h",
       "dict.h",
       "hiredis.h",
@@ -198,6 +238,7 @@ configuration( { "LINUX32" } )
 
     vpaths { ["Platform Source"] = { "**.c", "**.cpp", "**.cs", "**.asm" } }
     files( {
+      "alloc.c",
       "async.c",
       "dict.c",
       "hiredis.c",
@@ -212,6 +253,7 @@ configuration( { "LINUX32" } )
 configuration( { "LINUX64" } )
     vpaths { ["Platform Headers"] = { "**.h", "**.hpp", "**.hxx" } }
     files( {
+      "alloc.h",
       "async.h",
       "dict.h",
       "hiredis.h",
@@ -223,6 +265,7 @@ configuration( { "LINUX64" } )
 
     vpaths { ["Platform Source"] = { "**.c", "**.cpp", "**.cs", "**.asm" } }
     files( {
+      "alloc.c",
       "async.c",
       "dict.c",
       "hiredis.c",
@@ -237,6 +280,7 @@ configuration( { "LINUX64" } )
 configuration( { "NACL" } )
     vpaths { ["Platform Headers"] = { "**.h", "**.hpp", "**.hxx" } }
     files( {
+      "alloc.h",
       "async.h",
       "dict.h",
       "hiredis.h",
@@ -248,6 +292,7 @@ configuration( { "NACL" } )
 
     vpaths { ["Platform Source"] = { "**.c", "**.cpp", "**.cs", "**.asm" } }
     files( {
+      "alloc.c",
       "async.c",
       "dict.c",
       "hiredis.c",
@@ -262,6 +307,7 @@ configuration( { "NACL" } )
 configuration( { "OSX" } )
     vpaths { ["Platform Headers"] = { "**.h", "**.hpp", "**.hxx" } }
     files( {
+      "alloc.h",
       "async.h",
       "dict.h",
       "hiredis.h",
@@ -273,6 +319,7 @@ configuration( { "OSX" } )
 
     vpaths { ["Platform Source"] = { "**.c", "**.cpp", "**.cs", "**.asm" } }
     files( {
+      "alloc.c",
       "async.c",
       "dict.c",
       "hiredis.c",
@@ -287,6 +334,7 @@ configuration( { "OSX" } )
 configuration( { "POSIX" } )
     vpaths { ["Platform Headers"] = { "**.h", "**.hpp", "**.hxx" } }
     files( {
+      "alloc.h",
       "async.h",
       "dict.h",
       "hiredis.h",
@@ -298,6 +346,7 @@ configuration( { "POSIX" } )
 
     vpaths { ["Platform Source"] = { "**.c", "**.cpp", "**.cs", "**.asm" } }
     files( {
+      "alloc.c",
       "async.c",
       "dict.c",
       "hiredis.c",
@@ -312,6 +361,7 @@ configuration( { "POSIX" } )
 configuration( { "SDL" } )
     vpaths { ["Platform Headers"] = { "**.h", "**.hpp", "**.hxx" } }
     files( {
+      "alloc.h",
       "async.h",
       "dict.h",
       "hiredis.h",
@@ -323,6 +373,7 @@ configuration( { "SDL" } )
 
     vpaths { ["Platform Source"] = { "**.c", "**.cpp", "**.cs", "**.asm" } }
     files( {
+      "alloc.c",
       "async.c",
       "dict.c",
       "hiredis.c",
@@ -337,6 +388,7 @@ configuration( { "SDL" } )
 configuration( { "SYMBIAN" } )
     vpaths { ["Platform Headers"] = { "**.h", "**.hpp", "**.hxx" } }
     files( {
+      "alloc.h",
       "async.h",
       "dict.h",
       "hiredis.h",
@@ -348,6 +400,7 @@ configuration( { "SYMBIAN" } )
 
     vpaths { ["Platform Source"] = { "**.c", "**.cpp", "**.cs", "**.asm" } }
     files( {
+      "alloc.c",
       "async.c",
       "dict.c",
       "hiredis.c",
@@ -362,6 +415,7 @@ configuration( { "SYMBIAN" } )
 configuration( { "UNIX" } )
     vpaths { ["Platform Headers"] = { "**.h", "**.hpp", "**.hxx" } }
     files( {
+      "alloc.h",
       "async.h",
       "dict.h",
       "hiredis.h",
@@ -373,6 +427,7 @@ configuration( { "UNIX" } )
 
     vpaths { ["Platform Source"] = { "**.c", "**.cpp", "**.cs", "**.asm" } }
     files( {
+      "alloc.c",
       "async.c",
       "dict.c",
       "hiredis.c",
@@ -387,6 +442,7 @@ configuration( { "UNIX" } )
 configuration( { "WIN32" } )
     vpaths { ["Platform Headers"] = { "**.h", "**.hpp", "**.hxx" } }
     files( {
+      "alloc.h",
       "async.h",
       "dict.h",
       "hiredis.h",
@@ -398,6 +454,7 @@ configuration( { "WIN32" } )
 
     vpaths { ["Platform Source"] = { "**.c", "**.cpp", "**.cs", "**.asm" } }
     files( {
+      "alloc.c",
       "async.c",
       "dict.c",
       "hiredis.c",
@@ -412,6 +469,7 @@ configuration( { "WIN32" } )
 configuration( { "WIN64" } )
     vpaths { ["Platform Headers"] = { "**.h", "**.hpp", "**.hxx" } }
     files( {
+      "alloc.h",
       "async.h",
       "dict.h",
       "hiredis.h",
@@ -423,6 +481,7 @@ configuration( { "WIN64" } )
 
     vpaths { ["Platform Source"] = { "**.c", "**.cpp", "**.cs", "**.asm" } }
     files( {
+      "alloc.c",
       "async.c",
       "dict.c",
       "hiredis.c",

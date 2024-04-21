@@ -44,22 +44,15 @@ files( {
   "include/CDBField.h",
   "include/CDBQuery.h",
   "include/CGUCEFCOMModule.h",
-  "include/CHTTPClient.h",
-  "include/CHTTPURLHandler.h",
   "include/CMySQLClient.h",
   "include/CMySQLClientInterface.h",
   "include/CPHUDPSocket.h",
   "include/gucefCOM.h",
   "include/gucefCOMDLLInit.h",
   "include/gucefCOM_CComGlobal.h",
-  "include/gucefCOM_CDefaultHTTPServerRouterController.h",
-  "include/gucefCOM_CHTTPServer.h",
-  "include/gucefCOM_CIHTTPServerResource.h",
-  "include/gucefCOM_CIHTTPServerRouter.h",
-  "include/gucefCOM_CIHTTPServerRouterController.h",
-  "include/gucefCOM_config.h",
+  "include/gucefCOM_CStatsDClient.h",
   "include/gucefCOM_ETypes.h",
-  "include/gucefCOM_HTTPCode.h",
+  "include/gucefCOM_config.h",
   "include/gucefCOM_macros.h"
  } )
 
@@ -70,31 +63,28 @@ vpaths { ["Source"] = { "**.c", "**.cpp", "**.cs", "**.asm" } }
 files( {
   "src/CDBQuery.cpp",
   "src/CGUCEFCOMModule.cpp",
-  "src/CHTTPClient.cpp",
-  "src/CHTTPURLHandler.cpp",
   "src/CMySQLClient.cpp",
   "src/CPHUDPSocket.cpp",
   "src/gucefCOM.cpp",
   "src/gucefCOM_CComGlobal.cpp",
-  "src/gucefCOM_CDefaultHTTPServerRouterController.cpp",
-  "src/gucefCOM_CHTTPServer.cpp",
-  "src/gucefCOM_CIHTTPServerResource.cpp",
-  "src/gucefCOM_CIHTTPServerRouter.cpp",
-  "src/gucefCOM_CIHTTPServerRouterController.cpp"
+  "src/gucefCOM_CStatsDClient.cpp"
  } )
 
 
 configuration( {} )
-includedirs( { "../common/include", "../gucefCOMCORE/include", "../gucefCORE/include", "../gucefMT/include", "include" } )
+includedirs( { "../../common/include", "../gucefCOMCORE/include", "../gucefCORE/include", "../gucefMT/include", "include" } )
 
 configuration( { "ANDROID" } )
 includedirs( { "../gucefCORE/include/android" } )
 
-configuration( { "LINUX" } )
+configuration( { "LINUX32" } )
+includedirs( { "../gucefCORE/include/linux" } )
+
+configuration( { "LINUX64" } )
 includedirs( { "../gucefCORE/include/linux" } )
 
 configuration( { "WIN32" } )
-includedirs( { "../gucefCOMCORE/include/mswin", "../gucefCORE/include/mswin" } )
+includedirs( { "../gucefCOMCORE/include/mswin", "../gucefCORE/include/mswin", "../gucefMT/include/mswin" } )
 
 configuration( { "WIN64" } )
-includedirs( { "../gucefCOMCORE/include/mswin", "../gucefCORE/include/mswin" } )
+includedirs( { "../gucefCOMCORE/include/mswin", "../gucefCORE/include/mswin", "../gucefMT/include/mswin" } )

@@ -18,14 +18,6 @@ SET CMAKE_EXE=%BATCHSTARTDIR%\cmake\bin
 SET PATH=%PATH%;"%CMAKE_EXE%"
 ECHO CMake binary is here: %CMAKE_EXE%
 
-IF NOT DEFINED SKIP_GUCEF_CMAKELISTSFILEGENERATION (
-  ECHO *** Generate CMakeLists.txt files ***
-  CALL GenerateCMakeLists.bat
-)
-IF DEFINED SKIP_GUCEF_CMAKELISTSFILEGENERATION (
-  ECHO Skipping GUCEF's CMakeLists file generation
-)
-
 cd "%BATCHSTARTDIR%"
 
 ECHO *** Perform common CMake environment variable setup ***

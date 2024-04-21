@@ -66,4 +66,4 @@ files( {
 
 
 configuration( {} )
-includedirs( { "../../../freetype/include", "../../../freetype/include/freetype", "../../../freetype/include/freetype/config", "../../../freetype/include/freetype/internal", "../../../freetype/include/freetype/internal/services", "../../../freetype/src/winfonts", "../../Include", "../../Include/Rocket", "../../Include/Rocket/Controls", "../../Include/Rocket/Core", "../../Include/Rocket/Core/Python", "../../Include/Rocket/Debugger", "../Core" } )
+includedirs( { "../../../freetype/include", "../../../freetype/include/freetype", "../../../freetype/include/freetype/config", "../../../freetype/include/freetype/internal", "../../../freetype/include/freetype/internal/services", "../../../freetype/src", "../../../freetype/src/winfonts", "../../Include", "../../Include/Rocket", "../../Include/Rocket/Controls", "../../Include/Rocket/Core", "../../Include/Rocket/Core/Python", "../../Include/Rocket/Debugger", "../Core" } )

@@ -170,6 +170,43 @@ if (ANDROID)
   set( PLATFORM_SOURCE_INSTALL "ANDROID" )
   source_group( "Platform Source Files" FILES ${PLATFORM_SOURCE_FILES} )
 
+elseif (ARDUINO)
+  set( PLATFORM_SOURCE_FILES 
+    src/autofit/autofit.c
+    src/base/ftbase.c
+    src/base/ftbitmap.c
+    src/base/ftglyph.c
+    src/base/ftinit.c
+    src/base/ftsystem.c
+    src/bdf/bdf.c
+    src/cache/ftcache.c
+    src/cff/cff.c
+    src/cid/cidgload.c
+    src/cid/cidload.c
+    src/cid/cidobjs.c
+    src/cid/cidparse.c
+    src/cid/cidriver.c
+    src/gxvalid/gxvalid.c
+    src/gzip/ftgzip.c
+    src/lzw/ftlzw.c
+    src/otvalid/otvalid.c
+    src/pcf/pcf.c
+    src/pfr/pfr.c
+    src/psaux/psaux.c
+    src/pshinter/pshinter.c
+    src/psnames/psnames.c
+    src/raster/raster.c
+    src/sfnt/sfnt.c
+    src/smooth/ftgrays.c
+    src/smooth/ftsmooth.c
+    src/truetype/truetype.c
+    src/type1/type1.c
+    src/type42/type42.c
+  )
+
+  set( PLATFORM_SOURCE_INSTALL "ARDUINO" )
+  source_group( "Platform Source Files" FILES ${PLATFORM_SOURCE_FILES} )
+
 elseif (EMSCRIPTEN)
   set( PLATFORM_SOURCE_FILES 
     src/autofit/autofit.c
@@ -750,6 +787,8 @@ endif( WIN64 )
 
 
 if (ANDROID)
+GUCEF_config_lib( ${MODULE_NAME} )
+elseif (ARDUINO)
 GUCEF_config_lib( ${MODULE_NAME} )
 elseif (EMSCRIPTEN)
 GUCEF_config_lib( ${MODULE_NAME} )

@@ -22,17 +22,37 @@ LOCAL_MODULE_FILENAME := libgucefLOADER
 @echo Module name: $(LOCAL_MODULE)
 
 LOCAL_SRC_FILES := \
-  ../gucefCORE/src/CDVString.cpp \
+  ../gucefCORE/src/CDynamicBuffer.cpp \
+  ../gucefCORE/src/CException.cpp \
+  ../gucefCORE/src/CICloneable.cpp \
+  ../gucefCORE/src/CIOAccess.cpp \
+  ../gucefCORE/src/CMsgException.cpp \
   ../gucefCORE/src/DVCPPOSWRAP.cpp \
   ../gucefCORE/src/DVOSWRAP.cpp \
+  ../gucefCORE/src/IOACCESS.c \
+  ../gucefCORE/src/MFILE.c \
+  ../gucefCORE/src/PAFILE.c \
+  ../gucefCORE/src/dvcppfileutils.cpp \
   ../gucefCORE/src/dvcppstringutils.cpp \
-  ../gucefCORE/src/dvfileutils.c \
+  ../gucefCORE/src/dvfileutils.cpp \
   ../gucefCORE/src/dvmd5utils.c \
-  ../gucefCORE/src/dvstrutils.c \
+  ../gucefCORE/src/dvstrutils.cpp \
+  ../gucefCORE/src/gucefCORE_CAsciiString.cpp \
+  ../gucefCORE/src/gucefCORE_CDate.cpp \
+  ../gucefCORE/src/gucefCORE_CDateTime.cpp \
+  ../gucefCORE/src/gucefCORE_CIDate.cpp \
+  ../gucefCORE/src/gucefCORE_CITime.cpp \
+  ../gucefCORE/src/gucefCORE_CResourceMetaData.cpp \
+  ../gucefCORE/src/gucefCORE_CTime.cpp \
+  ../gucefCORE/src/gucefCORE_CUtf8String.cpp \
+  ../gucefCORE/src/gucefCORE_CVariant.cpp \
+  ../gucefCORE/src/gucefCORE_VariantData.c \
   ../gucefCORE/src/md5.c \
+  ../gucefMT/src/gucefMT_CICloneable.cpp \
   ../gucefMT/src/gucefMT_CILockable.cpp \
   ../gucefMT/src/gucefMT_CMutex.cpp \
   ../gucefMT/src/gucefMT_CScopeMutex.cpp \
+  ../gucefMT/src/gucefMT_ThreadStatus.cpp \
   ../gucefMT/src/gucefMT_dvmtoswrap.c \
   ../gucefMT/src/gucefMT_mutex.c \
   src/gucefLOADER.cpp

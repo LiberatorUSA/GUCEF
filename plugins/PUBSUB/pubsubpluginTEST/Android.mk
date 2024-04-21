@@ -17,25 +17,46 @@ LOCAL_PATH := $(MY_MODULE_PATH)
 include $(CLEAR_VARS)
 
 @echo Module path: $(MY_MODULE_PATH)
-LOCAL_MODULE := compressioncodecZLIB
-LOCAL_MODULE_FILENAME := libcompressioncodecZLIB
+LOCAL_MODULE := pubsubpluginTEST
+LOCAL_MODULE_FILENAME := libpubsubpluginTEST
 @echo Module name: $(LOCAL_MODULE)
 
 LOCAL_SRC_FILES := \
-  src/compressioncodecZLIB.c
+  ../pubsubpluginSTORAGE/src/pubsubpluginSTORAGE.cpp \
+  ../pubsubpluginSTORAGE/src/pubsubpluginSTORAGE_CStoragePubSubClient.cpp \
+  ../pubsubpluginSTORAGE/src/pubsubpluginSTORAGE_CStoragePubSubClientConfig.cpp \
+  ../pubsubpluginSTORAGE/src/pubsubpluginSTORAGE_CStoragePubSubClientTopic.cpp \
+  ../pubsubpluginSTORAGE/src/pubsubpluginSTORAGE_CStoragePubSubClientTopicConfig.cpp \
+  ../pubsubpluginSTORAGE/src/pubsubpluginSTORAGE_CStoragePubSubClientTopicVfsTask.cpp \
+  src/pubsubpluginTEST.cpp \
+  src/pubsubpluginTEST_CTestPubSubClient.cpp \
+  src/pubsubpluginTEST_CTestPubSubClientConfig.cpp \
+  src/pubsubpluginTEST_CTestPubSubClientTopic.cpp \
+  src/pubsubpluginTEST_CTestPubSubClientTopicConfig.cpp
 
 LOCAL_C_INCLUDES := \
+  $(MY_MODULE_PATH)/../pubsubpluginSTORAGE/include \
   $(MY_MODULE_PATH)/include \
   $(MY_MODULE_PATH)/../../../common/include \
+  $(MY_MODULE_PATH)/../../../platform/gucefCOM/include \
+  $(MY_MODULE_PATH)/../../../platform/gucefCOMCORE/include \
   $(MY_MODULE_PATH)/../../../platform/gucefCORE/include \
   $(MY_MODULE_PATH)/../../../platform/gucefCORE/include/android \
-  $(MY_MODULE_PATH)/../../../platform/gucefMT/include
+  $(MY_MODULE_PATH)/../../../platform/gucefMT/include \
+  $(MY_MODULE_PATH)/../../../platform/gucefPUBSUB/include \
+  $(MY_MODULE_PATH)/../../../platform/gucefVFS/include \
+  $(MY_MODULE_PATH)/../../../platform/gucefWEB/include
 
-LOCAL_CFLAGS := -DGUCEF_CODECPLUGIN_BUILD_MODULE
+LOCAL_CFLAGS := -DPUBSUBPLUGIN_STORAGE_EMBED_CODE -DPUBSUBPLUGIN_TEST_BUILD_PLUGIN_DLL
 
 
-LOCAL_LDLIBS := \
-  -lz
+LOCAL_SHARED_LIBRARIES := \
+  gucefCOMCORE \
+  gucefCORE \
+  gucefMT \
+  gucefPUBSUB \
+  gucefVFS \
+  gucefWEB
 
 include $(BUILD_SHARED_LIBRARY)
 

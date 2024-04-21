@@ -17,12 +17,12 @@ LOCAL_PATH := $(MY_MODULE_PATH)
 include $(CLEAR_VARS)
 
 @echo Module path: $(MY_MODULE_PATH)
-LOCAL_MODULE := compressioncodecZLIB
-LOCAL_MODULE_FILENAME := libcompressioncodecZLIB
+LOCAL_MODULE := codecspluginZLIB
+LOCAL_MODULE_FILENAME := libcodecspluginZLIB
 @echo Module name: $(LOCAL_MODULE)
 
 LOCAL_SRC_FILES := \
-  src/compressioncodecZLIB.c
+  src/codecspluginZLIB.c
 
 LOCAL_C_INCLUDES := \
   $(MY_MODULE_PATH)/include \

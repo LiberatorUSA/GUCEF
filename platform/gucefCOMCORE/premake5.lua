@@ -53,7 +53,6 @@ files( {
   "include/CCom.h",
   "include/CGUCEFCOMCOREModule.h",
   "include/CHostAddress.h",
-  "include/CIPAddress.h",
   "include/CIPInfo.h",
   "include/CPing.h",
   "include/CSocket.h",
@@ -68,12 +67,20 @@ files( {
   "include/gucefCOMCORE.h",
   "include/gucefCOMCORE_CComCoreGlobal.h",
   "include/gucefCOMCORE_CDiscoveryManager.h",
+  "include/gucefCOMCORE_CDnsCache.h",
+  "include/gucefCOMCORE_CDnsCacheEntry.h",
+  "include/gucefCOMCORE_CDnsCacheRefreshTaskConsumer.h",
+  "include/gucefCOMCORE_CDnsResolver.h",
   "include/gucefCOMCORE_CICommunicationInterface.h",
   "include/gucefCOMCORE_CIDiscovery.h",
   "include/gucefCOMCORE_CIDiscoveryCapability.h",
   "include/gucefCOMCORE_CIDiscoveryClient.h",
   "include/gucefCOMCORE_CIDiscoveryEntry.h",
+  "include/gucefCOMCORE_CIMessage.h",
   "include/gucefCOMCORE_CINetworkInterface.h",
+  "include/gucefCOMCORE_CIPv4Address.h",
+  "include/gucefCOMCORE_CIPv6Address.h",
+  "include/gucefCOMCORE_CMessageSerializer.h",
   "include/gucefCOMCORE_CPingTaskConsumer.h",
   "include/gucefCOMCORE_CSerialPort.h",
   "include/gucefCOMCORE_ETypes.h",
@@ -91,7 +98,6 @@ files( {
   "src/CCom.cpp",
   "src/CGUCEFCOMCOREModule.cpp",
   "src/CHostAddress.cpp",
-  "src/CIPAddress.cpp",
   "src/CIPInfo.cpp",
   "src/CPing.cpp",
   "src/CSocket.cpp",
@@ -106,12 +112,20 @@ files( {
   "src/gucefCOMCORE.cpp",
   "src/gucefCOMCORE_CComCoreGlobal.cpp",
   "src/gucefCOMCORE_CDiscoveryManager.cpp",
+  "src/gucefCOMCORE_CDnsCache.cpp",
+  "src/gucefCOMCORE_CDnsCacheEntry.cpp",
+  "src/gucefCOMCORE_CDnsCacheRefreshTaskConsumer.cpp",
+  "src/gucefCOMCORE_CDnsResolver.cpp",
   "src/gucefCOMCORE_CICommunicationInterface.cpp",
   "src/gucefCOMCORE_CIDiscovery.cpp",
   "src/gucefCOMCORE_CIDiscoveryCapability.cpp",
   "src/gucefCOMCORE_CIDiscoveryClient.cpp",
   "src/gucefCOMCORE_CIDiscoveryEntry.cpp",
+  "src/gucefCOMCORE_CIMessage.cpp",
   "src/gucefCOMCORE_CINetworkInterface.cpp",
+  "src/gucefCOMCORE_CIPv4Address.cpp",
+  "src/gucefCOMCORE_CIPv6Address.cpp",
+  "src/gucefCOMCORE_CMessageSerializer.cpp",
   "src/gucefCOMCORE_CPingTaskConsumer.cpp",
   "src/gucefCOMCORE_CSerialPort.cpp",
   "src/socketutils.cpp"
@@ -124,6 +138,7 @@ configuration( { "WIN32" } )
     files( {
       "include/mswin/gucefCOMCORE_CWin32NetworkInterface.h",
       "include/mswin/gucefCOMCORE_CWin32SerialPort.h",
+      "include/mswin/gucefCOMCORE_IphlpapiApi.h",
       "include/mswin/gucefCOMCORE_icmpApi.h"
     } )
 
@@ -131,6 +146,7 @@ configuration( { "WIN32" } )
     files( {
       "src/mswin/gucefCOMCORE_CWin32NetworkInterface.cpp",
       "src/mswin/gucefCOMCORE_CWin32SerialPort.cpp",
+      "src/mswin/gucefCOMCORE_IphlpapiApi.cpp",
       "src/mswin/gucefCOMCORE_icmpApi.cpp"
     } )
 
@@ -141,6 +157,7 @@ configuration( { "WIN64" } )
     files( {
       "include/mswin/gucefCOMCORE_CWin32NetworkInterface.h",
       "include/mswin/gucefCOMCORE_CWin32SerialPort.h",
+      "include/mswin/gucefCOMCORE_IphlpapiApi.h",
       "include/mswin/gucefCOMCORE_icmpApi.h"
     } )
 
@@ -148,6 +165,7 @@ configuration( { "WIN64" } )
     files( {
       "src/mswin/gucefCOMCORE_CWin32NetworkInterface.cpp",
       "src/mswin/gucefCOMCORE_CWin32SerialPort.cpp",
+      "src/mswin/gucefCOMCORE_IphlpapiApi.cpp",
       "src/mswin/gucefCOMCORE_icmpApi.cpp"
     } )
 
@@ -165,7 +183,7 @@ configuration( { "LINUX64" } )
 includedirs( { "../gucefCORE/include/linux" } )
 
 configuration( { "WIN32" } )
-includedirs( { "../gucefCORE/include/mswin", "include/mswin" } )
+includedirs( { "../gucefCORE/include/mswin", "../gucefMT/include/mswin", "include/mswin" } )
 
 configuration( { "WIN64" } )
-includedirs( { "../gucefCORE/include/mswin", "include/mswin" } )
+includedirs( { "../gucefCORE/include/mswin", "../gucefMT/include/mswin", "include/mswin" } )

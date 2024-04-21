@@ -21,14 +21,21 @@ LOCAL_MODULE := gucefMT_TestApp
 @echo Module name: $(LOCAL_MODULE)
 
 LOCAL_SRC_FILES := \
+  src/TestReaderWriterLock.cpp \
   src/gucefMT_TestApp.cpp
 
 LOCAL_C_INCLUDES := \
+  $(MY_MODULE_PATH)/include \
   $(MY_MODULE_PATH)/../../common/include \
+  $(MY_MODULE_PATH)/../../platform/gucefCORE/include \
+  $(MY_MODULE_PATH)/../../platform/gucefCORE/include/android \
   $(MY_MODULE_PATH)/../../platform/gucefMT/include
+
+LOCAL_CFLAGS := -DGUCEF_MT_TESTAPP_BUILD_MODULE
 
 
 LOCAL_SHARED_LIBRARIES := \
+  gucefCORE \
   gucefMT
 
 include $(BUILD_EXECUTABLE)

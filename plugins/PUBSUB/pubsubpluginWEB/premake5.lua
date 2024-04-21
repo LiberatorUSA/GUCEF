@@ -9,10 +9,10 @@
 --------------------------------------------------------------------
 --
 
--- Configuration for module: codecspluginZLIB
+-- Configuration for module: pubsubpluginWEB
 
 
-project( "codecspluginZLIB" )
+project( "pubsubpluginWEB" )
 
 configuration( {} )
   location( os.getenv( "PM5OUTPUTDIR" ) )
@@ -21,7 +21,7 @@ configuration( {} )
   targetdir( os.getenv( "PM5TARGETDIR" ) )
 
 configuration( {} )
-language( "C" )
+language( "C++" )
 
 
 
@@ -29,36 +29,24 @@ configuration( {} )
 kind( "SharedLib" )
 
 configuration( {} )
-links( { "gucefCORE", "gucefMT", "zlib" } )
+links( { "gucefCOMCORE", "gucefCORE", "gucefMT", "gucefPUBSUB", "gucefVFS", "gucefWEB" } )
+links( { "gucefCOMCORE", "gucefCORE", "gucefMT", "gucefPUBSUB", "gucefVFS", "gucefWEB" } )
 
 
 configuration( {} )
-defines( { "GUCEF_CODECPLUGIN_BUILD_MODULE" } )
-  links( { "z" } )
-  
-configuration( { LINUX32 } )
-links( { "zlib" } )
-  links( { "zlib" } )
-  
-configuration( { LINUX64 } )
-links( { "zlib" } )
-  links( { "zlib" } )
-  
-configuration( { WIN32 } )
-links( { "zlib" } )
-  links( { "zlib" } )
-  
-configuration( { WIN64 } )
-links( { "zlib" } )
-  links( { "zlib" } )
+defines( { "PUBSUBPLUGIN_WEB_BUILD_PLUGIN_DLL" } )
 
 
 configuration( {} )
 vpaths { ["Headers"] = { "**.h", "**.hpp", "**.hxx" } }
 files( {
-  "include/codecspluginZLIB.h",
-  "include/codecspluginZLIB_config.h",
-  "include/codecspluginZLIB_macros.h"
+  "include/pubsubpluginWEB.h",
+  "include/pubsubpluginWEB_CWebPubSubClient.h",
+  "include/pubsubpluginWEB_CWebPubSubClientConfig.h",
+  "include/pubsubpluginWEB_CWebPubSubClientTopic.h",
+  "include/pubsubpluginWEB_CWebPubSubClientTopicConfig.h",
+  "include/pubsubpluginWEB_config.h",
+  "include/pubsubpluginWEB_macros.h"
  } )
 
 
@@ -66,24 +54,28 @@ files( {
 configuration( {} )
 vpaths { ["Source"] = { "**.c", "**.cpp", "**.cs", "**.asm" } }
 files( {
-  "src/codecspluginZLIB.c"
+  "src/pubsubpluginWEB.cpp",
+  "src/pubsubpluginWEB_CWebPubSubClient.cpp",
+  "src/pubsubpluginWEB_CWebPubSubClientConfig.cpp",
+  "src/pubsubpluginWEB_CWebPubSubClientTopic.cpp",
+  "src/pubsubpluginWEB_CWebPubSubClientTopicConfig.cpp"
  } )
 
 
 configuration( {} )
-includedirs( { "../../../common/include", "../../../platform/gucefCORE/include", "../../../platform/gucefMT/include", "include" } )
+includedirs( { "../../../common/include", "../../../platform/gucefCOM/include", "../../../platform/gucefCOMCORE/include", "../../../platform/gucefCORE/include", "../../../platform/gucefMT/include", "../../../platform/gucefPUBSUB/include", "../../../platform/gucefVFS/include", "../../../platform/gucefWEB/include", "include" } )
 
 configuration( { "ANDROID" } )
 includedirs( { "../../../platform/gucefCORE/include/android" } )
 
 configuration( { "LINUX32" } )
-includedirs( { "../../../dependencies/zlib", "../../../platform/gucefCORE/include/linux" } )
+includedirs( { "../../../platform/gucefCORE/include/linux" } )
 
 configuration( { "LINUX64" } )
-includedirs( { "../../../dependencies/zlib", "../../../platform/gucefCORE/include/linux" } )
+includedirs( { "../../../platform/gucefCORE/include/linux" } )
 
 configuration( { "WIN32" } )
-includedirs( { "../../../dependencies/zlib", "../../../platform/gucefCORE/include/mswin" } )
+includedirs( { "../../../platform/gucefCOMCORE/include/mswin", "../../../platform/gucefCORE/include/mswin", "../../../platform/gucefMT/include/mswin" } )
 
 configuration( { "WIN64" } )
-includedirs( { "../../../dependencies/zlib", "../../../platform/gucefCORE/include/mswin" } )
+includedirs( { "../../../platform/gucefCOMCORE/include/mswin", "../../../platform/gucefCORE/include/mswin", "../../../platform/gucefMT/include/mswin" } )

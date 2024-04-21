@@ -43,7 +43,6 @@ files( {
   "include/gucefSMDRN.h",
   "include/gucefSMDRN_CISectorObject.h",
   "include/gucefSMDRN_CModule.h",
-  "include/gucefSMDRN_config.h",
   "include/gucefSMDRN_CSector.h",
   "include/gucefSMDRN_CSectorGrid.h",
   "include/gucefSMDRN_CSectorPosition.h",
@@ -55,6 +54,7 @@ files( {
   "include/gucefSMDRN_CZoneGrid.h",
   "include/gucefSMDRN_DLLInit.h",
   "include/gucefSMDRN_ETypes.h",
+  "include/gucefSMDRN_config.h",
   "include/gucefSMDRN_macros.h"
  } )
 
@@ -74,16 +74,19 @@ files( {
 
 
 configuration( {} )
-includedirs( { "../common/include", "../gucefCOM/include", "../gucefCOMCORE/include", "../gucefCORE/include", "../gucefDRN/include", "../gucefMT/include", "include" } )
+includedirs( { "../../common/include", "../gucefCOM/include", "../gucefCOMCORE/include", "../gucefCORE/include", "../gucefDRN/include", "../gucefMT/include", "include" } )
 
 configuration( { "ANDROID" } )
 includedirs( { "../gucefCORE/include/android" } )
 
-configuration( { "LINUX" } )
+configuration( { "LINUX32" } )
+includedirs( { "../gucefCORE/include/linux" } )
+
+configuration( { "LINUX64" } )
 includedirs( { "../gucefCORE/include/linux" } )
 
 configuration( { "WIN32" } )
-includedirs( { "../gucefCOMCORE/include/mswin", "../gucefCORE/include/mswin" } )
+includedirs( { "../gucefCOMCORE/include/mswin", "../gucefCORE/include/mswin", "../gucefMT/include/mswin" } )
 
 configuration( { "WIN64" } )
-includedirs( { "../gucefCOMCORE/include/mswin", "../gucefCORE/include/mswin" } )
+includedirs( { "../gucefCOMCORE/include/mswin", "../gucefCORE/include/mswin", "../gucefMT/include/mswin" } )

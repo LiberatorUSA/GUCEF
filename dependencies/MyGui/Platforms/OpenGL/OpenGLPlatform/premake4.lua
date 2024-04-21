@@ -33,6 +33,7 @@ links( { "MyGUI.Engine" } )
 links( { "MyGUI.Engine" } )
   links( { "GLESv1_CM" } )
   links( { "GL" } )
+  links( { "GL" } )
   links( { "opengl32" } )
   links( { "opengl32" } )
 
@@ -45,8 +46,8 @@ files( {
   "include/MyGUI_OpenGLDiagnostic.h",
   "include/MyGUI_OpenGLImageLoader.h",
   "include/MyGUI_OpenGLPlatform.h",
-  "include/MyGUI_OpenGLRenderManager.h",
   "include/MyGUI_OpenGLRTTexture.h",
+  "include/MyGUI_OpenGLRenderManager.h",
   "include/MyGUI_OpenGLTexture.h",
   "include/MyGUI_OpenGLVertexBuffer.h",
   "include/GL/glew.h",
@@ -62,12 +63,12 @@ files( {
   "include/GL/glew.c",
   "src/MyGUI_OpenGLDataManager.cpp",
   "src/MyGUI_OpenGLPlatform.cpp",
-  "src/MyGUI_OpenGLRenderManager.cpp",
   "src/MyGUI_OpenGLRTTexture.cpp",
+  "src/MyGUI_OpenGLRenderManager.cpp",
   "src/MyGUI_OpenGLTexture.cpp",
   "src/MyGUI_OpenGLVertexBuffer.cpp"
  } )
 
 
 configuration( {} )
-includedirs( { "../../../../freetype/include", "../../../../freetype/include/freetype", "../../../../freetype/include/freetype/config", "../../../../freetype/include/freetype/internal", "../../../../freetype/include/freetype/internal/services", "../../../../freetype/src/winfonts", "../../../MyGUIEngine/include", "../../../Common/FileSystemInfo", "include", "include/GL" } )
+includedirs( { "../../../../freetype/include", "../../../../freetype/include/freetype", "../../../../freetype/include/freetype/config", "../../../../freetype/include/freetype/internal", "../../../../freetype/include/freetype/internal/services", "../../../../freetype/src", "../../../../freetype/src/winfonts", "../../../MyGUIEngine/include", "../../../Common/FileSystemInfo", "include", "include/GL" } )

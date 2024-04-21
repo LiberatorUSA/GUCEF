@@ -21,6 +21,9 @@ endif
 
 include $(CLEAR_VARS)
 
+MY_MODULE_PATH := $(PROJECT_ROOT_PATH)/../../../../platform/gucefCORE
+include $(MY_MODULE_PATH)/Android.mk
+
 MY_MODULE_PATH := $(PROJECT_ROOT_PATH)/../../../../platform/gucefMT
 include $(MY_MODULE_PATH)/Android.mk
 

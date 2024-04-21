@@ -43,6 +43,7 @@ LOCAL_SHARED_LIBRARIES := \
   gucefCOMCORE \
   gucefCORE \
   gucefMT \
+  gucefVFS \
   gucefWEB
 
 include $(BUILD_EXECUTABLE)

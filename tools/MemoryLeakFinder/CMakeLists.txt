@@ -49,6 +49,42 @@ if (ANDROID)
   set( PLATFORM_SOURCE_INSTALL "ANDROID" )
   source_group( "Platform Source Files" FILES ${PLATFORM_SOURCE_FILES} )
 
+elseif (ARDUINO)
+  set( PLATFORM_HEADER_FILES 
+    ../../platform/gucefMT/include/gucefMT_CILockable.h
+    ../../platform/gucefMT/include/gucefMT_CMutex.h
+    ../../platform/gucefMT/include/gucefMT_CReadWriteLock.h
+    ../../platform/gucefMT/include/gucefMT_CScopeMutex.h
+    ../../platform/gucefMT/include/gucefMT_CScopeRwLock.h
+    ../../platform/gucefMT/include/gucefMT_DVRWLOCK.h
+    ../../platform/gucefMT/include/gucefMT_LockStatus.h
+    ../../platform/gucefMT/include/gucefMT_ThreadStatus.h
+    ../../platform/gucefMT/include/gucefMT_dvmtoswrap.h
+    ../../platform/gucefMT/include/gucefMT_mutex.h
+  )
+
+  set( PLATFORM_HEADER_INSTALL "ARDUINO" )
+  source_group( "Platform Header Files" FILES ${PLATFORM_HEADER_FILES} )
+
+  set( PLATFORM_SOURCE_FILES 
+    ../../platform/gucefMT/src/gucefMT_CILockable.cpp
+    ../../platform/gucefMT/src/gucefMT_CMutex.cpp
+    ../../platform/gucefMT/src/gucefMT_CReadWriteLock.cpp
+    ../../platform/gucefMT/src/gucefMT_CScopeMutex.cpp
+    ../../platform/gucefMT/src/gucefMT_CScopeRwLock.cpp
+    ../../platform/gucefMT/src/gucefMT_DVRWLOCK.c
+    ../../platform/gucefMT/src/gucefMT_LockStatus.cpp
+    ../../platform/gucefMT/src/gucefMT_MUTEX.c
+    ../../platform/gucefMT/src/gucefMT_ThreadStatus.cpp
+    ../../platform/gucefMT/src/gucefMT_dvmtoswrap.c
+    src/gucefMLF_MemoryManager.cpp
+    src/gucefMLF_callstack.cpp
+    src/gucefMLF_locktrace.cpp
+  )
+
+  set( PLATFORM_SOURCE_INSTALL "ARDUINO" )
+  source_group( "Platform Source Files" FILES ${PLATFORM_SOURCE_FILES} )
+
 elseif (EMSCRIPTEN)
   set( PLATFORM_HEADER_FILES 
     ../../platform/gucefMT/include/gucefMT_CILockable.h
@@ -601,6 +637,10 @@ include_directories( ../../common/include )
 if ( ANDROID )
   include_directories( ../../platform/gucefMT/include/ )
 endif( ANDROID )
+
+if ( ARDUINO )
+  include_directories( ../../platform/gucefMT/include/ )
+endif( ARDUINO )
 
 if ( EMSCRIPTEN )
   include_directories( ../../platform/gucefMT/include/ )

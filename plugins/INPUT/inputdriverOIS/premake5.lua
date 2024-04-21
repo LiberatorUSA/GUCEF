@@ -184,7 +184,7 @@ configuration( { "LINUX64" } )
 includedirs( { "../../../dependencies/OIS/includes", "../../../dependencies/OIS/includes/linux", "../../../dependencies/OIS/src/extras/LIRC", "../../../platform/gucefCORE/include/linux", "include" } )
 
 configuration( { "WIN32" } )
-includedirs( { "../../../dependencies/OIS/#$#ENVVAR:DXSDK_DIR#$#/Include", "../../../dependencies/OIS/includes", "../../../dependencies/OIS/includes/win32", "../../../dependencies/OIS/src/extras/LIRC", "../../../dependencies/OIS/src/win32/extras/WiiMote", "../../../dependencies/external", "../../../platform/gucefCORE/include/mswin", "include" } )
+includedirs( { "../../../dependencies/OIS/#$#ENVVAR:DXSDK_DIR#$#/Include", "../../../dependencies/OIS/includes", "../../../dependencies/OIS/includes/win32", "../../../dependencies/OIS/src/extras/LIRC", "../../../dependencies/OIS/src/win32/extras/WiiMote", "../../../dependencies/external", "../../../platform/gucefCORE/include/mswin", "../../../platform/gucefMT/include/mswin", "include" } )
 
 configuration( { "WIN64" } )
-includedirs( { "../../../dependencies/OIS/includes", "../../../dependencies/OIS/src/extras/LIRC", "../../../platform/gucefCORE/include/mswin", "include" } )
+includedirs( { "../../../dependencies/OIS/includes", "../../../dependencies/OIS/src/extras/LIRC", "../../../platform/gucefCORE/include/mswin", "../../../platform/gucefMT/include/mswin", "include" } )

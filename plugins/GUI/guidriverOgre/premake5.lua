@@ -93,7 +93,7 @@ configuration( { "OSX" } )
 includedirs( { "../../../dependencies/Ogre/OgreMain/include/OSX" } )
 
 configuration( { "WIN32" } )
-includedirs( { "../../../dependencies/Ogre/OgreMain/include/WIN32", "../../../dependencies/Ogre/OgreMain/src/WIN32", "../../../platform/gucefCORE/include/mswin" } )
+includedirs( { "../../../dependencies/Ogre/OgreMain/include/WIN32", "../../../dependencies/Ogre/OgreMain/src/WIN32", "../../../platform/gucefCORE/include/mswin", "../../../platform/gucefMT/include/mswin" } )
 
 configuration( { "WIN64" } )
-includedirs( { "../../../platform/gucefCORE/include/mswin" } )
+includedirs( { "../../../platform/gucefCORE/include/mswin", "../../../platform/gucefMT/include/mswin" } )

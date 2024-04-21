@@ -65,9 +65,9 @@ configuration( { "WIN32" } )
     vpaths { ["Platform Headers"] = { "**.h", "**.hpp", "**.hxx" } }
     files( {
       "include/guidriverWin32GL.h",
-      "include/guidriverWin32GL_config.h",
       "include/guidriverWin32GL_CWin32GLWindowContext.h",
       "include/guidriverWin32GL_CWin32GLWindowManagerImp.h",
+      "include/guidriverWin32GL_config.h",
       "include/guidriverWin32GL_macros.h",
       "include/guidriverWin32GL_pluginAPI.h"
     } )
@@ -85,9 +85,9 @@ configuration( { "WIN64" } )
     vpaths { ["Platform Headers"] = { "**.h", "**.hpp", "**.hxx" } }
     files( {
       "include/guidriverWin32GL.h",
-      "include/guidriverWin32GL_config.h",
       "include/guidriverWin32GL_CWin32GLWindowContext.h",
       "include/guidriverWin32GL_CWin32GLWindowManagerImp.h",
+      "include/guidriverWin32GL_config.h",
       "include/guidriverWin32GL_macros.h",
       "include/guidriverWin32GL_pluginAPI.h"
     } )
@@ -101,10 +101,10 @@ configuration( { "WIN64" } )
 
 
 configuration( {} )
-includedirs( { "../../../common/include", "../../../gucefCORE/include", "../../../gucefGUI/include", "../../../gucefIMAGE/include", "../../../gucefMT/include", "../../../gucefVFS/include" } )
+includedirs( { "../../../common/include", "../../../platform/gucefCORE/include", "../../../platform/gucefGUI/include", "../../../platform/gucefIMAGE/include", "../../../platform/gucefMT/include", "../../../platform/gucefVFS/include" } )
 
 configuration( { "WIN32" } )
-includedirs( { "../../../gucefCORE/include/mswin", "include" } )
+includedirs( { "../../../platform/gucefCORE/include/mswin", "../../../platform/gucefMT/include/mswin", "include" } )
 
 configuration( { "WIN64" } )
-includedirs( { "../../../gucefCORE/include/mswin", "include" } )
+includedirs( { "../../../platform/gucefCORE/include/mswin", "../../../platform/gucefMT/include/mswin", "include" } )

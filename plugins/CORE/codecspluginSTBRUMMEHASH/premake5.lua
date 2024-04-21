@@ -9,10 +9,10 @@
 --------------------------------------------------------------------
 --
 
--- Configuration for module: codecspluginZLIB
+-- Configuration for module: codecspluginSTBRUMMEHASH
 
 
-project( "codecspluginZLIB" )
+project( "codecspluginSTBRUMMEHASH" )
 
 configuration( {} )
   location( os.getenv( "PM5OUTPUTDIR" ) )
@@ -21,7 +21,7 @@ configuration( {} )
   targetdir( os.getenv( "PM5TARGETDIR" ) )
 
 configuration( {} )
-language( "C" )
+language( "C++" )
 
 
 
@@ -29,36 +29,20 @@ configuration( {} )
 kind( "SharedLib" )
 
 configuration( {} )
-links( { "gucefCORE", "gucefMT", "zlib" } )
+links( { "gucefCORE", "gucefMT", "stbrumme-hash" } )
+links( { "stbrumme-hash" } )
 
 
 configuration( {} )
 defines( { "GUCEF_CODECPLUGIN_BUILD_MODULE" } )
-  links( { "z" } )
-  
-configuration( { LINUX32 } )
-links( { "zlib" } )
-  links( { "zlib" } )
-  
-configuration( { LINUX64 } )
-links( { "zlib" } )
-  links( { "zlib" } )
-  
-configuration( { WIN32 } )
-links( { "zlib" } )
-  links( { "zlib" } )
-  
-configuration( { WIN64 } )
-links( { "zlib" } )
-  links( { "zlib" } )
 
 
 configuration( {} )
 vpaths { ["Headers"] = { "**.h", "**.hpp", "**.hxx" } }
 files( {
-  "include/codecspluginZLIB.h",
-  "include/codecspluginZLIB_config.h",
-  "include/codecspluginZLIB_macros.h"
+  "include/codecspluginSTBRUMMEHASH.h",
+  "include/codecspluginSTBRUMMEHASH_config.h",
+  "include/codecspluginSTBRUMMEHASH_macros.h"
  } )
 
 
@@ -66,24 +50,24 @@ files( {
 configuration( {} )
 vpaths { ["Source"] = { "**.c", "**.cpp", "**.cs", "**.asm" } }
 files( {
-  "src/codecspluginZLIB.c"
+  "src/codecspluginSTBRUMMEHASH.cpp"
  } )
 
 
 configuration( {} )
-includedirs( { "../../../common/include", "../../../platform/gucefCORE/include", "../../../platform/gucefMT/include", "include" } )
+includedirs( { "../../../common/include", "../../../dependencies/stbrumme-hash-library", "../../../platform/gucefCORE/include", "../../../platform/gucefMT/include", "include" } )
 
 configuration( { "ANDROID" } )
 includedirs( { "../../../platform/gucefCORE/include/android" } )
 
 configuration( { "LINUX32" } )
-includedirs( { "../../../dependencies/zlib", "../../../platform/gucefCORE/include/linux" } )
+includedirs( { "../../../platform/gucefCORE/include/linux" } )
 
 configuration( { "LINUX64" } )
-includedirs( { "../../../dependencies/zlib", "../../../platform/gucefCORE/include/linux" } )
+includedirs( { "../../../platform/gucefCORE/include/linux" } )
 
 configuration( { "WIN32" } )
-includedirs( { "../../../dependencies/zlib", "../../../platform/gucefCORE/include/mswin" } )
+includedirs( { "../../../platform/gucefCORE/include/mswin", "../../../platform/gucefMT/include/mswin" } )
 
 configuration( { "WIN64" } )
-includedirs( { "../../../dependencies/zlib", "../../../platform/gucefCORE/include/mswin" } )
+includedirs( { "../../../platform/gucefCORE/include/mswin", "../../../platform/gucefMT/include/mswin" } )

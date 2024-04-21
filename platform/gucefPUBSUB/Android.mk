@@ -17,52 +17,63 @@ LOCAL_PATH := $(MY_MODULE_PATH)
 include $(CLEAR_VARS)
 
 @echo Module path: $(MY_MODULE_PATH)
-LOCAL_MODULE := gucefCOMCORE
-LOCAL_MODULE_FILENAME := libgucefCOMCORE
+LOCAL_MODULE := gucefPUBSUB
+LOCAL_MODULE_FILENAME := libgucefPUBSUB
 @echo Module name: $(LOCAL_MODULE)
 
 LOCAL_SRC_FILES := \
-  src/CCom.cpp \
-  src/CGUCEFCOMCOREModule.cpp \
-  src/CHostAddress.cpp \
-  src/CIPAddress.cpp \
-  src/CIPInfo.cpp \
-  src/CPing.cpp \
-  src/CSocket.cpp \
-  src/CTCPClientSocket.cpp \
-  src/CTCPConnection.cpp \
-  src/CTCPServerConnection.cpp \
-  src/CTCPServerSocket.cpp \
-  src/CUDPChannel.cpp \
-  src/CUDPMasterSocket.cpp \
-  src/CUDPSocket.cpp \
-  src/dvwinsock.c \
-  src/gucefCOMCORE.cpp \
-  src/gucefCOMCORE_CComCoreGlobal.cpp \
-  src/gucefCOMCORE_CDiscoveryManager.cpp \
-  src/gucefCOMCORE_CICommunicationInterface.cpp \
-  src/gucefCOMCORE_CIDiscovery.cpp \
-  src/gucefCOMCORE_CIDiscoveryCapability.cpp \
-  src/gucefCOMCORE_CIDiscoveryClient.cpp \
-  src/gucefCOMCORE_CIDiscoveryEntry.cpp \
-  src/gucefCOMCORE_CINetworkInterface.cpp \
-  src/gucefCOMCORE_CPingTaskConsumer.cpp \
-  src/gucefCOMCORE_CSerialPort.cpp \
-  src/socketutils.cpp
+  src/gucefPUBSUB.cpp \
+  src/gucefPUBSUB_CBasicPubSubMsg.cpp \
+  src/gucefPUBSUB_CBinaryPubSubJournal.cpp \
+  src/gucefPUBSUB_CIPubSubBookmarkPersistence.cpp \
+  src/gucefPUBSUB_CIPubSubJournal.cpp \
+  src/gucefPUBSUB_CIPubSubMsg.cpp \
+  src/gucefPUBSUB_CModule.cpp \
+  src/gucefPUBSUB_CPubSub2PubSub.cpp \
+  src/gucefPUBSUB_CPubSubBookmark.cpp \
+  src/gucefPUBSUB_CPubSubBookmarkBinarySerializer.cpp \
+  src/gucefPUBSUB_CPubSubChannelSettings.cpp \
+  src/gucefPUBSUB_CPubSubClient.cpp \
+  src/gucefPUBSUB_CPubSubClientChannel.cpp \
+  src/gucefPUBSUB_CPubSubClientConfig.cpp \
+  src/gucefPUBSUB_CPubSubClientFactory.cpp \
+  src/gucefPUBSUB_CPubSubClientFeatures.cpp \
+  src/gucefPUBSUB_CPubSubClientSide.cpp \
+  src/gucefPUBSUB_CPubSubClientTopic.cpp \
+  src/gucefPUBSUB_CPubSubClientTopicConfig.cpp \
+  src/gucefPUBSUB_CPubSubFlowRouteConfig.cpp \
+  src/gucefPUBSUB_CPubSubFlowRouter.cpp \
+  src/gucefPUBSUB_CPubSubFlowRouterConfig.cpp \
+  src/gucefPUBSUB_CPubSubGlobal.cpp \
+  src/gucefPUBSUB_CPubSubJournalConfig.cpp \
+  src/gucefPUBSUB_CPubSubMsgBinarySerializer.cpp \
+  src/gucefPUBSUB_CPubSubMsgContainerBinarySerializer.cpp \
+  src/gucefPUBSUB_CPubSubMsgSerializer.cpp \
+  src/gucefPUBSUB_CPubSubSideChannelSettings.cpp \
+  src/gucefPUBSUB_CVfsPubSubBookmarkPersistence.cpp \
+  src/gucefPUBSUB_PubSubRouteTypes.cpp
 
 LOCAL_C_INCLUDES := \
   $(MY_MODULE_PATH)/include \
   $(MY_MODULE_PATH)/../../common/include \
+  $(MY_MODULE_PATH)/../gucefCOM/include \
+  $(MY_MODULE_PATH)/../gucefCOMCORE/include \
   $(MY_MODULE_PATH)/../gucefCORE/include \
   $(MY_MODULE_PATH)/../gucefCORE/include/android \
-  $(MY_MODULE_PATH)/../gucefMT/include
+  $(MY_MODULE_PATH)/../gucefMT/include \
+  $(MY_MODULE_PATH)/../gucefVFS/include \
+  $(MY_MODULE_PATH)/../gucefWEB/include
 
-LOCAL_CFLAGS := -DGUCEF_COMCORE_BUILD_MODULE
+LOCAL_CFLAGS := -DGUCEF_PUBSUB_BUILD_MODULE
 
 
 LOCAL_SHARED_LIBRARIES := \
+  gucefCOM \
+  gucefCOMCORE \
   gucefCORE \
-  gucefMT
+  gucefMT \
+  gucefVFS \
+  gucefWEB
 
 include $(BUILD_SHARED_LIBRARY)
 

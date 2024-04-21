@@ -44,6 +44,10 @@ if ( ANDROID )
   include_directories( ../../dependencies/hiredis ../../platform/gucefCORE/include/android )
 endif( ANDROID )
 
+if ( ARDUINO )
+  include_directories( ../../dependencies/hiredis )
+endif( ARDUINO )
+
 if ( EMSCRIPTEN )
   include_directories( ../../dependencies/hiredis )
 endif( EMSCRIPTEN )
@@ -108,6 +112,8 @@ endif( WIN64 )
 
 
 if (ANDROID)
+GUCEF_config_app( ${MODULE_NAME} )
+elseif (ARDUINO)
 GUCEF_config_app( ${MODULE_NAME} )
 elseif (EMSCRIPTEN)
 GUCEF_config_app( ${MODULE_NAME} )

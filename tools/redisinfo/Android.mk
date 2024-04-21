@@ -23,14 +23,25 @@ LOCAL_MODULE := redisinfo
 LOCAL_SRC_FILES := \
   src/crc16.cpp \
   src/main.cpp \
-  src/redisinfo.cpp
+  src/redisinfo.cpp \
+  src/redisinfo_CRedisClusterKeyCache.cpp \
+  src/redisinfo_CRedisClusterKeyCacheUpdateTask.cpp \
+  src/redisinfo_CRedisClusterKeyPrunerTask.cpp
 
 LOCAL_C_INCLUDES := \
   $(MY_MODULE_PATH)/include \
   $(MY_MODULE_PATH)/../../common/include \
-  $(MY_MODULE_PATH)/../../dependencies \
   $(MY_MODULE_PATH)/../../dependencies/hiredis \
+  $(MY_MODULE_PATH)/../../dependencies/redis-plus-plus/../ \
+  $(MY_MODULE_PATH)/../../dependencies/redis-plus-plus/src/sw/../ \
   $(MY_MODULE_PATH)/../../dependencies/redis-plus-plus/src/sw/redis++ \
+  $(MY_MODULE_PATH)/../../dependencies/redis-plus-plus/src/sw/redis++/cxx11 \
+  $(MY_MODULE_PATH)/../../dependencies/redis-plus-plus/src/sw/redis++/cxx11/sw \
+  $(MY_MODULE_PATH)/../../dependencies/redis-plus-plus/src/sw/redis++/cxx11/sw/redis++ \
+  $(MY_MODULE_PATH)/../../dependencies/redis-plus-plus/src/sw/redis++/no_tls \
+  $(MY_MODULE_PATH)/../../dependencies/redis-plus-plus/src/sw/redis++/no_tls/sw \
+  $(MY_MODULE_PATH)/../../dependencies/redis-plus-plus/src/sw/redis++/no_tls/sw/redis++ \
+  $(MY_MODULE_PATH)/../../dependencies/redis-plus-plus/src/sw/redis++/patterns \
   $(MY_MODULE_PATH)/../../platform/gucefCOM/include \
   $(MY_MODULE_PATH)/../../platform/gucefCOMCORE/include \
   $(MY_MODULE_PATH)/../../platform/gucefCORE/include \

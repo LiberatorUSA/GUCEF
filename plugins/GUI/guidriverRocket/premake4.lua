@@ -50,15 +50,14 @@ files( {
   "include/guidriverRocket_CFileSaveDialogImp.h",
   "include/guidriverRocket_CFileSystemDialogImp.h",
   "include/guidriverRocket_CFormBackendImp.h",
-  "include/guidriverRocket_CGridViewImp.h",
   "include/guidriverRocket_CGUIContext.h",
+  "include/guidriverRocket_CGridViewImp.h",
   "include/guidriverRocket_CImageFrameImp.h",
   "include/guidriverRocket_CInputAdapter.h",
   "include/guidriverRocket_CLabelImp.h",
   "include/guidriverRocket_CListBoxImp.h",
   "include/guidriverRocket_CMemoboxImp.h",
   "include/guidriverRocket_CMenuBarImp.h",
-  "include/guidriverRocket_config.h",
   "include/guidriverRocket_CPopupMenuImp.h",
   "include/guidriverRocket_CProgressBarImp.h",
   "include/guidriverRocket_CPushButtonImp.h",
@@ -74,6 +73,7 @@ files( {
   "include/guidriverRocket_CWidgetImp.h",
   "include/guidriverRocket_CWindowImp.h",
   "include/guidriverRocket_ETypes.h",
+  "include/guidriverRocket_config.h",
   "include/guidriverRocket_macros.h",
   "include/guidriverRocket_pluginAPI.h"
  } )
@@ -93,11 +93,11 @@ files( {
   "src/guidriverRocket_CFileSaveDialogImp.cpp",
   "src/guidriverRocket_CFileSystemDialogImp.cpp",
   "src/guidriverRocket_CFormBackendImp.cpp",
-  "src/guidriverRocket_CGridViewImp.cpp",
   "src/guidriverRocket_CGUIContext.cpp",
+  "src/guidriverRocket_CGridViewImp.cpp",
+  "src/guidriverRocket_CIOAccessToRocketStreamAdapter.cpp",
   "src/guidriverRocket_CImageFrameImp.cpp",
   "src/guidriverRocket_CInputAdapter.cpp",
-  "src/guidriverRocket_CIOAccessToRocketStreamAdapter.cpp",
   "src/guidriverRocket_CLabelImp.cpp",
   "src/guidriverRocket_CListboxImp.cpp",
   "src/guidriverRocket_CMemoboxImp.cpp",
@@ -122,16 +122,19 @@ files( {
 
 
 configuration( {} )
-includedirs( { "../../../common/include", "../../../dependencies/freetype/include", "../../../dependencies/freetype/include/freetype", "../../../dependencies/freetype/include/freetype/config", "../../../dependencies/freetype/include/freetype/internal", "../../../dependencies/freetype/include/freetype/internal/services", "../../../dependencies/freetype/src/winfonts", "../../../dependencies/libRocket/Include", "../../../dependencies/libRocket/Include/Rocket", "../../../dependencies/libRocket/Include/Rocket/Controls", "../../../dependencies/libRocket/Include/Rocket/Core", "../../../dependencies/libRocket/Include/Rocket/Core/Python", "../../../dependencies/libRocket/Include/Rocket/Debugger", "../../../dependencies/libRocket/Source/Controls", "../../../dependencies/libRocket/Source/Core", "../../../gucefCORE/include", "../../../gucefGUI/include", "../../../gucefIMAGE/include", "../../../gucefINPUT/include", "../../../gucefMT/include", "../../../gucefVFS/include", "include" } )
+includedirs( { "../../../common/include", "../../../dependencies/freetype/include", "../../../dependencies/freetype/include/freetype", "../../../dependencies/freetype/include/freetype/config", "../../../dependencies/freetype/include/freetype/internal", "../../../dependencies/freetype/include/freetype/internal/services", "../../../dependencies/freetype/src", "../../../dependencies/freetype/src/winfonts", "../../../dependencies/libRocket/Include", "../../../dependencies/libRocket/Include/Rocket", "../../../dependencies/libRocket/Include/Rocket/Controls", "../../../dependencies/libRocket/Include/Rocket/Core", "../../../dependencies/libRocket/Include/Rocket/Core/Python", "../../../dependencies/libRocket/Include/Rocket/Debugger", "../../../dependencies/libRocket/Source/Controls", "../../../dependencies/libRocket/Source/Core", "../../../platform/gucefCORE/include", "../../../platform/gucefGUI/include", "../../../platform/gucefIMAGE/include", "../../../platform/gucefINPUT/include", "../../../platform/gucefMT/include", "../../../platform/gucefVFS/include", "include" } )
 
 configuration( { "ANDROID" } )
-includedirs( { "../../../gucefCORE/include/android" } )
+includedirs( { "../../../platform/gucefCORE/include/android" } )
 
-configuration( { "LINUX" } )
-includedirs( { "../../../gucefCORE/include/linux" } )
+configuration( { "LINUX32" } )
+includedirs( { "../../../platform/gucefCORE/include/linux" } )
+
+configuration( { "LINUX64" } )
+includedirs( { "../../../platform/gucefCORE/include/linux" } )
 
 configuration( { "WIN32" } )
-includedirs( { "../../../gucefCORE/include/mswin" } )
+includedirs( { "../../../platform/gucefCORE/include/mswin", "../../../platform/gucefMT/include/mswin" } )
 
 configuration( { "WIN64" } )
-includedirs( { "../../../gucefCORE/include/mswin" } )
+includedirs( { "../../../platform/gucefCORE/include/mswin", "../../../platform/gucefMT/include/mswin" } )

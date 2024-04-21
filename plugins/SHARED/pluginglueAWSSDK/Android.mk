@@ -31,18 +31,18 @@ LOCAL_SRC_FILES := \
 LOCAL_C_INCLUDES := \
   $(MY_MODULE_PATH)/include \
   $(MY_MODULE_PATH)/../../../common/include \
-  $(MY_MODULE_PATH)/../../../dependencies/aws-c-common/include \
-  $(MY_MODULE_PATH)/../../../dependencies/aws-c-event-stream/include \
-  $(MY_MODULE_PATH)/../../../dependencies/aws-checksums/include \
-  $(MY_MODULE_PATH)/../../../dependencies/aws-checksums/include/aws \
-  $(MY_MODULE_PATH)/../../../dependencies/aws-checksums/include/aws/checksums \
-  $(MY_MODULE_PATH)/../../../dependencies/aws-checksums/include/aws/checksums/private \
   $(MY_MODULE_PATH)/../../../dependencies/aws-cpp-sdk-core/include \
   $(MY_MODULE_PATH)/../../../dependencies/aws-cpp-sdk-core/include/aws \
   $(MY_MODULE_PATH)/../../../dependencies/aws-cpp-sdk-core/include/aws/core \
   $(MY_MODULE_PATH)/../../../dependencies/aws-cpp-sdk-core/include/aws/core/auth \
+  $(MY_MODULE_PATH)/../../../dependencies/aws-cpp-sdk-core/include/aws/core/auth/bearer-token-provider \
+  $(MY_MODULE_PATH)/../../../dependencies/aws-cpp-sdk-core/include/aws/core/auth/signer \
+  $(MY_MODULE_PATH)/../../../dependencies/aws-cpp-sdk-core/include/aws/core/auth/signer-provider \
   $(MY_MODULE_PATH)/../../../dependencies/aws-cpp-sdk-core/include/aws/core/client \
   $(MY_MODULE_PATH)/../../../dependencies/aws-cpp-sdk-core/include/aws/core/config \
+  $(MY_MODULE_PATH)/../../../dependencies/aws-cpp-sdk-core/include/aws/core/config/defaults \
+  $(MY_MODULE_PATH)/../../../dependencies/aws-cpp-sdk-core/include/aws/core/endpoint \
+  $(MY_MODULE_PATH)/../../../dependencies/aws-cpp-sdk-core/include/aws/core/endpoint/internal \
   $(MY_MODULE_PATH)/../../../dependencies/aws-cpp-sdk-core/include/aws/core/external \
   $(MY_MODULE_PATH)/../../../dependencies/aws-cpp-sdk-core/include/aws/core/external/cjson \
   $(MY_MODULE_PATH)/../../../dependencies/aws-cpp-sdk-core/include/aws/core/external/tinyxml2 \
@@ -70,6 +70,19 @@ LOCAL_C_INCLUDES := \
   $(MY_MODULE_PATH)/../../../dependencies/aws-cpp-sdk-core/include/aws/core/utils/stream \
   $(MY_MODULE_PATH)/../../../dependencies/aws-cpp-sdk-core/include/aws/core/utils/threading \
   $(MY_MODULE_PATH)/../../../dependencies/aws-cpp-sdk-core/include/aws/core/utils/xml \
+  $(MY_MODULE_PATH)/../../../dependencies/aws-crt-cpp/crt/aws-c-auth/include \
+  $(MY_MODULE_PATH)/../../../dependencies/aws-crt-cpp/crt/aws-c-cal/include \
+  $(MY_MODULE_PATH)/../../../dependencies/aws-crt-cpp/crt/aws-c-common/include \
+  $(MY_MODULE_PATH)/../../../dependencies/aws-crt-cpp/crt/aws-c-compression/include \
+  $(MY_MODULE_PATH)/../../../dependencies/aws-crt-cpp/crt/aws-c-event-stream/include \
+  $(MY_MODULE_PATH)/../../../dependencies/aws-crt-cpp/crt/aws-c-http/include \
+  $(MY_MODULE_PATH)/../../../dependencies/aws-crt-cpp/crt/aws-c-io/include \
+  $(MY_MODULE_PATH)/../../../dependencies/aws-crt-cpp/crt/aws-c-io/source \
+  $(MY_MODULE_PATH)/../../../dependencies/aws-crt-cpp/crt/aws-c-mqtt/include \
+  $(MY_MODULE_PATH)/../../../dependencies/aws-crt-cpp/crt/aws-c-s3/include \
+  $(MY_MODULE_PATH)/../../../dependencies/aws-crt-cpp/crt/aws-c-sdkutils/include \
+  $(MY_MODULE_PATH)/../../../dependencies/aws-crt-cpp/crt/aws-checksums/include \
+  $(MY_MODULE_PATH)/../../../dependencies/aws-crt-cpp/include \
   $(MY_MODULE_PATH)/../../../dependencies/curl/include \
   $(MY_MODULE_PATH)/../../../dependencies/curl/include/curl \
   $(MY_MODULE_PATH)/../../../dependencies/curl/lib \

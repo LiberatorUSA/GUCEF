@@ -35,8 +35,8 @@ configuration( {} )
 kind( "ConsoleApp" )
 
 configuration( {} )
-links( { "GucefLogServiceLib", "gucefCOM", "gucefCOMCORE", "gucefCORE", "gucefMT" } )
-links( { "GucefLogServiceLib", "gucefCOM", "gucefCOMCORE", "gucefCORE", "gucefMT" } )
+links( { "GucefLogServiceLib", "gucefCOM", "gucefCOMCORE", "gucefCORE", "gucefMT", "gucefVFS", "gucefWEB" } )
+links( { "GucefLogServiceLib", "gucefCOM", "gucefCOMCORE", "gucefCORE", "gucefMT", "gucefVFS", "gucefWEB" } )
 
 
 configuration( {} )
@@ -51,16 +51,19 @@ files( {
 
 
 configuration( {} )
-includedirs( { "../../common/include", "../../gucefCOM/include", "../../gucefCOMCORE/include", "../../gucefCORE/include", "../../gucefMT/include", "../GucefLogServiceLib/include" } )
+includedirs( { "../../common/include", "../../platform/gucefCOM/include", "../../platform/gucefCOMCORE/include", "../../platform/gucefCORE/include", "../../platform/gucefMT/include", "../../platform/gucefVFS/include", "../../platform/gucefWEB/include", "../GucefLogServiceLib/include" } )
 
 configuration( { "ANDROID" } )
-includedirs( { "../../gucefCORE/include/android" } )
+includedirs( { "../../platform/gucefCORE/include/android" } )
 
-configuration( { "LINUX" } )
-includedirs( { "../../gucefCORE/include/linux" } )
+configuration( { "LINUX32" } )
+includedirs( { "../../platform/gucefCORE/include/linux" } )
+
+configuration( { "LINUX64" } )
+includedirs( { "../../platform/gucefCORE/include/linux" } )
 
 configuration( { "WIN32" } )
-includedirs( { "../../gucefCOMCORE/include/mswin", "../../gucefCORE/include/mswin" } )
+includedirs( { "../../platform/gucefCOMCORE/include/mswin", "../../platform/gucefCORE/include/mswin", "../../platform/gucefMT/include/mswin" } )
 
 configuration( { "WIN64" } )
-includedirs( { "../../gucefCOMCORE/include/mswin", "../../gucefCORE/include/mswin" } )
+includedirs( { "../../platform/gucefCOMCORE/include/mswin", "../../platform/gucefCORE/include/mswin", "../../platform/gucefMT/include/mswin" } )

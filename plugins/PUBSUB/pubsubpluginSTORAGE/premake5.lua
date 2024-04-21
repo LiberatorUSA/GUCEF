@@ -9,10 +9,10 @@
 --------------------------------------------------------------------
 --
 
--- Configuration for module: codecspluginZLIB
+-- Configuration for module: pubsubpluginSTORAGE
 
 
-project( "codecspluginZLIB" )
+project( "pubsubpluginSTORAGE" )
 
 configuration( {} )
   location( os.getenv( "PM5OUTPUTDIR" ) )
@@ -21,7 +21,7 @@ configuration( {} )
   targetdir( os.getenv( "PM5TARGETDIR" ) )
 
 configuration( {} )
-language( "C" )
+language( "C++" )
 
 
 
@@ -29,36 +29,25 @@ configuration( {} )
 kind( "SharedLib" )
 
 configuration( {} )
-links( { "gucefCORE", "gucefMT", "zlib" } )
+links( { "gucefCOMCORE", "gucefCORE", "gucefMT", "gucefPUBSUB", "gucefVFS" } )
+links( { "gucefCOMCORE", "gucefCORE", "gucefMT", "gucefPUBSUB", "gucefVFS" } )
 
 
 configuration( {} )
-defines( { "GUCEF_CODECPLUGIN_BUILD_MODULE" } )
-  links( { "z" } )
-  
-configuration( { LINUX32 } )
-links( { "zlib" } )
-  links( { "zlib" } )
-  
-configuration( { LINUX64 } )
-links( { "zlib" } )
-  links( { "zlib" } )
-  
-configuration( { WIN32 } )
-links( { "zlib" } )
-  links( { "zlib" } )
-  
-configuration( { WIN64 } )
-links( { "zlib" } )
-  links( { "zlib" } )
+defines( { "PUBSUBPLUGIN_STORAGE_BUILD_PLUGIN_DLL" } )
 
 
 configuration( {} )
 vpaths { ["Headers"] = { "**.h", "**.hpp", "**.hxx" } }
 files( {
-  "include/codecspluginZLIB.h",
-  "include/codecspluginZLIB_config.h",
-  "include/codecspluginZLIB_macros.h"
+  "include/pubsubpluginSTORAGE.h",
+  "include/pubsubpluginSTORAGE_CStoragePubSubClient.h",
+  "include/pubsubpluginSTORAGE_CStoragePubSubClientConfig.h",
+  "include/pubsubpluginSTORAGE_CStoragePubSubClientTopic.h",
+  "include/pubsubpluginSTORAGE_CStoragePubSubClientTopicConfig.h",
+  "include/pubsubpluginSTORAGE_CStoragePubSubClientTopicVfsTask.h",
+  "include/pubsubpluginSTORAGE_config.h",
+  "include/pubsubpluginSTORAGE_macros.h"
  } )
 
 
@@ -66,24 +55,29 @@ files( {
 configuration( {} )
 vpaths { ["Source"] = { "**.c", "**.cpp", "**.cs", "**.asm" } }
 files( {
-  "src/codecspluginZLIB.c"
+  "src/pubsubpluginSTORAGE.cpp",
+  "src/pubsubpluginSTORAGE_CStoragePubSubClient.cpp",
+  "src/pubsubpluginSTORAGE_CStoragePubSubClientConfig.cpp",
+  "src/pubsubpluginSTORAGE_CStoragePubSubClientTopic.cpp",
+  "src/pubsubpluginSTORAGE_CStoragePubSubClientTopicConfig.cpp",
+  "src/pubsubpluginSTORAGE_CStoragePubSubClientTopicVfsTask.cpp"
  } )
 
 
 configuration( {} )
-includedirs( { "../../../common/include", "../../../platform/gucefCORE/include", "../../../platform/gucefMT/include", "include" } )
+includedirs( { "../../../common/include", "../../../platform/gucefCOM/include", "../../../platform/gucefCOMCORE/include", "../../../platform/gucefCORE/include", "../../../platform/gucefMT/include", "../../../platform/gucefPUBSUB/include", "../../../platform/gucefVFS/include", "../../../platform/gucefWEB/include", "include" } )
 
 configuration( { "ANDROID" } )
 includedirs( { "../../../platform/gucefCORE/include/android" } )
 
 configuration( { "LINUX32" } )
-includedirs( { "../../../dependencies/zlib", "../../../platform/gucefCORE/include/linux" } )
+includedirs( { "../../../platform/gucefCORE/include/linux" } )
 
 configuration( { "LINUX64" } )
-includedirs( { "../../../dependencies/zlib", "../../../platform/gucefCORE/include/linux" } )
+includedirs( { "../../../platform/gucefCORE/include/linux" } )
 
 configuration( { "WIN32" } )
-includedirs( { "../../../dependencies/zlib", "../../../platform/gucefCORE/include/mswin" } )
+includedirs( { "../../../platform/gucefCOMCORE/include/mswin", "../../../platform/gucefCORE/include/mswin", "../../../platform/gucefMT/include/mswin" } )
 
 configuration( { "WIN64" } )
-includedirs( { "../../../dependencies/zlib", "../../../platform/gucefCORE/include/mswin" } )
+includedirs( { "../../../platform/gucefCOMCORE/include/mswin", "../../../platform/gucefCORE/include/mswin", "../../../platform/gucefMT/include/mswin" } )

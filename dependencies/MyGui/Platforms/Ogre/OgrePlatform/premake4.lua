@@ -12,7 +12,10 @@
 -- Configuration for module: MyGUI.OgrePlatform
 
 
-configuration( { "LINUX" } )
+configuration( { "LINUX32" } )
+  project( "MyGUI.OgrePlatform" )
+
+configuration( { "LINUX64" } )
   project( "MyGUI.OgrePlatform" )
 
 configuration( { "WIN32" } )
@@ -27,16 +30,24 @@ configuration( {} )
 configuration( {} )
 language( "C" )
 
-configuration( { "LINUX" } )
+configuration( { "LINUX32" } )
+language( "C++" )
+
+configuration( { "LINUX64" } )
 language( "C++" )
 
 configuration( { "WIN32" } )
 language( "C++" )
 
-configuration( { "LINUX" } )
+configuration( { "LINUX32" } )
 
 
-configuration( { LINUX } )
+configuration( { LINUX32 } )
+kind( "SharedLib" )
+configuration( { "LINUX64" } )
+
+
+configuration( { LINUX64 } )
 kind( "SharedLib" )
 configuration( { "WIN32" } )
 
@@ -44,16 +55,20 @@ configuration( { "WIN32" } )
 configuration( { WIN32 } )
 kind( "SharedLib" )
   
-configuration( { LINUX } )
-links( { "MyGUI.Engine", "OgreMain" } )
-  links( { "MyGUI.Engine", "OgreMain" } )
+configuration( { LINUX32 } )
+links( { "MyGUI.Engine", "Ogre" } )
+  links( { "MyGUI.Engine", "Ogre" } )
+  
+configuration( { LINUX64 } )
+links( { "MyGUI.Engine", "Ogre" } )
+  links( { "MyGUI.Engine", "Ogre" } )
   
 configuration( { WIN32 } )
-links( { "MyGUI.Engine", "OgreMain" } )
-  links( { "MyGUI.Engine", "OgreMain" } )
+links( { "MyGUI.Engine", "Ogre" } )
+  links( { "MyGUI.Engine", "Ogre" } )
 
 
-configuration( { "LINUX" } )
+configuration( { "LINUX32" } )
     vpaths { ["Platform Headers"] = { "**.h", "**.hpp", "**.hxx" } }
     files( {
       "../../../Common/FileSystemInfo/FileSystemInfo.h",
@@ -62,8 +77,8 @@ configuration( { "LINUX" } )
       "include/MyGUI_OgreDataStream.h",
       "include/MyGUI_OgreDiagnostic.h",
       "include/MyGUI_OgrePlatform.h",
-      "include/MyGUI_OgreRenderManager.h",
       "include/MyGUI_OgreRTTexture.h",
+      "include/MyGUI_OgreRenderManager.h",
       "include/MyGUI_OgreTexture.h",
       "include/MyGUI_OgreVertexBuffer.h"
     } )
@@ -72,8 +87,35 @@ configuration( { "LINUX" } )
     files( {
       "src/MyGUI_OgreDataManager.cpp",
       "src/MyGUI_OgreDataStream.cpp",
-      "src/MyGUI_OgreRenderManager.cpp",
       "src/MyGUI_OgreRTTexture.cpp",
+      "src/MyGUI_OgreRenderManager.cpp",
+      "src/MyGUI_OgreTexture.cpp",
+      "src/MyGUI_OgreVertexBuffer.cpp"
+    } )
+
+
+
+configuration( { "LINUX64" } )
+    vpaths { ["Platform Headers"] = { "**.h", "**.hpp", "**.hxx" } }
+    files( {
+      "../../../Common/FileSystemInfo/FileSystemInfo.h",
+      "include/MyGUI_LastHeader.h",
+      "include/MyGUI_OgreDataManager.h",
+      "include/MyGUI_OgreDataStream.h",
+      "include/MyGUI_OgreDiagnostic.h",
+      "include/MyGUI_OgrePlatform.h",
+      "include/MyGUI_OgreRTTexture.h",
+      "include/MyGUI_OgreRenderManager.h",
+      "include/MyGUI_OgreTexture.h",
+      "include/MyGUI_OgreVertexBuffer.h"
+    } )
+
+    vpaths { ["Platform Source"] = { "**.c", "**.cpp", "**.cs", "**.asm" } }
+    files( {
+      "src/MyGUI_OgreDataManager.cpp",
+      "src/MyGUI_OgreDataStream.cpp",
+      "src/MyGUI_OgreRTTexture.cpp",
+      "src/MyGUI_OgreRenderManager.cpp",
       "src/MyGUI_OgreTexture.cpp",
       "src/MyGUI_OgreVertexBuffer.cpp"
     } )
@@ -89,8 +131,8 @@ configuration( { "WIN32" } )
       "include/MyGUI_OgreDataStream.h",
       "include/MyGUI_OgreDiagnostic.h",
       "include/MyGUI_OgrePlatform.h",
-      "include/MyGUI_OgreRenderManager.h",
       "include/MyGUI_OgreRTTexture.h",
+      "include/MyGUI_OgreRenderManager.h",
       "include/MyGUI_OgreTexture.h",
       "include/MyGUI_OgreVertexBuffer.h"
     } )
@@ -99,18 +141,21 @@ configuration( { "WIN32" } )
     files( {
       "src/MyGUI_OgreDataManager.cpp",
       "src/MyGUI_OgreDataStream.cpp",
-      "src/MyGUI_OgreRenderManager.cpp",
       "src/MyGUI_OgreRTTexture.cpp",
+      "src/MyGUI_OgreRenderManager.cpp",
       "src/MyGUI_OgreTexture.cpp",
       "src/MyGUI_OgreVertexBuffer.cpp"
     } )
 
 
 configuration( {} )
-includedirs( { "../../../../freetype/include", "../../../../freetype/include/freetype", "../../../../freetype/include/freetype/config", "../../../../freetype/include/freetype/internal", "../../../../freetype/include/freetype/internal/services", "../../../../freetype/src/winfonts", "../../../MyGUIEngine/include" } )
+includedirs( { "../../../../Ogre/OgreMain/include", "../../../../Ogre/OgreMain/include/Hash", "../../../../Ogre/OgreMain/include/Threading", "../../../../Ogre/OgreMain/src", "../../../../Ogre/OgreMain/src/nedmalloc", "../../../../Ogre/OgreMain/src/stbi", "../../../../Ogre/include", "../../../../freetype/include", "../../../../freetype/include/freetype", "../../../../freetype/include/freetype/config", "../../../../freetype/include/freetype/internal", "../../../../freetype/include/freetype/internal/services", "../../../../freetype/src", "../../../../freetype/src/winfonts", "../../../MyGUIEngine/include" } )
 
-configuration( { "LINUX" } )
+configuration( { "LINUX32" } )
+includedirs( { "../../../Common/FileSystemInfo", "include" } )
+
+configuration( { "LINUX64" } )
 includedirs( { "../../../Common/FileSystemInfo", "include" } )
 
 configuration( { "WIN32" } )
-includedirs( { "../../../Common/FileSystemInfo", "include" } )
+includedirs( { "../../../../Ogre/OgreMain/include/WIN32", "../../../../Ogre/OgreMain/src/WIN32", "../../../Common/FileSystemInfo", "include" } )

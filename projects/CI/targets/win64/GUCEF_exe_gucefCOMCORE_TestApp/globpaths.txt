@@ -1,0 +1,15 @@
+common/include/*
+dependencies/json-builder/*
+dependencies/json-parser/*
+dependencies/libparsifal/*
+dependencies/stbrumme-hash-library/*
+dependencies/zlib/*
+platform/gucefCOMCORE/*
+platform/gucefCORE/*
+platform/gucefMT/*
+plugins/CORE/codecspluginSTBRUMMEHASH/*
+plugins/CORE/codecspluginZLIB/*
+plugins/CORE/dstorepluginJSONPARSER/*
+plugins/CORE/dstorepluginPARSIFALXML/*
+tests/gucefCOMCORE_TestApp/*
+tools/MemoryLeakFinder/*

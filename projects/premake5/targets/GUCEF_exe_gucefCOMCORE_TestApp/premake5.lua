@@ -12,7 +12,7 @@
 
 workspace( "GUCEF_exe_gucefCOMCORE_TestApp" )
 
-  platforms( { "ALL" } )
+  platforms( { "ALL", "WIN32", "WIN64" } )
 
   location( "projects\premake5\targets" )
 
@@ -21,7 +21,48 @@ workspace( "GUCEF_exe_gucefCOMCORE_TestApp" )
   --
 
 filter "ALL"
+  include( "dependencies/json-builder" )
+  include( "dependencies/json-parser" )
+  include( "dependencies/libparsifal" )
+  include( "dependencies/stbrumme-hash-library" )
+  include( "dependencies/zlib" )
   include( "platform/gucefCOMCORE" )
   include( "platform/gucefCORE" )
   include( "platform/gucefMT" )
+  include( "plugins/CORE/codecspluginSTBRUMMEHASH" )
+  include( "plugins/CORE/codecspluginZLIB" )
+  include( "plugins/CORE/dstorepluginJSONPARSER" )
+  include( "plugins/CORE/dstorepluginPARSIFALXML" )
   include( "tests/gucefCOMCORE_TestApp" )
+
+filter "WIN32"
+  include( "dependencies/json-builder" )
+  include( "dependencies/json-parser" )
+  include( "dependencies/libparsifal" )
+  include( "dependencies/stbrumme-hash-library" )
+  include( "dependencies/zlib" )
+  include( "platform/gucefCOMCORE" )
+  include( "platform/gucefCORE" )
+  include( "platform/gucefMT" )
+  include( "plugins/CORE/codecspluginSTBRUMMEHASH" )
+  include( "plugins/CORE/codecspluginZLIB" )
+  include( "plugins/CORE/dstorepluginJSONPARSER" )
+  include( "plugins/CORE/dstorepluginPARSIFALXML" )
+  include( "tests/gucefCOMCORE_TestApp" )
+  include( "tools/MemoryLeakFinder" )
+
+filter "WIN64"
+  include( "dependencies/json-builder" )
+  include( "dependencies/json-parser" )
+  include( "dependencies/libparsifal" )
+  include( "dependencies/stbrumme-hash-library" )
+  include( "dependencies/zlib" )
+  include( "platform/gucefCOMCORE" )
+  include( "platform/gucefCORE" )
+  include( "platform/gucefMT" )
+  include( "plugins/CORE/codecspluginSTBRUMMEHASH" )
+  include( "plugins/CORE/codecspluginZLIB" )
+  include( "plugins/CORE/dstorepluginJSONPARSER" )
+  include( "plugins/CORE/dstorepluginPARSIFALXML" )
+  include( "tests/gucefCOMCORE_TestApp" )
+  include( "tools/MemoryLeakFinder" )

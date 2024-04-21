@@ -82,6 +82,10 @@ if ( ANDROID )
   include_directories( ../../../../Ogre ../../../../Ogre/RenderSystems ../../../../Ogre/RenderSystems/GLES2 ../../../../Ogre/RenderSystems/GLES2/include ../../../../Ogre/RenderSystems/GLES2/include/EGL ../../../../Ogre/RenderSystems/GLES2/include/EGL/Android ../../../../hiredis )
 endif( ANDROID )
 
+if ( ARDUINO )
+  include_directories( ../../../../hiredis )
+endif( ARDUINO )
+
 if ( EMSCRIPTEN )
   include_directories( ../../../../Ogre ../../../../Ogre/RenderSystems ../../../../Ogre/RenderSystems/GLES2 ../../../../Ogre/RenderSystems/GLES2/include ../../../../Ogre/RenderSystems/GLES2/include/EGL ../../../../Ogre/RenderSystems/GLES2/include/EGL/Emscripten ../../../../hiredis )
 endif( EMSCRIPTEN )
@@ -146,6 +150,8 @@ endif( WIN64 )
 
 
 if (ANDROID)
+GUCEF_config_lib( ${MODULE_NAME} )
+elseif (ARDUINO)
 GUCEF_config_lib( ${MODULE_NAME} )
 elseif (EMSCRIPTEN)
 GUCEF_config_lib( ${MODULE_NAME} )

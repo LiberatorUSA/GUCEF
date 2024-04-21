@@ -22,6 +22,7 @@ LOCAL_MODULE_FILENAME := libhiredis
 @echo Module name: $(LOCAL_MODULE)
 
 LOCAL_SRC_FILES := \
+  alloc.c \
   async.c \
   dict.c \
   hiredis.c \

@@ -23,6 +23,8 @@ LOCAL_MODULE_FILENAME := libProjectGen
 
 LOCAL_SRC_FILES := \
   src/gucefProjectGen_CAndroidMakefileGenerator.cpp \
+  src/gucefProjectGen_CArduinoCLIGenerator.cpp \
+  src/gucefProjectGen_CCIHelperGenerator.cpp \
   src/gucefProjectGen_CCMakeProjectGenerator.cpp \
   src/gucefProjectGen_CDirCrawlingProjectInfoGatherer.cpp \
   src/gucefProjectGen_CDirPreprocessorManager.cpp \

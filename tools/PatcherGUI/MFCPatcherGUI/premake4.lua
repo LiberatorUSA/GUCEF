@@ -65,10 +65,10 @@ configuration( { "WIN32" } )
     vpaths { ["Platform Headers"] = { "**.h", "**.hpp", "**.hxx" } }
     files( {
       "include/CGUCEFAppWin32MFCDriver.h",
-      "include/ChildView.h",
       "include/CMFCCommandLineInfo.h",
-      "include/MainFrm.h",
+      "include/ChildView.h",
       "include/MFCPatcherGUI.h",
+      "include/MainFrm.h",
       "include/stdafx.h",
       "projects/MVC8/res/Resource.h",
       "projects/MVC9/res/Resource.h"
@@ -77,10 +77,10 @@ configuration( { "WIN32" } )
     vpaths { ["Platform Source"] = { "**.c", "**.cpp", "**.cs", "**.asm" } }
     files( {
       "src/CGUCEFAppWin32MFCDriver.cpp",
-      "src/ChildView.cpp",
       "src/CMFCCommandLineInfo.cpp",
-      "src/MainFrm.cpp",
+      "src/ChildView.cpp",
       "src/MFCPatcherGUI.cpp",
+      "src/MainFrm.cpp",
       "src/stdafx.cpp"
     } )
 
@@ -90,10 +90,10 @@ configuration( { "WIN64" } )
     vpaths { ["Platform Headers"] = { "**.h", "**.hpp", "**.hxx" } }
     files( {
       "include/CGUCEFAppWin32MFCDriver.h",
-      "include/ChildView.h",
       "include/CMFCCommandLineInfo.h",
-      "include/MainFrm.h",
+      "include/ChildView.h",
       "include/MFCPatcherGUI.h",
+      "include/MainFrm.h",
       "include/stdafx.h",
       "projects/MVC8/res/Resource.h",
       "projects/MVC9/res/Resource.h"
@@ -102,19 +102,19 @@ configuration( { "WIN64" } )
     vpaths { ["Platform Source"] = { "**.c", "**.cpp", "**.cs", "**.asm" } }
     files( {
       "src/CGUCEFAppWin32MFCDriver.cpp",
-      "src/ChildView.cpp",
       "src/CMFCCommandLineInfo.cpp",
-      "src/MainFrm.cpp",
+      "src/ChildView.cpp",
       "src/MFCPatcherGUI.cpp",
+      "src/MainFrm.cpp",
       "src/stdafx.cpp"
     } )
 
 
 configuration( {} )
-includedirs( { "../../../common/include", "../../../gucefCOM/include", "../../../gucefCOMCORE/include", "../../../gucefCORE/include", "../../../gucefMT/include", "../../../gucefPATCHER/include", "../../../gucefVFS/include" } )
+includedirs( { "../../../common/include", "../../../platform/gucefCOM/include", "../../../platform/gucefCOMCORE/include", "../../../platform/gucefCORE/include", "../../../platform/gucefMT/include", "../../../platform/gucefPATCHER/include", "../../../platform/gucefVFS/include" } )
 
 configuration( { "WIN32" } )
-includedirs( { "../../../gucefCOMCORE/include/mswin", "../../../gucefCORE/include/mswin", "include", "projects/MVC8/res", "projects/MVC9/res" } )
+includedirs( { "../../../platform/gucefCOMCORE/include/mswin", "../../../platform/gucefCORE/include/mswin", "../../../platform/gucefMT/include/mswin", "include", "projects/MVC8/res", "projects/MVC9/res" } )
 
 configuration( { "WIN64" } )
-includedirs( { "../../../gucefCOMCORE/include/mswin", "../../../gucefCORE/include/mswin", "include", "projects/MVC8/res", "projects/MVC9/res" } )
+includedirs( { "../../../platform/gucefCOMCORE/include/mswin", "../../../platform/gucefCORE/include/mswin", "../../../platform/gucefMT/include/mswin", "include", "projects/MVC8/res", "projects/MVC9/res" } )

@@ -9,10 +9,13 @@ platform/gucefMT/*
 platform/gucefPUBSUB/*
 platform/gucefVFS/*
 platform/gucefWEB/*
+plugins/../*
+plugins/COMCORE/comcorepluginDBL/*
 plugins/CORE/codecspluginSTBRUMMEHASH/*
 plugins/CORE/codecspluginZLIB/*
 plugins/CORE/dstorepluginJSONPARSER/*
 plugins/CORE/dstorepluginPARSIFALXML/*
+plugins/CORE/dstorepluginYAML/*
 plugins/GUI/guidriverCEGUI/*
 plugins/GUI/guidriverMyGUI/*
 plugins/GUI/guidriverOgre/*
@@ -24,10 +27,12 @@ plugins/IMAGE/imgpluginFreeImage/*
 plugins/IMAGE/imgpluginITV/*
 plugins/INPUT/inputdriverOIS/*
 plugins/INPUT/inputdriverXWINMSG/*
+plugins/PUBSUB/../*
 plugins/PUBSUB/pubsubpluginAWSSQS/*
 plugins/PUBSUB/pubsubpluginMSMQ/*
 plugins/PUBSUB/pubsubpluginREDISCLUSTER/*
 plugins/PUBSUB/pubsubpluginSTORAGE/*
+plugins/PUBSUB/pubsubpluginTEST/*
 plugins/PUBSUB/pubsubpluginUDP/*
 plugins/PUBSUB/pubsubpluginWEB/*
 plugins/SHARED/pluginglueAWSSDK/*
@@ -36,3 +41,4 @@ plugins/VFS/vfspluginDVP/*
 plugins/VFS/vfspluginITV/*
 plugins/VFS/vfspluginVP/*
 plugins/VFS/vfspluginZIP/*
+tools/*

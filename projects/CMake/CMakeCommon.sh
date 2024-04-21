@@ -12,17 +12,6 @@ CMAKECOMMON_SCRIPTSTARTDIR=${scriptPath%/*}
 echo "CMAKECOMMON_SCRIPTSTARTDIR = $CMAKECOMMON_SCRIPTSTARTDIR"
 
 
-# Check to see if we need to invoke the CMakeList generator
-SKIP_GUCEF_CMAKELISTSFILEGENERATION=${SKIP_GUCEF_CMAKELISTSFILEGENERATION:=undefined}
-if [ "$SKIP_GUCEF_CMAKELISTSFILEGENERATION" = "undefined" ];
-then 
-  echo "*** Generate CMakeLists.txt files ***"
-  #. "$CMAKECOMMON_SCRIPTSTARTDIR/GenerateCMakeLists.sh"
-else 
-  echo "Skipping GUCEF's CMakeLists file generation"
-fi
-
-
 # Go back to where we came from
 cd "$CMAKECOMMON_SCRIPTSTARTDIR"
 
@@ -52,7 +41,7 @@ echo "OUTPUTDIR = $OUTPUTDIR"
 OIS_HOME=${OIS_HOME:=undefined}
 if [ "$OIS_HOME" = "undefined" ]; then
   echo "OIS environment variable not found, setting it"
-  OIS_HOME="$GUCEF_HOME/gucefINPUT/plugins/inputdriverOIS/dependency/OIS"
+  OIS_HOME="$GUCEF_HOME/dependencies/OIS"
 fi
 echo "OIS_HOME = $OIS_HOME"
 
@@ -61,7 +50,7 @@ echo "OIS_HOME = $OIS_HOME"
 FREEIMAGE_HOME=${FREEIMAGE_HOME:=undefined}
 if [ "$FREEIMAGE_HOME" = "undefined" ]; then
   echo "FreeImage environment variable not found, setting it"
-  FREEIMAGE_HOME="$GUCEF_HOME/gucefIMAGE/plugins/imgpluginFreeImage/dependencies/FreeImage"
+  FREEIMAGE_HOME="$GUCEF_HOME/dependencies/FreeImage"
 fi
 echo "FREEIMAGE_HOME = $FREEIMAGE_HOME"
 
@@ -70,7 +59,7 @@ echo "FREEIMAGE_HOME = $FREEIMAGE_HOME"
 DEVIL_HOME=${DEVIL_HOME:=undefined}
 if [ "$DEVIL_HOME" = "undefined" ]; then
   echo "DevIL environment variable not found, setting it"
-  DEVIL_HOME="$GUCEF_HOME/gucefIMAGE/plugins/imgpluginDEVIL/dependancy/Devil"
+  DEVIL_HOME="$GUCEF_HOME/dependencies/Devil"
 fi
 echo "DEVIL_HOME = $DEVIL_HOME"
 
@@ -79,7 +68,7 @@ echo "DEVIL_HOME = $DEVIL_HOME"
 ZLIB_HOME=${ZLIB_HOME:=undefined}
 if [ "$ZLIB_HOME" = "undefined" ]; then
   echo "ZLib environment variable not found, setting it"
-  ZLIB_HOME="$GUCEF_HOME/gucefVFS/plugins/vfspluginZIP/dependencies/zlib"
+  ZLIB_HOME="$GUCEF_HOME/dependencies/zlib"
 fi
 echo "ZLIB_HOME = $ZLIB_HOME"
 
@@ -88,6 +77,6 @@ echo "ZLIB_HOME = $ZLIB_HOME"
 ZZIPLIB_HOME=${ZZIPLIB_HOME:=undefined}
 if [ "$ZZIPLIB_HOME" = "undefined" ]; then
   echo "ZZipLib environment variable not found, setting it"
-  ZZIPLIB_HOME="$GUCEF_HOME/gucefVFS/plugins/vfspluginZIP/dependencies/zziplib"
+  ZZIPLIB_HOME="$GUCEF_HOME/dependencies/zziplib"
 fi
 echo "ZZIPLIB_HOME = $ZZIPLIB_HOME"

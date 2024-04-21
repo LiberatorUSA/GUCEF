@@ -31,6 +31,14 @@ kind( "SharedLib" )
 
 configuration( {} )
 defines( { "BUILDING_LIBCURL", "HAVE_BUILTIN_CPU_SUPPORTS" } )
+  
+
+configuration( { LINUX32 } )
+defines( { "CURL_DISABLE_LDAP", "HAVE_STRUCT_TIMEVAL" } )
+  
+
+configuration( { LINUX64 } )
+defines( { "CURL_DISABLE_LDAP", "HAVE_STRUCT_TIMEVAL" } )
   links( { "Advapi32.lib", "Wldap32.lib", "Ws2_32.lib" } )
   
 

@@ -1,0 +1,8 @@
+common/include/*
+platform/gucefCOM/include/*
+platform/gucefCOMCORE/include/*
+platform/gucefCORE/include/*
+platform/gucefMT/include/*
+platform/gucefVFS/include/*
+platform/gucefWEB/include/*
+tools/msmqMetrics/*

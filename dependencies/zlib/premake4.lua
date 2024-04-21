@@ -12,7 +12,10 @@
 -- Configuration for module: zlib
 
 
-configuration( { "LINUX" } )
+configuration( { "LINUX32" } )
+  project( "zlib" )
+
+configuration( { "LINUX64" } )
   project( "zlib" )
 
 configuration( { "WIN32" } )
@@ -27,7 +30,10 @@ configuration( {} )
 configuration( {} )
   targetdir( os.getenv( "PM4TARGETDIR" ) )
 
-configuration( { "LINUX" } )
+configuration( { "LINUX32" } )
+language( "C" )
+
+configuration( { "LINUX64" } )
 language( "C" )
 
 configuration( { "WIN32" } )
@@ -36,10 +42,15 @@ language( "C" )
 configuration( { "WIN64" } )
 language( "C" )
 
-configuration( { "LINUX" } )
+configuration( { "LINUX32" } )
 
 
-configuration( { LINUX } )
+configuration( { LINUX32 } )
+kind( "SharedLib" )
+configuration( { "LINUX64" } )
+
+
+configuration( { LINUX64 } )
 kind( "SharedLib" )
 configuration( { "WIN32" } )
 
@@ -53,7 +64,11 @@ configuration( { WIN64 } )
 kind( "SharedLib" )
   
 
-configuration( { LINUX } )
+configuration( { LINUX32 } )
+defines( { "ZLIB_DLL", "ZLIB_INTERNAL", "ZZIP_HAVE_STDINT_H" } )
+  
+
+configuration( { LINUX64 } )
 defines( { "ZLIB_DLL", "ZLIB_INTERNAL", "ZZIP_HAVE_STDINT_H" } )
   
 
@@ -65,7 +80,41 @@ configuration( { WIN64 } )
 defines( { "ZLIB_DLL", "ZLIB_INTERNAL", "ZZIP_HAVE_STDINT_H" } )
 
 
-configuration( { "LINUX" } )
+configuration( { "LINUX32" } )
+    vpaths { ["Platform Headers"] = { "**.h", "**.hpp", "**.hxx" } }
+    files( {
+      "crc32.h",
+      "deflate.h",
+      "inffast.h",
+      "inffixed.h",
+      "inflate.h",
+      "inftrees.h",
+      "trees.h",
+      "zconf.h",
+      "zconf.in.h",
+      "zlib.h",
+      "zutil.h"
+    } )
+
+    vpaths { ["Platform Source"] = { "**.c", "**.cpp", "**.cs", "**.asm" } }
+    files( {
+      "adler32.c",
+      "compress.c",
+      "crc32.c",
+      "deflate.c",
+      "gzio.c",
+      "infback.c",
+      "inffast.c",
+      "inflate.c",
+      "inftrees.c",
+      "trees.c",
+      "uncompr.c",
+      "zutil.c"
+    } )
+
+
+
+configuration( { "LINUX64" } )
     vpaths { ["Platform Headers"] = { "**.h", "**.hpp", "**.hxx" } }
     files( {
       "crc32.h",

@@ -40,7 +40,11 @@ configuration( { ANDROID } )
 links( { "MyGUI.OpenGLESPlatform" } )
   links( { "GLESv1_CM", "MyGUI.OpenGLESPlatform" } )
   
-configuration( { LINUX } )
+configuration( { LINUX32 } )
+links( { "MyGUI.OpenGLPlatform" } )
+  links( { "GL", "MyGUI.OpenGLPlatform" } )
+  
+configuration( { LINUX64 } )
 links( { "MyGUI.OpenGLPlatform" } )
   links( { "GL", "MyGUI.OpenGLPlatform" } )
   
@@ -79,16 +83,19 @@ files( {
 
 
 configuration( {} )
-includedirs( { "../../../common/include", "../../../dependencies/MyGui/Common/FileSystemInfo", "../../../dependencies/MyGui/MyGUIEngine/include", "../../../dependencies/MyGui/Platforms/OpenGL/OpenGLPlatform/include", "../../../dependencies/MyGui/Platforms/OpenGL/OpenGLPlatform/include/GL", "../../../dependencies/freetype/include", "../../../dependencies/freetype/include/freetype", "../../../dependencies/freetype/include/freetype/config", "../../../dependencies/freetype/include/freetype/internal", "../../../dependencies/freetype/include/freetype/internal/services", "../../../dependencies/freetype/src/winfonts", "../../../gucefCORE/include", "../../../gucefGUI/include", "../../../gucefIMAGE/include", "../../../gucefINPUT/include", "../../../gucefMT/include", "../../../gucefVFS/include", "../guidriverMyGUI/include", "include" } )
+includedirs( { "../../../common/include", "../../../dependencies/MyGui/Common/FileSystemInfo", "../../../dependencies/MyGui/MyGUIEngine/include", "../../../dependencies/MyGui/Platforms/OpenGL/OpenGLPlatform/include", "../../../dependencies/MyGui/Platforms/OpenGL/OpenGLPlatform/include/GL", "../../../dependencies/freetype/include", "../../../dependencies/freetype/include/freetype", "../../../dependencies/freetype/include/freetype/config", "../../../dependencies/freetype/include/freetype/internal", "../../../dependencies/freetype/include/freetype/internal/services", "../../../dependencies/freetype/src", "../../../dependencies/freetype/src/winfonts", "../../../platform/gucefCORE/include", "../../../platform/gucefGUI/include", "../../../platform/gucefIMAGE/include", "../../../platform/gucefINPUT/include", "../../../platform/gucefMT/include", "../../../platform/gucefVFS/include", "../guidriverMyGUI/include", "include" } )
 
 configuration( { "ANDROID" } )
-includedirs( { "../../../dependencies/MyGui/Common/FileSystemInfo", "../../../gucefCORE/include/android", "OpenGLESPlatform/include" } )
+includedirs( { "../../../dependencies/MyGui/Common/FileSystemInfo", "../../../platform/gucefCORE/include/android", "OpenGLESPlatform/include" } )
 
-configuration( { "LINUX" } )
-includedirs( { "../../../gucefCORE/include/linux" } )
+configuration( { "LINUX32" } )
+includedirs( { "../../../platform/gucefCORE/include/linux" } )
+
+configuration( { "LINUX64" } )
+includedirs( { "../../../platform/gucefCORE/include/linux" } )
 
 configuration( { "WIN32" } )
-includedirs( { "../../../gucefCORE/include/mswin" } )
+includedirs( { "../../../platform/gucefCORE/include/mswin", "../../../platform/gucefMT/include/mswin" } )
 
 configuration( { "WIN64" } )
-includedirs( { "../../../gucefCORE/include/mswin" } )
+includedirs( { "../../../platform/gucefCORE/include/mswin", "../../../platform/gucefMT/include/mswin" } )

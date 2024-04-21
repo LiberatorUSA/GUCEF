@@ -17,25 +17,41 @@ LOCAL_PATH := $(MY_MODULE_PATH)
 include $(CLEAR_VARS)
 
 @echo Module path: $(MY_MODULE_PATH)
-LOCAL_MODULE := compressioncodecZLIB
-LOCAL_MODULE_FILENAME := libcompressioncodecZLIB
+LOCAL_MODULE := pubsubpluginMSMQ
+LOCAL_MODULE_FILENAME := libpubsubpluginMSMQ
 @echo Module name: $(LOCAL_MODULE)
 
 LOCAL_SRC_FILES := \
-  src/compressioncodecZLIB.c
+  src/pubsubpluginMSMQ.cpp \
+  src/pubsubpluginMSMQ_CMsmqPubSubClient.cpp \
+  src/pubsubpluginMSMQ_CMsmqPubSubClientConfig.cpp \
+  src/pubsubpluginMSMQ_CMsmqPubSubClientTopic.cpp \
+  src/pubsubpluginMSMQ_CMsmqPubSubClientTopicConfig.cpp
 
 LOCAL_C_INCLUDES := \
   $(MY_MODULE_PATH)/include \
   $(MY_MODULE_PATH)/../../../common/include \
+  $(MY_MODULE_PATH)/../../../platform/gucefCOM/include \
+  $(MY_MODULE_PATH)/../../../platform/gucefCOMCORE/include \
   $(MY_MODULE_PATH)/../../../platform/gucefCORE/include \
   $(MY_MODULE_PATH)/../../../platform/gucefCORE/include/android \
-  $(MY_MODULE_PATH)/../../../platform/gucefMT/include
+  $(MY_MODULE_PATH)/../../../platform/gucefMT/include \
+  $(MY_MODULE_PATH)/../../../platform/gucefPUBSUB/include \
+  $(MY_MODULE_PATH)/../../../platform/gucefVFS/include \
+  $(MY_MODULE_PATH)/../../../platform/gucefWEB/include
 
-LOCAL_CFLAGS := -DGUCEF_CODECPLUGIN_BUILD_MODULE
+LOCAL_CFLAGS := -DPUBSUBPLUGIN_MSMQ_BUILD_PLUGIN_DLL
+
+
+LOCAL_SHARED_LIBRARIES := \
+  gucefCOMCORE \
+  gucefCORE \
+  gucefMT \
+  gucefPUBSUB
 
 
 LOCAL_LDLIBS := \
-  -lz
+  -lMqrt.lib
 
 include $(BUILD_SHARED_LIBRARY)
 

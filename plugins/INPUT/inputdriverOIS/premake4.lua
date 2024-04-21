@@ -12,7 +12,10 @@
 -- Configuration for module: inputdriverOIS
 
 
-configuration( { "LINUX" } )
+configuration( { "LINUX32" } )
+  project( "inputdriverOIS" )
+
+configuration( { "LINUX64" } )
   project( "inputdriverOIS" )
 
 configuration( { "WIN32" } )
@@ -30,7 +33,10 @@ configuration( {} )
 configuration( {} )
 language( "C" )
 
-configuration( { "LINUX" } )
+configuration( { "LINUX32" } )
+language( "C++" )
+
+configuration( { "LINUX64" } )
 language( "C++" )
 
 configuration( { "WIN32" } )
@@ -39,10 +45,15 @@ language( "C++" )
 configuration( { "WIN64" } )
 language( "C++" )
 
-configuration( { "LINUX" } )
+configuration( { "LINUX32" } )
 
 
-configuration( { LINUX } )
+configuration( { LINUX32 } )
+kind( "SharedLib" )
+configuration( { "LINUX64" } )
+
+
+configuration( { LINUX64 } )
 kind( "SharedLib" )
 configuration( { "WIN32" } )
 
@@ -55,12 +66,20 @@ configuration( { "WIN64" } )
 configuration( { WIN64 } )
 kind( "SharedLib" )
   
-configuration( { LINUX } )
+configuration( { LINUX32 } )
 links( { "OIS", "gucefCORE", "gucefINPUT", "gucefMT" } )
   links( { "OIS" } )
   
 
-configuration( { LINUX } )
+configuration( { LINUX32 } )
+defines( { "BUILD_GUCEF_INPUT_PLUGIN_DLL", "INPUTDRIVEROIS_BUILD_MODULE" } )
+  
+configuration( { LINUX64 } )
+links( { "OIS", "gucefCORE", "gucefINPUT", "gucefMT" } )
+  links( { "OIS" } )
+  
+
+configuration( { LINUX64 } )
 defines( { "BUILD_GUCEF_INPUT_PLUGIN_DLL", "INPUTDRIVEROIS_BUILD_MODULE" } )
   
 configuration( { WIN32 } )
@@ -80,7 +99,26 @@ configuration( { WIN64 } )
 defines( { "BUILD_GUCEF_INPUT_PLUGIN_DLL", "INPUTDRIVEROIS_BUILD_MODULE" } )
 
 
-configuration( { "LINUX" } )
+configuration( { "LINUX32" } )
+    vpaths { ["Platform Headers"] = { "**.h", "**.hpp", "**.hxx" } }
+    files( {
+      "include/DLLMainInputDriverOIS.h",
+      "include/gucefINPUT_OISJoystickListener.h",
+      "include/gucefINPUT_OISKeyboardListener.h",
+      "include/gucefINPUT_OISMouseListener.h"
+    } )
+
+    vpaths { ["Platform Source"] = { "**.c", "**.cpp", "**.cs", "**.asm" } }
+    files( {
+      "src/DLLMainInputDriverOIS.cpp",
+      "src/gucefINPUT_OISJoystickListener.cpp",
+      "src/gucefINPUT_OISKeyboardListener.cpp",
+      "src/gucefINPUT_OISMouseListener.cpp"
+    } )
+
+
+
+configuration( { "LINUX64" } )
     vpaths { ["Platform Headers"] = { "**.h", "**.hpp", "**.hxx" } }
     files( {
       "include/DLLMainInputDriverOIS.h",
@@ -137,13 +175,16 @@ configuration( { "WIN64" } )
 
 
 configuration( {} )
-includedirs( { "../../../common/include", "../../../gucefCORE/include", "../../../gucefINPUT/include", "../../../gucefMT/include" } )
+includedirs( { "../../../common/include", "../../../platform/gucefCORE/include", "../../../platform/gucefINPUT/include", "../../../platform/gucefMT/include" } )
 
-configuration( { "LINUX" } )
-includedirs( { "../../../dependencies/OIS/includes", "../../../dependencies/OIS/includes/linux", "../../../dependencies/OIS/src/extras/LIRC", "../../../gucefCORE/include/linux", "include" } )
+configuration( { "LINUX32" } )
+includedirs( { "../../../dependencies/OIS/includes", "../../../dependencies/OIS/includes/linux", "../../../dependencies/OIS/src/extras/LIRC", "../../../platform/gucefCORE/include/linux", "include" } )
+
+configuration( { "LINUX64" } )
+includedirs( { "../../../dependencies/OIS/includes", "../../../dependencies/OIS/includes/linux", "../../../dependencies/OIS/src/extras/LIRC", "../../../platform/gucefCORE/include/linux", "include" } )
 
 configuration( { "WIN32" } )
-includedirs( { "../../../dependencies/OIS/includes", "../../../dependencies/OIS/includes/win32", "../../../dependencies/OIS/src/extras/LIRC", "../../../gucefCORE/include/mswin", "include" } )
+includedirs( { "../../../dependencies/OIS/#$#ENVVAR:DXSDK_DIR#$#/Include", "../../../dependencies/OIS/includes", "../../../dependencies/OIS/includes/win32", "../../../dependencies/OIS/src/extras/LIRC", "../../../dependencies/OIS/src/win32/extras/WiiMote", "../../../dependencies/external", "../../../platform/gucefCORE/include/mswin", "../../../platform/gucefMT/include/mswin", "include" } )
 
 configuration( { "WIN64" } )
-includedirs( { "../../../dependencies/OIS/includes", "../../../dependencies/OIS/src/extras/LIRC", "../../../gucefCORE/include/mswin", "include" } )
+includedirs( { "../../../dependencies/OIS/includes", "../../../dependencies/OIS/src/extras/LIRC", "../../../platform/gucefCORE/include/mswin", "../../../platform/gucefMT/include/mswin", "include" } )

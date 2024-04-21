@@ -20,6 +20,7 @@ echo ---
 echo --- Generating Arduino supporting scripts
 echo ---
 SET NOPAUSE=1
+call "%GUCEF_THEBATCHDIR%..\GenerateProjectFiles.bat"
 call "%GUCEF_THEBATCHDIR%GenerateArduinoSetup.bat"
 
 echo --- Executing Arduino supporting scripts

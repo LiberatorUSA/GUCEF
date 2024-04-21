@@ -31,7 +31,7 @@ LOCAL_C_INCLUDES := \
   $(MY_MODULE_PATH)/../../../../platform/gucefCORE/include \
   $(MY_MODULE_PATH)/../../../../platform/gucefCORE/include/android \
   $(MY_MODULE_PATH)/../../../../platform/gucefMT/include \
-  $(MY_MODULE_PATH)/../../../ProjectGen/include
+  $(MY_MODULE_PATH)/../../include
 
 LOCAL_CFLAGS := -DPROJECTGENVSIMPORTER_BUILD_MODULE
 

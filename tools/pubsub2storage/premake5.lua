@@ -9,10 +9,10 @@
 --------------------------------------------------------------------
 --
 
--- Configuration for module: udp2rediscluster
+-- Configuration for module: pubsub2storage
 
 
-project( "udp2rediscluster" )
+project( "pubsub2storage" )
 
 configuration( {} )
   location( os.getenv( "PM5OUTPUTDIR" ) )
@@ -35,15 +35,14 @@ configuration( {} )
 kind( "ConsoleApp" )
 
 configuration( {} )
-links( { "gucefCOM", "gucefCOMCORE", "gucefCORE", "gucefMT", "gucefWEB", "hiredis", "redis-plus-plus" } )
-links( { "gucefCOM", "gucefCOMCORE", "gucefCORE", "gucefMT", "gucefWEB", "hiredis", "redis-plus-plus" } )
+links( { "gucefCOM", "gucefCOMCORE", "gucefCORE", "gucefMT", "gucefPUBSUB", "gucefVFS", "gucefWEB" } )
+links( { "gucefCOM", "gucefCOMCORE", "gucefCORE", "gucefMT", "gucefPUBSUB", "gucefVFS", "gucefWEB" } )
 
 
 configuration( {} )
 vpaths { ["Headers"] = { "**.h", "**.hpp", "**.hxx" } }
 files( {
-  "include/crc16.h",
-  "include/udp2rediscluster.h"
+  "include/pubsub2storage.h"
  } )
 
 
@@ -51,56 +50,25 @@ files( {
 configuration( {} )
 vpaths { ["Source"] = { "**.c", "**.cpp", "**.cs", "**.asm" } }
 files( {
-  "src/crc16.cpp",
   "src/main.cpp",
-  "src/udp2rediscluster.cpp"
+  "src/pubsub2storage.cpp"
  } )
 
 
 configuration( {} )
-includedirs( { "../../common/include", "../../dependencies", "../../dependencies/hiredis", "../../dependencies/redis-plus-plus/src/sw/redis++", "../../platform/gucefCOM/include", "../../platform/gucefCOMCORE/include", "../../platform/gucefCORE/include", "../../platform/gucefMT/include", "../../platform/gucefVFS/include", "../../platform/gucefWEB/include", "include" } )
+includedirs( { "../../common/include", "../../platform/gucefCOM/include", "../../platform/gucefCOMCORE/include", "../../platform/gucefCORE/include", "../../platform/gucefMT/include", "../../platform/gucefPUBSUB/include", "../../platform/gucefVFS/include", "../../platform/gucefWEB/include", "include" } )
 
 configuration( { "ANDROID" } )
-includedirs( { "../../dependencies/hiredis", "../../platform/gucefCORE/include/android" } )
-
-configuration( { "EMSCRIPTEN" } )
-includedirs( { "../../dependencies/hiredis" } )
-
-configuration( { "GLX" } )
-includedirs( { "../../dependencies/hiredis" } )
-
-configuration( { "GTK" } )
-includedirs( { "../../dependencies/hiredis" } )
-
-configuration( { "IOS" } )
-includedirs( { "../../dependencies/hiredis" } )
+includedirs( { "../../platform/gucefCORE/include/android" } )
 
 configuration( { "LINUX32" } )
-includedirs( { "../../dependencies/hiredis", "../../platform/gucefCORE/include/linux" } )
+includedirs( { "../../platform/gucefCORE/include/linux" } )
 
 configuration( { "LINUX64" } )
-includedirs( { "../../dependencies/hiredis", "../../platform/gucefCORE/include/linux" } )
-
-configuration( { "NACL" } )
-includedirs( { "../../dependencies/hiredis" } )
-
-configuration( { "OSX" } )
-includedirs( { "../../dependencies/hiredis" } )
-
-configuration( { "POSIX" } )
-includedirs( { "../../dependencies/hiredis" } )
-
-configuration( { "SDL" } )
-includedirs( { "../../dependencies/hiredis" } )
-
-configuration( { "SYMBIAN" } )
-includedirs( { "../../dependencies/hiredis" } )
-
-configuration( { "UNIX" } )
-includedirs( { "../../dependencies/hiredis" } )
+includedirs( { "../../platform/gucefCORE/include/linux" } )
 
 configuration( { "WIN32" } )
-includedirs( { "../../dependencies/hiredis", "../../platform/gucefCOMCORE/include/mswin", "../../platform/gucefCORE/include/mswin" } )
+includedirs( { "../../platform/gucefCOMCORE/include/mswin", "../../platform/gucefCORE/include/mswin", "../../platform/gucefMT/include/mswin" } )
 
 configuration( { "WIN64" } )
-includedirs( { "../../dependencies/hiredis", "../../platform/gucefCOMCORE/include/mswin", "../../platform/gucefCORE/include/mswin" } )
+includedirs( { "../../platform/gucefCOMCORE/include/mswin", "../../platform/gucefCORE/include/mswin", "../../platform/gucefMT/include/mswin" } )

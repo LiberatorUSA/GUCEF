@@ -17,28 +17,27 @@ LOCAL_PATH := $(MY_MODULE_PATH)
 include $(CLEAR_VARS)
 
 @echo Module path: $(MY_MODULE_PATH)
-LOCAL_MODULE := dstorepluginJSONPARSER
-LOCAL_MODULE_FILENAME := libdstorepluginJSONPARSER
+LOCAL_MODULE := dstorepluginYAML
+LOCAL_MODULE_FILENAME := libdstorepluginYAML
 @echo Module name: $(LOCAL_MODULE)
 
 LOCAL_SRC_FILES := \
-  src/DLLMainDSTOREpluginJSONPARSER.c
+  src/DLLMainDSTOREpluginYAML.c
 
 LOCAL_C_INCLUDES := \
   $(MY_MODULE_PATH)/include \
   $(MY_MODULE_PATH)/../../../common/include \
-  $(MY_MODULE_PATH)/../../../dependencies/json-builder \
-  $(MY_MODULE_PATH)/../../../dependencies/json-parser \
+  $(MY_MODULE_PATH)/../../../dependencies/libyaml/include \
+  $(MY_MODULE_PATH)/../../../dependencies/libyaml/src \
   $(MY_MODULE_PATH)/../../../platform/gucefCORE/include \
   $(MY_MODULE_PATH)/../../../platform/gucefCORE/include/android \
   $(MY_MODULE_PATH)/../../../platform/gucefMT/include
 
-LOCAL_CFLAGS := -DDSTOREPLUGINJSONPARSER_BUILD_MODULE
+LOCAL_CFLAGS := -DDSTOREPLUGINYAML_BUILD_MODULE
 
 
-LOCAL_STATIC_LIBRARIES := \
-  jsonbuilder \
-  jsonparser
+LOCAL_SHARED_LIBRARIES := \
+  yaml
 
 include $(BUILD_SHARED_LIBRARY)
 

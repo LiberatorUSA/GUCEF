@@ -17,25 +17,66 @@ LOCAL_PATH := $(MY_MODULE_PATH)
 include $(CLEAR_VARS)
 
 @echo Module path: $(MY_MODULE_PATH)
-LOCAL_MODULE := compressioncodecZLIB
-LOCAL_MODULE_FILENAME := libcompressioncodecZLIB
+LOCAL_MODULE := pubsubpluginREDISCLUSTER
+LOCAL_MODULE_FILENAME := libpubsubpluginREDISCLUSTER
 @echo Module name: $(LOCAL_MODULE)
 
 LOCAL_SRC_FILES := \
-  src/compressioncodecZLIB.c
+  ../../../tools/redisinfo/src/redisinfo_CRedisClusterKeyCache.cpp \
+  ../../../tools/redisinfo/src/redisinfo_CRedisClusterKeyCacheUpdateTask.cpp \
+  ../../../tools/redisinfo/src/redisinfo_CRedisClusterKeyPrunerTask.cpp \
+  src/crc16.cpp \
+  src/pubsubpluginREDISCLUSTER.cpp \
+  src/pubsubpluginREDISCLUSTER_CRedisClusterPubSubClient.cpp \
+  src/pubsubpluginREDISCLUSTER_CRedisClusterPubSubClientConfig.cpp \
+  src/pubsubpluginREDISCLUSTER_CRedisClusterPubSubClientTopic.cpp \
+  src/pubsubpluginREDISCLUSTER_CRedisClusterPubSubClientTopicConfig.cpp \
+  src/pubsubpluginREDISCLUSTER_CRedisClusterPubSubClientTopicReader.cpp \
+  src/pubsubpluginREDISCLUSTER_RedisNode.cpp
 
 LOCAL_C_INCLUDES := \
+  $(MY_MODULE_PATH)/../../../tools/redisinfo/include/ \
   $(MY_MODULE_PATH)/include \
+  $(MY_MODULE_PATH)/.. \
+  $(MY_MODULE_PATH)/../.. \
+  $(MY_MODULE_PATH)/../../.. \
   $(MY_MODULE_PATH)/../../../common/include \
+  $(MY_MODULE_PATH)/../../../dependencies/hiredis \
+  $(MY_MODULE_PATH)/../../../dependencies/redis-plus-plus/../ \
+  $(MY_MODULE_PATH)/../../../dependencies/redis-plus-plus/src/sw/../ \
+  $(MY_MODULE_PATH)/../../../dependencies/redis-plus-plus/src/sw/redis++ \
+  $(MY_MODULE_PATH)/../../../dependencies/redis-plus-plus/src/sw/redis++/cxx11 \
+  $(MY_MODULE_PATH)/../../../dependencies/redis-plus-plus/src/sw/redis++/cxx11/sw \
+  $(MY_MODULE_PATH)/../../../dependencies/redis-plus-plus/src/sw/redis++/cxx11/sw/redis++ \
+  $(MY_MODULE_PATH)/../../../dependencies/redis-plus-plus/src/sw/redis++/no_tls \
+  $(MY_MODULE_PATH)/../../../dependencies/redis-plus-plus/src/sw/redis++/no_tls/sw \
+  $(MY_MODULE_PATH)/../../../dependencies/redis-plus-plus/src/sw/redis++/no_tls/sw/redis++ \
+  $(MY_MODULE_PATH)/../../../dependencies/redis-plus-plus/src/sw/redis++/patterns \
+  $(MY_MODULE_PATH)/../../../platform/gucefCOM/include \
+  $(MY_MODULE_PATH)/../../../platform/gucefCOMCORE/include \
   $(MY_MODULE_PATH)/../../../platform/gucefCORE/include \
   $(MY_MODULE_PATH)/../../../platform/gucefCORE/include/android \
-  $(MY_MODULE_PATH)/../../../platform/gucefMT/include
+  $(MY_MODULE_PATH)/../../../platform/gucefMT/include \
+  $(MY_MODULE_PATH)/../../../platform/gucefPUBSUB/include \
+  $(MY_MODULE_PATH)/../../../platform/gucefVFS/include \
+  $(MY_MODULE_PATH)/../../../platform/gucefWEB/include \
+  $(MY_MODULE_PATH)/../../../tools \
+  $(MY_MODULE_PATH)/../../../tools/redisinfo \
+  $(MY_MODULE_PATH)/../../../tools/redisinfo/include
 
-LOCAL_CFLAGS := -DGUCEF_CODECPLUGIN_BUILD_MODULE
+LOCAL_CFLAGS := -DPUBSUBPLUGIN_REDISCLUSTER_BUILD_PLUGIN_DLL
 
 
-LOCAL_LDLIBS := \
-  -lz
+LOCAL_SHARED_LIBRARIES := \
+  gucefCOMCORE \
+  gucefCORE \
+  gucefMT \
+  gucefPUBSUB
+
+
+LOCAL_STATIC_LIBRARIES := \
+  hiredis \
+  redis-plus-plus
 
 include $(BUILD_SHARED_LIBRARY)
 

@@ -12,7 +12,13 @@
 -- Configuration for module: gucefGUI_TestApp
 
 
-configuration( { "LINUX" } )
+configuration( { "ANDROID" } )
+  project( "gucefGUI_TestApp" )
+
+configuration( { "LINUX32" } )
+  project( "gucefGUI_TestApp" )
+
+configuration( { "LINUX64" } )
   project( "gucefGUI_TestApp" )
 
 configuration( { "WIN32" } )
@@ -30,7 +36,13 @@ configuration( {} )
 configuration( {} )
 language( "C" )
 
-configuration( { "LINUX" } )
+configuration( { "ANDROID" } )
+language( "C++" )
+
+configuration( { "LINUX32" } )
+language( "C++" )
+
+configuration( { "LINUX64" } )
 language( "C++" )
 
 configuration( { "WIN32" } )
@@ -39,10 +51,20 @@ language( "C++" )
 configuration( { "WIN64" } )
 language( "C++" )
 
-configuration( { "LINUX" } )
+configuration( { "ANDROID" } )
 
 
-configuration( { LINUX } )
+configuration( { ANDROID } )
+kind( "ConsoleApp" )
+configuration( { "LINUX32" } )
+
+
+configuration( { LINUX32 } )
+kind( "ConsoleApp" )
+configuration( { "LINUX64" } )
+
+
+configuration( { LINUX64 } )
 kind( "ConsoleApp" )
 configuration( { "WIN32" } )
 
@@ -55,12 +77,28 @@ configuration( { "WIN64" } )
 configuration( { WIN64 } )
 kind( "WindowedApp" )
   
-configuration( { LINUX } )
+configuration( { ANDROID } )
 links( { "gucefCORE", "gucefGUI", "gucefIMAGE", "gucefINPUT", "gucefMT", "gucefVFS" } )
   links( { "gucefCORE", "gucefGUI", "gucefIMAGE", "gucefINPUT", "gucefMT", "gucefVFS" } )
   
 
-configuration( { LINUX } )
+configuration( { ANDROID } )
+defines( { "GUCEF_GUI_TESTAPP_BUILD_MODULE" } )
+  
+configuration( { LINUX32 } )
+links( { "gucefCORE", "gucefGUI", "gucefIMAGE", "gucefINPUT", "gucefMT", "gucefVFS" } )
+  links( { "gucefCORE", "gucefGUI", "gucefIMAGE", "gucefINPUT", "gucefMT", "gucefVFS" } )
+  
+
+configuration( { LINUX32 } )
+defines( { "GUCEF_GUI_TESTAPP_BUILD_MODULE" } )
+  
+configuration( { LINUX64 } )
+links( { "gucefCORE", "gucefGUI", "gucefIMAGE", "gucefINPUT", "gucefMT", "gucefVFS" } )
+  links( { "gucefCORE", "gucefGUI", "gucefIMAGE", "gucefINPUT", "gucefMT", "gucefVFS" } )
+  
+
+configuration( { LINUX64 } )
 defines( { "GUCEF_GUI_TESTAPP_BUILD_MODULE" } )
   
 configuration( { WIN32 } )
@@ -80,7 +118,23 @@ configuration( { WIN64 } )
 defines( { "GUCEF_GUI_TESTAPP_BUILD_MODULE" } )
 
 
-configuration( { "LINUX" } )
+configuration( { "ANDROID" } )
+    vpaths { ["Platform Source"] = { "**.c", "**.cpp", "**.cs", "**.asm" } }
+    files( {
+      "src/gucefGUI_TestApp.cpp"
+    } )
+
+
+
+configuration( { "LINUX32" } )
+    vpaths { ["Platform Source"] = { "**.c", "**.cpp", "**.cs", "**.asm" } }
+    files( {
+      "src/gucefGUI_TestApp.cpp"
+    } )
+
+
+
+configuration( { "LINUX64" } )
     vpaths { ["Platform Source"] = { "**.c", "**.cpp", "**.cs", "**.asm" } }
     files( {
       "src/gucefGUI_TestApp.cpp"
@@ -104,13 +158,19 @@ configuration( { "WIN64" } )
 
 
 configuration( {} )
-includedirs( { "../../common/include", "../../gucefCORE/include", "../../gucefGUI/include", "../../gucefIMAGE/include", "../../gucefINPUT/include", "../../gucefMT/include", "../../gucefVFS/include" } )
+includedirs( { "../../common/include", "../../platform/gucefCORE/include", "../../platform/gucefGUI/include", "../../platform/gucefIMAGE/include", "../../platform/gucefINPUT/include", "../../platform/gucefMT/include", "../../platform/gucefVFS/include" } )
 
-configuration( { "LINUX" } )
-includedirs( { "../../gucefCORE/include/linux" } )
+configuration( { "ANDROID" } )
+includedirs( { "../../platform/gucefCORE/include/android" } )
+
+configuration( { "LINUX32" } )
+includedirs( { "../../platform/gucefCORE/include/linux" } )
+
+configuration( { "LINUX64" } )
+includedirs( { "../../platform/gucefCORE/include/linux" } )
 
 configuration( { "WIN32" } )
-includedirs( { "../../gucefCORE/include/mswin" } )
+includedirs( { "../../platform/gucefCORE/include/mswin", "../../platform/gucefMT/include/mswin" } )
 
 configuration( { "WIN64" } )
-includedirs( { "../../gucefCORE/include/mswin" } )
+includedirs( { "../../platform/gucefCORE/include/mswin", "../../platform/gucefMT/include/mswin" } )

@@ -12,7 +12,7 @@
 
 workspace( "GUCEF_exe_gucefCORE_TestApp" )
 
-  platforms( { "ALL", "LINUX32", "LINUX64", "WIN32", "WIN64" } )
+  platforms( { "ALL", "WIN32", "WIN64" } )
 
   location( "projects\premake5\targets" )
 
@@ -21,44 +21,39 @@ workspace( "GUCEF_exe_gucefCORE_TestApp" )
   --
 
 filter "ALL"
-  include( "tests/gucefCORE_TestApp" )
-
-filter "LINUX32"
   include( "dependencies/json-builder" )
   include( "dependencies/json-parser" )
   include( "dependencies/libparsifal" )
+  include( "dependencies/libyaml" )
   include( "platform/gucefCORE" )
   include( "platform/gucefMT" )
   include( "plugins/CORE/dstorepluginJSONPARSER" )
   include( "plugins/CORE/dstorepluginPARSIFALXML" )
-  include( "tests/gucefCORE_TestApp" )
-
-filter "LINUX64"
-  include( "dependencies/json-builder" )
-  include( "dependencies/json-parser" )
-  include( "dependencies/libparsifal" )
-  include( "platform/gucefCORE" )
-  include( "platform/gucefMT" )
-  include( "plugins/CORE/dstorepluginJSONPARSER" )
-  include( "plugins/CORE/dstorepluginPARSIFALXML" )
+  include( "plugins/CORE/dstorepluginYAML" )
   include( "tests/gucefCORE_TestApp" )
 
 filter "WIN32"
   include( "dependencies/json-builder" )
   include( "dependencies/json-parser" )
   include( "dependencies/libparsifal" )
+  include( "dependencies/libyaml" )
   include( "platform/gucefCORE" )
   include( "platform/gucefMT" )
   include( "plugins/CORE/dstorepluginJSONPARSER" )
   include( "plugins/CORE/dstorepluginPARSIFALXML" )
+  include( "plugins/CORE/dstorepluginYAML" )
   include( "tests/gucefCORE_TestApp" )
+  include( "tools/MemoryLeakFinder" )
 
 filter "WIN64"
   include( "dependencies/json-builder" )
   include( "dependencies/json-parser" )
   include( "dependencies/libparsifal" )
+  include( "dependencies/libyaml" )
   include( "platform/gucefCORE" )
   include( "platform/gucefMT" )
   include( "plugins/CORE/dstorepluginJSONPARSER" )
   include( "plugins/CORE/dstorepluginPARSIFALXML" )
+  include( "plugins/CORE/dstorepluginYAML" )
   include( "tests/gucefCORE_TestApp" )
+  include( "tools/MemoryLeakFinder" )

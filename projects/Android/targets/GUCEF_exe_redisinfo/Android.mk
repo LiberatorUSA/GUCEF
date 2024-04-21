@@ -21,12 +21,6 @@ endif
 
 include $(CLEAR_VARS)
 
-MY_MODULE_PATH := $(PROJECT_ROOT_PATH)/../../../../dependencies/aws-checksums
-include $(MY_MODULE_PATH)/Android.mk
-
-MY_MODULE_PATH := $(PROJECT_ROOT_PATH)/../../../../dependencies/curl
-include $(MY_MODULE_PATH)/Android.mk
-
 MY_MODULE_PATH := $(PROJECT_ROOT_PATH)/../../../../dependencies/hiredis
 include $(MY_MODULE_PATH)/Android.mk
 
@@ -36,7 +30,10 @@ include $(MY_MODULE_PATH)/Android.mk
 MY_MODULE_PATH := $(PROJECT_ROOT_PATH)/../../../../dependencies/libparsifal
 include $(MY_MODULE_PATH)/Android.mk
 
-MY_MODULE_PATH := $(PROJECT_ROOT_PATH)/../../../../dependencies/aws-c-common
+MY_MODULE_PATH := $(PROJECT_ROOT_PATH)/../../../../dependencies/libyaml
+include $(MY_MODULE_PATH)/Android.mk
+
+MY_MODULE_PATH := $(PROJECT_ROOT_PATH)/../../../../dependencies/stbrumme-hash-library
 include $(MY_MODULE_PATH)/Android.mk
 
 MY_MODULE_PATH := $(PROJECT_ROOT_PATH)/../../../../dependencies/json-builder
@@ -48,10 +45,10 @@ include $(MY_MODULE_PATH)/Android.mk
 MY_MODULE_PATH := $(PROJECT_ROOT_PATH)/../../../../platform/gucefMT
 include $(MY_MODULE_PATH)/Android.mk
 
-MY_MODULE_PATH := $(PROJECT_ROOT_PATH)/../../../../dependencies/redis-plus-plus/src/sw/redis++
+MY_MODULE_PATH := $(PROJECT_ROOT_PATH)/../../../../platform/gucefCOMCORE
 include $(MY_MODULE_PATH)/Android.mk
 
-MY_MODULE_PATH := $(PROJECT_ROOT_PATH)/../../../../platform/gucefCOMCORE
+MY_MODULE_PATH := $(PROJECT_ROOT_PATH)/../../../../dependencies/redis-plus-plus/src/sw/redis++
 include $(MY_MODULE_PATH)/Android.mk
 
 MY_MODULE_PATH := $(PROJECT_ROOT_PATH)/../../../../platform/gucefCOM
@@ -60,28 +57,22 @@ include $(MY_MODULE_PATH)/Android.mk
 MY_MODULE_PATH := $(PROJECT_ROOT_PATH)/../../../../platform/gucefVFS
 include $(MY_MODULE_PATH)/Android.mk
 
-MY_MODULE_PATH := $(PROJECT_ROOT_PATH)/../../../../dependencies/aws-c-event-stream
+MY_MODULE_PATH := $(PROJECT_ROOT_PATH)/../../../../plugins/CORE/codecspluginSTBRUMMEHASH
+include $(MY_MODULE_PATH)/Android.mk
+
+MY_MODULE_PATH := $(PROJECT_ROOT_PATH)/../../../../plugins/CORE/codecspluginZLIB
 include $(MY_MODULE_PATH)/Android.mk
 
 MY_MODULE_PATH := $(PROJECT_ROOT_PATH)/../../../../plugins/CORE/dstorepluginPARSIFALXML
+include $(MY_MODULE_PATH)/Android.mk
+
+MY_MODULE_PATH := $(PROJECT_ROOT_PATH)/../../../../plugins/CORE/dstorepluginYAML
 include $(MY_MODULE_PATH)/Android.mk
 
 MY_MODULE_PATH := $(PROJECT_ROOT_PATH)/../../../../platform/gucefWEB
 include $(MY_MODULE_PATH)/Android.mk
 
 MY_MODULE_PATH := $(PROJECT_ROOT_PATH)/../../../../plugins/CORE/dstorepluginJSONPARSER
-include $(MY_MODULE_PATH)/Android.mk
-
-MY_MODULE_PATH := $(PROJECT_ROOT_PATH)/../../../../dependencies/aws-cpp-sdk-core
-include $(MY_MODULE_PATH)/Android.mk
-
-MY_MODULE_PATH := $(PROJECT_ROOT_PATH)/../../../../plugins/SHARED/pluginglueAWSSDK
-include $(MY_MODULE_PATH)/Android.mk
-
-MY_MODULE_PATH := $(PROJECT_ROOT_PATH)/../../../../dependencies/aws-cpp-sdk-s3
-include $(MY_MODULE_PATH)/Android.mk
-
-MY_MODULE_PATH := $(PROJECT_ROOT_PATH)/../../../../plugins/VFS/vfspluginAWSS3
 include $(MY_MODULE_PATH)/Android.mk
 
 MY_MODULE_PATH := $(PROJECT_ROOT_PATH)/../../../../tools/redisinfo

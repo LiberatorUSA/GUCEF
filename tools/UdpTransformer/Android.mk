@@ -17,12 +17,12 @@ LOCAL_PATH := $(MY_MODULE_PATH)
 include $(CLEAR_VARS)
 
 @echo Module path: $(MY_MODULE_PATH)
-LOCAL_MODULE := UdpViaTcp
+LOCAL_MODULE := UdpTransformer
 @echo Module name: $(LOCAL_MODULE)
 
 LOCAL_SRC_FILES := \
-  src/main.cpp \
-  src/udpViaTcp.cpp
+  src/UdpTransformer.cpp \
+  src/main.cpp
 
 LOCAL_C_INCLUDES := \
   $(MY_MODULE_PATH)/include \

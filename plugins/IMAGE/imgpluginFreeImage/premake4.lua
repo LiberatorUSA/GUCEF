@@ -12,7 +12,10 @@
 -- Configuration for module: imgpluginFreeImage
 
 
-configuration( { "LINUX" } )
+configuration( { "LINUX32" } )
+  project( "imgpluginFreeImage" )
+
+configuration( { "LINUX64" } )
   project( "imgpluginFreeImage" )
 
 configuration( { "WIN32" } )
@@ -30,10 +33,15 @@ configuration( {} )
 configuration( {} )
 language( "C" )
 
-configuration( { "LINUX" } )
+configuration( { "LINUX32" } )
 
 
-configuration( { LINUX } )
+configuration( { LINUX32 } )
+kind( "SharedLib" )
+configuration( { "LINUX64" } )
+
+
+configuration( { LINUX64 } )
 kind( "SharedLib" )
 configuration( { "WIN32" } )
 
@@ -46,12 +54,20 @@ configuration( { "WIN64" } )
 configuration( { WIN64 } )
 kind( "SharedLib" )
   
-configuration( { LINUX } )
+configuration( { LINUX32 } )
 links( { "FreeImage", "gucefCORE", "gucefIMAGE", "gucefMT" } )
   links( { "FreeImage" } )
   
 
-configuration( { LINUX } )
+configuration( { LINUX32 } )
+defines( { "GUCEF_CODECPLUGIN_BUILD_MODULE" } )
+  
+configuration( { LINUX64 } )
+links( { "FreeImage", "gucefCORE", "gucefIMAGE", "gucefMT" } )
+  links( { "FreeImage" } )
+  
+
+configuration( { LINUX64 } )
 defines( { "GUCEF_CODECPLUGIN_BUILD_MODULE" } )
   
 configuration( { WIN32 } )
@@ -71,7 +87,20 @@ configuration( { WIN64 } )
 defines( { "GUCEF_CODECPLUGIN_BUILD_MODULE" } )
 
 
-configuration( { "LINUX" } )
+configuration( { "LINUX32" } )
+    vpaths { ["Platform Headers"] = { "**.h", "**.hpp", "**.hxx" } }
+    files( {
+      "include/imgpluginFreeImage.h"
+    } )
+
+    vpaths { ["Platform Source"] = { "**.c", "**.cpp", "**.cs", "**.asm" } }
+    files( {
+      "src/imgpluginFreeImage.c"
+    } )
+
+
+
+configuration( { "LINUX64" } )
     vpaths { ["Platform Headers"] = { "**.h", "**.hpp", "**.hxx" } }
     files( {
       "include/imgpluginFreeImage.h"
@@ -110,13 +139,16 @@ configuration( { "WIN64" } )
 
 
 configuration( {} )
-includedirs( { "../../../common/include", "../../../gucefCORE/include", "../../../gucefIMAGE/include", "../../../gucefMT/include" } )
+includedirs( { "../../../common/include", "../../../platform/gucefCORE/include", "../../../platform/gucefIMAGE/include", "../../../platform/gucefMT/include" } )
 
-configuration( { "LINUX" } )
-includedirs( { "../../../dependencies/FreeImage/Source", "../../../dependencies/FreeImage/Source/DeprecationManager", "../../../dependencies/FreeImage/Source/FreeImageToolkit", "../../../dependencies/FreeImage/Source/LibJPEG", "../../../dependencies/FreeImage/Source/LibMNG", "../../../dependencies/FreeImage/Source/LibOpenJPEG", "../../../dependencies/FreeImage/Source/LibPNG", "../../../dependencies/FreeImage/Source/LibTIFF", "../../../dependencies/FreeImage/Source/Metadata", "../../../dependencies/FreeImage/Source/OpenEXR", "../../../dependencies/FreeImage/Source/OpenEXR/Half", "../../../dependencies/FreeImage/Source/OpenEXR/Iex", "../../../dependencies/FreeImage/Source/OpenEXR/IlmImf", "../../../dependencies/FreeImage/Source/OpenEXR/IlmThread", "../../../dependencies/FreeImage/Source/OpenEXR/Imath", "../../../dependencies/FreeImage/Source/ZLib", "../../../gucefCORE/include/linux", "include" } )
+configuration( { "LINUX32" } )
+includedirs( { "../../../dependencies/FreeImage/Source", "../../../dependencies/FreeImage/Source/DeprecationManager", "../../../dependencies/FreeImage/Source/FreeImage", "../../../dependencies/FreeImage/Source/FreeImageToolkit", "../../../dependencies/FreeImage/Source/LibJPEG", "../../../dependencies/FreeImage/Source/LibJXR/common/include", "../../../dependencies/FreeImage/Source/LibJXR/image/decode", "../../../dependencies/FreeImage/Source/LibJXR/image/encode", "../../../dependencies/FreeImage/Source/LibJXR/image/sys", "../../../dependencies/FreeImage/Source/LibJXR/image/x86", "../../../dependencies/FreeImage/Source/LibJXR/jxrgluelib", "../../../dependencies/FreeImage/Source/LibOpenJPEG", "../../../dependencies/FreeImage/Source/LibPNG", "../../../dependencies/FreeImage/Source/LibRawLite/internal", "../../../dependencies/FreeImage/Source/LibRawLite/libraw", "../../../dependencies/FreeImage/Source/LibTIFF4", "../../../dependencies/FreeImage/Source/LibWebP/src/dec", "../../../dependencies/FreeImage/Source/LibWebP/src/dsp", "../../../dependencies/FreeImage/Source/LibWebP/src/enc", "../../../dependencies/FreeImage/Source/LibWebP/src/mux", "../../../dependencies/FreeImage/Source/LibWebP/src/utils", "../../../dependencies/FreeImage/Source/LibWebP/src/webp", "../../../dependencies/FreeImage/Source/Metadata", "../../../dependencies/FreeImage/Source/OpenEXR", "../../../dependencies/FreeImage/Source/OpenEXR/Half", "../../../dependencies/FreeImage/Source/OpenEXR/Iex", "../../../dependencies/FreeImage/Source/OpenEXR/IexMath", "../../../dependencies/FreeImage/Source/OpenEXR/IlmImf", "../../../dependencies/FreeImage/Source/OpenEXR/IlmThread", "../../../dependencies/FreeImage/Source/OpenEXR/Imath", "../../../dependencies/zlib", "../../../platform/gucefCORE/include/linux", "include" } )
+
+configuration( { "LINUX64" } )
+includedirs( { "../../../dependencies/FreeImage/Source", "../../../dependencies/FreeImage/Source/DeprecationManager", "../../../dependencies/FreeImage/Source/FreeImage", "../../../dependencies/FreeImage/Source/FreeImageToolkit", "../../../dependencies/FreeImage/Source/LibJPEG", "../../../dependencies/FreeImage/Source/LibJXR/common/include", "../../../dependencies/FreeImage/Source/LibJXR/image/decode", "../../../dependencies/FreeImage/Source/LibJXR/image/encode", "../../../dependencies/FreeImage/Source/LibJXR/image/sys", "../../../dependencies/FreeImage/Source/LibJXR/image/x86", "../../../dependencies/FreeImage/Source/LibJXR/jxrgluelib", "../../../dependencies/FreeImage/Source/LibOpenJPEG", "../../../dependencies/FreeImage/Source/LibPNG", "../../../dependencies/FreeImage/Source/LibRawLite/internal", "../../../dependencies/FreeImage/Source/LibRawLite/libraw", "../../../dependencies/FreeImage/Source/LibTIFF4", "../../../dependencies/FreeImage/Source/LibWebP/src/dec", "../../../dependencies/FreeImage/Source/LibWebP/src/dsp", "../../../dependencies/FreeImage/Source/LibWebP/src/enc", "../../../dependencies/FreeImage/Source/LibWebP/src/mux", "../../../dependencies/FreeImage/Source/LibWebP/src/utils", "../../../dependencies/FreeImage/Source/LibWebP/src/webp", "../../../dependencies/FreeImage/Source/Metadata", "../../../dependencies/FreeImage/Source/OpenEXR", "../../../dependencies/FreeImage/Source/OpenEXR/Half", "../../../dependencies/FreeImage/Source/OpenEXR/Iex", "../../../dependencies/FreeImage/Source/OpenEXR/IexMath", "../../../dependencies/FreeImage/Source/OpenEXR/IlmImf", "../../../dependencies/FreeImage/Source/OpenEXR/IlmThread", "../../../dependencies/FreeImage/Source/OpenEXR/Imath", "../../../dependencies/zlib", "../../../platform/gucefCORE/include/linux", "include" } )
 
 configuration( { "WIN32" } )
-includedirs( { "../../../dependencies/FreeImage/Source", "../../../dependencies/FreeImage/Source/DeprecationManager", "../../../dependencies/FreeImage/Source/FreeImageToolkit", "../../../dependencies/FreeImage/Source/LibJPEG", "../../../dependencies/FreeImage/Source/LibMNG", "../../../dependencies/FreeImage/Source/LibOpenJPEG", "../../../dependencies/FreeImage/Source/LibPNG", "../../../dependencies/FreeImage/Source/LibTIFF", "../../../dependencies/FreeImage/Source/Metadata", "../../../dependencies/FreeImage/Source/OpenEXR", "../../../dependencies/FreeImage/Source/OpenEXR/Half", "../../../dependencies/FreeImage/Source/OpenEXR/Iex", "../../../dependencies/FreeImage/Source/OpenEXR/IlmImf", "../../../dependencies/FreeImage/Source/OpenEXR/IlmThread", "../../../dependencies/FreeImage/Source/OpenEXR/Imath", "../../../dependencies/FreeImage/Source/ZLib", "../../../gucefCORE/include/mswin", "include" } )
+includedirs( { "../../../dependencies/FreeImage/Source", "../../../dependencies/FreeImage/Source/DeprecationManager", "../../../dependencies/FreeImage/Source/FreeImage", "../../../dependencies/FreeImage/Source/FreeImageToolkit", "../../../dependencies/FreeImage/Source/LibJPEG", "../../../dependencies/FreeImage/Source/LibJXR/common/include", "../../../dependencies/FreeImage/Source/LibJXR/image/decode", "../../../dependencies/FreeImage/Source/LibJXR/image/encode", "../../../dependencies/FreeImage/Source/LibJXR/image/sys", "../../../dependencies/FreeImage/Source/LibJXR/image/x86", "../../../dependencies/FreeImage/Source/LibJXR/jxrgluelib", "../../../dependencies/FreeImage/Source/LibOpenJPEG", "../../../dependencies/FreeImage/Source/LibPNG", "../../../dependencies/FreeImage/Source/LibRawLite/internal", "../../../dependencies/FreeImage/Source/LibRawLite/libraw", "../../../dependencies/FreeImage/Source/LibTIFF4", "../../../dependencies/FreeImage/Source/LibWebP/src/dec", "../../../dependencies/FreeImage/Source/LibWebP/src/dsp", "../../../dependencies/FreeImage/Source/LibWebP/src/enc", "../../../dependencies/FreeImage/Source/LibWebP/src/mux", "../../../dependencies/FreeImage/Source/LibWebP/src/utils", "../../../dependencies/FreeImage/Source/LibWebP/src/webp", "../../../dependencies/FreeImage/Source/Metadata", "../../../dependencies/FreeImage/Source/OpenEXR", "../../../dependencies/FreeImage/Source/OpenEXR/Half", "../../../dependencies/FreeImage/Source/OpenEXR/Iex", "../../../dependencies/FreeImage/Source/OpenEXR/IexMath", "../../../dependencies/FreeImage/Source/OpenEXR/IlmImf", "../../../dependencies/FreeImage/Source/OpenEXR/IlmThread", "../../../dependencies/FreeImage/Source/OpenEXR/Imath", "../../../dependencies/zlib", "../../../platform/gucefCORE/include/mswin", "../../../platform/gucefMT/include/mswin", "include" } )
 
 configuration( { "WIN64" } )
-includedirs( { "../../../dependencies/FreeImage/Source", "../../../dependencies/FreeImage/Source/DeprecationManager", "../../../dependencies/FreeImage/Source/FreeImageToolkit", "../../../dependencies/FreeImage/Source/LibJPEG", "../../../dependencies/FreeImage/Source/LibMNG", "../../../dependencies/FreeImage/Source/LibOpenJPEG", "../../../dependencies/FreeImage/Source/LibPNG", "../../../dependencies/FreeImage/Source/LibTIFF", "../../../dependencies/FreeImage/Source/Metadata", "../../../dependencies/FreeImage/Source/OpenEXR", "../../../dependencies/FreeImage/Source/OpenEXR/Half", "../../../dependencies/FreeImage/Source/OpenEXR/Iex", "../../../dependencies/FreeImage/Source/OpenEXR/IlmImf", "../../../dependencies/FreeImage/Source/OpenEXR/IlmThread", "../../../dependencies/FreeImage/Source/OpenEXR/Imath", "../../../dependencies/FreeImage/Source/ZLib", "../../../gucefCORE/include/mswin", "include" } )
+includedirs( { "../../../dependencies/FreeImage/Source", "../../../dependencies/FreeImage/Source/DeprecationManager", "../../../dependencies/FreeImage/Source/FreeImage", "../../../dependencies/FreeImage/Source/FreeImageToolkit", "../../../dependencies/FreeImage/Source/LibJPEG", "../../../dependencies/FreeImage/Source/LibJXR/common/include", "../../../dependencies/FreeImage/Source/LibJXR/image/decode", "../../../dependencies/FreeImage/Source/LibJXR/image/encode", "../../../dependencies/FreeImage/Source/LibJXR/image/sys", "../../../dependencies/FreeImage/Source/LibJXR/image/x86", "../../../dependencies/FreeImage/Source/LibJXR/jxrgluelib", "../../../dependencies/FreeImage/Source/LibOpenJPEG", "../../../dependencies/FreeImage/Source/LibPNG", "../../../dependencies/FreeImage/Source/LibRawLite/internal", "../../../dependencies/FreeImage/Source/LibRawLite/libraw", "../../../dependencies/FreeImage/Source/LibTIFF4", "../../../dependencies/FreeImage/Source/LibWebP/src/dec", "../../../dependencies/FreeImage/Source/LibWebP/src/dsp", "../../../dependencies/FreeImage/Source/LibWebP/src/enc", "../../../dependencies/FreeImage/Source/LibWebP/src/mux", "../../../dependencies/FreeImage/Source/LibWebP/src/utils", "../../../dependencies/FreeImage/Source/LibWebP/src/webp", "../../../dependencies/FreeImage/Source/Metadata", "../../../dependencies/FreeImage/Source/OpenEXR", "../../../dependencies/FreeImage/Source/OpenEXR/Half", "../../../dependencies/FreeImage/Source/OpenEXR/Iex", "../../../dependencies/FreeImage/Source/OpenEXR/IexMath", "../../../dependencies/FreeImage/Source/OpenEXR/IlmImf", "../../../dependencies/FreeImage/Source/OpenEXR/IlmThread", "../../../dependencies/FreeImage/Source/OpenEXR/Imath", "../../../dependencies/zlib", "../../../platform/gucefCORE/include/mswin", "../../../platform/gucefMT/include/mswin", "include" } )

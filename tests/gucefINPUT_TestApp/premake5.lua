@@ -70,32 +70,32 @@ configuration( { WIN64 } )
 kind( "WindowedApp" )
   
 configuration( { LINUX32 } )
-links( { "gucefCORE", "gucefMT" } )
-  links( { "gucefCORE", "gucefMT" } )
+links( { "gucefCORE", "gucefINPUT", "gucefMT" } )
+  links( { "gucefCORE", "gucefINPUT", "gucefMT" } )
   
 
 configuration( { LINUX32 } )
 defines( { "GUCEF_INPUT_TESTAPP_BUILD_MODULE" } )
   
 configuration( { LINUX64 } )
-links( { "gucefCORE", "gucefMT" } )
-  links( { "gucefCORE", "gucefMT" } )
+links( { "gucefCORE", "gucefINPUT", "gucefMT" } )
+  links( { "gucefCORE", "gucefINPUT", "gucefMT" } )
   
 
 configuration( { LINUX64 } )
 defines( { "GUCEF_INPUT_TESTAPP_BUILD_MODULE" } )
   
 configuration( { WIN32 } )
-links( { "gucefCORE", "gucefMT" } )
-  links( { "gucefCORE", "gucefMT" } )
+links( { "gucefCORE", "gucefINPUT", "gucefMT" } )
+  links( { "gucefCORE", "gucefINPUT", "gucefMT" } )
   
 
 configuration( { WIN32 } )
 defines( { "GUCEF_INPUT_TESTAPP_BUILD_MODULE" } )
   
 configuration( { WIN64 } )
-links( { "gucefCORE", "gucefMT" } )
-  links( { "gucefCORE", "gucefMT" } )
+links( { "gucefCORE", "gucefINPUT", "gucefMT" } )
+  links( { "gucefCORE", "gucefINPUT", "gucefMT" } )
   
 
 configuration( { WIN64 } )
@@ -142,7 +142,7 @@ configuration( { "WIN64" } )
 
 
 configuration( {} )
-includedirs( { "../../common/include", "../../platform/gucefCORE/include", "../../platform/gucefMT/include" } )
+includedirs( { "../../common/include", "../../platform/gucefCORE/include", "../../platform/gucefINPUT/include", "../../platform/gucefMT/include" } )
 
 configuration( { "LINUX32" } )
 includedirs( { "../../platform/gucefCORE/include/linux" } )
@@ -151,7 +151,7 @@ configuration( { "LINUX64" } )
 includedirs( { "../../platform/gucefCORE/include/linux" } )
 
 configuration( { "WIN32" } )
-includedirs( { "../../platform/gucefCORE/include/mswin" } )
+includedirs( { "../../platform/gucefCORE/include/mswin", "../../platform/gucefMT/include/mswin" } )
 
 configuration( { "WIN64" } )
-includedirs( { "../../platform/gucefCORE/include/mswin" } )
+includedirs( { "../../platform/gucefCORE/include/mswin", "../../platform/gucefMT/include/mswin" } )

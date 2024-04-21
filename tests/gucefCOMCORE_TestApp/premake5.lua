@@ -43,6 +43,7 @@ configuration( {} )
 vpaths { ["Headers"] = { "**.h", "**.hpp", "**.hxx" } }
 files( {
   "include/TestCode_ClientServer.h",
+  "include/TestCode_DNS.h",
   "include/TestCode_PingTest.h",
   "include/TestCode_SimpleTCPClient.h"
  } )
@@ -53,6 +54,7 @@ configuration( {} )
 vpaths { ["Source"] = { "**.c", "**.cpp", "**.cs", "**.asm" } }
 files( {
   "src/TestCode_ClientServer.cpp",
+  "src/TestCode_DNS.cpp",
   "src/TestCode_PingTest.cpp",
   "src/TestCode_SimpleTCPClient.cpp",
   "src/gucefCOMCORE_TestApp.cpp"
@@ -72,7 +74,7 @@ configuration( { "LINUX64" } )
 includedirs( { "../../platform/gucefCORE/include/linux" } )
 
 configuration( { "WIN32" } )
-includedirs( { "../../platform/gucefCOMCORE/include/mswin", "../../platform/gucefCORE/include/mswin" } )
+includedirs( { "../../platform/gucefCOMCORE/include/mswin", "../../platform/gucefCORE/include/mswin", "../../platform/gucefMT/include/mswin" } )
 
 configuration( { "WIN64" } )
-includedirs( { "../../platform/gucefCOMCORE/include/mswin", "../../platform/gucefCORE/include/mswin" } )
+includedirs( { "../../platform/gucefCOMCORE/include/mswin", "../../platform/gucefCORE/include/mswin", "../../platform/gucefMT/include/mswin" } )

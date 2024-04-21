@@ -40,13 +40,24 @@ links( { "gucefCORE", "gucefMT" } )
 
 
 configuration( {} )
+defines( { "GUCEF_CORE_TESTAPP_BUILD_MODULE" } )
+
+
+configuration( {} )
 vpaths { ["Headers"] = { "**.h", "**.hpp", "**.hxx" } }
 files( {
   "include/TestCyclicDynamicBuffer.h",
+  "include/TestDataNodeBinarySerializer.h",
+  "include/TestDynamicBufferStringStream.h",
+  "include/TestDynamicBufferSwap.h",
   "include/TestIniParser.h",
   "include/TestNotifierObserver.h",
   "include/TestSharedPtr.h",
-  "include/TestString.h"
+  "include/TestString.h",
+  "include/TestUri.h",
+  "include/TestVariant.h",
+  "include/TestVariantBinarySerializer.h",
+  "include/TestVars.h"
  } )
 
 
@@ -54,26 +65,36 @@ files( {
 configuration( {} )
 vpaths { ["Source"] = { "**.c", "**.cpp", "**.cs", "**.asm" } }
 files( {
-  "src/gucefCORE_TestApp_main.cpp",
   "src/TestCyclicDynamicBuffer.cpp",
+  "src/TestDataNodeBinarySerializer.cpp",
+  "src/TestDynamicBufferStringStream.cpp",
+  "src/TestDynamicBufferSwap.cpp",
   "src/TestIniParser.cpp",
   "src/TestNotifierObserver.cpp",
   "src/TestSharedPtr.cpp",
-  "src/TestString.cpp"
+  "src/TestString.cpp",
+  "src/TestUri.cpp",
+  "src/TestVariant.cpp",
+  "src/TestVariantBinarySerializer.cpp",
+  "src/TestVars.cpp",
+  "src/gucefCORE_TestApp_main.cpp"
  } )
 
 
 configuration( {} )
-includedirs( { "../../common/include", "../../gucefCORE/include", "../../gucefMT/include", "include" } )
+includedirs( { "../../common/include", "../../platform/gucefCORE/include", "../../platform/gucefMT/include", "include" } )
 
 configuration( { "ANDROID" } )
-includedirs( { "../../gucefCORE/include/android" } )
+includedirs( { "../../platform/gucefCORE/include/android" } )
 
-configuration( { "LINUX" } )
-includedirs( { "../../gucefCORE/include/linux" } )
+configuration( { "LINUX32" } )
+includedirs( { "../../platform/gucefCORE/include/linux" } )
+
+configuration( { "LINUX64" } )
+includedirs( { "../../platform/gucefCORE/include/linux" } )
 
 configuration( { "WIN32" } )
-includedirs( { "../../gucefCORE/include/mswin" } )
+includedirs( { "../../platform/gucefCORE/include/mswin", "../../platform/gucefMT/include/mswin" } )
 
 configuration( { "WIN64" } )
-includedirs( { "../../gucefCORE/include/mswin" } )
+includedirs( { "../../platform/gucefCORE/include/mswin", "../../platform/gucefMT/include/mswin" } )

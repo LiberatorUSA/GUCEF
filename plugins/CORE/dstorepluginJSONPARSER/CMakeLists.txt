@@ -40,6 +40,10 @@ if ( ANDROID )
   include_directories( ../../../dependencies/json-builder ../../../dependencies/json-parser ../../../platform/gucefCORE/include/android )
 endif( ANDROID )
 
+if ( ARDUINO )
+  include_directories( ../../../dependencies/json-builder ../../../dependencies/json-parser )
+endif( ARDUINO )
+
 if ( EMSCRIPTEN )
   include_directories( ../../../dependencies/json-builder ../../../dependencies/json-parser )
 endif( EMSCRIPTEN )
@@ -104,6 +108,8 @@ endif( WIN64 )
 
 
 if (ANDROID)
+GUCEF_config_lib( ${MODULE_NAME} )
+elseif (ARDUINO)
 GUCEF_config_lib( ${MODULE_NAME} )
 elseif (EMSCRIPTEN)
 GUCEF_config_lib( ${MODULE_NAME} )

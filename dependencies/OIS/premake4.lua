@@ -12,7 +12,10 @@
 -- Configuration for module: OIS
 
 
-configuration( { "LINUX" } )
+configuration( { "LINUX32" } )
+  project( "OIS" )
+
+configuration( { "LINUX64" } )
   project( "OIS" )
 
 configuration( { "OSX" } )
@@ -30,10 +33,13 @@ configuration( {} )
 configuration( {} )
   targetdir( os.getenv( "PM4TARGETDIR" ) )
 
-configuration( { "IPHONEOS" } )
+configuration( { "IOS" } )
 language( "C++" )
 
-configuration( { "LINUX" } )
+configuration( { "LINUX32" } )
+language( "C++" )
+
+configuration( { "LINUX64" } )
 language( "C++" )
 
 configuration( { "OSX" } )
@@ -48,10 +54,15 @@ language( "C++" )
 configuration( { "WIN64" } )
 language( "C++" )
 
-configuration( { "LINUX" } )
+configuration( { "LINUX32" } )
 
 
-configuration( { LINUX } )
+configuration( { LINUX32 } )
+kind( "SharedLib" )
+configuration( { "LINUX64" } )
+
+
+configuration( { LINUX64 } )
 kind( "SharedLib" )
 configuration( { "OSX" } )
 
@@ -71,25 +82,36 @@ kind( "SharedLib" )
   links( { "X11" } )
   
 
-configuration( { LINUX } )
+configuration( { LINUX32 } )
+defines( { "OIS_DYNAMIC_LIB", "OIS_LINUX_PLATFORM", "OIS_NONCLIENT_BUILD" } )
+  links( { "X11" } )
+  
+
+configuration( { LINUX64 } )
 defines( { "OIS_DYNAMIC_LIB", "OIS_LINUX_PLATFORM", "OIS_NONCLIENT_BUILD" } )
   
 
 configuration( { OSX } )
 defines( { "OIS_APPLE_PLATFORM", "OIS_DYNAMIC_LIB", "OIS_NONCLIENT_BUILD" } )
-  links( { "dinput8.lib", "dxguid.lib" } )
+  
+configuration( { WIN32 } )
+links( { "DirectInput8" } )
+  links( { "dinput8", "dxguid" } )
   
 
 configuration( { WIN32 } )
 defines( { "OIS_DYNAMIC_LIB", "OIS_NONCLIENT_BUILD" } )
-  links( { "dinput8.lib", "dxguid.lib" } )
+  
+configuration( { WIN64 } )
+links( { "DirectInput8" } )
+  links( { "dinput8", "dxguid" } )
   
 
 configuration( { WIN64 } )
 defines( { "OIS_DYNAMIC_LIB", "OIS_NONCLIENT_BUILD" } )
 
 
-configuration( { "IPHONEOS" } )
+configuration( { "IOS" } )
     vpaths { ["Platform Headers"] = { "**.h", "**.hpp", "**.hxx" } }
     files( {
       "includes/iphone/iPhoneAccelerometer.h",
@@ -114,7 +136,58 @@ configuration( { "IPHONEOS" } )
 
 
 
-configuration( { "LINUX" } )
+configuration( { "LINUX32" } )
+    vpaths { ["Platform Headers"] = { "**.h", "**.hpp", "**.hxx" } }
+    files( {
+      "includes/OIS.h",
+      "includes/OISConfig.h",
+      "includes/OISEffect.h",
+      "includes/OISEvents.h",
+      "includes/OISException.h",
+      "includes/OISFactoryCreator.h",
+      "includes/OISForceFeedback.h",
+      "includes/OISInputManager.h",
+      "includes/OISInterface.h",
+      "includes/OISJoyStick.h",
+      "includes/OISKeyboard.h",
+      "includes/OISMouse.h",
+      "includes/OISMultiTouch.h",
+      "includes/OISObject.h",
+      "includes/OISPrereqs.h",
+      "includes/linux/EventHelpers.h",
+      "includes/linux/LinuxForceFeedback.h",
+      "includes/linux/LinuxInputManager.h",
+      "includes/linux/LinuxJoyStickEvents.h",
+      "includes/linux/LinuxKeyboard.h",
+      "includes/linux/LinuxMouse.h",
+      "includes/linux/LinuxPrereqs.h",
+      "src/extras/LIRC/OISLIRC.h",
+      "src/extras/LIRC/OISLIRCFactoryCreator.h",
+      "src/extras/LIRC/OISLIRCRingBuffer.h"
+    } )
+
+    vpaths { ["Platform Source"] = { "**.c", "**.cpp", "**.cs", "**.asm" } }
+    files( {
+      "src/OISEffect.cpp",
+      "src/OISException.cpp",
+      "src/OISForceFeedback.cpp",
+      "src/OISInputManager.cpp",
+      "src/OISJoyStick.cpp",
+      "src/OISKeyboard.cpp",
+      "src/OISObject.cpp",
+      "src/extras/LIRC/OISLIRC.cpp",
+      "src/extras/LIRC/OISLIRCFactoryCreator.cpp",
+      "src/linux/EventHelpers.cpp",
+      "src/linux/LinuxForceFeedback.cpp",
+      "src/linux/LinuxInputManager.cpp",
+      "src/linux/LinuxJoyStickEvents.cpp",
+      "src/linux/LinuxKeyboard.cpp",
+      "src/linux/LinuxMouse.cpp"
+    } )
+
+
+
+configuration( { "LINUX64" } )
     vpaths { ["Platform Headers"] = { "**.h", "**.hpp", "**.hxx" } }
     files( {
       "includes/OIS.h",
@@ -183,8 +256,8 @@ configuration( { "OSX" } )
       "includes/OISMultiTouch.h",
       "includes/OISObject.h",
       "includes/OISPrereqs.h",
-      "includes/mac/MacHelpers.h",
       "includes/mac/MacHIDManager.h",
+      "includes/mac/MacHelpers.h",
       "includes/mac/MacInputManager.h",
       "includes/mac/MacJoyStick.h",
       "includes/mac/MacKeyboard.h",
@@ -206,8 +279,8 @@ configuration( { "OSX" } )
       "src/OISObject.cpp",
       "src/extras/LIRC/OISLIRC.cpp",
       "src/extras/LIRC/OISLIRCFactoryCreator.cpp",
-      "src/mac/MacHelpers.cpp",
       "src/mac/MacHIDManager.cpp",
+      "src/mac/MacHelpers.cpp",
       "src/mac/MacInputManager.cpp",
       "src/mac/MacJoyStick.cpp",
       "src/mac/MacKeyboard.cpp",
@@ -271,7 +344,13 @@ configuration( { "WIN32" } )
       "includes/win32/Win32Prereqs.h",
       "src/extras/LIRC/OISLIRC.h",
       "src/extras/LIRC/OISLIRCFactoryCreator.h",
-      "src/extras/LIRC/OISLIRCRingBuffer.h"
+      "src/extras/LIRC/OISLIRCRingBuffer.h",
+      "src/win32/extras/WiiMote/OISWiiMote.h",
+      "src/win32/extras/WiiMote/OISWiiMoteFactoryCreator.h",
+      "src/win32/extras/WiiMote/OISWiiMoteForceFeedback.h",
+      "src/win32/extras/WiiMote/OISWiiMoteRingBuffer.h",
+      "src/win32/extras/WiiMote/hiddevice.h",
+      "src/win32/extras/WiiMote/wiimote.h"
     } )
 
     vpaths { ["Platform Source"] = { "**.c", "**.cpp", "**.cs", "**.asm" } }
@@ -289,7 +368,14 @@ configuration( { "WIN32" } )
       "src/win32/Win32InputManager.cpp",
       "src/win32/Win32JoyStick.cpp",
       "src/win32/Win32KeyBoard.cpp",
-      "src/win32/Win32Mouse.cpp"
+      "src/win32/Win32Mouse.cpp",
+      "src/win32/extras/WiiMote/OISWiiMote.cpp",
+      "src/win32/extras/WiiMote/OISWiiMoteFactoryCreator.cpp",
+      "src/win32/extras/WiiMote/OISWiiMoteForceFeedback.cpp",
+      "src/win32/extras/WiiMote/OISWiiMoteRingBuffer.cpp",
+      "src/win32/extras/WiiMote/hiddevice.cpp",
+      "src/win32/extras/WiiMote/main.cpp",
+      "src/win32/extras/WiiMote/wiimote.cpp"
     } )
 
 
@@ -331,10 +417,13 @@ configuration( { "WIN64" } )
     } )
 
 
-configuration( { "IPHONEOS" } )
+configuration( { "IOS" } )
 includedirs( { "includes/iphone" } )
 
-configuration( { "LINUX" } )
+configuration( { "LINUX32" } )
+includedirs( { "includes", "includes/linux", "src/extras/LIRC" } )
+
+configuration( { "LINUX64" } )
 includedirs( { "includes", "includes/linux", "src/extras/LIRC" } )
 
 configuration( { "OSX" } )
@@ -344,7 +433,7 @@ configuration( { "SDL" } )
 includedirs( { "includes/SDL" } )
 
 configuration( { "WIN32" } )
-includedirs( { "includes", "includes/win32", "src/extras/LIRC" } )
+includedirs( { "#$#ENVVAR:DXSDK_DIR#$#/Include", "../external", "includes", "includes/win32", "src/extras/LIRC", "src/win32/extras/WiiMote" } )
 
 configuration( { "WIN64" } )
 includedirs( { "includes", "src/extras/LIRC" } )

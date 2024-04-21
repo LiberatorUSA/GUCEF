@@ -45,6 +45,7 @@ files( {
   "include/gucefWEB_CAsyncHttpServerResponseHandler.h",
   "include/gucefWEB_CCodecBasedHTTPServerResource.h",
   "include/gucefWEB_CConfigurableHttpServerResource.h",
+  "include/gucefWEB_CDataNodeSerializableHttpServerResource.h",
   "include/gucefWEB_CDefaultHTTPServerResource.h",
   "include/gucefWEB_CDefaultHTTPServerRouter.h",
   "include/gucefWEB_CDefaultHTTPServerRouterController.h",
@@ -64,10 +65,18 @@ files( {
   "include/gucefWEB_CIHTTPServerRouterController.h",
   "include/gucefWEB_CIHttpServerRequestHandler.h",
   "include/gucefWEB_CModule.h",
+  "include/gucefWEB_CStdParamParser.h",
   "include/gucefWEB_CTConfigurableMapHttpServerResource.h",
+  "include/gucefWEB_CTDataNodeSerializableHttpServerResourceExpansion.h",
+  "include/gucefWEB_CTDataNodeSerializableMapHttpServerResource.h",
+  "include/gucefWEB_CTReadableMapIndexHttpServerResource.h",
+  "include/gucefWEB_CTaskDataCollectionServerResource.h",
+  "include/gucefWEB_CTaskManagerServerResource.h",
+  "include/gucefWEB_CVfsHttpServerResource.h",
   "include/gucefWEB_CWebGlobal.h",
   "include/gucefWEB_ETypes.h",
   "include/gucefWEB_HTTPCode.h",
+  "include/gucefWEB_ViewTypes.h",
   "include/gucefWEB_config.h",
   "include/gucefWEB_macros.h"
  } )
@@ -82,6 +91,7 @@ files( {
   "src/gucefWEB_CAsyncHttpServerResponseHandler.cpp",
   "src/gucefWEB_CCodecBasedHTTPServerResource.cpp",
   "src/gucefWEB_CConfigurableHttpServerResource.cpp",
+  "src/gucefWEB_CDataNodeSerializableHttpServerResource.cpp",
   "src/gucefWEB_CDefaultHTTPServerResource.cpp",
   "src/gucefWEB_CDefaultHTTPServerRouter.cpp",
   "src/gucefWEB_CDefaultHTTPServerRouterController.cpp",
@@ -101,6 +111,13 @@ files( {
   "src/gucefWEB_CIHTTPServerRouterController.cpp",
   "src/gucefWEB_CIHttpServerRequestHandler.cpp",
   "src/gucefWEB_CModule.cpp",
+  "src/gucefWEB_CStdParamParser.cpp",
+  "src/gucefWEB_CTDataNodeSerializableHttpServerResourceExpansion.cpp",
+  "src/gucefWEB_CTDataNodeSerializableMapHttpServerResource.cpp",
+  "src/gucefWEB_CTReadableMapIndexHttpServerResource.cpp",
+  "src/gucefWEB_CTaskDataCollectionServerResource.cpp",
+  "src/gucefWEB_CTaskManagerServerResource.cpp",
+  "src/gucefWEB_CVfsHttpServerResource.cpp",
   "src/gucefWEB_CWebGlobal.cpp"
  } )
 
@@ -118,7 +135,7 @@ configuration( { "LINUX64" } )
 includedirs( { "../gucefCORE/include/linux" } )
 
 configuration( { "WIN32" } )
-includedirs( { "../gucefCOMCORE/include/mswin", "../gucefCORE/include/mswin" } )
+includedirs( { "../gucefCOMCORE/include/mswin", "../gucefCORE/include/mswin", "../gucefMT/include/mswin" } )
 
 configuration( { "WIN64" } )
-includedirs( { "../gucefCOMCORE/include/mswin", "../gucefCORE/include/mswin" } )
+includedirs( { "../gucefCOMCORE/include/mswin", "../gucefCORE/include/mswin", "../gucefMT/include/mswin" } )

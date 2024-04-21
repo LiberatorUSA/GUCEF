@@ -9,10 +9,10 @@
 --------------------------------------------------------------------
 --
 
--- Configuration for module: UdpViaTcp
+-- Configuration for module: UdpTransformer
 
 
-project( "UdpViaTcp" )
+project( "UdpTransformer" )
 
 configuration( {} )
   location( os.getenv( "PM5OUTPUTDIR" ) )
@@ -42,7 +42,7 @@ links( { "gucefCOM", "gucefCOMCORE", "gucefCORE", "gucefMT", "gucefWEB" } )
 configuration( {} )
 vpaths { ["Headers"] = { "**.h", "**.hpp", "**.hxx" } }
 files( {
-  "include/UdpViaTcp.h"
+  "include/UdpTransformer.h"
  } )
 
 
@@ -50,8 +50,8 @@ files( {
 configuration( {} )
 vpaths { ["Source"] = { "**.c", "**.cpp", "**.cs", "**.asm" } }
 files( {
-  "src/main.cpp",
-  "src/udpViaTcp.cpp"
+  "src/UdpTransformer.cpp",
+  "src/main.cpp"
  } )
 
 
@@ -68,7 +68,7 @@ configuration( { "LINUX64" } )
 includedirs( { "../../platform/gucefCORE/include/linux" } )
 
 configuration( { "WIN32" } )
-includedirs( { "../../platform/gucefCOMCORE/include/mswin", "../../platform/gucefCORE/include/mswin" } )
+includedirs( { "../../platform/gucefCOMCORE/include/mswin", "../../platform/gucefCORE/include/mswin", "../../platform/gucefMT/include/mswin" } )
 
 configuration( { "WIN64" } )
-includedirs( { "../../platform/gucefCOMCORE/include/mswin", "../../platform/gucefCORE/include/mswin" } )
+includedirs( { "../../platform/gucefCOMCORE/include/mswin", "../../platform/gucefCORE/include/mswin", "../../platform/gucefMT/include/mswin" } )

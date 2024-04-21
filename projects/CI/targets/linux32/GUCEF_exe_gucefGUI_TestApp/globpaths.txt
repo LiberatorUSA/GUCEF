@@ -10,11 +10,9 @@ dependencies/MyGui/Platforms/OpenGL/OpenGLPlatform/*
 dependencies/OIS/*
 dependencies/Ogre/OgreMain/*
 dependencies/Ogre/include/*
-dependencies/aws-c-common/*
-dependencies/aws-c-event-stream/*
-dependencies/aws-checksums/*
 dependencies/aws-cpp-sdk-core/*
 dependencies/aws-cpp-sdk-s3/*
+dependencies/aws-crt-cpp/*
 dependencies/cegui/cegui/*
 dependencies/curl/*
 dependencies/flic/*

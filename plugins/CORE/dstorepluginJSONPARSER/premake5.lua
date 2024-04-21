@@ -58,6 +58,9 @@ includedirs( { "../../../common/include", "../../../dependencies/json-builder", 
 configuration( { "ANDROID" } )
 includedirs( { "../../../dependencies/json-builder", "../../../dependencies/json-parser", "../../../platform/gucefCORE/include/android" } )
 
+configuration( { "ARDUINO" } )
+includedirs( { "../../../dependencies/json-builder", "../../../dependencies/json-parser" } )
+
 configuration( { "EMSCRIPTEN" } )
 includedirs( { "../../../dependencies/json-builder", "../../../dependencies/json-parser" } )
 
@@ -95,7 +98,7 @@ configuration( { "UNIX" } )
 includedirs( { "../../../dependencies/json-builder", "../../../dependencies/json-parser" } )
 
 configuration( { "WIN32" } )
-includedirs( { "../../../dependencies/json-builder", "../../../dependencies/json-parser", "../../../platform/gucefCORE/include/mswin" } )
+includedirs( { "../../../dependencies/json-builder", "../../../dependencies/json-parser", "../../../platform/gucefCORE/include/mswin", "../../../platform/gucefMT/include/mswin" } )
 
 configuration( { "WIN64" } )
-includedirs( { "../../../dependencies/json-builder", "../../../dependencies/json-parser", "../../../platform/gucefCORE/include/mswin" } )
+includedirs( { "../../../dependencies/json-builder", "../../../dependencies/json-parser", "../../../platform/gucefCORE/include/mswin", "../../../platform/gucefMT/include/mswin" } )
