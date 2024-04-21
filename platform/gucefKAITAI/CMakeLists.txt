@@ -13,6 +13,7 @@
 
 set( HEADER_FILES 
   includes/gucefKAITAI.h
+  includes/gucefKAITAI_CGlobalKaitaiSchemaRegistry.h
   includes/gucefKAITAI_CKaitaiGlobal.h
   includes/gucefKAITAI_CKaitaiReader.h
   includes/gucefKAITAI_CKaitaiSchema.h
@@ -26,6 +27,7 @@ set( HEADER_FILES
 )
 
 set( SOURCE_FILES 
+  src/gucefKAITAI_CGlobalKaitaiSchemaRegistry.cpp
   src/gucefKAITAI_CKaitaiGlobal.cpp
   src/gucefKAITAI_CKaitaiReader.cpp
   src/gucefKAITAI_CKaitaiSchema.cpp
@@ -46,11 +48,11 @@ set( ALL_FILES ${HEADER_FILES} ${SOURCE_FILES} ${PLATFORM_HEADER_FILES} ${PLATFO
 
 set( MODULE_NAME "gucefKAITAI" )
 add_library( ${MODULE_NAME} ${ALL_FILES} )
-add_dependencies( ${MODULE_NAME} gucefCORE gucefMT )
-target_link_libraries( ${MODULE_NAME} gucefCORE gucefMT )
+add_dependencies( ${MODULE_NAME} gucefCORE gucefMT gucefVFS )
+target_link_libraries( ${MODULE_NAME} gucefCORE gucefMT gucefVFS )
 set_property( TARGET ${MODULE_NAME} APPEND_STRING PROPERTY COMPILE_DEFINITIONS "GUCEF_KAITAI_BUILD_MODULE" )
 
-include_directories( ../../common/include ../gucefCORE/include ../gucefMT/include includes )
+include_directories( ../../common/include ../gucefCORE/include ../gucefMT/include ../gucefVFS/include includes )
 
 if ( ANDROID )
   include_directories( ../gucefCORE/include/android )

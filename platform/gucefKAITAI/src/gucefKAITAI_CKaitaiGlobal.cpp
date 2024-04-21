@@ -37,10 +37,10 @@
 //#define GUCEF_VFS_CVFSGLOBAL_H
 //#endif /* GUCEF_VFS_CVFSGLOBAL_H ? */
 
-#ifndef GUCEF_KAITAI_CKAITAISCHEMAREGISTRY_H
-#include "gucefKAITAI_CKaitaiSchemaRegistry.h"    
-#define GUCEF_KAITAI_CKAITAISCHEMAREGISTRY_H
-#endif /* GUCEF_KAITAI_CKAITAISCHEMAREGISTRY_H ? */
+#ifndef GUCEF_KAITAI_CGLOBALKAITAISCHEMAREGISTRY_H
+#include "gucefKAITAI_CGlobalKaitaiSchemaRegistry.h"    
+#define GUCEF_KAITAI_CGLOBALKAITAISCHEMAREGISTRY_H
+#endif /* GUCEF_KAITAI_CGLOBALKAITAISCHEMAREGISTRY_H ? */
 
 #include "gucefKAITAI_CKaitaiGlobal.h"  /* definition of the class implemented here */
 
@@ -85,7 +85,7 @@ CKaitaiGlobal::Initialize( void )
 
     GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "gucefKAITAI Global systems initializing" );
 
-    m_kaitaiSchemaRegistry = GUCEF_NEW CKaitaiSchemaRegistry();
+    m_kaitaiSchemaRegistry = GUCEF_NEW CGlobalKaitaiSchemaRegistry();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -95,7 +95,7 @@ CKaitaiGlobal::~CKaitaiGlobal()
 
     GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "gucefKATAI Global systems shutting down" );
     
-    GUCEF_DELETE m_kaitaiSchemaRegistry;
+    GUCEF_DELETE static_cast< CGlobalKaitaiSchemaRegistry* >( m_kaitaiSchemaRegistry );
     m_kaitaiSchemaRegistry = GUCEF_NULL;
 }
 

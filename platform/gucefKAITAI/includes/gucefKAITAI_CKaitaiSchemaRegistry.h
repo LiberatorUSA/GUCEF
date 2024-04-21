@@ -79,18 +79,28 @@ class GUCEF_KAITAI_PUBLIC_CPP CKaitaiSchemaRegistry : public CORE::CTONRegistry<
     TSchemaPtr TryGetSchema( const CORE::CString& schemaFamily , 
                              const CORE::CString& schemaName   ) const;
 
+    bool RegisterSchema( TSchemaPtr schema                 ,
+                         const CORE::CString& schemaFamily );
     
     bool LoadSchema( const CORE::CUri& schemaResource  ,
                      const CORE::CString& schemaFamily );
+
+    bool LoadSchemas( const CORE::CUri& schemaResourceRoot ,
+                      const CORE::CString& schemaFamily    ,
+                      bool recursive                       );
+
+    bool LoadSchemaUsingVfs( const CORE::CString& schemaResourcePath  ,
+                             const CORE::CString& schemaFamily        );
+
+    bool LoadSchemasUsingVfs( const CORE::CString& schemaResourcesRoot ,
+                              const CORE::CString& schemaFamily        ,
+                              bool recursive                           );
 
     protected:
 
     virtual MT::TLockStatus Lock( UInt32 lockWaitTimeoutInMs = GUCEF_MT_DEFAULT_LOCK_TIMEOUT_IN_MS ) const GUCEF_VIRTUAL_OVERRIDE;
 
     virtual MT::TLockStatus Unlock( void ) const GUCEF_VIRTUAL_OVERRIDE;
-
-    private:
-    friend class CKaitaiGlobal;
 
     CKaitaiSchemaRegistry( void );
 

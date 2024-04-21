@@ -47,6 +47,16 @@
 #define GUCEF_CORE_CVARIANT_H
 #endif /* GUCEF_CORE_CVARIANT_H ? */
 
+#ifndef GUCEF_VFS_CVFSGLOBAL_H
+#include "gucefVFS_CVfsGlobal.h"
+#define GUCEF_VFS_CVFSGLOBAL_H
+#endif /* GUCEF_VFS_CVFSGLOBAL_H ? */
+
+#ifndef GUCEF_VFS_CVFS_H
+#include "gucefVFS_CVFS.h"
+#define GUCEF_VFS_CVFS_H
+#endif /* GUCEF_VFS_CVFS_H ? */
+
 #include "gucefKAITAI_CKaitaiSchema.h"
 
 /*-------------------------------------------------------------------------//
@@ -254,6 +264,36 @@ CKaitaiSchema::Deserialize( const CORE::CDataNode& domRootNode, const CORE::CDat
 /*-------------------------------------------------------------------------*/
 
 bool 
+CKaitaiSchema::LoadSchema( CORE::IOAccessPtr schemaResource )
+{GUCEF_TRACE;
+
+    // Grab a YAML codec since Kaitai uses the yaml format
+    CORE::CCoreGlobal* coreGlobal = CORE::CCoreGlobal::Instance();
+    CORE::CDStoreCodecRegistry& dstoreCodecRegistry = coreGlobal->GetDStoreCodecRegistry();
+    CORE::CDStoreCodecRegistry::TDStoreCodecPtr yamlCodec;
+    if ( dstoreCodecRegistry.TryLookup( "yaml", yamlCodec, false ) && yamlCodec )
+    {
+        // using the codec parse the resource into a usable document
+        CORE::CDataNode schemaDocument;
+        if ( yamlCodec->BuildDataTree( &schemaDocument, schemaResource.GetPointerAlways() ) )
+        {
+            // now deserialize the document into the strongly typed class
+            CORE::CDataNodeSerializableSettings deserializerSettings;
+            return Deserialize( schemaDocument, deserializerSettings );
+        }
+
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "KaitaiSchema:LoadSchema: Failed to build document using YAML codec" );
+        return false;
+    }
+
+    GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "KaitaiSchema:LoadSchema: Failed to locate a YAML codec" );
+    return false;
+
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool 
 CKaitaiSchema::LoadSchema( const CORE::CUri& schemaResource )
 {GUCEF_TRACE;
 
@@ -266,29 +306,47 @@ CKaitaiSchema::LoadSchema( const CORE::CUri& schemaResource )
                                       ioAccess                                                 , 
                                       CORE::CUriResourceAccessor::URI_RESOURCEACCESS_MODE_READ ) && ioAccess )
     {
-        // now grab a YAML codec since Kaitai uses the yaml format
-        CORE::CDStoreCodecRegistry& dstoreCodecRegistry = coreGlobal->GetDStoreCodecRegistry();
-        CORE::CDStoreCodecRegistry::TDStoreCodecPtr yamlCodec;
-        if ( dstoreCodecRegistry.TryLookup( "yaml", yamlCodec, false ) && yamlCodec )
+        if ( LoadSchema( ioAccess ) )
         {
-            // using the codec parse the resource into a usable document
-            CORE::CDataNode schemaDocument;
-            if ( yamlCodec->BuildDataTree( &schemaDocument, ioAccess.GetPointerAlways() ) )
-            {
-                // now deserialize the document into the strongly typed class
-                CORE::CDataNodeSerializableSettings deserializerSettings;
-                return Deserialize( schemaDocument, deserializerSettings );
-            }
-
-            GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "KaitaiSchema:LoadSchema: Failed to build document using YAML codec for resource " + CORE::ToString( schemaResource ) );
-            return false;
+            GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "KaitaiSchema:LoadSchema: Successfully loaded schema using resource " + CORE::ToString( schemaResource ) );
+            return true;
         }
-
-        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "KaitaiSchema:LoadSchema: Failed to locate a YAML codec. Needed for resource " + CORE::ToString( schemaResource ) );
+        
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "KaitaiSchema:LoadSchema: Failed to load schema from resource " + CORE::ToString( schemaResource ) );
         return false;
     }
 
     GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "KaitaiSchema:LoadSchema: Failed to obtain access to resource " + CORE::ToString( schemaResource ) );
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool 
+CKaitaiSchema::LoadSchemaUsingVfs( const CORE::CString& schemaResourcePath )
+{GUCEF_TRACE;
+
+    VFS::CVfsGlobal* vfsGlobal = VFS::CVfsGlobal::Instance();
+    VFS::CVFS& vfs = vfsGlobal->GetVfs();
+
+    VFS::TBasicVfsResourcePtr resource = vfs.GetFile( schemaResourcePath );
+    if ( !resource.IsNULL() )
+    {
+        CORE::IOAccessPtr ioAccess = resource->GetAccess();
+        if ( !ioAccess.IsNULL() )
+        {
+            if ( LoadSchema( ioAccess ) )
+            {
+                GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "KaitaiSchema:LoadSchema: Successfully loaded schema using VFS resource " + CORE::ToString( schemaResourcePath ) );
+                return true;
+            }
+        
+            GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "KaitaiSchema:LoadSchema: Failed to load schema from VFS resource " + CORE::ToString( schemaResourcePath ) );
+            return false;
+        }
+    }
+
+    GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "KaitaiSchema:LoadSchema: Failed to obtain access to VFS resource " + CORE::ToString( schemaResourcePath ) );
     return false;
 }
 

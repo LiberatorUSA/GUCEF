@@ -60,6 +60,15 @@ CUriResourceAccessorFactory::~CUriResourceAccessorFactory()
 
 /*-------------------------------------------------------------------------*/
 
+CUriResourceAccessorFactory::TProductPtr 
+CUriResourceAccessorFactory::CreateAccessor( const CUri& uri )
+{GUCEF_TRACE;
+
+    return Create( uri.GetScheme() );
+}
+
+/*-------------------------------------------------------------------------*/
+
 bool
 CUriResourceAccessorFactory::GetResourceAccess( const CUri& uri                                     ,
                                                 IOAccessPtr& accessToResource                       ,

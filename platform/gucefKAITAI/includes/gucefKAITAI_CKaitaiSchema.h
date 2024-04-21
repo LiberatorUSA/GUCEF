@@ -94,7 +94,17 @@ class GUCEF_KAITAI_PUBLIC_CPP CKaitaiSchema : public CORE::CIDataNodeSerializabl
     /*
      *  Utility function for loading a Kaitai schema
      */
+    bool LoadSchema( CORE::IOAccessPtr schemaResource );
+
+    /*
+     *  Utility function for loading a Kaitai schema
+     */
     bool LoadSchema( const CORE::CUri& schemaResource ); 
+
+    /*
+     *  Utility function for loading a Kaitai schema using the VFS
+     */
+    bool LoadSchemaUsingVfs( const CORE::CString& schemaResourcePath );
 
     virtual CORE::CICloneable* Clone( void ) const GUCEF_VIRTUAL_OVERRIDE;
     virtual const CORE::CString& GetClassTypeName( void ) const GUCEF_VIRTUAL_OVERRIDE;

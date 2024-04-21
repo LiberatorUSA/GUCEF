@@ -68,6 +68,11 @@ class GUCEF_CORE_PUBLIC_CPP CUriResourceAccessorFactory : public CTAbstractFacto
     virtual ~CUriResourceAccessorFactory( void );
 
     /**
+     *  Utility specialization of Create() which uses the contextually more natural Uri class
+     */
+    TProductPtr CreateAccessor( const CUri& uri );
+
+    /**
      *  Utility shortcut version of GetResourceAccess() which instantiates the correct accessor 
      *  first in order to obtain resource access. 
      *  Note that for repeated resource access, it is more efficient to cache the accessor
