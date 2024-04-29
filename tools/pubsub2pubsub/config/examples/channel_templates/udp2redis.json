@@ -117,6 +117,8 @@
 							"useTopicLevelMaxTotalMsgsInFlight": false,
 							"maxTotalMsgsInFlight": -1,
 							"CustomConfig": {
+								"autoGenerateRedisAddMinId": false,
+								"maxAgeInMsForMinId": 31560000000,
 								"redisXAddMaxLen": -1,
 								"redisXAddMaxLenIsApproximate": true,
 								"redisXAddIgnoreMsgId": true,

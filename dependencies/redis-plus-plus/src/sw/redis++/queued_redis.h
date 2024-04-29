@@ -1610,6 +1610,19 @@ public:
         return command(cmd::xadd_maxlen_range<Input>, key, id, first, last, count, approx);
     }
 
+    // DV edit: add minid variant
+    template <typename Input>
+    QueuedRedis& dvcustom_xadd_minid(const StringView &key,
+                        const StringView &id,
+                        Input first,
+                        Input last,
+                        long long minid,
+                        bool approx = true) {
+        range_check("XADD", first, last);
+
+        return command(cmd::dvcustom_xadd_minid_range<Input>, key, id, first, last, minid, approx);
+    }
+
     template <typename T>
     QueuedRedis& xadd(const StringView &key,
                         const StringView &id,

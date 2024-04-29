@@ -48,6 +48,9 @@ namespace REDISCLUSTER {
 CRedisClusterPubSubClientTopicConfig::CRedisClusterPubSubClientTopicConfig( void )
     : PUBSUB::CPubSubClientTopicConfig()
     , CORE::CTSharedObjCreator< CRedisClusterPubSubClientTopicConfig, MT::CMutex >( this )
+    , autoGenerateRedisAddMinId( false )
+    , maxAgeInMsForMinId( GUCEF_MT_UINT64MAX )
+    , redisXAddMaxAgeIsApproximate( true )
     , redisXAddMaxLen( -1 )
     , redisXAddMaxLenIsApproximate( true )    
     , redisXAddIgnoreMsgId( true )
@@ -66,6 +69,9 @@ CRedisClusterPubSubClientTopicConfig::CRedisClusterPubSubClientTopicConfig( void
 CRedisClusterPubSubClientTopicConfig::CRedisClusterPubSubClientTopicConfig( const CRedisClusterPubSubClientTopicConfig& src )
     : PUBSUB::CPubSubClientTopicConfig( src )
     , CORE::CTSharedObjCreator< CRedisClusterPubSubClientTopicConfig, MT::CMutex >( this )
+    , autoGenerateRedisAddMinId( src.autoGenerateRedisAddMinId )
+    , maxAgeInMsForMinId( src.maxAgeInMsForMinId )
+    , redisXAddMaxAgeIsApproximate( src.redisXAddMaxAgeIsApproximate )
     , redisXAddMaxLen( src.redisXAddMaxLen )
     , redisXAddMaxLenIsApproximate( src.redisXAddMaxLenIsApproximate )    
     , redisXAddIgnoreMsgId( src.redisXAddIgnoreMsgId )
@@ -84,6 +90,9 @@ CRedisClusterPubSubClientTopicConfig::CRedisClusterPubSubClientTopicConfig( cons
 CRedisClusterPubSubClientTopicConfig::CRedisClusterPubSubClientTopicConfig( const PUBSUB::CPubSubClientTopicConfig& genericConfig )
     : PUBSUB::CPubSubClientTopicConfig( genericConfig )
     , CORE::CTSharedObjCreator< CRedisClusterPubSubClientTopicConfig, MT::CMutex >( this )
+    , autoGenerateRedisAddMinId( false )
+    , maxAgeInMsForMinId( GUCEF_MT_UINT64MAX )
+    , redisXAddMaxAgeIsApproximate( true )
     , redisXAddMaxLen( -1 )
     , redisXAddMaxLenIsApproximate( true )    
     , redisXAddIgnoreMsgId( true )
@@ -111,6 +120,9 @@ bool
 CRedisClusterPubSubClientTopicConfig::LoadCustomConfig( const CORE::CDataNode& config )
 {GUCEF_TRACE;
     
+    autoGenerateRedisAddMinId = config.GetAttributeValueOrChildValueByName( "autoGenerateRedisAddMinId" ).AsBool( autoGenerateRedisAddMinId, true );
+    maxAgeInMsForMinId = config.GetAttributeValueOrChildValueByName( "maxAgeInMsForMinId" ).AsUInt64( maxAgeInMsForMinId, true );
+    redisXAddMaxAgeIsApproximate = config.GetAttributeValueOrChildValueByName( "redisXAddMaxAgeIsApproximate" ).AsBool( redisXAddMaxAgeIsApproximate, true );
     redisXAddMaxLen = config.GetAttributeValueOrChildValueByName( "redisXAddMaxLen" ).AsInt32( redisXAddMaxLen, true ); 
     redisXAddMaxLenIsApproximate = config.GetAttributeValueOrChildValueByName( "redisXAddMaxLenIsApproximate" ).AsBool( redisXAddMaxLenIsApproximate, true );    
     redisXAddIgnoreMsgId = config.GetAttributeValueOrChildValueByName( "redisXAddIgnoreMsgId" ).AsBool( redisXAddIgnoreMsgId, true ); 
@@ -160,6 +172,9 @@ CRedisClusterPubSubClientTopicConfig::operator=( const CRedisClusterPubSubClient
     if ( &src != this )
     {
         PUBSUB::CPubSubClientTopicConfig::operator=( src );
+        autoGenerateRedisAddMinId = src.autoGenerateRedisAddMinId;
+        maxAgeInMsForMinId = src.maxAgeInMsForMinId;
+        redisXAddMaxAgeIsApproximate = src.redisXAddMaxAgeIsApproximate;
         redisXAddMaxLen = src.redisXAddMaxLen; 
         redisXAddMaxLenIsApproximate = src.redisXAddMaxLenIsApproximate;   
         redisXAddIgnoreMsgId = src.redisXAddIgnoreMsgId;

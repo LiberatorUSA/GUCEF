@@ -1748,6 +1748,27 @@ void xadd_maxlen_range(Connection &connection,
     connection.send(args);
 }
 
+// DV edit: add minid variant
+template <typename Input>
+void dvcustom_xadd_minid_range(Connection &connection,
+                        const StringView &key,
+                        const StringView &id,
+                        Input first,
+                        Input last,
+                        long long minid,
+                        bool approx) {
+    CmdArgs args;
+    args << "XADD" << key << "MINID";
+
+    if (approx) {
+        args << "~";
+    }
+
+    args << minid << id << std::make_pair(first, last);
+
+    connection.send(args);
+}
+
 inline void xclaim(Connection &connection,
                     const StringView &key,
                     const StringView &group,

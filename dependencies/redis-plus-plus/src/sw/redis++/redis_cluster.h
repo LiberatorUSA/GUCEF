@@ -1084,6 +1084,15 @@ public:
                         long long count,
                         bool approx = true);
 
+    // DV edit: add minid variant
+    template <typename Input>
+    std::string dvcustom_xadd_minid(const StringView &key,
+                        const StringView &id,
+                        Input first,
+                        Input last,
+                        long long minid,
+                        bool approx = true);
+
     template <typename T>
     std::string xadd(const StringView &key,
                         const StringView &id,

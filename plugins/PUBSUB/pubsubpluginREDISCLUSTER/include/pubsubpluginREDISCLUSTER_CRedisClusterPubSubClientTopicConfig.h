@@ -62,9 +62,12 @@ class PUBSUBPLUGIN_REDISCLUSTER_PLUGIN_PRIVATE_CPP CRedisClusterPubSubClientTopi
 {
     public:
 
-    CORE::Int32 redisXAddMaxLen;
-    bool redisXAddMaxLenIsApproximate;
-    bool redisXAddIgnoreMsgId;
+    bool autoGenerateRedisAddMinId;                   /**< whether to auto generate the min id for the XADD command. This is a Unix epoch timestamp of the publish time at the node */
+    CORE::UInt64 maxAgeInMsForMinId;                  /**< the max age of a message in the stream in milliseconds based on current system time. Used when autoGenerateRedisAddMinId is true */
+    bool redisXAddMaxAgeIsApproximate;                /**< whether the max age is approximate or exact thus resulting in a ~ or = passed to redis. exact has a performance penalty for Redis */
+    CORE::Int32 redisXAddMaxLen;                      /**< the max len of the stream. A value smaller than 0 means maxlen is not used */
+    bool redisXAddMaxLenIsApproximate;                /**< whether the max len is approximate or exact thus resulting in a ~ or = passed to redis. exact has a performance penalty for Redis */
+    bool redisXAddIgnoreMsgId;                        /**< whether to ignore the msg id on the message object and instead have the Redis node generate the key which is a Unix epoch timestamp of the publish time at the node */
     CORE::CString redisXReadDefaultOffset;
     CORE::Int32 redisXReadCount;
     CORE::UInt32 redisXReadBlockTimeoutInMs;

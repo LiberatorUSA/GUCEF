@@ -450,6 +450,13 @@ CRedisClusterPubSubClientTopic::RedisSendSyncImpl( CORE::UInt64& publishActionId
 
         if ( m_config.preferDedicatedConnection && GUCEF_NULL != m_redisPipeline )
         {
+            if ( m_config.autoGenerateRedisAddMinId )
+            {
+                // the cluster uses local time for its auto-generated message id as such we will use the same but are assuming the cluster is in the same timezone
+                CORE::UInt64 maxAgeTimestamp = CORE::CDateTime::NowLocalDateTime().ToUnixEpochBasedTicksInMillisecs() - m_config.maxAgeInMsForMinId;
+                m_redisPipeline->dvcustom_xadd_minid( cnSV, msgIdToUse, kvPairs.begin(), kvPairs.end(), maxAgeTimestamp, m_config.redisXAddMaxAgeIsApproximate );
+            }
+            else
             if ( m_config.redisXAddMaxLen >= 0 )
                 m_redisPipeline->xadd( cnSV, msgIdToUse, kvPairs.begin(), kvPairs.end(), m_config.redisXAddMaxLen, m_config.redisXAddMaxLenIsApproximate );
             else
@@ -488,6 +495,13 @@ CRedisClusterPubSubClientTopic::RedisSendSyncImpl( CORE::UInt64& publishActionId
         }
         else
         {
+            if ( m_config.autoGenerateRedisAddMinId )
+            {
+                // the cluster uses local time for its auto-generated message id as such we will use the same but are assuming the cluster is in the same timezone
+                CORE::UInt64 maxAgeTimestamp = CORE::CDateTime::NowLocalDateTime().ToUnixEpochBasedTicksInMillisecs() - m_config.maxAgeInMsForMinId;
+                m_redisContext->dvcustom_xadd_minid( cnSV, msgIdToUse, kvPairs.begin(), kvPairs.end(), maxAgeTimestamp, m_config.redisXAddMaxAgeIsApproximate );
+            }
+            else
             if ( m_config.redisXAddMaxLen >= 0 )
                 m_redisContext->xadd( cnSV, msgIdToUse, kvPairs.begin(), kvPairs.end(), m_config.redisXAddMaxLen, m_config.redisXAddMaxLenIsApproximate );
             else

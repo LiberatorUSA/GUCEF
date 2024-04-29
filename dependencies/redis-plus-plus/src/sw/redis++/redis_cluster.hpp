@@ -1022,6 +1022,21 @@ std::string RedisCluster::xadd(const StringView &key,
     return reply::parse<std::string>(*reply);
 }
 
+// DV edit: add minid variant
+template <typename Input>
+std::string RedisCluster::dvcustom_xadd_minid(const StringView &key,
+                                const StringView &id,
+                                Input first,
+                                Input last,
+                                long long minid,
+                                bool approx) {
+    auto reply = command(cmd::dvcustom_xadd_minid_range<Input>, key, id, first, last, minid, approx);
+
+    return reply::parse<std::string>(*reply);
+}
+
+
+
 template <typename Output>
 void RedisCluster::xclaim(const StringView &key,
                             const StringView &group,

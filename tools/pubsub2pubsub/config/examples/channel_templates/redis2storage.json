@@ -49,7 +49,9 @@
                         "journalPath": "vfs://DataPath/journals/clientType/{clientType}/instance/topics/{clientInstance}/topicName/{topicName}"
                     },
                     "CustomConfig": {
-                        "redisXAddMaxLen": -1,
+                        "autoGenerateRedisAddMinId": false,
+						"maxAgeInMsForMinId": 31560000000,
+						"redisXAddMaxLen": -1,						
                         "redisXAddMaxLenIsApproximate": true,
                         "redisXAddIgnoreMsgId": true,
                         "redisXReadDefaultOffset": "0",
