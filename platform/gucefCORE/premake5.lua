@@ -190,8 +190,6 @@ files( {
   "include/gucefCORE_CDynamicBufferSwap.h",
   "include/gucefCORE_CEnumerator.h",
   "include/gucefCORE_CEventBasedTaskConsumer.h",
-  "include/gucefCORE_CExecutionPlan.h",
-  "include/gucefCORE_CExecutionPlanRunner.h",
   "include/gucefCORE_CFileSystemDirectoryWatcher.h",
   "include/gucefCORE_CFileSystemUriResourceAccessor.h",
   "include/gucefCORE_CForwardingNotifier.h",
