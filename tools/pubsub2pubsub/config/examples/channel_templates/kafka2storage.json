@@ -44,7 +44,7 @@
                     "preferDedicatedConnection": false,
                     "topicName": "ExampleKafkaTopicName",
                     "consumerGroupName": "pubsubcapture",
-                    "consumerName": "$HOSTNAME$",					
+                    "consumerName": "$HOSTNAME$-{topicName}",					
                     "CustomConfig": {
                         "addProducerHostnameAsKafkaMsgHeader": false,
                         "consumerModeStartOffset": "stored",
@@ -70,7 +70,8 @@
                         "KafkaConsumerGlobalConfig": {
                             "auto.offset.reset": "largest",
                             "consume.callback.max.messages": "0",
-                            "log_level": "7"
+                            "log_level": "7",
+							"enable.auto.commit": "false"
                         }
                     }
                 },

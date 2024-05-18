@@ -708,10 +708,21 @@ CKafkaPubSubClientTopic::SetupBasedOnConfig( void )
         {
             if ( !m_config.consumerGroupName.IsNULLOrEmpty() )
             {
-                if ( RdKafka::Conf::CONF_OK != m_kafkaConsumerConf->set( "group.id", m_config.consumerGroupName, errStr ) )
+                CORE::CString consumerGroupName;
+                if ( !TryResolveMacrosInString( m_config.consumerGroupName, consumerGroupName ) )
+                {
+		            GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "KafkaPubSubClientTopic:LoadConfig: Failed to resolve macros in consumerGroupName" );
+                }
+                
+                if ( RdKafka::Conf::CONF_OK == m_kafkaConsumerConf->set( "group.id", consumerGroupName, errStr ) )
+                {
+		            GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "KafkaPubSubClientTopic:LoadConfig: Set Kafka group.id to \"" +
+                        consumerGroupName + "\" for topic " + m_config.topicName );
+                }
+                else
                 {
 		            GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "KafkaPubSubClientTopic:LoadConfig: Failed to set Kafka consumer group id to \"" +
-                        m_config.consumerGroupName + "\", error message: " + errStr );
+                        consumerGroupName + "\", error message: " + errStr );
                     ++m_kafkaErrorReplies;
                     return false;
                 }
@@ -731,7 +742,18 @@ CKafkaPubSubClientTopic::SetupBasedOnConfig( void )
         {
             if ( !m_config.consumerName.IsNULLOrEmpty() )
             {
-                if ( RdKafka::Conf::CONF_OK != m_kafkaConsumerConf->set( "group.instance.id", m_config.consumerName, errStr ) )
+                CORE::CString consumerName;
+                if ( !TryResolveMacrosInString( m_config.consumerName, consumerName ) )
+                {
+		            GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "KafkaPubSubClientTopic:LoadConfig: Failed to resolve macros in consumerName" );
+                }
+
+                if ( RdKafka::Conf::CONF_OK == m_kafkaConsumerConf->set( "group.instance.id", consumerName, errStr ) )
+                {
+		            GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "KafkaPubSubClientTopic:LoadConfig: Set Kafka group.instance.id to \"" +
+                        consumerName + "\" for topic " + m_config.topicName );
+                }
+                else
                 {
 		            GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "KafkaPubSubClientTopic:LoadConfig: Failed to set Kafka consumer instance id to \"" +
                         m_config.consumerName + "\", error message: " + errStr );

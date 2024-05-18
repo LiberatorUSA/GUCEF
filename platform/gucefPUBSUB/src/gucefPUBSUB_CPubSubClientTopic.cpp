@@ -32,6 +32,11 @@
 #define GUCEF_CORE_LOGGING_H
 #endif /* GUCEF_CORE_LOGGING_H ? */
 
+#ifndef GUCEF_PUBSUB_CPUBSUBCLIENT_H
+#include "gucefPUBSUB_CPubSubClient.h"
+#define GUCEF_PUBSUB_CPUBSUBCLIENT_H
+#endif /* GUCEF_PUBSUB_CPUBSUBCLIENT_H ? */
+
 #include "gucefPUBSUB_CPubSubClientTopic.h"
 
 /*-------------------------------------------------------------------------//
@@ -108,6 +113,24 @@ CPubSubClientTopic::~CPubSubClientTopic()
 {GUCEF_TRACE;
 
     SignalUpcomingDestruction();
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CPubSubClientTopic::TryResolveMacrosInString( const CORE::CString& testString ,
+                                              CORE::CString& resultString     ) const
+{GUCEF_TRACE;
+
+    resultString = testString.ReplaceSubstr( "{topicName}", GetTopicName() );
+
+    const CPubSubClient* client = GetClient();
+    if ( GUCEF_NULL != client )
+    {
+        resultString = resultString.ReplaceSubstr( "{clientType}", client->GetType() );    
+    }
+
+    return true;
 }
 
 /*-------------------------------------------------------------------------*/

@@ -310,6 +310,15 @@ class GUCEF_PUBSUB_EXPORT_CPP CPubSubClientTopic : public CORE::CTSGNotifier
     virtual bool SetJournal( CIPubSubJournalBasicPtr journal );
 
     virtual CIPubSubJournalBasicPtr GetJournal( void ) const;
+
+    /**
+     *  Helper function that can be used to resolve some common macros in strings
+     *  The generic implementation at this level supports the following macros
+     *      - {topicName}
+     *      - {clientType}
+     */
+    virtual bool TryResolveMacrosInString( const CORE::CString& testString ,
+                                           CORE::CString& resultString     ) const;
 };
 
 /*-------------------------------------------------------------------------*/
