@@ -97,11 +97,13 @@ CKafkaPubSubClientTopic::CKafkaPubSubClientTopic( CKafkaPubSubClient* client )
     , m_kafkaMessagesFiltered( 0 )
     , m_producerHostname( CORE::GetHostname() )
     , m_firstPartitionAssignment( true )
-    , m_consumerOffsets()
+    , m_consumerReadOffsets()
+    , m_consumerAckdOffsets()
+    , m_receivedMsgAcks()
     , m_tickCountAtLastOffsetCommit( 0 )
     , m_tickCountAtConsumeDelayRequest( 0 )
     , m_requestedConsumeDelayInMs( 0 )
-    , m_msgsReceivedSinceLastOffsetCommit( false )
+    , m_msgsAckdSinceLastOffsetCommit( false )
     , m_consumerOffsetWaitsForExplicitMsgAck( false )
     , m_currentPublishActionId( 1 )
     , m_currentReceiveActionId( 1 )
@@ -1335,13 +1337,16 @@ CKafkaPubSubClientTopic::GetCurrentBookmark( void )
         // To remedy we encode/serialize all partition IDs and their offsets into a blob bookmark
         // This will achieve the aim, to the extent possible with Kafka, of being able to retain this information client-side as a unified concept
 
-        if ( !m_consumerOffsets.empty() )
+        // Also note that we are not using the Kafka comitted offsets here but rather the current best read position which can be a little ahead of
+        // the actual commit to Kafka but it is the most recent ack'd position that we can provide without risk of information loss
+
+        if ( !m_consumerAckdOffsets.empty() )
         {
-            CORE::CDynamicBuffer consumerOffsetsBuffer( m_consumerOffsets.size() * ( sizeof(CORE::UInt32) + sizeof(CORE::Int64) ) );
+            CORE::CDynamicBuffer consumerOffsetsBuffer( m_consumerAckdOffsets.size() * ( sizeof(CORE::UInt32) + sizeof(CORE::Int64) ) );
 
             CORE::UInt32 byteOffset = 0;
-            TInt32ToInt64Map::iterator i = m_consumerOffsets.begin();
-            while ( i != m_consumerOffsets.end() )
+            TInt32ToInt64Map::iterator i = m_consumerAckdOffsets.begin();
+            while ( i != m_consumerAckdOffsets.end() )
             {
                 *consumerOffsetsBuffer.AsTypePtr< CORE::UInt32 >( byteOffset ) = (*i).first;
                 byteOffset += sizeof(CORE::UInt32);
@@ -1371,20 +1376,11 @@ CKafkaPubSubClientTopic::AcknowledgeReceipt( const TPartitionOffset& offset )
 
     MT::CScopeMutex lock( m_lock );
 
-    TInt32ToInt64Map::iterator p = m_consumerOffsets.find( offset.partitionId );
-    if ( p != m_consumerOffsets.end() )
-    {
-        CORE::Int64& currentOffset = (*p).second;
-        if ( offset.partitionOffset > currentOffset )
-        {
-            currentOffset = offset.partitionOffset;
-            m_msgsReceivedSinceLastOffsetCommit = true;
-        }
+    TInt64Set& ackdOffsets = m_receivedMsgAcks[ offset.partitionId ];
+    ackdOffsets.insert( offset.partitionOffset );
+    m_msgsAckdSinceLastOffsetCommit = true;
 
-        return true;
-    }
-
-    return false;
+    return true;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -1673,8 +1669,11 @@ CKafkaPubSubClientTopic::UpdateKafkaMsgsReceiveLag( void )
                     {
                         if ( RdKafka::Topic::OFFSET_INVALID != highOffset )
                         {
-                            TInt32ToInt64Map::iterator n = m_consumerOffsets.find( partition->partition() );
-                            if ( n != m_consumerOffsets.end() )
+                            // We use the ack'd minimum offsets known to the topic as the earliest most up-to-date carat of where we 
+                            // are reading wise which can be a little ahead of the read position that was actually commited to Kafka
+                            
+                            TInt32ToInt64Map::iterator n = m_consumerReadOffsets.find( partition->partition() );
+                            if ( n != m_consumerReadOffsets.end() )
                             {
                                 CORE::Int64 currentReadCursorOffset = (*n).second;
                                 CORE::Int64 currentReadCursorLag = highOffset - currentReadCursorOffset;
@@ -2031,11 +2030,11 @@ CKafkaPubSubClientTopic::offset_commit_cb( RdKafka::ErrorCode err               
             for ( unsigned int i=0; i<partitions.size(); ++i )
             {
                 int64_t partitionOffset = partitions[ i ]->offset();
-                if ( RdKafka::Topic::OFFSET_INVALID == partitionOffset                                   || 
-                     RdKafka::Topic::OFFSET_INVALID == m_consumerOffsets[ partitions[ i ]->partition() ] )
+                if ( RdKafka::Topic::OFFSET_INVALID == partitionOffset                                                || 
+                     RdKafka::Topic::OFFSET_INVALID == m_kafkaCommitedConsumerOffsets[ partitions[ i ]->partition() ] )
                 {
                     Int64 newPartitionOffset = ConvertKafkaConsumerStartOffset( offsetResetSetting, partitions[ i ]->partition(), (Int32) requestTimeout );
-                    m_consumerOffsets[ partitions[ i ]->partition() ] = newPartitionOffset;
+                    m_kafkaCommitedConsumerOffsets[ partitions[ i ]->partition() ] = newPartitionOffset;
                     partitions[ i ]->set_offset( newPartitionOffset );
                     GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "KafkaPubSubClientTopic: Resetting local offset administration to " + CORE::ToString( newPartitionOffset ) + " for partition " + CORE::ToString( partitions[ i ]->partition() ) );
                 }
@@ -2097,13 +2096,11 @@ CKafkaPubSubClientTopic::rebalance_cb( RdKafka::KafkaConsumer* consumer         
                 }
 
                 partitions[ i ]->set_offset( startOffset );
-                m_consumerOffsets[ partitions[ i ]->partition() ] = startOffset;
+                m_kafkaCommitedConsumerOffsets[ partitions[ i ]->partition() ] = startOffset;
             }
         }
         if (  m_firstPartitionAssignment )
             m_firstPartitionAssignment = false;
-
-        m_kafkaCommitedConsumerOffsets.clear();
 
         if ( CommitConsumerOffsets( false ) )
         {
@@ -2122,7 +2119,7 @@ CKafkaPubSubClientTopic::rebalance_cb( RdKafka::KafkaConsumer* consumer         
         consumer->unassign();
         for ( unsigned int i=0; i<partitions.size(); ++i )
         {
-            m_consumerOffsets.erase( partitions[ i ]->partition() );
+            m_consumerReadOffsets.erase( partitions[ i ]->partition() );
             m_kafkaCommitedConsumerOffsets.erase( partitions[ i ]->partition() );
         }
 
@@ -2176,7 +2173,7 @@ CKafkaPubSubClientTopic::LinkReceivedMsg( RdKafka::Message& message, CORE::UInt3
 {GUCEF_TRACE;
 
     // Grab a message wrapper from pre-allocated storage
-    PUBSUB::CBasicPubSubMsg& msgWrap = m_pubsubMsgs[ 0 ];
+    PUBSUB::CBasicPubSubMsg& msgWrap = m_pubsubMsgs[ msgIndex ];
     msgWrap.Clear();
     msgWrap.SetOriginClientTopic( CreateSharedPtr() );
 
@@ -2277,6 +2274,52 @@ CKafkaPubSubClientTopic::consume_cb( RdKafka::Message& message, void* opaque )
 /*-------------------------------------------------------------------------*/
 
 bool
+CKafkaPubSubClientTopic::IsSubscriptionAtEndOfData( void ) const
+{GUCEF_TRACE;
+
+    MT::CScopeMutex lock( m_lock );
+    
+    if ( GUCEF_NULL == m_kafkaConsumer )
+        return false;
+
+    if ( !m_consumerReadOffsets.empty() )
+    {
+        TInt32ToInt64Map::const_iterator i = m_consumerReadOffsets.begin();
+        while ( i != m_consumerReadOffsets.end() )
+        {    
+            CORE::Int32 partitionId = (*i).first;
+            CORE::Int64 readPosition = (*i).second;
+        
+            CORE::Int64 lowOffset = 0;
+            CORE::Int64 highOffset = 0;
+            RdKafka::ErrorCode response = m_kafkaConsumer->get_watermark_offsets( m_config.topicName, partitionId, &lowOffset, &highOffset );
+            if ( response == RdKafka::ERR_NO_ERROR )
+            {
+                if ( RdKafka::Topic::OFFSET_INVALID != highOffset   &&
+                     RdKafka::Topic::OFFSET_INVALID != readPosition )
+                {
+                    // We check to see if the read position, the offset of the last message received, has reached the high watermark
+                    if ( readPosition < highOffset )
+                        return false;
+                }
+            }
+            else
+            {
+                GUCEF_WARNING_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "KafkaPubSubClientTopic:IsSubscriptionAtEndOfData: Error obtaining watermark offsets. ErrorCode=" + CORE::ToString( response ) );
+                return false;
+            }
+            ++i;
+        }
+
+        return true;
+    }
+
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
 CKafkaPubSubClientTopic::ProcessRdKafkaMessage( RdKafka::Message& message , 
                                                 CORE::UInt32 msgIndex     , 
                                                 bool& isFiltered          )
@@ -2307,6 +2350,7 @@ CKafkaPubSubClientTopic::ProcessRdKafkaMessage( RdKafka::Message& message ,
             #endif
 
             ++m_kafkaMessagesReceived;
+            m_consumerReadOffsets[ message.partition() ] = message.offset();
 
             isFiltered = false;
             if ( m_config.useKafkaMsgHeadersForConsumerFiltering )
@@ -2330,14 +2374,10 @@ CKafkaPubSubClientTopic::ProcessRdKafkaMessage( RdKafka::Message& message ,
 
                                     // A filtered message also counts as successfully handled
                                     // As such we need to update the offset so that its taken into account for a later commit of said offsets
-                                    CORE::Int64& offset = m_consumerOffsets[ message.partition() ];
-                                    if ( message.offset() > offset )
-                                    {
-                                        offset = message.offset();
+                                    m_receivedMsgAcks[ message.partition() ].insert( message.offset() );
 
-                                        // Even when using an explicit ack this counts as the ack since the msg will never leave the backend as it was filtered
-                                        m_msgsReceivedSinceLastOffsetCommit = true;
-                                    }
+                                    // Even when using an explicit ack this counts as the ack since the msg will never leave the backend as it was filtered
+                                    m_msgsAckdSinceLastOffsetCommit = true;
 
                                     GUCEF_DEBUG_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "KafkaPubSubClientTopic:consume_cb: Filtered message on topic \"" +
                                             m_config.topicName + " with offset " + CORE::Int64ToString( message.offset() ) );
@@ -2357,11 +2397,12 @@ CKafkaPubSubClientTopic::ProcessRdKafkaMessage( RdKafka::Message& message ,
                 if ( !m_consumerOffsetWaitsForExplicitMsgAck )
                 {
                     // Right away update the local offsets, don't wait for AcknowledgeReceipt()
-                    CORE::Int64& offset = m_consumerOffsets[ message.partition() ];
+                    // we fake ack right away allowing the process to progress towards a commit
+                    CORE::Int64& offset = m_consumerAckdOffsets[ message.partition() ];
                     if ( message.offset() > offset )
                     {
                         offset = message.offset();
-                        m_msgsReceivedSinceLastOffsetCommit = true;  // Since something was recieved we want to set the flag to ensure we start commiting offsets again
+                        m_msgsAckdSinceLastOffsetCommit = true;  // Since something was recieved we want to set the flag to ensure we start commiting offsets again
                     }
                 }
                 
@@ -2381,7 +2422,12 @@ CKafkaPubSubClientTopic::ProcessRdKafkaMessage( RdKafka::Message& message ,
             if ( m_client->GetConfig().desiredFeatures.supportsSubscriptionEndOfDataEvent )
             {
                 // We need to see if we have reached EOF across all partitions not just the partition for which the RdKafka event was sent.
-                // @TODO
+                // The signal from Kafka merely triggers a more hollistic check
+                if ( IsSubscriptionAtEndOfData() )
+                {
+                    if ( !NotifyObservers( SubscriptionEndOfDataEvent ) ) 
+                        return success;
+                }
             }
 
             break;
@@ -2647,13 +2693,34 @@ CKafkaPubSubClientTopic::CommitConsumerOffsets( bool useAsyncCommit )
             // Match the current Topic objects with our simplistic bookkeeping and sync them
             std::vector<RdKafka::TopicPartition*>::iterator p = partitions.begin();
             while ( p != partitions.end() )
-            {
+            {                
+                // try to find ackd offsets for the given partition
+                // note that if no messages have been recieved and/or ackd yet then this will not yield anything
                 CORE::Int32 partitionId = (*p)->partition();
-                TInt32ToInt64Map::iterator o = m_consumerOffsets.find( partitionId );
-                if ( o != m_consumerOffsets.end() )
+                TInt32ToInt64Map::iterator o = m_consumerAckdOffsets.find( partitionId );
+                if ( o != m_consumerAckdOffsets.end() )
                 {
                     (*p)->set_offset( (*o).second );
                 }
+                else
+                {
+                    GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "KafkaPubSubClientTopic:CommitConsumerOffsets: No ackd offsets are available for partition " + CORE::ToString( partitionId ) +
+                        " falling back to commited ofsets" );
+                    
+                    // We dont have any acks for this partition we can use to update the offset
+                    // as such fall back to the commited offsets collection                    
+                    TInt32ToInt64Map::iterator o2 = m_kafkaCommitedConsumerOffsets.find( partitionId );
+                    if ( o2 != m_kafkaCommitedConsumerOffsets.end() )
+                    {
+                        (*p)->set_offset( (*o2).second );
+                    }
+                    else
+                    {
+                        GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "KafkaPubSubClientTopic:CommitConsumerOffsets: No commited offsets are available for partition " + CORE::ToString( partitionId ) );
+                        return false;
+                    }
+                }
+
                 ++p;
             }
 
@@ -2668,7 +2735,7 @@ CKafkaPubSubClientTopic::CommitConsumerOffsets( bool useAsyncCommit )
                     if ( RdKafka::ERR_NO_ERROR == err )
                     {
                         // Reset our flag so that we do not commit needlessly
-                        m_msgsReceivedSinceLastOffsetCommit = false;
+                        m_msgsAckdSinceLastOffsetCommit = false;
 
                         GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "KafkaPubSubClientTopic: Successfully triggered async commit of current offsets" );
                         return true;
@@ -2689,7 +2756,7 @@ CKafkaPubSubClientTopic::CommitConsumerOffsets( bool useAsyncCommit )
                     if ( RdKafka::ERR_NO_ERROR == err )
                     {
                         // Reset our flag so that we do not commit needlessly
-                        m_msgsReceivedSinceLastOffsetCommit = false;
+                        m_msgsAckdSinceLastOffsetCommit = false;
 
                         GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "KafkaPubSubClientTopic: Successfully triggered sync commit of current offsets" );
                         return true;
@@ -2754,6 +2821,112 @@ CKafkaPubSubClientTopic::RequestSubscriptionMsgArrivalDelay( CORE::UInt32 minDel
         m_requestedConsumeDelayInMs = minDelayInMs + remainingMs;
     }
     return true;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CKafkaPubSubClientTopic::ProcessMsgAcks( void )
+{GUCEF_TRACE;
+
+    bool offsetsChanged = false;
+
+    // Acks can come in async with gaps
+    // as such we need to match complete acks sequences against offsets we aim to commit
+    // this is required to ensure we dont accidentally commit while experiencing a gap, skipping over the gap
+
+    TInt32ToInt64SetMap::iterator n = m_receivedMsgAcks.begin();
+    while ( n != m_receivedMsgAcks.end() )
+    {
+        CORE::Int32 partitionId = (*n).first;
+        TInt64Set& ackdOffsets = (*n).second;
+
+        if ( !ackdOffsets.empty() )
+        {
+            // We need to repeat this process for all partitions belonging to the topic
+            TInt32ToInt64Map::iterator p = m_consumerAckdOffsets.find( partitionId );
+            if ( p == m_consumerAckdOffsets.end() )
+            {
+                CORE::Int64 commitedOffset = m_kafkaCommitedConsumerOffsets[ partitionId ];              
+                GUCEF_DEBUG_LOG( CORE::LOGLEVEL_IMPORTANT, "KafkaPubSubClientTopic: No ackd offset found for partition " + CORE::ToString( partitionId ) +
+                    " using Kafka commited offset as the new ack starting position: " + CORE::ToString( commitedOffset )  );
+                
+                m_consumerAckdOffsets[ partitionId ] = commitedOffset; 
+                p = m_consumerAckdOffsets.find( partitionId );
+            }
+
+            if ( p != m_consumerAckdOffsets.end() )
+            {
+                CORE::Int64& currentOffset = (*p).second;
+                           
+                TInt64Set::iterator a = ackdOffsets.begin();
+                CORE::Int64 ackdOffset = (*a);
+                if ( currentOffset == ackdOffset || currentOffset+1 == ackdOffset )
+                {
+                    // We found the start of the next sequence to commit
+                    // let's commit an entire block at once if we can by checking for a continuous sequence
+                    ++a;
+                    while ( a != ackdOffsets.end() )
+                    {
+                        CORE::Int64 nextAckdOffset = (*a);
+                        if ( ackdOffset+1 == nextAckdOffset )
+                            ackdOffset = nextAckdOffset;
+                        else
+                            break;
+                        
+                        ++a;
+                    }
+
+                    // Now we move the consumer offset to the new position
+                    GUCEF_DEBUG_LOG( CORE::LOGLEVEL_IMPORTANT, "KafkaPubSubClientTopic: Moving ackd commit offset from " + 
+                        CORE::ToString( currentOffset ) + " to " + CORE::ToString( ackdOffset ) + " for partition " + CORE::ToString( partitionId ) );
+                    currentOffset = ackdOffset;
+                    offsetsChanged = true;
+                }
+                else
+                {
+                    GUCEF_DEBUG_LOG( CORE::LOGLEVEL_IMPORTANT, "KafkaPubSubClientTopic: Ackd offset " + 
+                        CORE::ToString( ackdOffset ) + " is too far from current offset " + CORE::ToString( currentOffset ) + " for partition " + CORE::ToString( partitionId ) );
+                }
+            }
+        }
+        ++n;
+    }
+
+    return offsetsChanged;
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CKafkaPubSubClientTopic::CleanupMsgAcks( void )
+{GUCEF_TRACE;
+
+    // Acks which have been committed successfully need to be eliminated from our acks collection
+    TInt32ToInt64Map::iterator p = m_consumerAckdOffsets.begin();
+    while ( p != m_consumerAckdOffsets.end() )
+    {
+        CORE::Int32 partitionId = (*p).first;
+        CORE::Int64 currentOffset = (*p).second;
+
+        TInt32ToInt64SetMap::iterator n = m_receivedMsgAcks.begin();
+        while ( n != m_receivedMsgAcks.end() )
+        {
+            TInt64Set& ackdOffsets = (*n).second;
+            while ( !ackdOffsets.empty() )
+            {
+                CORE::Int64 ackdOffset = *(ackdOffsets.begin());
+                if ( ackdOffset <= currentOffset )
+                    ackdOffsets.erase( ackdOffsets.begin() );    
+                else
+                    break;
+            }
+
+            ++n;
+        }
+
+        ++p;
+    }
 }
 
 /*-------------------------------------------------------------------------*/
@@ -2855,15 +3028,21 @@ CKafkaPubSubClientTopic::OnPulseCycle( CORE::CNotifier* notifier    ,
                 GetPulseGenerator()->RequestImmediatePulse();
             }
 
-            if ( m_msgsReceivedSinceLastOffsetCommit )
+            if ( !m_consumerOffsetWaitsForExplicitMsgAck || m_msgsAckdSinceLastOffsetCommit )
             {
                 // Periodically commit our offsets
                 // This can slow things down so we dont want to do this too often
                 if ( 5000 < GetPulseGenerator()->GetTimeSinceTickCountInMilliSecs( m_tickCountAtLastOffsetCommit ) )
                 {
-                    if ( CommitConsumerOffsets() )
+                    bool offsetsChanged = ProcessMsgAcks();
+                    if ( offsetsChanged )
                     {
-                        m_tickCountAtLastOffsetCommit = GetPulseGenerator()->GetTickCount();
+                        if ( CommitConsumerOffsets( false ) )
+                        {
+                            CleanupMsgAcks();
+
+                            m_tickCountAtLastOffsetCommit = GetPulseGenerator()->GetTickCount();
+                        }
                     }
                 }
             }
