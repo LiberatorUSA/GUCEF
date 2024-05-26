@@ -293,19 +293,23 @@ class PUBSUBPLUGIN_KAFKA_PLUGIN_PRIVATE_CPP CKafkaPubSubClientTopic : public PUB
 
     void CleanupMsgAcks( void );
 
+    bool RetrieveKafkaCommitedOffsets( void );
+
+    bool QueryKafkaIfSubscriptionIsAtEndOfData( bool& isSubscriptionAtEndOfData ) const;
+
     private:
 
     typedef CORE::CTEventHandlerFunctor< CKafkaPubSubClientTopic > TEventCallback;
    
     // Types to implement/hook-up topic interface
-    typedef std::vector< PUBSUB::CBasicPubSubMsg >                      TPubSubMsgsVector;
-    typedef std::vector< RdKafka::Message* >                            TRdKafkaMsgPtrVector;
+    typedef std::vector< PUBSUB::CBasicPubSubMsg, gucef_allocator< PUBSUB::CBasicPubSubMsg > >                      TPubSubMsgsVector;
+    typedef std::vector< RdKafka::Message*, gucef_allocator< RdKafka::Message* > >                                  TRdKafkaMsgPtrVector;
     typedef std::pair< CORE::CDynamicBuffer, CORE::CDynamicBuffer >     TBufferPair;
-    typedef std::vector< TBufferPair >                                  TBufferVector;
-    typedef std::set< CORE::Int64 >                                     TInt64Set;
+    typedef std::vector< TBufferPair, gucef_allocator< TBufferPair > >                                              TBufferVector;
+    typedef std::set< CORE::Int64, std::less< CORE::Int64 >, gucef_allocator< CORE::Int64 >  >                      TInt64Set;
     typedef std::map< CORE::Int32, CORE::Int64 >                        TInt32ToInt64Map;
     typedef std::map< CORE::Int32, TInt64Set >                          TInt32ToInt64SetMap;
-    typedef std::vector< RdKafka::TopicPartition* >                     TRdKafkaTopicPartitionPtrVector;
+    typedef std::vector< RdKafka::TopicPartition* >                                                                 TRdKafkaTopicPartitionPtrVector;
 
     CKafkaPubSubClient* m_client;
     CORE::CTimer* m_metricsTimer;
@@ -347,6 +351,7 @@ class PUBSUBPLUGIN_KAFKA_PLUGIN_PRIVATE_CPP CKafkaPubSubClientTopic : public PUB
     TopicMetrics m_metrics;
     bool m_shouldBeConnected;
     bool m_isSubscribed;
+    bool m_isSubscriptionAtEndOfData;
     mutable bool m_isHealthy;
     MT::CMutex m_lock;
 };

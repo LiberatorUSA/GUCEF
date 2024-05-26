@@ -125,7 +125,7 @@ class GUCEF_PUBSUB_EXPORT_CPP CPubSubClientSide : public CORE::CTaskConsumer
     typedef CPubSubClientPtr                TPubSubClientInstantiationEventData;    /**< shared pointer to the pubsub client */
 
     typedef CORE::CTEventHandlerFunctor< CPubSubClientSide >                            TEventCallback;
-    typedef std::vector< CPubSubClientSide*, basic_allocator< CPubSubClientSide* > >    TPubSubClientSideVector;
+    typedef std::vector< CPubSubClientSide*, gucef_allocator< CPubSubClientSide* > >    TPubSubClientSideVector;
 
     class CPubSubClientSideMetrics : public CORE::CTSharedObjCreator< CPubSubClientSideMetrics, MT::CMutex > 
     {
@@ -510,9 +510,9 @@ class GUCEF_PUBSUB_EXPORT_CPP CPubSubClientSide : public CORE::CTaskConsumer
     typedef TopicLink::TSharedPtrType  TopicLinkPtr;
 
     typedef std::pair< const CPubSubClientTopic*, TopicLinkPtr >   TPubSubClientTopicRawPtrAndTopicLinkPair;
-    typedef std::map< CPubSubClientTopic*, TopicLinkPtr, std::less< CPubSubClientTopic* >, basic_allocator< TPubSubClientTopicRawPtrAndTopicLinkPair > > TopicPtrMap;
-    typedef std::map< CORE::CString, TopicLinkPtr, std::less< CORE::CString >, basic_allocator< TPubSubClientTopicRawPtrAndTopicLinkPair > >             TopicNameMap;
-    typedef std::set< CPubSubClientTopicBasicPtr, std::less< CPubSubClientTopicBasicPtr >, basic_allocator< CPubSubClientTopicBasicPtr > >               TopicSet;
+    typedef std::map< CPubSubClientTopic*, TopicLinkPtr, std::less< CPubSubClientTopic* >, gucef_allocator< TPubSubClientTopicRawPtrAndTopicLinkPair > > TopicPtrMap;
+    typedef std::map< CORE::CString, TopicLinkPtr, std::less< CORE::CString >, gucef_allocator< TPubSubClientTopicRawPtrAndTopicLinkPair > >             TopicNameMap;
+    typedef std::set< CPubSubClientTopicBasicPtr, std::less< CPubSubClientTopicBasicPtr >, gucef_allocator< CPubSubClientTopicBasicPtr > >               TopicSet;
 
     CPubSubClientPtr m_pubsubClient;
     CPubSubClientFeatures m_clientFeatures;
@@ -540,7 +540,7 @@ class GUCEF_PUBSUB_EXPORT_CPP CPubSubClientSide : public CORE::CTaskConsumer
 /*-------------------------------------------------------------------------*/
 
 typedef CORE::CTSharedPtr< CPubSubClientSide, MT::CMutex >  CPubSubClientSidePtr;
-typedef std::vector< CPubSubClientSidePtr, basic_allocator< CPubSubClientSidePtr > >    TPubSubClientSidePtrVector;
+typedef std::vector< CPubSubClientSidePtr, gucef_allocator< CPubSubClientSidePtr > >    TPubSubClientSidePtrVector;
 
 /*-------------------------------------------------------------------------//
 //                                                                         //

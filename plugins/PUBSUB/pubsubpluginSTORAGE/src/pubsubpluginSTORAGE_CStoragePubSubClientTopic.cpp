@@ -747,7 +747,7 @@ CStoragePubSubClientTopic::Publish( TPublishActionIdVector& publishActionIds ,
 template < typename T >
 bool
 CStoragePubSubClientTopic::PublishViaMsgPtrs( TPublishActionIdVector& publishActionIds           ,
-                                              const std::vector< T, basic_allocator< T > >& msgs ,
+                                              const std::vector< T, gucef_allocator< T > >& msgs ,
                                               bool notify                                        )
 {GUCEF_TRACE;
 
@@ -767,7 +767,7 @@ CStoragePubSubClientTopic::PublishViaMsgPtrs( TPublishActionIdVector& publishAct
         GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "StoragePubSubClientTopic:PublishViaMsgPtrs: Given " + CORE::ToString( msgs.size() ) + " msgs" );
 
         TPublishActionIdVector::iterator publishActionIdIttr = publishActionIds.begin();
-        typename std::vector< T, basic_allocator< T > >::const_iterator i = msgs.begin();
+        typename std::vector< T, gucef_allocator< T > >::const_iterator i = msgs.begin();
         bool work = true;
         while ( work )
         {

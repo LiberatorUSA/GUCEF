@@ -230,7 +230,7 @@ class PUBSUBPLUGIN_STORAGE_PLUGIN_PRIVATE_CPP CStoragePubSubClient : public PUBS
 
     typedef CORE::CTEventHandlerFunctor< CStoragePubSubClient > TEventCallback;
     typedef std::pair< CORE::CString, CStoragePubSubClientTopicPtr >    TStringAndTopicPtrPair;
-    typedef std::map< CORE::CString, CStoragePubSubClientTopicPtr, std::less< CORE::CString >, basic_allocator< TStringAndTopicPtrPair > > TTopicMap;
+    typedef std::map< CORE::CString, CStoragePubSubClientTopicPtr, std::less< CORE::CString >, gucef_allocator< TStringAndTopicPtrPair > > TTopicMap;
 
     CStoragePubSubClientConfig m_config;
     PUBSUB::CIPubSubJournalBasicPtr m_journal;

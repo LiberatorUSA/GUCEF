@@ -41,34 +41,6 @@
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
-//      CONSTANTS                                                          //
-//                                                                         //
-//-------------------------------------------------------------------------*/
-
-/*
- *      Maximum and minimal values for the build-in types 
- */
-#define GUCEF_INT8MAX     127
-#define GUCEF_INT8MIN     (-128)
-#define GUCEF_UINT8MAX    256
-#define GUCEF_UINT8MIN    0
-#define GUCEF_INT16MAX    32767
-#define GUCEF_INT16MIN    (-32767-1)
-#define GUCEF_UINT16MAX   65535
-#define GUCEF_UINT16MIN   0
-#define GUCEF_INT32MAX    2147483647
-#define GUCEF_INT32MIN    (-2147483647-1)
-#define GUCEF_UINT32MAX   4294967295
-#define GUCEF_UINT32MIN   0
-#define GUCEF_INT64MIN    -9223372036854775808
-#define GUCEF_INT64MAX    9223372036854775807
-#define GUCEF_UINT64MIN   0
-#define GUCEF_UINT64MAX   18446744073709551615
-#define GUCEF_FLOAT32MAX  (3.40282347E+38F)
-#define GUCEF_FLOAT32MIN  (-3.40282347E+38F-1)
-
-/*-------------------------------------------------------------------------//
-//                                                                         //
 //      NAMESPACE                                                          //
 //                                                                         //
 //-------------------------------------------------------------------------*/
@@ -137,6 +109,34 @@ typedef float           Float32;  /* 4 bytes, signed, decimal */
 typedef double          Float64;  /* 8 bytes, signed, decimal */
 
 #endif
+
+/*-------------------------------------------------------------------------//
+//                                                                         //
+//      CONSTANTS                                                          //
+//                                                                         //
+//-------------------------------------------------------------------------*/
+
+/*
+ *      Maximum and minimal values for the build-in types 
+ */
+#define GUCEF_INT8MAX     ( (Int8) 127 )
+#define GUCEF_INT8MIN     ( (Int8) (-128) )
+#define GUCEF_UINT8MAX    ( (UInt8) 256 )
+#define GUCEF_UINT8MIN    ( (UInt8) 0 )
+#define GUCEF_INT16MAX    ( (Int16) 32767 )
+#define GUCEF_INT16MIN    ( (Int16) (-32767-1) )
+#define GUCEF_UINT16MAX   ( (UInt16) 65535 )
+#define GUCEF_UINT16MIN   ( (UInt16) 0 )
+#define GUCEF_INT32MAX    ( (Int32) 2147483647 )
+#define GUCEF_INT32MIN    ( (Int32) (-2147483647-1) )
+#define GUCEF_UINT32MAX   ( (UInt32) 4294967295 )
+#define GUCEF_UINT32MIN   ( (UInt32) 0 )
+#define GUCEF_INT64MIN    ( (Int64) -9223372036854775808 )
+#define GUCEF_INT64MAX    ( (Int64) 9223372036854775807 )
+#define GUCEF_UINT64MIN   ( (UInt64) 0 )
+#define GUCEF_UINT64MAX   ( (UInt64) 18446744073709551615 )
+#define GUCEF_FLOAT32MAX  ( (Float32) (3.40282347E+38F) )
+#define GUCEF_FLOAT32MIN  ( (Float32) (-3.40282347E+38F-1) )
 
 /*--------------------------------------------------------------------------*/
 
@@ -394,8 +394,8 @@ typedef enum EBasicDataType TBasicDataType;
 
 /*--------------------------------------------------------------------------*/
 
-#define GUCEF_FLOAT32_COMPARISON_EPSILON   0.00001f
-#define GUCEF_FLOAT64_COMPARISON_EPSILON   0.00001
+#define GUCEF_FLOAT32_COMPARISON_EPSILON   ( (Float32) 0.00001f )
+#define GUCEF_FLOAT64_COMPARISON_EPSILON   ( (Float64) 0.00001 )
 
 /*-------------------------------------------------------------------------//
 //                                                                         //

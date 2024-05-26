@@ -127,7 +127,7 @@ class GUCEF_COMCORE_EXPORT_CPP CINetworkInterface : public virtual CICommunicati
     typedef CIPv4Address::TIPv4AddressVector    TIPv4AddressVector;
     typedef CIPInfo::TIPInfoVector              TIPInfoVector;
     typedef CORE::CTSharedPtr< CINetworkInterface, MT::CMutex >                            CINetworkInterfacePtr;
-    typedef std::vector< CINetworkInterfacePtr, basic_allocator< CINetworkInterface > >    TINetworkInterfacePtrVector;
+    typedef std::vector< CINetworkInterfacePtr, gucef_allocator< CINetworkInterface > >    TINetworkInterfacePtrVector;
     
     virtual ~CINetworkInterface();
 

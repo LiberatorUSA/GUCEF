@@ -111,7 +111,7 @@ class PUBSUBPLUGIN_STORAGE_PLUGIN_PRIVATE_CPP CStoragePubSubClientTopic : public
 {
     public:
 
-    typedef std::vector< CORE::UInt32, basic_allocator< CORE::UInt32 > >    UInt32Vector;
+    typedef std::vector< CORE::UInt32, gucef_allocator< CORE::UInt32 > >    UInt32Vector;
 
     class CStorageBookmarkInfo
     {
@@ -315,9 +315,9 @@ class PUBSUBPLUGIN_STORAGE_PLUGIN_PRIVATE_CPP CStoragePubSubClientTopic : public
         virtual bool SaveConfig( CORE::CDataNode& tree ) const GUCEF_VIRTUAL_OVERRIDE;
         virtual bool LoadConfig( const CORE::CDataNode& treeroot ) GUCEF_VIRTUAL_OVERRIDE;
     };
-    typedef std::deque< StorageToPubSubRequest, basic_allocator< StorageToPubSubRequest > > StorageToPubSubRequestDeque;
+    typedef std::deque< StorageToPubSubRequest, gucef_allocator< StorageToPubSubRequest > > StorageToPubSubRequestDeque;
     
-    typedef std::vector< bool, basic_allocator< bool > > TBoolVector;
+    typedef std::vector< bool, gucef_allocator< bool > > TBoolVector;
     
     class StorageBufferMetaData
     {
@@ -363,7 +363,7 @@ class PUBSUBPLUGIN_STORAGE_PLUGIN_PRIVATE_CPP CStoragePubSubClientTopic : public
 
     template < typename T >
     bool PublishViaMsgPtrs( TPublishActionIdVector& publishActionIds           , 
-                            const std::vector< T, basic_allocator< T > >& msgs , 
+                            const std::vector< T, gucef_allocator< T > >& msgs , 
                             bool notify                                        );
 
     void NotifyPublishResults( void );

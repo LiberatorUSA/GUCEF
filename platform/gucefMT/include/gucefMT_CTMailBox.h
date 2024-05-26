@@ -101,8 +101,8 @@ class CTMailBox : public virtual MT::CILockable
     typedef struct SMailElement TMailElement;
 
     typedef T                                                            value_type;
-    typedef std::vector< TMailElement, basic_allocator< TMailElement > > TMailVector;
-    typedef std::deque< TMailElement, basic_allocator< TMailElement > >  TMailQueue;
+    typedef std::vector< TMailElement, gucef_allocator< TMailElement > > TMailVector;
+    typedef std::deque< TMailElement, gucef_allocator< TMailElement > >  TMailQueue;
     typedef typename std::deque< TMailElement >::iterator                iterator;
     typedef typename std::deque< TMailElement >::const_iterator          const_iterator;
 

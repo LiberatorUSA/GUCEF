@@ -87,10 +87,10 @@ class GUCEF_CORE_PUBLIC_CPP CUtf8String
 {
     public:
 
-    typedef std::vector< CUtf8String, basic_allocator< CUtf8String > >                                      StringVector;
-    typedef std::set< CUtf8String, std::less< CUtf8String >, basic_allocator< CUtf8String > >               StringSet;
+    typedef std::vector< CUtf8String, gucef_allocator< CUtf8String > >                                      StringVector;
+    typedef std::set< CUtf8String, std::less< CUtf8String >, gucef_allocator< CUtf8String > >               StringSet;
     typedef std::pair< const CUtf8String, CUtf8String >                                                     StringPair;
-    typedef std::map< CUtf8String, CUtf8String, std::less< CUtf8String >, basic_allocator< StringPair > >   StringMap;
+    typedef std::map< CUtf8String, CUtf8String, std::less< CUtf8String >, gucef_allocator< StringPair > >   StringMap;
 
     static const CUtf8String    Empty;
     static const StringVector   EmptyStringVector;

@@ -57,7 +57,7 @@ class GUCEF_COMCORE_EXPORT_CPP CIPv6Address
 {
     public:
 
-    typedef std::vector< CIPv6Address, basic_allocator< CIPv6Address > > TIPv6AddressVector;
+    typedef std::vector< CIPv6Address, gucef_allocator< CIPv6Address > > TIPv6AddressVector;
 
     bool operator==( const CIPv6Address& other ) const;
 

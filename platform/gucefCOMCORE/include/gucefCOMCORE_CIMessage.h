@@ -105,11 +105,11 @@ class GUCEF_COMCORE_EXPORT_CPP CIMessage : public CORE::CIDataNodeSerializable
     public:
 
     typedef std::pair< CORE::CVariant, CORE::CVariant >                                             TKeyValuePair;
-    typedef std::vector< TKeyValuePair, basic_allocator< TKeyValuePair > >                          TKeyValuePairs;
-    typedef std::vector< CIMessage*, basic_allocator< CIMessage* > >                                TIMessageRawPtrVector;
-    typedef std::vector< const CIMessage*, basic_allocator< const CIMessage* > >                    TIMessageConstRawPtrVector;
+    typedef std::vector< TKeyValuePair, gucef_allocator< TKeyValuePair > >                          TKeyValuePairs;
+    typedef std::vector< CIMessage*, gucef_allocator< CIMessage* > >                                TIMessageRawPtrVector;
+    typedef std::vector< const CIMessage*, gucef_allocator< const CIMessage* > >                    TIMessageConstRawPtrVector;
     typedef CORE::CTSharedPtr< CIMessage, MT::CNoLock >                                             TIMessageNoLockSharedPtr;
-    typedef std::vector< TIMessageNoLockSharedPtr, basic_allocator< TIMessageNoLockSharedPtr > >    TIMessageSPtrVector;
+    typedef std::vector< TIMessageNoLockSharedPtr, gucef_allocator< TIMessageNoLockSharedPtr > >    TIMessageSPtrVector;
 
     CIMessage( void );
 

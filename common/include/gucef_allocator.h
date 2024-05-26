@@ -76,10 +76,10 @@ namespace GUCEF {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-template < class T > class basic_allocator;
+template < class T > class gucef_allocator;
 
 template <>
-class basic_allocator<void>
+class gucef_allocator<void>
 {
 public:
     typedef void              value_type;
@@ -91,12 +91,12 @@ public:
     template <class U>
     struct rebind
     {
-        typedef basic_allocator<U> other;
+        typedef gucef_allocator<U> other;
     };
 };
 
 template < class T >
-class basic_allocator
+class gucef_allocator
 {
 public:
     typedef T                 value_type;
@@ -110,15 +110,15 @@ public:
     template <class U>
     struct rebind
     {
-        typedef basic_allocator<U> other;
+        typedef gucef_allocator<U> other;
     };
 
-    basic_allocator() GUCEF_NOEXCEPT {}  // not required, unless used
-    template <class U> basic_allocator( basic_allocator<U> const& u ) GUCEF_NOEXCEPT 
+    gucef_allocator() GUCEF_NOEXCEPT {}  // not required, unless used
+    template <class U> gucef_allocator( gucef_allocator<U> const& u ) GUCEF_NOEXCEPT 
     {GUCEF_TRACE; }
 
     pointer
-    allocate( size_type n, basic_allocator<void>::const_pointer = 0 )
+    allocate( size_type n, gucef_allocator<void>::const_pointer = 0 )
     {GUCEF_TRACE;
 
         #if defined( GUCEF_USE_MEMORY_LEAK_CHECKER ) && defined( GUCEF_USE_PLATFORM_MEMORY_LEAK_CHECKER ) && !defined( GUCEF_DYNNEWON_DISABLED )
@@ -191,7 +191,7 @@ public:
 
 template <class T, class U>
 bool
-operator==( basic_allocator<T> const&, basic_allocator<U> const& )
+operator==( gucef_allocator<T> const&, gucef_allocator<U> const& )
 {GUCEF_TRACE;
 
     return true;
@@ -201,7 +201,7 @@ operator==( basic_allocator<T> const&, basic_allocator<U> const& )
 
 template <class T, class U>
 bool
-operator!=( basic_allocator<T> const& x, basic_allocator<U> const& y )
+operator!=( gucef_allocator<T> const& x, gucef_allocator<U> const& y )
 {GUCEF_TRACE;
 
     return !(x == y);

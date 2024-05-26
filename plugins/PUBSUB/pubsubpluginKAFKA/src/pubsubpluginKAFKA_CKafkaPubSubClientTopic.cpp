@@ -115,6 +115,7 @@ CKafkaPubSubClientTopic::CKafkaPubSubClientTopic( CKafkaPubSubClient* client )
     , m_metrics()
     , m_shouldBeConnected( false )
     , m_isSubscribed( false )
+    , m_isSubscriptionAtEndOfData( false )
     , m_isHealthy( true )
     , m_lock()
 {GUCEF_TRACE;
@@ -888,6 +889,66 @@ CKafkaPubSubClientTopic::Disconnect( void )
 /*-------------------------------------------------------------------------*/
 
 bool
+CKafkaPubSubClientTopic::RetrieveKafkaCommitedOffsets( void )
+{GUCEF_TRACE;
+
+    if ( GUCEF_NULL != m_kafkaConsumer )
+    {
+        TRdKafkaTopicPartitionPtrVector partitions;
+        RdKafka::ErrorCode err = m_kafkaConsumer->committed( partitions, 10000 );
+        if ( RdKafka::ERR_NO_ERROR == err )
+        {
+            bool retrievedKafkaCommitedOffsets = false;
+            CORE::CString commitInfo = "KafkaPubSubClientTopic:RetrieveKafkaCommitedOffsets: Group \"" + m_config.consumerGroupName + "\", Member ID \"" + m_kafkaConsumer->memberid() + "\": ";
+            if ( !partitions.empty() )
+            {
+                bool hasErrorPartition = false;
+                for ( unsigned int i=0; i<partitions.size(); ++i )
+                {
+                    RdKafka::TopicPartition* partition = partitions[ i ];
+                    if ( GUCEF_NULL != partition )
+                    {
+                        Int32 partitionId = partition->partition();
+                        Int64 partitionOffset = partition->offset();
+
+                        commitInfo += "Topic \"" + CORE::ToString( partition->topic() ) + "\" has partition \"" + CORE::ToString( partitionId ) + "\" with committed offset \"" + CORE::ToString( partitionOffset ) + "\". ";
+
+                        if ( RdKafka::Topic::OFFSET_INVALID != partitionOffset )
+                        {
+                            m_kafkaCommitedConsumerOffsets[ partitionId ] = partitionOffset;
+                        }
+                        else
+                        {
+                            hasErrorPartition = true;
+                        }
+                    }
+                }
+
+                if ( !hasErrorPartition )
+                    retrievedKafkaCommitedOffsets = true;
+            }
+            else
+            {
+                commitInfo += "has no known server-side commited offsets";
+            }
+            GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, commitInfo );
+
+            return retrievedKafkaCommitedOffsets;
+        }
+        else
+        {
+            ++m_kafkaErrorReplies;
+            std::string errStr = RdKafka::err2str( err );
+            GUCEF_WARNING_LOG( CORE::LOGLEVEL_IMPORTANT, "KafkaPubSubClientTopic:RetrieveKafkaCommitedOffsets: Failed to obtain currently commited offsets for member \"" + m_kafkaConsumer->memberid() + "\". ErrorCode : " + errStr );
+        }
+    }
+
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
 CKafkaPubSubClientTopic::Subscribe( void )
 {GUCEF_TRACE;
 
@@ -910,34 +971,8 @@ CKafkaPubSubClientTopic::Subscribe( void )
     {
         // First obtain the currently commited offsets if possible
         // this is optional but desired as it helps with troubleshooting and helps init the stats earlier
-        TRdKafkaTopicPartitionPtrVector partitions;
-        RdKafka::ErrorCode err = m_kafkaConsumer->committed( partitions, 10000 );
-        if ( RdKafka::ERR_NO_ERROR == err )
-        {
-            CORE::CString commitInfo = "KafkaPubSubClientTopic:Subscribe: Group \"" + m_config.consumerGroupName + "\", Member ID \"" + m_kafkaConsumer->memberid() + "\": ";
-            if ( !partitions.empty() )
-            {
-                for ( unsigned int i=0; i<partitions.size(); ++i )
-                {
-                    RdKafka::TopicPartition* partition = partitions[ i ];
-                    commitInfo += "Topic \"" + CORE::ToString( partition->topic() ) + "\" has partition \"" + CORE::Int32ToString( partition->partition() ) + "\" with committed offset \"" + CORE::ToString( partition->offset() ) + "\". ";
-
-                    m_kafkaCommitedConsumerOffsets[ partition->partition() ] = partition->offset();
-                }
-            }
-            else
-            {
-                commitInfo += "has no known server-side commited offsets";
-            }
-            GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, commitInfo );
-        }
-        else
-        {
-            ++m_kafkaErrorReplies;
-            std::string errStr = RdKafka::err2str( err );
-            GUCEF_WARNING_LOG( CORE::LOGLEVEL_IMPORTANT, "KafkaPubSubClientTopic: Failed to obtain currently commited offsets for member \"" + m_kafkaConsumer->memberid() + "\". ErrorCode : " + errStr );
-        }
-
+        RetrieveKafkaCommitedOffsets();
+        
         // Perform the actual subscribe
         std::vector< std::string > topics;
         topics.push_back( m_config.topicName );
@@ -2098,39 +2133,204 @@ CKafkaPubSubClientTopic::rebalance_cb( RdKafka::KafkaConsumer* consumer         
     std::string actionStr = "<UNKNOWN>";
     if ( err == RdKafka::ERR__ASSIGN_PARTITIONS )
     {
+        GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "KafkaPubSubClientTopic:rebalance_cb: Assigning partitions" );
         RdKafka::ErrorCode assignSuccess = consumer->assign( partitions );
+        
+        // Check if we can use the newly assigned partition's offsets
+        bool hasInvalidOffsets = false;
         for ( unsigned int i=0; i<partitions.size(); ++i )
         {
-            if ( m_firstPartitionAssignment || RdKafka::Topic::OFFSET_INVALID == partitions[ i ]->offset() )
+            Int64 paritionOffset = partitions[ i ]->offset();           
+            if ( RdKafka::Topic::OFFSET_INVALID == paritionOffset )
             {
-                CORE::Int64 startOffset = (CORE::Int64) RdKafka::Topic::OFFSET_INVALID;
-                Int64 requestTimeout = GetConsumerConfigSettingAsInt64( "request.timeout.ms", 3000 );
-                if ( RdKafka::Topic::OFFSET_INVALID == partitions[i]->offset() )
-                {
-                    startOffset = ConvertKafkaConsumerStartOffset( DefaultOffsetResetValue, partitions[ i ]->partition(), (Int32) requestTimeout );
-                }
-                else
-                {
-                    CORE::CString offsetResetValue = m_config.consumerModeStartOffset.IsNULLOrEmpty() ? DefaultOffsetResetValue : m_config.consumerModeStartOffset;
-                    offsetResetValue = GetConsumerConfigSetting( "auto.offset.reset", offsetResetValue ); 
-                    
-                    startOffset = ConvertKafkaConsumerStartOffset( offsetResetValue, partitions[ i ]->partition(), (Int32) requestTimeout );
-                }
-
-                partitions[ i ]->set_offset( startOffset );
-                m_kafkaCommitedConsumerOffsets[ partitions[ i ]->partition() ] = startOffset;
+                GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "KafkaPubSubClientTopic:rebalance_cb: We were given OFFSET_INVALID for topic \"" + m_config.topicName + "\"" );
+                hasInvalidOffsets = true;
+                break;
             }
         }
-        if (  m_firstPartitionAssignment )
-            m_firstPartitionAssignment = false;
 
-        if ( CommitConsumerOffsets( false ) )
-        {
-            GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "KafkaPubSubClientTopic: Successfully commited the new offsets" );
+        // If the newly assigned partition offsets are Ok we will consider those the last commited offsets
+        // in such a case no need for an extra call to Kafka
+        bool updatedKafkaCommitedConsumerOffsets = false;
+        if ( !hasInvalidOffsets )
+        {            
+            GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "KafkaPubSubClientTopic:rebalance_cb: We were given offsets for topic \"" + m_config.topicName + "\". Will use those as the new 'commited' offsets" );
+            
+            m_kafkaCommitedConsumerOffsets.clear();
+            for ( unsigned int i=0; i<partitions.size(); ++i )
+            {
+                Int32 partitionId = partitions[ i ]->partition();
+                Int64 paritionOffset = partitions[ i ]->offset();           
+                m_kafkaCommitedConsumerOffsets[ partitionId ] = paritionOffset;
+                m_consumerAckdOffsets[ partitionId ] = paritionOffset;
+
+                GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "KafkaPubSubClientTopic:rebalance_cb: partition " + 
+                    CORE::ToString( partitionId ) + " is now at offset " + CORE::ToString( paritionOffset ) );
+            }
+            updatedKafkaCommitedConsumerOffsets = true;
         }
-        else
+
+        // Check if we can directly obtain our last commited offsets from Kafka if we dont have the values yet
+        if ( m_kafkaCommitedConsumerOffsets.empty() )
         {
-            GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "KafkaPubSubClientTopic: CommitConsumerOffsets failed after reset of offsets" );
+            if ( RetrieveKafkaCommitedOffsets() && !m_kafkaCommitedConsumerOffsets.empty() )
+            {
+                hasInvalidOffsets = false;
+                updatedKafkaCommitedConsumerOffsets = true;
+                GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "KafkaPubSubClientTopic:rebalance_cb: Successfully retrieved last commited offsets for topic \"" + m_config.topicName + "\" from Kafka" );
+
+                for ( unsigned int i=0; i<partitions.size(); ++i )
+                {
+                    Int32 partitionId = partitions[ i ]->partition();
+                    Int64 paritionOffset = partitions[ i ]->offset();           
+
+                    TInt32ToInt64Map::iterator c = m_kafkaCommitedConsumerOffsets.find( partitionId );
+                    if ( c != m_kafkaCommitedConsumerOffsets.end() )
+                    {
+                        Int64 comittedOffset = (*c).second;
+                        partitions[ i ]->set_offset( comittedOffset );
+                        m_consumerAckdOffsets[ partitionId ] = comittedOffset; 
+
+                        GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "KafkaPubSubClientTopic:rebalance_cb: Changing offset for partition " + CORE::ToString( partitionId ) + 
+                            " from " + CORE::ToString( paritionOffset ) + " to committed value " + CORE::ToString( comittedOffset )   );
+                    }
+                    else
+                    {
+                        // this should never happen
+                        hasInvalidOffsets = true;
+                        partitions[ i ]->set_offset( RdKafka::Topic::OFFSET_INVALID );
+                        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "KafkaPubSubClientTopic:rebalance_cb: Offset for partition " + CORE::ToString( partitionId ) + 
+                            " with value " + CORE::ToString( paritionOffset ) + " could not be updated to a committed value since the partition is not available as part of the commited set" );
+                    }
+                }
+            }
+            else
+            {
+                // The Kafka cluster doesnt have our offsets (anymore?)
+                // offset retention is controlled through settings such as "offsets.retention.minutes" at the broker level and can be altered at the topic level
+                GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "KafkaPubSubClientTopic:rebalance_cb: The Kafka cluster doesnt have a valid commit offset (anymore?) for us for topic \"" + m_config.topicName + "\"." );
+            }
+        }
+
+        // Any luck yet? If not fall back to locally cached values if we have any
+        if ( ( hasInvalidOffsets || m_kafkaCommitedConsumerOffsets.empty() ) && !m_consumerAckdOffsets.empty() )
+        {
+            // We will need watermarks to bounds check our cached values since its possible they are aged too much and no longer valid
+            for ( unsigned int i=0; i<partitions.size(); ++i )
+            {
+                Int32 partitionId = partitions[ i ]->partition();
+                Int64 paritionOffset = partitions[ i ]->offset(); 
+
+                int64_t high = 0; int64_t low = 0;
+                RdKafka::ErrorCode err = m_kafkaConsumer->get_watermark_offsets( m_config.topicName, partitionId, &low, &high );
+                if ( RdKafka::ERR_NO_ERROR == err )
+                {            
+                    GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "KafkaPubSubClientTopic:rebalance_cb: The watermark offsets for topic \"" + m_config.topicName +
+                            "\" and partition " + CORE::ToString( partitionId ) + " are: Low=" + CORE::ToString( low ) + ", High=" + CORE::ToString( high ) );
+                    
+                    // Does the offset for this partition need fixing? Some may already be Ok
+                    if ( RdKafka::Topic::OFFSET_INVALID == paritionOffset )
+                    {
+                        // Try using the locally available in ram 'last ack'd' offsets
+                        TInt32ToInt64Map::iterator a = m_consumerAckdOffsets.find( partitionId );                
+                        if ( a != m_consumerAckdOffsets.end() )
+                        {
+                            // We have last ack'd offsets in memory on our end for this partition
+                            // in this case its safe to use the last ack'd offsets as long as they are within watermark range. This limits replay volume due to commit lag
+                            Int64 lastAckdOffset = (*a).second;
+                    
+                            if ( RdKafka::Topic::OFFSET_INVALID != lastAckdOffset && lastAckdOffset >= low && lastAckdOffset <= high )
+                            {
+                                // Great! The offset is in range and thus can be used as a substitute
+                                partitions[ i ]->set_offset( lastAckdOffset );
+                                m_kafkaCommitedConsumerOffsets[ partitionId ] = lastAckdOffset;
+                                updatedKafkaCommitedConsumerOffsets = true;
+
+                                GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "KafkaPubSubClientTopic:rebalance_cb: Kafka has offset " + CORE::ToString( paritionOffset ) + " for topic \"" + m_config.topicName +
+                                        "\" and partition " + CORE::ToString( partitions[ i ]->partition() ) + ". We have a last Ack'd offset of " + CORE::ToString( lastAckdOffset ) + " so we will try to resume from that point instead" );
+                            }
+                            else
+                            {
+                                hasInvalidOffsets = true;
+
+                                GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "KafkaPubSubClientTopic:rebalance_cb: Kafka has offset " + CORE::ToString( paritionOffset ) + " for topic \"" + m_config.topicName +
+                                        "\" and partition " + CORE::ToString( partitions[ i ]->partition() ) + ". We have do NOT have a valid and usable last Ack'd offset: " + CORE::ToString( lastAckdOffset ) );
+                            }
+                        }
+                    }
+                }
+                else
+                {                        
+                    ++m_kafkaErrorReplies;
+                    GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "KafkaPubSubClientTopic:rebalance_cb: Unable to obtain low and high watermarks for topic \"" + m_config.topicName +
+                            "\" and partition " + CORE::ToString( partitionId ) + ". Without this information our only option is a full reset" );
+                }
+            }
+        }
+
+        // Any luck yet? If not fall back to a reset to default offset values, starting from scratch
+        if ( hasInvalidOffsets || m_kafkaCommitedConsumerOffsets.empty() )
+        {            
+            Int64 requestTimeout = GetConsumerConfigSettingAsInt64( "request.timeout.ms", 3000 );
+
+            hasInvalidOffsets = false;
+            for ( unsigned int i=0; i<partitions.size(); ++i )
+            {
+                Int32 partitionId = partitions[ i ]->partition();
+                Int64 paritionOffset = partitions[ i ]->offset(); 
+                CORE::Int64 startOffset = (CORE::Int64) RdKafka::Topic::OFFSET_INVALID;
+
+                // Does the offset for this partition need fixing? Some may already be Ok
+                if ( RdKafka::Topic::OFFSET_INVALID == paritionOffset )
+                {
+                    startOffset = ConvertKafkaConsumerStartOffset( DefaultOffsetResetValue, partitionId, (Int32) requestTimeout );
+                    if ( RdKafka::Topic::OFFSET_INVALID != startOffset )
+                    {
+                        partitions[ i ]->set_offset( startOffset );
+                        m_kafkaCommitedConsumerOffsets[ partitionId ] = startOffset;
+                        m_consumerAckdOffsets[ partitionId ] = startOffset; 
+                        m_receivedMsgAcks[ partitionId ].clear();
+                        updatedKafkaCommitedConsumerOffsets = true;
+
+                        GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "KafkaPubSubClientTopic:rebalance_cb: Changing offset for partition " + CORE::ToString( partitionId ) + 
+                            " from " + CORE::ToString( paritionOffset ) + " to reset value " + CORE::ToString( startOffset ) );                        
+                    }
+                    else
+                    {
+                        // This should not happen
+                        hasInvalidOffsets = true;
+                        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "KafkaPubSubClientTopic:rebalance_cb: Offset for partition " + CORE::ToString( partitionId ) + 
+                            " with offset " + CORE::ToString( paritionOffset ) + " cannot be updated to a reset value since the reset value is invalid: " + CORE::ToString( startOffset ) );   
+                    }
+                }
+            }
+        }
+
+        // Revalidate
+        if ( !hasInvalidOffsets )
+        {
+            for ( unsigned int i=0; i<partitions.size(); ++i )
+            {
+                Int32 partitionId = partitions[ i ]->partition();
+                Int64 paritionOffset = partitions[ i ]->offset();           
+                if ( RdKafka::Topic::OFFSET_INVALID == paritionOffset )
+                {
+                    GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "KafkaPubSubClientTopic:rebalance_cb: We still have OFFSET_INVALID for partition " + CORE::ToString( partitionId )  + " of topic \"" + m_config.topicName + "\"" );
+                    hasInvalidOffsets = true;
+                }
+            }
+        }
+
+        if ( !hasInvalidOffsets && updatedKafkaCommitedConsumerOffsets && !m_kafkaCommitedConsumerOffsets.empty() )
+        {
+            if ( CommitConsumerOffsets( false ) )
+            {
+                GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "KafkaPubSubClientTopic:rebalance_cb: Successfully committed the new offsets" );
+            }
+            else
+            {
+                GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "KafkaPubSubClientTopic:rebalance_cb: CommitConsumerOffsets failed" );
+            }
         }
 
         actionStr = "ASSIGN_PARTITIONS";
@@ -2151,7 +2351,7 @@ CKafkaPubSubClientTopic::rebalance_cb( RdKafka::KafkaConsumer* consumer         
     CORE::CString partitionInfo = "KafkaPubSubClientTopic:rebalance_cb: Member ID \"" + consumer->memberid() + "\": Action " + actionStr + " : ";
     for ( unsigned int i=0; i<partitions.size(); ++i )
     {
-        partitionInfo += "Topic \"" + partitions[ i ]->topic() + "\" is at partition \"" + CORE::Int32ToString( partitions[ i ]->partition() ).STL_String() +
+        partitionInfo += "Topic \"" + partitions[ i ]->topic() + "\" is at partition \"" + CORE::ToString( partitions[ i ]->partition() ).STL_String() +
                 "\" at offset \"" + ConvertKafkaConsumerStartOffset( partitions[ i ]->offset() ).STL_String() + "\". ";
 
         int64_t high = 0; int64_t low = 0;
@@ -2299,6 +2499,22 @@ bool
 CKafkaPubSubClientTopic::IsSubscriptionAtEndOfData( void ) const
 {GUCEF_TRACE;
 
+    if ( m_isSubscribed )
+        return m_isSubscriptionAtEndOfData;
+    
+    bool isSubscriptionAtEndOfData = m_isSubscriptionAtEndOfData;
+    if ( QueryKafkaIfSubscriptionIsAtEndOfData( isSubscriptionAtEndOfData ) )
+        return isSubscriptionAtEndOfData;
+
+    return m_isSubscriptionAtEndOfData;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CKafkaPubSubClientTopic::QueryKafkaIfSubscriptionIsAtEndOfData( bool& isSubscriptionAtEndOfData ) const
+{GUCEF_TRACE;
+    
     MT::CScopeMutex lock( m_lock );
     
     if ( GUCEF_NULL == m_kafkaConsumer )
@@ -2716,29 +2932,39 @@ CKafkaPubSubClientTopic::CommitConsumerOffsets( bool useAsyncCommit )
             std::vector<RdKafka::TopicPartition*>::iterator p = partitions.begin();
             while ( p != partitions.end() )
             {                
+                CORE::Int32 partitionId = (*p)->partition();
+                CORE::Int64 partitionOffset = (*p)->offset();
+                
                 // try to find ackd offsets for the given partition
                 // note that if no messages have been recieved and/or ackd yet then this will not yield anything
-                CORE::Int32 partitionId = (*p)->partition();
+                
                 TInt32ToInt64Map::iterator o = m_consumerAckdOffsets.find( partitionId );
                 if ( o != m_consumerAckdOffsets.end() )
                 {
-                    (*p)->set_offset( (*o).second );
+                    CORE::Int64 ackdOffset = (*o).second;
+                    
+                    GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "KafkaPubSubClientTopic:CommitConsumerOffsets: Ackd offsets are available for partition " + CORE::ToString( partitionId ) +
+                        ". Current offset is " + CORE::ToString( partitionOffset ) + ". Ackd offset is " + CORE::ToString( ackdOffset ) );
+
+                    (*p)->set_offset( ackdOffset );
                 }
                 else
-                {
-                    GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "KafkaPubSubClientTopic:CommitConsumerOffsets: No ackd offsets are available for partition " + CORE::ToString( partitionId ) +
-                        " falling back to commited ofsets" );
-                    
+                {                    
                     // We dont have any acks for this partition we can use to update the offset
                     // as such fall back to the commited offsets collection                    
                     TInt32ToInt64Map::iterator o2 = m_kafkaCommitedConsumerOffsets.find( partitionId );
                     if ( o2 != m_kafkaCommitedConsumerOffsets.end() )
                     {
-                        (*p)->set_offset( (*o2).second );
+                        CORE::Int64 commitedOffset = (*o2).second;
+
+                        GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "KafkaPubSubClientTopic:CommitConsumerOffsets: No ackd offsets are available for partition " + CORE::ToString( partitionId ) +
+                            ". Current offset is " + CORE::ToString( partitionOffset ) + ". falling back to local copy of commited offset " + CORE::ToString( commitedOffset ) );
+                        
+                        (*p)->set_offset( commitedOffset );
                     }
                     else
                     {
-                        GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "KafkaPubSubClientTopic:CommitConsumerOffsets: No commited offsets are available for partition " + CORE::ToString( partitionId ) );
+                        GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "KafkaPubSubClientTopic:CommitConsumerOffsets: Cannot commit: No Ack'd or commited offsets are available for partition " + CORE::ToString( partitionId ) );
                         return false;
                     }
                 }
@@ -2869,12 +3095,34 @@ CKafkaPubSubClientTopic::ProcessMsgAcks( void )
             TInt32ToInt64Map::iterator p = m_consumerAckdOffsets.find( partitionId );
             if ( p == m_consumerAckdOffsets.end() )
             {
-                CORE::Int64 commitedOffset = m_kafkaCommitedConsumerOffsets[ partitionId ];              
-                GUCEF_DEBUG_LOG( CORE::LOGLEVEL_IMPORTANT, "KafkaPubSubClientTopic: No ackd offset found for partition " + CORE::ToString( partitionId ) +
-                    " using Kafka commited offset as the new ack starting position: " + CORE::ToString( commitedOffset )  );
+                CORE::Int64 commitedOffset = 0;
+                TInt32ToInt64Map::iterator k = m_kafkaCommitedConsumerOffsets.find( partitionId ); 
+                if ( k == m_kafkaCommitedConsumerOffsets.end() )
+                {
+                    if ( RetrieveKafkaCommitedOffsets() )
+                    {
+                        k = m_kafkaCommitedConsumerOffsets.find( partitionId );
+                    }
+                }
+                if ( k != m_kafkaCommitedConsumerOffsets.end() )
+                {
+                    commitedOffset = (*k).second;
+
+                    GUCEF_DEBUG_LOG( CORE::LOGLEVEL_IMPORTANT, "KafkaPubSubClientTopic: No ackd offset found for partition " + CORE::ToString( partitionId ) +
+                        " using Kafka commited offset as the new ack starting position: " + CORE::ToString( commitedOffset )  );
                 
-                m_consumerAckdOffsets[ partitionId ] = commitedOffset; 
-                p = m_consumerAckdOffsets.find( partitionId );
+                    m_consumerAckdOffsets[ partitionId ] = commitedOffset; 
+                    p = m_consumerAckdOffsets.find( partitionId );
+                }
+                else
+                {
+                    // Note that we need the consensus ackd offset not the offsets in the m_receivedMsgAcks collection because there could be race conditions where an earlier offset will
+                    // flow into that collection any second. As such we dont want to assume its lowest nr is the lowest nr of all messages in flight
+                    // In contrast to the m_consumerAckdOffsets map which is only progressed once the full sequence is validated
+                    GUCEF_WARNING_LOG( CORE::LOGLEVEL_IMPORTANT, "KafkaPubSubClientTopic: No Ackd or Kafka commited offsets are found for partition " + CORE::ToString( partitionId ) );
+                    ++n;
+                    continue;
+                }
             }
 
             if ( p != m_consumerAckdOffsets.end() )
@@ -3012,12 +3260,33 @@ CKafkaPubSubClientTopic::OnPulseCycle( CORE::CNotifier* notifier    ,
             {
                 RdKafka::Message* msg = m_kafkaConsumer->consume( 0 );
                 int errState = msg->err();
-                if ( RdKafka::ERR__TIMED_OUT == errState || RdKafka::ERR__PARTITION_EOF == errState )
+                if ( RdKafka::ERR__TIMED_OUT == errState )
                 {
                     GUCEF_DELETE msg;
                     break;
                 }
+                if ( RdKafka::ERR__PARTITION_EOF == errState )
+                {
+                    GUCEF_DELETE msg;
 
+                    // We have a toggle flag to ensure we dont trigger notifications on every check
+                    // we only want to notify if the end of data status changed
+                    if ( !m_isSubscriptionAtEndOfData )
+                    {
+                        m_isSubscriptionAtEndOfData = true;
+                        if ( GUCEF_NULL != m_client )
+                        {                        
+                            if ( m_client->GetConfig().desiredFeatures.supportsSubscriptionEndOfDataEvent )
+                            {
+                                if ( !NotifyObservers( SubscriptionEndOfDataEvent ) )
+                                    return;
+                            }
+                        }
+                    }
+                    break;
+                }
+
+                m_isSubscriptionAtEndOfData = false;
                 bool isFiltered = false;
                 if ( ProcessRdKafkaMessage( *msg, msgRead+1, isFiltered ) && !isFiltered )
                 {
