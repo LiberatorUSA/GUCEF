@@ -83,6 +83,10 @@ class PUBSUBPLUGIN_AWSSQS_PLUGIN_PRIVATE_CPP CAwsSqsPubSubClientTopicConfig : pu
 
     bool topicNameIsQueueName;
     bool tryToUseSendMessageBatch;
+    bool addPrefixWhenSendingKvPairs;
+    CORE::CAsciiString kvPairPrefixToAddOnSend;
+    bool addPrefixWhenSendingMetaDataKvPairs;
+    CORE::CAsciiString metaDatakvPairPrefixToAddOnSend;
 };
 
 /*-------------------------------------------------------------------------*/

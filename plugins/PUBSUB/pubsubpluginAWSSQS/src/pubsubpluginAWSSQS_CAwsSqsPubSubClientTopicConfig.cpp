@@ -50,6 +50,10 @@ CAwsSqsPubSubClientTopicConfig::CAwsSqsPubSubClientTopicConfig( void )
     , CORE::CTSharedObjCreator< CAwsSqsPubSubClientTopicConfig, MT::CMutex >( this )
     , topicNameIsQueueName( false )
     , tryToUseSendMessageBatch( false )
+    , addPrefixWhenSendingKvPairs( false )
+    , kvPairPrefixToAddOnSend()
+    , addPrefixWhenSendingMetaDataKvPairs( false )
+    , metaDatakvPairPrefixToAddOnSend()
 {GUCEF_TRACE;
 
 }
@@ -61,6 +65,10 @@ CAwsSqsPubSubClientTopicConfig::CAwsSqsPubSubClientTopicConfig( const CAwsSqsPub
     , CORE::CTSharedObjCreator< CAwsSqsPubSubClientTopicConfig, MT::CMutex >( this )
     , topicNameIsQueueName( src.topicNameIsQueueName )
     , tryToUseSendMessageBatch( src.tryToUseSendMessageBatch )
+    , addPrefixWhenSendingKvPairs( src.addPrefixWhenSendingKvPairs )
+    , kvPairPrefixToAddOnSend( src.kvPairPrefixToAddOnSend )
+    , addPrefixWhenSendingMetaDataKvPairs( src.addPrefixWhenSendingMetaDataKvPairs )
+    , metaDatakvPairPrefixToAddOnSend( src.metaDatakvPairPrefixToAddOnSend )
 {GUCEF_TRACE;
 
 }
@@ -72,6 +80,10 @@ CAwsSqsPubSubClientTopicConfig::CAwsSqsPubSubClientTopicConfig( const PUBSUB::CP
     , CORE::CTSharedObjCreator< CAwsSqsPubSubClientTopicConfig, MT::CMutex >( this )
     , topicNameIsQueueName( false )
     , tryToUseSendMessageBatch( false )
+    , addPrefixWhenSendingKvPairs( false )
+    , kvPairPrefixToAddOnSend()
+    , addPrefixWhenSendingMetaDataKvPairs( false )
+    , metaDatakvPairPrefixToAddOnSend()
 {GUCEF_TRACE;
 
     LoadCustomConfig( genericConfig.customConfig );  
@@ -92,7 +104,10 @@ CAwsSqsPubSubClientTopicConfig::LoadCustomConfig( const CORE::CDataNode& config 
         
     topicNameIsQueueName = config.GetAttributeValueOrChildValueByName( "topicNameIsQueueName" ).AsBool( topicNameIsQueueName, true );
     tryToUseSendMessageBatch = config.GetAttributeValueOrChildValueByName( "tryToUseSendMessageBatch" ).AsBool( tryToUseSendMessageBatch, true );
-    
+    addPrefixWhenSendingKvPairs = config.GetAttributeValueOrChildValueByName( "addPrefixWhenSendingKvPairs" ).AsBool( addPrefixWhenSendingKvPairs, true );
+    kvPairPrefixToAddOnSend = config.GetAttributeValueOrChildValueByName( "kvPairPrefixToAddOnSend" ).AsAsciiString( kvPairPrefixToAddOnSend, true );
+    addPrefixWhenSendingMetaDataKvPairs = config.GetAttributeValueOrChildValueByName( "addPrefixWhenSendingMetaDataKvPairs" ).AsBool( addPrefixWhenSendingMetaDataKvPairs, true );
+    metaDatakvPairPrefixToAddOnSend = config.GetAttributeValueOrChildValueByName( "metaDatakvPairPrefixToAddOnSend" ).AsAsciiString( metaDatakvPairPrefixToAddOnSend, true );    
     return true;
 }
 
@@ -135,6 +150,10 @@ CAwsSqsPubSubClientTopicConfig::operator=( const CAwsSqsPubSubClientTopicConfig&
         PUBSUB::CPubSubClientTopicConfig::operator=( src );
         topicNameIsQueueName = src.topicNameIsQueueName;
         tryToUseSendMessageBatch = src.tryToUseSendMessageBatch;
+        addPrefixWhenSendingKvPairs = addPrefixWhenSendingKvPairs;
+        kvPairPrefixToAddOnSend = src.kvPairPrefixToAddOnSend;
+        addPrefixWhenSendingMetaDataKvPairs = src.addPrefixWhenSendingMetaDataKvPairs;
+        metaDatakvPairPrefixToAddOnSend = src.metaDatakvPairPrefixToAddOnSend;
     }
     return *this;
 }

@@ -490,6 +490,7 @@ inline CString ToString( const CUtf8String::StringVector& el ) { CUtf8String out
 inline CString ToString( const CAsciiString::StringVector& el ) { CAsciiString out; return CUtf8String( out.Combine( el, ',' ) ); }
 inline CString ToString( const CUtf8String::StringSet& el ) { CUtf8String out; return out.Combine( el, ',' ); }
 inline CString ToString( const CAsciiString::StringSet& el ) { CAsciiString out; return CUtf8String( out.Combine( el, ',' ) ); }
+inline CString ToString( const CUtf8String::StringMap& el ) { CUtf8String out; return out.Combine( el, '=', ',' ); }
 #endif
 
 inline CString ToString( UInt8 value ) { return UInt8ToString( value ); }

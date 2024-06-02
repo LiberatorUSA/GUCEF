@@ -117,6 +117,10 @@ class GUCEF_CORE_PUBLIC_CPP CTaskManager : public CTSGNotifier
     ThreadPoolPtr GetOrCreateThreadPool( const CString& threadPoolName , 
                                          bool createIfNotExists = true );
 
+    bool UnregisterThreadPool( const CString& threadPoolName );
+
+    bool UnregisterThreadPool( ThreadPoolPtr threadPool );
+    
     /**
      *  Queues a task for execution as soon as a thread is available
      *  to execute it.

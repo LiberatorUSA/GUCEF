@@ -166,11 +166,11 @@
 		"minSpilloverSideGoodHealthDurationBeforeActivationInMs": 5000,
 		"routeSwitchingTimerIntervalInMs": 1000,
 		"routes": [{
-			"fromSide": "msmq-source",
-			"toSide": "web-sink",
-			"failoverSide": "",
-			"spilloverBufferSide": "",
-			"deadLetterSide": ""
+			"fromSideId": "msmq-source",
+			"toSideId": "web-sink",
+			"failoverSideId": "",
+			"spilloverBufferSideId": "",
+			"deadLetterSideId": ""
 		}]
 	}
 }

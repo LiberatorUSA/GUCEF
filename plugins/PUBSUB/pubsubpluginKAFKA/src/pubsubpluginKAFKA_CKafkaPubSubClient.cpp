@@ -711,6 +711,7 @@ CKafkaPubSubClient::SetupBasedOnConfig( void )
         // Use the global pulse generator.
         // NOT what you want if you want thread isolation or basically any time you are not
         // writing a single threaded app
+        GUCEF_WARNING_LOG( CORE::LOGLEVEL_NORMAL, "KafkaPubSubClient:SetupBasedOnConfig: No pulseGenerator provided, will fall back to global one" );
         m_config.pulseGenerator = CORE::CCoreGlobal::Instance()->GetPulseGenerator();
     }
         

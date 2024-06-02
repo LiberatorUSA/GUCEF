@@ -225,11 +225,11 @@
 		"minSpilloverSideGoodHealthDurationBeforeActivationInMs": 5000,
 		"routeSwitchingTimerIntervalInMs": 1000,
 		"routes": [{
-			"fromSide": "storage-source",
-			"toSide": "kafka-sink",
-			"failoverSide": "",
-			"spilloverBufferSide": "",
-			"deadLetterSide": ""
+			"fromSideId": "storage-source",
+			"toSideId": "kafka-sink",
+			"failoverSideId": "",
+			"spilloverBufferSideId": "",
+			"deadLetterSideId": ""
 		}]
 	}
 }

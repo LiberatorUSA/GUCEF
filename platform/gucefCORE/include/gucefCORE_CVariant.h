@@ -163,6 +163,7 @@ class GUCEF_CORE_PUBLIC_CPP CVariant
     
     bool IsInteger( void ) const;
     bool IsFloat( void ) const;
+    bool IsNumber( void ) const;
     bool IsString( void ) const;
     bool IsBoolean( void ) const;
     bool IsBinary( void ) const;

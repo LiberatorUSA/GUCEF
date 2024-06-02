@@ -223,15 +223,27 @@ CPubSubFlowRouterConfig::LoadConfig( const CORE::CDataNode& cfg )
             CPubSubFlowRouteConfigPtr route = CPubSubFlowRouteConfig::CreateSharedObj();
             if ( route->LoadConfig( *routeNode ) )
             {
-                routes.push_back( route );
+                if ( route->fromSideId.IsNULLOrEmpty()            &&
+                     route->toSideId.IsNULLOrEmpty()              &&
+                     route->spilloverBufferSideId.IsNULLOrEmpty() &&
+                     route->deadLetterSideId.IsNULLOrEmpty()      &&
+                     route->failoverSideId.IsNULLOrEmpty()        )
+                {
+                    GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "PubSubFlowRouterConfig(" + CORE::ToString( this ) +
+                        "):LoadConfig: route node has no side ids specified and is thus invalid. It will be ignored" );
+                }
+                else
+                {
+                    routes.push_back( route );
+                }
             }
             ++i;
         }
     }
     else
     {
-        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "PubSubFlowRouterConfig(" + CORE::PointerToString( this ) +
-            "):LoadConfig: Missing 'routes' config is malformed" );
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "PubSubFlowRouterConfig(" + CORE::ToString( this ) +
+            "):LoadConfig: Missing 'routes' thus the config is malformed" );
         return false;
     }
 

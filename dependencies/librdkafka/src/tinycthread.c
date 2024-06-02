@@ -97,10 +97,12 @@ void mtx_destroy(mtx_t *mtx)
   if (!mtx->mTimed)
   {
     DeleteCriticalSection(&(mtx->mHandle.cs));
+    memset( &(mtx->mHandle.cs), 0, sizeof mtx->mHandle.cs );
   }
   else
   {
     CloseHandle(mtx->mHandle.mut);
+    mtx->mHandle.mut = NULL;
   }
 #else
   pthread_mutex_destroy(mtx);

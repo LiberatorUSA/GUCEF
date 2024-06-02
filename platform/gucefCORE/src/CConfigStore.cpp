@@ -597,9 +597,10 @@ CConfigStore::ApplyConfigData( const CDataNode& loadedConfig ,
                     errorOccured = true;
                     GUCEF_ERROR_LOG( LOGLEVEL_IMPORTANT, "ConfigStore:ApplyConfigData: Loading of config failed for a late-addition configureable with type name \"" + (*i)->GetClassTypeName() + "\"" );
                 }            
-                m_configureables.insert( (*i) );
-                m_newConfigureables.erase( (*i) );
             }
+
+            m_configureables.insert( (*i) );
+            m_newConfigureables.erase( (*i) );
             ++i;
         }
     }

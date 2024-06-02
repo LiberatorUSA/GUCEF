@@ -75,6 +75,8 @@ class PUBSUBPLUGIN_AWSSQS_PLUGIN_PRIVATE_CPP CAwsSqsPubSubClient : public PUBSUB
 
     static const CORE::CString TypeName; 
 
+    typedef std::map< CAwsSqsPubSubClientTopicConfigPtr , CORE::CString::StringSet > TTopicConfigPtrToStringSetMap;
+
     CAwsSqsPubSubClient( const PUBSUB::CPubSubClientConfig& config );
 
     virtual ~CAwsSqsPubSubClient() GUCEF_VIRTUAL_OVERRIDE;
@@ -91,6 +93,27 @@ class PUBSUBPLUGIN_AWSSQS_PLUGIN_PRIVATE_CPP CAwsSqsPubSubClient : public PUBSUB
                                                                   CORE::PulseGeneratorPtr pulseGenerator = CORE::PulseGeneratorPtr() ) GUCEF_VIRTUAL_OVERRIDE;
 
     virtual PUBSUB::CPubSubClientTopicBasicPtr GetTopicAccess( const CORE::CString& topicName ) GUCEF_VIRTUAL_OVERRIDE;
+
+    virtual bool GetMultiTopicAccess( const CORE::CString& topicName    ,
+                                      PubSubClientTopicSet& topicAccess ) GUCEF_VIRTUAL_OVERRIDE;
+
+    virtual bool GetMultiTopicAccess( const CORE::CString::StringSet& topicNames ,
+                                      PubSubClientTopicSet& topicAccess          ) GUCEF_VIRTUAL_OVERRIDE;
+
+    virtual bool CreateMultiTopicAccess( PUBSUB::CPubSubClientTopicConfigPtr topicConfig                    ,
+                                         PubSubClientTopicSet& topicAccess                                  ,
+                                         CORE::PulseGeneratorPtr pulseGenerator = CORE::PulseGeneratorPtr() ) GUCEF_VIRTUAL_OVERRIDE;
+
+    bool AutoCreateMultiTopicAccess( CAwsSqsPubSubClientTopicConfigPtr templateTopicConfig ,
+                                     const CORE::CString::StringSet& topicNameList         ,
+                                     PubSubClientTopicSet& topicAccess                     ,
+                                     CORE::PulseGeneratorPtr pulseGenerator                );
+
+    bool AutoCreateMultiTopicAccess( const TTopicConfigPtrToStringSetMap& topicsToCreate ,
+                                     PubSubClientTopicSet& topicAccess                   ,
+                                     CORE::PulseGeneratorPtr pulseGenerator              );
+
+    void AutoDestroyTopicAccess( const CORE::CString::StringSet& topicNames );
 
     virtual void DestroyTopicAccess( const CORE::CString& topicName ) GUCEF_VIRTUAL_OVERRIDE;
 
@@ -148,6 +171,32 @@ class PUBSUBPLUGIN_AWSSQS_PLUGIN_PRIVATE_CPP CAwsSqsPubSubClient : public PUBSUB
     PUBSUB::CPubSubClientConfig& GetConfig( void );
 
     Aws::SQS::SQSClient& GetSqsClient( void );
+
+    /**
+     *  Helper function to extract the queue name from a queue url
+     */
+    static std::string GetQueueNameFromUrl( const std::string& queueUrl );
+
+    Aws::String GetSqsQueueUrlForQueueName( const CORE::CString& queueName ,
+                                            Aws::SQS::SQSError& errorCode  );
+
+    bool IsQueueEmpty( const std::string& queueUrl );
+
+    bool TryGetNrOfMessagesInQueue( const std::string& queueUrl ,
+                                    CORE::Int64& messageCount   );
+
+    bool TryGetQueueAttributes( const std::string& queueUrl          ,
+                                CORE::CString::StringMap& attributes );
+
+    CAwsSqsPubSubClientTopicConfigPtr FindTemplateConfigForTopicName( const CORE::CString& topicName ) const;
+
+    bool GetAllGlobPatternTopicNames( CORE::CString::StringSet& allGlobPatternTopicNames );
+
+    bool ListAllQueues( const CORE::CString::StringSet& globPatternFilters ,
+                        CORE::CString::StringSet& queueNames               );
+
+    bool ListAllQueues( const CORE::CString& globPatternFilter ,
+                        CORE::CString::StringSet& queueNames   );
     
     private:
 
@@ -155,6 +204,11 @@ class PUBSUBPLUGIN_AWSSQS_PLUGIN_PRIVATE_CPP CAwsSqsPubSubClient : public PUBSUB
     OnMetricsTimerCycle( CORE::CNotifier* notifier    ,
                          const CORE::CEvent& eventId  ,
                          CORE::CICloneable* eventData );
+
+    void
+    OnQueueIndexingTimerCycle( CORE::CNotifier* notifier    ,
+                              const CORE::CEvent& eventId  ,
+                              CORE::CICloneable* eventData );
 
     void
     OnTopicHealthStatusChange( CORE::CNotifier* notifier    ,
@@ -174,6 +228,7 @@ class PUBSUBPLUGIN_AWSSQS_PLUGIN_PRIVATE_CPP CAwsSqsPubSubClient : public PUBSUB
 
     PUBSUB::CPubSubClientConfig m_config;
     CORE::CTimer* m_metricsTimer;
+    CORE::CTimer* m_queueIndexingTimer;
     TTopicMap m_topicMap;
     Aws::SQS::SQSClient m_sqsClient;    
 };

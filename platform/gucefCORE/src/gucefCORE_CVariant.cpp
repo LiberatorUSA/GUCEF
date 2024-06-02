@@ -433,6 +433,16 @@ CVariant::IsFloat( void ) const
 /*-------------------------------------------------------------------------*/
 
 bool
+CVariant::IsNumber( void ) const
+{GUCEF_TRACE;
+
+    return IsInteger() || IsFloat() || 
+        m_variantData.containedType == GUCEF_DATATYPE_NUMERIC;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
 CVariant::IsString( void ) const
 {GUCEF_TRACE;
 

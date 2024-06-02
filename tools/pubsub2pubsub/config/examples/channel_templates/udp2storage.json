@@ -232,11 +232,11 @@
 		"minSpilloverSideGoodHealthDurationBeforeActivationInMs": 5000,
 		"routeSwitchingTimerIntervalInMs": 1000,
 		"routes": [{
-			"fromSide": "udp-source",
-			"toSide": "storage-sink",
-			"failoverSide": "",
-			"spilloverBufferSide": "",
-			"deadLetterSide": ""
+			"fromSideId": "udp-source",
+			"toSideId": "storage-sink",
+			"failoverSideId": "",
+			"spilloverBufferSideId": "",
+			"deadLetterSideId": ""
 		}]
 	}
 }

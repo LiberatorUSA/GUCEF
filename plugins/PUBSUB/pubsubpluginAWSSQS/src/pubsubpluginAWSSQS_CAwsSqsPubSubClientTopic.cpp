@@ -153,10 +153,13 @@ void
 CAwsSqsPubSubClientTopic::RegisterEventHandlers( void )
 {GUCEF_TRACE;
 
-    TEventCallback callback( this, &CAwsSqsPubSubClientTopic::OnPulseCycle );
-    SubscribeTo( m_client->GetConfig().pulseGenerator.GetPointerAlways() ,
-                 CORE::CPulseGenerator::PulseEvent                       ,
-                 callback                                                );
+    if ( GUCEF_NULL != m_client )
+    {
+        TEventCallback callback( this, &CAwsSqsPubSubClientTopic::OnPulseCycle );
+        SubscribeTo( m_client->GetConfig().pulseGenerator.GetPointerAlways() ,
+                     CORE::CPulseGenerator::PulseEvent                       ,
+                     callback                                                );
+    }
 }
 
 /*-------------------------------------------------------------------------*/
@@ -231,6 +234,9 @@ CAwsSqsPubSubClientTopic::Publish( CORE::UInt64& publishActionId, const PUBSUB::
 
     bool success = false;
     MT::CScopeMutex lock( m_lock );
+
+    if ( GUCEF_NULL == m_client )
+        return false;
 
     if ( 0 == publishActionId )
     {
@@ -321,6 +327,134 @@ CAwsSqsPubSubClientTopic::AcknowledgeReceipt( const PUBSUB::CPubSubBookmark& boo
 
 /*-------------------------------------------------------------------------*/
 
+bool
+CAwsSqsPubSubClientTopic::ApplySqsMessageAttributeNameContraints( CORE::CAsciiString& candidateName )
+{GUCEF_TRACE;
+
+    // From the AWS documentation:
+    //          Name – The message attribute name can contain the following characters: A-Z, a-z, 0-9, underscore (_), hyphen (-), and period (.). The following restrictions apply:
+    //              - Can be up to 256 characters long
+    //              - Can't start with AWS. or Amazon. (or any casing variations)
+    //              - Is case-sensitive
+    //              - Must be unique among all attribute names for the message
+    //              - Must not start or end with a period
+    //              - Must not have periods in a sequence
+    
+    bool wasAdjusted = false;
+
+    if ( !candidateName.IsNULLOrEmpty() )
+    {
+        // Take care of this requirement: 'Can't start with AWS. or Amazon.'
+        CORE::CAsciiString lcTestString = candidateName.Lowercase();
+        if ( 0 == lcTestString.HasSubstr( "aws" ) )
+        {
+            candidateName = candidateName.CutChars( 3, true );    
+            wasAdjusted = true;
+        }
+        else
+        if ( 0 == lcTestString.HasSubstr( "amazon" ) )
+        {
+            candidateName = candidateName.CutChars( 6, true );    
+            wasAdjusted = true;
+        }
+        
+        if ( !candidateName.IsNULLOrEmpty() )
+        {
+            // Take care of this requirement: 'Must not start or end with a period'
+            if ( '.' == candidateName[ 0 ] )
+            {
+                candidateName[ 0 ] = '_';    
+                wasAdjusted = true;
+            }
+            if ( '.' == candidateName[ candidateName.Length()-1 ] )
+            {
+                candidateName[ candidateName.Length()-1 ] = '_';
+                wasAdjusted = true;
+            }
+
+            // Take care of this requirement: 'Must not have periods in a sequence'
+            if ( candidateName.HasRepeatingChar( '.' ) )
+            {
+                candidateName = candidateName.CompactRepeatingChar( '.' );
+                wasAdjusted = true;
+            }
+
+            // Take care of this requirement: 'Can be up to 256 characters long'
+            if ( candidateName.Length() > 256 )
+            {
+                candidateName = candidateName.CutChars( candidateName.Length() - 256, false );
+                wasAdjusted = true;
+            }
+        }
+    }
+
+    return wasAdjusted;
+}
+
+/*-------------------------------------------------------------------------*/
+
+template< class T >
+bool
+CAwsSqsPubSubClientTopic::AddAttributesToSqsMsg( T& sqsMsg                                          , 
+                                                 const PUBSUB::CIPubSubMsg::TKeyValuePairs& kvPairs ,
+                                                 bool addPrefix                                     ,
+                                                 const CORE::CAsciiString& prefixToAdd              )
+{GUCEF_TRACE;
+
+    if ( !kvPairs.empty() )
+    {        
+        typedef Aws::Map< Aws::String, Aws::SQS::Model::MessageAttributeValue > TSqsMsgAttributeMap;
+
+        TSqsMsgAttributeMap attribs;
+        PUBSUB::CIPubSubMsg::TKeyValuePairs::const_iterator n = kvPairs.begin();
+        while ( n != kvPairs.end() )
+        {
+            const PUBSUB::CIPubSubMsg::TKeyValuePair& kvPair = (*n);
+            const CORE::CVariant& kvKey = kvPair.first;
+            const CORE::CVariant& kvValue = kvPair.second;
+
+            if ( kvKey.IsInitialized() && kvValue.IsInitialized() )
+            {                    
+                Aws::SQS::Model::MessageAttributeValue sqsAttribValue;
+
+                if ( kvValue.IsString() )
+                {
+                    sqsAttribValue.SetDataType( "String" );
+                    sqsAttribValue.SetStringValue( kvValue.AsUtf8String() );
+                }
+                else
+                if ( kvValue.IsNumber() )
+                {
+                    sqsAttribValue.SetDataType( "StringValue" );
+                    sqsAttribValue.SetStringValue( kvValue.AsUtf8String() );
+                }
+                else // kvValue.IsBinary() ? catch-all
+                {
+                    sqsAttribValue.SetDataType( "Binary" );
+                    sqsAttribValue.SetBinaryValue( Aws::Utils::ByteBuffer( static_cast< const unsigned char* >( kvValue.AsVoidPtr() ), kvValue.ByteSize() ) );
+                }
+                                    
+                CORE::CAsciiString kvKeyName = kvKey.AsAsciiString();
+                if ( addPrefix )
+                {
+                    kvKeyName = prefixToAdd + kvKeyName;
+                }
+                ApplySqsMessageAttributeNameContraints( kvKeyName );
+                sqsMsg.AddMessageAttributes( kvKeyName, sqsAttribValue ); // if there are dupicate keys last one wins                    
+            }
+            else
+            {
+                GUCEF_WARNING_LOG( CORE::LOGLEVEL_NORMAL, "AwsSqsPubSubClientTopic:Publish: Uninitialized key and/or value set on msg, ignoring" );
+            }
+
+            ++n;
+        }    
+    }
+    return true;
+}
+
+/*-------------------------------------------------------------------------*/
+
 template< class T >
 bool
 CAwsSqsPubSubClientTopic::TranslateToSqsMsg( T& sqsMsg, const PUBSUB::CIPubSubMsg* msg, CORE::UInt32& msgByteSize )
@@ -359,62 +493,27 @@ CAwsSqsPubSubClientTopic::TranslateToSqsMsg( T& sqsMsg, const PUBSUB::CIPubSubMs
         return false;
     }
 
+    bool totalSuccess = true;
     const PUBSUB::CIPubSubMsg::TKeyValuePairs& kvPairs = msg->GetKeyValuePairs();
-    if ( !kvPairs.empty() )
-    {
-        typedef Aws::Map< Aws::String, Aws::SQS::Model::MessageAttributeValue > TSqsMsgAttributeMap;
+    totalSuccess = AddAttributesToSqsMsg( sqsMsg, kvPairs, m_config.addPrefixWhenSendingKvPairs, m_config.kvPairPrefixToAddOnSend ) && totalSuccess;
+    const PUBSUB::CIPubSubMsg::TKeyValuePairs& metaKvPairs = msg->GetMetaDataKeyValuePairs();
+    totalSuccess = AddAttributesToSqsMsg( sqsMsg, metaKvPairs, m_config.addPrefixWhenSendingMetaDataKvPairs, m_config.metaDatakvPairPrefixToAddOnSend ) && totalSuccess;
 
-        TSqsMsgAttributeMap attribs;
-        PUBSUB::CIPubSubMsg::TKeyValuePairs::const_iterator n = kvPairs.begin();
-        while ( n != kvPairs.end() )
-        {
-            const PUBSUB::CIPubSubMsg::TKeyValuePair& kvPair = (*n);
-            const CORE::CVariant& kvKey = kvPair.first;
-            const CORE::CVariant& kvValue = kvPair.second;
-
-            if ( kvKey.IsInitialized() && kvValue.IsInitialized() )
-            {                    
-                Aws::SQS::Model::MessageAttributeValue sqsAttribValue;
-
-                if ( kvValue.IsBinary() )
-                {
-                    sqsAttribValue.SetDataType( "Binary" );
-                    sqsAttribValue.SetBinaryValue( Aws::Utils::ByteBuffer( static_cast< const unsigned char* >( kvValue.AsVoidPtr() ), kvValue.ByteSize() ) );
-                }
-                else
-                if ( kvValue.IsString() )
-                {
-                    sqsAttribValue.SetDataType( "String" );
-                    sqsAttribValue.SetStringValue( kvValue.AsUtf8String() );
-                }
-                else
-                {
-                    sqsAttribValue.SetDataType( "StringValue" );
-                    sqsAttribValue.SetStringValue( kvValue.AsUtf8String() );
-                }
-                    
-                sqsMsg.AddMessageAttributes( kvKey.AsUtf8String(), sqsAttribValue ); // if there are dupicate keys last one wins                    
-            }
-            else
-            {
-                GUCEF_WARNING_LOG( CORE::LOGLEVEL_NORMAL, "AwsSqsPubSubClientTopic:Publish: Uninitialized key and/or value set on msg, ignoring" );
-            }
-
-            ++n;
-        }    
-    }
-    return true;
+    return totalSuccess;
 }
 
 /*-------------------------------------------------------------------------*/
 
 bool
-CAwsSqsPubSubClientTopic::Publish( TPublishActionIdVector& publishActionIds                       , 
+CAwsSqsPubSubClientTopic::Publish( TPublishActionIdVector& publishActionIds                      , 
                                    const PUBSUB::CIPubSubMsg::TIPubSubMsgConstRawPtrVector& msgs ,
-                                   bool notify                                                    )
+                                   bool notify                                                   )
 {GUCEF_TRACE;
 
     MT::CScopeMutex lock( m_lock );
+
+    if ( GUCEF_NULL == m_client )
+        return false;
     
     bool totalSuccess = true;
     try
@@ -539,6 +638,17 @@ CAwsSqsPubSubClientTopic::Publish( TPublishActionIdVector& publishActionIds     
 
 /*-------------------------------------------------------------------------*/
 
+bool 
+CAwsSqsPubSubClientTopic::IsQueueEmpty( void ) 
+{GUCEF_TRACE;
+
+    if ( GUCEF_NULL != m_client )
+        m_client->IsQueueEmpty( m_queueUrl );
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
 void
 CAwsSqsPubSubClientTopic::OnPulseCycle( CORE::CNotifier* notifier    ,
                                         const CORE::CEvent& eventId  ,
@@ -578,11 +688,6 @@ CAwsSqsPubSubClientTopic::LoadConfig( const PUBSUB::CPubSubClientTopicConfig& co
     MT::CScopeMutex lock( m_lock );
     
     m_config = config;
-
-    if ( m_config.topicNameIsQueueName )
-        m_queueUrl = GetSqsQueueUrlForQueueName( m_config.topicName );
-    else
-        m_queueUrl = m_config.topicName;
 
     return true;
 }
@@ -693,15 +798,50 @@ CAwsSqsPubSubClientTopic::InitializeConnectivity( bool reset )
     
     MT::CScopeMutex lock( m_lock );
 
+    if ( GUCEF_NULL != m_client )
+    {
+        if ( m_config.topicNameIsQueueName )
+            m_queueUrl = GetSqsQueueUrlForQueueName( m_config.topicName );
+        else
+            m_queueUrl = m_config.topicName;
+
+        if ( !m_queueUrl.empty() )
+        {
+            CORE::CString::StringMap queueAttributes;
+            if ( m_client->TryGetQueueAttributes( m_queueUrl, queueAttributes ) )
+            {            
+                GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "AwsSqsPubSubClientTopic:InitializeConnectivity: Retrieved attributes for queue \"" + CORE::ToString( m_queueUrl ) + 
+                    "\" which are as follows: " + CORE::ToString( queueAttributes ) );
+                return true;
+            }
+        }
+        else
+        {
+            GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "AwsSqsPubSubClientTopic:InitializeConnectivity: No queue URL could be determined thus cannot use SQS queue" );
+        }
+    }
+
     return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
+CAwsSqsPubSubClientTopic::TopicMetrics::TopicMetrics( void )
+    : sqsMessagesTransmitted( 0 )
+    , sqsMessagesReceived( 0 )
+    , sqsMessagesInQueue( 0 )
+    , sqsMessagesFiltered( 0 )
+    , sqsErrorReplies( 0 )
+{GUCEF_TRACE;
+
 }
 
 /*-------------------------------------------------------------------------*/
 
 void
 CAwsSqsPubSubClientTopic::OnMetricsTimerCycle( CORE::CNotifier* notifier    ,
-                                             const CORE::CEvent& eventId  ,
-                                             CORE::CICloneable* eventData )
+                                               const CORE::CEvent& eventId  ,
+                                               CORE::CICloneable* eventData )
 {GUCEF_TRACE;
 
 

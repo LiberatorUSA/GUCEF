@@ -424,6 +424,20 @@ CAsciiString::operator[]( const UInt32 index ) const
 
 /*-------------------------------------------------------------------------*/
 
+char&
+CAsciiString::operator[]( const UInt32 index )
+{GUCEF_TRACE;
+
+    static char outOfBoundsChar = '\0';
+    if ( index <= m_length )
+        return m_string[ index ];
+    
+    GUCEF_ASSERT_ALWAYS;
+    return outOfBoundsChar;
+}
+
+/*-------------------------------------------------------------------------*/
+
 bool
 CAsciiString::operator<( const CAsciiString& other ) const
 {GUCEF_TRACE;
@@ -1136,6 +1150,27 @@ CAsciiString::RemoveChar( const char charToRemove ) const
         }
     }
     return newString;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CAsciiString::HasRepeatingChar( const char charToCheck ) const
+{GUCEF_TRACE;
+
+    for ( UInt32 i=0; i<m_length; ++i )
+    {
+        if ( m_string[ i ] == charToCheck )
+        {
+            if ( ( i+1 < m_length ) &&
+                    ( m_string[ i+1 ] == charToCheck ) )
+            {
+                return true;
+            }
+        }
+    }
+
+    return false;
 }
 
 /*-------------------------------------------------------------------------*/

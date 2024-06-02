@@ -243,6 +243,35 @@ CTaskManager::GetOrCreateThreadPool( const CString& threadPoolName ,
 
 /*-------------------------------------------------------------------------*/
 
+bool 
+CTaskManager::UnregisterThreadPool( const CString& threadPoolName )
+{GUCEF_TRACE;
+
+    MT::CObjectScopeLock lock( this, GUCEF_MT_LONG_LOCK_TIMEOUT );
+
+    ThreadPoolMap::const_iterator i = m_threadPools.find( threadPoolName );
+    if ( i != m_threadPools.end() )
+    {
+        m_threadPools.erase( i );
+        GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "TaskManager:UnregisterThreadPool: Thread pool with name \"" + threadPoolName + "\" has been unregistered" );
+    }
+    
+    return true;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool 
+CTaskManager::UnregisterThreadPool( ThreadPoolPtr threadPool )
+{GUCEF_TRACE;
+
+    if ( threadPool.IsNULL() )
+        return true; // nothing to do
+    
+    return UnregisterThreadPool( threadPool->GetThreadPoolName() );
+}
+/*-------------------------------------------------------------------------*/
+
 TTaskStatus 
 CTaskManager::QueueTask( const CString& threadPoolName     ,
                          const CString& taskType           ,

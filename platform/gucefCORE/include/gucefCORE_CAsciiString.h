@@ -143,6 +143,8 @@ class GUCEF_CORE_PUBLIC_CPP CAsciiString
 
     char operator[]( const UInt32 index ) const;
 
+    char& operator[]( const UInt32 index );
+
     bool IsNULLOrEmpty( void ) const;
 
     operator std::string() const;
@@ -297,6 +299,8 @@ class GUCEF_CORE_PUBLIC_CPP CAsciiString
                            UInt32 startOffset = 0  ) const;
 
     CAsciiString RemoveChar( const char charToRemove ) const;
+
+    bool HasRepeatingChar( const char charToCheck ) const;
 
     CAsciiString CompactRepeatingChar( const char charToCompact ) const;
 

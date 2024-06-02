@@ -185,7 +185,7 @@ static void rd_kafka_global_srand(void) {
  * @returns the current number of active librdkafka instances
  */
 static int rd_kafka_global_cnt_get(void) {
-        int r;
+        int r = 0;
         mtx_lock(&rd_kafka_global_lock);
         r = rd_kafka_global_cnt;
         mtx_unlock(&rd_kafka_global_lock);

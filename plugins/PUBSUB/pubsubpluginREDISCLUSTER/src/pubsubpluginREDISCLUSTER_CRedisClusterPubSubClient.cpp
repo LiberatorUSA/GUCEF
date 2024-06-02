@@ -100,7 +100,10 @@ CRedisClusterPubSubClient::CRedisClusterPubSubClient( const PUBSUB::CPubSubClien
     ConfigureJournal( m_config );
 
     if ( m_config.pulseGenerator.IsNULL() )
+    {
+        GUCEF_WARNING_LOG( CORE::LOGLEVEL_NORMAL, "RedisClusterPubSubClient: No pulseGenerator provided, will fall back to global one" );
         m_config.pulseGenerator = CORE::CCoreGlobal::Instance()->GetPulseGenerator();
+    }
 
     if ( m_config.topicPulseGenerator.IsNULL() )
         m_config.topicPulseGenerator = m_config.pulseGenerator;
@@ -112,11 +115,11 @@ CRedisClusterPubSubClient::CRedisClusterPubSubClient( const PUBSUB::CPubSubClien
     }
     if ( m_config.desiredFeatures.supportsAutoReconnect )
     {
-        m_redisReconnectTimer = GUCEF_NEW CORE::CTimer( config.pulseGenerator, config.reconnectDelayInMs );
+        m_redisReconnectTimer = GUCEF_NEW CORE::CTimer( m_config.pulseGenerator, config.reconnectDelayInMs );
     }
     if ( m_config.desiredFeatures.supportsGlobPatternTopicNames )
     {                                                                      // @TODO: interval
-        m_streamIndexingTimer = GUCEF_NEW CORE::CTimer( config.pulseGenerator, 100000 );
+        m_streamIndexingTimer = GUCEF_NEW CORE::CTimer( m_config.pulseGenerator, 100000 );
     }
 
     m_config.metricsPrefix += "redis.";
@@ -141,7 +144,10 @@ CRedisClusterPubSubClient::~CRedisClusterPubSubClient()
     MT::CScopeMutex lock( m_lock );
     
     if ( !m_threadPool.IsNULL() )
+    {
         m_threadPool->RequestAllThreadsToStop( true, false );
+        CORE::CCoreGlobal::Instance()->GetTaskManager().UnregisterThreadPool( m_threadPool );
+    }
 
     GUCEF_DELETE m_metricsTimer;
     m_metricsTimer = GUCEF_NULL;
@@ -1047,6 +1053,9 @@ CRedisClusterPubSubClient::Connect( bool reset )
         sw::redis::ConnectionOptions rppConnectionOptions;
         rppConnectionOptions.host = m_config.remoteAddresses.front().GetHostname();  // Required.
         rppConnectionOptions.port = m_config.remoteAddresses.front().GetPortInHostByteOrder(); // Optional. The default port is 6379.
+        if ( 0 == rppConnectionOptions.port )
+            rppConnectionOptions.port = 6379;
+
         //rppConnectionOptions.password = "auth";   // Optional. No password by default.
         //rppConnectionOptions.db = 1;  // Optional. Use the 0th database by default.
 

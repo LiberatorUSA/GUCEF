@@ -499,6 +499,7 @@ class GUCEF_CORE_PUBLIC_CPP CUtf8String
 
     CUtf8String Combine( const StringVector& elements, Int32 seperator ) const;
     CUtf8String Combine( const StringSet& elements, Int32 seperator ) const;
+    CUtf8String Combine( const StringMap& elements, Int32 valueSeperator, Int32 kvSeperator ) const;
     
     void Clear( void );
 

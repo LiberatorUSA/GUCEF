@@ -189,11 +189,11 @@
 		"minSpilloverSideGoodHealthDurationBeforeActivationInMs": 5000,
 		"routeSwitchingTimerIntervalInMs": 1000,
 		"routes": [{
-			"fromSide": "redis-source",
-			"toSide": "storage-sink",
-			"failoverSide": "",
-			"spilloverBufferSide": "",
-			"deadLetterSide": ""
+			"fromSideId": "redis-source",
+			"toSideId": "storage-sink",
+			"failoverSideId": "",
+			"spilloverBufferSideId": "",
+			"deadLetterSideId": ""
 		}]
 	}
 }

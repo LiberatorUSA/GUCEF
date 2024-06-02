@@ -112,6 +112,19 @@ class PUBSUBPLUGIN_AWSSQS_PLUGIN_PRIVATE_CPP CAwsSqsPubSubClientTopic : public P
 
     virtual void Shutdown( void );
 
+    class TopicMetrics
+    {
+        public:
+
+        TopicMetrics( void );
+
+        CORE::UInt32 sqsMessagesTransmitted;
+        CORE::UInt32 sqsMessagesReceived;
+        CORE::UInt32 sqsMessagesInQueue;
+        CORE::UInt32 sqsMessagesFiltered;       
+        CORE::UInt32 sqsErrorReplies;
+    };
+
     void
     OnMetricsTimerCycle( CORE::CNotifier* notifier    ,
                          const CORE::CEvent& eventId  ,
@@ -125,6 +138,8 @@ class PUBSUBPLUGIN_AWSSQS_PLUGIN_PRIVATE_CPP CAwsSqsPubSubClientTopic : public P
     virtual const MT::CILockable* AsLockable( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
     virtual const CORE::CString& GetClassTypeName( void ) const GUCEF_VIRTUAL_OVERRIDE;
+
+    bool IsQueueEmpty( void );
 
     protected:
 
@@ -142,7 +157,18 @@ class PUBSUBPLUGIN_AWSSQS_PLUGIN_PRIVATE_CPP CAwsSqsPubSubClientTopic : public P
 
     template< class T >
     bool
-    TranslateToSqsMsg( T& sqsMsg, const PUBSUB::CIPubSubMsg* msg, CORE::UInt32& msgByteSize );
+    AddAttributesToSqsMsg( T& sqsMsg                                          , 
+                           const PUBSUB::CIPubSubMsg::TKeyValuePairs& kvPairs ,
+                           bool addPrefix                                     ,
+                           const CORE::CAsciiString& prefixToAdd              );
+
+    template< class T >
+    bool
+    TranslateToSqsMsg( T& sqsMsg                      , 
+                       const PUBSUB::CIPubSubMsg* msg , 
+                       CORE::UInt32& msgByteSize      );
+
+    bool ApplySqsMessageAttributeNameContraints( CORE::CAsciiString& candidateName );
 
     private:
 
@@ -173,7 +199,8 @@ class PUBSUBPLUGIN_AWSSQS_PLUGIN_PRIVATE_CPP CAwsSqsPubSubClientTopic : public P
 
 /*-------------------------------------------------------------------------*/
 
-typedef CAwsSqsPubSubClientTopic::TSharedPtrType    CAwsSqsPubSubClientTopicPtr;
+typedef CAwsSqsPubSubClientTopic::TSharedPtrType        CAwsSqsPubSubClientTopicPtr;
+typedef CAwsSqsPubSubClientTopic::TBasicSharedPtrType   CAwsSqsPubSubClientTopicBasicPtr;
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
