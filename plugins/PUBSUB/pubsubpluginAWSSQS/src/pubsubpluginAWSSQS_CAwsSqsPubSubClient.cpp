@@ -205,14 +205,14 @@ CAwsSqsPubSubClient::GetSupportedFeatures( PUBSUB::CPubSubClientFeatures& featur
     features.supportsKeyValueSetPerMsg = true;           // Supported in SQS using message attributes. "Each message can have up to 10 attributes. Message attributes are optional and separate from the message body (however, they are sent alongside it)"
     features.supportsMetaDataKeyValueSetPerMsg = true;   // "Whereas you can use message attributes to attach custom metadata to Amazon SQS messages for your applications, you can use message system attributes to store metadata for other AWS services, such as AWS X-Ray"
     features.supportsDuplicateKeysPerMsg = false;        // Since attributes are a map of keys to a value it mandates that every key is unique
-    features.supportsMultiHostSharding = true;           // SQS is a managed service which under the coveres is shareded across hardware/nodes
+    features.supportsMultiHostSharding = true;           // SQS is a managed service which under the coveres is shared across hardware/nodes
     features.supportsPublishing = true;                  // SQS supports sending messages to the queue
     features.supportsSubscribing = true;                 // SQS supports reading messages from the queue
     features.supportsMetrics = true;                     // We add our own metrics support in this plugin for SQS specific stats
-    features.supportsAutoReconnect = true;               // Our plugin adds auto reconnect out of the box
-    features.supportsSubscriberMsgReceivedAck = false;   // Since SQS is a queue where you consume the messages: this does not apply
+    features.supportsAutoReconnect = true;               // Our plugin adds auto 'reconnect' out of the box by virtue of the AWS SDK
+    features.supportsSubscriberMsgReceivedAck = true;    // SQS requires explit messages deletion to signal you are done with the message, this is the ack
     features.supportsAutoMsgReceivedAck = false;         // Since SQS is a queue where you consume the messages: grabbing the message is in a way the ack but this does not really apply
-    features.supportsAbsentMsgReceivedAck = true;        // Since SQS is a queue where you consume the messages: this does not apply and hence can be absent
+    features.supportsAbsentMsgReceivedAck = false;       // SQS requires explit messages deletion to signal you are done with the message, without that the message will become 'visible' again and retransmitted
     features.supportsAckUsingLastMsgInBatch = false;     // Since SQS is a queue where you consume the messages: this does not apply
     features.supportsAckUsingBookmark = false;           // Since SQS is a queue where you consume the messages: this does not apply
     features.supportsBookmarkingConcept = true;          // Since SQS is a queue where you consume the messages: Your offset is remembered simply due to the nature of a queue
@@ -881,9 +881,9 @@ CAwsSqsPubSubClient::Connect( bool reset )
     if ( !Disconnect() )
         return false;
 
-    
-    // @TODO
-    return false;
+    // The SQS client works on a per action basis as request-response
+    // there is currently no persistent connect aside from a long poll for subscription use cases
+    return true;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -892,7 +892,7 @@ bool
 CAwsSqsPubSubClient::IsConnected( void ) const
 {GUCEF_TRACE;
 
-    return false;
+    return IsInitialized();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -910,6 +910,14 @@ bool
 CAwsSqsPubSubClient::IsInitialized( void ) const
 {GUCEF_TRACE;
 
+    if ( PLUGINGLUE::AWSSDK::CAwsSdkGlobal::Instance()->IsIncludedInGlobalBootstrapConfigLoad() )
+    {
+        if ( PLUGINGLUE::AWSSDK::CAwsSdkGlobal::Instance()->IsGlobalBootstrapConfigLoadInProgress() ||
+             PLUGINGLUE::AWSSDK::CAwsSdkGlobal::Instance()->IsGlobalConfigLoadInProgress()           )
+        {
+            return false;
+        }
+    }
     return true;
 }
 

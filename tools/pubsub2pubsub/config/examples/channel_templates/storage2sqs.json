@@ -21,6 +21,11 @@
                 "pubsubClientType": "STORAGE",
                 "reconnectDelayInMs": 0,
                 "CustomConfig": {},
+                "journalConfig": {
+                    "useJournal": false,
+                    "journalType": "binary",
+                    "journalPath": "vfs://DataPath/journals/clientType/{clientType}/instance/{clientInstance}"
+                },						
                 "Topics": [],
                 "defaultTopicConfig": {
                     "isOptional": false,
@@ -34,10 +39,10 @@
                     "maxTotalMsgsInFlight": -1,
                     "CustomConfig": {
                         "desiredNrOfBuffers": 3,
-                        "desiredMinimalSerializedBlockSize": 2560000,
-                        "desiredMaxTimeToWaitToGrowSerializedBlockSizeInMs": 1000,
-                        "vfsStorageRootPath": "InstallPath/storage-source",
-                        "vfsFileExtention": "pubsubmsgs",
+                        "desiredMinimalSerializedBlockSize": 52428800,
+                        "desiredMaxTimeToWaitToGrowSerializedBlockSizeInMs": 30000,
+                        "vfsStorageRootPath": "DataPath/storage/{topicName}",
+                        "vfsFileExtention": "pubsubcapture",
                         "encodeCodecFamily": "",
                         "encodeCodecName": "",
                         "decodeCodecFamily": "",
@@ -60,8 +65,34 @@
                         "treatEveryFullfilledRequestAsEODEvent": false,
                         "deleteContainersWithFullyAckdContent": false,
                         "moveContainersWithFullyAckdContent": true,
-                        "vfsStorageRootPathForFullyAckdContainers": "InstallPath/storage-source/processed",
-                        "maxCompletedContainerRefsToRetain": 50
+                        "vfsStorageRootPathForFullyAckdContainers": "DataPath/storage-source/ackd",
+                        "maxCompletedContainerRefsToRetain": 50,
+                        "binarySerializerOptions": {
+                            "msgDateTimeIncluded": true,
+                            "msgDateTimeAsMsSinceUnixEpochInUtc": true,
+                            "msgIdIncluded": true,
+                            "msgIndexIncluded": true,
+                            "msgPrimaryPayloadIncluded": true,
+                            "msgKeyValuePairsIncluded": true,
+                            "msgMetaDataKeyValuePairsIncluded": true,
+                            "topicNameIncluded": false
+                        },
+                        "serializerOptions": {
+                            "msgDateTimeIncluded": true,
+                            "msgDateTimeAsMsSinceUnixEpochInUtc": true,
+                            "msgIdIncluded": true,
+                            "msgIndexIncluded": true,
+                            "msgPrimaryPayloadIncluded": true,
+                            "msgPrimaryPayloadTypeIncluded": false,
+                            "msgKeyValuePairsIncluded": true,
+                            "msgMetaDataKeyValuePairsIncluded": false,
+                            "includeUndefinedValues": false,
+                            "receiveActionIdIncluded": true,
+                            "originTopicObjPointerIncluded": false,
+                            "originTopicNameIncluded": false,
+                            "originClientTypeNameIncluded": false,
+                            "originClientObjPointerIncluded": false
+                        }						
                     }
                 },
                 "DesiredFeatures": {
@@ -96,6 +127,7 @@
                     "supportsDerivingBookmarkFromMsg": true,
                     "supportsDiscoveryOfAvailableTopics": true,
                     "supportsGlobPatternTopicNames": true,
+                    "supportsPatternBasedAggregateTopic": false,
                     "supportsMetrics": true
                 }
             },
@@ -108,7 +140,7 @@
                 "autoPersistMsgInterval": 1000,
                 "maxNrOfBookmarksToKeep": 10,
                 "CustomConfig": {
-                    "vfsRootPath": "InstallPath/bookmarks",
+                    "vfsRootPath": "DataPath/bookmarks",
                     "persistenceStructure": "{bookmarkNamespace}/clientType/{clientType}/topicName/{topicName}"
                 }
             }
@@ -130,6 +162,11 @@
                 "reconnectDelayInMs": 500,
                 "RemoteAddresses": [],
                 "CustomConfig": {},
+                "journalConfig": {
+                    "useJournal": false,
+                    "journalType": "binary",
+                    "journalPath": "vfs://DataPath/journals/clientType/{clientType}/instance/{clientInstance}"
+                },					
                 "Topics": [],
                 "defaultTopicConfig": {
                     "isOptional": false,
@@ -137,6 +174,11 @@
                     "needSubscribeSupport": false,
                     "preferDedicatedConnection": false,
                     "topicName": "pubsub2pubsub-storage-load-test-queue",
+                    "journalConfig": {
+                        "useJournal": true,
+                        "journalType": "binary",
+                        "journalPath": "vfs://DataPath/journals/clientType/{clientType}/instance/topics/{clientInstance}/topicName/{topicName}"
+                    },					
                     "CustomConfig": {
                         "topicNameIsQueueName": true,
                         "tryToUseSendMessageBatch": true,
@@ -178,7 +220,7 @@
                 "autoPersistMsgInterval": 1000,
                 "maxNrOfBookmarksToKeep": 10,
                 "CustomConfig": {
-                    "vfsRootPath": "InstallPath/bookmarks",
+                    "vfsRootPath": "DataPath/bookmarks",
                     "persistenceStructure": "{bookmarkNamespace}/clientType/{clientType}/topicName/{topicName}"
                 }
             }

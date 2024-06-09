@@ -105,6 +105,7 @@ class PUBSUBPLUGIN_AWSSQS_PLUGIN_PRIVATE_CPP CAwsSqsPubSubClientTopic : public P
 
     virtual bool AcknowledgeReceipt( const PUBSUB::CIPubSubMsg& msg ) GUCEF_VIRTUAL_OVERRIDE;
     virtual bool AcknowledgeReceipt( const PUBSUB::CPubSubBookmark& bookmark ) GUCEF_VIRTUAL_OVERRIDE;
+    virtual bool AcknowledgeReceipt( const CORE::CVariant& receipt );
 
     virtual bool SaveConfig( PUBSUB::CPubSubClientTopicConfig& config ) const GUCEF_VIRTUAL_OVERRIDE;
 
@@ -188,6 +189,7 @@ class PUBSUBPLUGIN_AWSSQS_PLUGIN_PRIVATE_CPP CAwsSqsPubSubClientTopic : public P
     CAwsSqsPubSubClientTopicConfig m_config;
     MT::CMutex m_lock;
     Aws::String m_queueUrl;
+    CORE::UInt32 m_sqsMaximumMessageSize;
     PUBSUB::CIPubSubMsg::TIPubSubMsgConstRawPtrVector m_publishBulkMsgRemapStorage;
     CORE::UInt64 m_currentPublishActionId;
     CORE::UInt64 m_currentReceiveActionId;

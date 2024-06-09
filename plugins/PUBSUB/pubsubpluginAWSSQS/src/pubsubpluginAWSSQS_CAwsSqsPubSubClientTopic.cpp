@@ -102,6 +102,7 @@ CAwsSqsPubSubClientTopic::CAwsSqsPubSubClientTopic( CAwsSqsPubSubClient* client 
     , m_config()
     , m_lock()
     , m_queueUrl()
+    , m_sqsMaximumMessageSize( SQSCLIENT_MAX_PAYLOAD_SIZE )
     , m_publishBulkMsgRemapStorage()
     , m_currentPublishActionId( 1 )
     , m_currentReceiveActionId( 1 )
@@ -308,11 +309,62 @@ CAwsSqsPubSubClientTopic::Publish( TPublishActionIdVector& publishActionIds, con
 /*-------------------------------------------------------------------------*/
 
 bool
+CAwsSqsPubSubClientTopic::AcknowledgeReceipt( const CORE::CVariant& receipt )
+{GUCEF_TRACE;
+
+    MT::CScopeMutex lock( m_lock );
+
+    if ( GUCEF_NULL == m_client )
+        return false;
+    
+    bool totalSuccess = true;
+    try
+    {            
+        if ( receipt.IsString() && !receipt.IsNULLOrEmpty() )
+        {
+            const char* receiptHandle = receipt.AsCharPtr();
+            if ( GUCEF_NULL != receiptHandle )
+            {        
+                Aws::SQS::Model::DeleteMessageRequest delete_req;
+                delete_req.SetQueueUrl( m_queueUrl );
+                delete_req.SetReceiptHandle( receiptHandle );
+
+                Aws::SQS::Model::DeleteMessageOutcome delete_out = m_client->GetSqsClient().DeleteMessage( delete_req );
+                if ( delete_out.IsSuccess() )
+                {
+                    GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "AwsSqsPubSubClientTopic:AcknowledgeReceipt: Successfully deleted message with receipt handle " + CORE::ToString( receiptHandle ) );
+                    return true;
+                }
+            }
+            else
+            {
+                GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "AwsSqsPubSubClientTopic:AcknowledgeReceipt: provided variant does not have valid content" );
+            }
+        }
+        else
+        {
+            GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "AwsSqsPubSubClientTopic:AcknowledgeReceipt: provided variant is not a string" );
+        }
+    }
+    catch ( const std::exception& e )
+    {
+        GUCEF_EXCEPTION_LOG( CORE::LOGLEVEL_CRITICAL, CORE::CString( "AwsSqsPubSubClientTopic:AcknowledgeReceipt: experienced an exception: " ) + e.what() );
+    }
+    catch ( ... )
+    {
+        GUCEF_EXCEPTION_LOG( CORE::LOGLEVEL_CRITICAL, "AwsSqsPubSubClientTopic:AcknowledgeReceipt: experienced an unknown exception, your application may be unstable" );
+    }
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
 CAwsSqsPubSubClientTopic::AcknowledgeReceipt( const PUBSUB::CIPubSubMsg& msg )
 {GUCEF_TRACE;
 
-    // Does not apply to SQS
-    return false;
+    const CORE::CVariant& msgIndex = msg.GetMsgIndex();
+    return AcknowledgeReceipt( msgIndex );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -321,7 +373,15 @@ bool
 CAwsSqsPubSubClientTopic::AcknowledgeReceipt( const PUBSUB::CPubSubBookmark& bookmark )
 {GUCEF_TRACE;
 
-    // Does not apply to SQS
+    if ( PUBSUB::CPubSubBookmark::BOOKMARK_TYPE_MSG_INDEX == bookmark.GetBookmarkType() )
+    {
+        const CORE::CVariant& msgIndex = bookmark.GetBookmarkData();
+        return AcknowledgeReceipt( msgIndex );
+    }
+    else
+    {
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "AwsSqsPubSubClientTopic:AcknowledgeReceipt: provided bookmark type is invalid" );
+    }
     return false;
 }
 
@@ -477,7 +537,7 @@ CAwsSqsPubSubClientTopic::TranslateToSqsMsg( T& sqsMsg, const PUBSUB::CIPubSubMs
         // Binary is Base64 encoded. For SQS strings are Unicode with UTF-8 binary encoding
         CORE::CUtf8String bodyPayloadStr = bodyPayload.AsUtf8String();
             
-        if ( bodyPayloadStr.ByteSize() >= 1 && bodyPayloadStr.ByteSize() <= SQSCLIENT_MAX_PAYLOAD_SIZE )
+        if ( bodyPayloadStr.ByteSize() >= 1 && bodyPayloadStr.ByteSize() <= m_sqsMaximumMessageSize )
         {
             sqsMsg.SetMessageBody( bodyPayloadStr );
         }
@@ -812,6 +872,12 @@ CAwsSqsPubSubClientTopic::InitializeConnectivity( bool reset )
             {            
                 GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "AwsSqsPubSubClientTopic:InitializeConnectivity: Retrieved attributes for queue \"" + CORE::ToString( m_queueUrl ) + 
                     "\" which are as follows: " + CORE::ToString( queueAttributes ) );
+                
+                CORE::CString::StringMap::iterator i = queueAttributes.find( "MaximumMessageSize" );
+                if ( i != queueAttributes.end() )
+                {
+                    m_sqsMaximumMessageSize = CORE::StringToUInt32( (*i).second, m_sqsMaximumMessageSize );
+                }
                 return true;
             }
         }
