@@ -549,13 +549,15 @@ CPubSubMsgContainerBinarySerializer::Deserialize( CPubSubClientTopic::TPubSubMsg
     while ( i != index.end() )
     {
         CORE::UInt32 offsetOfMsg = (*i);
-        CIPubSubMsg& msg = (*m).GetData();
-
-        if ( !CPubSubMsgBinarySerializer::Deserialize( options, linkWherePossible, msg, offsetOfMsg, source, bytesRead ) )
+        CIPubSubMsg* msg = (*m);
+        if ( GUCEF_NULL != msg )
         {
-            GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "PubSubMsgContainerBinarySerializer:DeserializeMsgAtIndex: Failed to deserialize msg at index " + CORE::ToString( msgIndex ) + " and offset " + CORE::ToString( offsetOfMsg ) );
-            isCorrupted = true;
-            return false;
+            if ( !CPubSubMsgBinarySerializer::Deserialize( options, linkWherePossible, *msg, offsetOfMsg, source, bytesRead ) )
+            {
+                GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "PubSubMsgContainerBinarySerializer:DeserializeMsgAtIndex: Failed to deserialize msg at index " + CORE::ToString( msgIndex ) + " and offset " + CORE::ToString( offsetOfMsg ) );
+                isCorrupted = true;
+                return false;
+            }
         }
         ++i; ++m; ++msgIndex;
     }

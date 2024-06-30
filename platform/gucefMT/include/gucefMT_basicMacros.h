@@ -65,8 +65,11 @@
 /*
  *      Macros to get the smallest or largest of 2 values.
  */
-#define SMALLEST(a,b) (((a) < (b)) ? (a) : (b))
-#define LARGEST(a,b) (((a) > (b)) ? (a) : (b))
+#define GUCEF_SMALLEST(a,b) (((a) < (b)) ? (a) : (b))
+#define GUCEF_LARGEST(a,b) (((a) > (b)) ? (a) : (b))
+
+#define SMALLEST    GUCEF_SMALLEST
+#define LARGEST     GUCEF_LARGEST
 
 /*-------------------------------------------------------------------------*/
 
@@ -118,29 +121,3 @@
 //#define INT16INTOCHAR
 
 #endif /* GUCEF_MT_BASICMACROS_H */
-
-/*-------------------------------------------------------------------------//
-//                                                                         //
-//      Info & Changes                                                     //
-//                                                                         //
-//-------------------------------------------------------------------------//
-
-- 24-09-2006 :
-        - Commented out SDL ... we dont use this anymore? - Logan
-- 24-03-2004 :
-        - Removed all build specific macros. These are macros that relyed on
-          specific build switches to define there meaning. This required the
-          include of a config include here which causes problems when exporting
-          from one module and importing from another since they would both use
-          the same switch. Thus only generic macros are allowed here from now
-          on.
-- 05-09-2003 :
-        - Added the LARGEST and SMALLEST macros
-- 13-08-2003 :
-        - Added this section.
-        - Added MAX_DIR_LENGTH and MAX_FILENAME_LENGTH
-
----------------------------------------------------------------------------*/
-
-
-

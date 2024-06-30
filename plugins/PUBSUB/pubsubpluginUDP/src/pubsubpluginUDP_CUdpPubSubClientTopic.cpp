@@ -623,8 +623,7 @@ CUdpPubSubClientTopic::OnUDPPacketsRecieved( CORE::CNotifier* notifier    ,
             
             // Now that we have prepared our wrapped message let's link it
             // as a reference in the list of received messages we send out
-            m_pubsubMsgsRefs.push_back( CPubSubClientTopic::TPubSubMsgRef() );
-            m_pubsubMsgsRefs.back().LinkTo( &msgWrapper );
+            m_pubsubMsgsRefs.push_back( &msgWrapper );
         }
         GUCEF_DEBUG_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "UdpPubSubClientTopic(" + CORE::ToString( this ) + "): Received and mapped " + CORE::ToString( packetsReceived ) + " packets" );
 

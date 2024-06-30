@@ -64,6 +64,8 @@ class CTMailboxForSharedCloneables : public MT::CMailboxForCloneables
 {
     public:
 
+    typedef CloneableType                                           TCloneableType;
+    typedef PtrLockType                                             TSharedPtrLockType;
     typedef CTSharedPtr< CloneableType, PtrLockType >               TMailSPtr;
     typedef std::vector< TMailSPtr, gucef_allocator< TMailSPtr > >  TMailSPtrList;
 
@@ -161,10 +163,13 @@ CTMailboxForSharedCloneables< CloneableType, PtrLockType >::GetSPtrBulkMail( TMa
 
     MT::CObjectScopeLock lock( this );
 
+    if ( m_mailQueue.empty() )
+        return false; // nothing to read, early out
+    
     // We know how many mail items we will read so lets not perform unnessesary reallocs of the vector's underlying memory
     if ( maxMailItems > 0 )    
     {
-        size_t itemsToRead = SMALLEST( m_mailQueue.size(), (size_t) maxMailItems );
+        size_t itemsToRead = GUCEF_SMALLEST( m_mailQueue.size(), (size_t) maxMailItems );
         mailList.reserve( itemsToRead );
     }
     else
@@ -179,7 +184,9 @@ CTMailboxForSharedCloneables< CloneableType, PtrLockType >::GetSPtrBulkMail( TMa
         {
             #ifdef GUCEF_DEBUG_MODE
 
-            TMailSPtr objPtr( static_cast< CloneableType* >( m_mailQueue.front() ) );
+            CICloneable* clonable = m_mailQueue.front();
+            CloneableType* derivedClonable = static_cast< CloneableType* >( clonable );
+            TMailSPtr objPtr( derivedClonable );
             mailList.push_back( objPtr );            
             GUCEF_ASSERT( objPtr.GetPointerAlways() == static_cast< CloneableType* >( m_mailQueue.front() ) );
             m_mailQueue.pop_front();

@@ -402,8 +402,13 @@ CPubSubClientTopic::Publish( TPublishActionIdVector& publishActionIds, const TIP
             publishActionId = publishActionIds[ n ];
         }
 
-        if ( !(*i).IsNULL() )
-            totalSuccess = totalSuccess && Publish( publishActionId, *(*i).GetPointerAlways(), notify );
+        const CIPubSubMsg::TNoLockSharedPtr& msg = (*i);
+        
+        if ( !msg.IsNULL() )
+        {
+            const CIPubSubMsg& msgRef = (*msg.GetPointerAlways());
+            totalSuccess = totalSuccess && Publish( publishActionId, msgRef, notify );
+        }
         else
             totalSuccess = false;    
 

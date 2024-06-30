@@ -3716,9 +3716,9 @@ CStoragePubSubClientTopic::TransmitNextPubSubMsgBuffer( void )
         bufferMetaData->actionIds.reserve( nrOfMessages );
         bufferMetaData->pubsubMsgsRefs.clear();
         bufferMetaData->pubsubMsgsRefs.reserve( nrOfMessages );
+        bufferMetaData->msgAcks.clear();
         if ( m_needToTrackAcks )
-        {
-            bufferMetaData->msgAcks.clear();
+        {            
             bufferMetaData->msgAcks.reserve( nrOfMessages );
         }
         bufferMetaData->lastMsgTransmittedIndex = 0;

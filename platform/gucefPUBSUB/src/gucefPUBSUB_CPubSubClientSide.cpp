@@ -1543,8 +1543,7 @@ CPubSubClientSide::TopicLink::OnCheckForTimedOutInFlightMessagesTimerCycle( CORE
                 while ( n != inFlightDiscardList.end() )
                 {
                     TopicLink::MsgTrackingEntry& trackingEntry = inFlightMsgs[ (*n) ];
-                    CPubSubClientTopic::TPubSubMsgRef msgRef;
-                    msgRef.LinkTo( trackingEntry.msg.GetPointerAlways() );
+                    CPubSubClientTopic::TPubSubMsgRef msgRef = trackingEntry.msg.GetPointerAlways();
                     discardedMsgs.push_back( msgRef );
                     ++n;
                 }
@@ -1908,6 +1907,8 @@ CPubSubClientSide::TopicLink::PublishMailboxMsgs( void )
                 bool timeoutOccured = false;
                 try
                 {
+                    
+                    CPubSubClientTopic::TIPubSubMsgSPtrVector::iterator i = msgs.begin();
                     publishSuccess = PublishMsgsSync< CPubSubClientTopic::TIPubSubMsgSPtrVector >( msgs );
                     totalSuccess = publishSuccess && totalSuccess;
                 }

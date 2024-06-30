@@ -701,9 +701,7 @@ CRedisClusterPubSubClientTopic::RedisRead( void )
                                             // prep generic storage object for linkage
                                             m_readVars.m_pubsubMsgs.push_back( PUBSUB::CBasicPubSubMsg() );
                                             PUBSUB::CBasicPubSubMsg& pubsubMsg = m_readVars.m_pubsubMsgs.back();
-                                            msgRefs.push_back( TPubSubMsgRef() );
-                                            TPubSubMsgRef& pubsubMsgRef = msgRefs.back();
-                                            pubsubMsgRef.LinkTo( &pubsubMsg );
+                                            msgRefs.push_back( &pubsubMsg );
                                             pubsubMsg.SetOriginClientTopic( CreateSharedPtr() );
 
                                             if ( REDIS_REPLY_STRING == msg->element[ 0 ]->type )
@@ -755,10 +753,10 @@ CRedisClusterPubSubClientTopic::RedisRead( void )
                                                     pubsubMsg.GetKeyValuePairs().push_back( PUBSUB::CBasicPubSubMsg::TKeyValuePair() );
                                                     PUBSUB::CBasicPubSubMsg::TKeyValuePair& kvLink = pubsubMsg.GetKeyValuePairs().back();
 
-                                                    kvLink.first.LinkTo( keyStr, keySize, GUCEF_DATATYPE_BINARY_BLOB );
-                                                    kvLink.second.LinkTo( valueStr, valueSize, GUCEF_DATATYPE_BINARY_BLOB );
+                                                    kvLink.first.LinkTo( keyStr, (UInt32) keySize, GUCEF_DATATYPE_BINARY_BLOB );
+                                                    kvLink.second.LinkTo( valueStr, (UInt32) valueSize, GUCEF_DATATYPE_BINARY_BLOB );
 
-                                                    m_msgsBytesReceived += ( keySize + valueSize );
+                                                    m_msgsBytesReceived += (UInt32) ( keySize + valueSize );
                                                     
                                                     ++m_fieldsInMsgsReceived;
                                                 }
@@ -851,9 +849,7 @@ CRedisClusterPubSubClientTopic::RedisRead( void )
 
                         m_readVars.m_pubsubMsgs.push_back( PUBSUB::CBasicPubSubMsg() );
                         PUBSUB::CBasicPubSubMsg& pubsubMsg = m_readVars.m_pubsubMsgs.back();
-                        msgRefs.push_back( TPubSubMsgRef() );
-                        TPubSubMsgRef& pubsubMsgRef = msgRefs.back();
-                        pubsubMsgRef.LinkTo( &pubsubMsg );
+                        msgRefs.push_back( &pubsubMsg );
                         pubsubMsg.SetOriginClientTopic( CreateSharedPtr() );
 
                         pubsubMsg.SetReceiveActionId( m_readVars.m_currentReceiveActionId );
@@ -1612,7 +1608,9 @@ CORE::UInt32
 CRedisClusterPubSubClientTopic::GetMsgsInFlightGauge( void ) const
 {GUCEF_TRACE;
 
-    return m_msgsInFlight;
+    if ( m_msgsInFlight > 0 )
+        return (CORE::UInt32) m_msgsInFlight;
+    return 0;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -1785,7 +1783,7 @@ CRedisClusterPubSubClientTopic::OnMetricsTimerCycle( CORE::CNotifier* notifier  
     m_metrics.msgsTransmitted = GetMsgsTransmittedCounter( true );    
     UInt32 fieldsInMsgsTransmitted = GetFieldsInMsgsTransmittedCounter( true );
     if ( m_metrics.msgsTransmitted > 0 )
-        m_metrics.fieldsInMsgsTransmittedRatio = fieldsInMsgsTransmitted / m_metrics.msgsTransmitted;
+        m_metrics.fieldsInMsgsTransmittedRatio = (Float32) ( fieldsInMsgsTransmitted / m_metrics.msgsTransmitted );
     else
         m_metrics.fieldsInMsgsTransmittedRatio = 0.0f;    
 
@@ -1793,7 +1791,7 @@ CRedisClusterPubSubClientTopic::OnMetricsTimerCycle( CORE::CNotifier* notifier  
     m_metrics.msgsBytesReceived = GetMsgsBytesReceivedCounter( true );    
     UInt32 fieldsInMsgsReceived = GetFieldsInMsgsReceivedCounter( true );
     if ( m_metrics.msgsReceived > 0 )
-        m_metrics.fieldsInMsgsReceivedRatio = fieldsInMsgsReceived / m_metrics.msgsReceived;
+        m_metrics.fieldsInMsgsReceivedRatio = (Float32) ( fieldsInMsgsReceived / m_metrics.msgsReceived );
     else
         m_metrics.fieldsInMsgsReceivedRatio = 0.0f;
 

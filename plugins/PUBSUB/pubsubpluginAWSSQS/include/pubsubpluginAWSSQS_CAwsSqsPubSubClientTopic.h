@@ -45,6 +45,16 @@
 #define PUBSUBPLUGIN_AWSSQS_CAWSSQSPUBSUBCLIENTTOPICCONFIG_H
 #endif /* PUBSUBPLUGIN_AWSSQS_CAWSSQSPUBSUBCLIENTTOPICCONFIG_H ? */
 
+#include <aws/sqs/model/GetQueueUrlRequest.h>
+#include <aws/sqs/model/GetQueueUrlResult.h>
+#include <aws/sqs/model/SendMessageRequest.h>
+#include <aws/sqs/model/SendMessageResult.h>
+#include <aws/sqs/model/SendMessageBatchRequest.h>
+#include <aws/sqs/model/SendMessageBatchResult.h>
+#include <aws/sqs/model/ReceiveMessageRequest.h>
+#include <aws/sqs/model/ReceiveMessageResult.h>
+#include <aws/sqs/model/DeleteMessageRequest.h>
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //
@@ -101,6 +111,7 @@ class PUBSUBPLUGIN_AWSSQS_PLUGIN_PRIVATE_CPP CAwsSqsPubSubClientTopic : public P
 
     virtual bool Publish( TPublishActionIdVector& publishActionIds, const PUBSUB::CBasicPubSubMsg::TBasicPubSubMsgVector& msgs, bool notify ) GUCEF_VIRTUAL_OVERRIDE;
     virtual bool Publish( TPublishActionIdVector& publishActionIds, const PUBSUB::CIPubSubMsg::TIPubSubMsgConstRawPtrVector& msgs, bool notify ) GUCEF_VIRTUAL_OVERRIDE;
+    virtual bool Publish( TPublishActionIdVector& publishActionIds, const PUBSUB::CIPubSubMsg::TIPubSubMsgSPtrVector& msgs, bool notify ) GUCEF_VIRTUAL_OVERRIDE;
     virtual bool Publish( CORE::UInt64& publishActionId, const PUBSUB::CIPubSubMsg& msg, bool notify ) GUCEF_VIRTUAL_OVERRIDE;
 
     virtual bool AcknowledgeReceipt( const PUBSUB::CIPubSubMsg& msg ) GUCEF_VIRTUAL_OVERRIDE;
@@ -161,13 +172,27 @@ class PUBSUBPLUGIN_AWSSQS_PLUGIN_PRIVATE_CPP CAwsSqsPubSubClientTopic : public P
     AddAttributesToSqsMsg( T& sqsMsg                                          , 
                            const PUBSUB::CIPubSubMsg::TKeyValuePairs& kvPairs ,
                            bool addPrefix                                     ,
-                           const CORE::CAsciiString& prefixToAdd              );
+                           const CORE::CAsciiString& prefixToAdd              ,
+                           CORE::UInt32& msgByteSize                          );
 
     template< class T >
     bool
-    TranslateToSqsMsg( T& sqsMsg                      , 
-                       const PUBSUB::CIPubSubMsg* msg , 
-                       CORE::UInt32& msgByteSize      );
+    TranslateToSqsMsgOfType( T& sqsMsg                      , 
+                             const PUBSUB::CIPubSubMsg* msg , 
+                             CORE::UInt32& msgByteSize      );
+
+    
+    bool 
+    TranslateToSqsMsg( Aws::SQS::Model::SendMessageRequest& sqsMsg ,
+                       const PUBSUB::CIPubSubMsg* msg              , 
+                       CORE::UInt32& approxMsgByteSize             );
+                            
+    bool
+    TranslateToSqsBatchMsg( Aws::SQS::Model::SendMessageBatchRequestEntry& sqsMsg , 
+                            const PUBSUB::CIPubSubMsg* msg                        , 
+                            CORE::UInt64 publishActionId                          ,
+                            CORE::UInt32& approxMsgByteSize                       );
+
 
     bool ApplySqsMessageAttributeNameContraints( CORE::CAsciiString& candidateName );
 

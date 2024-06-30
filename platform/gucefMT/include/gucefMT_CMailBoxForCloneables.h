@@ -332,6 +332,8 @@ bool
 CMailboxForCloneables::AddBulkMail( const TContainer& mailList, UInt32 itemsPerLockCycle )
 {GUCEF_TRACE;
 
+    bool totalSuccess = true;
+
     typename TContainer::const_iterator i = mailList.begin();
     while ( i != mailList.end() )
     {
@@ -343,12 +345,22 @@ CMailboxForCloneables::AddBulkMail( const TContainer& mailList, UInt32 itemsPerL
             const CICloneable* origMail = AsCloneablePtr< const typename TContainer::const_iterator::value_type >( (*i) );
             if ( GUCEF_NULL != origMail )
             {
-                m_mailQueue.push_back( origMail->Clone() );
+                CICloneable* clonedMail = origMail->Clone();
+                if ( GUCEF_NULL != clonedMail )
+                {
+                    m_mailQueue.push_back( clonedMail );
+                }
+                else
+                {
+                    // Cloning failed
+                    totalSuccess = false;
+                }
             }
             ++i; ++n;
         }
     }
-    return true;
+    
+    return totalSuccess;
 }
 
 /*-------------------------------------------------------------------------//

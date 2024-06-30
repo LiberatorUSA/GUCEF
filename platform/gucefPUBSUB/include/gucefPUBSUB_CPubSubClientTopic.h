@@ -148,7 +148,7 @@ class GUCEF_PUBSUB_EXPORT_CPP CPubSubClientTopic : public CORE::CTSGNotifier
     typedef CIPubSubMsg::TIPubSubMsgConstRawPtrVector                       TIPubSubMsgConstRawPtrVector;
     typedef CIPubSubMsg::TIPubSubMsgRawPtrVector                            TIPubSubMsgRawPtrVector;
     typedef CIPubSubMsg::TIPubSubMsgSPtrVector                              TIPubSubMsgSPtrVector;
-    typedef CORE::CTLinkedCloneable< CIPubSubMsg >                                                               TPubSubMsgRef;
+    typedef CIPubSubMsg*                                                                                         TPubSubMsgRef;
     typedef CORE::CTCloneableExpansion< std::vector< TPubSubMsgRef, gucef_allocator< TPubSubMsgRef > > >         TPubSubMsgsRefVector;    
     typedef UInt64                                                                                               TPublishActionId;
     typedef CORE::CTCloneableExpansion< std::vector< TPublishActionId, gucef_allocator< TPublishActionId > > >   TPublishActionIdVector;        

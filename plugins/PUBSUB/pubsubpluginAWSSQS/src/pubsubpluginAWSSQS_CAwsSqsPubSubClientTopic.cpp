@@ -29,15 +29,6 @@
 
 #include <aws/core/Aws.h>
 #include <aws/sqs/SQSClient.h>
-#include <aws/sqs/model/GetQueueUrlRequest.h>
-#include <aws/sqs/model/GetQueueUrlResult.h>
-#include <aws/sqs/model/SendMessageRequest.h>
-#include <aws/sqs/model/SendMessageResult.h>
-#include <aws/sqs/model/SendMessageBatchRequest.h>
-#include <aws/sqs/model/SendMessageBatchResult.h>
-#include <aws/sqs/model/ReceiveMessageRequest.h>
-#include <aws/sqs/model/ReceiveMessageResult.h>
-#include <aws/sqs/model/DeleteMessageRequest.h>
 #include <iostream>
 
 #ifndef GUCEF_MT_CSCOPEMUTEX_H
@@ -251,18 +242,25 @@ CAwsSqsPubSubClientTopic::Publish( CORE::UInt64& publishActionId, const PUBSUB::
         sm_req.SetQueueUrl( m_queueUrl );
                
         CORE::UInt32 msgByteSize = 0;                     
-        if ( TranslateToSqsMsg< Aws::SQS::Model::SendMessageRequest >( sm_req, &msg, msgByteSize ) )
+        if ( TranslateToSqsMsg( sm_req, &msg, msgByteSize ) )
         {
-            Aws::SQS::Model::SendMessageOutcome sm_out = m_client->GetSqsClient().SendMessage( sm_req );
-            if ( sm_out.IsSuccess() )
+            if ( msgByteSize <= m_sqsMaximumMessageSize )
             {
-                GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "AwsSqsPubSubClientTopic:Publish: Success sending message to \"" + m_queueUrl + "\"" );
-                success = true;
+                Aws::SQS::Model::SendMessageOutcome sm_out = m_client->GetSqsClient().SendMessage( sm_req );
+                if ( sm_out.IsSuccess() )
+                {
+                    GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "AwsSqsPubSubClientTopic:Publish: Success sending message to \"" + m_queueUrl + "\"" );
+                    success = true;
+                }
+                else
+                {
+                    GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "AwsSqsPubSubClientTopic:Publish: Error sending message to \"" + m_queueUrl + "\". Error Msg: " + sm_out.GetError().GetMessage() );
+                } 
             }
             else
             {
-                GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "AwsSqsPubSubClientTopic:Publish: Error sending message to \"" + m_queueUrl + "\". Error Msg: " + sm_out.GetError().GetMessage() );
-            } 
+                GUCEF_ERROR_LOG(CORE::LOGLEVEL_NORMAL, "AwsSqsPubSubClientTopic:Publish: Message too large with size of " + CORE::ToString( msgByteSize ) + " to \"" + m_queueUrl + "\"");
+            }
         }
     }
     catch ( const std::exception& e )
@@ -296,11 +294,31 @@ CAwsSqsPubSubClientTopic::Publish( TPublishActionIdVector& publishActionIds, con
 
     MT::CScopeMutex lock( m_lock );
 
-    m_publishBulkMsgRemapStorage.resize( msgs.size() );
+    m_publishBulkMsgRemapStorage.clear();
+    m_publishBulkMsgRemapStorage.reserve( msgs.size() );
     PUBSUB::CBasicPubSubMsg::TBasicPubSubMsgVector::const_iterator i = msgs.begin();
     while ( i != msgs.end() )    
     {
         m_publishBulkMsgRemapStorage.push_back( &(*i) );
+        ++i;
+    }
+    return Publish( publishActionIds, m_publishBulkMsgRemapStorage, notify );
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CAwsSqsPubSubClientTopic::Publish( TPublishActionIdVector& publishActionIds, const PUBSUB::CIPubSubMsg::TIPubSubMsgSPtrVector& msgs, bool notify )
+{GUCEF_TRACE;
+
+    MT::CScopeMutex lock( m_lock );
+
+    m_publishBulkMsgRemapStorage.clear();
+    m_publishBulkMsgRemapStorage.reserve( msgs.size() );
+    PUBSUB::CIPubSubMsg::TIPubSubMsgSPtrVector::const_iterator i = msgs.begin();
+    while ( i != msgs.end() )    
+    {
+        m_publishBulkMsgRemapStorage.push_back( (*i).GetPointerAlways() );
         ++i;
     }
     return Publish( publishActionIds, m_publishBulkMsgRemapStorage, notify );
@@ -458,7 +476,8 @@ bool
 CAwsSqsPubSubClientTopic::AddAttributesToSqsMsg( T& sqsMsg                                          , 
                                                  const PUBSUB::CIPubSubMsg::TKeyValuePairs& kvPairs ,
                                                  bool addPrefix                                     ,
-                                                 const CORE::CAsciiString& prefixToAdd              )
+                                                 const CORE::CAsciiString& prefixToAdd              ,
+                                                 CORE::UInt32& msgByteSize                          )
 {GUCEF_TRACE;
 
     if ( !kvPairs.empty() )
@@ -476,31 +495,59 @@ CAwsSqsPubSubClientTopic::AddAttributesToSqsMsg( T& sqsMsg                      
             if ( kvKey.IsInitialized() && kvValue.IsInitialized() )
             {                    
                 Aws::SQS::Model::MessageAttributeValue sqsAttribValue;
+                bool valueHasBeenSetOk = false;
 
                 if ( kvValue.IsString() )
                 {
-                    sqsAttribValue.SetDataType( "String" );
-                    sqsAttribValue.SetStringValue( kvValue.AsUtf8String() );
+                    CORE::CUtf8String valueStr = kvValue.AsUtf8String();
+                    if ( !valueStr.IsNULLOrEmpty() )
+                    {
+                        sqsAttribValue.SetDataType( "String" );
+                        msgByteSize += 6;                 
+                        sqsAttribValue.SetStringValue( valueStr );
+                        msgByteSize += (valueStr.ByteSize()-1);
+                        valueHasBeenSetOk = true;
+                    }
                 }
                 else
                 if ( kvValue.IsNumber() )
                 {
-                    sqsAttribValue.SetDataType( "StringValue" );
-                    sqsAttribValue.SetStringValue( kvValue.AsUtf8String() );
+                    CORE::CUtf8String valueStr = kvValue.AsUtf8String();
+                    if ( !valueStr.IsNULLOrEmpty() )
+                    {
+                        sqsAttribValue.SetDataType( "StringValue" );
+                        msgByteSize += 11;                 
+                        sqsAttribValue.SetStringValue( valueStr );
+                        msgByteSize += (valueStr.ByteSize()-1);
+                        valueHasBeenSetOk = true;
+                    }
                 }
                 else // kvValue.IsBinary() ? catch-all
                 {
-                    sqsAttribValue.SetDataType( "Binary" );
-                    sqsAttribValue.SetBinaryValue( Aws::Utils::ByteBuffer( static_cast< const unsigned char* >( kvValue.AsVoidPtr() ), kvValue.ByteSize() ) );
+                    if ( kvValue.ByteSize() > 0 )
+                    {
+                        sqsAttribValue.SetDataType( "Binary" );
+                        msgByteSize += 6;
+                        sqsAttribValue.SetBinaryValue( Aws::Utils::ByteBuffer( static_cast< const unsigned char* >( kvValue.AsVoidPtr() ), kvValue.ByteSize() ) );
+                        msgByteSize += kvValue.ByteSize();
+                        valueHasBeenSetOk = true;
+                    }
                 }
                                     
-                CORE::CAsciiString kvKeyName = kvKey.AsAsciiString();
-                if ( addPrefix )
+                if ( valueHasBeenSetOk )
                 {
-                    kvKeyName = prefixToAdd + kvKeyName;
+                    CORE::CAsciiString kvKeyName = kvKey.AsAsciiString();
+                    if ( addPrefix )
+                    {
+                        kvKeyName = prefixToAdd + kvKeyName;
+                    }
+                    ApplySqsMessageAttributeNameContraints( kvKeyName );
+                    if ( !kvKeyName.IsNULLOrEmpty() )
+                    {
+                        sqsMsg.AddMessageAttributes( kvKeyName, sqsAttribValue ); // if there are dupicate keys last one wins                    
+                        msgByteSize += (kvKeyName.ByteSize()-1);
+                    }
                 }
-                ApplySqsMessageAttributeNameContraints( kvKeyName );
-                sqsMsg.AddMessageAttributes( kvKeyName, sqsAttribValue ); // if there are dupicate keys last one wins                    
             }
             else
             {
@@ -517,22 +564,24 @@ CAwsSqsPubSubClientTopic::AddAttributesToSqsMsg( T& sqsMsg                      
 
 template< class T >
 bool
-CAwsSqsPubSubClientTopic::TranslateToSqsMsg( T& sqsMsg, const PUBSUB::CIPubSubMsg* msg, CORE::UInt32& msgByteSize )
+CAwsSqsPubSubClientTopic::TranslateToSqsMsgOfType( T& sqsMsg                      , 
+                                                   const PUBSUB::CIPubSubMsg* msg , 
+                                                   CORE::UInt32& msgByteSize      )
 {GUCEF_TRACE;
 
     if ( GUCEF_NULL == msg )
     {
-        GUCEF_WARNING_LOG( CORE::LOGLEVEL_NORMAL, "AwsSqsPubSubClientTopic:TranslateToSqsMsg: NULL Message passed" );
+        GUCEF_WARNING_LOG( CORE::LOGLEVEL_NORMAL, "AwsSqsPubSubClientTopic:TranslateToSqsMsgOfType: NULL Message passed" );
         return false;
     }
 
+    // A message can include only XML, JSON, and unformatted text. The following Unicode characters are allowed:
+    // #x9 | #xA | #xD | #x20 to #xD7FF | #xE000 to #xFFFD | #x10000 to #x10FFFF
+    // The minimum size is one character. The maximum size is 256 KB (or smaller based on queue settings)
+
     const CORE::CVariant& bodyPayload = msg->GetPrimaryPayload();
     if ( bodyPayload.IsInitialized() )
-    {
-        // A message can include only XML, JSON, and unformatted text. The following Unicode characters are allowed:
-        // #x9 | #xA | #xD | #x20 to #xD7FF | #xE000 to #xFFFD | #x10000 to #x10FFFF
-        // The minimum size is one character. The maximum size is 256 KB.
-            
+    {            
         // We request the payload as a string. Note that this auto converts
         // Binary is Base64 encoded. For SQS strings are Unicode with UTF-8 binary encoding
         CORE::CUtf8String bodyPayloadStr = bodyPayload.AsUtf8String();
@@ -540,26 +589,140 @@ CAwsSqsPubSubClientTopic::TranslateToSqsMsg( T& sqsMsg, const PUBSUB::CIPubSubMs
         if ( bodyPayloadStr.ByteSize() >= 1 && bodyPayloadStr.ByteSize() <= m_sqsMaximumMessageSize )
         {
             sqsMsg.SetMessageBody( bodyPayloadStr );
+            msgByteSize += (bodyPayloadStr.ByteSize()-1);
         }
         else
         {
-            GUCEF_WARNING_LOG( CORE::LOGLEVEL_NORMAL, "AwsSqsPubSubClientTopic:TranslateToSqsMsg: Message body size as string has an invalid size. Must be between 1-256KB. Cannot translate" );
+            GUCEF_WARNING_LOG( CORE::LOGLEVEL_NORMAL, "AwsSqsPubSubClientTopic:TranslateToSqsMsgOfType: Message body size as string has an invalid size. Must be between 1-256KB. Cannot translate" );
             return false;
         }
     }
     else
     {
-        GUCEF_WARNING_LOG( CORE::LOGLEVEL_NORMAL, "AwsSqsPubSubClientTopic:TranslateToSqsMsg: Message does not have a body which SQS does not allow. Cannot publish" );
+        GUCEF_WARNING_LOG( CORE::LOGLEVEL_NORMAL, "AwsSqsPubSubClientTopic:TranslateToSqsMsgOfType: Message does not have a body which SQS does not allow. Cannot publish" );
         return false;
     }
 
     bool totalSuccess = true;
     const PUBSUB::CIPubSubMsg::TKeyValuePairs& kvPairs = msg->GetKeyValuePairs();
-    totalSuccess = AddAttributesToSqsMsg( sqsMsg, kvPairs, m_config.addPrefixWhenSendingKvPairs, m_config.kvPairPrefixToAddOnSend ) && totalSuccess;
+    totalSuccess = AddAttributesToSqsMsg( sqsMsg, kvPairs, m_config.addPrefixWhenSendingKvPairs, m_config.kvPairPrefixToAddOnSend, msgByteSize ) && totalSuccess;
     const PUBSUB::CIPubSubMsg::TKeyValuePairs& metaKvPairs = msg->GetMetaDataKeyValuePairs();
-    totalSuccess = AddAttributesToSqsMsg( sqsMsg, metaKvPairs, m_config.addPrefixWhenSendingMetaDataKvPairs, m_config.metaDatakvPairPrefixToAddOnSend ) && totalSuccess;
+    totalSuccess = AddAttributesToSqsMsg( sqsMsg, metaKvPairs, m_config.addPrefixWhenSendingMetaDataKvPairs, m_config.metaDatakvPairPrefixToAddOnSend, msgByteSize ) && totalSuccess;
 
     return totalSuccess;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CAwsSqsPubSubClientTopic::TranslateToSqsBatchMsg( Aws::SQS::Model::SendMessageBatchRequestEntry& sqsMsg , 
+                                                  const PUBSUB::CIPubSubMsg* msg                        , 
+                                                  CORE::UInt64 publishActionId                          ,
+                                                  CORE::UInt32& approxMsgByteSize                       )
+{GUCEF_TRACE;
+
+    /*
+    
+        The JSON for the request will become as follows:
+        
+        {
+           "Entries": [ 
+              { 
+                 "DelaySeconds": number,
+                 "Id": "string",
+                 "MessageAttributes": { 
+                    "string" : { 
+                       "BinaryListValues": [ blob ],
+                       "BinaryValue": blob,
+                       "DataType": "string",
+                       "StringListValues": [ "string" ],
+                       "StringValue": "string"
+                    }
+                 },
+                 "MessageBody": "string",
+                 "MessageDeduplicationId": "string",
+                 "MessageGroupId": "string",
+                 "MessageSystemAttributes": { 
+                    "string" : { 
+                       "BinaryListValues": [ blob ],
+                       "BinaryValue": blob,
+                       "DataType": "string",
+                       "StringListValues": [ "string" ],
+                       "StringValue": "string"
+                    }
+                 }
+              }
+           ],
+           "QueueUrl": "string"
+        }
+    
+        
+        Hence based on the above we will put a floor message size at 742 bytes purely due to JSON formatting on a per batch entry basis
+    
+    */
+    approxMsgByteSize += 742;
+   
+
+    // Specific to batch messages: Its mandatory to set an ID on each entry in the batch.
+    //                             This is done to be able to provide a response to the API call that has individual success/fail states per entry
+
+    CORE::CString IdStr = CORE::ToString( publishActionId ); 
+    sqsMsg.SetId( IdStr );
+    approxMsgByteSize += (IdStr.ByteSize()-1);
+    
+    // Now do the translation work which is generic and shared between batch and non-batch messages
+    
+    return TranslateToSqsMsgOfType< Aws::SQS::Model::SendMessageBatchRequestEntry >( sqsMsg, msg, approxMsgByteSize );
+}
+
+/*-------------------------------------------------------------------------*/
+    
+bool 
+CAwsSqsPubSubClientTopic::TranslateToSqsMsg( Aws::SQS::Model::SendMessageRequest& sqsMsg ,
+                                             const PUBSUB::CIPubSubMsg* msg              , 
+                                             CORE::UInt32& approxMsgByteSize             )
+{GUCEF_TRACE;
+
+    /*
+    
+        The JSON for the request will become as follows:
+
+        {
+           "DelaySeconds": number,
+           "MessageAttributes": { 
+              "string" : { 
+                 "BinaryListValues": [ blob ],
+                 "BinaryValue": blob,
+                 "DataType": "string",
+                 "StringListValues": [ "string" ],
+                 "StringValue": "string"
+              }
+           },
+           "MessageBody": "string",
+           "MessageDeduplicationId": "string",
+           "MessageGroupId": "string",
+           "MessageSystemAttributes": { 
+              "string" : { 
+                 "BinaryListValues": [ blob ],
+                 "BinaryValue": blob,
+                 "DataType": "string",
+                 "StringListValues": [ "string" ],
+                 "StringValue": "string"
+              }
+           },
+           "QueueUrl": "string"
+        }
+
+
+        Hence based on the above we will put a floor message size at 574 bytes purely due to JSON formatting
+
+    */
+    approxMsgByteSize += 574;
+    approxMsgByteSize += (CORE::UInt32) m_queueUrl.size();
+
+    // Now do the translation work which is generic and shared between batch and non-batch messages
+    
+    return TranslateToSqsMsgOfType< Aws::SQS::Model::SendMessageRequest >( sqsMsg, msg, approxMsgByteSize );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -579,67 +742,112 @@ CAwsSqsPubSubClientTopic::Publish( TPublishActionIdVector& publishActionIds     
     try
     {            
         if ( m_config.tryToUseSendMessageBatch )
-        {
-            Aws::SQS::Model::SendMessageBatchRequest sm_req;
-            sm_req.SetQueueUrl( m_queueUrl );
-       
-            size_t preExistingActionIds = publishActionIds.size(); size_t n=0;
+        {       
+            size_t preExistingActionIds = publishActionIds.size(); 
+            size_t n=0;
+            CORE::UInt32 sqsMsgByteSize = 0;
             PUBSUB::CIPubSubMsg::TIPubSubMsgConstRawPtrVector::const_iterator i = msgs.begin();
             while ( i != msgs.end() )
             {        
-                CORE::UInt64 publishActionId = 0;
-                if ( preExistingActionIds > n )
-                {
-                    publishActionId = publishActionIds[ n ];
-                    if ( 0 == publishActionId )
+                size_t batchStartN = n;
+
+                Aws::SQS::Model::SendMessageBatchRequest sm_req;
+                sm_req.SetQueueUrl( m_queueUrl );
+
+                while ( i != msgs.end() )
+                {                 
+                    const PUBSUB::CIPubSubMsg* msg = (*i);            
+                
+                    CORE::UInt64 publishActionId = 0;
+                    if ( preExistingActionIds > n )
+                    {
+                        publishActionId = publishActionIds[ n ];
+                        if ( 0 == publishActionId )
+                        {
+                            publishActionId = m_currentPublishActionId; 
+                            ++m_currentPublishActionId;
+                            publishActionIds[ n ] = publishActionId;
+                        }
+                    }
+                    else
                     {
                         publishActionId = m_currentPublishActionId; 
                         ++m_currentPublishActionId;
-                        publishActionIds[ n ] = publishActionId;
+                        publishActionIds.push_back( publishActionId );
                     }
+
+                    CORE::UInt32 sqsSingleMsgByteSize = 0;
+                    Aws::SQS::Model::SendMessageBatchRequestEntry sqsMsg;                        
+                    if ( TranslateToSqsBatchMsg( sqsMsg, msg, publishActionId, sqsSingleMsgByteSize ) )
+                    {
+                        if ( ( sqsMsgByteSize + sqsSingleMsgByteSize <= m_sqsMaximumMessageSize ) &&  // max batch message size is still just 256K same as using non-batch so this is mostly usefuly for small messages
+                             ( sm_req.GetEntries().size() < 10 )                                   )  // max nr of entries per the AWS API is 10 per batch operation
+                        {
+                            sm_req.AddEntries( sqsMsg );
+                            sqsMsgByteSize += sqsSingleMsgByteSize;
+                        }
+                        else
+                        {
+                            if ( !sm_req.GetEntries().empty() )
+                            {
+                                Aws::SQS::Model::SendMessageBatchOutcome sm_out = m_client->GetSqsClient().SendMessageBatch( sm_req );
+                                if ( sm_out.IsSuccess() )
+                                {
+                                    GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "AwsSqsPubSubClientTopic:Publish: Success performing batch operation for messages to \"" + CORE::ToString( m_queueUrl ) + 
+                                        "\" with " + CORE::ToString( sm_out.GetResult().GetFailed().size() ) + " entries failed out of " + CORE::ToString( sm_req.GetEntries().size() ) );
+
+                                    const Aws::Vector< Aws::SQS::Model::BatchResultErrorEntry >& failedEntries = sm_out.GetResult().GetFailed();
+                                    Aws::Vector< Aws::SQS::Model::BatchResultErrorEntry >::const_iterator b = failedEntries.begin();
+                                    while ( b != failedEntries.end() )
+                                    {
+                                        const Aws::SQS::Model::BatchResultErrorEntry& failureEntry = (*b);
+                                        CORE::UInt64 publishActionIdOfFailedEntry = CORE::StringToUInt64( failureEntry.GetId(), GUCEF_UINT64MAX );
+                                        if ( publishActionIdOfFailedEntry == GUCEF_UINT64MAX )
+                                        {
+                                            GUCEF_WARNING_LOG( CORE::LOGLEVEL_NORMAL, "AwsSqsPubSubClientTopic:Publish: Likely issue interpreting the 'Id' of a failed batch entry error result: " + CORE::ToString( failureEntry.GetId() ) );
+                                        }
+                                        m_publishFailureActionIds.push_back( publishActionIdOfFailedEntry );
+                                        ++b;
+                                    }
+
+                                    const Aws::Vector<Aws::SQS::Model::SendMessageBatchResultEntry>& successEntries = sm_out.GetResult().GetSuccessful();
+                                    Aws::Vector< Aws::SQS::Model::SendMessageBatchResultEntry >::const_iterator b2 = successEntries.begin();
+                                    while ( b2 != successEntries.end() )
+                                    {
+                                        const Aws::SQS::Model::SendMessageBatchResultEntry& successEntry = (*b2);
+                                        CORE::UInt64 publishActionIdOfSuccessEntry = CORE::StringToUInt64( successEntry.GetId(), GUCEF_UINT64MAX );
+                                        if ( publishActionIdOfSuccessEntry == GUCEF_UINT64MAX )
+                                        {
+                                            GUCEF_WARNING_LOG( CORE::LOGLEVEL_NORMAL, "AwsSqsPubSubClientTopic:Publish: Likely issue interpreting the 'Id' of a batch entry success result: " + CORE::ToString( successEntry.GetId() ) );
+                                        }
+                                        m_publishSuccessActionIds.push_back( publishActionIdOfSuccessEntry );
+                                        ++b2;
+                                    }
+                                }
+                                else
+                                {
+                                    totalSuccess = false;
+                                    GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "AwsSqsPubSubClientTopic:Publish: Error sending batch message to \"" + m_queueUrl + "\". Error Msg: " + sm_out.GetError().GetMessage() );
+
+                                    if ( notify && !msgs.empty() )
+                                        for ( size_t i=batchStartN; i<n; ++i )    
+                                            m_publishFailureActionIds.push_back( publishActionIds[ preExistingActionIds + i ] );
+                                }   
+                            }
+                            
+                            // we need to start a new batch message to stay under the size limit
+                            publishActionIds.pop_back();
+                            break;
+                        }
+                    }
+                    else
+                    {
+                        m_publishFailureActionIds.push_back( publishActionIds.back() );
+                    }
+
+                    ++i; 
+                    ++n;
                 }
-                else
-                {
-                    publishActionId = m_currentPublishActionId; 
-                    ++m_currentPublishActionId;
-                    publishActionIds.push_back( publishActionId );
-                }
-
-                const PUBSUB::CIPubSubMsg* msg = (*i);            
-                CORE::UInt32 msgByteSize = 0;
-                Aws::SQS::Model::SendMessageBatchRequestEntry sqsMsg;                        
-                if ( TranslateToSqsMsg< Aws::SQS::Model::SendMessageBatchRequestEntry >( sqsMsg, msg, msgByteSize ) )
-                {
-                    sm_req.AddEntries( sqsMsg );
-                }
-                ++i; ++n;
-            }
-
-            if ( msgs.size() != sm_req.GetEntries().size() )
-            {
-                GUCEF_WARNING_LOG( CORE::LOGLEVEL_NORMAL, "AwsSqsPubSubClientTopic:Publish: Unable accept " + CORE::ToString( msgs.size() - sm_req.GetEntries().size() ) + " messages out of " + CORE::ToString( msgs.size() ) );
-            }
-
-            if ( !sm_req.GetEntries().empty() )
-            {
-                Aws::SQS::Model::SendMessageBatchOutcome sm_out = m_client->GetSqsClient().SendMessageBatch( sm_req );
-                if ( sm_out.IsSuccess() )
-                {
-                    GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "AwsSqsPubSubClientTopic:Publish: Success sending batch message to \"" + m_queueUrl + "\"" );
-
-                    if ( notify && !msgs.empty() )
-                        for ( size_t i=0; i<msgs.size(); ++i )    
-                            m_publishSuccessActionIds.push_back( publishActionIds[ preExistingActionIds + i ] );
-                }
-                else
-                {
-                    totalSuccess = false;
-                    GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "AwsSqsPubSubClientTopic:Publish: Error sending batch message to \"" + m_queueUrl + "\". Error Msg: " + sm_out.GetError().GetMessage() );
-
-                    if ( notify && !msgs.empty() )
-                        for ( size_t i=0; i<msgs.size(); ++i )    
-                            m_publishFailureActionIds.push_back( publishActionIds[ preExistingActionIds + i ] );
-                }   
             }
         }
         else

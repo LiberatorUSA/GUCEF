@@ -2479,8 +2479,7 @@ CKafkaPubSubClientTopic::LinkReceivedMsg( RdKafka::Message& message, CORE::UInt3
     // Now that we have prepared our wrapped message let's link it
     // as a reference in the list of received messages we send out
     TPubSubMsgsRefVector& msgRefs = m_pubsubMsgsRefs;
-    msgRefs.push_back( CPubSubClientTopic::TPubSubMsgRef() );
-    msgRefs.back().LinkTo( &msgWrap );
+    msgRefs.push_back( &msgWrap );
 }
 
 /*-------------------------------------------------------------------------*/
