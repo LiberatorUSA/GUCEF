@@ -39,6 +39,9 @@
 
 #include "pubsubpluginKAFKA.h"
 
+#include "rdkafka.h"
+#include "rdkafkacpp.h"
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //
@@ -64,6 +67,7 @@ typedef CORE::CTFactoryWithParam< PUBSUB::CPubSubClient, CKafkaPubSubClient, PUB
 //-------------------------------------------------------------------------*/
 
 TKafkaPubSubClientFactory g_kafkaClusterPubSubClientFactory;
+RdKafka::Producer* g_dummyProducerToInitLibrary = GUCEF_NULL;
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -74,9 +78,18 @@ TKafkaPubSubClientFactory g_kafkaClusterPubSubClientFactory;
 CORE::Int32 GUCEF_PLUGIN_CALLSPEC_PREFIX
 GUCEFPlugin_Load( CORE::UInt32 argc, const char** argv ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
 {GUCEF_TRACE;
-
+    
     GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "Load called on PUBSUB plugin KAFKA" );
     GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "Using librdkafka " + RdKafka::version_str() );
+
+    // RdKafka does not expose the global init function
+    // Without knowing if the factory was used to create an instance we also dont know if we can safely call the shutdown function
+    // as such we create a dummy instance to force an init of the library indirectly
+    if ( GUCEF_NULL == g_dummyProducerToInitLibrary )
+    {
+        std::string errorStr;
+        g_dummyProducerToInitLibrary = RdKafka::Producer::create( GUCEF_NULL, errorStr );
+    }
 
     PUBSUB::CPubSubGlobal::Instance()->GetPubSubClientFactory().RegisterConcreteFactory( CKafkaPubSubClient::TypeName, &g_kafkaClusterPubSubClientFactory );
     
@@ -94,8 +107,17 @@ GUCEFPlugin_Unload( void ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
 
     PUBSUB::CPubSubGlobal::Instance()->GetPubSubClientFactory().UnregisterConcreteFactory( CKafkaPubSubClient::TypeName );
 
-    RdKafka::wait_destroyed( 5000 );
+    // RdKafka does not expose the global init function
+    // Without knowing if the factory was used to create an instance we also dont know if we can safely call the shutdown function
+    // as such we create a dummy instance to force an init of the library indirectly
+    if ( GUCEF_NULL != g_dummyProducerToInitLibrary )
+    {
+        delete g_dummyProducerToInitLibrary;
+        g_dummyProducerToInitLibrary = GUCEF_NULL;
 
+        RdKafka::wait_destroyed( 5000 );
+    }
+    
     GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "Unload finished for PUBSUB plugin KAFKA" );
 }
 

@@ -194,18 +194,21 @@ CTaskManagerServerResource::RegisterEventHandlers( void )
 
     TEventCallback callback2( this, &CTaskManagerServerResource::OnThreadPoolDestruction );
     SubscribeTo( &taskManager, CORE::CTaskManager::ThreadPoolDestructionEvent, callback2 ); 
+
+    TEventCallback callback3( this, &CTaskManagerServerResource::OnThreadPoolUnregistered );
+    SubscribeTo( &taskManager, CORE::CTaskManager::ThreadPoolUnregisteredEvent, callback3 );     
     
-    TEventCallback callback3( this, &CTaskManagerServerResource::OnGlobalTaskConsumerFactoryRegistered );
-    SubscribeTo( &taskManager, CORE::CTaskManager::GlobalTaskConsumerFactoryRegisteredEvent, callback3 );
+    TEventCallback callback4( this, &CTaskManagerServerResource::OnGlobalTaskConsumerFactoryRegistered );
+    SubscribeTo( &taskManager, CORE::CTaskManager::GlobalTaskConsumerFactoryRegisteredEvent, callback4 );
 
-    TEventCallback callback4( this, &CTaskManagerServerResource::OnGlobalTaskConsumerFactoryUnregistered );
-    SubscribeTo( &taskManager, CORE::CTaskManager::GlobalTaskConsumerFactoryUnregisteredEvent, callback4 );
+    TEventCallback callback5( this, &CTaskManagerServerResource::OnGlobalTaskConsumerFactoryUnregistered );
+    SubscribeTo( &taskManager, CORE::CTaskManager::GlobalTaskConsumerFactoryUnregisteredEvent, callback5 );
 
-    TEventCallback callback5( this, &CTaskManagerServerResource::OnGlobalTaskDataFactoryRegistered );
-    SubscribeTo( &taskManager, CORE::CTaskManager::GlobalTaskDataFactoryRegisteredEvent, callback5 );
+    TEventCallback callback6( this, &CTaskManagerServerResource::OnGlobalTaskDataFactoryRegistered );
+    SubscribeTo( &taskManager, CORE::CTaskManager::GlobalTaskDataFactoryRegisteredEvent, callback6 );
 
-    TEventCallback callback6( this, &CTaskManagerServerResource::OnGlobalTaskDataFactoryUnregistered );
-    SubscribeTo( &taskManager, CORE::CTaskManager::GlobalTaskDataFactoryUnregisteredEvent, callback6 );
+    TEventCallback callback7( this, &CTaskManagerServerResource::OnGlobalTaskDataFactoryUnregistered );
+    SubscribeTo( &taskManager, CORE::CTaskManager::GlobalTaskDataFactoryUnregisteredEvent, callback7 );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -376,7 +379,30 @@ CTaskManagerServerResource::OnThreadPoolDestruction( CORE::CNotifier* notifier  
 
         if ( GUCEF_NULL != m_router )
         {
-            const CORE::CString& poolName = static_cast< CORE::CTaskManager::ThreadPoolCreatedEventData* >( eventData )->GetData();
+            const CORE::CString& poolName = static_cast< CORE::CTaskManager::ThreadPoolDestructionEventData* >( eventData )->GetData();
+                    
+            m_router->RemoveResourceMapping( m_rootPath + "threadpools/" + poolName );
+            m_threadPoolMetaDataMap.erase( poolName );
+            m_threadPoolInfoMap.erase( poolName );
+        }
+    }
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CTaskManagerServerResource::OnThreadPoolUnregistered( CORE::CNotifier* notifier    ,
+                                                      const CORE::CEvent& eventId  ,
+                                                      CORE::CICloneable* eventData )
+{GUCEF_TRACE;
+
+    if ( GUCEF_NULL != m_router )
+    {
+        MT::CScopeWriterLock writeLock( m_rwLock, GUCEF_MT_LONG_LOCK_TIMEOUT );
+
+        if ( GUCEF_NULL != m_router )
+        {
+            const CORE::CString& poolName = static_cast< CORE::CTaskManager::ThreadPoolUnregisteredEventData* >( eventData )->GetData();
                     
             m_router->RemoveResourceMapping( m_rootPath + "threadpools/" + poolName );
             m_threadPoolMetaDataMap.erase( poolName );

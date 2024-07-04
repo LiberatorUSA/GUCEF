@@ -97,6 +97,7 @@ namespace CORE {
 
 const CEvent CTaskManager::ThreadPoolCreatedEvent = "GUCEF::CORE::CTaskManager::ThreadPoolCreatedEvent";
 const CEvent CTaskManager::ThreadPoolDestructionEvent = "GUCEF::CORE::CTaskManager::ThreadPoolDestructionEvent";
+const CEvent CTaskManager::ThreadPoolUnregisteredEvent = "GUCEF::CORE::CTaskManager::ThreadPoolUnregisteredEvent";
 const CEvent CTaskManager::GlobalTaskConsumerFactoryRegisteredEvent = "GUCEF::CORE::CTaskManager::GlobalTaskConsumerFactoryRegisteredEvent";
 const CEvent CTaskManager::GlobalTaskConsumerFactoryUnregisteredEvent = "GUCEF::CORE::CTaskManager::GlobalTaskConsumerFactoryUnregisteredEvent";
 const CEvent CTaskManager::GlobalTaskDataFactoryRegisteredEvent = "GUCEF::CORE::CTaskManager::GlobalTaskDataFactoryRegisteredEvent";
@@ -117,6 +118,7 @@ CTaskManager::RegisterEvents( void )
 
     ThreadPoolCreatedEvent.Initialize();
     ThreadPoolDestructionEvent.Initialize();
+    ThreadPoolUnregisteredEvent.Initialize();
     GlobalTaskConsumerFactoryRegisteredEvent.Initialize();
     GlobalTaskConsumerFactoryUnregisteredEvent.Initialize();
     GlobalTaskDataFactoryRegisteredEvent.Initialize();
@@ -138,7 +140,9 @@ CTaskManager::CTaskManager( void )
     ThreadPoolPtr defaultPool = ( GUCEF_NEW CThreadPool( CORE::CCoreGlobal::Instance()->GetPulseGenerator(), DefaultThreadPoolName ) )->CreateSharedPtr();
     m_threadPools[ DefaultThreadPoolName ] = defaultPool;
 
-    SubscribeTo( defaultPool.GetPointerAlways() );    
+    RegisterEventHandlers();
+    RegisterThreadPoolEventHandlers( defaultPool.GetPointerAlways() );    
+
     ThreadPoolCreatedEventData eData( DefaultThreadPoolName );
     NotifyObserversFromThread( ThreadPoolCreatedEvent, &eData );
 }
@@ -166,21 +170,125 @@ CTaskManager::GetClassTypeName( void ) const
 /*-------------------------------------------------------------------------*/
 
 void
+CTaskManager::RegisterEventHandlers( void )
+{GUCEF_TRACE;
+
+    CGUCEFApplication& app = CORE::CCoreGlobal::Instance()->GetApplication();
+
+    TEventCallback callback( this, &CTaskManager::OnAppShutdown );
+    SubscribeTo( &app, CGUCEFApplication::AppShutdownEvent, callback );
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CTaskManager::OnAppShutdown( CORE::CNotifier* notifier    ,
+                             const CORE::CEvent& eventId  ,
+                             CORE::CICloneable* eventData )
+{GUCEF_TRACE;
+
+    Shutdown();
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CTaskManager::Shutdown( void )
+{GUCEF_TRACE;
+
+    RequestAllThreadsToStop( true, false );
+    UnregisterAllTaskDataFactories();
+    UnregisterAllTaskConsumerFactories();
+    UnregisterAllThreadPools();
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CTaskManager::RegisterThreadPoolEventHandlers( CThreadPool* threadPool )
+{GUCEF_TRACE;
+
+    TEventCallback callback( this, &CTaskManager::OnThreadPoolThreadStarted );
+    SubscribeTo( threadPool, CThreadPool::ThreadStartedEvent, callback );
+
+    TEventCallback callback2( this, &CTaskManager::OnThreadPoolThreadKilled );
+    SubscribeTo( threadPool, CThreadPool::ThreadKilledEvent, callback2 ); 
+
+    TEventCallback callback3( this, &CTaskManager::OnThreadPoolThreadFinished );
+    SubscribeTo( threadPool, CThreadPool::ThreadFinishedEvent, callback3 );    
+
+    TEventCallback callback4( this, &CTaskManager::OnThreadPoolDestruction );
+    SubscribeTo( threadPool, CNotifier::DestructionEvent, callback4 );
+
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CTaskManager::OnThreadPoolThreadStarted( CNotifier* notifier    ,
+                                         const CEvent& eventId  ,
+                                         CICloneable* eventData )
+{GUCEF_TRACE;
+
+    MT::CObjectScopeLock lock( this, GUCEF_MT_LONG_LOCK_TIMEOUT );
+    ++m_activeGlobalNrOfThreads;
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CTaskManager::OnThreadPoolThreadKilled( CNotifier* notifier    ,
+                                        const CEvent& eventId  ,
+                                        CICloneable* eventData )
+{GUCEF_TRACE;
+
+    MT::CObjectScopeLock lock( this, GUCEF_MT_LONG_LOCK_TIMEOUT );
+    --m_activeGlobalNrOfThreads;
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CTaskManager::OnThreadPoolThreadFinished( CNotifier* notifier    ,
+                                          const CEvent& eventId  ,
+                                          CICloneable* eventData )
+{GUCEF_TRACE;
+
+    MT::CObjectScopeLock lock( this, GUCEF_MT_LONG_LOCK_TIMEOUT );
+    --m_activeGlobalNrOfThreads;
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CTaskManager::OnThreadPoolDestruction( CNotifier* notifier    ,
+                                       const CEvent& eventId  ,
+                                       CICloneable* eventData )
+{GUCEF_TRACE;
+
+    if ( CThreadPool::ClassTypeName == notifier->GetClassTypeName() )
+    {
+        CThreadPool* threadPool = static_cast< CThreadPool* >( notifier );
+        CString threadPoolName = threadPool->GetThreadPoolName();
+
+        // The threadpool should already be unregistered at this point but just in case lets make double sure
+        // no-op if it was already not registered
+        UnregisterThreadPool( threadPoolName );
+
+        // Now what we are mainly after: Notify observers of the threadpool's demise by name
+        ThreadPoolDestructionEventData eventData( threadPoolName );
+        NotifyObserversFromThread( ThreadPoolDestructionEvent, &eventData );
+    }
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
 CTaskManager::OnPumpedNotify( CNotifier* notifier    ,
                               const CEvent& eventId  ,
                               CICloneable* eventData )
 {GUCEF_TRACE;
 
-    if ( CThreadPool::ThreadStartedEvent == eventId )
-    {
-        ++m_activeGlobalNrOfThreads;
-    }
-    else
-    if ( CThreadPool::ThreadKilledEvent == eventId   ||
-         CThreadPool::ThreadFinishedEvent == eventId  )
-    {
-        --m_activeGlobalNrOfThreads;
-    }
 }
 
 /*-------------------------------------------------------------------------*/
@@ -219,10 +327,10 @@ CTaskManager::GetOrCreateThreadPool( const CString& threadPoolName            ,
     {
         ThreadPoolPtr newPool = ( GUCEF_NEW CThreadPool( threadPoolPulseContext, threadPoolName ) )->CreateSharedPtr();        
         m_threadPools[ threadPoolName ] = newPool;
-
         lock.EarlyUnlock();
 
-        SubscribeTo( newPool.GetPointerAlways() );
+        RegisterThreadPoolEventHandlers( newPool.GetPointerAlways() );
+        
         ThreadPoolCreatedEventData eData( threadPoolName );
         NotifyObserversFromThread( ThreadPoolCreatedEvent, &eData ); 
         return newPool; 
@@ -254,6 +362,11 @@ CTaskManager::UnregisterThreadPool( const CString& threadPoolName )
     {
         m_threadPools.erase( i );
         GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "TaskManager:UnregisterThreadPool: Thread pool with name \"" + threadPoolName + "\" has been unregistered" );
+
+        lock.EarlyUnlock();
+        
+        ThreadPoolUnregisteredEventData eventData( threadPoolName );
+        NotifyObserversFromThread( ThreadPoolUnregisteredEvent, &eventData );
     }
     
     return true;
@@ -270,6 +383,26 @@ CTaskManager::UnregisterThreadPool( ThreadPoolPtr threadPool )
     
     return UnregisterThreadPool( threadPool->GetThreadPoolName() );
 }
+
+/*-------------------------------------------------------------------------*/
+
+void 
+CTaskManager::UnregisterAllThreadPools( void )
+{GUCEF_TRACE;
+
+    // We dont bulk unregister because we want to provide proper notifications per entry
+    
+    CString::StringSet poolNames;
+    GetAllThreadPoolNames( poolNames );
+
+    CString::StringSet::iterator i = poolNames.begin();
+    while ( i != poolNames.end() )
+    {
+        UnregisterThreadPool( (*i) );
+        ++i;
+    }
+}
+
 /*-------------------------------------------------------------------------*/
 
 TTaskStatus 
@@ -559,6 +692,25 @@ CTaskManager::UnregisterTaskConsumerFactory( const CString& taskType )
 
 /*-------------------------------------------------------------------------*/
 
+void 
+CTaskManager::UnregisterAllTaskConsumerFactories( void )
+{GUCEF_TRACE;
+
+    // We dont bulk unregister because we want to provide proper notifications
+
+    CString::StringSet taskTypes;
+    m_consumerFactory.ObtainKeySet( taskTypes );
+
+    CString::StringSet::iterator i = taskTypes.begin();
+    while ( i != taskTypes.end() )
+    {
+        UnregisterTaskConsumerFactory( (*i) );
+        ++i;
+    }
+}
+
+/*-------------------------------------------------------------------------*/
+
 void
 CTaskManager::RegisterTaskDataFactory( const CString& taskType   ,
                                        TTaskDataFactory* factory )
@@ -580,6 +732,25 @@ CTaskManager::UnregisterTaskDataFactory( const CString& taskType )
     GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "TaskManager: global task data factory unregistered of type " + taskType );
     GlobalTaskDataFactoryUnregisteredEventData eData( taskType );
     NotifyObserversFromThread( GlobalTaskDataFactoryUnregisteredEvent, &eData );
+}
+
+/*-------------------------------------------------------------------------*/
+
+void 
+CTaskManager::UnregisterAllTaskDataFactories( void )
+{GUCEF_TRACE;
+
+    // We dont bulk unregister because we want to provide proper notifications
+
+    CString::StringSet taskTypes;
+    m_taskDataFactory.ObtainKeySet( taskTypes );
+
+    CString::StringSet::iterator i = taskTypes.begin();
+    while ( i != taskTypes.end() )
+    {
+        UnregisterTaskDataFactory( (*i) );
+        ++i;
+    }
 }
 
 /*-------------------------------------------------------------------------*/

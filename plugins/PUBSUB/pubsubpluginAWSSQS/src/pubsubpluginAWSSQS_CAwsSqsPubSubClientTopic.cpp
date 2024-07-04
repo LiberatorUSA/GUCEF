@@ -832,16 +832,31 @@ CAwsSqsPubSubClientTopic::Publish( TPublishActionIdVector& publishActionIds     
                                     if ( notify && !msgs.empty() )
                                         for ( size_t i=batchStartN; i<n; ++i )    
                                             m_publishFailureActionIds.push_back( publishActionIds[ preExistingActionIds + i ] );
-                                }   
+                                }                                
                             }
-                            
-                            // we need to start a new batch message to stay under the size limit
+                            else
+                            {
+                                // We could not even add a single message to the batch message
+                                GUCEF_WARNING_LOG( CORE::LOGLEVEL_NORMAL, "AwsSqsPubSubClientTopic:Publish: Failed to send message using SQS batch API. publishActionId=" + CORE::ToString( publishActionId ) );
+
+                                // the non-batch API has slightly less message byte overhead so we will try again using that API instead.
+                                // the regular publish will add the action ids
+                                Publish( publishActionId, *msg, false );
+                                break;
+                            }
+
+                            // we need to start a new SQS batch message to stay within its constraints  
+                            sqsMsgByteSize = 0;                            
+
+                            // Undo the action id change since we will go for another pass
+                            --m_currentPublishActionId;
                             publishActionIds.pop_back();
                             break;
                         }
                     }
                     else
                     {
+                        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "AwsSqsPubSubClientTopic:Publish: Failed to translate message something SQS compatible. publishActionId=" + CORE::ToString( publishActionIds.back() ) );
                         m_publishFailureActionIds.push_back( publishActionIds.back() );
                     }
 
@@ -878,14 +893,6 @@ CAwsSqsPubSubClientTopic::Publish( TPublishActionIdVector& publishActionIds     
                 }
 
                 bool success = Publish( publishActionId, *(*i), false );
-
-                if ( notify )
-                {
-                    if ( success )
-                        m_publishSuccessActionIds.push_back( publishActionId );
-                    else
-                        m_publishFailureActionIds.push_back( publishActionId );
-                }
 
                 totalSuccess = success && totalSuccess;                
                 ++i; ++n;

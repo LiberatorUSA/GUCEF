@@ -64,6 +64,7 @@ class GUCEF_WEB_PUBLIC_CPP CWebGlobal
     CGlobalHttpCodecLinks& GetGlobalHttpCodecLinks( void ) const;
 
     private:
+    friend class CModule;
 
     static void Deinstance( void );
 

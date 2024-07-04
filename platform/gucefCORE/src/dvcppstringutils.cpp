@@ -375,14 +375,15 @@ Base64Encode( const void* byteBuffer, UInt32 bufferSize )
 
     CString result;
     UInt32 base64StrLength = ( ( bufferSize + 2 ) / 3 ) * 4;
-    char* str = result.Reserve( base64StrLength+1, (Int32) base64StrLength );
+    char* base64StringBuffer = result.Reserve( base64StrLength+1, (Int32) base64StrLength );
+    char* str = base64StringBuffer; 
 
     // Base64 encoding can really add up wrt size requirements
     // We need to sanity check that we were able to allocate enough memory
     if ( GUCEF_NULL == str || base64StrLength+1 != result.ByteSize() )
         return CString::Empty;
 
-    memset( str, '=', base64StrLength );    
+    memset( base64StringBuffer, '=', base64StrLength );    
     const char* charByteBuffer = (const char*) byteBuffer;
 
     int i = 0;
@@ -433,7 +434,7 @@ Base64Encode( const void* byteBuffer, UInt32 bufferSize )
 
     }
 
-    str[ base64StrLength ] = '\0';
+    base64StringBuffer[ base64StrLength ] = '\0';
     result.DetermineLength();
     
     return result;

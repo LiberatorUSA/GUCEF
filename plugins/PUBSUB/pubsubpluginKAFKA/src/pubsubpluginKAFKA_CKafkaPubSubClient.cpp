@@ -438,7 +438,7 @@ CKafkaPubSubClient::AutoCreateMultiTopicAccess( const TTopicConfigPtrToStringSet
 
     if ( newTopicAccessCount > 0 )
     {
-        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "KafkaPubSubClient(" + CORE::PointerToString( this ) + "):AutoCreateMultiTopicAccess: Auto created " +
+        GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "KafkaPubSubClient(" + CORE::PointerToString( this ) + "):AutoCreateMultiTopicAccess: Auto created " +
             CORE::ToString( newTopicAccessCount ) + " topics based on template configs" );
 
         TopicsAccessAutoCreatedEventData eData( topicAccess );
@@ -806,7 +806,7 @@ CKafkaPubSubClient::Disconnect( void )
     
     if ( IsConnected() )
     {
-        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "KafkaPubSubClient(" + CORE::PointerToString( this ) + "):Disconnect: Beginning topic disconnect" );
+        GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "KafkaPubSubClient(" + CORE::PointerToString( this ) + "):Disconnect: Beginning topic disconnect" );
         
         bool totalSuccess = true;
         TTopicMap::iterator i = m_topicMap.begin();
@@ -816,7 +816,7 @@ CKafkaPubSubClient::Disconnect( void )
             ++i;
         }
 
-        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "KafkaPubSubClient(" + CORE::PointerToString( this ) + "):Disconnect: Finished topic disconnect" );
+        GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "KafkaPubSubClient(" + CORE::PointerToString( this ) + "):Disconnect: Finished topic disconnect" );
 
         return totalSuccess;
     }
@@ -844,7 +844,7 @@ CKafkaPubSubClient::Connect( bool reset )
     
     MT::CScopeMutex lock( m_lock );
 
-    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "KafkaPubSubClient(" + CORE::PointerToString( this ) + "):Connect: Beginning topic connect" );
+    GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "KafkaPubSubClient(" + CORE::PointerToString( this ) + "):Connect: Beginning topic connect" );
         
     bool totalSuccess = true;
     TTopicMap::iterator i = m_topicMap.begin();

@@ -90,6 +90,8 @@ namespace CORE {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+const CString CThreadPool::ClassTypeName = "GUCEF::CORE::CThreadPool";
+
 const CEvent CThreadPool::ThreadKilledEvent = "GUCEF::CORE::CThreadPool::ThreadKilledEvent";
 const CEvent CThreadPool::ThreadStartedEvent = "GUCEF::CORE::CThreadPool::ThreadStartedEvent";
 const CEvent CThreadPool::ThreadPausedEvent = "GUCEF::CORE::CThreadPool::ThreadPausedEvent";
@@ -258,8 +260,7 @@ const CString&
 CThreadPool::GetClassTypeName( void ) const
 {GUCEF_TRACE;
 
-    static const CString typeName = "GUCEF::CORE::CThreadPool";
-    return typeName;
+    return ClassTypeName;
 }
 
 /*-------------------------------------------------------------------------*/

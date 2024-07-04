@@ -83,6 +83,7 @@ class GUCEF_CORE_PUBLIC_CPP CTaskManager : public CTSGNotifier
 
     static const CEvent ThreadPoolCreatedEvent;
     static const CEvent ThreadPoolDestructionEvent;
+    static const CEvent ThreadPoolUnregisteredEvent;
     static const CEvent GlobalTaskConsumerFactoryRegisteredEvent;
     static const CEvent GlobalTaskConsumerFactoryUnregisteredEvent;
     static const CEvent GlobalTaskDataFactoryRegisteredEvent;
@@ -90,6 +91,7 @@ class GUCEF_CORE_PUBLIC_CPP CTaskManager : public CTSGNotifier
 
     typedef TCloneableString    ThreadPoolCreatedEventData;                           /**< name of the thread pool that is created */
     typedef TCloneableString    ThreadPoolDestructionEventData;                       /**< name of the thread pool that is being destroyed */
+    typedef TCloneableString    ThreadPoolUnregisteredEventData;                      /**< name of the thread pool that is unregistered */
     typedef TCloneableString    GlobalTaskConsumerFactoryRegisteredEventData;         /**< name of the task consumer factory which is newly registered */
     typedef TCloneableString    GlobalTaskConsumerFactoryUnregisteredEventData;       /**< name of the task consumer factory which is no longer registered */
     typedef TCloneableString    GlobalTaskDataFactoryRegisteredEventData;             /**< name of the task data factory which is newly registered */
@@ -120,6 +122,8 @@ class GUCEF_CORE_PUBLIC_CPP CTaskManager : public CTSGNotifier
     bool UnregisterThreadPool( const CString& threadPoolName );
 
     bool UnregisterThreadPool( ThreadPoolPtr threadPool );
+
+    void UnregisterAllThreadPools( void );
     
     /**
      *  Queues a task for execution as soon as a thread is available
@@ -188,6 +192,8 @@ class GUCEF_CORE_PUBLIC_CPP CTaskManager : public CTSGNotifier
 
     void UnregisterTaskConsumerFactory( const CString& taskType );
 
+    void UnregisterAllTaskConsumerFactories( void );
+
     void GetAllRegisteredTaskConsumerFactoryTypes( CORE::CString::StringSet& taskTypes );
 
     void GetRegisteredTaskConsumerFactoryTypes( const CString& threadPoolName       ,
@@ -197,6 +203,8 @@ class GUCEF_CORE_PUBLIC_CPP CTaskManager : public CTSGNotifier
                                   TTaskDataFactory* factory );
 
     void UnregisterTaskDataFactory( const CString& taskType );
+
+    void UnregisterAllTaskDataFactories( void );
 
     bool IsTaskOfTaskTypeExecutable( const CString& taskType, const CString& threadPoolName = CString::Empty ) const;
     
@@ -287,12 +295,37 @@ class GUCEF_CORE_PUBLIC_CPP CTaskManager : public CTSGNotifier
                                     CDataNode& domNode                                      ,
                                     const CDataNodeSerializableSettings& serializerSettings ) const;
 
+    /**
+     *  Gracefully shuts everything down and unregisters all that was registered
+     */    
+    void Shutdown( void );
+    
     protected:
 
     virtual void OnPumpedNotify( CNotifier* notifier           ,
                                  const CEvent& eventid         ,
                                  CICloneable* eventdata = NULL ) GUCEF_VIRTUAL_OVERRIDE;
 
+    void OnThreadPoolThreadStarted( CNotifier* notifier    ,
+                                    const CEvent& eventId  ,
+                                    CICloneable* eventData );
+
+    void OnThreadPoolThreadKilled( CNotifier* notifier    ,
+                                   const CEvent& eventId  ,
+                                   CICloneable* eventData );
+
+    void OnThreadPoolThreadFinished( CNotifier* notifier    ,
+                                     const CEvent& eventId  ,
+                                     CICloneable* eventData );
+
+    void OnThreadPoolDestruction( CNotifier* notifier    ,
+                                  const CEvent& eventId  ,
+                                  CICloneable* eventData );
+
+    void OnAppShutdown( CORE::CNotifier* notifier    ,
+                        const CORE::CEvent& eventId  ,
+                        CORE::CICloneable* eventData );
+    
     private:
     friend class CTaskConsumer;
 
@@ -311,6 +344,10 @@ class GUCEF_CORE_PUBLIC_CPP CTaskManager : public CTSGNotifier
 
     void RemoveConsumer( UInt32 taskID );
 
+    void RegisterThreadPoolEventHandlers( CThreadPool* threadPool );
+
+    void RegisterEventHandlers( void );
+
     CTaskManager( const CTaskManager& src );            /**< not implemented */
     CTaskManager& operator=( const CTaskManager& src ); /**< not implemented */
 
@@ -320,6 +357,7 @@ class GUCEF_CORE_PUBLIC_CPP CTaskManager : public CTSGNotifier
     typedef CTAbstractFactory< CString, CTaskConsumer, MT::CMutex > TAbstractTaskConsumerFactory;
     typedef CTAbstractFactory< CString, CIDataNodeSerializableTaskData, MT::CMutex > TAbstractTaskDataFactory;
     typedef CTaskConsumer::TTaskIdGenerator TTaskIdGenerator;
+    typedef CTEventHandlerFunctor< CTaskManager > TEventCallback;
 
     TTaskIdGenerator m_taskIdGenerator;
     TAbstractTaskConsumerFactory m_consumerFactory;

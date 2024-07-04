@@ -145,6 +145,10 @@ class GUCEF_WEB_PUBLIC_CPP CTaskManagerServerResource : public CORE::CTSGNotifie
                                           const CORE::CEvent& eventId               ,
                                           CORE::CICloneable* eventData = GUCEF_NULL );
 
+    virtual void OnThreadPoolUnregistered( CORE::CNotifier* notifier                 ,
+                                           const CORE::CEvent& eventId               ,
+                                           CORE::CICloneable* eventData = GUCEF_NULL );
+
     virtual void OnGlobalTaskConsumerFactoryRegistered( CORE::CNotifier* notifier                 ,
                                                         const CORE::CEvent& eventId               ,
                                                         CORE::CICloneable* eventData = GUCEF_NULL );

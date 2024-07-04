@@ -23,6 +23,11 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+#ifndef GUCEF_WEB_CWEBGLOBAL_H
+#include "gucefWEB_CWebGlobal.h"
+#define GUCEF_WEB_CWEBGLOBAL_H
+#endif /* GUCEF_WEB_CWEBGLOBAL_H ? */
+
 #include "gucefWEB_CModule.h" 
 
 /*-------------------------------------------------------------------------//
@@ -43,6 +48,7 @@ namespace WEB {
 bool 
 CModule::Load( void )
 {        
+    CWebGlobal::Instance();
     return true;
 }
 
@@ -51,6 +57,7 @@ CModule::Load( void )
 bool 
 CModule::Unload( void )
 {        
+    CWebGlobal::Deinstance();
     return true;
 }
 

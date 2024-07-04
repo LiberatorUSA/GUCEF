@@ -1636,6 +1636,7 @@ PubSub2PubSub::OnAppShutdown( CORE::CNotifier* notifier    ,
 
     // Since we are shutting down the app gracefully close the C&C API now
     m_httpServer.Close();
+    m_httpRouter.RemoveAllResourceMappings();
 
     // Now get rid of all the channels we created based on the settings
     m_channels.clear();

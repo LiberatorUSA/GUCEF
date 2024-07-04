@@ -113,6 +113,8 @@ class GUCEF_CORE_PUBLIC_CPP CThreadPool : public CTSGNotifier ,
 {
     public:
 
+    static const CString ClassTypeName;
+
     static const CEvent ThreadKilledEvent;
     static const CEvent ThreadStartedEvent;
     static const CEvent ThreadPausedEvent;
