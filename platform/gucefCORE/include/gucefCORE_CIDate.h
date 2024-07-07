@@ -31,6 +31,11 @@
 #define GUCEF_CORE_MACROS_H
 #endif /* GUCEF_CORE_MACROS_H ? */
 
+#ifndef GUCEF_CORE_CSTRING_H
+#include "gucefCORE_CString.h"
+#define GUCEF_CORE_CSTRING_H
+#endif /* GUCEF_CORE_CSTRING_H ? */
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //
@@ -53,6 +58,8 @@ class GUCEF_CORE_PUBLIC_CPP CIDate
     virtual Int16 GetYear( void ) const = 0;
 
     virtual UInt8 GetMonth( void ) const = 0;
+
+    virtual CORE::CString GetMonthName( void ) const = 0;
 
     virtual UInt8 GetDay( void ) const = 0;
 };

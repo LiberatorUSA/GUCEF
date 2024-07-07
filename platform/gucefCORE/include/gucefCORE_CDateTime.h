@@ -150,6 +150,10 @@ class GUCEF_CORE_PUBLIC_CPP CDateTime : public CDate ,
 
     void Clear( void );
 
+    void AddSeconds( Int32 secondsToAdd );
+    void AddMinutes( Int32 minutesToAdd );
+    void AddHours( Int32 hoursToAdd );
+
     explicit CDateTime( const struct tm* src, bool isUtc );
 
     explicit CDateTime( const time_t src, bool isUtc );

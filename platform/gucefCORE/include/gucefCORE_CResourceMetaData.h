@@ -81,7 +81,10 @@ class GUCEF_CORE_PUBLIC_CPP CResourceMetaData
 
     CResourceMetaData( void );
     CResourceMetaData( const CResourceMetaData& src );
+
     void Clear( void );
+
+    bool GetEarliestUtcDt( CORE::CDateTime& earliest ) const;
 };
 
 /*-------------------------------------------------------------------------//

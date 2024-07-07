@@ -226,6 +226,20 @@ CDate::GetMonth( void ) const
 
 /*-------------------------------------------------------------------------*/
 
+CORE::CString
+CDate::GetMonthName( void ) const
+{GUCEF_TRACE;
+
+    static const char* monthNames[] = { "January", "February", "March", "April", "May", "June",
+                                        "July", "August", "September", "October", "November", "December" };
+    if ( m_month >= 1 && m_month <= 12 )
+        return monthNames[ m_month-1 ];
+    else
+        return "Unknown";
+}
+
+/*-------------------------------------------------------------------------*/
+
 bool 
 CDate::SetDay( UInt8 day )
 {GUCEF_TRACE;

@@ -1290,6 +1290,42 @@ CDateTime::Clear( void )
     *this = Empty;
 }
 
+/*-------------------------------------------------------------------------*/
+
+void
+CDateTime::AddSeconds( Int32 secondsToAdd )
+{GUCEF_TRACE;
+
+    UInt64 baseTimestamp = ToUnixEpochBasedTicksInMillisecs();
+    Int64 msDelta = (Int64) secondsToAdd * 1000;
+    baseTimestamp += msDelta;
+    FromUnixEpochBasedTicksInMillisecs( baseTimestamp );    
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CDateTime::AddMinutes( Int32 minutesToAdd )
+{GUCEF_TRACE;
+
+    UInt64 baseTimestamp = ToUnixEpochBasedTicksInMillisecs();
+    Int64 msDelta = (Int64) minutesToAdd * 60 * 1000;
+    baseTimestamp += msDelta;
+    FromUnixEpochBasedTicksInMillisecs( baseTimestamp );    
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CDateTime::AddHours( Int32 hoursToAdd )
+{GUCEF_TRACE;
+
+    UInt64 baseTimestamp = ToUnixEpochBasedTicksInMillisecs();
+    Int64 msDelta = (Int64) hoursToAdd * 60 * 60 * 1000;
+    baseTimestamp += msDelta;
+    FromUnixEpochBasedTicksInMillisecs( baseTimestamp );    
+}
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //

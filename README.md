@@ -128,6 +128,7 @@ If you get into trouble for whatever reason with stale/bad output files (disk is
 - pubsub2storage: Adapter service which translates more generally between messaging paradigms and storage. Will be superseded by pubsub2pubsub.
 - pubsub2pubsub: Adapter service which translates more generally between different messaging paradigms. Will supersede many of the other adapter services.
 - FilePusher: Agent service which monitors the file system for certain files and pushes them to a VFS destination for example AWS S3.
+- FileSorter: Agent service which automatically sorts files. Handy for initial sort for digital picture and video archive for example.
 - GucefLogService: Service which can accept GUCEF platform logs streamed via network connection. Aimed at situations where we cannot have/access local logs
 - ServerPortExtender: Service used to reverse inbound/outbound connection initiation for an application server port thus bypassing egress only restrictions
 - UdpTransformer: Service which takes ingress UDP and performs a simplistic transform followed by a retransmission

@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="ISO-8859-1" ?>
+<ModuleInfoEntry>
+	<Module Name="FileSorter" Platform="All" Type="Executable" Tags="services" >
+		<Dependencies>
+			<Dependency Name="gucefWEB" />
+			<Dependency Name="gucefVFS" />
+			<Dependency Name="gucefCOM" />
+			<Dependency Name="gucefCOMCORE" />
+			<Dependency Name="gucefCORE" />
+			<Dependency Name="gucefMT" />
+		</Dependencies>
+		<Linker>
+			<Dependency Name="gucefWEB" />
+			<Dependency Name="gucefVFS" />
+			<Dependency Name="gucefCOM" />
+			<Dependency Name="gucefCOMCORE" />
+			<Dependency Name="gucefCORE" />
+			<Dependency Name="gucefMT" />
+		</Linker>
+		<RuntimeDependencies>
+			<RuntimeDependency Name="vfspluginAWSS3" />
+			<RuntimeDependency Name="vfspluginZIP" />
+			<RuntimeDependency Name="dstorepluginPARSIFALXML" />
+			<RuntimeDependency Name="dstorepluginJSONPARSER" />
+			<RuntimeDependency Name="dstorepluginYAML" />
+			<RuntimeDependency Name="codecspluginZLIB" />
+			<RuntimeDependency Name="codecspluginSTBRUMMEHASH" />
+		</RuntimeDependencies>			
+	</Module>
+</ModuleInfoEntry>

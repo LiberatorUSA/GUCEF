@@ -74,6 +74,8 @@ class GUCEF_CORE_PUBLIC_CPP CDate : public CIDate
     
     virtual UInt8 GetMonth( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
+    virtual CORE::CString GetMonthName( void ) const GUCEF_VIRTUAL_OVERRIDE;
+
     bool SetDay( UInt8 day );
     
     virtual UInt8 GetDay( void ) const GUCEF_VIRTUAL_OVERRIDE;

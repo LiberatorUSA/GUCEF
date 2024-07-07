@@ -268,7 +268,6 @@ CFileSystemArchive::GetListFromRoot( const CORE::CString& actualFsDir  ,
 
     CORE::CString vfsPath = CORE::CombinePath( vfsMountLocation, vfsArchiveLocation );
 
-    CORE::CString filename;
     struct CORE::SDI_Data* did = CORE::DI_First_Dir_Entry( actualFsDir.C_String() );
     if ( did != NULL )
     {
@@ -282,7 +281,7 @@ CFileSystemArchive::GetListFromRoot( const CORE::CString& actualFsDir  ,
             {
                 if ( addFiles )
                 {
-                    filename = CORE::DI_Name( did );
+                    CORE::CString filename = CORE::DI_Name( did );
                     if ( filename != '.' && filename != ".." )
                     {
                         if ( CVFS::FilterValidation( filename ,
@@ -318,9 +317,8 @@ CFileSystemArchive::GetListFromRoot( const CORE::CString& actualFsDir  ,
 
                     if ( recursive )
                     {
-
                         CORE::CString fsSubdir = CORE::CombinePath( actualFsDir, dirName );
-                        CORE::CString vfsSubdir = CORE::CombinePath( vfsArchiveLocation, filename );
+                        CORE::CString vfsSubdir = CORE::CombinePath( vfsArchiveLocation, dirName );
 
                         // Recursively process the sub-dir
                         GetListFromRoot( fsSubdir              ,

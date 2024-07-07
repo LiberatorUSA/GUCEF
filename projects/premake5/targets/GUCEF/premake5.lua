@@ -187,6 +187,7 @@ filter "ALL"
   include( "tools/FileDiff" )
   include( "tools/FilePusher" )
   include( "tools/FileReplacer" )
+  include( "tools/FileSorter" )
   include( "tools/GucefArchiver" )
   include( "tools/GucefLogServiceApp" )
   include( "tools/GucefLogServiceClientPlugin" )

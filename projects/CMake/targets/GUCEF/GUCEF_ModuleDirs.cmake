@@ -174,6 +174,7 @@ add_subdirectory( ${CMAKE_CURRENT_SOURCE_DIR}/../../../../tools/DuplicateFileFin
 add_subdirectory( ${CMAKE_CURRENT_SOURCE_DIR}/../../../../tools/FileDiff ${CMAKE_BINARY_DIR}/FileDiff )
 add_subdirectory( ${CMAKE_CURRENT_SOURCE_DIR}/../../../../tools/FilePusher ${CMAKE_BINARY_DIR}/FilePusher )
 add_subdirectory( ${CMAKE_CURRENT_SOURCE_DIR}/../../../../tools/FileReplacer ${CMAKE_BINARY_DIR}/FileReplacer )
+add_subdirectory( ${CMAKE_CURRENT_SOURCE_DIR}/../../../../tools/FileSorter ${CMAKE_BINARY_DIR}/FileSorter )
 add_subdirectory( ${CMAKE_CURRENT_SOURCE_DIR}/../../../../tools/GucefArchiver ${CMAKE_BINARY_DIR}/GucefArchiver )
 add_subdirectory( ${CMAKE_CURRENT_SOURCE_DIR}/../../../../tools/GucefLogServiceApp ${CMAKE_BINARY_DIR}/GucefLogServiceApp )
 add_subdirectory( ${CMAKE_CURRENT_SOURCE_DIR}/../../../../tools/GucefLogServiceClientPlugin ${CMAKE_BINARY_DIR}/GucefLogServiceClientPlugin )

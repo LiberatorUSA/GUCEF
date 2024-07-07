@@ -99,6 +99,77 @@ CResourceMetaData::Clear( void )
     resourceExists = false;
 }
 
+/*-------------------------------------------------------------------------*/
+
+bool
+CResourceMetaData::GetEarliestUtcDt( CORE::CDateTime& earliest ) const
+{GUCEF_TRACE;
+
+    if ( hasCreationDateTime && hasModifiedDateTime && hasLastAccessedDateTime )
+    {
+        if ( creationDateTime > modifiedDateTime )
+        {
+            if ( modifiedDateTime > lastAccessedDateTime )
+            {
+                earliest = lastAccessedDateTime.ToUTC();
+                return true;
+            }
+            else
+            {
+                earliest = modifiedDateTime.ToUTC();
+                return true;
+            }
+        }
+        else
+        {
+            if ( creationDateTime > lastAccessedDateTime )
+            {
+                earliest = lastAccessedDateTime.ToUTC();
+                return true;
+            }
+            else
+            {
+                earliest = creationDateTime.ToUTC();
+                return true;
+            }
+        }
+    }
+    else
+    if ( hasCreationDateTime && hasModifiedDateTime )
+    {
+        if ( creationDateTime > modifiedDateTime )
+        {
+            earliest = modifiedDateTime.ToUTC();
+            return true;
+        }
+        else
+        {
+            earliest = creationDateTime.ToUTC();
+            return true;
+        }
+    }
+    else 
+    if ( hasCreationDateTime )
+    {
+        earliest = creationDateTime.ToUTC();
+        return true;
+    }
+    else 
+    if ( hasModifiedDateTime )
+    {
+        earliest = modifiedDateTime.ToUTC();
+        return true;
+    }
+    else 
+    if ( hasLastAccessedDateTime )
+    {
+        earliest = lastAccessedDateTime.ToUTC();
+        return true;
+    }
+
+    return false;
+}
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //
