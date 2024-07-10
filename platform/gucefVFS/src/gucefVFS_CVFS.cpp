@@ -615,9 +615,9 @@ CVFS::MoveFile( const CString& oldFilePath ,
     // Since we could not find an archive that can hold both the old and new location we will have to
     // perform a logical move which is a copy followed by a delete
 
-    if( CopyFile( oldFilePath ,
-                  newFilePath ,
-                  overwrite   ) )
+    if ( CopyFile( oldFilePath ,
+                   newFilePath ,
+                   overwrite   ) )
     {
         return DeleteFile( oldFilePath, false );
     }
@@ -666,6 +666,8 @@ CVFS::CopyFile( const CORE::CString& originalFilepath ,
                 const CORE::CString& copyFilepath     ,
                 const bool overwrite                  )
 {GUCEF_TRACE;
+
+return false;
 
     if ( originalFilepath == copyFilepath )
     {
@@ -1990,7 +1992,7 @@ CVFS::FilterValidation( const CORE::CString& filename ,
                         const CORE::CString& filter   )
 {GUCEF_TRACE;
 
-    if ( filter.Length() > 0 )
+    if ( !filter.IsNULLOrEmpty() )
     {
         // perform a 'glob pattern' match which is just wildcard character based segment matching
 
@@ -2112,7 +2114,8 @@ CVFS::GetFileList( TStringVector& outputList      ,
 {GUCEF_TRACE;
 
     CORE::CString::StringSet filters;
-    filters.insert( nameFilter );
+    if ( !nameFilter.IsNULLOrEmpty() )
+        filters.insert( nameFilter );
 
     return GetFileList( outputList            , 
                         location              ,

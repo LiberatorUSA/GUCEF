@@ -104,8 +104,10 @@ GetFileModificationTime( const CString& path )
 
     #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
 
+    std::wstring wFilepath = ToWString( path );
+    
     ::WIN32_FILE_ATTRIBUTE_DATA data;
-    if ( 0 != ::GetFileAttributesEx( path.C_String(), GetFileExInfoStandard, &data ) )
+    if ( 0 != ::GetFileAttributesExW( wFilepath.c_str(), GetFileExInfoStandard, &data ) )
     {
         return CDateTime( data.ftLastWriteTime );
     }
@@ -142,8 +144,10 @@ GetFileCreationTime( const CString& path )
 
     #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
 
+    std::wstring wFilepath = ToWString( path );
+    
     WIN32_FILE_ATTRIBUTE_DATA data;
-    if ( 0 != GetFileAttributesEx( path.C_String(), GetFileExInfoStandard, &data ) )
+    if ( 0 != GetFileAttributesExW( wFilepath.c_str(), GetFileExInfoStandard, &data ) )
     {
         return CDateTime( data.ftCreationTime );
     }
@@ -186,8 +190,10 @@ GetFileMetaData( const CString& filePath     ,
 
         #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
 
+        std::wstring wFilepath = ToWString( filePath );
+        
         WIN32_FILE_ATTRIBUTE_DATA data;
-        if ( 0 != GetFileAttributesEx( filePath.C_String(), GetFileExInfoStandard, &data ) )
+        if ( 0 != ::GetFileAttributesExW( wFilepath.c_str(), GetFileExInfoStandard, &data ) )
         {
             metaData.creationDateTime = CDateTime( data.ftCreationTime );
             metaData.hasCreationDateTime = true;
@@ -201,6 +207,23 @@ GetFileMetaData( const CString& filePath     ,
             ul.LowPart = data.nFileSizeLow;
             metaData.resourceSizeInBytes = (UInt64) ul.QuadPart;
             metaData.hasResourceSizeInBytes = true;
+
+            data.dwFileAttributes & FILE_ATTRIBUTE_READONLY ? metaData.isReadOnly = true : metaData.isReadOnly = false;
+            metaData.hasIsReadOnly = true;
+            data.dwFileAttributes & FILE_ATTRIBUTE_HIDDEN ? metaData.isHidden = true : metaData.isHidden = false;
+            metaData.hasIsHidden = true;
+            data.dwFileAttributes & FILE_ATTRIBUTE_SYSTEM || data.dwFileAttributes & FILE_ATTRIBUTE_DEVICE ? metaData.isSystemResource = true : metaData.isSystemResource = false;
+            metaData.hasIsSystemResource = true;
+            data.dwFileAttributes & FILE_ATTRIBUTE_ARCHIVE ? metaData.isArchive = true : metaData.isArchive = false;
+            metaData.hasIsArchive = true;
+            data.dwFileAttributes & FILE_ATTRIBUTE_COMPRESSED ? metaData.isCompressed = true : metaData.isCompressed = false;
+            metaData.hasIsCompressed = true;
+            data.dwFileAttributes & FILE_ATTRIBUTE_ENCRYPTED ? metaData.isEncrypted = true : metaData.isEncrypted = false;
+            metaData.hasIsEncrypted = true;
+            data.dwFileAttributes & FILE_ATTRIBUTE_TEMPORARY ? metaData.isTemporary = true : metaData.isTemporary = false;
+            metaData.hasIsTemporary = true;
+            data.dwFileAttributes & FILE_ATTRIBUTE_OFFLINE ? metaData.isOffline = true : metaData.isOffline = false;
+            metaData.hasIsOffline = true;            
         }
 
         // true no matter what since access rights also factor into it
@@ -324,7 +347,38 @@ bool
 FileExists( const CString& filename )
 {GUCEF_TRACE;
 
-    return 0 != File_Exists( filename.C_String() );
+    if ( !filename.IsNULLOrEmpty() )
+    {
+        #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
+
+        std::wstring wFilename = ToWString( filename );
+        
+        WIN32_FIND_DATAW FileInfo;
+        HANDLE hFind = GUCEF_NULL;
+        hFind = FindFirstFileW( wFilename.c_str(), &FileInfo );
+        if ( hFind != INVALID_HANDLE_VALUE )
+        {
+            FindClose( hFind );
+
+            /* make sure we found a file not a directory */
+            return !( FileInfo.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY );
+        }
+        return 0;
+
+        #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
+
+        struct stat buf;
+        return stat( filename.C_String(), &buf ) == 0;
+
+        #else
+
+        FILE *fptr = fopen( filename.C_String(), "rb" );
+        fclose( fptr );
+        return fptr > 0;
+
+        #endif
+    }
+    return false;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -333,7 +387,41 @@ bool
 DirExists( const CString& path )
 {GUCEF_TRACE;
 
-    return 0 != Dir_Exists( path.C_String() );
+    if ( GUCEF_NULL != path )
+    {
+        #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
+
+        std::wstring wPath = ToWString( path );
+        
+        WIN32_FIND_DATAW FileInfo;
+        HANDLE hFind = GUCEF_NULL;
+        hFind = FindFirstFileW( wPath.c_str(), &FileInfo );
+        if ( hFind != INVALID_HANDLE_VALUE )
+        {
+            FindClose( hFind );
+
+            /* make sure we found a directory not a file */
+            return ( FileInfo.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY );
+        }
+        return 0;
+
+        #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
+
+        struct stat buf;
+        if ( stat( path, &buf ) == 0 )
+            if ( buf.st_mode & S_IFDIR != 0 )
+                return 1;
+        return 0;
+
+        #else
+
+        FILE *fptr = fopen( filename.C_String(), "rb" );
+        fclose( fptr );
+        return fptr > 0;
+
+        #endif
+    }
+    return 0;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -360,7 +448,49 @@ UInt64
 FileSize( const CString& filename )
 {GUCEF_TRACE;
 
-    return Filesize( filename.C_String() );
+    if ( !filename.IsNULLOrEmpty() )
+    {
+        #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
+
+        std::wstring wFilename = ToWString( filename );
+        
+        UInt64 lfilesize = 0;
+        WIN32_FIND_DATAW FileInfo;
+        HANDLE hFind;
+        hFind = FindFirstFileW( wFilename.c_str(), &FileInfo );
+        if ( hFind == INVALID_HANDLE_VALUE )
+        {
+            lfilesize = 0;
+        }
+        else
+        {
+            lfilesize = FileInfo.nFileSizeLow;
+        }
+        FindClose( hFind );
+        return lfilesize;
+
+        #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
+
+        struct stat buf;
+        int result;
+        result = stat( filename.C_String(), &buf );
+        if ( result == 0 )
+            return buf.st_size;
+        return 0;
+
+        #else
+
+        UInt64 filesize = 0;
+        FILE *fptr = fopen( filename.C_String(), "rb" );
+        fseek( fptr, 0, SEEK_END );
+        filesize = ftell( fptr );
+        fclose( fptr );
+        return filesize;
+
+        #endif
+    }
+
+    return 0;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -694,6 +824,418 @@ GetAllFileSystemMountPointsForVolume( const CString& volumeId         ,
     return false;
 
     #endif
+}
+
+/*-------------------------------------------------------------------------*/
+
+// Structure used to store dir iteration data which is O/S dependent
+struct CFileSystemIterator::FileSystemIteratorOsData
+{
+ 	bool isActive;            // Flag indicating if the iterator is active 
+    
+    #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
+
+	intptr_t find_handle;        // Unique handle identifying the file or set of files that resulted from a findfirst with the filter provided
+	struct _wfinddata64_t find;  // struct that stores entry data 
+
+    #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
+
+    DIR* dir;                 // Directory stream
+    struct dirent* entry;     // Pointer needed for functions to iterating directory entries. Stores entry name which is used to get stat 
+    struct stat statinfo;     // Struct needed for determining info about an entry with stat(). 
+
+    #else
+
+    // -> empty struct because we don't support other OS's atm 
+    #error Unsupported OS
+
+    #endif
+};
+
+/*-------------------------------------------------------------------------*/
+
+CFileSystemIterator::CFileSystemIterator( void )
+    : m_osData( GUCEF_NULL )
+{GUCEF_TRACE;
+
+    m_osData = (FileSystemIteratorOsData*) malloc( sizeof FileSystemIteratorOsData );
+    if ( GUCEF_NULL != m_osData )
+    {
+        memset( m_osData, 0 , sizeof FileSystemIteratorOsData );
+
+        // we start with an inactive iterator. 
+        // A call to FindFirst will activate it potentially
+        m_osData->isActive = false;
+    }   
+}
+
+/*-------------------------------------------------------------------------*/
+
+CFileSystemIterator::~CFileSystemIterator()
+{GUCEF_TRACE;
+
+    if ( GUCEF_NULL != m_osData )
+    {
+        FindClose();
+        free( m_osData );
+    }
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CFileSystemIterator::FindFirst( const CString& path )
+{GUCEF_TRACE;
+
+    if ( path.IsNULLOrEmpty() )
+        return false;
+    if ( GUCEF_NULL == m_osData || m_osData->isActive )
+        return false;
+
+    #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
+       
+    /*
+     *	In Win32 we use _findfirst ect. because even though the posix
+     *	functions are supported on windows NT they are not supported on
+     *	Win98 and WinME and these functions are. No support for Win95 or
+     *	older though.
+     */
+
+    if ( -1 == path.HasChar( '*', false ) )
+    {
+       CString filterPath = CombinePath( path, "*.*" );
+       std::wstring wFilterPath = ToWString( filterPath );
+       m_osData->find_handle = _wfindfirst64( wFilterPath.c_str(), &m_osData->find );
+    }
+    else
+    {
+        std::wstring wPath = ToWString( path );
+        m_osData->find_handle = _wfindfirst64( wPath.c_str(), &m_osData->find );
+    }
+
+    // Check if findfirst was successful
+    if ( m_osData->find_handle == -1 )
+    {
+        // There was an error
+        _findclose( m_osData->find_handle );
+        m_osData->find_handle = 0;
+
+        return false;
+    }
+
+    /*
+     *	Successfully obtained first entry 
+     */
+    m_osData->isActive = true;
+    return true;
+
+    #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
+
+    /*
+     *	In Linux we use POSIX functions because these are independant of
+     *	the Linux distribution. It may also provide use with support for
+     *	other Unix based systems.
+     */
+
+    /*
+     *	Attempt to open the directory
+     */
+    m_osData->dir = opendir( path.C_String() );
+    if ( GUCEF_NULL == m_osData->dir )
+    {
+        // Could not open directory
+	    return false;
+    }
+
+    /*
+     *	change working dir to be able to read file information
+     */
+    chdir( path );
+
+    /*
+     *	Read first entry
+     */
+    m_osData->entry = readdir( m_osData->dir );
+    while( m_osData->entry )
+    {
+        /*
+         *	Get info on the entry.
+         *	We only want regular files and directory entry's. We ignore the
+         *	rest.
+         */
+        stat( m_osData->entry->d_name, &m_osData->statinfo );
+        if ( S_ISREG( m_osData->statinfo.st_mode ) || S_ISDIR( m_osData->statinfo.st_mode ) )
+        {
+        	/*
+             *	We found either a regular file or a directory
+             *	entry which is now our current entry.
+             */
+            return m_osData;
+        }
+
+        /*
+         *	This entry is not what we want,.. skip to the next entry
+         */
+        m_osData->entry = readdir( m_osData->dir );
+    }
+
+    /*
+     *	there was an error reading the entry data or no entry was found
+     *	on the path specified that was a regular file or directory.
+     */
+    if ( NULL != m_osData->dir )
+    {
+        closedir( m_osData->dir );
+    }
+    free( m_osData );
+    return NULL;
+
+    #else
+
+    /*
+     *	Unsupported O/S build
+     */    
+
+    return false;
+    
+    #endif
+    
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CFileSystemIterator::FindNext( void )
+{GUCEF_TRACE;
+
+    if ( GUCEF_NULL == m_osData || !m_osData->isActive )
+        return false;
+
+    #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
+
+    return !_wfindnext64( m_osData->find_handle, &m_osData->find );
+
+    #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
+
+    /*
+     *	Read next entry
+     */
+    m_osData->entry = readdir( m_osData->dir );
+    while ( GUCEF_NULL != m_osData->entry )
+    {
+        /*
+         *	Get info on the entry.
+         *	We only want regular files and directory entry's. We ignore the
+         *	rest.
+         */
+        stat( m_osData->entry->d_name, &m_osData->statinfo );
+        if ( S_ISREG( m_osData->statinfo.st_mode ) || S_ISDIR( m_osData->statinfo.st_mode ) )
+        {
+        	/*
+             *	We found either a regular file or a directory
+             *	entry which is now our current entry.
+             */
+            return true;
+        }
+
+        /*
+         *	This entry is not what we want,.. skip to the next entry
+         */
+        m_osData->entry = readdir( m_osData->dir );
+    }
+
+    /*
+     *	Could not find any other entry's that where either a regular file
+     *	or a directory.
+     */
+
+    #else
+
+        /*
+         *	Unsupported O/S build
+         */
+    #endif
+
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool 
+CFileSystemIterator::FindClose( void )
+{GUCEF_TRACE;
+
+    if ( GUCEF_NULL == m_osData || !m_osData->isActive )
+        return false;
+
+    #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
+
+    ::_findclose( m_osData->find_handle );
+    m_osData->find_handle = GUCEF_NULL;
+    
+    #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
+
+    if ( GUCEF_NULL != m_osData->dir )
+    {
+        ::closedir( m_osData->dir );
+        m_osData->dir = GUCEF_NULL;
+    }
+
+    #else
+
+    /*
+     *	Unsupported O/S build
+     */
+
+    #endif
+
+    m_osData->isActive = false;
+    return true;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CFileSystemIterator::IsADirectory( void ) const
+{GUCEF_TRACE;
+
+    if ( GUCEF_NULL != m_osData && m_osData->isActive )
+    {
+        #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
+
+        return ( m_osData->find.attrib & _A_SUBDIR );
+
+        #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
+
+        return S_ISDIR( m_osData->statinfo.st_mode ) > 0;
+
+        #else
+
+        /*
+         *	Unsupported O/S build
+         */
+
+        #endif
+    }
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool 
+CFileSystemIterator::IsAFile( void ) const
+{GUCEF_TRACE;
+
+    if ( GUCEF_NULL != m_osData && m_osData->isActive )
+    {
+        #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
+        
+        return !( m_osData->find.attrib & _A_SUBDIR );
+    
+        #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
+    
+        return S_ISREG( m_osData->statinfo.st_mode ) > 0;
+
+        #else
+
+        /*
+         *	Unsupported O/S build
+         */
+
+        #endif
+    }
+
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
+CString 
+CFileSystemIterator::GetResourceName( void ) const
+{GUCEF_TRACE;
+
+    if ( GUCEF_NULL != m_osData && m_osData->isActive )
+    {
+        #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
+
+        return m_osData->find.name;
+
+        #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
+
+        return m_osData->entry->d_name;
+
+        #else
+
+        /*
+         *	Unsupported O/S build
+         */
+
+        #endif
+    }
+    return CString::Empty;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CFileSystemIterator::TryReadMetaData( CResourceMetaData& metaData )
+{GUCEF_TRACE;
+
+    if ( GUCEF_NULL != m_osData && m_osData->isActive )
+    {
+        #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
+
+        metaData.resourceSizeInBytes = m_osData->find.size;
+        metaData.hasResourceSizeInBytes = true;
+        metaData.creationDateTime = CDateTime( m_osData->find.time_create, true );
+        metaData.hasCreationDateTime = true;
+        metaData.modifiedDateTime = CDateTime( m_osData->find.time_access, true );
+        metaData.hasModifiedDateTime = true;
+        metaData.lastAccessedDateTime = CDateTime( m_osData->find.time_write, true );
+        metaData.hasLastAccessedDateTime = true;
+        
+        m_osData->find.attrib & FILE_ATTRIBUTE_READONLY ? metaData.isReadOnly = true : metaData.isReadOnly = false;
+        metaData.hasIsReadOnly = true;
+        m_osData->find.attrib & FILE_ATTRIBUTE_HIDDEN ? metaData.isHidden = true : metaData.isHidden = false;
+        metaData.hasIsHidden = true;
+        m_osData->find.attrib & FILE_ATTRIBUTE_SYSTEM || m_osData->find.attrib & FILE_ATTRIBUTE_DEVICE ? metaData.isSystemResource = true : metaData.isSystemResource = false;
+        metaData.hasIsSystemResource = true;
+        m_osData->find.attrib & FILE_ATTRIBUTE_ARCHIVE ? metaData.isArchive = true : metaData.isArchive = false;
+        metaData.hasIsArchive = true;
+        m_osData->find.attrib & FILE_ATTRIBUTE_COMPRESSED ? metaData.isCompressed = true : metaData.isCompressed = false;
+        metaData.hasIsCompressed = true;
+        m_osData->find.attrib & FILE_ATTRIBUTE_ENCRYPTED ? metaData.isEncrypted = true : metaData.isEncrypted = false;
+        metaData.hasIsEncrypted = true;
+        m_osData->find.attrib & FILE_ATTRIBUTE_TEMPORARY ? metaData.isTemporary = true : metaData.isTemporary = false;
+        metaData.hasIsTemporary = true;
+        m_osData->find.attrib & FILE_ATTRIBUTE_OFFLINE ? metaData.isOffline = true : metaData.isOffline = false;
+        metaData.hasIsOffline = true;
+
+        return true;
+    
+        #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
+
+        metaData.creationDateTime = CDateTime( m_osData->statinfo.st_ctime, true );
+        metaData.hasCreationDateTime = true;
+        metaData.modifiedDateTime = CDateTime( m_osData->statinfo.st_mtim, true );
+        metaData.hasModifiedDateTime = true;
+        metaData.lastAccessedDateTime = CDateTime( m_osData->statinfo.st_atim, true );
+        metaData.hasLastAccessedDateTime = true;
+        metaData.resourceSizeInBytes = (UInt64) m_osData->statinfo.st_size;
+        metaData.hasResourceSizeInBytes = true;
+
+        return true;
+        
+        #else
+
+        /*
+         *	Unsupported O/S build
+         */
+
+        #endif
+    }
+
+    return false;
 }
 
 /*-------------------------------------------------------------------------//

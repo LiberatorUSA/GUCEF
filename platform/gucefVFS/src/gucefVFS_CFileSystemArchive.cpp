@@ -268,8 +268,8 @@ CFileSystemArchive::GetListFromRoot( const CORE::CString& actualFsDir  ,
 
     CORE::CString vfsPath = CORE::CombinePath( vfsMountLocation, vfsArchiveLocation );
 
-    struct CORE::SDI_Data* did = CORE::DI_First_Dir_Entry( actualFsDir.C_String() );
-    if ( did != NULL )
+    CORE::CFileSystemIterator fileSystemIterator;
+    if ( fileSystemIterator.FindFirst( actualFsDir ) )
     {
         /*
          *      Iterate the dir content adding the file entries from
@@ -277,11 +277,12 @@ CFileSystemArchive::GetListFromRoot( const CORE::CString& actualFsDir  ,
          */
         do
         {
-            if ( CORE::DI_Is_It_A_File( did ) != 0 )
+            if ( fileSystemIterator.IsAFile() )
             {
                 if ( addFiles )
                 {
-                    CORE::CString filename = CORE::DI_Name( did );
+                    CORE::CString filename = fileSystemIterator.GetResourceName();
+
                     if ( filename != '.' && filename != ".." )
                     {
                         if ( CVFS::FilterValidation( filename ,
@@ -303,7 +304,7 @@ CFileSystemArchive::GetListFromRoot( const CORE::CString& actualFsDir  ,
             }
             else
             {
-                CORE::CString dirName = CORE::DI_Name( did );
+                CORE::CString dirName = fileSystemIterator.GetResourceName();
                 if ( dirName != '.' && dirName != ".." )
                 {
                     if ( addDirs )
@@ -334,9 +335,7 @@ CFileSystemArchive::GetListFromRoot( const CORE::CString& actualFsDir  ,
                 }
             }
         }
-        while ( CORE::DI_Next_Dir_Entry( did ) );
-
-        CORE::DI_Cleanup( did );
+        while ( fileSystemIterator.FindNext() );
     }
 }
 

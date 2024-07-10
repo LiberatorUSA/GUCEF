@@ -1173,6 +1173,12 @@ CUtf8String::ReplaceChar( Int32 oldchar ,
                     newDestCpPos = (char*) utf8catcodepoint( destCpPos, newchar, (size_t) bufferSpaceLeft );
                 }
                 bufferSpaceLeft -= (Int32)( newDestCpPos - destCpPos );
+                if ( bufferSpaceLeft < 0 )
+                {
+                    GUCEF_ASSERT_ALWAYS;
+                    newStr.Clear();
+                    return newStr;
+                }
                 destCpPos = newDestCpPos;
             }
             newStr.m_length = m_length;

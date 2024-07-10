@@ -54,6 +54,22 @@ CResourceMetaData::CResourceMetaData( void )
     , resourceSizeInBytes( 0 )
     , hasResourceSizeInBytes( false )
     , resourceExists( false )
+    , hasIsReadOnly( false )
+    , isReadOnly( false )
+    , hasIsHidden( false )
+    , isHidden( false )
+    , hasIsSystemResource( false )
+    , isSystemResource( false )
+    , hasIsArchive( false )
+    , isArchive( false )
+    , hasIsCompressed( false )
+    , isCompressed( false )
+    , hasIsEncrypted( false )
+    , isEncrypted( false )
+    , hasIsTemporary( false )
+    , isTemporary( false )
+    , hasIsOffline( false )
+    , isOffline( false )
 {GUCEF_TRACE;
 
 }
@@ -74,6 +90,22 @@ CResourceMetaData::CResourceMetaData( const CResourceMetaData& src )
     , resourceSizeInBytes( src.resourceSizeInBytes )
     , hasResourceSizeInBytes( src.hasResourceSizeInBytes )
     , resourceExists( src.resourceExists )
+    , hasIsReadOnly( src.hasIsReadOnly )
+    , isReadOnly( src.isReadOnly )
+    , hasIsHidden( src.hasIsHidden )
+    , isHidden( src.isHidden )
+    , hasIsSystemResource( false )
+    , isSystemResource( false )
+    , hasIsArchive( false )
+    , isArchive( false )
+    , hasIsCompressed( false )
+    , isCompressed( false )
+    , hasIsEncrypted( false )
+    , isEncrypted( false )
+    , hasIsTemporary( false )
+    , isTemporary( false )
+    , hasIsOffline( false )
+    , isOffline( false )
 {GUCEF_TRACE;
 
 }
@@ -96,6 +128,24 @@ CResourceMetaData::Clear( void )
     hasLastAccessedDateTime = false;
     resourceSizeInBytes = 0;
     hasResourceSizeInBytes = false;
+
+    hasIsReadOnly = false;
+    isReadOnly = false;
+    hasIsHidden = false;
+    isHidden = false;
+    hasIsSystemResource = false;
+    isSystemResource = false;
+    hasIsArchive = false;
+    isArchive = false;
+    hasIsCompressed = false;
+    isCompressed = false;
+    hasIsEncrypted = false;
+    isEncrypted = false;
+    hasIsTemporary = false;
+    isTemporary = false;
+    hasIsOffline = false;
+    isOffline = false;
+
     resourceExists = false;
 }
 

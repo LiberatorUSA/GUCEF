@@ -92,28 +92,13 @@ namespace CORE {
 //-------------------------------------------------------------------------*/
 
 /*
- *	Structure used to store dir itteration data so it can be passed between
+ *	Structure used to store dir iteration data so it can be passed between
  *	the DI_ functions in a OS independant manner.
  */
 struct SDI_Data
 {
- 	#if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
-
-	intptr_t find_handle;     /* Unique handle identifying the file or set of files that resulted from a findfirst with the filter provided */
-	struct _finddata_t  find; /* struct that stores entry data */
-
-    #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
-
-    DIR *dir;                 /* Directory stream */
-    struct dirent *entry;     /* Pointer needed for functions to iterating directory entries. Stores entry name which is used to get stat */
-    struct stat statinfo;     /* Struct needed for determining info about an entry with stat(). */
-
-    #else
-
-    /* -> empty struct because we don't support other OS's atm */
-    #error Unsupported OS
-
-    #endif
+    CFileSystemIterator cppIterator;
+    CString entryName;
 };
 
 /*-------------------------------------------------------------------------//
@@ -124,385 +109,179 @@ struct SDI_Data
 
 struct SDI_Data*
 DI_First_Dir_Entry( const char* path )
-{
-    /*
-     *	Function that should be used for directory entry itteration.
-     *	All the functions listed here with a DI_ prefix belong together and
-     *	combined allow you to itterate trough a directory in a cross-platform
-     *	manner. Note that the DI_ functions are NOT threadsafe.
-     *
-     *	This function allocates data storage for the dir itteration process.
-     *	In case of error NULL is returned.
-     */
-    struct SDI_Data *data;
-    size_t pathStrLen = 0;
+{GUCEF_TRACE;
 
-    #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
-
-    char* tmp_path = GUCEF_NULL;
-
-    #endif /* GUCEF_PLATFORM_MSWIN ? */
-
-    if ( GUCEF_NULL == path )
-        return GUCEF_NULL;
-    pathStrLen = strlen( path );
-
-    /*
-     *	Allocate data storage.
-     */
-    data = ( struct SDI_Data* ) malloc( sizeof( struct SDI_Data ) );
-    if ( GUCEF_NULL == data )
-        return GUCEF_NULL;
-
-    #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
-
-    /*
-     *	In Win32 we use _findfirst ect. because even though the posix
-     *	functions are supported on windows NT they are not supported on
-     *	Win98 and WinME and these functions are. No support for Win95 or
-     *	older though.
-     */
-    if ( -1 == Find_Char( '*', path, (UInt32) pathStrLen ) )
+    // map to C++ version
+    try
     {
-        tmp_path = (char*)calloc( pathStrLen+5, sizeof( char ) );
-        if ( GUCEF_NULL != tmp_path )
+        struct SDI_Data* data = GUCEF_NEW SDI_Data();
+        if ( GUCEF_NULL == data )
+            return GUCEF_NULL;
+
+        if ( data->cppIterator.FindFirst( path ) )
         {
-            strcpy( tmp_path, path );
-            Append_To_Path( tmp_path, pathStrLen+5, "*.*\0" );
-            data->find_handle = _findfirst( tmp_path, &data->find );
-            free( tmp_path );
-        }
-    }
-    else
-    {
-        data->find_handle = _findfirst( path, &data->find );
-    }
-
-    /*
-     *	Check if findfirst was successful
-     */
-    if ( data->find_handle == -1 )
-    {
-        /*
-         *	There was an error
-         */
-        _findclose( data->find_handle );
-        free( data );
-        return GUCEF_NULL;
-    }
-
-    /*
-     *	Successfully obtained first entry so we return the struct
-     *	pointer
-     */
-    return data;
-
-    #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
-
-    /*
-     *	In Linux we use POSIX functions because these are independant of
-     *	the Linux distribution. It may also provide use with support for
-     *	other Unix based systems.
-     */
-
-    /*
-     *	Attempt to open the directory
-     */
-    data->dir = opendir( path );
-    if ( NULL == data->dir )
-    {
-    	/*
-         *	Could not open directory
-         */
-        free( data );
-	    return NULL;
-    }
-
-    /*
-     *	change working dir to be able to read file information
-     */
-    chdir( path );
-
-    /*
-     *	Read first entry
-     */
-    data->entry = readdir( data->dir );
-    while( data->entry )
-    {
-        /*
-         *	Get info on the entry.
-         *	We only want regular files and directory entry's. We ignore the
-         *	rest.
-         */
-        stat( data->entry->d_name, &data->statinfo );
-        if ( S_ISREG( data->statinfo.st_mode ) || S_ISDIR( data->statinfo.st_mode ) )
-        {
-        	/*
-             *	We found either a regular file or a directory
-             *	entry which is now our current entry.
-             */
             return data;
         }
-
-        /*
-         *	This entry is not what we want,.. skip to the next entry
-         */
-        data->entry = readdir( data->dir );
-    }
-
-    /*
-     *	there was an error reading the entry data or no entry was found
-     *	on the path specified that was a regular file or directory.
-     */
-    if ( NULL != data->dir )
-    {
-        closedir( data->dir );
-    }
-    free( data );
-    return NULL;
-
-    #else
-
-    /*
-     *	Unsupported O/S build
-     */
-    return NULL;
-
-    #endif
-}
-
-/*-------------------------------------------------------------------------*/
-
-UInt32
-DI_Next_Dir_Entry( struct SDI_Data *data )
-{
-    /*
-     *	Function that should be used for directory entry itteration.
-     *	All the functions listed here with a DI_ prefix belong together and
-     *	combined allow you to itterate trough a directory in a cross-platform
-     *	manner. Note that the DI_ functions are NOT threadsafe.
-     *
-     *	Function that selects the next directory entry. If there are no more
-     *	directory entry's available ie we itterated over all entry's then
-     *	0 is returned in which case you should call DI_Cleanup(),
-     *	otherwise 1 is returned.
-     */
-    #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
-
-    return !_findnext( data->find_handle, &data->find );
-
-    #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
-
-    /*
-     *	Read next entry
-     */
-    data->entry = readdir( data->dir );
-    while( data->entry )
-    {
-        /*
-         *	Get info on the entry.
-         *	We only want regular files and directory entry's. We ignore the
-         *	rest.
-         */
-        stat( data->entry->d_name, &data->statinfo );
-        if ( S_ISREG( data->statinfo.st_mode ) || S_ISDIR( data->statinfo.st_mode ) )
+        else
         {
-        	/*
-             *	We found either a regular file or a directory
-             *	entry which is now our current entry.
-             */
-            return 1;
+            GUCEF_DELETE data;
+            return GUCEF_NULL;
+        
         }
-
-        /*
-         *	This entry is not what we want,.. skip to the next entry
-         */
-        data->entry = readdir( data->dir );
     }
-
-    /*
-     *	Could not find any other entry's that where either a regular file
-     *	or a directory.
-     */
-    return 0;
-
-    #else
-
-        /*
-         *	Unsupported O/S build
-         */
-    #endif
-}
-
-/*-------------------------------------------------------------------------*/
-
-UInt64
-DI_Timestamp( struct SDI_Data *data )
-{
-    /*
-     *	Function that should be used for directory entry itteration.
-     *	All the functions listed here with a DI_ prefix belong together and
-     *	combined allow you to itterate trough a directory in a cross-platform
-     *	manner. Note that the DI_ functions are NOT threadsafe.
-     *
-     *	Returns the dir entry name of the current directory entry. This may be
-     *	a directory name or a filename. Use DI_Is_It_A_File() to determine which
-     */
-    #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
-
-    return data->find.time_write;
-
-    #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
-
-    return data->statinfo.st_mtime;
-
-    #else
-
-    /*
-     *	Unsupported O/S build
-     */
-    return 0;
-
-    #endif
-}
-
-/*-------------------------------------------------------------------------*/
-
-UInt64
-DI_Size( struct SDI_Data *data )
-{
-    /*
-     *	Function that should be used for directory entry itteration.
-     *	All the functions listed here with a DI_ prefix belong together and
-     *	combined allow you to itterate trough a directory in a cross-platform
-     *	manner. Note that the DI_ functions are NOT threadsafe.
-     *
-     *	Returns the size of the current entry which in the case of a file is the
-     *	filesize.
-     */
-    #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
-
-    return data->find.size;
-
-    #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
-
-    return data->statinfo.st_size;
-
-    #else
-
-    /*
-     *	Unsupported O/S build
-     */
-    return 0;
-
-    #endif
+    catch ( const std::exception& )
+    {
+        return GUCEF_NULL;    
+    }
 }
 
 /*-------------------------------------------------------------------------*/
 
 UInt32
-DI_Is_It_A_File( struct SDI_Data *data )
-{
-    /*
-     *	Function that should be used for directory entry itteration.
-     *	All the functions listed here with a DI_ prefix belong together and
-     *	combined allow you to itterate trough a directory in a cross-platform
-     *	manner. Note that the DI_ functions are NOT threadsafe.
-     *
-     *	Returns boolean indicating wheter the current entry is a directory or
-     *	a file.
-     */
-    #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
+DI_Next_Dir_Entry( struct SDI_Data* data )
+{GUCEF_TRACE;
 
-    return !( data->find.attrib & _A_SUBDIR );
+    // map to C++ version
+    try
+    {
+        if ( GUCEF_NULL == data )
+            return 0;
+        return data->cppIterator.FindNext() ? 1 : 0;
+    }
+    catch ( const std::exception& )
+    {
+        return 0;    
+    }
+}
 
-    #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
+/*-------------------------------------------------------------------------*/
 
-    return S_ISREG( data->statinfo.st_mode );
+UInt64
+DI_Timestamp( struct SDI_Data* data )
+{GUCEF_TRACE;
 
-    #else
+    // map to C++ version
+    try
+    {
+        if ( GUCEF_NULL == data )
+            return 0;
+        
+        CResourceMetaData metaData;
+        if ( data->cppIterator.TryReadMetaData( metaData ) )
+        {
+            if ( metaData.hasModifiedDateTime )
+            {
+                return metaData.modifiedDateTime.ToUnixEpochBasedTicksInMillisecs();
+            }
+            else if ( metaData.hasCreationDateTime )
+            {
+                return metaData.creationDateTime.ToUnixEpochBasedTicksInMillisecs();
+            }
+        }
+        return 0;
+    }
+    catch ( const std::exception& )
+    {
+        return 0;    
+    }
+}
 
-    /*
-     *	Unsupported O/S build
-     */
-    return 0;
+/*-------------------------------------------------------------------------*/
 
-    #endif
+UInt64
+DI_Size( struct SDI_Data* data )
+{GUCEF_TRACE;
+
+    // map to C++ version
+    try
+    {
+        if ( GUCEF_NULL == data )
+            return 0;
+        
+        CResourceMetaData metaData;
+        if ( data->cppIterator.TryReadMetaData( metaData ) )
+        {
+            if ( metaData.hasResourceSizeInBytes )
+            {
+                return metaData.resourceSizeInBytes;
+            }
+        }
+        return 0;
+    }
+    catch ( const std::exception& )
+    {
+        return 0;    
+    }
+}
+
+/*-------------------------------------------------------------------------*/
+
+UInt32
+DI_Is_It_A_File( struct SDI_Data* data )
+{GUCEF_TRACE;
+
+    // map to C++ version
+    try
+    {
+        if ( GUCEF_NULL == data )
+            return 0;
+        
+        return data->cppIterator.IsAFile() ? 1 : 0;
+    }
+    catch ( const std::exception& )
+    {
+        return 0;    
+    }
 }
 
 /*-------------------------------------------------------------------------*/
 
 const char*
-DI_Name( struct SDI_Data *data )
-{
-    /*
-     *	Function that should be used for directory entry itteration.
-     *	All the functions listed here with a DI_ prefix belong together and
-     *	combined allow you to itterate trough a directory in a cross-platform
-     *	manner. Note that the DI_ functions are NOT threadsafe.
-     *
-     *	Returns the dir entry name of the current directory entry. This may be
-     *	a directory name or a filename. Use DI_Is_It_A_File() to determine which
-     */
-    #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
+DI_Name( struct SDI_Data* data )
+{GUCEF_TRACE;
 
-    return data->find.name;
-
-    #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
-
-    return data->entry->d_name;
-
-    #else
-
-    /*
-     *	Unsupported O/S build
-     */
-    return NULL;
-
-    #endif
+    // map to C++ version
+    try
+    {
+        if ( GUCEF_NULL == data )
+            return 0;
+        
+        data->entryName = data->cppIterator.GetResourceName();
+        return data->entryName.C_String();
+    }
+    catch ( const std::exception& )
+    {
+        return 0;    
+    }
 }
 
 /*-------------------------------------------------------------------------*/
 
 void
-DI_Cleanup( struct SDI_Data *data )
-{
-    /*
-     *	Function that should be used for directory entry itteration.
-     *	All the functions listed here with a DI_ prefix belong together and
-     *	combined allow you to itterate trough a directory in a cross-platform
-     *	manner. Note that the DI_ functions are NOT threadsafe.
-     *
-     *	De-allocates data storage used for dir itteration which was created by
-     *	a call to DI_First_Dir_Entry().
-     */
-    #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
+DI_Cleanup( struct SDI_Data* data )
+{GUCEF_TRACE;
 
-    _findclose( data->find_handle );
-    free( data );
-
-    #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
-
-    if ( NULL != data->dir )
+    // map to C++ version
+    try
     {
-        closedir( data->dir );
+        if ( GUCEF_NULL == data )
+            return;
+        
+        data->cppIterator.FindClose();
+        data->entryName.Clear();
+        GUCEF_DELETE data;
     }
-    free( data );
-
-    #else
-
-    /*
-     *	Unsupported O/S build
-     */
-
-    #endif
+    catch ( const std::exception& )
+    {
+    }
 }
 
 /*-------------------------------------------------------------------------*/
 
 char*
 Get_Current_Dir( char* dest_buffer, UInt32 buf_length )
-{
+{GUCEF_TRACE;
+
     /*
      *	Function that returns the current directory
      */
@@ -538,7 +317,8 @@ Get_Current_Dir( char* dest_buffer, UInt32 buf_length )
  */
 UInt32
 Max_Dir_Length( void )
-{
+{GUCEF_TRACE;
+
     #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
 
     return MAX_PATH;
@@ -561,7 +341,8 @@ Max_Dir_Length( void )
 
 UInt32
 Max_Filename_Length( void )
-{
+{GUCEF_TRACE;
+
     #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
 
     return _MAX_FNAME;
@@ -586,7 +367,8 @@ Max_Filename_Length( void )
 
 static int
 recursive_mkdir( const char* dir, int accessPerms )
-{
+{GUCEF_TRACE;
+
     char tmp[ PATH_MAX ];
     char *p = NULL;
     size_t len;
@@ -637,7 +419,8 @@ recursive_mkdir( const char* dir, int accessPerms )
  */
 static UInt32
 create_directory( const char *new_dir, UInt32 offset )
-{
+{GUCEF_TRACE;
+
     Int32 idx = _Find_Char( offset, 1, '\\', new_dir, (UInt32)strlen( new_dir ) );
     if ( idx > 0 )
     {
@@ -703,7 +486,8 @@ create_directory( const char *new_dir, UInt32 offset )
 
 UInt32
 Create_Directory( const char* new_dir )
-{
+{GUCEF_TRACE;
+
     if ( GUCEF_NULL == new_dir )
         return 0;
 
@@ -749,7 +533,7 @@ Create_Path_Directories( const char* path )
 UInt32
 Remove_Directory( const char *dir  ,
                   UInt32 del_files )
-{
+{GUCEF_TRACE;
 
     if ( del_files )
     {
@@ -850,7 +634,8 @@ Remove_Directory( const char *dir  ,
  */
 UInt32
 Module_Path( char *dest, UInt32 dest_size )
-{
+{GUCEF_TRACE;
+
     #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
 
     return !GetModuleFileName( NULL, dest, dest_size );
@@ -923,7 +708,8 @@ Module_Path( char *dest, UInt32 dest_size )
 
 UInt32
 Delete_File( const char *filename )
-{
+{GUCEF_TRACE;
+
     #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
 
     return DeleteFileA( filename );
@@ -948,7 +734,8 @@ Delete_File( const char *filename )
 
 ssize_t
 do_sendfile( int out_fd, int in_fd, off_t offset, size_t count )
-{
+{GUCEF_TRACE;
+
     ssize_t bytes_sent;
     size_t total_bytes_sent = 0;
     while ( total_bytes_sent < count )
@@ -977,7 +764,8 @@ do_sendfile( int out_fd, int in_fd, off_t offset, size_t count )
 
 UInt32
 Copy_File( const char *dst, const char *src )
-{
+{GUCEF_TRACE;
+
     if ( 0 == Create_Path_Directories( dst ) ) return 0;
 
     #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
@@ -1069,8 +857,15 @@ UInt32
 Move_File( const char* dst, const char* src, char overwriteFlag )
 {GUCEF_TRACE;
 
-    // map to C++ version
-    return CORE::MoveFile( CString( dst ), CString( src ), 0 != overwriteFlag ) ? 1 : 0;
+    try
+    {
+        // map to C++ version
+        return CORE::MoveFile( CString( dst ), CString( src ), 0 != overwriteFlag ) ? 1 : 0;
+    }
+    catch ( const std::exception& )
+    {
+        return 0;
+    }
 }
 
 /*-------------------------------------------------------------------------*/
@@ -1080,7 +875,8 @@ Move_File( const char* dst, const char* src, char overwriteFlag )
 static HANDLE
 ExecuteProgramEx( const char *filename,
                   const char *cmdline )
-{
+{GUCEF_TRACE;
+
     STARTUPINFO si;
     PROCESS_INFORMATION pi;
     BOOL bres;
@@ -1125,7 +921,8 @@ ExecuteProgramEx( const char *filename,
 UInt32
 Execute_Program( const char *filename ,
                  const char *cmdline  )
-{
+{GUCEF_TRACE;
+
     if ( NULL != filename )
     {
         #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
@@ -1149,125 +946,52 @@ Execute_Program( const char *filename ,
 /*-------------------------------------------------------------------------*/
 
 UInt64
-Filesize( const char *filename )
-{
-    if ( NULL != filename )
+Filesize( const char* filename )
+{GUCEF_TRACE;
+
+    try
     {
-        #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
-
-        UInt64 lfilesize = 0;
-        WIN32_FIND_DATA FileInfo;
-        HANDLE hFind;
-        hFind = FindFirstFile( filename, &FileInfo );
-        if ( hFind == INVALID_HANDLE_VALUE )
-        {
-            lfilesize = 0;
-        }
-        else
-        {
-            lfilesize = FileInfo.nFileSizeLow;
-        }
-        FindClose( hFind );
-        return lfilesize;
-
-        #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
-
-        struct stat buf;
-        int result;
-        result = stat( filename, &buf );
-        if ( result == 0 )
-            return buf.st_size;
-        return 0;
-
-        #else
-
-        UInt64 filesize = 0;
-        FILE *fptr = fopen( filename, "rb" );
-        fseek( fptr, 0, SEEK_END );
-        filesize = ftell( fptr );
-        fclose( fptr );
-        return filesize;
-
-        #endif
+        // map to C++ version
+        return CORE::FileSize( CORE::CString( filename ) );
     }
-    return 0;
+    catch ( const std::exception& )
+    {
+        return 0;
+    }
 }
 
 /*-------------------------------------------------------------------------*/
 
 UInt32
 File_Exists( const char *filename )
-{
-    if ( NULL != filename )
+{GUCEF_TRACE;
+
+    try
     {
-        #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
-
-        WIN32_FIND_DATA FileInfo;
-        HANDLE hFind;
-        hFind = FindFirstFile( filename, &FileInfo );
-        if ( hFind != INVALID_HANDLE_VALUE )
-        {
-                FindClose( hFind );
-
-                /* make sure we found a file not a directory */
-                return !( FileInfo.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY );
-        }
-        return 0;
-
-        #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
-
-        struct stat buf;
-        return stat( filename, &buf ) == 0;
-
-        #else
-
-        FILE *fptr = fopen( filename, "rb" );
-        fclose( fptr );
-        return fptr > 0;
-
-        #endif
+        // map to C++ version
+        return CORE::FileExists( CString( filename ) ) ? 1 : 0;
     }
-    return 0;
+    catch ( const std::exception& )
+    {
+        return 0;
+    }
 }
 
 /*-------------------------------------------------------------------------*/
 
 UInt32
 Dir_Exists( const char *path )
-{
-    if ( GUCEF_NULL != path )
+{GUCEF_TRACE;
+
+    try
     {
-        #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
-
-        WIN32_FIND_DATA FileInfo;
-        HANDLE hFind = GUCEF_NULL;
-        hFind = FindFirstFile( path, &FileInfo );
-        if ( hFind != INVALID_HANDLE_VALUE )
-        {
-            FindClose( hFind );
-
-            /* make sure we found a directory not a file */
-            return ( FileInfo.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY );
-        }
-        return 0;
-
-        #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
-
-        struct stat buf;
-        if ( stat( path, &buf ) == 0 )
-            if ( buf.st_mode & S_IFDIR != 0 )
-                return 1;
-        return 0;
-
-        #else
-
-        FILE *fptr = fopen( filename, "rb" );
-        fclose( fptr );
-        return fptr > 0;
-
-        #endif
+        // map to C++ version
+        return CORE::DirExists( CString( path ) ) ? 1 : 0;
     }
-    return 0;
+    catch ( const std::exception& )
+    {
+        return 0;
+    }
 }
 
 /*-------------------------------------------------------------------------*/

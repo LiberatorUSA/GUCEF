@@ -1165,7 +1165,11 @@ int utf8makevalid(void *str, const utf8_int32_t replacement) {
 }
 
 void *utf8codepoint(const void *utf8_restrict str,
-                    utf8_int32_t *utf8_restrict out_codepoint) {
+                    utf8_int32_t *utf8_restrict out_codepoint) 
+{
+  if (NULL == str)
+    return NULL;
+
   const char *s = (const char *)str;
 
   if (0xf0 == (0xf8 & s[0])) {
@@ -1191,7 +1195,11 @@ void *utf8codepoint(const void *utf8_restrict str,
   return (void *)s;
 }
 
-size_t utf8codepointcalcsize(const void *str) {
+size_t utf8codepointcalcsize(const void *str) 
+{
+  if (NULL == str)
+    return 0;
+
   const char *s = (const char *)str;
 
   if (0xf0 == (0xf8 & s[0])) {
@@ -1224,6 +1232,9 @@ size_t utf8codepointsize(utf8_int32_t chr) {
 void *utf8catcodepoint(void *str, utf8_int32_t chr, size_t n) {
   char *s = (char *)str;
 
+  if (NULL == str)
+    return NULL;
+  
   if (0 == ((utf8_int32_t)0xffffff80 & chr)) {
     // 1-byte/7-bit ascii
     // (0b0xxxxxxx)

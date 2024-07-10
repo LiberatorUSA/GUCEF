@@ -1262,16 +1262,20 @@ CString
 StripFilename( const CString& pathPlusFilename )
 {GUCEF_TRACE;
 
-    char* buffer = GUCEF_NEW char[ pathPlusFilename.Length()+1 ];
-    UInt32 length = _Strip_Filename( buffer, pathPlusFilename.C_String() );
-    CString resultStr( buffer, length );
-    GUCEF_DELETE []buffer;
-    return resultStr;
+    Int32 sepCharIndex1 = pathPlusFilename.HasChar( GUCEF_DIRSEPCHAR, false );
+    Int32 sepCharIndex2 = pathPlusFilename.HasChar( GUCEF_DIRSEPCHAROPPOSITE, false );
+    Int32 sepCharIndex = sepCharIndex1 > sepCharIndex2 ? sepCharIndex1 : sepCharIndex2;
+
+    if ( sepCharIndex > 0 )
+    {
+        return pathPlusFilename.SubstrToIndex( sepCharIndex, true );    
+    }
+    return pathPlusFilename;
 }
 
 /*-------------------------------------------------------------------------*/
 
-GUCEF_CORE_PUBLIC_CPP CString
+CString
 StripFileExtention( const CString& path )
 {GUCEF_TRACE;
 
@@ -1285,11 +1289,23 @@ StripFileExtention( const CString& path )
 
 /*-------------------------------------------------------------------------*/
 
-GUCEF_CORE_PUBLIC_CPP CString
+CString
 ExtractFilename( const CString& pathPlusFilename )
 {GUCEF_TRACE;
 
-    return Extract_Filename( pathPlusFilename.C_String() );
+    Int32 sepCharIndex1 = pathPlusFilename.HasChar( GUCEF_DIRSEPCHAR, false );
+    Int32 sepCharIndex2 = pathPlusFilename.HasChar( GUCEF_DIRSEPCHAROPPOSITE, false );
+    Int32 sepCharIndex = sepCharIndex1 > sepCharIndex2 ? sepCharIndex1 : sepCharIndex2;
+    
+    if ( sepCharIndex > 0 )
+    {
+            // @TODO: this is inconsistent !!!
+            //   frontToBack is exclusive of index while the reverse is not
+            // hence for now +1 to sepCharIndex
+
+        return pathPlusFilename.SubstrToIndex( sepCharIndex+1, false );    
+    }
+    return pathPlusFilename;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -1489,12 +1505,12 @@ Utf16toUtf8( const std::wstring& wstr ,
 
     #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
 
-    size_t charsNeeded = ::WideCharToMultiByte( CP_ACP, 0, wstr.c_str(), (int)wstr.size(), 0, 0, 0, 0 );
+    size_t charsNeeded = ::WideCharToMultiByte( CP_UTF8, 0, wstr.c_str(), (int)wstr.size(), 0, 0, 0, 0 );
     if ( charsNeeded == 0 )
         return false; // Failed converting UTF-16 string to UTF-8
 
     str.resize( charsNeeded, '\0' );
-    int charsConverted = ::WideCharToMultiByte( CP_ACP, 0, wstr.c_str(), (int)wstr.size(), (LPSTR)str.c_str(), (int)charsNeeded, 0, 0 );
+    int charsConverted = ::WideCharToMultiByte( CP_UTF8, 0, wstr.c_str(), (int)wstr.size(), (LPSTR)str.c_str(), (int)charsNeeded, 0, 0 );
     if ( charsConverted == 0 )
         return false; // Failed converting UTF-16 string to UTF-8
 

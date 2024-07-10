@@ -77,6 +77,24 @@ class GUCEF_CORE_PUBLIC_CPP CResourceMetaData
     bool hasLastAccessedDateTime;
     UInt64 resourceSizeInBytes;
     bool hasResourceSizeInBytes;
+
+    bool hasIsReadOnly;
+    bool isReadOnly;
+    bool hasIsHidden;
+    bool isHidden;
+    bool hasIsSystemResource;
+    bool isSystemResource;
+    bool hasIsArchive;
+    bool isArchive;
+    bool hasIsCompressed;
+    bool isCompressed;
+    bool hasIsEncrypted;
+    bool isEncrypted;
+    bool hasIsTemporary;
+    bool isTemporary;
+    bool hasIsOffline;
+    bool isOffline;
+
     bool resourceExists;
 
     CResourceMetaData( void );

@@ -181,6 +181,40 @@ GUCEF_CORE_PUBLIC_CPP bool
 GetAllFileSystemMountPointsForVolume( const CString& volumeId         , 
                                       CString::StringSet& mountPoints );
 
+/*-------------------------------------------------------------------------*/
+
+/**
+ *  When needing to iterate the file system this class can be used to do so
+ *  It is a cross-platform implementation which provides meta-data for each 
+ *  resource found to the extent available
+ * 
+ *  The class is not thread safe, keep the iterator object private to the thread
+ *  Also note that the interface intentionally mimics the C API style for easy mapping
+ */
+class GUCEF_CORE_PUBLIC_CPP CFileSystemIterator
+{
+    public:
+
+    CFileSystemIterator( void );
+    ~CFileSystemIterator();
+
+    bool FindFirst( const CString& path );
+    bool FindNext( void );
+    bool FindClose( void );
+
+    bool IsADirectory( void ) const;
+    bool IsAFile( void ) const;
+
+    bool TryReadMetaData( CResourceMetaData& metaData );
+    CString GetResourceName( void ) const;
+
+    private:
+
+    struct FileSystemIteratorOsData;
+
+    struct FileSystemIteratorOsData* m_osData;
+};
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //
