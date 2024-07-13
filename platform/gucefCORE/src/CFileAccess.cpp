@@ -48,6 +48,11 @@
 #define GUCEF_CORE_GUCEF_ESSENTIALS_H
 #endif /* GUCEF_CORE_GUCEF_ESSENTIALS_H ? */ 
 
+#if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
+    #include <io.h>
+    #include <fcntl.h>
+#endif
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //
@@ -64,10 +69,13 @@ namespace CORE {
 //-------------------------------------------------------------------------*/
 
 CFileAccess::CFileAccess( void )
-    : CIOAccess()    ,
-      m_filename()   ,
-      m_mode()       ,
-      m_file( NULL )
+    : CIOAccess()    
+    , _writeable( false )
+    , _readable( false )
+    , m_mode()       
+    , m_file( GUCEF_NULL )
+    , m_filename()   
+    , _size( 0 )    
 {GUCEF_TRACE;
 
 }
@@ -76,13 +84,33 @@ CFileAccess::CFileAccess( void )
 
 CFileAccess::CFileAccess( const CString& file           ,
                           const char* mode /* = "rb" */ )
-        : CIOAccess(),
-          m_filename( file ) ,
-          m_mode( mode )     ,
-          m_file( NULL )     
+    : CIOAccess()
+    , _writeable( false )
+    , _readable( false )
+    , m_mode()       
+    , m_file( GUCEF_NULL )
+    , m_filename()   
+    , _size( 0 )    
 {GUCEF_TRACE;
 
     Open( file, mode );
+}
+
+/*-------------------------------------------------------------------------*/
+
+CFileAccess::CFileAccess( const CString& file               ,
+                          const CResourceMetaData& metaData ,
+                          const char* mode                  )
+    : CIOAccess()
+    , _writeable( false )
+    , _readable( false )
+    , m_mode()       
+    , m_file( GUCEF_NULL )
+    , m_filename()   
+    , _size( 0 ) 
+{GUCEF_TRACE;
+
+    Open( file, metaData, mode );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -137,10 +165,11 @@ CFileAccess::GetErrorString( int errorCode )
 void 
 CFileAccess::Open( void )
 {GUCEF_TRACE;
-        Close();
+
+    Close();
         
-        m_file = fopen( m_filename.C_String() ,
-                       m_mode.C_String()    );                      
+    m_file = fopen( m_filename.C_String() ,
+                    m_mode.C_String()    );                      
 }
 
 /*-------------------------------------------------------------------------*/
@@ -148,7 +177,8 @@ CFileAccess::Open( void )
 bool
 CFileAccess::Open( const CString& file ,
                    const char* mode    )
-{
+{GUCEF_TRACE;
+
     Close();
     
     m_filename = file;
@@ -168,7 +198,7 @@ CFileAccess::Open( const CString& file ,
     }
     if ( _readable )
     {
-        _size = Filesize( file.C_String() );
+        _size = FileSize( file );
     }
     
     errno = 0;
@@ -185,14 +215,151 @@ CFileAccess::Open( const CString& file ,
 
 /*-------------------------------------------------------------------------*/
 
+bool
+CFileAccess::Open( const CString& file               ,
+                   const CResourceMetaData& metaData ,
+                   const char* mode                  )
+{GUCEF_TRACE;
+
+    Close();
+    
+    m_filename = file;
+    m_mode = mode;
+    
+    _readable = ( strchr( mode, 'r' ) != NULL ) || ( strchr( mode, 'a' ) != NULL );
+    _writeable = ( strchr( mode, 'w' ) != NULL ) || ( strchr( mode, 'a' ) != NULL );
+
+    if ( _writeable )
+    {
+        CString path = StripFilename( file );
+        if ( !CreateDirs( path ) )
+        {
+            GUCEF_DEBUG_LOG( LOGLEVEL_NORMAL, "FileAccess:Open: Failed to recursively create directories" );
+            return false;
+        }
+    }
+    if ( _readable )
+    {
+        _size = FileSize( file );
+    }
+    
+    errno = 0;
+
+    #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
+
+    // Get the current file attributes
+    // we only want to change the flags we have and keep the rest as-is
+    CResourceMetaData originalMetaData;
+    if ( FileExists( m_filename ) )
+    {
+        if ( !GetFileMetaData( m_filename, originalMetaData ) )
+            return false;
+    }
+
+    std::wstring wFilename = ToWString( m_filename );
+
+    WIN32_FILE_ATTRIBUTE_DATA data;
+    memset( &data, 0, sizeof data );
+
+    // Convert boolean flags to file attribute flags
+    if ( metaData.hasIsHidden ) { metaData.isHidden ? data.dwFileAttributes |= FILE_ATTRIBUTE_HIDDEN : data.dwFileAttributes &= ~FILE_ATTRIBUTE_HIDDEN; }
+    else { originalMetaData.isHidden ? data.dwFileAttributes |= FILE_ATTRIBUTE_HIDDEN : data.dwFileAttributes &= ~FILE_ATTRIBUTE_HIDDEN; }
+
+    if ( metaData.hasIsReadOnly ) { metaData.isReadOnly ? data.dwFileAttributes |= FILE_ATTRIBUTE_READONLY : data.dwFileAttributes &= ~FILE_ATTRIBUTE_READONLY; }
+    else { originalMetaData.isReadOnly ? data.dwFileAttributes |= FILE_ATTRIBUTE_READONLY : data.dwFileAttributes &= ~FILE_ATTRIBUTE_READONLY; }
+
+    if ( metaData.hasIsSystemResource ) { metaData.isSystemResource ? data.dwFileAttributes |= FILE_ATTRIBUTE_SYSTEM : data.dwFileAttributes &= ~FILE_ATTRIBUTE_SYSTEM; }
+    else { originalMetaData.isSystemResource ? data.dwFileAttributes |= FILE_ATTRIBUTE_SYSTEM : data.dwFileAttributes &= ~FILE_ATTRIBUTE_SYSTEM; }
+
+    if ( metaData.hasIsArchive ) { metaData.isArchive ? data.dwFileAttributes |= FILE_ATTRIBUTE_ARCHIVE : data.dwFileAttributes &= ~FILE_ATTRIBUTE_ARCHIVE; }
+    else { originalMetaData.isArchive ? data.dwFileAttributes |= FILE_ATTRIBUTE_ARCHIVE : data.dwFileAttributes &= ~FILE_ATTRIBUTE_ARCHIVE; }
+
+    if ( metaData.hasIsCompressed ) { metaData.isCompressed ? data.dwFileAttributes |= FILE_ATTRIBUTE_COMPRESSED : data.dwFileAttributes &= ~FILE_ATTRIBUTE_COMPRESSED; }
+    else { originalMetaData.isCompressed ? data.dwFileAttributes |= FILE_ATTRIBUTE_COMPRESSED : data.dwFileAttributes &= ~FILE_ATTRIBUTE_COMPRESSED; }
+
+    if ( metaData.hasIsEncrypted ) { metaData.isEncrypted ? data.dwFileAttributes |= FILE_ATTRIBUTE_ENCRYPTED : data.dwFileAttributes &= ~FILE_ATTRIBUTE_ENCRYPTED; }
+    else { originalMetaData.isEncrypted ? data.dwFileAttributes |= FILE_ATTRIBUTE_ENCRYPTED : data.dwFileAttributes &= ~FILE_ATTRIBUTE_ENCRYPTED; }
+        
+    if ( metaData.hasIsTemporary ) { metaData.isTemporary ? data.dwFileAttributes |= FILE_ATTRIBUTE_TEMPORARY : data.dwFileAttributes &= ~FILE_ATTRIBUTE_TEMPORARY; }
+    else { originalMetaData.isTemporary ? data.dwFileAttributes |= FILE_ATTRIBUTE_TEMPORARY : data.dwFileAttributes &= ~FILE_ATTRIBUTE_TEMPORARY; }
+        
+    //if ( metaData.hasIsOffline ) { metaData.isOffline ? data.dwFileAttributes |= FILE_ATTRIBUTE_OFFLINE : data.dwFileAttributes &= ~FILE_ATTRIBUTE_OFFLINE; }
+    //else 
+            { originalMetaData.hasIsOffline ? data.dwFileAttributes |= FILE_ATTRIBUTE_OFFLINE : data.dwFileAttributes &= ~FILE_ATTRIBUTE_OFFLINE; }
+
+    // Open using Win32
+    HANDLE hFile = INVALID_HANDLE_VALUE;
+    if ( _readable && !_writeable )
+        hFile = ::CreateFileW( wFilename.c_str(), GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, data.dwFileAttributes, NULL );
+    else if ( _readable && _writeable )
+        hFile = ::CreateFileW( wFilename.c_str(), GENERIC_READ | GENERIC_WRITE, FILE_SHARE_READ, NULL, OPEN_ALWAYS, data.dwFileAttributes, NULL );
+    else if ( !_readable && _writeable )
+        hFile = ::CreateFileW( wFilename.c_str(), GENERIC_WRITE, FILE_SHARE_READ, NULL, CREATE_ALWAYS, data.dwFileAttributes, NULL );
+
+    if ( INVALID_HANDLE_VALUE == hFile ) 
+    {
+        GUCEF_DEBUG_LOG( LOGLEVEL_NORMAL, "FileAccess:Open: Failed to open handle to file \"" + file + "\". mode=" + CString(mode) + " error=" + GetErrorString( errno ) );
+        return false;
+    }
+
+    // Convert date time to windows file time as needed
+    metaData.hasCreationDateTime ? data.ftCreationTime = metaData.creationDateTime.ToWindowsFiletime() : data.ftCreationTime = originalMetaData.creationDateTime.ToWindowsFiletime();
+    metaData.hasModifiedDateTime ? data.ftLastWriteTime = metaData.modifiedDateTime.ToWindowsFiletime() : data.ftLastWriteTime = originalMetaData.modifiedDateTime.ToWindowsFiletime();
+    metaData.hasLastAccessedDateTime ? data.ftLastAccessTime = metaData.lastAccessedDateTime.ToWindowsFiletime() : data.ftLastAccessTime = originalMetaData.lastAccessedDateTime.ToWindowsFiletime();
+
+    if ( 0 == ::SetFileTime( hFile, &data.ftCreationTime, &data.ftLastAccessTime, &data.ftLastWriteTime ) )
+    {
+        GUCEF_DEBUG_LOG( LOGLEVEL_NORMAL, "FileAccess:Open: SetFileTime failed with error code: " + ToString( (UInt32) ::GetLastError() ) );
+    }
+
+    // Convert HANDLE to file descriptor
+    // This transfers ownership of the HANDLE to the file descriptor
+    int fd = ::_open_osfhandle( (intptr_t) hFile, _O_RDONLY );
+    if ( fd == -1 ) 
+    {
+        GUCEF_DEBUG_LOG( LOGLEVEL_NORMAL, "FileAccess:Open: Failed to convert HANDLE to file descriptor" );
+        ::CloseHandle( hFile );
+        hFile = INVALID_HANDLE_VALUE;
+        return false;
+    }
+
+    // Convert file descriptor to FILE*
+    // This transfers ownership of the file descriptor to the FILE*
+    m_file = ::_fdopen( fd, mode );
+    if ( m_file == NULL) 
+    {
+        GUCEF_DEBUG_LOG( LOGLEVEL_NORMAL, "FileAccess:Open: Failed to convert file descriptor to FILE*" );
+        _close( fd );
+    }
+    
+    #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
+
+    #else
+
+    /*
+     *  Unsupported platform
+     */
+
+    #endif
+
+    if ( m_file == NULL && 0 != errno )
+    {
+        GUCEF_DEBUG_LOG( LOGLEVEL_NORMAL, "FileAccess:Open: Failed to open file with meta-data \"" + file + "\". mode=" + CString(mode) + " error=" + GetErrorString( errno ) );
+    }
+    
+    return m_file != NULL;
+}
+
+/*-------------------------------------------------------------------------*/
+
 void 
 CFileAccess::Close( void )
 {GUCEF_TRACE;
 
     if ( NULL != m_file )
     { 
-            fclose( m_file );
-            m_file = NULL;
+        fclose( m_file );
+        m_file = NULL;
     }
 }
 
@@ -354,7 +521,7 @@ bool
 CFileAccess::IsValid( void )
 {GUCEF_TRACE;
     
-    return File_Exists( m_filename.C_String() ) == 1;
+    return FileExists( m_filename );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -369,7 +536,7 @@ CFileAccess::GetSize( void ) const
         {
             fflush( m_file );       
         }
-        return Filesize( m_filename.C_String() );           
+        return FileSize( m_filename );
     }
     return 0;
 }
@@ -394,11 +561,11 @@ CFileAccess::Clone( void ) const
 
     if ( IsReadable() )
     {
-            return GUCEF_NEW CFileAccess( m_filename, "rb" );
+        return GUCEF_NEW CFileAccess( m_filename, "rb" );
     }
     
     // Cannot be cloned
-    return NULL;
+    return GUCEF_NULL;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -418,7 +585,7 @@ CFileAccess::SetFileToUse( const CString& filename  ,
                            bool moveIfCurrentlyOpen )
 {GUCEF_TRACE;
 
-    if ( NULL != m_file )
+    if ( GUCEF_NULL != m_file )
     {
         // We already have a file open.
         fclose( m_file );
@@ -432,7 +599,7 @@ CFileAccess::SetFileToUse( const CString& filename  ,
     }
 
     m_file = fopen( filename.C_String(), mode );
-    if ( NULL != m_file )
+    if ( GUCEF_NULL != m_file )
     {
         m_filename = filename;
         m_mode = mode;

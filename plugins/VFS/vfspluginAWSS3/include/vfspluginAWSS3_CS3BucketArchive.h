@@ -85,6 +85,12 @@ class GUCEF_HIDDEN CS3BucketArchive : public VFS::CArchive
                                                const VFS::UInt32 memLoadSize = 0 ,
                                                const bool overwrite = false      ) GUCEF_VIRTUAL_OVERRIDE;
 
+    virtual VFS::TBasicVfsResourcePtr GetFileAs( const VFS::CString& file                ,
+                                                 const CORE::CResourceMetaData& metaData ,
+                                                 const char* mode = "wb"                 ,
+                                                 const UInt32 memLoadSize = 0            ,
+                                                 const bool overwrite = false            ) GUCEF_VIRTUAL_OVERRIDE;
+
     virtual bool StoreAsFile( const CORE::CString& filepath    ,
                               const CORE::CDynamicBuffer& data ,
                               const CORE::UInt64 offset        ,

@@ -181,6 +181,8 @@ class GUCEF_CORE_PUBLIC_CPP CDateTime : public CDate ,
 
     explicit CDateTime( const struct _FILETIME& src );
 
+    struct _FILETIME ToWindowsFiletime( void ) const;
+    
     #endif
 
     virtual ~CDateTime();

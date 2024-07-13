@@ -178,6 +178,110 @@ GetFileCreationTime( const CString& path )
 /*-------------------------------------------------------------------------*/
 
 bool
+SetFileMetaData( const CString& filePath           ,
+                 const CResourceMetaData& metaData )
+{GUCEF_TRACE;
+
+    if ( FileExists( filePath ) )
+    {
+        #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
+
+        bool totalSuccess = true;
+        std::wstring wFilepath = ToWString( filePath );
+        
+        // Get the current file attributes
+        // we only want to change the flags we have and keep the rest as-is
+        CResourceMetaData originalMetaData;
+        if ( !GetFileMetaData( filePath, originalMetaData ) )
+            return false;
+
+        WIN32_FILE_ATTRIBUTE_DATA data;
+        memset( &data, 0, sizeof data );
+
+        // Convert boolean flags to file attribute flags
+        if ( metaData.hasIsHidden ) { metaData.isHidden ? data.dwFileAttributes |= FILE_ATTRIBUTE_HIDDEN : data.dwFileAttributes &= ~FILE_ATTRIBUTE_HIDDEN; }
+        else { originalMetaData.isHidden ? data.dwFileAttributes |= FILE_ATTRIBUTE_HIDDEN : data.dwFileAttributes &= ~FILE_ATTRIBUTE_HIDDEN; }
+
+        if ( metaData.hasIsReadOnly ) { metaData.isReadOnly ? data.dwFileAttributes |= FILE_ATTRIBUTE_READONLY : data.dwFileAttributes &= ~FILE_ATTRIBUTE_READONLY; }
+        else { originalMetaData.isReadOnly ? data.dwFileAttributes |= FILE_ATTRIBUTE_READONLY : data.dwFileAttributes &= ~FILE_ATTRIBUTE_READONLY; }
+
+        if ( metaData.hasIsSystemResource ) { metaData.isSystemResource ? data.dwFileAttributes |= FILE_ATTRIBUTE_SYSTEM : data.dwFileAttributes &= ~FILE_ATTRIBUTE_SYSTEM; }
+        else { originalMetaData.isSystemResource ? data.dwFileAttributes |= FILE_ATTRIBUTE_SYSTEM : data.dwFileAttributes &= ~FILE_ATTRIBUTE_SYSTEM; }
+
+        if ( metaData.hasIsArchive ) { metaData.isArchive ? data.dwFileAttributes |= FILE_ATTRIBUTE_ARCHIVE : data.dwFileAttributes &= ~FILE_ATTRIBUTE_ARCHIVE; }
+        else { originalMetaData.isArchive ? data.dwFileAttributes |= FILE_ATTRIBUTE_ARCHIVE : data.dwFileAttributes &= ~FILE_ATTRIBUTE_ARCHIVE; }
+
+        if ( metaData.hasIsCompressed ) { metaData.isCompressed ? data.dwFileAttributes |= FILE_ATTRIBUTE_COMPRESSED : data.dwFileAttributes &= ~FILE_ATTRIBUTE_COMPRESSED; }
+        else { originalMetaData.isCompressed ? data.dwFileAttributes |= FILE_ATTRIBUTE_COMPRESSED : data.dwFileAttributes &= ~FILE_ATTRIBUTE_COMPRESSED; }
+
+        if ( metaData.hasIsEncrypted ) { metaData.isEncrypted ? data.dwFileAttributes |= FILE_ATTRIBUTE_ENCRYPTED : data.dwFileAttributes &= ~FILE_ATTRIBUTE_ENCRYPTED; }
+        else { originalMetaData.isEncrypted ? data.dwFileAttributes |= FILE_ATTRIBUTE_ENCRYPTED : data.dwFileAttributes &= ~FILE_ATTRIBUTE_ENCRYPTED; }
+        
+        if ( metaData.hasIsTemporary ) { metaData.isTemporary ? data.dwFileAttributes |= FILE_ATTRIBUTE_TEMPORARY : data.dwFileAttributes &= ~FILE_ATTRIBUTE_TEMPORARY; }
+        else { originalMetaData.isTemporary ? data.dwFileAttributes |= FILE_ATTRIBUTE_TEMPORARY : data.dwFileAttributes &= ~FILE_ATTRIBUTE_TEMPORARY; }
+        
+        //if ( metaData.hasIsOffline ) { metaData.isOffline ? data.dwFileAttributes |= FILE_ATTRIBUTE_OFFLINE : data.dwFileAttributes &= ~FILE_ATTRIBUTE_OFFLINE; }
+        //else 
+             { originalMetaData.hasIsOffline ? data.dwFileAttributes |= FILE_ATTRIBUTE_OFFLINE : data.dwFileAttributes &= ~FILE_ATTRIBUTE_OFFLINE; }
+
+        // Set the new file attributes
+        BOOL result = ::SetFileAttributesW( wFilepath.c_str(), data.dwFileAttributes );
+        if ( 0 == result )
+        {
+            GUCEF_DEBUG_LOG( LOGLEVEL_NORMAL, "SetFileMetaData: SetFileAttributesW failed with error code: " + ToString( (UInt32) ::GetLastError() ) );
+            totalSuccess = false;
+        }
+
+        // Convert date time to windows file time as needed
+        metaData.hasCreationDateTime ? data.ftCreationTime = metaData.creationDateTime.ToWindowsFiletime() : data.ftCreationTime = originalMetaData.creationDateTime.ToWindowsFiletime();
+        metaData.hasModifiedDateTime ? data.ftLastWriteTime = metaData.modifiedDateTime.ToWindowsFiletime() : data.ftLastWriteTime = originalMetaData.modifiedDateTime.ToWindowsFiletime();
+        metaData.hasLastAccessedDateTime ? data.ftLastAccessTime = metaData.lastAccessedDateTime.ToWindowsFiletime() : data.ftLastAccessTime = originalMetaData.lastAccessedDateTime.ToWindowsFiletime();
+                
+        // Open the file for writing attributes without needing a handle for data read/write operations
+        // we dont want to touch the file contents
+        HANDLE hFile = ::CreateFileW( wFilepath.c_str(), FILE_WRITE_ATTRIBUTES, FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL );
+        if ( INVALID_HANDLE_VALUE != hFile ) 
+        {        
+            if ( 0 == ::SetFileTime( hFile, &data.ftCreationTime, &data.ftLastAccessTime, &data.ftLastWriteTime ) )
+            {
+                GUCEF_DEBUG_LOG( LOGLEVEL_NORMAL, "SetFileMetaData: SetFileTime failed with error code: " + ToString( (UInt32) ::GetLastError() ) );
+                totalSuccess = false;
+            }
+            ::CloseHandle( hFile );
+            hFile = INVALID_HANDLE_VALUE;
+        }
+        else
+        {
+            GUCEF_DEBUG_LOG( LOGLEVEL_NORMAL, "SetFileMetaData: CreateFileW for FILE_WRITE_ATTRIBUTES failed with error code: " + ToString( (UInt32) ::GetLastError() ) );
+            totalSuccess = false;
+        }
+
+        return totalSuccess;
+
+        #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
+
+        /*
+         *  Unsupported platform  - @TODO
+         */
+        return false;
+
+        #else
+
+        /*
+         *  Unsupported platform
+         */
+        return false;
+
+        #endif
+    }
+    
+    // Cannot set meta-data on a non-existing file
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
 GetFileMetaData( const CString& filePath     ,
                  CResourceMetaData& metaData )
 {GUCEF_TRACE;
@@ -224,6 +328,11 @@ GetFileMetaData( const CString& filePath     ,
             metaData.hasIsTemporary = true;
             data.dwFileAttributes & FILE_ATTRIBUTE_OFFLINE ? metaData.isOffline = true : metaData.isOffline = false;
             metaData.hasIsOffline = true;            
+        }
+        else
+        {
+            // Failed to get file attributes.
+            GUCEF_DEBUG_LOG( LOGLEVEL_NORMAL, "GetFileMetaData: GetFileAttributesExW failed with error code: " + ToString( (UInt32) ::GetLastError() ) );
         }
 
         // true no matter what since access rights also factor into it

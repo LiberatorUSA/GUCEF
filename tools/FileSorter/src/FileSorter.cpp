@@ -193,8 +193,40 @@ FileTypeConfig::GetClassTypeName( void ) const
 
 /*-------------------------------------------------------------------------*/
 
+ CORE::CString
+FileTypeConfig::GetStringForFileType( const TFileType fileType )
+{GUCEF_TRACE;
+
+    switch ( fileType )
+    {
+        case TFileType::FILETYPE_TEXT: return "text";
+        case TFileType::FILETYPE_BINARY: return "binary";
+        case TFileType::FILETYPE_IMAGE: return "image";
+        case TFileType::FILETYPE_AUDIO: return "audio";
+        case TFileType::FILETYPE_VIDEO: return "video";
+        case TFileType::FILETYPE_ARCHIVE: return "archive";
+        case TFileType::FILETYPE_DOCUMENT: return "document";
+        case TFileType::FILETYPE_PRESENTATION: return "presentation";
+        case TFileType::FILETYPE_SPREADSHEET: return "spreadsheet";
+        case TFileType::FILETYPE_DATABASE: return "database";
+        case TFileType::FILETYPE_EXECUTABLE: return "executable";
+        case TFileType::FILETYPE_SCRIPT: return "script";
+        case TFileType::FILETYPE_WEBPAGE: return "webpage";
+        case TFileType::FILETYPE_SOURCECODE: return "sourcecode";
+        case TFileType::FILETYPE_CONFIGURATION: return "configuration";
+        case TFileType::FILETYPE_LOG: return "log";
+        case TFileType::FILETYPE_TEMPORARY: return "temporary";
+        case TFileType::FILETYPE_COMPRESSED: return "compressed";
+        case TFileType::FILETYPE_OTHER: return "other";
+        case TFileType::FILETYPE_UNKNOWN: return "unknown";
+        default: return "unknown";
+    }
+}
+
+/*-------------------------------------------------------------------------*/
+
 TFileType 
-FileTypeConfig::GetFileTypeForString( const CORE::CString& fileTypeStr ) const
+FileTypeConfig::GetFileTypeForString( const CORE::CString& fileTypeStr )
 {GUCEF_TRACE;
 
     const CORE::CString& fileTypeStrLc = fileTypeStr.Lowercase();
@@ -243,6 +275,40 @@ FileTypeConfig::GetFileTypeForString( const CORE::CString& fileTypeStr ) const
         return TFileType::FILETYPE_UNKNOWN;
 
     return TFileType::FILETYPE_UNKNOWN;
+}
+
+/*-------------------------------------------------------------------------*/
+
+TFileTypeSet 
+FileTypeConfig::GetFileTypesForStringSet( const CORE::CString::StringSet& fileTypeStrs )
+{GUCEF_TRACE;
+
+    TFileTypeSet fileTypes;
+    CORE::CString::StringSet::const_iterator i = fileTypeStrs.begin();
+    while ( i != fileTypeStrs.end() )
+    {
+        const CORE::CString& fileTypeStr = (*i);
+        fileTypes.insert( GetFileTypeForString( fileTypeStr ) );
+        ++i;
+    }
+    return fileTypes;
+}
+
+/*-------------------------------------------------------------------------*/
+
+CORE::CString::StringSet 
+FileTypeConfig::GetStringSetForFileTypes( const TFileTypeSet& fileTypes )
+{GUCEF_TRACE;
+
+    CORE::CString::StringSet fileTypeStrs;
+    TFileTypeSet::const_iterator i = fileTypes.begin();
+    while ( i != fileTypes.end() )
+    {
+        TFileType fileType = (*i);
+        fileTypeStrs.insert( GetStringForFileType( fileType ) );
+        ++i;
+    }
+    return fileTypeStrs;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -331,6 +397,8 @@ FileSorterConfig::FileSorterConfig( void )
     , monthFolderDecoration( "-== {month}. {monthName} ==-" )
     , useDayFolder( true )
     , dayFolderDecoration( "{month}.{day}.{year}" )
+    , sortAllFileTypes( false )
+    , fileTypesToSort()
 {GUCEF_TRACE;
 
 }
@@ -372,7 +440,14 @@ FileSorterConfig::LoadConfig( const CORE::CDataNode& globalConfig )
     monthFolderDecoration = cfg->GetAttributeValueOrChildValueByName( "monthFolderDecoration", monthFolderDecoration ).AsString( monthFolderDecoration, true );
     useDayFolder = cfg->GetAttributeValueOrChildValueByName( "useDayFolder", useDayFolder ).AsBool( useDayFolder, true );
     dayFolderDecoration = cfg->GetAttributeValueOrChildValueByName( "dayFolderDecoration", dayFolderDecoration ).AsString( dayFolderDecoration, true );
-
+    sortAllFileTypes = cfg->GetAttributeValueOrChildValueByName( "sortAllFileTypes", useDayFolder ).AsBool( sortAllFileTypes, true );
+        
+    CORE::CString::StringSet fileTypesToSortStrSet = FileTypeConfig::GetStringSetForFileTypes( fileTypesToSort );
+    CORE::CString fileTypesToSortStr = CORE::ToString( fileTypesToSortStrSet );
+    fileTypesToSortStr = cfg->GetAttributeValueOrChildValueByName( "fileTypesToSort", fileTypesToSortStr ).AsString( fileTypesToSortStr, true );
+    fileTypesToSortStrSet = CORE::StringToStringSet( fileTypesToSortStr );
+    fileTypesToSort = FileTypeConfig::GetFileTypesForStringSet( fileTypesToSortStrSet );
+    
     const CORE::CDataNode* fileTypeConfigNode = cfg->FindChild( "FileTypeConfig" );
     if ( GUCEF_NULL != fileTypeConfigNode )
     {
@@ -398,10 +473,22 @@ FileSorter::SortFile( const CORE::CString& currentVfsFilePath )
 {GUCEF_TRACE;
 
     VFS::CVFS& vfs = VFS::CVfsGlobal::Instance()->GetVfs();
-    
-    CORE::CString filename = CORE::ExtractFilename( currentVfsFilePath );
+        
     CORE::CString fileExt = CORE::ExtractFileExtention( currentVfsFilePath );
     TFileType fileType = m_appConfig.fileTypeConfig.GetFileTypeForFileExtension( fileExt );
+
+    if ( !m_appConfig.sortAllFileTypes )
+    {
+        TFileTypeSet::iterator i = m_appConfig.fileTypesToSort.find( fileType );
+        if ( i == m_appConfig.fileTypesToSort.end() )
+        {
+            GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "FileSorter: File \"" + currentVfsFilePath + "\" is of type \"" + 
+                FileTypeConfig::GetStringForFileType( fileType ) + "\" and is not in the list of file types to sort. Skipping" );
+            return true;
+        }
+    }
+
+    CORE::CString filename = CORE::ExtractFilename( currentVfsFilePath );
     const CORE::CString& typeSortRootFolder = m_appConfig.fileTypeConfig.GetSortRootFolderForFileType( fileType );    
         
     CORE::CString targetVfsPath = m_appConfig.vfsSortedTargetRootPath + "/" + typeSortRootFolder;

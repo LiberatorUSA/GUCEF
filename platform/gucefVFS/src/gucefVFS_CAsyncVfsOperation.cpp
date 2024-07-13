@@ -185,6 +185,23 @@ CAsyncVfsOperation::OnTaskCycle( CORE::CICloneable* taskData )
             if ( !NotifyObservers( AsyncVfsOperationCompletedEvent, &syncCallResult ) ) return true;
             break;
         }
+        case ASYNCVFSOPERATIONTYPE_COPYFILECONTENT:
+        {
+            GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "AsyncVfsOperation(" + CORE::PointerToString( this ) + "):OnTaskCycle: Async invocation of CopyFileContent" );
+            
+            CCopyFileContentTaskData* specificSyncCallData = static_cast< CCopyFileContentTaskData* >( syncCallData );
+            bool success = CVfsGlobal::Instance()->GetVfs().CopyFileContent( specificSyncCallData->originalFilepath , 
+                                                                             specificSyncCallData->copyFilepath     ,
+                                                                             specificSyncCallData->overwrite        );
+        
+            syncCallResult.successState = success;
+            syncCallResult.durationInMilliSecs = (UInt32) startTime.CORE::CDateTime::GetTimeDifferenceInMillisecondsToNow();
+
+            GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "AsyncVfsOperation(" + CORE::PointerToString( this ) + "):OnTaskCycle: Completed Async invocation of CopyFileContent" );
+            
+            if ( !NotifyObservers( AsyncVfsOperationCompletedEvent, &syncCallResult ) ) return true;
+            break;
+        }
         case ASYNCVFSOPERATIONTYPE_ENCODEFILE:
         {
             GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "AsyncVfsOperation(" + CORE::PointerToString( this ) + "):OnTaskCycle: Async invocation of EncodeFile" );

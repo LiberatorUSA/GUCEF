@@ -486,10 +486,10 @@ inline CString ToString( const CAsciiString::StringSet& el ) { CAsciiString out;
 #elif ( GUCEF_DEFAULT_STRING_FORMAT == GUCEF_DATATYPE_UTF8_STRING )
 inline CString ToString( const CUtf8String& str ) { return str; }
 inline CString ToString( const CAsciiString& str ) { return CUtf8String( str ); }
-inline CString ToString( const CUtf8String::StringVector& el ) { CUtf8String out; return out.Combine( el, ',' ); }
-inline CString ToString( const CAsciiString::StringVector& el ) { CAsciiString out; return CUtf8String( out.Combine( el, ',' ) ); }
-inline CString ToString( const CUtf8String::StringSet& el ) { CUtf8String out; return out.Combine( el, ',' ); }
-inline CString ToString( const CAsciiString::StringSet& el ) { CAsciiString out; return CUtf8String( out.Combine( el, ',' ) ); }
+inline CString ToString( const CUtf8String::StringVector& el, Int32 sepChar = ',' ) { CUtf8String out; return out.Combine( el, sepChar ); }
+inline CString ToString( const CAsciiString::StringVector& el, char sepChar = ',' ) { CAsciiString out; return CUtf8String( out.Combine( el, sepChar ) ); }
+inline CString ToString( const CUtf8String::StringSet& el, Int32 sepChar = ',' ) { CUtf8String out; return out.Combine( el, sepChar ); }
+inline CString ToString( const CAsciiString::StringSet& el, char sepChar = ',' ) { CAsciiString out; return CUtf8String( out.Combine( el, sepChar ) ); }
 inline CString ToString( const CUtf8String::StringMap& el ) { CUtf8String out; return out.Combine( el, '=', ',' ); }
 #endif
 
@@ -526,8 +526,8 @@ inline CString ToString( void ) { return typeid( typeNameParam ).name(); }
 
 /*-------------------------------------------------------------------------*/
 
-inline CString::StringSet ToStringSet( const CUtf8String& str ) { CString::StringSet set; set.insert( str ); return set; }
-inline CString::StringSet ToStringSet( const CAsciiString& str ) { CString::StringSet set; set.insert( str ); return set; }
+inline CString::StringSet ToStringSet( const CUtf8String& str ) { return StringToStringSet( str ); }
+inline CString::StringSet ToStringSet( const CAsciiString& str ) { return StringToStringSet( str ); }
 inline CString::StringSet ToStringSet( const CUtf8String::StringVector& vec ) { CString::StringSet set; CUtf8String::StringVector::const_iterator i=vec.begin(); while ( i != vec.end() ) { set.insert( (*i) ); ++i; } return set; }
 inline CString::StringSet ToStringSet( const CAsciiString::StringVector& vec ) { CString::StringSet set; CAsciiString::StringVector::const_iterator i=vec.begin(); while ( i != vec.end() ) { set.insert( (*i) ); ++i; } return set; }
 #if ( GUCEF_DEFAULT_STRING_FORMAT == GUCEF_DATATYPE_ASCII_STRING )

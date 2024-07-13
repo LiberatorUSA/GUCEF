@@ -662,12 +662,96 @@ CVFS::MoveFileAsync( const CORE::CString& oldFilePath    ,
 /*-------------------------------------------------------------------------*/
 
 bool
+CVFS::CopyFileContent( const CORE::CString& originalFilepath ,
+                       const CORE::CString& copyFilepath     ,
+                       const bool overwrite                  )
+{GUCEF_TRACE;
+
+    if ( originalFilepath == copyFilepath )
+    {
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "VFS:CopyFileContent: original and target path cannot be the same: " + originalFilepath );
+        return false;
+    }
+        
+    TBasicVfsResourcePtr originalFile = GetFile( originalFilepath, "rb", overwrite );
+    if ( !originalFile || GUCEF_NULL == originalFile->GetAccess() || !originalFile->GetAccess()->IsValid() )
+    {
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "VFS:CopyFileContent: Cannot obtain original file: " + originalFilepath );
+        return false;
+    }
+    UInt64 origSize = originalFile->GetAccess()->GetSize();
+
+    TBasicVfsResourcePtr targetFile = GetFile( copyFilepath, "wb", overwrite );
+    if ( !targetFile || GUCEF_NULL == targetFile->GetAccess() || !targetFile->GetAccess()->IsValid() )
+    {
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "VFS:CopyFileContent: Cannot obtain access to output file: " + copyFilepath );
+        return false;
+    }
+
+    // Perform the actual byte copy synchronously and check if the expected size matches the actual size
+    UInt64 bytesWritten = targetFile->GetAccess()->Write( *originalFile->GetAccess() );
+    if ( origSize != bytesWritten )
+    {
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "VFS:CopyFileContent: Failed to fully copy file \"" + originalFilepath +
+            "\" to \"" + copyFilepath + "\". Bytes written (" + CORE::ToString( bytesWritten ) +
+            ") does not match expected size (" + CORE::ToString( origSize ) );
+
+        targetFile.Unlink();
+
+        // We should not leave a corrupt file behind
+        if ( !DeleteFile( copyFilepath, false ) )
+        {
+            GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "VFS:CopyFileContent: Failed to delete partially copied file at \"" + copyFilepath + "\". Corrupt file may now exist in target location, please check!" );
+        }
+        return false;
+    }
+    
+    GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "VFS:CopyFileContent: Successfully copied file \"" + originalFilepath +
+            "\" to \"" + copyFilepath + "\"" );
+    return true;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CVFS::CopyFileContentAsync( const CORE::CString& originalFilepath ,
+                            const CORE::CString& copyFilepath     ,
+                            const bool overwrite                  ,
+                            const CORE::CString& asyncRequestId   )
+{GUCEF_TRACE;
+
+    try
+    {
+        CCopyFileContentTaskData operationData;
+        operationData.operationType = ASYNCVFSOPERATIONTYPE_COPYFILECONTENT;
+        operationData.asyncRequestId = asyncRequestId;
+        operationData.originalFilepath = originalFilepath;
+        operationData.copyFilepath = copyFilepath;
+        operationData.overwrite = overwrite;
+
+        CORE::ThreadPoolPtr threadPool = CORE::CCoreGlobal::Instance()->GetTaskManager().GetOrCreateThreadPool( m_asyncOpsThreadpool );
+        return !CORE::TaskStatusIsAnError( threadPool->QueueTask( CAsyncVfsOperation::TaskType, &operationData, GUCEF_NULL, &AsObserver() ) );
+    }
+    catch ( const timeout_exception& )
+    {
+        GUCEF_WARNING_LOG( CORE::LOGLEVEL_NORMAL, "VFS:CopyFileContentAsync: Failed to queue task due to timeout. asyncRequestId=" +
+            asyncRequestId );
+    }
+    catch ( const std::exception& e )
+    {
+        GUCEF_EXCEPTION_LOG( CORE::LOGLEVEL_IMPORTANT, "VFS:CopyFileContentAsync: Failed to queue task due to exception. asyncRequestId=" +
+            asyncRequestId + " what=" + CORE::ToString( e.what() ) );
+    }
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
 CVFS::CopyFile( const CORE::CString& originalFilepath ,
                 const CORE::CString& copyFilepath     ,
                 const bool overwrite                  )
 {GUCEF_TRACE;
-
-return false;
 
     if ( originalFilepath == copyFilepath )
     {
@@ -675,6 +759,14 @@ return false;
         return false;
     }
 
+    CORE::CResourceMetaData metaData;
+    if ( !GetFileMetaData( originalFilepath ,
+                           metaData         ) )
+    {
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "VFS:CopyFile: Cannot obtain meta-data on original file: " + originalFilepath );
+        return false;
+    }
+    
     TBasicVfsResourcePtr originalFile = GetFile( originalFilepath, "rb", overwrite );
     if ( !originalFile || GUCEF_NULL == originalFile->GetAccess() || !originalFile->GetAccess()->IsValid() )
     {
@@ -682,15 +774,54 @@ return false;
         return false;
     }
 
-    TBasicVfsResourcePtr targetFile = GetFile( copyFilepath, "wb", overwrite );
+    // Applying meta-data when obtaining the target file is ideal since it avoids the possibility of race conditions
+    // where the file is created without the meta-data and then the meta-data is applied afterwards
+    // However not all backend implementations support this so we fall back to applying the meta-data afterwards
+    TBasicVfsResourcePtr targetFile = GetFileAs( copyFilepath, metaData, "wb", overwrite );
     if ( !targetFile || GUCEF_NULL == targetFile->GetAccess() || !targetFile->GetAccess()->IsValid() )
     {
-        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "VFS:CopyFile: Cannot obtain access to output file: " + copyFilepath );
-        return false;
+        GUCEF_WARNING_LOG( CORE::LOGLEVEL_NORMAL, "VFS:CopyFile: Cannot obtain access to output file using source metadata as a constraint: " + copyFilepath );
+
+        // Try again without the meta-data constraint
+        targetFile = GetFile( copyFilepath, "wb", overwrite );
+        if ( !targetFile || GUCEF_NULL == targetFile->GetAccess() || !targetFile->GetAccess()->IsValid() )
+        {
+            GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "VFS:CopyFile: Cannot obtain access to output file: " + copyFilepath );
+            return false;
+        }
+        GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "VFS:CopyFile: Obtained access to output file without using source metadata as a constraint: " + copyFilepath );
     }
 
+    // Perform the actual byte copy synchronously and check if the expected size matches the actual size
     UInt64 bytesWritten = targetFile->GetAccess()->Write( *originalFile->GetAccess() );
+    if ( metaData.hasResourceSizeInBytes )
+    {
+        if ( bytesWritten != metaData.resourceSizeInBytes )
+        {
+            GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "VFS:CopyFile: Failed to fully copy file \"" + originalFilepath +
+                "\" to \"" + copyFilepath + "\". Bytes written (" + CORE::ToString( bytesWritten ) +
+                ") does not match expected size (" + CORE::ToString( metaData.resourceSizeInBytes ) + ")" );
 
+            targetFile.Unlink();
+
+            // We should not leave a corrupt file behind
+            if ( !DeleteFile( copyFilepath, false ) )
+            {
+                GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "VFS:CopyFile: Failed to delete partially copied file at \"" + copyFilepath + "\". Corrupt file may now exist in target location, please check!" );
+            }
+            return false;
+        }
+    }
+
+    // Again set the meta-data, this time after the file has been written
+    // We need to do this regardless to fix the 'lastModified' time if possible
+    // hopefully the other flags were already set during the file creation
+    if ( !SetFileMetaData( copyFilepath, metaData ) )
+    {
+        GUCEF_WARNING_LOG( CORE::LOGLEVEL_NORMAL, "VFS:CopyFile: Could not apply meta-data to copied file \"" + copyFilepath +
+            "\" using info from \"" + originalFilepath + "\". File content is copied but meta-data will differ" );
+    }
+    
     GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "VFS:CopyFile: Successfully copied file \"" + originalFilepath +
             "\" to \"" + copyFilepath + "\"" );
     return true;
@@ -1140,6 +1271,9 @@ CVFS::GetFile( const CORE::CString& file          ,
     CString filepath = ConformVfsFilePath( file );
     bool fileMustExist = *mode == 'r';
 
+    if ( filepath.IsNULLOrEmpty() || GUCEF_NULL == mode )
+        return TBasicVfsResourcePtr();
+
     MT::CScopeReaderLock lock( m_rwdataLock );
 
     // Get a list of all eligable mounts
@@ -1182,6 +1316,51 @@ CVFS::GetFile( const CORE::CString& file          ,
 
     // Unable to load file
     GUCEF_ERROR_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "Vfs: Unable to locate a mount which can provide the file: " + file );
+    return TBasicVfsResourcePtr();
+}
+
+/*-------------------------------------------------------------------------*/
+
+TBasicVfsResourcePtr
+CVFS::GetFileAs( const CORE::CString& file               ,
+                 const CORE::CResourceMetaData& metaData ,
+                 const char* mode                        ,
+                 const bool overwrite                    )
+{GUCEF_TRACE;
+
+    CString filepath = ConformVfsFilePath( file );
+
+    if ( filepath.IsNULLOrEmpty() || GUCEF_NULL == mode )
+        return TBasicVfsResourcePtr();
+
+    MT::CScopeReaderLock lock( m_rwdataLock );
+
+    // Get a list of all eligable mounts
+    TConstMountLinkVector mountLinks;
+    GetEligableMounts( filepath, overwrite, mountLinks );
+
+    // Find the file in the available archives
+    TConstMountLinkVector::iterator i = mountLinks.begin();
+    while ( i != mountLinks.end() )
+    {
+        TConstMountLink& mountLink = (*i);
+
+        GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "Vfs: Found requested file using mount link remainder: " + mountLink.remainder );
+        TArchivePtr archive = mountLink.mountEntry->archive;
+        TBasicVfsResourcePtr filePtr = archive->GetFileAs( mountLink.remainder ,
+                                                           metaData            ,
+                                                           mode                ,
+                                                           m_maxmemloadsize    ,
+                                                           overwrite           );
+
+        if ( filePtr )
+            return filePtr;
+
+        ++i;
+    }
+
+    // Unable to load file
+    GUCEF_ERROR_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "Vfs: Unable to locate a mount which can provide the file using the provided meta-data constraints: " + file );
     return TBasicVfsResourcePtr();
 }
 
@@ -2274,6 +2453,37 @@ CVFS::GetFileList( CORE::CDataNode& outputDataTree        ,
 
         ++i;
     }
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CVFS::SetFileMetaData( const CString& filename           ,
+                       CORE::CResourceMetaData& metaData )
+{GUCEF_TRACE;
+
+    CString path = ConformVfsFilePath( filename );
+
+    MT::CScopeReaderLock lock( m_rwdataLock );
+
+    // Get a list of all eligable mounts
+    TConstMountLinkVector mountLinks;
+    GetEligableMounts( path, false, mountLinks );
+
+    // Search for a file and then get the meta data
+    TConstMountLinkVector::iterator i = mountLinks.begin();
+    while ( i != mountLinks.end() )
+    {
+        TConstMountLink& mountLink = (*i);
+        TArchivePtr archive = mountLink.mountEntry->archive;
+        if ( archive->SetFileMetaData( mountLink.remainder, metaData ) )
+        {
+            return true;
+        }
+        ++i;
+    }
+
+    return false;
 }
 
 /*-------------------------------------------------------------------------*/

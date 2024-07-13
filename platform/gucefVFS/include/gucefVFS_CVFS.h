@@ -214,6 +214,11 @@ class GUCEF_VFS_PUBLIC_CPP CVFS : public CORE::CTSGNotifier          ,
                                   const char* mode = "rb"      ,
                                   const bool overwrite = false );
 
+    TBasicVfsResourcePtr GetFileAs( const CORE::CString& file               ,
+                                    const CORE::CResourceMetaData& metaData ,
+                                    const char* mode = "wb"                 ,
+                                    const bool overwrite = false            );
+
     /**
      *  Loads the entire file at the given location into memory if possible
      */
@@ -259,6 +264,37 @@ class GUCEF_VFS_PUBLIC_CPP CVFS : public CORE::CTSGNotifier          ,
     /**
      *  Copies a file from one vfs path to another if possible
      *  the target file must be located in a writable target mounted archive
+     *  Note that meta-data is explicitly not copied, only the file content
+     *  use CopyFile() if you care about the meta-data
+     *
+     *  @param originalFilepath   path to the original file to be copied
+     *  @param copyFilepath       destination path for the file copy
+     *  @param overwrite          whether to overwrite any existing file at the target path if one exists    
+     */
+    bool CopyFileContent( const CORE::CString& originalFilepath ,
+                          const CORE::CString& copyFilepath     ,
+                          const bool overwrite = false          );
+
+    /**
+     *  Async copies file content from one vfs path to another if possible
+     *  the target file must be located in a writable target mounted archive
+     *  See CopyFileContent()
+     *
+     *  @param originalFilepath       path to the original file to be copied
+     *  @param copyFilepath           destination path for the file copy
+     *  @param overwrite              whether to overwrite any existing file at the target path if one exists    
+     *  @param asyncRequestId         optional: user defined identifier for the async request to be provided back in the response
+     */
+    bool CopyFileContentAsync( const CORE::CString& originalFilepath                      ,
+                               const CORE::CString& copyFilepath                          ,
+                               const bool overwrite = false                               ,
+                               const CORE::CString& asyncRequestId = CORE::CString::Empty );
+
+    /**
+     *  Copies a file from one vfs path to another if possible
+     *  the target file must be located in a writable target mounted archive
+     *  Note that meta-data is explicitly copied as well to the extent feasible using the underlying backends
+     *  use CopyFileContent() if you only care about the file content as it would incur less overhead
      *
      *  @param originalFilepath   path to the original file to be copied
      *  @param copyFilepath       destination path for the file copy
@@ -271,6 +307,7 @@ class GUCEF_VFS_PUBLIC_CPP CVFS : public CORE::CTSGNotifier          ,
     /**
      *  Async copies a file from one vfs path to another if possible
      *  the target file must be located in a writable target mounted archive
+     *  See CopyFile()
      *
      *  @param originalFilepath       path to the original file to be copied
      *  @param copyFilepath           destination path for the file copy
@@ -552,6 +589,9 @@ class GUCEF_VFS_PUBLIC_CPP CVFS : public CORE::CTSGNotifier          ,
     bool GetFileMetaData( const CString& filename           ,
                           CORE::CResourceMetaData& metaData ) const; 
 
+    bool SetFileMetaData( const CString& filename           ,
+                          CORE::CResourceMetaData& metaData );
+
     bool GetActualFilePath( const CString& file ,
                             CString& path       ) const;
 
@@ -638,6 +678,7 @@ class GUCEF_VFS_PUBLIC_CPP CVFS : public CORE::CTSGNotifier          ,
         CORE::CString path;
         bool writeable;
         TArchivePtr archive;
+        CORE::CString archiveType;
         CORE::CString mountPath;
     };
     typedef struct SMountEntry TMountEntry;

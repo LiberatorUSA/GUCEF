@@ -135,6 +135,20 @@ CS3Archive::GetFile( const VFS::CString& file      ,
 
 /*-------------------------------------------------------------------------*/
 
+VFS::TBasicVfsResourcePtr 
+CS3Archive::GetFileAs( const VFS::CString& file                ,
+                       const CORE::CResourceMetaData& metaData ,
+                       const char* mode                        ,
+                       const UInt32 memLoadSize                ,
+                       const bool overwrite                    )
+{GUCEF_TRACE;
+
+    // We dont currently support applying meta-data
+    return VFS::TBasicVfsResourcePtr();
+}
+
+/*-------------------------------------------------------------------------*/
+
 bool 
 CS3Archive::StoreAsFile( const CORE::CString& filepath    ,
                          const CORE::CDynamicBuffer& data ,

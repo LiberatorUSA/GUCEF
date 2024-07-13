@@ -72,6 +72,7 @@ enum EAsyncVfsOperationType : int
     ASYNCVFSOPERATIONTYPE_MOUNTARCHIVE         ,
     ASYNCVFSOPERATIONTYPE_STOREDATAASFILE      ,
     ASYNCVFSOPERATIONTYPE_COPYFILE             ,
+    ASYNCVFSOPERATIONTYPE_COPYFILECONTENT      ,
     ASYNCVFSOPERATIONTYPE_MOVEFILE             ,
     ASYNCVFSOPERATIONTYPE_ENCODEFILE           ,
     ASYNCVFSOPERATIONTYPE_DECODEFILE           ,
@@ -240,6 +241,23 @@ class GUCEF_VFS_PUBLIC_CPP CCopyFileTaskData : public CAsyncVfsTaskData
     CCopyFileTaskData( void );
     CCopyFileTaskData( const CCopyFileTaskData& src );
     virtual ~CCopyFileTaskData();
+};
+
+/*-------------------------------------------------------------------------*/
+
+class GUCEF_VFS_PUBLIC_CPP CCopyFileContentTaskData : public CAsyncVfsTaskData
+{
+    public:
+
+    CORE::CString originalFilepath;
+    CORE::CString copyFilepath;
+    bool overwrite;
+
+    virtual CICloneable* Clone( void ) const GUCEF_VIRTUAL_OVERRIDE;
+
+    CCopyFileContentTaskData( void );
+    CCopyFileContentTaskData( const CCopyFileContentTaskData& src );
+    virtual ~CCopyFileContentTaskData();
 };
 
 /*-------------------------------------------------------------------------*/

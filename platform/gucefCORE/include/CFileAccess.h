@@ -33,6 +33,11 @@
 #define GUCEF_CORE_CIOACCESS_H
 #endif /* GUCEF_CORE_CIOACCESS_H ? */
 
+#ifndef GUCEF_CORE_CRESOURCEMETADATA_H
+#include "gucefCORE_CResourceMetaData.h"
+#define GUCEF_CORE_CRESOURCEMETADATA_H
+#endif /* GUCEF_CORE_CRESOURCEMETADATA_H ? */
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //
@@ -57,15 +62,26 @@ class GUCEF_CORE_PUBLIC_CPP CFileAccess : public CIOAccess
     CFileAccess( const CString& file     ,
                  const char* mode = "rb" );
 
+    CFileAccess( const CString& file               ,
+                 const CResourceMetaData& metaData ,
+                 const char* mode = "wb"           );
+
     CFileAccess( void );
 
     virtual ~CFileAccess() GUCEF_VIRTUAL_OVERRIDE;
 
     /**
-      *      open the resource for I/O
-      */
+     *      open the resource for I/O
+     */
     virtual bool Open( const CString& file     ,
                        const char* mode = "rb" );
+
+    /**
+     *      open the resource for I/O
+     */
+    virtual bool Open( const CString& file               ,
+                       const CResourceMetaData& metaData ,
+                       const char* mode = "wb"           );
 
     /**
       *      open the resource for I/O

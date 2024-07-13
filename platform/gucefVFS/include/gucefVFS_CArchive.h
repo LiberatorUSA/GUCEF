@@ -117,6 +117,19 @@ class GUCEF_VFS_PUBLIC_CPP CArchive : public CORE::CObservingNotifier           
                                           const UInt32 memLoadSize = 0 ,
                                           const bool overwrite = false ) = 0;
 
+    /**
+     *  Default implementation always fails.
+     *  Derived classes should override this method to provide the functionality if feasible.
+     *  Recommended implementation is to apply the meta-data 'best effort' based on the constraints of the actual underlying storage
+     *  and to return true if within the constraints the meta-data was applied successfully.
+     *  Aside from the metadata handling the bahaviour of this member function should be the same as GetFile().
+     */
+    virtual TBasicVfsResourcePtr GetFileAs( const CString& file                     ,
+                                            const CORE::CResourceMetaData& metaData ,
+                                            const char* mode = "wb"                 ,
+                                            const UInt32 memLoadSize = 0            ,
+                                            const bool overwrite = false            );
+
     virtual bool StoreAsFile( const CORE::CString& filepath    ,
                               const CORE::CDynamicBuffer& data ,
                               const CORE::UInt64 offset        ,
@@ -149,6 +162,15 @@ class GUCEF_VFS_PUBLIC_CPP CArchive : public CORE::CObservingNotifier           
     virtual bool DirExists( const CString& dirPath ) const = 0;
     
     virtual UInt64 GetFileSize( const CString& filePath ) const = 0;
+
+    /**
+     *  Default implementation always fails.
+     *  Derived classes should override this method to provide the functionality if feasible.
+     *  Recommended implementation is to apply the meta-data 'best effort' based on the constraints of the actual underlying storage
+     *  and to return true if within the constraints the meta-data was applied successfully.
+     */
+    virtual bool SetFileMetaData( const CString& filePath                 ,
+                                  const CORE::CResourceMetaData& metaData );
 
     virtual bool GetFileMetaData( const CString& filePath           ,
                                   CORE::CResourceMetaData& metaData ) const = 0;

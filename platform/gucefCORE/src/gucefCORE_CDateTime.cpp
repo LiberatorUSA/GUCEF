@@ -691,6 +691,18 @@ CDateTime::CDateTime( const struct _FILETIME& src )
     COSDateTimeUtils::Win32FileTimeToDateTime( src, *this );
 }
 
+/*-------------------------------------------------------------------------*/
+
+struct _FILETIME 
+CDateTime::ToWindowsFiletime( void ) const
+{GUCEF_TRACE;
+
+    FILETIME fileTime;
+    memset( &fileTime, 0, sizeof fileTime );
+    COSDateTimeUtils::DateTimeToWin32FileTime( *this, fileTime );
+    return fileTime;
+}
+
 #endif
 
 /*-------------------------------------------------------------------------*/

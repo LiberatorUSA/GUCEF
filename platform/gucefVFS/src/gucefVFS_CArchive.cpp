@@ -73,6 +73,19 @@ CArchive::operator=( const CArchive& src )
 
 /*-------------------------------------------------------------------------*/
 
+TBasicVfsResourcePtr 
+CArchive::GetFileAs( const CString& file                     ,
+                     const CORE::CResourceMetaData& metaData ,
+                     const char* mode                        ,
+                     const UInt32 memLoadSize                ,
+                     const bool overwrite                    )
+{GUCEF_TRACE;
+
+    return TBasicVfsResourcePtr();
+}
+
+/*-------------------------------------------------------------------------*/
+
 bool 
 CArchive::AddDirToWatch( const CString& dirToWatch       ,
                          const CDirWatchOptions& options ,
@@ -134,6 +147,16 @@ CArchive::IsConnected( void ) const
 {GUCEF_TRACE;
 
     return true;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CArchive::SetFileMetaData( const CString& filePath                 ,
+                           const CORE::CResourceMetaData& metaData )
+{GUCEF_TRACE;
+
+    return false;
 }
 
 /*-------------------------------------------------------------------------//

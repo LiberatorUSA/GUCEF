@@ -64,6 +64,8 @@
   #define MAX_DIR_LENGTH PATH_MAX
   #define GUCEF_DIRSEPCHAROPPOSITE '\\'
   #define GUCEF_DIRSEPCHAR '/'
+  #include <linux/kernel.h>
+  #include <linux/string.h>
 #else
   #error Unsupported OS
 #endif
@@ -1492,6 +1494,40 @@ IsAbsolutePath( const CString& path )
 
 /*-------------------------------------------------------------------------*/
 
+#if ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
+
+// function to calculate UTF8 buffer size with handling for invalid UTF16 sequences
+size_t 
+CalculateUtf8BufferSizeForUtf16( const uint16_t* utf16, size_t utf16_length ) 
+{GUCEF_TRACE;
+
+    size_t utf8_buffer_size = 0;
+    for (size_t i = 0; i < utf16_length; ++i) {
+        if (utf16[i] >= 0xD800 && utf16[i] <= 0xDBFF) {
+            // Check for a valid low surrogate following the high surrogate
+            if (i + 1 < utf16_length && utf16[i + 1] >= 0xDC00 && utf16[i + 1] <= 0xDFFF) {
+                utf8_buffer_size += 4; // Valid surrogate pair
+                i++; // Skip the next unit as it's part of the surrogate pair
+            } else {
+                // Handle invalid surrogate pair (e.g., missing low surrogate)
+                utf8_buffer_size += 3; // Allocate space as if it were a BMP character
+                // Note: Actual handling might vary based on requirements (e.g., error reporting)
+            }
+        } else if (utf16[i] >= 0xDC00 && utf16[i] <= 0xDFFF) {
+            // Handle a low surrogate without a preceding high surrogate
+            utf8_buffer_size += 3; // Allocate space as if it were a BMP character
+            // Note: Actual handling might vary based on requirements
+        } else {
+            utf8_buffer_size += 3; // BMP character
+        }
+    }
+    return utf8_buffer_size;
+}
+
+#endif 
+
+/*-------------------------------------------------------------------------*/
+
 bool
 Utf16toUtf8( const std::wstring& wstr ,
              std::string& str         )
@@ -1516,7 +1552,14 @@ Utf16toUtf8( const std::wstring& wstr ,
 
     return true;
 
-    #else
+    #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
+
+    size_t neededBufferSize = CalculateUtf8BufferSizeForUtf16( wstr.c_str(), wstr.size() ) + 1;
+    str.resize( neededBufferSize, '\0' );
+    ::utf16_to_utf8( wstr.c_str(), str.c_str(), neededBufferSize );
+    return true;
+
+    #else   
 
     return false;
 

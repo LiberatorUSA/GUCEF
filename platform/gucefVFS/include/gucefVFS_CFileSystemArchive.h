@@ -78,6 +78,12 @@ class GUCEF_VFS_PUBLIC_CPP CFileSystemArchive : public CArchive
                                           const UInt32 memLoadSize = 0 ,
                                           const bool overwrite = false ) GUCEF_VIRTUAL_OVERRIDE;
 
+    virtual TBasicVfsResourcePtr GetFileAs( const CString& file                     ,
+                                            const CORE::CResourceMetaData& metaData ,
+                                            const char* mode = "wb"                 ,
+                                            const UInt32 memLoadSize = 0            ,
+                                            const bool overwrite = false            ) GUCEF_VIRTUAL_OVERRIDE;
+
     virtual bool StoreAsFile( const CORE::CString& filepath    ,
                               const CORE::CDynamicBuffer& data ,
                               const CORE::UInt64 offset        ,
@@ -110,6 +116,9 @@ class GUCEF_VFS_PUBLIC_CPP CFileSystemArchive : public CArchive
     virtual bool DirExists( const CString& dirPath ) const GUCEF_VIRTUAL_OVERRIDE;
     
     virtual UInt64 GetFileSize( const CString& filePath ) const GUCEF_VIRTUAL_OVERRIDE;
+
+    virtual bool SetFileMetaData( const CString& filePath                 ,
+                                  const CORE::CResourceMetaData& metaData ) GUCEF_VIRTUAL_OVERRIDE;
 
     virtual bool GetFileMetaData( const CString& filePath           ,
                                   CORE::CResourceMetaData& metaData ) const GUCEF_VIRTUAL_OVERRIDE;
@@ -183,10 +192,11 @@ class GUCEF_VFS_PUBLIC_CPP CFileSystemArchive : public CArchive
                           bool addFiles                               ,
                           bool addDirs                                ) const;
     
-    TBasicVfsResourcePtr LoadFromDisk( const CString& file          ,
-                                       const char* mode = "rb"      ,
-                                       const UInt32 memLoadSize = 0 ,
-                                       const bool overwrite = false );
+    TBasicVfsResourcePtr LoadFromDisk( const CString& file                     ,
+                                       const char* mode                        ,
+                                       const CORE::CResourceMetaData* metaData ,
+                                       const UInt32 memLoadSize = 0            ,
+                                       const bool overwrite = false            );
 
     private:
     typedef CORE::CTSharedPtr< CORE::CDynamicBuffer, MT::CMutex > TDynamicBufferPtr;

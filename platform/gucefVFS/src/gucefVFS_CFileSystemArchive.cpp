@@ -193,15 +193,34 @@ CFileSystemArchive::UnloadArchive( void )
 /*-------------------------------------------------------------------------*/
 
 TBasicVfsResourcePtr
-CFileSystemArchive::GetFile( const CString& file      ,
+CFileSystemArchive::GetFile( const CString& filepath  ,
                              const char* mode         ,
                              const UInt32 memLoadSize ,
                              const bool overwrite     )
 
 {GUCEF_TRACE;
 
-    return LoadFromDisk( file        ,
+    return LoadFromDisk( filepath    ,
                          mode        ,
+                         GUCEF_NULL  ,
+                         memLoadSize ,
+                         overwrite   );
+}
+
+/*-------------------------------------------------------------------------*/
+
+TBasicVfsResourcePtr
+CFileSystemArchive::GetFileAs( const CString& filepath                 ,
+                               const CORE::CResourceMetaData& metaData ,
+                               const char* mode                        ,
+                               const UInt32 memLoadSize                ,
+                               const bool overwrite                    )
+
+{GUCEF_TRACE;
+
+    return LoadFromDisk( filepath    ,
+                         mode        ,
+                         &metaData   ,
                          memLoadSize ,
                          overwrite   );
 }
@@ -456,6 +475,17 @@ CFileSystemArchive::GetFileHash( const CString& filePath ) const
 /*-------------------------------------------------------------------------*/
 
 bool
+CFileSystemArchive::SetFileMetaData( const CString& filePath                 ,
+                                     const CORE::CResourceMetaData& metaData )
+{GUCEF_TRACE;
+
+    CString path = CORE::CombinePath( m_rootDir, filePath.ReplaceChar( GUCEF_DIRSEPCHAROPPOSITE, GUCEF_DIRSEPCHAR ) );
+    return CORE::SetFileMetaData( path, metaData );
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
 CFileSystemArchive::GetFileMetaData( const CString& filePath           ,
                                      CORE::CResourceMetaData& metaData ) const
 {GUCEF_TRACE;
@@ -508,10 +538,11 @@ CFileSystemArchive::GetType( void ) const
 /*-------------------------------------------------------------------------*/
 
 TBasicVfsResourcePtr
-CFileSystemArchive::LoadFromDisk( const CString& filePath  ,
-                                  const char* mode         ,
-                                  const UInt32 memLoadSize ,
-                                  const bool overwrite     )
+CFileSystemArchive::LoadFromDisk( const CString& filePath                 ,
+                                  const char* mode                        ,
+                                  const CORE::CResourceMetaData* metaData ,
+                                  const UInt32 memLoadSize                ,
+                                  const bool overwrite                    )
 {GUCEF_TRACE;
 
     // Create a file path for this root
@@ -520,23 +551,26 @@ CFileSystemArchive::LoadFromDisk( const CString& filePath  ,
     bool isAppend( ( strchr( mode, 'a' ) != NULL ) || ( strchr( mode, '+' ) != NULL ) );
     bool needwriteable( ( strchr( mode, 'a' ) != NULL ) || ( strchr( mode, 'w' ) != NULL ) || ( strchr( mode, '+' ) != NULL ) );
 
-    // Check if we can perform read-only access which allows us
-    // to share the resource
-    if ( ( strcmp( mode, "rb" ) == 0 ) ||
-         ( strcmp( mode, "r" ) == 0 )   )
+    if ( GUCEF_NULL == metaData )
     {
-        // Check our cache for this file
-        TFileMemCache::iterator n = m_diskCacheList.find( path );
-        if ( n != m_diskCacheList.end() )
+        // Check if we can perform read-only access which allows us
+        // to share the resource
+        if ( ( strcmp( mode, "rb" ) == 0 ) ||
+             ( strcmp( mode, "r" ) == 0 )   )
         {
-            // We found the file in our cache, we will link to the existing buffer.
-            TDynamicBufferPtr bufferPtr = (*n).second;
-            CORE::DynamicBufferAccessPtr bufferAccess( GUCEF_NEW CORE::CDynamicBufferAccess( bufferPtr.GetPointer(), false ) );
-            TVfsResourcePtr vfsResource( GUCEF_NEW CVFSHandle( bufferAccess ,
-                                                               path         ,
-                                                               filePath     ,
-                                                               bufferPtr    ) );
-            return vfsResource;
+            // Check our cache for this file
+            TFileMemCache::iterator n = m_diskCacheList.find( path );
+            if ( n != m_diskCacheList.end() )
+            {
+                // We found the file in our cache, we will link to the existing buffer.
+                TDynamicBufferPtr bufferPtr = (*n).second;
+                CORE::DynamicBufferAccessPtr bufferAccess( GUCEF_NEW CORE::CDynamicBufferAccess( bufferPtr.GetPointer(), false ) );
+                TVfsResourcePtr vfsResource( GUCEF_NEW CVFSHandle( bufferAccess ,
+                                                                   path         ,
+                                                                   filePath     ,
+                                                                   bufferPtr    ) );
+                return vfsResource;
+            }
         }
     }
 
@@ -557,7 +591,7 @@ CFileSystemArchive::LoadFromDisk( const CString& filePath  ,
          ( exists && isAppend )                    )
     {
         // Attempt to get access to the file
-        CORE::FileAccessPtr fa( GUCEF_NEW CORE::CFileAccess( path, mode ) );
+        CORE::FileAccessPtr fa( GUCEF_NULL == metaData ? GUCEF_NEW CORE::CFileAccess( path, mode ) : GUCEF_NEW CORE::CFileAccess( path, *metaData, mode ) );
         if ( !fa.IsNULL() && !fa->IsValid() )
         {
             // try a different root

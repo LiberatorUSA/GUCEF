@@ -25,6 +25,10 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+#include <set>
+#include <vector>
+#include <map>
+
 #ifndef GUCEF_CORE_CICONFIGURABLE_H
 #include "CIConfigurable.h"
 #define GUCEF_CORE_CICONFIGURABLE_H
@@ -159,6 +163,7 @@ enum EFileType
 };
 typedef enum EFileType TFileType;
 
+typedef std::set< TFileType > TFileTypeSet;
 typedef std::map< CORE::CString, TFileType > TStringToFileTypeMap;
 typedef std::map< TFileType, CORE::CString > TFileTypeToStringMap;
 
@@ -182,7 +187,10 @@ class FileTypeConfig : public CORE::CIConfigurable
 
     TFileType GetFileTypeForFileExtension( const CORE::CString& fileExt ) const;
 
-    TFileType GetFileTypeForString( const CORE::CString& fileTypeStr ) const;
+    static CORE::CString GetStringForFileType( const TFileType fileType );
+    static TFileType GetFileTypeForString( const CORE::CString& fileTypeStr );
+    static TFileTypeSet GetFileTypesForStringSet( const CORE::CString::StringSet& fileTypeStrs );
+    static CORE::CString::StringSet GetStringSetForFileTypes( const TFileTypeSet& fileTypes );
 
     const CORE::CString& GetSortRootFolderForFileType( TFileType fileType ) const;
 
@@ -223,6 +231,8 @@ class FileSorterConfig : public CORE::CGloballyConfigurable
     CORE::CString monthFolderDecoration;
     bool useDayFolder;
     CORE::CString dayFolderDecoration;
+    bool sortAllFileTypes;
+    TFileTypeSet fileTypesToSort;
 
     private:
 

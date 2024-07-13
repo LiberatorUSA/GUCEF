@@ -92,6 +92,17 @@ GetFileCreationTime( const CString& path );
 /*-------------------------------------------------------------------------*/
 
 /**
+ *  Attempts to set various file meta-data using the file system
+ *  The implementation will apply the meta-data 'best effort' based on the constraints of the actual underlying storage
+ *  and return true if within the constraints of the file system the meta-data was applied successfully.
+ */
+GUCEF_CORE_PUBLIC_CPP bool
+SetFileMetaData( const CString& filePath           ,
+                 const CResourceMetaData& metaData );
+
+/*-------------------------------------------------------------------------*/
+
+/**
  *  Attempts to obtain various file meta-data from the file system
  */
 GUCEF_CORE_PUBLIC_CPP bool

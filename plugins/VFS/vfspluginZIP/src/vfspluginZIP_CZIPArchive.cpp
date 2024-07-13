@@ -172,6 +172,20 @@ CZIPArchive::GetFile( const VFS::CString& file      ,
 
 /*-------------------------------------------------------------------------*/
 
+VFS::TBasicVfsResourcePtr 
+CZIPArchive::GetFileAs( const VFS::CString& file                ,
+                        const CORE::CResourceMetaData& metaData ,
+                        const char* mode                        ,
+                        const UInt32 memLoadSize                ,
+                        const bool overwrite                    )
+{GUCEF_TRACE;
+
+    // We dont currently support applying meta-data
+    return VFS::TBasicVfsResourcePtr();
+}
+
+/*-------------------------------------------------------------------------*/
+
 bool 
 CZIPArchive::DeleteFile( const VFS::CString& filePath )
 {GUCEF_TRACE;
