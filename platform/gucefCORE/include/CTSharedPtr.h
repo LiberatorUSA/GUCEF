@@ -194,10 +194,10 @@ class CTSharedPtr : public CTBasicSharedPtr< T, LockType >
      */
     inline operator bool() const;
 
-    inline T* GetPointerAlways( void ) 
+    inline T* GetPointerAlways( void )
         { return CTBasicSharedPtr< T, LockType >::GetPointerAlways(); }
 
-    inline const T* GetPointerAlways( void ) const 
+    inline const T* GetPointerAlways( void ) const
         { return CTBasicSharedPtr< T, LockType >::GetPointerAlways(); }
 
     // implemented inline as a workaround for VC6 issues
@@ -252,7 +252,7 @@ class CTSharedObjCreator : public CTSharedPtrCreator< T, LockType >
     typedef CTDynamicDestructor< T >                                    TConcreteTypedDestructor;
 
     static CTSharedPtr< T, LockType > CreateSharedObj( const T* dummyForCppNameMangling = GUCEF_NULL );
-                                                                                           
+
     template < typename Param >
     static CTSharedPtr< T, LockType > CreateSharedObjWithParam( const Param& param );
 
@@ -260,7 +260,7 @@ class CTSharedObjCreator : public CTSharedPtrCreator< T, LockType >
     virtual ~CTSharedObjCreator();
 
     protected:
-    
+
     TConcreteTypedDestructor m_objectDestructor;
 
     private:
@@ -603,7 +603,7 @@ template< typename T, class LockType >
 CTSharedPtrCreator< T, LockType >::CTSharedPtrCreator( T* derived )
     : CTBasicSharedPtrCreator< T, LockType >( derived )
 {GUCEF_TRACE;
-    
+
 }
 
 /*-------------------------------------------------------------------------*/
@@ -669,7 +669,7 @@ CTSharedObjCreator< T, LockType >::CTSharedObjCreator( T* derived )
     , m_objectDestructor( false )
 {GUCEF_TRACE;
 
-    m_shared.m_voidDestructor = &m_objectDestructor;
+    CTBasicSharedPtrCreator< T, LockType >::m_shared.m_voidDestructor = &m_objectDestructor;
 }
 
 /*-------------------------------------------------------------------------*/

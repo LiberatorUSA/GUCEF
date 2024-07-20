@@ -71,16 +71,16 @@ using namespace GUCEF::CORE;
 
 /*---------------------------------------------------------------------------*/
 
-static char* supportedCryptoHashTypes[] = {
+static const char* supportedCryptoHashTypes[] = {
     "md5", "sha1", "sha3", "sha256", "keccak"
 };
 
-static char* supportedHashTypes[] = {
+static const char* supportedHashTypes[] = {
     "crc32"
 };
 
-static const Int32 cryptoHashCodecCount = (Int32) ( sizeof( supportedCryptoHashTypes ) / sizeof(char*) ); 
-static const Int32 hashCodecCount = (Int32) ( sizeof( supportedHashTypes ) / sizeof(char*) ); 
+static const Int32 cryptoHashCodecCount = (Int32) ( sizeof( supportedCryptoHashTypes ) / sizeof(char*) );
+static const Int32 hashCodecCount = (Int32) ( sizeof( supportedHashTypes ) / sizeof(char*) );
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -92,7 +92,7 @@ static const Int32 hashCodecCount = (Int32) ( sizeof( supportedHashTypes ) / siz
 //  if that is implemented later the various functions below can be cleaned up into 1
 
 /*---------------------------------------------------------------------------*/
-                                                                               
+
 UInt32
 GenerateKeccakCryptoHash( TIOAccess* input  ,
                           TIOAccess* output )
@@ -104,20 +104,20 @@ GenerateKeccakCryptoHash( TIOAccess* input  ,
 
     /* crypto hash the input in chunks */
     while ( 0 == input->eof( input ) )
-    {        
+    {
         inputBytesRead = input->read( input, tempInputBuffer, 1, TEMP_READ_HASH_BUFFER_SIZE );
         cryptohashAlgo.add( tempInputBuffer, inputBytesRead );
     }
-    
+
     std::string resultHash = cryptohashAlgo.getHash();
-  
+
     if ( 1 == output->write( output, resultHash.c_str(), (UInt32) resultHash.size(), 1 ) )
         return 1;
     return 0;
 }
 
 /*---------------------------------------------------------------------------*/
-                                                                               
+
 UInt32
 GenerateSHA256CryptoHash( TIOAccess* input  ,
                           TIOAccess* output )
@@ -129,13 +129,13 @@ GenerateSHA256CryptoHash( TIOAccess* input  ,
 
     /* crypto hash the input in chunks */
     while ( 0 == input->eof( input ) )
-    {        
+    {
         inputBytesRead = input->read( input, tempInputBuffer, 1, TEMP_READ_HASH_BUFFER_SIZE );
         cryptohashAlgo.add( tempInputBuffer, inputBytesRead );
     }
-    
+
     std::string resultHash = cryptohashAlgo.getHash();
-  
+
     if ( 1 == output->write( output, resultHash.c_str(), (UInt32) resultHash.size(), 1 ) )
         return 1;
     return 0;
@@ -154,13 +154,13 @@ GenerateSHA3CryptoHash( TIOAccess* input  ,
 
     /* crypto hash the input in chunks */
     while ( 0 == input->eof( input ) )
-    {        
+    {
         inputBytesRead = input->read( input, tempInputBuffer, 1, TEMP_READ_HASH_BUFFER_SIZE );
         cryptohashAlgo.add( tempInputBuffer, inputBytesRead );
     }
-    
+
     std::string resultHash = cryptohashAlgo.getHash();
-  
+
     if ( 1 == output->write( output, resultHash.c_str(), (UInt32) resultHash.size(), 1 ) )
         return 1;
     return 0;
@@ -179,13 +179,13 @@ GenerateSHA1CryptoHash( TIOAccess* input  ,
 
     /* crypto hash the input in chunks */
     while ( 0 == input->eof( input ) )
-    {        
+    {
         inputBytesRead = input->read( input, tempInputBuffer, 1, TEMP_READ_HASH_BUFFER_SIZE );
         cryptohashAlgo.add( tempInputBuffer, inputBytesRead );
     }
-    
+
     std::string resultHash = cryptohashAlgo.getHash();
-  
+
     if ( 1 == output->write( output, resultHash.c_str(), (UInt32) resultHash.size(), 1 ) )
         return 1;
     return 0;
@@ -204,13 +204,13 @@ GenerateMD5CryptoHash( TIOAccess* input  ,
 
     /* crypto hash the input in chunks */
     while ( 0 == input->eof( input ) )
-    {        
+    {
         inputBytesRead = input->read( input, tempInputBuffer, 1, TEMP_READ_HASH_BUFFER_SIZE );
         cryptohashAlgo.add( tempInputBuffer, inputBytesRead );
     }
-    
+
     std::string resultHash = cryptohashAlgo.getHash();
-  
+
     if ( 1 == output->write( output, resultHash.c_str(), (UInt32) resultHash.size(), 1 ) )
         return 1;
     return 0;
@@ -229,13 +229,13 @@ GenerateCRC32Hash( TIOAccess* input  ,
 
     /* crypto hash the input in chunks */
     while ( 0 == input->eof( input ) )
-    {        
+    {
         inputBytesRead = input->read( input, tempInputBuffer, 1, TEMP_READ_HASH_BUFFER_SIZE );
         hashAlgo.add( tempInputBuffer, inputBytesRead );
     }
-    
+
     std::string resultHash = hashAlgo.getHash();
-  
+
     if ( 1 == output->write( output, resultHash.c_str(), (UInt32) resultHash.size(), 1 ) )
         return 1;
     return 0;
@@ -305,20 +305,20 @@ CODECPLUGIN_Encode( void* plugdata         ,
 {
     if ( 0 == strcmp( "CryptographicHashCodec", familyType ) )
     {
-        if ( 0 == strcmp( "md5", codecType ) )        
-            return GenerateMD5CryptoHash( input, output );        
-        if ( 0 == strcmp( "sha1", codecType ) )        
+        if ( 0 == strcmp( "md5", codecType ) )
+            return GenerateMD5CryptoHash( input, output );
+        if ( 0 == strcmp( "sha1", codecType ) )
             return GenerateSHA1CryptoHash( input, output );
-        if ( 0 == strcmp( "sha3", codecType ) )        
+        if ( 0 == strcmp( "sha3", codecType ) )
             return GenerateSHA3CryptoHash( input, output );
-        if ( 0 == strcmp( "sha256", codecType ) )        
+        if ( 0 == strcmp( "sha256", codecType ) )
             return GenerateSHA256CryptoHash( input, output );
-        if ( 0 == strcmp( "keccak", codecType ) )        
+        if ( 0 == strcmp( "keccak", codecType ) )
             return GenerateKeccakCryptoHash( input, output );
     }
     if ( 0 == strcmp( "ChecksumCodec", familyType ) )
     {
-        if ( 0 == strcmp( "crc32", codecType ) )        
+        if ( 0 == strcmp( "crc32", codecType ) )
             return GenerateCRC32Hash( input, output );
     }
     return 0;

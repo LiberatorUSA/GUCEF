@@ -179,7 +179,7 @@ GetAllFileSystemStorageVolumes( CString::StringSet& volumeIds );
  *  Path names returned represent root paths which are garantueed to be backed by the given volume
  */
 GUCEF_CORE_PUBLIC_CPP bool
-GetAllFileSystemPathNamesForVolume( const CString& volumeId       , 
+GetAllFileSystemPathNamesForVolume( const CString& volumeId       ,
                                     CString::StringSet& pathNames );
 
 /*-------------------------------------------------------------------------*/
@@ -189,16 +189,16 @@ GetAllFileSystemPathNamesForVolume( const CString& volumeId       ,
  *  These are alternate logical mappings which are in reality mapped to a different underlying volume
  */
 GUCEF_CORE_PUBLIC_CPP bool
-GetAllFileSystemMountPointsForVolume( const CString& volumeId         , 
+GetAllFileSystemMountPointsForVolume( const CString& volumeId         ,
                                       CString::StringSet& mountPoints );
 
 /*-------------------------------------------------------------------------*/
 
 /**
  *  When needing to iterate the file system this class can be used to do so
- *  It is a cross-platform implementation which provides meta-data for each 
+ *  It is a cross-platform implementation which provides meta-data for each
  *  resource found to the extent available
- * 
+ *
  *  The class is not thread safe, keep the iterator object private to the thread
  *  Also note that the interface intentionally mimics the C API style for easy mapping
  */
@@ -221,9 +221,9 @@ class GUCEF_CORE_PUBLIC_CPP CFileSystemIterator
 
     private:
 
-    struct FileSystemIteratorOsData;
+    class CFileSystemIteratorOsData;
 
-    struct FileSystemIteratorOsData* m_osData;
+    class CFileSystemIteratorOsData* m_osData;
 };
 
 /*-------------------------------------------------------------------------//

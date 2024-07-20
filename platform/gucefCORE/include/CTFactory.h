@@ -72,8 +72,9 @@ class CTFactory : public CTFactoryBase< BaseClassType, LockType > ,
 {
     public:
 
-    typedef ConcreteClassType                                   TConcreteClassType;
-    typedef CTSharedPtr< ConcreteClassType, LockType >          TConcreteProductPtr;
+    typedef typename CTFactoryBase< BaseClassType, LockType >::TProductPtr      TProductPtr;
+    typedef ConcreteClassType                                                   TConcreteClassType;
+    typedef CTSharedPtr< ConcreteClassType, LockType >                          TConcreteProductPtr;
 
     CTFactory( void );
 
@@ -174,7 +175,7 @@ CTFactory< BaseClassType, ConcreteClassType, LockType >::Create( void )
         concreteObj = GUCEF_NULL;
     }
 
-    return TProductPtr();
+    return TConcreteProductPtr();
 }
 
 /*-------------------------------------------------------------------------*/

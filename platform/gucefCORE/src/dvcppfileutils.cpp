@@ -105,7 +105,7 @@ GetFileModificationTime( const CString& path )
     #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
 
     std::wstring wFilepath = ToWString( path );
-    
+
     ::WIN32_FILE_ATTRIBUTE_DATA data;
     if ( 0 != ::GetFileAttributesExW( wFilepath.c_str(), GetFileExInfoStandard, &data ) )
     {
@@ -145,7 +145,7 @@ GetFileCreationTime( const CString& path )
     #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
 
     std::wstring wFilepath = ToWString( path );
-    
+
     WIN32_FILE_ATTRIBUTE_DATA data;
     if ( 0 != GetFileAttributesExW( wFilepath.c_str(), GetFileExInfoStandard, &data ) )
     {
@@ -188,7 +188,7 @@ SetFileMetaData( const CString& filePath           ,
 
         bool totalSuccess = true;
         std::wstring wFilepath = ToWString( filePath );
-        
+
         // Get the current file attributes
         // we only want to change the flags we have and keep the rest as-is
         CResourceMetaData originalMetaData;
@@ -216,12 +216,12 @@ SetFileMetaData( const CString& filePath           ,
 
         if ( metaData.hasIsEncrypted ) { metaData.isEncrypted ? data.dwFileAttributes |= FILE_ATTRIBUTE_ENCRYPTED : data.dwFileAttributes &= ~FILE_ATTRIBUTE_ENCRYPTED; }
         else { originalMetaData.isEncrypted ? data.dwFileAttributes |= FILE_ATTRIBUTE_ENCRYPTED : data.dwFileAttributes &= ~FILE_ATTRIBUTE_ENCRYPTED; }
-        
+
         if ( metaData.hasIsTemporary ) { metaData.isTemporary ? data.dwFileAttributes |= FILE_ATTRIBUTE_TEMPORARY : data.dwFileAttributes &= ~FILE_ATTRIBUTE_TEMPORARY; }
         else { originalMetaData.isTemporary ? data.dwFileAttributes |= FILE_ATTRIBUTE_TEMPORARY : data.dwFileAttributes &= ~FILE_ATTRIBUTE_TEMPORARY; }
-        
+
         //if ( metaData.hasIsOffline ) { metaData.isOffline ? data.dwFileAttributes |= FILE_ATTRIBUTE_OFFLINE : data.dwFileAttributes &= ~FILE_ATTRIBUTE_OFFLINE; }
-        //else 
+        //else
              { originalMetaData.hasIsOffline ? data.dwFileAttributes |= FILE_ATTRIBUTE_OFFLINE : data.dwFileAttributes &= ~FILE_ATTRIBUTE_OFFLINE; }
 
         // Set the new file attributes
@@ -236,12 +236,12 @@ SetFileMetaData( const CString& filePath           ,
         metaData.hasCreationDateTime ? data.ftCreationTime = metaData.creationDateTime.ToWindowsFiletime() : data.ftCreationTime = originalMetaData.creationDateTime.ToWindowsFiletime();
         metaData.hasModifiedDateTime ? data.ftLastWriteTime = metaData.modifiedDateTime.ToWindowsFiletime() : data.ftLastWriteTime = originalMetaData.modifiedDateTime.ToWindowsFiletime();
         metaData.hasLastAccessedDateTime ? data.ftLastAccessTime = metaData.lastAccessedDateTime.ToWindowsFiletime() : data.ftLastAccessTime = originalMetaData.lastAccessedDateTime.ToWindowsFiletime();
-                
+
         // Open the file for writing attributes without needing a handle for data read/write operations
         // we dont want to touch the file contents
         HANDLE hFile = ::CreateFileW( wFilepath.c_str(), FILE_WRITE_ATTRIBUTES, FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL );
-        if ( INVALID_HANDLE_VALUE != hFile ) 
-        {        
+        if ( INVALID_HANDLE_VALUE != hFile )
+        {
             if ( 0 == ::SetFileTime( hFile, &data.ftCreationTime, &data.ftLastAccessTime, &data.ftLastWriteTime ) )
             {
                 GUCEF_DEBUG_LOG( LOGLEVEL_NORMAL, "SetFileMetaData: SetFileTime failed with error code: " + ToString( (UInt32) ::GetLastError() ) );
@@ -274,7 +274,7 @@ SetFileMetaData( const CString& filePath           ,
 
         #endif
     }
-    
+
     // Cannot set meta-data on a non-existing file
     return false;
 }
@@ -295,7 +295,7 @@ GetFileMetaData( const CString& filePath     ,
         #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
 
         std::wstring wFilepath = ToWString( filePath );
-        
+
         WIN32_FILE_ATTRIBUTE_DATA data;
         if ( 0 != ::GetFileAttributesExW( wFilepath.c_str(), GetFileExInfoStandard, &data ) )
         {
@@ -327,7 +327,7 @@ GetFileMetaData( const CString& filePath     ,
             data.dwFileAttributes & FILE_ATTRIBUTE_TEMPORARY ? metaData.isTemporary = true : metaData.isTemporary = false;
             metaData.hasIsTemporary = true;
             data.dwFileAttributes & FILE_ATTRIBUTE_OFFLINE ? metaData.isOffline = true : metaData.isOffline = false;
-            metaData.hasIsOffline = true;            
+            metaData.hasIsOffline = true;
         }
         else
         {
@@ -461,7 +461,7 @@ FileExists( const CString& filename )
         #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
 
         std::wstring wFilename = ToWString( filename );
-        
+
         WIN32_FIND_DATAW FileInfo;
         HANDLE hFind = GUCEF_NULL;
         hFind = FindFirstFileW( wFilename.c_str(), &FileInfo );
@@ -501,7 +501,7 @@ DirExists( const CString& path )
         #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
 
         std::wstring wPath = ToWString( path );
-        
+
         WIN32_FIND_DATAW FileInfo;
         HANDLE hFind = GUCEF_NULL;
         hFind = FindFirstFileW( wPath.c_str(), &FileInfo );
@@ -517,7 +517,7 @@ DirExists( const CString& path )
         #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
 
         struct stat buf;
-        if ( stat( path, &buf ) == 0 )
+        if ( stat( path.C_String(), &buf ) == 0 )
             if ( buf.st_mode & S_IFDIR != 0 )
                 return 1;
         return 0;
@@ -562,7 +562,7 @@ FileSize( const CString& filename )
         #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
 
         std::wstring wFilename = ToWString( filename );
-        
+
         UInt64 lfilesize = 0;
         WIN32_FIND_DATAW FileInfo;
         HANDLE hFind;
@@ -803,7 +803,7 @@ GetAllFileSystemStorageVolumes( CString::StringSet& volumeIds )
 /*-------------------------------------------------------------------------*/
 
 bool
-GetAllFileSystemPathNamesForVolume( const CString& volumeId       , 
+GetAllFileSystemPathNamesForVolume( const CString& volumeId       ,
                                     CString::StringSet& pathNames )
 {GUCEF_TRACE;
 
@@ -815,9 +815,9 @@ GetAllFileSystemPathNamesForVolume( const CString& volumeId       ,
 
     // first get the size of the buffer we need
     DWORD requiredBufferLength = 0;
-    BOOL success = ::GetVolumePathNamesForVolumeNameW( volumeIdWide.c_str()  , 
-                                                       NULL                  , 
-                                                       0                     , 
+    BOOL success = ::GetVolumePathNamesForVolumeNameW( volumeIdWide.c_str()  ,
+                                                       NULL                  ,
+                                                       0                     ,
                                                        &requiredBufferLength );
     if ( success == TRUE )
     {
@@ -831,15 +831,15 @@ GetAllFileSystemPathNamesForVolume( const CString& volumeId       ,
         return false;
     }
 
-    UInt32 requiredBufferBytes = requiredBufferLength * sizeof( WCHAR );    
+    UInt32 requiredBufferBytes = requiredBufferLength * sizeof( WCHAR );
     CORE::CDynamicBuffer volumePathsBuffer( requiredBufferBytes, true );
     volumePathsBuffer.SetBytes( 0 );
     volumePathsBuffer.SetDataSize( requiredBufferBytes );
-    
+
     // Get the volume paths
-    success = ::GetVolumePathNamesForVolumeNameW( volumeIdWide.c_str()                 , 
-                                                  volumePathsBuffer.AsTypePtr<WCHAR>() , 
-                                                  volumePathsBuffer.GetBufferSize()    , 
+    success = ::GetVolumePathNamesForVolumeNameW( volumeIdWide.c_str()                 ,
+                                                  volumePathsBuffer.AsTypePtr<WCHAR>() ,
+                                                  volumePathsBuffer.GetBufferSize()    ,
                                                   &requiredBufferLength                );
     if ( success == TRUE )
     {
@@ -879,7 +879,7 @@ GetAllFileSystemPathNamesForVolume( const CString& volumeId       ,
 /*-------------------------------------------------------------------------*/
 
 bool
-GetAllFileSystemMountPointsForVolume( const CString& volumeId         , 
+GetAllFileSystemMountPointsForVolume( const CString& volumeId         ,
                                       CString::StringSet& mountPoints )
 {GUCEF_TRACE;
 
@@ -894,7 +894,7 @@ GetAllFileSystemMountPointsForVolume( const CString& volumeId         ,
     memset( volMountBuffer, 0, sizeof( volMountBuffer ) );
 
     // Get the Volume mount points as the windows equivelant of symlink based mounts
-    // Volume mount points are alternative locations in the file system where volumes are mounted, 
+    // Volume mount points are alternative locations in the file system where volumes are mounted,
     // providing a way to access volumes indirectly or integrate them into the directory structure of another volume.
 
     HANDLE mountFindHandle = ::FindFirstVolumeMountPointW( volumeIdWide.c_str(), volMountBuffer, MOUNT_POINT_BUFFER_SIZE );
@@ -938,24 +938,42 @@ GetAllFileSystemMountPointsForVolume( const CString& volumeId         ,
 /*-------------------------------------------------------------------------*/
 
 // Structure used to store dir iteration data which is O/S dependent
-struct CFileSystemIterator::FileSystemIteratorOsData
+class CFileSystemIterator::CFileSystemIteratorOsData
 {
- 	bool isActive;            // Flag indicating if the iterator is active 
-    
+ 	public:
+
+ 	bool isActive;            // Flag indicating if the iterator is active
+
     #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
 
 	intptr_t find_handle;        // Unique handle identifying the file or set of files that resulted from a findfirst with the filter provided
-	struct _wfinddata64_t find;  // struct that stores entry data 
+	struct _wfinddata64_t find;  // struct that stores entry data
+
+	CFileSystemIteratorOsData( void )
+        : isActive( false )  // we start with an inactive iterator. A call to FindFirst will activate it potentially
+        , find_handle( 0 )
+	{
+        memset( &find, 0, sizeof find );
+	}
 
     #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
 
     DIR* dir;                 // Directory stream
-    struct dirent* entry;     // Pointer needed for functions to iterating directory entries. Stores entry name which is used to get stat 
-    struct stat statinfo;     // Struct needed for determining info about an entry with stat(). 
+    struct dirent* entry;     // Pointer needed for functions to iterating directory entries. Stores entry name which is used to get stat
+    struct stat statinfo;     // Struct needed for determining info about an entry with stat().
+
+	CFileSystemIteratorOsData( void )
+        : isActive( false )
+        , dir( GUCEF_NULL )
+        , entry( GUCEF_NULL )
+        , statinfo()
+	{
+        memset( &statinfo, 0, sizeof statinfo );
+	}
 
     #else
 
-    // -> empty struct because we don't support other OS's atm 
+    // -> empty struct because we don't support other OS's atm
     #error Unsupported OS
 
     #endif
@@ -964,18 +982,9 @@ struct CFileSystemIterator::FileSystemIteratorOsData
 /*-------------------------------------------------------------------------*/
 
 CFileSystemIterator::CFileSystemIterator( void )
-    : m_osData( GUCEF_NULL )
+    : m_osData( GUCEF_NEW CFileSystemIteratorOsData() )
 {GUCEF_TRACE;
 
-    m_osData = (FileSystemIteratorOsData*) malloc( sizeof FileSystemIteratorOsData );
-    if ( GUCEF_NULL != m_osData )
-    {
-        memset( m_osData, 0 , sizeof FileSystemIteratorOsData );
-
-        // we start with an inactive iterator. 
-        // A call to FindFirst will activate it potentially
-        m_osData->isActive = false;
-    }   
 }
 
 /*-------------------------------------------------------------------------*/
@@ -986,7 +995,8 @@ CFileSystemIterator::~CFileSystemIterator()
     if ( GUCEF_NULL != m_osData )
     {
         FindClose();
-        free( m_osData );
+        GUCEF_DELETE m_osData;
+        m_osData = GUCEF_NULL;
     }
 }
 
@@ -1002,7 +1012,7 @@ CFileSystemIterator::FindFirst( const CString& path )
         return false;
 
     #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
-       
+
     /*
      *	In Win32 we use _findfirst ect. because even though the posix
      *	functions are supported on windows NT they are not supported on
@@ -1033,7 +1043,7 @@ CFileSystemIterator::FindFirst( const CString& path )
     }
 
     /*
-     *	Successfully obtained first entry 
+     *	Successfully obtained first entry
      */
     m_osData->isActive = true;
     return true;
@@ -1059,7 +1069,7 @@ CFileSystemIterator::FindFirst( const CString& path )
     /*
      *	change working dir to be able to read file information
      */
-    chdir( path );
+    chdir( path.C_String() );
 
     /*
      *	Read first entry
@@ -1103,12 +1113,12 @@ CFileSystemIterator::FindFirst( const CString& path )
 
     /*
      *	Unsupported O/S build
-     */    
+     */
 
     return false;
-    
+
     #endif
-    
+
 }
 
 /*-------------------------------------------------------------------------*/
@@ -1170,7 +1180,7 @@ CFileSystemIterator::FindNext( void )
 
 /*-------------------------------------------------------------------------*/
 
-bool 
+bool
 CFileSystemIterator::FindClose( void )
 {GUCEF_TRACE;
 
@@ -1181,7 +1191,7 @@ CFileSystemIterator::FindClose( void )
 
     ::_findclose( m_osData->find_handle );
     m_osData->find_handle = GUCEF_NULL;
-    
+
     #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
 
     if ( GUCEF_NULL != m_osData->dir )
@@ -1231,18 +1241,18 @@ CFileSystemIterator::IsADirectory( void ) const
 
 /*-------------------------------------------------------------------------*/
 
-bool 
+bool
 CFileSystemIterator::IsAFile( void ) const
 {GUCEF_TRACE;
 
     if ( GUCEF_NULL != m_osData && m_osData->isActive )
     {
         #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
-        
+
         return !( m_osData->find.attrib & _A_SUBDIR );
-    
+
         #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
-    
+
         return S_ISREG( m_osData->statinfo.st_mode ) > 0;
 
         #else
@@ -1259,7 +1269,7 @@ CFileSystemIterator::IsAFile( void ) const
 
 /*-------------------------------------------------------------------------*/
 
-CString 
+CString
 CFileSystemIterator::GetResourceName( void ) const
 {GUCEF_TRACE;
 
@@ -1302,7 +1312,7 @@ CFileSystemIterator::TryReadMetaData( CResourceMetaData& metaData )
         metaData.hasModifiedDateTime = true;
         metaData.lastAccessedDateTime = CDateTime( m_osData->find.time_write, true );
         metaData.hasLastAccessedDateTime = true;
-        
+
         m_osData->find.attrib & FILE_ATTRIBUTE_READONLY ? metaData.isReadOnly = true : metaData.isReadOnly = false;
         metaData.hasIsReadOnly = true;
         m_osData->find.attrib & FILE_ATTRIBUTE_HIDDEN ? metaData.isHidden = true : metaData.isHidden = false;
@@ -1321,7 +1331,7 @@ CFileSystemIterator::TryReadMetaData( CResourceMetaData& metaData )
         metaData.hasIsOffline = true;
 
         return true;
-    
+
         #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
 
         metaData.creationDateTime = CDateTime( m_osData->statinfo.st_ctime, true );
@@ -1334,7 +1344,7 @@ CFileSystemIterator::TryReadMetaData( CResourceMetaData& metaData )
         metaData.hasResourceSizeInBytes = true;
 
         return true;
-        
+
         #else
 
         /*

@@ -110,7 +110,7 @@ namespace CORE {
  // defined elsewhere right now
 #else
 struct SProcessId
-{    
+{
     #if ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
     pid_t pid;
     #else
@@ -403,9 +403,9 @@ typedef struct _PROCESSOR_POWER_INFORMATION {
 struct SCpuDataPoint
 {
     TCpuStats cpuStats;
+    UInt32 logicalCpuCount; // we keep a copy here in the private stucture for fast and safe access. Someone could alter the one in cpuStats
 
     #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
-    UInt32 logicalCpuCount; // we keep a copy here in the private stucture for fast and safe access. Someone could alter the one in cpuStats
     PPROCESSOR_POWER_INFORMATION cpuPowerInfo;
     SYSTEM_PROCESSOR_PERFORMANCE_INFORMATION* cpuPerfInfo;
     SYSTEM_PROCESSOR_PERFORMANCE_INFORMATION* prevCpuPerfInfo;
@@ -1169,13 +1169,13 @@ IsProcessStillActive( TProcessId* pid, OSWRAP_BOOLINT* status )
         if ( GUCEF_NULL == hProcess )
             return OSWRAP_FALSE;
 
-        *status = OSWRAP_TRUE;                         
+        *status = OSWRAP_TRUE;
         DWORD exitCode = 0;
         if ( ( ::GetExitCodeProcess( hProcess, &exitCode ) == FALSE ) || exitCode != STILL_ACTIVE )
         {
             *status = OSWRAP_FALSE;
         }
-        
+
         ::CloseHandle( hProcess );
         return OSWRAP_TRUE;
 
@@ -1688,7 +1688,7 @@ CopyProcCpuDataPoint( TProcCpuDataPoint* srcCpuDataDataPoint ,
         dataPoint->pid = srcCpuDataDataPoint->pid;
     else
         dataPoint->pid = newProcId->pid;
-        
+
     dataPoint->hProcess = ::OpenProcess( PROCESS_QUERY_INFORMATION,
                                          FALSE,
                                          dataPoint->pid );
@@ -1703,7 +1703,7 @@ CopyProcCpuDataPoint( TProcCpuDataPoint* srcCpuDataDataPoint ,
     dataPoint->globalUserTime = srcCpuDataDataPoint->globalUserTime;
     dataPoint->procKernelTime = srcCpuDataDataPoint->procKernelTime;
     dataPoint->procUserTime = srcCpuDataDataPoint->procUserTime;
-    
+
     #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
 
     if ( GUCEF_NULL == newProcId )
@@ -1714,7 +1714,7 @@ CopyProcCpuDataPoint( TProcCpuDataPoint* srcCpuDataDataPoint ,
     dataPoint->globalJiffies = srcCpuDataDataPoint->globalJiffies;
     dataPoint->procUserModeJiffies = srcCpuDataDataPoint->procUserModeJiffies;
     dataPoint->procKernelModeJiffies = srcCpuDataDataPoint->procKernelModeJiffies;
-    
+
     #endif
 
     return dataPoint;
@@ -1902,7 +1902,7 @@ CreateCpuDataPoint( void )
     if ( GUCEF_NULL == dataPoint->cpuPerfInfo )
     {
         free( dataPoint->cpuPowerInfo );
-        free( dataPoint->cpuStats.logicalCpuStats );        
+        free( dataPoint->cpuStats.logicalCpuStats );
         free( dataPoint );
         return GUCEF_NULL;
     }
@@ -1912,7 +1912,7 @@ CreateCpuDataPoint( void )
     {
         free( dataPoint->cpuPerfInfo );
         free( dataPoint->cpuPowerInfo );
-        free( dataPoint->cpuStats.logicalCpuStats );        
+        free( dataPoint->cpuStats.logicalCpuStats );
         free( dataPoint );
         return GUCEF_NULL;
     }
@@ -1963,7 +1963,7 @@ GetCpuStats( TCpuDataPoint* previousCpuDataDataPoint ,
     #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
 
     // For getting the overall CPU usage the recommended way is to "Use GetSystemTimes instead to retrieve this information."
-    // Do note that while the below follows said recommendation from Microsoft, it is not the most accurate way to get the CPU usage relative to 
+    // Do note that while the below follows said recommendation from Microsoft, it is not the most accurate way to get the CPU usage relative to
     // the per core CPU usage which is also obtained and thus there may be some discrepancies between the two values.
     // Then again the NtQuerySystemInformation call is not garantueed to work as its an undocumented API call.
     FILETIME globalIdleTime;
@@ -1981,7 +1981,7 @@ GetCpuStats( TCpuDataPoint* previousCpuDataDataPoint ,
 
     UInt64 globalCpuKernelDelta = globalCpuKernel - prevGlobalCpuKernel;
     UInt64 globalCpuUserDelta = globalCpuUser - prevGlobalCpuUser;
-    UInt64 globalCpuIdleDelta = globalCpuIdle - prevGlobalCpuIdle;    
+    UInt64 globalCpuIdleDelta = globalCpuIdle - prevGlobalCpuIdle;
     UInt64 globalCpuSystemDelta = globalCpuKernelDelta + globalCpuUserDelta;
     if ( 0 == globalCpuSystemDelta )
         globalCpuSystemDelta = 1;
@@ -1992,10 +1992,10 @@ GetCpuStats( TCpuDataPoint* previousCpuDataDataPoint ,
     previousCpuDataDataPoint->globalIdleTime = globalIdleTime;
     previousCpuDataDataPoint->globalKernelTime = globalKernelTime;
     previousCpuDataDataPoint->globalUserTime = globalUserTime;
-    
-    NTSTATUS ntStatus = TryNtQuerySystemInformation( SystemProcessorPerformanceInformation                                                        , 
-                                                     previousCpuDataDataPoint->cpuPerfInfo                                                        , 
-                                                     sizeof(SYSTEM_PROCESSOR_PERFORMANCE_INFORMATION) * previousCpuDataDataPoint->logicalCpuCount , 
+
+    NTSTATUS ntStatus = TryNtQuerySystemInformation( SystemProcessorPerformanceInformation                                                        ,
+                                                     previousCpuDataDataPoint->cpuPerfInfo                                                        ,
+                                                     sizeof(SYSTEM_PROCESSOR_PERFORMANCE_INFORMATION) * previousCpuDataDataPoint->logicalCpuCount ,
                                                      NULL                                                                                         );
     if ( WIN32_NT_SUCCESS( ntStatus ) )
     {
@@ -2013,11 +2013,11 @@ GetCpuStats( TCpuDataPoint* previousCpuDataDataPoint ,
 
             UInt64 coreKernelDelta = coreKernel - prevCoreKernel;
             UInt64 coreUserDelta = coreUser - prevCoreUser;
-            UInt64 coreIdleDelta = coreIdle - prevCoreIdle;    
+            UInt64 coreIdleDelta = coreIdle - prevCoreIdle;
             UInt64 coreSystemDelta = coreKernelDelta + coreUserDelta;
             if ( 0 == coreSystemDelta )
                 coreSystemDelta = 1;
-    
+
             Float64 coreUsePercentage = ( (coreSystemDelta - coreIdleDelta) * 100 ) / ( coreSystemDelta * 1.0 );
             previousCpuDataDataPoint->cpuStats.logicalCpuStats[ i ].cpuUsePercentage = coreUsePercentage;
         }

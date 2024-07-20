@@ -14,12 +14,12 @@
  *
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
- 
+
 #ifndef GUCEF_CORE_CTFACTORYWITHPARAM_H
 #define GUCEF_CORE_CTFACTORYWITHPARAM_H
- 
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      INCLUDES                                                           //
@@ -34,7 +34,7 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-namespace GUCEF { 
+namespace GUCEF {
 namespace CORE {
 
 /*-------------------------------------------------------------------------//
@@ -48,39 +48,40 @@ namespace CORE {
  *  factory design pattern.
  */
 template< class BaseClassType, class ConcreteClassType, typename ConstructionParamType, typename LockType >
-class CTFactoryWithParam : public CTFactoryBaseWithParam< BaseClassType, ConstructionParamType, LockType > ,           
+class CTFactoryWithParam : public CTFactoryBaseWithParam< BaseClassType, ConstructionParamType, LockType > ,
                            public CTTypeNamedDynamicDestructorBase< ConcreteClassType > ,
                            public CTDynamicDestructorBase< ConcreteClassType >
 {
     public:
 
-    typedef ConcreteClassType                                   TConcreteClassType;
-    typedef CTSharedPtr< ConcreteClassType, LockType >          TConcreteProductPtr;
-    
+    typedef typename CTFactoryBaseWithParam< BaseClassType, ConstructionParamType, LockType >::TProductPtr  TProductPtr;
+    typedef ConcreteClassType                                                                               TConcreteClassType;
+    typedef CTSharedPtr< ConcreteClassType, LockType >                                                      TConcreteProductPtr;
+
     /**
      *  Default constructor which acts as a no-op since factories are
      *  meta-data classes
      */
     CTFactoryWithParam( void );
-    
+
     /**
      *  Copy constructor which acts as a no-op since factories are
      *  meta-data classes
      */
     CTFactoryWithParam( const CTFactoryWithParam& src );
-    
+
     /**
      *  Default destructor which acts as a no-op since factories are
      *  meta-data classes
      */
     virtual ~CTFactoryWithParam();
-    
+
     /**
      *  Default assignment operator which acts as a no-op since factories are
      *  meta-data classes
-     */    
+     */
     CTFactoryWithParam& operator=( const CTFactoryWithParam& src );
-    
+
     /**
      *  Constructs the concrete factory product
      *
@@ -107,18 +108,18 @@ class CTFactoryWithParam : public CTFactoryBaseWithParam< BaseClassType, Constru
 
 template< class BaseClassType, class ConcreteClassType, typename ConstructionParamType, typename LockType >
 CTFactoryWithParam< BaseClassType, ConcreteClassType, ConstructionParamType, LockType >::CTFactoryWithParam( void )
-    : CTFactoryBaseWithParam< BaseClassType, ConstructionParamType, LockType >()            
+    : CTFactoryBaseWithParam< BaseClassType, ConstructionParamType, LockType >()
     , CTTypeNamedDynamicDestructorBase< ConcreteClassType >()
     , CTDynamicDestructorBase< ConcreteClassType >()
 {GUCEF_TRACE;
-    
+
 }
 
 /*-------------------------------------------------------------------------*/
 
 template< class BaseClassType, class ConcreteClassType, typename ConstructionParamType, typename LockType >
 CTFactoryWithParam< BaseClassType, ConcreteClassType, ConstructionParamType, LockType >::CTFactoryWithParam( const CTFactoryWithParam< BaseClassType, ConcreteClassType, ConstructionParamType, LockType >& src )
-    : CTFactoryBaseWithParam< BaseClassType, ConstructionParamType, LockType >( src )            
+    : CTFactoryBaseWithParam< BaseClassType, ConstructionParamType, LockType >( src )
     , CTTypeNamedDynamicDestructorBase< ConcreteClassType >( src )
     , CTDynamicDestructorBase< ConcreteClassType >( src )
 {GUCEF_TRACE;
@@ -126,7 +127,7 @@ CTFactoryWithParam< BaseClassType, ConcreteClassType, ConstructionParamType, Loc
 }
 
 /*-------------------------------------------------------------------------*/
-   
+
 template< class BaseClassType, class ConcreteClassType, typename ConstructionParamType, typename LockType >
 CTFactoryWithParam< BaseClassType, ConcreteClassType, ConstructionParamType, LockType >::~CTFactoryWithParam()
 {GUCEF_TRACE;
@@ -136,7 +137,7 @@ CTFactoryWithParam< BaseClassType, ConcreteClassType, ConstructionParamType, Loc
 /*-------------------------------------------------------------------------*/
 
 template< class BaseClassType, class ConcreteClassType, typename ConstructionParamType, typename LockType >
-CTFactoryWithParam< BaseClassType, ConcreteClassType, ConstructionParamType, LockType >& 
+CTFactoryWithParam< BaseClassType, ConcreteClassType, ConstructionParamType, LockType >&
 CTFactoryWithParam< BaseClassType, ConcreteClassType, ConstructionParamType, LockType >::operator=( const CTFactoryWithParam< BaseClassType, ConcreteClassType, ConstructionParamType, LockType >& src )
 {GUCEF_TRACE;
 
@@ -149,7 +150,7 @@ CTFactoryWithParam< BaseClassType, ConcreteClassType, ConstructionParamType, Loc
 /*-------------------------------------------------------------------------*/
 
 template< class BaseClassType, class ConcreteClassType, typename ConstructionParamType, typename LockType >
-typename CTFactoryWithParam< BaseClassType, ConcreteClassType, ConstructionParamType, LockType >::TProductPtr 
+typename CTFactoryWithParam< BaseClassType, ConcreteClassType, ConstructionParamType, LockType >::TProductPtr
 CTFactoryWithParam< BaseClassType, ConcreteClassType, ConstructionParamType, LockType >::Create( const ConstructionParamType& param )
 {GUCEF_TRACE;
 
@@ -200,9 +201,9 @@ CTFactoryWithParam< BaseClassType, ConcreteClassType, ConstructionParamType, Loc
 }
 
 /*-------------------------------------------------------------------------*/
-    
+
 template< class BaseClassType, class ConcreteClassType, typename ConstructionParamType, typename LockType >
-CICloneable* 
+CICloneable*
 CTFactoryWithParam< BaseClassType, ConcreteClassType, ConstructionParamType, LockType >::Clone( void ) const
 {GUCEF_TRACE;
 

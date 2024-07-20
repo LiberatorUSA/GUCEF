@@ -188,9 +188,9 @@ ConvertByteToHexChars( const char byte ,
                        digitIndex1         ,
                        digitIndex2         );
 
-    if ( digitIndex1 < 0 ) 
+    if ( digitIndex1 < 0 )
         digitIndex1 *= -1;
-    if ( digitIndex2 < 0 ) 
+    if ( digitIndex2 < 0 )
         digitIndex2 *= -1;
 
     hexCharA = g_hexDigits[ digitIndex2 ];
@@ -205,7 +205,7 @@ ConvertBytesToHexString( const void* byteBuffer ,
                          bool addSpaces         ,
                          bool addHexPrefix      )
 {GUCEF_TRACE;
-    
+
     const char* charByteBuffer = (const char*) byteBuffer;
 
     // Each byte is expressed as a 2 char hex value
@@ -228,9 +228,9 @@ ConvertBytesToHexString( const void* byteBuffer ,
                            digitIndex1         ,
                            digitIndex2         );
 
-        if ( digitIndex1 < 0 ) 
+        if ( digitIndex1 < 0 )
             digitIndex1 *= -1;
-        if ( digitIndex2 < 0 ) 
+        if ( digitIndex2 < 0 )
             digitIndex2 *= -1;
 
         if ( addSpaces )
@@ -286,7 +286,7 @@ ConvertBytesToHexString( const void* byteBuffer ,
 
 /*-------------------------------------------------------------------------*/
 
-CString 
+CString
 Base16Encode( const void* byteBuffer, UInt32 bufferSize )
 {GUCEF_TRACE;
 
@@ -298,7 +298,7 @@ Base16Encode( const void* byteBuffer, UInt32 bufferSize )
 bool
 Base16Decode( const CString& base16Str, bool hasHexPrefix, void* byteBuffer, UInt32 bufferSize, UInt32& bytesUsed )
 {GUCEF_TRACE;
-    
+
     char* charByteBuffer = static_cast< char* >( byteBuffer );
     CAsciiString asciiBase16Str = CORE::ToAsciiString( base16Str );
     if ( hasHexPrefix )
@@ -327,15 +327,15 @@ Base16Decode( const CString& base16Str, bool hasHexPrefix, void* byteBuffer, UIn
         char hexCharA = '0';
         char hexCharB = asciiBase16Str[ base16Index ];
         char byte = 0;
-        ConvertHexCharsToByte( hexCharA, hexCharB, byte );        
+        ConvertHexCharsToByte( hexCharA, hexCharB, byte );
         charByteBuffer[ byteIndex ] = byte;
         ++base16Index; ++byteIndex;
     }
-        
+
     for ( base16Index; base16Index < asciiBase16Str.Length(); ++base16Index )
     {
         char byte = 0;
-        ConvertHexCharsToByte( asciiBase16Str[ base16Index ], asciiBase16Str[ base16Index+1 ], byte );        
+        ConvertHexCharsToByte( asciiBase16Str[ base16Index ], asciiBase16Str[ base16Index+1 ], byte );
         charByteBuffer[ byteIndex ] = byte;
         ++base16Index; ++byteIndex;
     }
@@ -346,7 +346,7 @@ Base16Decode( const CString& base16Str, bool hasHexPrefix, void* byteBuffer, UIn
 
 /*-------------------------------------------------------------------------*/
 
-CString 
+CString
 Base64Encode( const CString& toBeEncodedStr )
 {GUCEF_TRACE;
 
@@ -371,21 +371,21 @@ static const int base64_table[ 256 ] =
 
 /*-------------------------------------------------------------------------*/
 
-CString 
+CString
 Base64Encode( const void* byteBuffer, UInt32 bufferSize )
 {GUCEF_TRACE;
 
     CString result;
     UInt32 base64StrLength = ( ( bufferSize + 2 ) / 3 ) * 4;
     char* base64StringBuffer = result.Reserve( base64StrLength+1, (Int32) base64StrLength );
-    char* str = base64StringBuffer; 
+    char* str = base64StringBuffer;
 
     // Base64 encoding can really add up wrt size requirements
     // We need to sanity check that we were able to allocate enough memory
     if ( GUCEF_NULL == str || base64StrLength+1 != result.ByteSize() )
         return CString::Empty;
 
-    memset( base64StringBuffer, '=', base64StrLength );    
+    memset( base64StringBuffer, '=', base64StrLength );
     const char* charByteBuffer = (const char*) byteBuffer;
 
     int i = 0;
@@ -393,10 +393,10 @@ Base64Encode( const void* byteBuffer, UInt32 bufferSize )
     unsigned char char_array_3[3];
     unsigned char char_array_4[4];
 
-    for ( size_t pos = 0; pos < bufferSize; ++pos ) 
+    for ( size_t pos = 0; pos < bufferSize; ++pos )
     {
         char_array_3[ i++ ] = charByteBuffer[ pos ];
-        if ( i == 3 ) 
+        if ( i == 3 )
         {
             char_array_4[0] = (char_array_3[0] & 0xfc) >> 2;
             char_array_4[1] = ((char_array_3[0] & 0x03) << 4) + ((char_array_3[1] & 0xf0) >> 4);
@@ -438,7 +438,7 @@ Base64Encode( const void* byteBuffer, UInt32 bufferSize )
 
     base64StringBuffer[ base64StrLength ] = '\0';
     result.DetermineLength();
-    
+
     return result;
 }
 
@@ -454,7 +454,7 @@ Base64Decode( const CString& base64Str, void* byteBuffer, UInt32 bufferSize, UIn
 
     UInt32 base64StrLen = base64Str.ByteSize()-1;
     const unsigned char* p = (const unsigned char*) base64Str.C_String();
-    
+
     UInt32 j = 0,
         pad1 = base64StrLen % 4 || p[ base64StrLen-1 ] == '=',
         pad2 = pad1 && ( base64StrLen % 4 > 2 || p[ base64StrLen-2 ] != '=' );
@@ -598,8 +598,8 @@ GetRelativePathToOtherPathRoot( const CString& fromPath ,
     CString absFromPath = RelativePath( fromPath, resolveVars );
     CString absToPath = RelativePath( toPath, resolveVars );
 
-    CString fromPathRemainder = absFromPath.ReplaceChar( '\\', '/' );  
-    CString toPathRemainder = absToPath.ReplaceChar( '\\', '/' );    
+    CString fromPathRemainder = absFromPath.ReplaceChar( '\\', '/' );
+    CString toPathRemainder = absToPath.ReplaceChar( '\\', '/' );
 
     #if GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN
 
@@ -612,7 +612,7 @@ GetRelativePathToOtherPathRoot( const CString& fromPath ,
     // Now just check for the overlap in paths and based on the overlap
     // we will make a relative path
     UInt32 pathEquality = fromPathRemainder.FindMaxSegmentEquality( toPathRemainder, '/', true, false );
-                                                 
+
     #else
 
     // Now just check for the overlap in paths and based on the overlap
@@ -624,24 +624,24 @@ GetRelativePathToOtherPathRoot( const CString& fromPath ,
     // If there is overlap we will need to determine how to get to the other path
     // If there is no overlap then there is nothing to do
     if ( pathEquality > 0 )
-    {      
+    {
         // fromPathRemainder
         //     foo/bar/example
         //   -->
-        // toPathRemainder   
+        // toPathRemainder
         //     foo/lol
         //   =
-        //     ../../lol            
+        //     ../../lol
 
         fromPathRemainder = fromPathRemainder.CutChars( pathEquality, true, 0 );
-            
+
         TStringVector upDirElements = fromPathRemainder.ParseElements( '/', false );
         CString relativePath;
         for ( UInt32 i=0; i<upDirElements.size(); ++i )
         {
             relativePath += "../";
         }
-            
+
         toPathRemainder = toPathRemainder.CutChars( pathEquality, true, 0 );
         relativePath = CombinePath( relativePath, toPathRemainder );
         if ( !relativePath.IsNULLOrEmpty() && '/' == relativePath[ 0 ] )
@@ -1133,7 +1133,7 @@ StringToStringVector( const CString& str                           ,
 /*-------------------------------------------------------------------------*/
 
 CString
-StringVectorToString( const CString::StringVector& strVector , 
+StringVectorToString( const CString::StringVector& strVector ,
                       const CString& defaultIfNeeded         ,
                       char seperator                         )
 {GUCEF_TRACE;
@@ -1173,7 +1173,7 @@ StringToStringSet( const CString& str                        ,
 /*-------------------------------------------------------------------------*/
 
 CString
-StringSetToString( const CString::StringSet& strSet , 
+StringSetToString( const CString::StringSet& strSet ,
                    const CString& defaultIfNeeded   ,
                    char seperator                   )
 {GUCEF_TRACE;
@@ -1270,7 +1270,7 @@ StripFilename( const CString& pathPlusFilename )
 
     if ( sepCharIndex > 0 )
     {
-        return pathPlusFilename.SubstrToIndex( sepCharIndex, true );    
+        return pathPlusFilename.SubstrToIndex( sepCharIndex, true );
     }
     return pathPlusFilename;
 }
@@ -1298,14 +1298,14 @@ ExtractFilename( const CString& pathPlusFilename )
     Int32 sepCharIndex1 = pathPlusFilename.HasChar( GUCEF_DIRSEPCHAR, false );
     Int32 sepCharIndex2 = pathPlusFilename.HasChar( GUCEF_DIRSEPCHAROPPOSITE, false );
     Int32 sepCharIndex = sepCharIndex1 > sepCharIndex2 ? sepCharIndex1 : sepCharIndex2;
-    
+
     if ( sepCharIndex > 0 )
     {
             // @TODO: this is inconsistent !!!
             //   frontToBack is exclusive of index while the reverse is not
             // hence for now +1 to sepCharIndex
 
-        return pathPlusFilename.SubstrToIndex( sepCharIndex+1, false );    
+        return pathPlusFilename.SubstrToIndex( sepCharIndex+1, false );
     }
     return pathPlusFilename;
 }
@@ -1497,8 +1497,8 @@ IsAbsolutePath( const CString& path )
 #if ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
 
 // function to calculate UTF8 buffer size with handling for invalid UTF16 sequences
-size_t 
-CalculateUtf8BufferSizeForUtf16( const uint16_t* utf16, size_t utf16_length ) 
+size_t
+CalculateUtf8BufferSizeForUtf16( const uint16_t* utf16, size_t utf16_length )
 {GUCEF_TRACE;
 
     size_t utf8_buffer_size = 0;
@@ -1524,7 +1524,7 @@ CalculateUtf8BufferSizeForUtf16( const uint16_t* utf16, size_t utf16_length )
     return utf8_buffer_size;
 }
 
-#endif 
+#endif
 
 /*-------------------------------------------------------------------------*/
 
@@ -1554,12 +1554,15 @@ Utf16toUtf8( const std::wstring& wstr ,
 
     #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
 
-    size_t neededBufferSize = CalculateUtf8BufferSizeForUtf16( wstr.c_str(), wstr.size() ) + 1;
-    str.resize( neededBufferSize, '\0' );
-    ::utf16_to_utf8( wstr.c_str(), str.c_str(), neededBufferSize );
-    return true;
+    // @TODO
+//    size_t neededBufferSize = CalculateUtf8BufferSizeForUtf16( (const uint16_t*) wstr.c_str(), wstr.size() ) + 1;
+//    str.resize( neededBufferSize, '\0' );
+//    ::utf16_to_utf8( wstr.c_str(), str.c_str(), neededBufferSize );
+//    return true;
 
-    #else   
+    return false;
+
+    #else
 
     return false;
 
