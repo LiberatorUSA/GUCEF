@@ -722,6 +722,10 @@ class GUCEF_VFS_PUBLIC_CPP CVFS : public CORE::CTSGNotifier          ,
                                          CORE::CICloneable* eventdata );
     
     bool LoadVfsSystemConfig( const CORE::CDataNode& cfg );
+
+    void OnAppShutdownCompleted( CORE::CNotifier* notifier                 ,
+                                 const CORE::CEvent& eventid               ,
+                                 CORE::CICloneable* eventdata = GUCEF_NULL );
     
     private:    
     

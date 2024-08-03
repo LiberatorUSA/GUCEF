@@ -98,6 +98,11 @@
 #define GUCEF_CORE_CONFIGSTORE_H
 #endif /* GUCEF_CORE_CONFIGSTORE_H ? */
 
+#ifndef GUCEF_CORE_CGUCEFAPPLICATION_H
+#include "CGUCEFApplication.h"
+#define GUCEF_CORE_CGUCEFAPPLICATION_H
+#endif /* GUCEF_CORE_CGUCEFAPPLICATION_H ? */
+
 #ifndef DVCPPSTRINGUTILS_H
 #include "dvcppstringutils.h"           /* C++ string utils */
 #define DVCPPSTRINGUTILS_H
@@ -212,6 +217,10 @@ CVFS::RegisterEventHandlers( void )
     SubscribeTo( &CORE::CCoreGlobal::Instance()->GetConfigStore() ,
                  CORE::CConfigStore::GlobalConfigLoadFailedEvent  ,
                  callback2                                        );
+    TEventCallback callback3( this, &CVFS::OnAppShutdownCompleted );
+    SubscribeTo( &CORE::CCoreGlobal::Instance()->GetApplication()  ,
+                 CORE::CGUCEFApplication::AppShutdownCompleteEvent ,
+                 callback3                                         );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -529,6 +538,20 @@ CVFS::OnGlobalConfigLoadFinished( CORE::CNotifier* notifier    ,
     MountAllDelayMountedArchives();
     
     NotifyObservers( VfsInitializationCompletedEvent );
+}
+
+/*-------------------------------------------------------------------------*/
+
+void 
+CVFS::OnAppShutdownCompleted( CORE::CNotifier* notifier    ,
+                              const CORE::CEvent& eventid  ,
+                              CORE::CICloneable* eventdata )
+{GUCEF_TRACE;
+
+    MT::CScopeWriterLock lock( m_rwdataLock );
+    
+    UnmountAllArchives();
+    UnregisterAllArchiveFactories();
 }
 
 /*-------------------------------------------------------------------------*/

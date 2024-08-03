@@ -82,8 +82,8 @@ class GUCEF_CORE_PUBLIC_CPP CDataNode : public CIEnumerable
 {
     public:
 
-    typedef std::vector< CString, gucef_allocator< CString > >                                                  TStringVector;
-    typedef std::set< CString, std::less< CString >, gucef_allocator< CString > >                               TStringSet;
+    typedef CString::StringVector                                                                               TStringVector;
+    typedef CString::StringSet                                                                                  TStringSet;
     typedef std::pair< const CString, CVariant >                                                                TKeyValuePair;
     typedef std::set< CDataNode*, std::less< CDataNode* >, gucef_allocator< CDataNode* > >                      TDataNodeSet;
     typedef std::list< CDataNode*, gucef_allocator< CDataNode* > >                                              TDataNodeList;

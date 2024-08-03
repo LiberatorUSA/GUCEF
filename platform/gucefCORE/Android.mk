@@ -142,6 +142,7 @@ LOCAL_SRC_FILES := \
   src/gucefCORE_CDStoreBinaryCodec.cpp \
   src/gucefCORE_CDataNodeBinarySerializer.cpp \
   src/gucefCORE_CDataNodeDefinition.cpp \
+  src/gucefCORE_CDataNodeDocumentBuilder.cpp \
   src/gucefCORE_CDataNodeSerializableDataNode.cpp \
   src/gucefCORE_CDataNodeSerializableSettings.cpp \
   src/gucefCORE_CDate.cpp \
@@ -163,6 +164,7 @@ LOCAL_SRC_FILES := \
   src/gucefCORE_CIDataNodeSerializableTaskData.cpp \
   src/gucefCORE_CIDate.cpp \
   src/gucefCORE_CIDirectoryWatcher.cpp \
+  src/gucefCORE_CIDocumentParserCallbacks.cpp \
   src/gucefCORE_CIEnumerable.cpp \
   src/gucefCORE_CIEventHandlerFunctorBase.cpp \
   src/gucefCORE_CIFunction.cpp \

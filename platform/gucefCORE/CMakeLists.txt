@@ -148,6 +148,7 @@ set( HEADER_FILES
   include/gucefCORE_CDStoreBinaryCodec.h
   include/gucefCORE_CDataNodeBinarySerializer.h
   include/gucefCORE_CDataNodeDefinition.h
+  include/gucefCORE_CDataNodeDocumentBuilder.h
   include/gucefCORE_CDataNodeSerializableDataNode.h
   include/gucefCORE_CDataNodeSerializableSettings.h
   include/gucefCORE_CDate.h
@@ -171,6 +172,7 @@ set( HEADER_FILES
   include/gucefCORE_CIDataNodeSerializableTaskData.h
   include/gucefCORE_CIDate.h
   include/gucefCORE_CIDirectoryWatcher.h
+  include/gucefCORE_CIDocumentParserCallbacks.h
   include/gucefCORE_CIEnumerable.h
   include/gucefCORE_CIEventHandlerFunctorBase.h
   include/gucefCORE_CIFunction.h
@@ -388,6 +390,7 @@ set( SOURCE_FILES
   src/gucefCORE_CDStoreBinaryCodec.cpp
   src/gucefCORE_CDataNodeBinarySerializer.cpp
   src/gucefCORE_CDataNodeDefinition.cpp
+  src/gucefCORE_CDataNodeDocumentBuilder.cpp
   src/gucefCORE_CDataNodeSerializableDataNode.cpp
   src/gucefCORE_CDataNodeSerializableSettings.cpp
   src/gucefCORE_CDate.cpp
@@ -409,6 +412,7 @@ set( SOURCE_FILES
   src/gucefCORE_CIDataNodeSerializableTaskData.cpp
   src/gucefCORE_CIDate.cpp
   src/gucefCORE_CIDirectoryWatcher.cpp
+  src/gucefCORE_CIDocumentParserCallbacks.cpp
   src/gucefCORE_CIEnumerable.cpp
   src/gucefCORE_CIEventHandlerFunctorBase.cpp
   src/gucefCORE_CIFunction.cpp
