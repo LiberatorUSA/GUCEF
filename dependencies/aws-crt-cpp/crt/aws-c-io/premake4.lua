@@ -31,9 +31,13 @@ kind( "StaticLib" )
 configuration( {} )
 links( { "aws-c-cal", "aws-c-common" } )
 links( { "aws-c-cal", "aws-c-common" } )
+  
 
+configuration( { WIN32 } )
+defines( { "AWS_USE_IO_COMPLETION_PORTS" } )
+  
 
-configuration( {} )
+configuration( { WIN64 } )
 defines( { "AWS_USE_IO_COMPLETION_PORTS" } )
 
 

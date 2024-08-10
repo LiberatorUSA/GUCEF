@@ -48,8 +48,6 @@ LOCAL_C_INCLUDES := \
   $(MY_MODULE_PATH)/../aws-c-common/include \
   $(MY_MODULE_PATH)/include
 
-LOCAL_CFLAGS := -DAWS_USE_IO_COMPLETION_PORTS
-
 
 LOCAL_STATIC_LIBRARIES := \
   aws-c-cal \

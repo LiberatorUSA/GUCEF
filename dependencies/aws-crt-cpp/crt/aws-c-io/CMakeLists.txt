@@ -106,7 +106,14 @@ set( MODULE_NAME "aws-c-io" )
 add_library( ${MODULE_NAME} STATIC ${ALL_FILES} )
 add_dependencies( ${MODULE_NAME} aws-c-cal aws-c-common )
 target_link_libraries( ${MODULE_NAME} aws-c-cal aws-c-common )
-set_property( TARGET ${MODULE_NAME} APPEND_STRING PROPERTY COMPILE_DEFINITIONS "AWS_USE_IO_COMPLETION_PORTS" )
+
+if ( WIN32 )
+  set_property( TARGET ${MODULE_NAME} APPEND_STRING PROPERTY COMPILE_DEFINITIONS "AWS_USE_IO_COMPLETION_PORTS" )
+endif( WIN32 )
+
+if ( WIN64 )
+  set_property( TARGET ${MODULE_NAME} APPEND_STRING PROPERTY COMPILE_DEFINITIONS "AWS_USE_IO_COMPLETION_PORTS" )
+endif( WIN64 )
 
 include_directories( ../aws-c-cal/include ../aws-c-common/include include source )
 

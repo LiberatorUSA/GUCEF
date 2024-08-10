@@ -1,18 +1,22 @@
 <ModuleInfoEntry>
     <Module Name="aws-c-io" Type="StaticLibrary" Platform="All">
         <Preprocessor>
-			<Define String="AWS_USE_IO_COMPLETION_PORTS" />		
         </Preprocessor>
         <Dependencies>
             <Dependency Name="aws-c-common" />
             <Dependency Name="aws-c-common-headers" />
-			<Dependency Name="aws-c-cal" />
-			<Dependency Name="aws-c-cal-headers" />
-			<Dependency Name="aws-c-io-headers" />
+                <Dependency Name="aws-c-cal" />
+                <Dependency Name="aws-c-cal-headers" />
+                <Dependency Name="aws-c-io-headers" />
         </Dependencies>
         <Linker>
             <Dependency Name="aws-c-common" />
-			<Dependency Name="aws-c-cal" />
-        </Linker>		
+            <Dependency Name="aws-c-cal" />
+        </Linker>
+    </Module>
+    <Module Platform="mswin">
+        <Preprocessor>
+            <Define String="AWS_USE_IO_COMPLETION_PORTS" />
+        </Preprocessor>
     </Module>
 </ModuleInfoEntry>
