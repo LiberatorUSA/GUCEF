@@ -73,7 +73,7 @@ files( {
   "lib/connect.h",
   "lib/content_encoding.h",
   "lib/cookie.h",
-  "lib/curl-config.h",
+  "lib/curl_config.h",
   "lib/curl_addrinfo.h",
   "lib/curl_base64.h",
   "lib/curl_ctype.h",
