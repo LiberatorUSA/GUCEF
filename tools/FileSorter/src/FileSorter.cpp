@@ -388,6 +388,7 @@ const CORE::CString FileSorterConfig::ClassTypeName = "FileSorterConfig";
 FileSorterConfig::FileSorterConfig( void )
     : CORE::CGloballyConfigurable()
     , vfsInboxPath()
+    , vfsInboxPathScanIntervalInMs( 5 * 60 * 1000 ) // default is 5 minutes
     , vfsSortSourceRootPath()
     , vfsSortedTargetRootPath()
     , useDateTimeFolderStructure( true )
@@ -431,6 +432,7 @@ FileSorterConfig::LoadConfig( const CORE::CDataNode& globalConfig )
         return false;
 
     vfsInboxPath = cfg->GetAttributeValueOrChildValueByName( "vfsInboxPath", vfsInboxPath ).AsString( vfsInboxPath, true );
+    vfsInboxPathScanIntervalInMs = cfg->GetAttributeValueOrChildValueByName( "vfsInboxPathScanIntervalInMs", vfsInboxPathScanIntervalInMs ).AsUInt32( vfsInboxPathScanIntervalInMs, true );
     vfsSortSourceRootPath = cfg->GetAttributeValueOrChildValueByName( "vfsSortSourceRootPath", vfsSortSourceRootPath ).AsString( vfsSortSourceRootPath, true );
     vfsSortedTargetRootPath = cfg->GetAttributeValueOrChildValueByName( "vfsSortedTargetRootPath", vfsSortedTargetRootPath ).AsString( vfsSortedTargetRootPath, true );
     useDateTimeFolderStructure = cfg->GetAttributeValueOrChildValueByName( "useDateTimeFolderStructure", useDateTimeFolderStructure ).AsBool( useDateTimeFolderStructure, true );
@@ -585,6 +587,8 @@ FileSorter::SortFilesInVfsPath( const CORE::CString& vfsRootPath )
         return true;
 
     VFS::CVFS& vfs = VFS::CVfsGlobal::Instance()->GetVfs();
+    if ( !vfs.IsInitialized() )
+        return false;
     
     CORE::CString::StringVector filesToSort;
     if ( vfs.GetFileList( filesToSort, vfsRootPath, true, true, CORE::CString::Empty ) )
@@ -620,7 +624,12 @@ FileSorter::OnAppStarted( CORE::CNotifier* notifier    ,
 
     VFS::CVFS& vfs = VFS::CVfsGlobal::Instance()->GetVfs();
     if ( vfs.IsInitialized() )
+    {
         SortInitialRootPaths();
+
+        m_inboxWatchTimer.SetInterval( m_appConfig.vfsInboxPathScanIntervalInMs );
+        m_inboxWatchTimer.SetEnabled( true );
+    }
 }
 
 /*-------------------------------------------------------------------------*/
@@ -632,6 +641,49 @@ FileSorter::OnVfsInitializationCompleted( CORE::CNotifier* notifier    ,
 {GUCEF_TRACE;
 
     SortInitialRootPaths();
+
+    VFS::CVFS& vfs = VFS::CVfsGlobal::Instance()->GetVfs();
+    
+    if ( vfs.AddDirToWatch(m_appConfig.vfsInboxPath, true ) )
+    {
+        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "FileSorter: Added VFS path  \"" + m_appConfig.vfsInboxPath + "\" to watch list" );
+    }
+    else
+    {
+		GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "FileSorter: Failed to add VFS path \"" + m_appConfig.vfsInboxPath + "\" to watch list" );
+	}
+
+    m_inboxWatchTimer.SetInterval( m_appConfig.vfsInboxPathScanIntervalInMs );
+    m_inboxWatchTimer.SetEnabled( true );    
+}
+
+/*-------------------------------------------------------------------------*/
+
+void 
+FileSorter::OnVfsWatchedInboxDirChange( CORE::CNotifier* notifier    ,
+                                        const CORE::CEvent& eventId  ,
+                                        CORE::CICloneable* eventData )
+{GUCEF_TRACE;
+
+    // we dont even care what the change is or to what file, we just sort everything in the inbox
+    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "FileSorter: Detected changes in 'inbox' VFS path  \"" + m_appConfig.vfsInboxPath + "\"" );
+    SortFilesInVfsPath( m_appConfig.vfsInboxPath );
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+FileSorter::OnInboxWatchTimerCycle( CORE::CNotifier* notifier    ,
+                                    const CORE::CEvent& eventId  ,
+                                    CORE::CICloneable* eventData )
+{GUCEF_TRACE;
+
+    m_inboxWatchTimer.SetEnabled( false ); // stop the timer while we process just in case it takes a while
+
+    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "FileSorter: Performing periodic scan of VFS path  \"" + m_appConfig.vfsInboxPath + "\"" );
+    SortFilesInVfsPath( m_appConfig.vfsInboxPath );
+
+    m_inboxWatchTimer.SetEnabled( true );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -652,7 +704,23 @@ FileSorter::RegisterEventHandlers( void )
     SubscribeTo( &vfs                                       ,
                  VFS::CVFS::VfsInitializationCompletedEvent ,
                  callback2                                  );
+    TEventCallback callback3( this, &FileSorter::OnVfsWatchedInboxDirChange );
+    SubscribeTo( &vfs                        ,
+                 VFS::CVFS::FileCreatedEvent ,
+                 callback3                   );
+    TEventCallback callback4( this, &FileSorter::OnVfsWatchedInboxDirChange );
+    SubscribeTo( &vfs                         ,
+                 VFS::CVFS::FileModifiedEvent ,
+                 callback4                    );
+    TEventCallback callback5( this, &FileSorter::OnVfsWatchedInboxDirChange );
+    SubscribeTo( &vfs                        ,
+                 VFS::CVFS::FileRenamedEvent ,
+                 callback5                   );
 
+    TEventCallback callback6( this, &FileSorter::OnInboxWatchTimerCycle );
+    SubscribeTo( &m_inboxWatchTimer             ,
+                 CORE::CTimer::TimerUpdateEvent ,
+                 callback6                      );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -662,6 +730,7 @@ FileSorter::FileSorter( void )
     , m_httpServer()
     , m_httpRouter()
     , m_taskManagementRsc()
+    , m_inboxWatchTimer()
     , m_globalConfig()
     , m_appArgs()
     , m_appConfig()

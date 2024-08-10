@@ -222,6 +222,7 @@ class FileSorterConfig : public CORE::CGloballyConfigurable
 
     FileTypeConfig fileTypeConfig;
     CORE::CString vfsInboxPath;
+    CORE::UInt32 vfsInboxPathScanIntervalInMs;
     CORE::CString vfsSortSourceRootPath;
     CORE::CString vfsSortedTargetRootPath;
     bool useDateTimeFolderStructure;
@@ -275,12 +276,21 @@ class FileSorter : public CORE::CTSGNotifier
     void OnVfsInitializationCompleted( CORE::CNotifier* notifier    ,
                                        const CORE::CEvent& eventId  ,
                                        CORE::CICloneable* eventData );
+
+    void OnVfsWatchedInboxDirChange( CORE::CNotifier* notifier    ,
+                                     const CORE::CEvent& eventId  ,
+                                     CORE::CICloneable* eventData );
+
+    void OnInboxWatchTimerCycle( CORE::CNotifier* notifier    ,
+                                 const CORE::CEvent& eventId  ,
+                                 CORE::CICloneable* eventData );
     
     private:
     
     WEB::CHTTPServer m_httpServer;
     WEB::CDefaultHTTPServerRouter m_httpRouter;
     WEB::CTaskManagerServerResource m_taskManagementRsc;    
+    CORE::CTimer m_inboxWatchTimer;
     CORE::CDataNode m_globalConfig;    
     CORE::CValueList m_appArgs;
     FileSorterConfig m_appConfig;
