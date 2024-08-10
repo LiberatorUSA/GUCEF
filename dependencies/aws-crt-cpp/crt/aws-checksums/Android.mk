@@ -26,8 +26,7 @@ LOCAL_SRC_FILES := \
   source/crc_sw.c \
   source/arm/crc32c_arm.c \
   source/generic/crc32c_null.c \
-  source/intel/asm/crc32c_sse42_asm.c \
-  source/intel/visualc/visualc_crc32c_sse42.c
+  source/intel/asm/crc32c_sse42_asm.c
 
 LOCAL_C_INCLUDES := \
   $(MY_MODULE_PATH)/../aws-c-common/include \

@@ -29,7 +29,6 @@ LOCAL_SRC_FILES := \
   src/gucefKAITAI_CKaitaiSchemaEnumDefinition.cpp \
   src/gucefKAITAI_CKaitaiSchemaFieldDefinition.cpp \
   src/gucefKAITAI_CKaitaiSchemaRegistry.cpp \
-  src/gucefKAITAI_CKaitaiSerializer.cpp \
   src/gucefKAITAI_CModule.cpp
 
 LOCAL_C_INCLUDES := \

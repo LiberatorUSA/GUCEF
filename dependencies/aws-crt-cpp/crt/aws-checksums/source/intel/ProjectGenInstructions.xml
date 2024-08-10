@@ -1,0 +1,8 @@
+<PROJECTGENERATOR>
+    <EXCLUDES PLATFORM="ALL">
+        <ITEM NAME="visualc" TYPE="DIR" />
+    </EXCLUDES>
+    <INCLUDES PLATFORM="mswin">
+      <ITEM NAME="visualc" TYPE="DIR" />
+   </INCLUDES>
+</PROJECTGENERATOR>

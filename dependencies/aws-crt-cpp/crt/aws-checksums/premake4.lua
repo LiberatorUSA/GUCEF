@@ -40,9 +40,24 @@ files( {
   "source/crc_sw.c",
   "source/arm/crc32c_arm.c",
   "source/generic/crc32c_null.c",
-  "source/intel/asm/crc32c_sse42_asm.c",
-  "source/intel/visualc/visualc_crc32c_sse42.c"
+  "source/intel/asm/crc32c_sse42_asm.c"
  } )
+
+
+
+configuration( { "WIN32" } )
+    vpaths { ["Platform Source"] = { "**.c", "**.cpp", "**.cs", "**.asm" } }
+    files( {
+      "source/intel/visualc/visualc_crc32c_sse42.c"
+    } )
+
+
+
+configuration( { "WIN64" } )
+    vpaths { ["Platform Source"] = { "**.c", "**.cpp", "**.cs", "**.asm" } }
+    files( {
+      "source/intel/visualc/visualc_crc32c_sse42.c"
+    } )
 
 
 configuration( {} )
