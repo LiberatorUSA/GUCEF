@@ -116,27 +116,32 @@ typedef double          Float64;  /* 8 bytes, signed, decimal */
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+#ifdef __cplusplus
+  #define GUCEF_NS_FOR_BUILDINS ::GUCEF::
+#else
+  #define GUCEF_NS_FOR_BUILDINS
+#endif
 /*
  *      Maximum and minimal values for the build-in types 
  */
-#define GUCEF_INT8MAX     ( (Int8) 127 )
-#define GUCEF_INT8MIN     ( (Int8) (-128) )
-#define GUCEF_UINT8MAX    ( (UInt8) 256 )
-#define GUCEF_UINT8MIN    ( (UInt8) 0 )
-#define GUCEF_INT16MAX    ( (Int16) 32767 )
-#define GUCEF_INT16MIN    ( (Int16) (-32767-1) )
-#define GUCEF_UINT16MAX   ( (UInt16) 65535 )
-#define GUCEF_UINT16MIN   ( (UInt16) 0 )
-#define GUCEF_INT32MAX    ( (Int32) 2147483647 )
-#define GUCEF_INT32MIN    ( (Int32) (-2147483647-1) )
-#define GUCEF_UINT32MAX   ( (UInt32) 4294967295 )
-#define GUCEF_UINT32MIN   ( (UInt32) 0 )
-#define GUCEF_INT64MIN    ( (Int64) -9223372036854775808 )
-#define GUCEF_INT64MAX    ( (Int64) 9223372036854775807 )
-#define GUCEF_UINT64MIN   ( (UInt64) 0 )
-#define GUCEF_UINT64MAX   ( (UInt64) 18446744073709551615 )
-#define GUCEF_FLOAT32MAX  ( (Float32) (3.40282347E+38F) )
-#define GUCEF_FLOAT32MIN  ( (Float32) (-3.40282347E+38F-1) )
+#define GUCEF_INT8MAX     ( (GUCEF_NS_FOR_BUILDINS Int8) 127 )
+#define GUCEF_INT8MIN     ( (GUCEF_NS_FOR_BUILDINS Int8) (-128) )
+#define GUCEF_UINT8MAX    ( (GUCEF_NS_FOR_BUILDINS UInt8) 256 )
+#define GUCEF_UINT8MIN    ( (GUCEF_NS_FOR_BUILDINS UInt8) 0 )
+#define GUCEF_INT16MAX    ( (GUCEF_NS_FOR_BUILDINS Int16) 32767 )
+#define GUCEF_INT16MIN    ( (GUCEF_NS_FOR_BUILDINS Int16) (-32767-1) )
+#define GUCEF_UINT16MAX   ( (GUCEF_NS_FOR_BUILDINS UInt16) 65535 )
+#define GUCEF_UINT16MIN   ( (GUCEF_NS_FOR_BUILDINS UInt16) 0 )
+#define GUCEF_INT32MAX    ( (GUCEF_NS_FOR_BUILDINS Int32) 2147483647 )
+#define GUCEF_INT32MIN    ( (GUCEF_NS_FOR_BUILDINS Int32) (-2147483647-1) )
+#define GUCEF_UINT32MAX   ( (GUCEF_NS_FOR_BUILDINS UInt32) 4294967295 )
+#define GUCEF_UINT32MIN   ( (GUCEF_NS_FOR_BUILDINS UInt32) 0 )
+#define GUCEF_INT64MIN    ( (GUCEF_NS_FOR_BUILDINS Int64) -9223372036854775808 )
+#define GUCEF_INT64MAX    ( (GUCEF_NS_FOR_BUILDINS Int64) 9223372036854775807 )
+#define GUCEF_UINT64MIN   ( (GUCEF_NS_FOR_BUILDINS UInt64) 0 )
+#define GUCEF_UINT64MAX   ( (GUCEF_NS_FOR_BUILDINS UInt64) 18446744073709551615 )
+#define GUCEF_FLOAT32MAX  ( (GUCEF_NS_FOR_BUILDINS Float32) (3.40282347E+38F) )
+#define GUCEF_FLOAT32MIN  ( (GUCEF_NS_FOR_BUILDINS Float32) (-3.40282347E+38F-1) )
 
 /*--------------------------------------------------------------------------*/
 

@@ -20,7 +20,6 @@ set( HEADER_FILES
   includes/gucefKAITAI_CKaitaiSchemaEnumDefinition.h
   includes/gucefKAITAI_CKaitaiSchemaFieldDefinition.h
   includes/gucefKAITAI_CKaitaiSchemaRegistry.h
-  includes/gucefKAITAI_CKaitaiSerializer.h
   includes/gucefKAITAI_CModule.h
   includes/gucefKAITAI_ETypes.h
   includes/gucefKAITAI_config.h
@@ -35,7 +34,6 @@ set( SOURCE_FILES
   src/gucefKAITAI_CKaitaiSchemaEnumDefinition.cpp
   src/gucefKAITAI_CKaitaiSchemaFieldDefinition.cpp
   src/gucefKAITAI_CKaitaiSchemaRegistry.cpp
-  src/gucefKAITAI_CKaitaiSerializer.cpp
   src/gucefKAITAI_CModule.cpp
 )
 
