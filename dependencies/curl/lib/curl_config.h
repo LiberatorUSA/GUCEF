@@ -160,10 +160,10 @@
 #endif
 
 /* Allow SMB to work on Windows */
-#define USE_WIN32_CRYPTO 1
+/* #define USE_WIN32_CRYPTO 1 */
 
 /* Use Windows LDAP implementation */
-#define USE_WIN32_LDAP 1
+/* #define USE_WIN32_LDAP 1 */
 
 /* Define if you want to enable IPv6 support */
 #define USE_IPV6 1
@@ -200,7 +200,7 @@
 #define HAVE_CLOCK_GETTIME_MONOTONIC_RAW 1
 
 /* Define to 1 if you have the `closesocket' function. */
-#define HAVE_CLOSESOCKET 1
+/* #define HAVE_CLOSESOCKET 1 */
 
 /* Define to 1 if you have the <dirent.h> header file. */
 #define HAVE_DIRENT_H 1
@@ -293,7 +293,7 @@
 #define HAVE_GMTIME_R 1
 
 /* if you have the gssapi libraries */
-#define HAVE_GSSAPI 1
+/* #define HAVE_GSSAPI 1 */
 
 /* Define to 1 if you have the <gssapi/gssapi_generic.h> header file. */
 #define HAVE_GSSAPI_GSSAPI_GENERIC_H 1
@@ -348,31 +348,31 @@
 #define HAVE_LBER_H 1
 
 /* Define to 1 if you have the ldap.h header file. */
-#define HAVE_LDAP_H 1
+/* #define HAVE_LDAP_H 1 */
 
 /* Use LDAPS implementation */
-#define HAVE_LDAP_SSL 1
+/* #define HAVE_LDAP_SSL 1 */
 
 /* Define to 1 if you have the ldap_ssl.h header file. */
-#define HAVE_LDAP_SSL_H 1
+/* #define HAVE_LDAP_SSL_H 1 */
 
 /* Define to 1 if you have the `ldap_url_parse' function. */
-#define HAVE_LDAP_URL_PARSE 1
+/* #define HAVE_LDAP_URL_PARSE 1 */
 
 /* Define to 1 if you have the <libgen.h> header file. */
 #define HAVE_LIBGEN_H 1
 
 /* Define to 1 if you have the `idn2' library (-lidn2). */
-#define HAVE_LIBIDN2 1
+/* #define HAVE_LIBIDN2 1 */
 
 /* Define to 1 if you have the idn2.h header file. */
-#define HAVE_IDN2_H 1
+/* #define HAVE_IDN2_H 1 */
 
 /* if zlib is available */
-#define HAVE_LIBZ 1
+/* #define HAVE_LIBZ 1 */
 
 /* if brotli is available */
-#define HAVE_BROTLI 1
+/* #define HAVE_BROTLI 1 */
 
 /* if zstd is available */
 #define HAVE_ZSTD 1
@@ -423,7 +423,7 @@
 #define HAVE_POLL_H 1
 
 /* Define to 1 if you have a working POSIX-style strerror_r function. */
-#define HAVE_POSIX_STRERROR_R 1
+/* #define HAVE_POSIX_STRERROR_R 1 */
 
 /* Define to 1 if you have the <pthread.h> header file */
 #define HAVE_PTHREAD_H 1
@@ -437,6 +437,12 @@
 /* Define to 1 if you have the recv function. */
 #define HAVE_RECV 1
 
+#define RECV_TYPE_ARG1 int
+#define RECV_TYPE_ARG2 void*
+#define RECV_TYPE_ARG3 size_t
+#define RECV_TYPE_ARG4 int
+#define RECV_TYPE_RETV ssize_t
+
 /* Define to 1 if you have the select function. */
 #define HAVE_SELECT 1
 
@@ -445,6 +451,13 @@
 
 /* Define to 1 if you have the send function. */
 #define HAVE_SEND 1
+
+#define SEND_TYPE_ARG1 int
+#define SEND_QUAL_ARG2 const
+#define SEND_TYPE_ARG2 void*
+#define SEND_TYPE_ARG3 size_t
+#define SEND_TYPE_ARG4 int
+#define SEND_TYPE_RETV ssize_t
 
 /* Define to 1 if you have the sendmsg function. */
 #define HAVE_SENDMSG 1
@@ -480,7 +493,7 @@
 #define HAVE_SIGNAL 1
 
 /* Define to 1 if you have the sigsetjmp function or macro. */
-#define HAVE_SIGSETJMP 1
+/* #define HAVE_SIGSETJMP 1 */
 
 /* Define to 1 if you have the `snprintf' function. */
 #define HAVE_SNPRINTF 1
@@ -519,7 +532,7 @@
 #define HAVE_STRINGS_H 1
 
 /* Define to 1 if you have the <stropts.h> header file. */
-#define HAVE_STROPTS_H 1
+/* #define HAVE_STROPTS_H 1 */
 
 /* Define to 1 if you have the strtok_r function. */
 #define HAVE_STRTOK_R 1
@@ -564,7 +577,7 @@
 #define HAVE_SYS_SOCKET_H 1
 
 /* Define to 1 if you have the <sys/sockio.h> header file. */
-#define HAVE_SYS_SOCKIO_H 1
+/* #define HAVE_SYS_SOCKIO_H 1 */
 
 /* Define to 1 if you have the <sys/stat.h> header file. */
 #define HAVE_SYS_STAT_H 1
@@ -612,28 +625,28 @@
 #define NEED_REENTRANT 1
 
 /* cpu-machine-OS */
-#define OS ${OS}
+#define OS "Linux"
 
 /* Name of package */
-#define PACKAGE ${PACKAGE}
+#define PACKAGE "libcurl"
 
 /* Define to the address where bug reports for this package should be sent. */
-#define PACKAGE_BUGREPORT ${PACKAGE_BUGREPORT}
+#define PACKAGE_BUGREPORT ""
 
 /* Define to the full name of this package. */
-#define PACKAGE_NAME ${PACKAGE_NAME}
+#define PACKAGE_NAME "libcurl"
 
 /* Define to the full name and version of this package. */
-#define PACKAGE_STRING ${PACKAGE_STRING}
+#define PACKAGE_STRING "libcurl"
 
 /* Define to the one symbol short name of this package. */
-#define PACKAGE_TARNAME ${PACKAGE_TARNAME}
+#define PACKAGE_TARNAME "libcurl.tar.gz"
 
 /* Define to the version of this package. */
-#define PACKAGE_VERSION ${PACKAGE_VERSION}
+#define PACKAGE_VERSION ""
 
 /* a suitable file to read random data from */
-#define RANDOM_FILE "${RANDOM_FILE}"
+#define RANDOM_FILE ""
 
 /*
  Note: SIZEOF_* variables are fetched with CMake through check_type_size().
@@ -672,7 +685,7 @@ ${SIZEOF_TIME_T_CODE}
 #define STDC_HEADERS 1
 
 /* Define if you want to enable c-ares support */
-#define USE_ARES 1
+/* #define USE_ARES 1 */
 
 /* Define if you want to enable POSIX threaded DNS lookup */
 #define USE_THREADS_POSIX 1
@@ -681,43 +694,43 @@ ${SIZEOF_TIME_T_CODE}
 /* #define USE_THREADS_WIN32 1 */
 
 /* if GnuTLS is enabled */
-#define USE_GNUTLS 1
+/* #define USE_GNUTLS 1 */
 
 /* if Secure Transport is enabled */
-#define USE_SECTRANSP 1
+/* #define USE_SECTRANSP 1 */
 
 /* if mbedTLS is enabled */
-#define USE_MBEDTLS 1
+/* #define USE_MBEDTLS 1 */
 
 /* if BearSSL is enabled */
-#define USE_BEARSSL 1
+/* #define USE_BEARSSL 1 */
 
 /* if wolfSSL is enabled */
-#define USE_WOLFSSL 1
+/* #define USE_WOLFSSL 1 */
 
 /* if wolfSSL has the wolfSSL_DES_ecb_encrypt function. */
-#define HAVE_WOLFSSL_DES_ECB_ENCRYPT 1
+/* #define HAVE_WOLFSSL_DES_ECB_ENCRYPT 1 */
 
 /* if wolfSSL has the wolfSSL_BIO_set_shutdown function. */
-#define HAVE_WOLFSSL_FULL_BIO 1
+/* #define HAVE_WOLFSSL_FULL_BIO 1 */
 
 /* if libssh is in use */
-#define USE_LIBSSH 1
+/* #define USE_LIBSSH 1 */
 
 /* if libssh2 is in use */
-#define USE_LIBSSH2 1
+/* #define USE_LIBSSH2 1 */
 
 /* if libpsl is in use */
-#define USE_LIBPSL 1
+/* #define USE_LIBPSL 1 */
 
 /* if you want to use OpenLDAP code instead of legacy ldap implementation */
-#define USE_OPENLDAP 1
+/* #define USE_OPENLDAP 1 */
 
 /* if OpenSSL is in use */
 #define USE_OPENSSL 1
 
 /* if librtmp/rtmpdump is in use */
-#define USE_LIBRTMP 1
+/* #define USE_LIBRTMP 1 */
 
 /* if GSASL is in use */
 #define USE_GSASL 1
@@ -733,16 +746,16 @@ ${SIZEOF_TIME_T_CODE}
 #define CURL_DISABLE_OPENSSL_AUTO_LOAD_CONFIG 1
 
 /* to enable NGHTTP2  */
-#define USE_NGHTTP2 1
+/* #define USE_NGHTTP2 1 */
 
 /* to enable NGTCP2 */
-#define USE_NGTCP2 1
+/* #define USE_NGTCP2 1 */
 
 /* to enable NGHTTP3  */
-#define USE_NGHTTP3 1
+/* #define USE_NGHTTP3 1 */
 
 /* to enable quiche */
-#define USE_QUICHE 1
+/* #define USE_QUICHE 1 */
 
 /* to enable openssl + nghttp3 */
 #define USE_OPENSSL_QUIC 1
@@ -757,49 +770,49 @@ ${SIZEOF_TIME_T_CODE}
 #define USE_UNIX_SOCKETS 1
 
 /* Define to 1 if you are building a Windows target with large file support. */
-#define USE_WIN32_LARGE_FILES 1
+/* #define USE_WIN32_LARGE_FILES 1 */
 
 /* to enable SSPI support */
-#define USE_WINDOWS_SSPI 1
+/* #define USE_WINDOWS_SSPI 1 */
 
 /* to enable Windows SSL  */
-#define USE_SCHANNEL 1
+/* #define USE_SCHANNEL 1 */
 
 /* enable multiple SSL backends */
 #define CURL_WITH_MULTI_SSL 1
 
 /* Version number of package */
-#define VERSION ${VERSION}
+#define VERSION "7.69.1"
 
 /* Number of bits in a file offset, on hosts where this is settable. */
-#define _FILE_OFFSET_BITS ${_FILE_OFFSET_BITS}
+/* #define _FILE_OFFSET_BITS ${_FILE_OFFSET_BITS} */
 
 /* Define for large files, on AIX-style hosts. */
-#define _LARGE_FILES ${_LARGE_FILES}
+/* #define _LARGE_FILES ${_LARGE_FILES} */
 
 /* define this if you need it to compile thread-safe code */
-#define _THREAD_SAFE ${_THREAD_SAFE}
+/* #define _THREAD_SAFE ${_THREAD_SAFE} */
 
 /* Define to empty if `const' does not conform to ANSI C. */
-#define const ${const}
+/* #define const ${const} */
 
 /* Type to use in place of in_addr_t when system does not provide it. */
-#define in_addr_t ${in_addr_t}
+/* #define in_addr_t ${in_addr_t} */
 
 /* Define to `unsigned int' if <sys/types.h> does not define. */
-#define size_t ${size_t}
+/* #define size_t ${size_t} */
 
 /* the signed version of size_t */
-#define ssize_t ${ssize_t}
+/* #define ssize_t ${ssize_t} */
 
 /* Define to 1 if you have the mach_absolute_time function. */
 #define HAVE_MACH_ABSOLUTE_TIME 1
 
 /* to enable Windows IDN */
-#define USE_WIN32_IDN 1
+/* #define USE_WIN32_IDN 1 */
 
 /* to enable Apple IDN */
-#define USE_APPLE_IDN 1
+/* #define USE_APPLE_IDN 1 */
 
 /* Define to 1 to enable websocket support. */
 #define USE_WEBSOCKETS 1
@@ -818,5 +831,32 @@ ${SIZEOF_TIME_T_CODE}
 
 /* if ECH support is available */
 #define USE_ECH 1
+
+/* Define to 1 if you have <errno.h> */
+#define HAVE_ERRNO_H 1
+
+/* Define if the compiler supports C99 variadic macro style. */
+#define HAVE_VARIADIC_MACROS_C99 1
+
+#define SIZEOF_SHORT 2
+#define SIZEOF_INT 4
+#define SIZEOF_LONG 8
+#define SIZEOF_LONG_LONG 8
+#define SIZEOF_CURL_OFF_T 4
+
+/* 4 for 32 bit build, 8 for 64bit builds */
+#define SIZEOF_SIZE_T 8
+
+/* #define CURL_TYPEOF_CURL_SOCKLEN_T unsigned int */
+
+#define CURL_TYPEOF_CURL_OFF_T long
+#define CURL_FORMAT_CURL_OFF_T "ld"
+#define CURL_FORMAT_CURL_OFF_TU "lu"
+#define CURL_FORMAT_OFF_T "%ld"
+#define CURL_SUFFIX_CURL_OFF_T L
+#define CURL_SUFFIX_CURL_OFF_TU UL
+#define CURL_SIZEOF_CURL_OFF_T SIZEOF_CURL_OFF_T
+
+
 
 #endif /* HEADER_CURL_CONFIG_H */

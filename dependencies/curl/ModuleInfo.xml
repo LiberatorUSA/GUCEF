@@ -1,35 +1,35 @@
 <ModuleInfoEntry>
     <Module Name="curl" Type="SharedLibrary" Platform="All">
         <Preprocessor>
-			<Define String="HAVE_BUILTIN_CPU_SUPPORTS" />
-			<Define String="BUILDING_LIBCURL" />
+            <Define String="HAVE_BUILTIN_CPU_SUPPORTS" />
+            <Define String="BUILDING_LIBCURL" />
         </Preprocessor>
         <Dependencies>
         </Dependencies>
         <Linker>
-        </Linker>		
+        </Linker>
     </Module>
     <Module Platform="mswin">
         <Preprocessor>
-			<Define String="_CRT_SECURE_NO_DEPRECATE" />
-			<Define String="_CRT_NONSTDC_NO_DEPRECATE" />
-			<Define String="CURL_DISABLE_LDAP" />
+            <Define String="_CRT_SECURE_NO_DEPRECATE" />
+            <Define String="_CRT_NONSTDC_NO_DEPRECATE" />
+            <Define String="CURL_DISABLE_LDAP" />
         </Preprocessor>
         <Dependencies>
         </Dependencies>
         <Linker>
             <Dependency Name="Ws2_32.lib" />
             <Dependency Name="Advapi32.lib" />
-			<Dependency Name="Wldap32.lib" />
+            <Dependency Name="Wldap32.lib" />
         </Linker>
     </Module>
     <Module Platform="linux">
         <Preprocessor>
-			<Define String="HAVE_CONFIG_H" />
+            <Define String="HAVE_CONFIG_H" />
         </Preprocessor>
         <Dependencies>
         </Dependencies>
         <Linker>
         </Linker>
-    </Module>		
+    </Module>	
 </ModuleInfoEntry>
