@@ -291,14 +291,14 @@ ProcessMetrics::CProcInfo::Clear( void )
 
 /*-------------------------------------------------------------------------*/
 
-ProcessMetrics::CProcInfo& 
+ProcessMetrics::CProcInfo&
 ProcessMetrics::CProcInfo::operator=( const CProcInfo& src )
 {GUCEF_TRACE;
 
     if ( this != &src )
     {
         Clear();
-        
+
         pid = CORE::CopyProcessId( src.pid );
         previousProcCpuDataDataPoint = CORE::CopyProcCpuDataPoint( previousProcCpuDataDataPoint, pid );
         processInformation = src.processInformation;
@@ -309,11 +309,11 @@ ProcessMetrics::CProcInfo::operator=( const CProcInfo& src )
         restartIfStopsRunning = src.restartIfStopsRunning;
     }
     return *this;
-}    
+}
 
 /*-------------------------------------------------------------------------*/
 
-bool 
+bool
 ProcessMetrics::CProcInfo::IsProcessStillActive( void )
 {GUCEF_TRACE;
 
@@ -334,20 +334,20 @@ ProcessMetrics::CProcInfo::IsProcessStillActive( void )
                     {
                         if ( lastUptimeInMs > cpuUseInfo.uptimeInMs )
                         {
-                            GUCEF_WARNING_LOG( CORE::LOGLEVEL_NORMAL, "ProcessMetrics: Proc \"" + exeName + "\" : Uptime went down even though the OS claims the proc is still alive. lastUptime=" + 
+                            GUCEF_WARNING_LOG( CORE::LOGLEVEL_NORMAL, "ProcessMetrics: Proc \"" + exeName + "\" : Uptime went down even though the OS claims the proc is still alive. lastUptime=" +
                                 CORE::ToString( lastUptimeInMs ) + " -> uptime=" + CORE::ToString( cpuUseInfo.uptimeInMs ) );
-                        
+
                             lastUptimeInMs = cpuUseInfo.uptimeInMs;
 
                             // If the up time went down then the process cannot possibly have been the same one that persisted
                             // Since things don't add up we will report this proc as dead since the context is that in this app it will cause
-                            // us to refresh all relevant information                        
+                            // us to refresh all relevant information
                             return false;
                         }
                         lastUptimeInMs = cpuUseInfo.uptimeInMs;
                     }
                 }
-            
+
                 GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "ProcessMetrics: Proc \"" + exeName + "\" is still alive" );
                 return true;
             }
@@ -385,7 +385,7 @@ ProcessMetrics::CProcInfo::Unlink( void )
 
 /*-------------------------------------------------------------------------*/
 
-bool 
+bool
 ProcessMetrics::CProcInfo::RefreshPID( void )
 {GUCEF_TRACE;
 
@@ -403,7 +403,7 @@ ProcessMetrics::CProcInfo::RefreshPID( void )
 
 /*-------------------------------------------------------------------------*/
 
-bool 
+bool
 ProcessMetrics::CProcInfo::RefreshPID( CORE::TProcessId* procIds, CORE::UInt32 procIdCount )
 {GUCEF_TRACE;
 
@@ -428,14 +428,14 @@ ProcessMetrics::CProcInfo::RefreshPID( CORE::TProcessId* procIds, CORE::UInt32 p
             }
         }
     }
-    
+
     GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "ProcessMetrics: No running proc match found for \"" + exeName + "\"" );
     return success;
 }
 
 /*-------------------------------------------------------------------------*/
 
-bool 
+bool
 ProcessMetrics::CProcInfo::RefreshPID( CORE::TProcessId* newProcId )
 {GUCEF_TRACE;
 
@@ -444,14 +444,14 @@ ProcessMetrics::CProcInfo::RefreshPID( CORE::TProcessId* newProcId )
         CORE::FreeProcessId( pid );
         pid = GUCEF_NULL;
         GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "ProcessMetrics: Refreshing pre-existing PID for \"" + exeName + "\"" );
-    }            
+    }
     else
     {
         GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "ProcessMetrics: Applying PID for \"" + exeName + "\"" );
     }
-                
+
     pid = CORE::CopyProcessId( newProcId );
-    
+
     if ( CORE::CProcessInformation::TryGetProcessInformation( pid, processInformation ) )
     {
         GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "ProcessMetrics: Obtained process information for \"" + exeName + "\"" );
@@ -469,7 +469,7 @@ ProcessMetrics::CProcInfo::RefreshPID( CORE::TProcessId* newProcId )
     }
     else
     {
-        previousProcCpuDataDataPoint = CORE::CreateProcCpuDataPoint( pid ); 
+        previousProcCpuDataDataPoint = CORE::CreateProcCpuDataPoint( pid );
     }
 
     return true;
@@ -573,11 +573,11 @@ ProcessMetrics::RegisterEventHandlers( void )
     SubscribeTo( &m_metricsTimer                ,
                  CORE::CTimer::TimerUpdateEvent ,
                  callback                       );
-    
+
     TEventCallback callback2( this, &ProcessMetrics::OnProcScanTimerCycle );
     SubscribeTo( &m_procIndexTimer              ,
                  CORE::CTimer::TimerUpdateEvent ,
-                 callback2                      );    
+                 callback2                      );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -588,7 +588,7 @@ ProcessMetrics::RefreshPIDs( const CORE::CString::StringSet& refreshExeNames )
 
     if ( refreshExeNames.empty() )
         return;
-    
+
     GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "ProcessMetrics: Refresing PID administration for " + CORE::ToString( refreshExeNames.size() ) + " items" );
 
     CORE::UInt32 procIdCount = 0;
@@ -634,7 +634,7 @@ ProcessMetrics::LaunchProcs( const CORE::CString::StringSet& procsToLaunch )
 {GUCEF_TRACE;
 
     GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "ProcessMetrics: Attempting to launch " + CORE::ToString( procsToLaunch.size() ) + " proc(s)" );
-    
+
     bool totalSuccess = true;
     CORE::CString::StringSet::const_iterator i = procsToLaunch.begin();
     while ( i != procsToLaunch.end() )
@@ -677,7 +677,7 @@ ProcessMetrics::LaunchProcs( const CORE::CString::StringSet& procsToLaunch )
                         }
                         else
                         {
-                            GUCEF_WARNING_LOG( CORE::LOGLEVEL_NORMAL, "ProcessMetrics: Launched process \"" + procInfo.exeName + 
+                            GUCEF_WARNING_LOG( CORE::LOGLEVEL_NORMAL, "ProcessMetrics: Launched process \"" + procInfo.exeName +
                                 "\" using only its name and command line \"" + cmdLine + "\" but unable to get its meta-data" );
                         }
                     }
@@ -724,11 +724,11 @@ ProcessMetrics::SetupPubSubClient( const CORE::CDataNode& cfg )
                 if ( !topicNameList.empty() )
                 {
                     m_thresholdNotificationPublishTopic = m_pubSubClient->GetTopicAccess( *topicNameList.begin() );
-                    if ( GUCEF_NULL == m_thresholdNotificationPublishTopic )
+                    if ( m_thresholdNotificationPublishTopic.IsNULL() )
                     {
                         m_thresholdNotificationPublishTopic = m_pubSubClient->CreateTopicAccess( *topicNameList.begin() );
                     }
-                    if ( GUCEF_NULL != m_thresholdNotificationPublishTopic )
+                    if ( !m_thresholdNotificationPublishTopic.IsNULL() )
                     {
                         GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "ProcessMetrics:SetupPubSubClient: Successfully obtained access to topic with name: " + *topicNameList.begin() );
                         return true;
@@ -769,7 +769,7 @@ ProcessMetrics::PublishMetricThresholdExceeded( const CORE::CVariant& metricValu
                                                 const MetricThreshold& threshold  )
 {GUCEF_TRACE;
 
-    if ( m_pubSubClient.IsNULL() || GUCEF_NULL == m_thresholdNotificationPublishTopic )
+    if ( m_pubSubClient.IsNULL() || m_thresholdNotificationPublishTopic.IsNULL() )
         return;
 
     PUBSUB::CBasicPubSubMsg msg;
@@ -886,7 +886,7 @@ ProcessMetrics::OnProcScanTimerCycle( CORE::CNotifier* notifier    ,
     UInt32 lockedOnProcs = 0;
     TProcessIdMap::iterator m = m_exeProcsToWatch.begin();
     while ( m != m_exeProcsToWatch.end() )
-    {        
+    {
         // We don't just check that we found the proc, we also revalidate that its still alive
         CProcInfo& procInfo = (*m).second;
         if ( procInfo.IsProcessStillActive() )
@@ -897,14 +897,14 @@ ProcessMetrics::OnProcScanTimerCycle( CORE::CNotifier* notifier    ,
         {
             nonLockedOnProcs.insert( procInfo.exeName );
 
-            if ( procInfo.startIfNotRunning                                     && 
+            if ( procInfo.startIfNotRunning                                     &&
                  ( GUCEF_NULL == procInfo.pid && 0 == procInfo.lastUptimeInMs )  )
             {
                 // this proc is not running and has not run before to the best of our knowledge
                 procsToLaunch.insert( procInfo.exeName );
             }
             else
-            if ( procInfo.restartIfStopsRunning                                  && 
+            if ( procInfo.restartIfStopsRunning                                  &&
                  ( GUCEF_NULL != procInfo.pid || 0 != procInfo.lastUptimeInMs )  )
             {
                 // this proc was running and is requested to be auto-restarted
@@ -918,7 +918,7 @@ ProcessMetrics::OnProcScanTimerCycle( CORE::CNotifier* notifier    ,
     // negative number means always match everything
     if ( m_exeMatchPidMatchThreshold > 0 && lockedOnProcs >= (UInt32) m_exeMatchPidMatchThreshold )
     {
-        GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "ProcessMetrics: Locked onto " + CORE::ToString( lockedOnProcs ) + 
+        GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "ProcessMetrics: Locked onto " + CORE::ToString( lockedOnProcs ) +
             " procs out of a minimum match total of " + CORE::ToString( m_exeMatchPidMatchThreshold ) + ", skipping proc scan" );
         return;
     }
@@ -938,7 +938,7 @@ ProcessMetrics::RefreshPIDs( void )
     UInt32 lockedOnProcs = 0;
     TProcessIdMap::iterator m = m_exeProcsToWatch.begin();
     while ( m != m_exeProcsToWatch.end() )
-    {        
+    {
         // We don't just check that we found the proc, we also revalidate that its still alive
         CProcInfo& procInfo = (*m).second;
         if ( procInfo.IsProcessStillActive() )
@@ -966,13 +966,13 @@ ProcessMetrics::OnMetricsTimerCycle( CORE::CNotifier* notifier    ,
     TStringSet failedProcs;
 
     if ( m_gatherMemStats )
-    {        
+    {
         TProcessIdMap::iterator m = m_exeProcsToWatch.begin();
         while ( m != m_exeProcsToWatch.end() )
         {
             CProcInfo& procInfo = (*m).second;
             if ( procInfo.gatherMetrics )
-            {            
+            {
                  CORE::TProcessMemoryUsageInfo memUseInfo;
                 if ( OSWRAP_TRUE == CORE::GetProcessMemoryUsage( procInfo.pid, &memUseInfo ) )
                 {
@@ -1031,7 +1031,7 @@ ProcessMetrics::OnMetricsTimerCycle( CORE::CNotifier* notifier    ,
             {
                 static const CORE::CString metricName = "CpuUsePercentage";
                 GUCEF_METRIC_GAUGE( lCpuMetricPrefix + metricName, cpuStats->cpuUsePercentage, 1.0f );
-                ValidateMetricThresholds( CORE::CVariant( cpuStats->cpuUsePercentage ), metricName, CORE::CString::Empty );                
+                ValidateMetricThresholds( CORE::CVariant( cpuStats->cpuUsePercentage ), metricName, CORE::CString::Empty );
             }
 
             for ( CORE::UInt32 i=0; i<cpuStats->logicalCpuCount; ++i )
@@ -1088,7 +1088,7 @@ ProcessMetrics::OnMetricsTimerCycle( CORE::CNotifier* notifier    ,
                 {
                     static const CORE::CString metricName = "CpuUsePercentage";
                     GUCEF_METRIC_GAUGE( lCpuMetricPrefix + metricName, lCpuStats->cpuUsePercentage, 1.0f );
-                    ValidateMetricThresholds( CORE::CVariant( lCpuStats->cpuUsePercentage ), metricName, CORE::CString::Empty );                
+                    ValidateMetricThresholds( CORE::CVariant( lCpuStats->cpuUsePercentage ), metricName, CORE::CString::Empty );
                 }
             }
         }
@@ -1101,7 +1101,7 @@ ProcessMetrics::OnMetricsTimerCycle( CORE::CNotifier* notifier    ,
         {
             CProcInfo& procInfo = (*m).second;
             if ( procInfo.gatherMetrics )
-            { 
+            {
                 CORE::TProcessCpuUsageInfo cpuUseInfo;
                 if ( OSWRAP_TRUE == CORE::GetProcessCpuUsage( procInfo.pid, procInfo.previousProcCpuDataDataPoint, &cpuUseInfo ) )
                 {
@@ -1109,7 +1109,7 @@ ProcessMetrics::OnMetricsTimerCycle( CORE::CNotifier* notifier    ,
                     // this is used as an extra sanity check on whether the process's lifecycle was interrupted
                     procInfo.lastUptimeInMs = cpuUseInfo.uptimeInMs;
 
-                    const CORE::CString& procName = (*m).first;                
+                    const CORE::CString& procName = (*m).first;
                     CORE::CString metricPrefix = "ProcessMetrics." + procName + '.';
 
                     if ( m_gatherProcCpuUptime )
@@ -1198,7 +1198,7 @@ ProcessMetrics::OnMetricsTimerCycle( CORE::CNotifier* notifier    ,
     if ( m_gatherGlobalNetworkStats )
     {
         COMCORE::CCom& comms = COMCORE::CComCoreGlobal::Instance()->GetCom();
-        
+
         COMCORE::CCom::TINetworkInterfacePtrVector nics;
         if ( comms.GetAllNetworkInterfaces( nics ) )
         {
@@ -1317,7 +1317,7 @@ ProcessMetrics::OnMetricsTimerCycle( CORE::CNotifier* notifier    ,
                         CORE::CString nicMetricName = nicMetricNamePrefix + nic->GetAdapterName() + "ReceiveLinkSpeedBitsPerSec";
                         GUCEF_METRIC_GAUGE( nicMetricName, nicMetrics.receiveLinkSpeedBitsPerSec, 1.0f );
                         ValidateMetricThresholds( CORE::CVariant( nicMetrics.receiveLinkSpeedBitsPerSec ), nicMetricName, CORE::CString::Empty );
-                    }                    
+                    }
                 }
                 ++i;
             }
@@ -1331,7 +1331,7 @@ ProcessMetrics::OnMetricsTimerCycle( CORE::CNotifier* notifier    ,
             GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "ProcessMetrics: Fetching storage volume list" );
             if ( CORE::GetAllFileSystemStorageVolumes( m_storageVolumeIds ) )
             {
-                GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "ProcessMetrics: Successfully obtained a list of " + CORE::ToString( m_storageVolumeIds.size() ) + " storage volumes" );    
+                GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "ProcessMetrics: Successfully obtained a list of " + CORE::ToString( m_storageVolumeIds.size() ) + " storage volumes" );
             }
             else
             {
@@ -1367,11 +1367,11 @@ ProcessMetrics::OnMetricsTimerCycle( CORE::CNotifier* notifier    ,
                         ++i;
                     }
                 }
-            }            
+            }
         }
 
         static const CORE::CString storageMetricNamePrefix = "ProcessMetrics.Storage.";
-        
+
         CORE::CString::StringSet::iterator i = m_storageVolumeIds.begin();
         while ( i != m_storageVolumeIds.end() )
         {
@@ -1386,7 +1386,7 @@ ProcessMetrics::OnMetricsTimerCycle( CORE::CNotifier* notifier    ,
                     metricStrToUse = &storagePath;
 
                 CORE::CString metricsStorageVolumeId = GenerateMetricsFriendlyString( *metricStrToUse );
-                
+
                 if ( m_gatherGlobalStorageVolumeBytesAvailableToCaller )
                 {
                     CORE::CString storageMetricName = storageMetricNamePrefix + metricsStorageVolumeId + ".FreeBytesAvailableToCaller";
@@ -1490,7 +1490,7 @@ ProcessMetrics::SetStandbyMode( bool newModeIsStandby )
             TProcessIdMap::iterator m = m_exeProcsToWatch.begin();
             while ( m != m_exeProcsToWatch.end() )
             {
-                CProcInfo& procInfo = (*m).second;                
+                CProcInfo& procInfo = (*m).second;
                 procInfo.Unlink();
                 ++m;
             }
@@ -1551,7 +1551,7 @@ ProcessMetrics::LoadConfig( const CORE::CValueList& appConfig   ,
     m_gatherGlobalCpuSpecMaxFrequencyInMhz = appConfig.GetValueAlways( "gatherGlobalCpuSpecMaxFrequencyInMhz", m_gatherGlobalCpuSpecMaxFrequencyInMhz ).AsBool( m_gatherGlobalCpuSpecMaxFrequencyInMhz, true );
     m_gatherGlobalCpuMaxFrequencyInMhz = appConfig.GetValueAlways( "gatherGlobalCpuMaxFrequencyInMhz", m_gatherGlobalCpuMaxFrequencyInMhz ).AsBool( m_gatherGlobalCpuMaxFrequencyInMhz, true );
     m_gatherGlobalCpuOverallPercentage = appConfig.GetValueAlways( "gatherGlobalCpuOverallPercentage", m_gatherGlobalCpuOverallPercentage ).AsBool( m_gatherGlobalCpuOverallPercentage, true );
-    m_gatherGlobalCpuOverallPercentagePerCore = appConfig.GetValueAlways( "gatherGlobalCpuOverallPercentagePerCore", m_gatherGlobalCpuOverallPercentagePerCore ).AsBool( m_gatherGlobalCpuOverallPercentagePerCore, true );   
+    m_gatherGlobalCpuOverallPercentagePerCore = appConfig.GetValueAlways( "gatherGlobalCpuOverallPercentagePerCore", m_gatherGlobalCpuOverallPercentagePerCore ).AsBool( m_gatherGlobalCpuOverallPercentagePerCore, true );
 
     m_gatherGlobalNetworkStats = appConfig.GetValueAlways( "gatherGlobalNetworkStats", m_gatherGlobalNetworkStats ).AsBool( m_gatherGlobalNetworkStats, true );
     m_gatherGlobalNetworkStatInboundOctets = appConfig.GetValueAlways( "gatherGlobalNetworkStatInboundOctets", m_gatherGlobalNetworkStatInboundOctets ).AsBool( m_gatherGlobalNetworkStatInboundOctets, true );
@@ -1563,7 +1563,7 @@ ProcessMetrics::LoadConfig( const CORE::CValueList& appConfig   ,
     m_gatherGlobalNetworkStatOutboundUnicastOctets = appConfig.GetValueAlways( "gatherGlobalNetworkStatOutboundUnicastOctets", m_gatherGlobalNetworkStatOutboundUnicastOctets ).AsBool( m_gatherGlobalNetworkStatOutboundUnicastOctets, true );
     m_gatherGlobalNetworkStatOutboundUnicastPackets = appConfig.GetValueAlways( "gatherGlobalNetworkStatOutboundUnicastPackets", m_gatherGlobalNetworkStatOutboundUnicastPackets ).AsBool( m_gatherGlobalNetworkStatOutboundUnicastPackets, true );
     m_gatherGlobalNetworkStatOutboundErroredPackets = appConfig.GetValueAlways( "gatherGlobalNetworkStatOutboundErroredPackets", m_gatherGlobalNetworkStatOutboundErroredPackets ).AsBool( m_gatherGlobalNetworkStatOutboundErroredPackets, true );
-    m_gatherGlobalNetworkStatOutboundDiscardedPackets = appConfig.GetValueAlways( "gatherGlobalNetworkStatOutboundDiscardedPackets", m_gatherGlobalNetworkStatOutboundDiscardedPackets ).AsBool( m_gatherGlobalNetworkStatOutboundDiscardedPackets, true );    
+    m_gatherGlobalNetworkStatOutboundDiscardedPackets = appConfig.GetValueAlways( "gatherGlobalNetworkStatOutboundDiscardedPackets", m_gatherGlobalNetworkStatOutboundDiscardedPackets ).AsBool( m_gatherGlobalNetworkStatOutboundDiscardedPackets, true );
     m_gatherGlobalNetworkStatInboundMulticastOctets = appConfig.GetValueAlways( "gatherGlobalNetworkStatInboundMulticastOctets", m_gatherGlobalNetworkStatInboundMulticastOctets ).AsBool( m_gatherGlobalNetworkStatInboundMulticastOctets, true );
     m_gatherGlobalNetworkStatOutboundMulticastOctets = appConfig.GetValueAlways( "gatherGlobalNetworkStatOutboundMulticastOctets", m_gatherGlobalNetworkStatOutboundMulticastOctets ).AsBool( m_gatherGlobalNetworkStatOutboundMulticastOctets, true );
     m_gatherGlobalNetworkStatInboundBroadcastOctets = appConfig.GetValueAlways( "gatherGlobalNetworkStatInboundBroadcastOctets", m_gatherGlobalNetworkStatInboundBroadcastOctets ).AsBool( m_gatherGlobalNetworkStatInboundBroadcastOctets, true );

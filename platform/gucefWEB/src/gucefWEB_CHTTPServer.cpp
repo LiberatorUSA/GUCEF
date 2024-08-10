@@ -1,5 +1,5 @@
 /*
- *  gucefWEB: GUCEF module providing Web application functionality 
+ *  gucefWEB: GUCEF module providing Web application functionality
  *  for standardized protocols
  *
  *  Copyright (C) 1998 - 2020.  Dinand Vanvelzen
@@ -125,7 +125,7 @@ CHttpServerSettings::CHttpServerSettings( const CHttpServerSettings& src )
 
 /*-------------------------------------------------------------------------*/
 
-CHttpServerSettings& 
+CHttpServerSettings&
 CHttpServerSettings::operator=( const CHttpServerSettings& src )
 {GUCEF_TRACE;
 
@@ -146,19 +146,19 @@ CHttpServerSettings::~CHttpServerSettings()
 {GUCEF_TRACE;
 
 }
-    
+
 /*-------------------------------------------------------------------------*/
 
 bool
 CHttpServerSettings::SaveConfig( CORE::CDataNode& cfg ) const
 {GUCEF_TRACE;
 
-    bool totalSuccess = true;    
+    bool totalSuccess = true;
     totalSuccess = cfg.SetAttribute( "maxClientConnections", maxClientConnections ) && totalSuccess;
     totalSuccess = cfg.SetAttribute( "keepAliveConnections", keepAliveConnections ) && totalSuccess;
     totalSuccess = cfg.SetAttribute( "processRequestsAsync", processRequestsAsync ) && totalSuccess;
     totalSuccess = cfg.SetAttribute( "allowWebSocketUpgrades", allowWebSocketUpgrades ) && totalSuccess;
-    return totalSuccess;        
+    return totalSuccess;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -167,8 +167,8 @@ bool
 CHttpServerSettings::LoadConfig( const CORE::CDataNode& cfg )
 {GUCEF_TRACE;
 
-    maxClientConnections = cfg.GetAttributeValueOrChildValueByName( "maxClientConnections" ).AsUInt32( maxClientConnections, true );     
-    keepAliveConnections = cfg.GetAttributeValueOrChildValueByName( "keepAliveConnections" ).AsBool( keepAliveConnections, true ); 
+    maxClientConnections = cfg.GetAttributeValueOrChildValueByName( "maxClientConnections" ).AsUInt32( maxClientConnections, true );
+    keepAliveConnections = cfg.GetAttributeValueOrChildValueByName( "keepAliveConnections" ).AsBool( keepAliveConnections, true );
     processRequestsAsync = cfg.GetAttributeValueOrChildValueByName( "processRequestsAsync" ).AsBool( processRequestsAsync, true );
     allowWebSocketUpgrades = cfg.GetAttributeValueOrChildValueByName( "allowWebSocketUpgrades" ).AsBool( allowWebSocketUpgrades, true );
 
@@ -177,7 +177,7 @@ CHttpServerSettings::LoadConfig( const CORE::CDataNode& cfg )
 
 /*-------------------------------------------------------------------------*/
 
-const CString& 
+const CString&
 CHttpServerSettings::GetClassTypeName( void ) const
 {GUCEF_TRACE;
 
@@ -188,7 +188,7 @@ CHttpServerSettings::GetClassTypeName( void ) const
 
 CHTTPServer::CHTTPServer( THttpServerRequestHandlerFactory* requestHandlerFactory /* = GUCEF_NULL */ ,
                           const CHttpServerSettings* settings /* = GUCEF_NULL */                     )
-    : CORE::CObservingNotifier()              
+    : CORE::CObservingNotifier()
     , m_tcpServerSocket( false, GUCEF_NULL != settings ? settings->maxClientConnections : 100 )
     , m_requestHandler()
     , m_requestHandlerFactory( requestHandlerFactory )
@@ -216,8 +216,8 @@ CHTTPServer::CHTTPServer( THttpServerRequestHandlerFactory* requestHandlerFactor
 CHTTPServer::CHTTPServer( const CORE::PulseGeneratorPtr& pulsGenerator                               ,
                           THttpServerRequestHandlerFactory* requestHandlerFactory /* = GUCEF_NULL */ ,
                           const CHttpServerSettings* settings /* = GUCEF_NULL */                     )
-    : CORE::CObservingNotifier()                               
-    , m_tcpServerSocket( pulsGenerator, false, GUCEF_NULL != settings ? settings->maxClientConnections : 100 ) 
+    : CORE::CObservingNotifier()
+    , m_tcpServerSocket( pulsGenerator, false, GUCEF_NULL != settings ? settings->maxClientConnections : 100 )
     , m_requestHandler()
     , m_requestHandlerFactory( requestHandlerFactory )
     , m_settings()
@@ -245,7 +245,7 @@ CHTTPServer::~CHTTPServer()
 {GUCEF_TRACE;
 
     MT::CScopeMutex lock( m_lock );
-    
+
     SignalUpcomingObserverDestruction();
     m_requestHandler.Unlink();
 }
@@ -294,7 +294,7 @@ CHTTPServer::GetRequestHandler( void ) const
 
 /*-------------------------------------------------------------------------*/
 
-bool 
+bool
 CHTTPServer::IsActive( void ) const
 {GUCEF_TRACE;
 
@@ -312,7 +312,7 @@ CHTTPServer::ListenOnPort( const UInt16 port )
 
 /*-------------------------------------------------------------------------*/
 
-bool 
+bool
 CHTTPServer::Listen( void )
 {GUCEF_TRACE;
 
@@ -330,10 +330,10 @@ CHTTPServer::Close( void )
 
 /*-------------------------------------------------------------------------*/
 
-bool 
+bool
 CHTTPServer::SetPort( UInt16 port )
 {GUCEF_TRACE;
-    
+
     return m_tcpServerSocket.SetPort( port );
 }
 
@@ -449,7 +449,7 @@ CHTTPServer::InitSha1CodecLink( void )
     if ( m_sha1Codec.IsNULL() )
     {
         CORE::CCodecRegistry& codecRegistry = CORE::CCoreGlobal::Instance()->GetCodecRegistry();
-        
+
         // First obtain the registery specific to compression codecs
         CORE::CCodecRegistry::TCodecFamilyRegistryPtr codecFamilyRegistry;
         if ( codecRegistry.TryLookup( CORE::CoreCodecTypes::CryptographicHashCodec, codecFamilyRegistry, false ) && codecFamilyRegistry )
@@ -480,7 +480,7 @@ CHTTPServer::GenerateWebSocketResponseKey( const CORE::CString& clientKey )
     if ( !m_sha1Codec.IsNULL() )
     {
         CORE::CString sanityCheckKey = clientKey + "258EAFA5-E914-47DA-95CA-C5AB0DC85B11";
-        CORE::CDynamicBuffer inBuffer; inBuffer.LinkTo( sanityCheckKey );  
+        CORE::CDynamicBuffer inBuffer; inBuffer.LinkTo( sanityCheckKey );
         CORE::CDynamicBufferAccess inBufferAccess( inBuffer );
 
         CORE::CDynamicBuffer outBuffer( true );
@@ -505,20 +505,20 @@ CHTTPServer::OnWebSocketUpgrade( COMCORE::CTCPServerConnection* connection ,
     {
         CHttpResponseData response;
         response.statusCode = 403; // Forbidden
-        
+
         CORE::CDynamicBuffer responseBuffer;
         response.Serialize( responseBuffer );
         connection->Send( responseBuffer );
         connection->Close();
-        
+
         GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "HttpServer(" + CORE::ToString( this ) + "):OnWebSocketUpgrade: Client attempted websocket upgrade. This feature is disabled" );
         return;
-    }    
-    
+    }
+
     CHttpRequestData::TStringMap::const_iterator versionHeader = requestData.otherHeaders.find( "sec-websocket-version" );
     CHttpRequestData::TStringMap::const_iterator connectionHeader = requestData.otherHeaders.find( "connection" );
     CHttpRequestData::TStringMap::const_iterator sanityCheckKeyHeader = requestData.otherHeaders.find( "sec-websocket-key" );
-    
+
     // In the case of a websocket upgrade request perform additional sanity check
     // We want a well formed request
     if ( versionHeader == requestData.otherHeaders.end()       ||
@@ -527,12 +527,12 @@ CHTTPServer::OnWebSocketUpgrade( COMCORE::CTCPServerConnection* connection ,
     {
         CHttpResponseData response;
         response.statusCode = 400; // Bad Request - missing headers
-        
+
         CORE::CDynamicBuffer responseBuffer;
         response.Serialize( responseBuffer );
         connection->Send( responseBuffer );
         connection->Close();
-        
+
         GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "HttpServer(" + CORE::ToString( this ) + "):OnWebSocketUpgrade: Client attempted websocket upgrade without all the mandatory headers" );
         return;
     }
@@ -541,7 +541,7 @@ CHTTPServer::OnWebSocketUpgrade( COMCORE::CTCPServerConnection* connection ,
     {
         CHttpResponseData response;
         response.statusCode = 400; // Bad Request - malformed, mandatory partner header
-        
+
         CORE::CDynamicBuffer responseBuffer;
         response.Serialize( responseBuffer );
         connection->Send( responseBuffer );
@@ -583,7 +583,7 @@ CHTTPServer::OnWebSocketUpgrade( COMCORE::CTCPServerConnection* connection ,
         GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "HttpServer(" + CORE::ToString( this ) + "):OnWebSocketUpgrade: Cannot perform websocket upgrade: No SHA1 codec is available" );
         return;
     }
-    
+
     // We are accepting the web socket upgrade. Notify as such
     CHttpResponseData response;
     response.statusCode = 101; // Switching Protocols
@@ -616,7 +616,7 @@ CHTTPServer::ASyncProcessReceivedData( COMCORE::CTCPServerConnection* connection
         OnWebSocketUpgrade( connection, requestData );
         return;
     }
-    
+
     requestData.clientConnectionId = connection->GetConnectionIndex();
     requestData.remoteClientAddress = connection->GetRemoteHostAddress().GetFirstIPv4Address();
     requestData.keepConnectionsAlive = m_settings.keepAliveConnections;
@@ -634,7 +634,7 @@ CHTTPServer::ASyncProcessReceivedData( COMCORE::CTCPServerConnection* connection
         // directly
 
         GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "CHTTPServer(" + CORE::PointerToString( this ) + "): Unable to ASync queue the request processing (QueueTask failed). As such will respond with 503" );
-        
+
         CHttpResponseData returnData;
         returnData.statusCode = 503;   // Send 'Server too busy' because this is per configured capacity constraints
 
@@ -656,7 +656,7 @@ CHTTPServer::SyncProcessReceivedData( COMCORE::CTCPServerConnection* connection 
 
     try
     {
-        CHttpRequestData requestData; 
+        CHttpRequestData requestData;
         if ( !ParseRequest( inputBuffer, requestData ) )
             return;
 
@@ -674,17 +674,17 @@ CHTTPServer::SyncProcessReceivedData( COMCORE::CTCPServerConnection* connection 
 
         connection->Send( outputBuffer );
         if ( !m_settings.keepAliveConnections )
-            connection->Close();    
+            connection->Close();
     }
     catch ( const std::exception& e )
     {
         GUCEF_EXCEPTION_LOG( CORE::LOGLEVEL_NORMAL, "CHTTPServer(" + CORE::PointerToString( this ) + "): Exception sync processing received data: " + CORE::CString( e.what() ) );
-        
+
         try
         {
             // Inform the client we ran into an internal server error so they are not just sitting there waiting for a response
             CHttpResponseData returnData;
-            returnData.statusCode = 500;   
+            returnData.statusCode = 500;
             CORE::CDynamicBuffer outputBuffer;
             returnData.Serialize( outputBuffer );
 
@@ -692,7 +692,7 @@ CHTTPServer::SyncProcessReceivedData( COMCORE::CTCPServerConnection* connection 
 
             if ( !m_settings.keepAliveConnections )
             {
-                try 
+                try
                 {
                     connection->Close();
                 }
@@ -833,7 +833,7 @@ CHTTPServer::ParseRequest( const CORE::CDynamicBuffer& inputBuffer ,
         request.requestUriParams = request.requestUri.SubstrToChar( '?', false, true );
         temp = temp.CutChars( request.requestUri.Length()+1, true );
         if ( !request.requestUriParams.IsNULLOrEmpty() )
-            request.requestUri = request.requestUri.CutChars( request.requestUriParams.Length()+1, false, 0 ); 
+            request.requestUri = request.requestUri.CutChars( request.requestUriParams.Length()+1, false, 0 );
 
         // Parse the request protocol and its version
         request.requestProtocol = temp.SubstrToChar( '/', true );
@@ -894,7 +894,7 @@ CHTTPServer::ParseRequest( const CORE::CDynamicBuffer& inputBuffer ,
             if ( headerName == "upgrade" )
             {
                 request.isWebSocketUpgrade = "websocket" == headerValue;
-            }            
+            }
             else
             {
                 request.otherHeaders[ headerName ] = headerValue;
@@ -919,30 +919,30 @@ CHTTPServer::ParseRequest( const CORE::CDynamicBuffer& inputBuffer ,
 }
 
 /*-------------------------------------------------------------------------*/
-                         
+
 MT::TLockStatus
 CHTTPServer::Lock( UInt32 lockWaitTimeoutInMs ) const
 {GUCEF_TRACE;
-    
+
     return m_lock.Lock( lockWaitTimeoutInMs );
 }
 
 /*-------------------------------------------------------------------------*/
-                         
+
 MT::TLockStatus
 CHTTPServer::Unlock( void ) const
 {GUCEF_TRACE;
-    
+
     return m_lock.Unlock();
 }
 
 /*-------------------------------------------------------------------------*/
 
-CIHTTPServerRouterController* 
+CIHTTPServerRouterController*
 CHTTPServer::GetRouterController( void ) const
 {GUCEF_TRACE;
 
-    if ( GUCEF_NULL != m_requestHandler )
+    if ( !m_requestHandler.IsNULL() )
     {
         return m_requestHandler->GetRouterController();
     }
@@ -960,13 +960,13 @@ CHTTPServer::GetRequestHandlerFactory( void ) const
 
 /*-------------------------------------------------------------------------*/
 
-bool 
+bool
 CHTTPServer::SendResponseASync( UInt32 connectionId                  ,
                                 const CORE::CDynamicBuffer& response ,
                                 const COMCORE::CIPv4Address& remoteIP  )
 {GUCEF_TRACE;
 
-    return m_tcpServerSocket.SendToConnection( connectionId                 , 
+    return m_tcpServerSocket.SendToConnection( connectionId                 ,
                                                response.GetConstBufferPtr() ,
                                                response.GetDataSize()       ,
                                                &remoteIP                    );

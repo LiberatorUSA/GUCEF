@@ -75,7 +75,7 @@ namespace REDISINFO {
 //-------------------------------------------------------------------------*/
 
 const CORE::CEvent CRedisClusterKeyCache::CacheUpdateEvent =    "GUCEF::PUBSUBPLUGIN::REDISCLUSTER::CRedisClusterKeyCache::CacheUpdateEvent";
-#define GUCEF_DEFAULT_SCAN_COUNT_SIZE                           5000     
+#define GUCEF_DEFAULT_SCAN_COUNT_SIZE                           5000
 #define GUCEF_DEFAULT_CACHE_UPDATE_TIMER_INTERVAL               ( 5 * 60 * 1000 ) // 5mins
 
 MT::CReadWriteLock CRedisClusterKeyCache::g_dataLock( true );
@@ -153,7 +153,7 @@ CRedisClusterKeyCache::CRedisClusterKeyCache( void )
 {GUCEF_TRACE;
 
     MT::CScopeWriterLock lock( g_dataLock );
-    
+
     if ( !m_threadPool.IsNULL() )
         m_threadPool->RequestAllThreadsToStop( true, false );
     m_threadPool.Unlink();
@@ -223,7 +223,7 @@ CRedisClusterKeyCache::SetRedisScanInterationCountSize( UInt32 countSize )
 
 /*-------------------------------------------------------------------------*/
 
-UInt32 
+UInt32
 CRedisClusterKeyCache::GetRedisScanInterationCountSize( void ) const
 {GUCEF_TRACE;
 
@@ -263,22 +263,22 @@ CRedisClusterKeyCache::GetRedisKeys( RedisClusterPtr redisCluster               
         return false;
 
     CORE::UInt64 resultOffset = page * (CORE::UInt64) maxResults;
-    
+
     MT::CScopeReaderLock lock( g_dataLock );
-    
+
     TStringToStringSetMap& keyMap = m_cache[ redisCluster ];
-    CORE::CString::StringSet& cachedKeys = keyMap[ keyType ]; 
+    CORE::CString::StringSet& cachedKeys = keyMap[ keyType ];
 
     if ( globPatternsToMatch.empty() )
     {
         // No pattern matching, return everything
-        
+
         // first sanity check
         if ( resultOffset + maxResults > cachedKeys.size() )
         {
             if ( resultOffset > cachedKeys.size() )
                 return true; // empty result set since we are past the max
-            
+
             // cap the values
             CORE::UInt64 remnant = cachedKeys.size() - resultOffset;
             if ( remnant < maxResults )
@@ -294,12 +294,12 @@ CRedisClusterKeyCache::GetRedisKeys( RedisClusterPtr redisCluster               
             else
                 break;
         }
-        
+
         // copy the specified subset
         CORE::UInt32 resultEntries = 0;
         while ( i != cachedKeys.end() && resultEntries < maxResults )
         {
-            keys.insert( (*i) );            
+            keys.insert( (*i) );
             ++i; ++resultEntries;
         }
 
@@ -311,7 +311,7 @@ CRedisClusterKeyCache::GetRedisKeys( RedisClusterPtr redisCluster               
     CORE::CString::StringSet::iterator i = cachedKeys.begin();
     while ( i != cachedKeys.end() )
     {
-        const CORE::CString& key = (*i);        
+        const CORE::CString& key = (*i);
         CORE::CString::StringSet::iterator g = globPatternsToMatch.begin();
         while ( g != globPatternsToMatch.end() )
         {
@@ -368,7 +368,7 @@ CRedisClusterKeyCache::GetRedisKeys( RedisClusterPtr redisCluster               
     keys.Clear();
     keys.SetName( keyType );
     keys.SetNodeType( GUCEF_DATATYPE_ARRAY );
-    
+
     CORE::CString::StringSet flatIndexOfKeys;
     if ( GetRedisKeys( redisCluster, flatIndexOfKeys, keyType, globPatternsToMatch ) )
     {
@@ -377,7 +377,7 @@ CRedisClusterKeyCache::GetRedisKeys( RedisClusterPtr redisCluster               
         {
             keys.AddValueAsChild( (*i) );
             ++i;
-        }        
+        }
         return true;
     }
     return false;
@@ -385,7 +385,7 @@ CRedisClusterKeyCache::GetRedisKeys( RedisClusterPtr redisCluster               
 
 /*-------------------------------------------------------------------------*/
 
-void 
+void
 CRedisClusterKeyCache::StopUpdatesForCluster( RedisClusterPtr redisCluster )
 {GUCEF_TRACE;
 
@@ -396,14 +396,14 @@ CRedisClusterKeyCache::StopUpdatesForCluster( RedisClusterPtr redisCluster )
 /*-------------------------------------------------------------------------*/
 
 // Only intended to be used by the closely coupled task class
-bool 
+bool
 CRedisClusterKeyCache::GetRedisClusterAccess( RedisClusterPtrSet& set )
 {GUCEF_TRACE;
 
     try
     {
         MT::CScopeReaderLock lock( g_dataLock );
-    
+
         TRedisClusterPtrToTypeKeysMap::iterator i = m_cache.begin();
         while ( i != m_cache.end() )
         {
@@ -421,7 +421,7 @@ CRedisClusterKeyCache::GetRedisClusterAccess( RedisClusterPtrSet& set )
 /*-------------------------------------------------------------------------*/
 
 // Only intended to be used by the closely coupled task class
-bool 
+bool
 CRedisClusterKeyCache::GetRedisKeyCache( RedisClusterPtr& redisCluster    ,
                                          const CORE::CString& keyType     ,
                                          CORE::CString::StringSet** keys  )
@@ -432,7 +432,7 @@ CRedisClusterKeyCache::GetRedisKeyCache( RedisClusterPtr& redisCluster    ,
 
     TStringToStringSetMap& keyMap = m_cache[ redisCluster ];
     CORE::CString::StringSet& cachedKeys = keyMap[ keyType ];
-    
+
     *keys = &cachedKeys;
     return true;
 }
@@ -440,7 +440,7 @@ CRedisClusterKeyCache::GetRedisKeyCache( RedisClusterPtr& redisCluster    ,
 /*-------------------------------------------------------------------------*/
 
 // Only intended to be used by the closely coupled task class
-bool 
+bool
 CRedisClusterKeyCache::ApplyKeyDelta( CacheUpdateInfo& updateInfo )
 {GUCEF_TRACE;
 
@@ -455,7 +455,7 @@ CRedisClusterKeyCache::ApplyKeyDelta( CacheUpdateInfo& updateInfo )
             MT::CScopeWriterLock lock( g_dataLock );
 
             TStringToStringSetMap& keyMap = m_cache[ updateInfo.redisCluster ];
-            CORE::CString::StringSet& cachedKeys = keyMap[ updateInfo.keyType ];    
+            CORE::CString::StringSet& cachedKeys = keyMap[ updateInfo.keyType ];
 
             // delete the deleted keys
             CORE::CString::StringSet::iterator i = updateInfo.deletedKeys.begin();
@@ -474,7 +474,7 @@ CRedisClusterKeyCache::ApplyKeyDelta( CacheUpdateInfo& updateInfo )
             }
         }
 
-        // Now that the changes have been applied and the write lock released we 
+        // Now that the changes have been applied and the write lock released we
         // notify of the changes
         NotifyObservers( CacheUpdateEvent, &updateInfo );
     }
@@ -482,7 +482,7 @@ CRedisClusterKeyCache::ApplyKeyDelta( CacheUpdateInfo& updateInfo )
     {
         return false;
     }
-    return true;    
+    return true;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -524,11 +524,11 @@ CRedisClusterKeyCache::SetPersistKeyCacheSnapshotCodec( const CORE::CString& sna
 /*-------------------------------------------------------------------------*/
 
 bool
-CRedisClusterKeyCache::SaveDocTo( const CORE::CDataNode& doc     , 
-                                  const CORE::CString& codecName , 
+CRedisClusterKeyCache::SaveDocTo( const CORE::CDataNode& doc     ,
+                                  const CORE::CString& codecName ,
                                   const CORE::CString& vfsPath   ) const
 {GUCEF_TRACE;
-    
+
     VFS::CVFS& vfs = VFS::CVfsGlobal::Instance()->GetVfs();
     if ( !vfs.IsInitialized() )
     {
@@ -536,16 +536,16 @@ CRedisClusterKeyCache::SaveDocTo( const CORE::CDataNode& doc     ,
         return false;
     }
 
-    CORE::CDStoreCodecRegistry::TDStoreCodecPtr codec; 
+    CORE::CDStoreCodecRegistry::TDStoreCodecPtr codec;
     CORE::CCoreGlobal::Instance()->GetDStoreCodecRegistry().TryLookup( codecName, codec, false );
     if ( !codec )
     {
         GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "RedisClusterKeyCache:SaveDocTo: Could not obtain codec for codecName : " + codecName );
-        return false;    
+        return false;
     }
 
     VFS::TBasicVfsResourcePtr file = vfs.GetFile( vfsPath, "wb", true );
-    if ( file.IsNULL() || GUCEF_NULL == file->GetAccess() )
+    if ( file.IsNULL() || file->GetAccess().IsNULL() )
     {
         GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "RedisClusterKeyCache:SaveDocTo: VFS could not provide access to file at path: " + vfsPath );
         return false;

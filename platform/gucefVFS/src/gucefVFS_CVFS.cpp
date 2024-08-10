@@ -196,7 +196,7 @@ CVFS::~CVFS()
 {GUCEF_TRACE;
 
     MT::CScopeWriterLock lock( m_rwdataLock );
-    
+
     UnmountAllArchives();
     UnregisterAllArchiveFactories();
     SignalUpcomingDestruction();
@@ -234,12 +234,12 @@ CVFS::UnmountAllArchives( void )
     while ( !m_mountList.empty() )
     {
         TMountEntry& mountEntry = *m_mountList.begin();
-        TArchiveUnmountedEventData eData( mountEntry.mountPath ); 
+        TArchiveUnmountedEventData eData( mountEntry.mountPath );
         if ( mountEntry.archive->UnloadArchive() )
         {
             m_archivePtrToMountEntryLookup.erase( mountEntry.archive.GetPointerAlways() );
             m_mountList.erase( m_mountList.begin() );
-            NotifyObservers( ArchiveUnmountedEvent, &eData );  
+            NotifyObservers( ArchiveUnmountedEvent, &eData );
         }
     }
 }
@@ -333,7 +333,7 @@ CVFS::OnArchiveDirectoryWatcherEvent( CORE::CNotifier* notifier    ,
 {GUCEF_TRACE;
 
     VFS::CArchive* archive = static_cast< VFS::CArchive* >( notifier );
-        
+
     if ( IsDirectoryWatcherDirEvent( eventid ) )
     {
         MT::CScopeReaderLock lock( m_rwdataLock );
@@ -354,7 +354,7 @@ CVFS::OnArchiveDirectoryWatcherEvent( CORE::CNotifier* notifier    ,
                     vfsAdjusted.GetData().newDirName = ConformVfsDirPath( vfsAdjusted.GetData().newDirName );
                     vfsAdjusted.GetData().oldDirName = ConformVfsDirPath( vfsAdjusted.GetData().oldDirName );
                     NotifyObservers( eventid, &vfsAdjusted );
-                }              
+                }
             }
             else
             {
@@ -372,12 +372,12 @@ CVFS::OnArchiveDirectoryWatcherEvent( CORE::CNotifier* notifier    ,
     if ( IsDirectoryWatcherFileEvent( eventid ) )
     {
         MT::CScopeReaderLock lock( m_rwdataLock );
-        
+
         TArchivePtrToMountEntryMap::iterator i = m_archivePtrToMountEntryLookup.find( archive );
         if ( i != m_archivePtrToMountEntryLookup.end() )
-        {            
+        {
             TMountEntry* mountEntry = (*i).second;
-                
+
             if ( eventid == CORE::CDirectoryWatcherEvents::FileRenamedEvent )
             {
                 CORE::CDirectoryWatcherEvents::TFileRenamedEventData* fileRenameInfo = static_cast< CORE::CDirectoryWatcherEvents::TFileRenamedEventData* >( eventdata );
@@ -399,7 +399,7 @@ CVFS::OnArchiveDirectoryWatcherEvent( CORE::CNotifier* notifier    ,
                     CORE::TCloneableString vfsPath( mountEntry->mountPath + '/' + *filePath );
                     vfsPath = ConformVfsFilePath( vfsPath );
                     NotifyObservers( eventid, &vfsPath );
-                }                
+                }
             }
         }
     }
@@ -448,7 +448,7 @@ CVFS::IsConnected( void ) const
 {GUCEF_TRACE;
 
     MT::CScopeReaderLock lock( m_rwdataLock );
-    
+
     bool isConnectedOverall = true;
     TMountVector::const_iterator i = m_mountList.begin();
     while ( i != m_mountList.end() )
@@ -461,7 +461,7 @@ CVFS::IsConnected( void ) const
         }
         ++i;
     }
-    
+
     return isConnectedOverall;
 }
 
@@ -472,7 +472,7 @@ CVFS::IsHealthy( void ) const
 {GUCEF_TRACE;
 
     MT::CObjectScopeLock lock( this );
-    
+
     bool isHealthyOverall = true;
     TMountVector::const_iterator i = m_mountList.begin();
     while ( i != m_mountList.end() )
@@ -485,7 +485,7 @@ CVFS::IsHealthy( void ) const
         }
         ++i;
     }
-    
+
     return isHealthyOverall;
 }
 
@@ -521,7 +521,7 @@ CVFS::MountAllDelayMountedArchives( void )
         m_delayMountedArchiveSettings.erase( i );
     }
     m_delayedArchiveMountingIsComplete = true;
-    
+
     lock.EarlyUnlock();
 
     NotifyObservers( DelayedArchiveMountingCompletedEvent );
@@ -536,20 +536,20 @@ CVFS::OnGlobalConfigLoadFinished( CORE::CNotifier* notifier    ,
 {GUCEF_TRACE;
 
     MountAllDelayMountedArchives();
-    
+
     NotifyObservers( VfsInitializationCompletedEvent );
 }
 
 /*-------------------------------------------------------------------------*/
 
-void 
+void
 CVFS::OnAppShutdownCompleted( CORE::CNotifier* notifier    ,
                               const CORE::CEvent& eventid  ,
                               CORE::CICloneable* eventdata )
 {GUCEF_TRACE;
 
     MT::CScopeWriterLock lock( m_rwdataLock );
-    
+
     UnmountAllArchives();
     UnregisterAllArchiveFactories();
 }
@@ -598,18 +598,18 @@ CVFS::MoveFile( const CString& oldFilePath ,
 
     CString oldPath = ConformVfsFilePath( oldFilePath );
     CString newPath = ConformVfsFilePath( newFilePath );
-    
+
     if ( oldPath == newPath )
     {
         GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "VFS:MoveFile: old and new path are the same. No action taken. Path= " + oldPath );
         return true;
-    }    
-    
+    }
+
     MT::CScopeReaderLock lock( m_rwdataLock );
 
     // Get lists of all eligable mounts
     TConstMountLinkVector oldPathMountLinks;
-    GetEligableMounts( oldPath, false, oldPathMountLinks );    
+    GetEligableMounts( oldPath, false, oldPathMountLinks );
     TConstMountLinkVector newPathMountLinks;
     GetEligableMounts( newPath, false, newPathMountLinks );
 
@@ -619,15 +619,15 @@ CVFS::MoveFile( const CString& oldFilePath ,
         TConstMountLink& oldMountLink = (*i);
         TConstMountLinkVector::iterator n = newPathMountLinks.begin();
         while ( n != newPathMountLinks.end() )
-        {            
+        {
             TConstMountLink& newMountLink = (*n);
             if ( oldMountLink.mountEntry == newMountLink.mountEntry )
             {
                 // Found a match where both old and new path are available via the same archive
                 // this takes priority over any cross-archive logical 'moves'
                 TArchivePtr archive = newMountLink.mountEntry->archive;
-                return archive->MoveFile( oldMountLink.remainder , 
-                                          newMountLink.remainder , 
+                return archive->MoveFile( oldMountLink.remainder ,
+                                          newMountLink.remainder ,
                                           overwrite              );
             }
             ++n;
@@ -695,9 +695,9 @@ CVFS::CopyFileContent( const CORE::CString& originalFilepath ,
         GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "VFS:CopyFileContent: original and target path cannot be the same: " + originalFilepath );
         return false;
     }
-        
+
     TBasicVfsResourcePtr originalFile = GetFile( originalFilepath, "rb", overwrite );
-    if ( !originalFile || GUCEF_NULL == originalFile->GetAccess() || !originalFile->GetAccess()->IsValid() )
+    if ( originalFile.IsNULL() || originalFile->GetAccess().IsNULL() || !originalFile->GetAccess()->IsValid() )
     {
         GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "VFS:CopyFileContent: Cannot obtain original file: " + originalFilepath );
         return false;
@@ -705,7 +705,7 @@ CVFS::CopyFileContent( const CORE::CString& originalFilepath ,
     UInt64 origSize = originalFile->GetAccess()->GetSize();
 
     TBasicVfsResourcePtr targetFile = GetFile( copyFilepath, "wb", overwrite );
-    if ( !targetFile || GUCEF_NULL == targetFile->GetAccess() || !targetFile->GetAccess()->IsValid() )
+    if ( targetFile.IsNULL() || targetFile->GetAccess().IsNULL() || !targetFile->GetAccess()->IsValid() )
     {
         GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "VFS:CopyFileContent: Cannot obtain access to output file: " + copyFilepath );
         return false;
@@ -728,7 +728,7 @@ CVFS::CopyFileContent( const CORE::CString& originalFilepath ,
         }
         return false;
     }
-    
+
     GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "VFS:CopyFileContent: Successfully copied file \"" + originalFilepath +
             "\" to \"" + copyFilepath + "\"" );
     return true;
@@ -789,9 +789,9 @@ CVFS::CopyFile( const CORE::CString& originalFilepath ,
         GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "VFS:CopyFile: Cannot obtain meta-data on original file: " + originalFilepath );
         return false;
     }
-    
+
     TBasicVfsResourcePtr originalFile = GetFile( originalFilepath, "rb", overwrite );
-    if ( !originalFile || GUCEF_NULL == originalFile->GetAccess() || !originalFile->GetAccess()->IsValid() )
+    if ( originalFile.IsNULL() || originalFile->GetAccess().IsNULL() || !originalFile->GetAccess()->IsValid() )
     {
         GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "VFS:CopyFile: Cannot obtain original file: " + originalFilepath );
         return false;
@@ -801,13 +801,13 @@ CVFS::CopyFile( const CORE::CString& originalFilepath ,
     // where the file is created without the meta-data and then the meta-data is applied afterwards
     // However not all backend implementations support this so we fall back to applying the meta-data afterwards
     TBasicVfsResourcePtr targetFile = GetFileAs( copyFilepath, metaData, "wb", overwrite );
-    if ( !targetFile || GUCEF_NULL == targetFile->GetAccess() || !targetFile->GetAccess()->IsValid() )
+    if ( targetFile.IsNULL() || targetFile->GetAccess().IsNULL() || !targetFile->GetAccess()->IsValid() )
     {
         GUCEF_WARNING_LOG( CORE::LOGLEVEL_NORMAL, "VFS:CopyFile: Cannot obtain access to output file using source metadata as a constraint: " + copyFilepath );
 
         // Try again without the meta-data constraint
         targetFile = GetFile( copyFilepath, "wb", overwrite );
-        if ( !targetFile || GUCEF_NULL == targetFile->GetAccess() || !targetFile->GetAccess()->IsValid() )
+        if ( targetFile.IsNULL() || targetFile->GetAccess().IsNULL() || !targetFile->GetAccess()->IsValid() )
         {
             GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "VFS:CopyFile: Cannot obtain access to output file: " + copyFilepath );
             return false;
@@ -844,7 +844,7 @@ CVFS::CopyFile( const CORE::CString& originalFilepath ,
         GUCEF_WARNING_LOG( CORE::LOGLEVEL_NORMAL, "VFS:CopyFile: Could not apply meta-data to copied file \"" + copyFilepath +
             "\" using info from \"" + originalFilepath + "\". File content is copied but meta-data will differ" );
     }
-    
+
     GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "VFS:CopyFile: Successfully copied file \"" + originalFilepath +
             "\" to \"" + copyFilepath + "\"" );
     return true;
@@ -910,14 +910,14 @@ CVFS::EncodeFile( const CORE::CString& originalFilepath ,
     }
 
     TBasicVfsResourcePtr originalFile = GetFile( originalFilepath, "rb", overwrite );
-    if ( !originalFile || GUCEF_NULL == originalFile->GetAccess() || !originalFile->GetAccess()->IsValid() )
+    if ( originalFile.IsNULL() || originalFile->GetAccess().IsNULL() || !originalFile->GetAccess()->IsValid() )
     {
         GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "VFS:EncodeFile: Cannot obtain original file: " + originalFilepath );
         return false;
     }
 
     TBasicVfsResourcePtr targetFile = GetFile( encodedFilepath, "wb", overwrite );
-    if ( !targetFile || GUCEF_NULL == targetFile->GetAccess() || !targetFile->GetAccess()->IsValid() )
+    if ( targetFile.IsNULL() || targetFile->GetAccess().IsNULL() || !targetFile->GetAccess()->IsValid() )
     {
         GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "VFS:EncodeFile: Cannot obtain access to output file: " + encodedFilepath );
         return false;
@@ -993,7 +993,7 @@ CVFS::DecodeAsFile( CORE::CDynamicBuffer& decodedOutput  ,
     }
 
     TBasicVfsResourcePtr sourceFile = GetFile( encodedFilePath, "rb", false );
-    if ( !sourceFile || GUCEF_NULL == sourceFile->GetAccess() || !sourceFile->GetAccess()->IsValid() )
+    if ( sourceFile.IsNULL() || sourceFile->GetAccess().IsNULL() || !sourceFile->GetAccess()->IsValid() )
     {
         GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "VFS:DecodeAsFile: Cannot obtain access to output file: " + encodedFilePath );
         return false;
@@ -1041,7 +1041,7 @@ CVFS::EncodeAsFile( const CORE::CDynamicBuffer& data     ,
     }
 
     TBasicVfsResourcePtr targetFile = GetFile( encodedFilepath, "wb", overwrite );
-    if ( !targetFile || GUCEF_NULL == targetFile->GetAccess() || !targetFile->GetAccess()->IsValid() )
+    if ( targetFile.IsNULL() || targetFile->GetAccess().IsNULL() || !targetFile->GetAccess()->IsValid() )
     {
         GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "VFS:EncodeAsFile: Cannot obtain access to output file: " + encodedFilepath );
         return false;
@@ -1061,7 +1061,7 @@ CVFS::EncodeAsFile( const CORE::CDynamicBuffer& data     ,
 
     GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "VFS:DecodeFile: Successfully encoded buffer using codec \"" +
         encodeCodec + "\" from codec family \"" + codecFamily + "\"" );
-    
+
     return true;
 }
 
@@ -1170,14 +1170,14 @@ CVFS::DecodeFile( const CORE::CString& originalFilepath ,
     }
 
     TBasicVfsResourcePtr originalFile = GetFile( originalFilepath, "rb", overwrite );
-    if ( !originalFile || GUCEF_NULL == originalFile->GetAccess() || !originalFile->GetAccess()->IsValid() )
+    if ( originalFile.IsNULL() || originalFile->GetAccess().IsNULL() || !originalFile->GetAccess()->IsValid() )
     {
         GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "VFS:DecodeFile: Cannot obtain original file: " + originalFilepath );
         return false;
     }
 
     TBasicVfsResourcePtr targetFile = GetFile( decodedFilepath, "wb", overwrite );
-    if ( !targetFile || GUCEF_NULL == targetFile->GetAccess() || !targetFile->GetAccess()->IsValid() )
+    if ( targetFile.IsNULL() || targetFile->GetAccess().IsNULL() || !targetFile->GetAccess()->IsValid() )
     {
         GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "VFS:DecodeFile: Cannot obtain access to output file: " + decodedFilepath );
         return false;
@@ -1401,7 +1401,7 @@ CVFS::LoadFile( CORE::CDynamicBuffer& destinationBuffer ,
 
     // First load the file as a VFS reference as usual
     TBasicVfsResourcePtr fileReference = GetFile( filePath, mode, false );
-    if ( fileReference.IsNULL() || GUCEF_NULL == fileReference->GetAccess() )
+    if ( fileReference.IsNULL() || fileReference->GetAccess().IsNULL() )
         return false;
 
     // load the data from whatever abstracted vfs medium into memory
@@ -1419,10 +1419,10 @@ CVFS::LoadFile( CORE::CDataNode& destination    ,
                 const CORE::CString& codecToUse )
 {GUCEF_TRACE;
 
-    
+
     CORE::CString actualCodecToUse = codecToUse;
     if ( actualCodecToUse.IsNULLOrEmpty() )
-        actualCodecToUse = CORE::ExtractFileExtention( filePath ); 
+        actualCodecToUse = CORE::ExtractFileExtention( filePath );
     if ( actualCodecToUse.IsNULLOrEmpty() )
     {
         GUCEF_ERROR_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "Vfs:LoadFile: No codec type name or file extension provided for file: " + filePath );
@@ -1431,9 +1431,9 @@ CVFS::LoadFile( CORE::CDataNode& destination    ,
 
     // First load the file as a VFS reference as usual
     TBasicVfsResourcePtr fileReference = GetFile( filePath, "rb", false );
-    if ( !fileReference || GUCEF_NULL == fileReference->GetAccess() )
+    if ( fileReference.IsNULL() || fileReference->GetAccess().IsNULL() )
         return false;
-    
+
     // Now obtain the codec
     CORE::CDStoreCodecRegistry& codecRegistry = CORE::CCoreGlobal::Instance()->GetDStoreCodecRegistry();
     CORE::CDStoreCodecRegistry::TDStoreCodecPtr codec;
@@ -1441,7 +1441,7 @@ CVFS::LoadFile( CORE::CDataNode& destination    ,
     {
         // Now pass the I/O access to the codec
         CORE::IOAccessPtr accessPtr = fileReference->GetAccess();
-        if ( codec->BuildDataTree( &destination, accessPtr.GetPointerAlways() ) ) 
+        if ( codec->BuildDataTree( &destination, accessPtr.GetPointerAlways() ) )
         {
             return true;
         }
@@ -1636,7 +1636,7 @@ CVFS::MountArchive( const CArchiveSettings& settings )
             }
             else
             {
-                GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "VFS:MountArchive: Failed to load archive of type \"" + 
+                GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "VFS:MountArchive: Failed to load archive of type \"" +
                     settings.GetArchiveType() + "\" which was to be mounted at path: " + updatedSettings.GetMountPath() );
             }
         }
@@ -1805,7 +1805,7 @@ CVFS::GetActualFilePath( const CString& file ,
 {GUCEF_TRACE;
 
     CString filePath = ConformVfsFilePath( file );
-    
+
     MT::CScopeReaderLock lock( m_rwdataLock );
 
     // Get a list of all eligable mounts
@@ -1871,7 +1871,7 @@ CVFS::GetVfsPathForAbsolutePath( const CString& absolutePath ,
 
 /*-------------------------------------------------------------------------*/
 
-bool 
+bool
 CVFS::DirExists( const CString& dirPath ) const
 {GUCEF_TRACE;
 
@@ -1967,13 +1967,13 @@ CVFS::UnmountArchiveByName( const CString& archiveName )
         {
             if ( mountEntry.archive->UnloadArchive() )
             {
-                TArchiveUnmountedEventData eData( mountEntry.mountPath );                
+                TArchiveUnmountedEventData eData( mountEntry.mountPath );
                 m_archivePtrToMountEntryLookup.erase( mountEntry.archive.GetPointerAlways() );
                 m_mountList.erase( i );
 
                 lock.EarlyUnlock();
 
-                NotifyObservers( ArchiveUnmountedEvent, &eData );              
+                NotifyObservers( ArchiveUnmountedEvent, &eData );
                 return true;
             }
             return false;
@@ -2083,10 +2083,10 @@ CVFS::LoadVfsSystemConfig( const CORE::CDataNode& cfg )
 
     m_maxmemloadsize = cfg.GetAttributeValueOrChildValueByName( "maxmemload" ).AsUInt32( m_maxmemloadsize, true );
     m_asyncOpsThreadpool = cfg.GetAttributeValueOrChildValueByName( "asyncOpsThreadpool" ).AsString( m_asyncOpsThreadpool, true );
-    m_asyncOpsMinWorkerThreads = cfg.GetAttributeValueOrChildValueByName( "asyncOpsMinWorkerThreads" ).AsUInt32( m_asyncOpsMinWorkerThreads, true ); 
+    m_asyncOpsMinWorkerThreads = cfg.GetAttributeValueOrChildValueByName( "asyncOpsMinWorkerThreads" ).AsUInt32( m_asyncOpsMinWorkerThreads, true );
 
     CORE::ThreadPoolPtr threadPool = CORE::CCoreGlobal::Instance()->GetTaskManager().GetOrCreateThreadPool( m_asyncOpsThreadpool );
-    threadPool->SetDesiredMinNrOfWorkerThreads( m_asyncOpsMinWorkerThreads ); 
+    threadPool->SetDesiredMinNrOfWorkerThreads( m_asyncOpsMinWorkerThreads );
 
     return true;
 }
@@ -2098,7 +2098,7 @@ CVFS::LoadConfig( const CORE::CDataNode& tree )
 {GUCEF_TRACE;
 
     MT::CScopeWriterLock lock( m_rwdataLock );
-    
+
     bool globalConfigLoadInProgress = IsGlobalConfigLoadInProgress();
     const CORE::CDataNode* n = tree.Search( "GUCEF%VFS%CVFS" ,
                                             '%'              ,
@@ -2107,7 +2107,7 @@ CVFS::LoadConfig( const CORE::CDataNode& tree )
     if ( GUCEF_NULL != n )
     {
         LoadVfsSystemConfig( *n );
-        
+
         CORE::CDataNode::TConstDataNodeSet rootNodeList = n->FindChildrenOfType( "VfsRoot" );
         CORE::CDataNode::TConstDataNodeSet::iterator i = rootNodeList.begin();
         while( i != rootNodeList.end() )
@@ -2129,7 +2129,7 @@ CVFS::LoadConfig( const CORE::CDataNode& tree )
     if ( GUCEF_NULL != n )
     {
         LoadVfsSystemConfig( *n );
-        
+
         CORE::CDataNode::TConstDataNodeSet rootNodeList = n->FindChildrenOfType( "ArchiveSettings", false, false );
         CORE::CDataNode::TConstDataNodeSet::iterator i = rootNodeList.begin();
         while( i != rootNodeList.end() )
@@ -2210,7 +2210,7 @@ CVFS::FilterValidation( const CORE::CString& filename ,
         }
         return true;
     }
-    
+
     // no filter passed means no filtering should be applied
     return true;
 }
@@ -2226,7 +2226,7 @@ CVFS::FilterValidation( const CORE::CString& filename           ,
     {
         CORE::CString::StringSet::const_iterator i = filters.begin();
         while ( i != filters.end() )
-        {        
+        {
             // we just need to match 1 of the filters passed
             if ( FilterValidation( filename, (*i) ) )
                 return true;
@@ -2235,7 +2235,7 @@ CVFS::FilterValidation( const CORE::CString& filename           ,
         }
         return false;
     }
-    
+
     // no filters passed means no filtering should be applied
     return true;
 }
@@ -2308,7 +2308,7 @@ CVFS::GetEligableMounts( const CString& location                ,
 
 bool
 CVFS::GetFileList( TStringVector& outputList      ,
-                   const CString& location        , 
+                   const CString& location        ,
                    bool recursive                 ,
                    bool includePathInFilename     ,
                    const CString& nameFilter      ,
@@ -2319,7 +2319,7 @@ CVFS::GetFileList( TStringVector& outputList      ,
     if ( !nameFilter.IsNULLOrEmpty() )
         filters.insert( nameFilter );
 
-    return GetFileList( outputList            , 
+    return GetFileList( outputList            ,
                         location              ,
                         recursive             ,
                         includePathInFilename ,
@@ -2331,7 +2331,7 @@ CVFS::GetFileList( TStringVector& outputList      ,
 
 bool
 CVFS::GetFileList( TStringVector& outputList             ,
-                   const CString& location               , 
+                   const CString& location               ,
                    bool recursive                        ,
                    bool includePathInFilename            ,
                    const CString::StringSet& nameFilters ,
@@ -2340,7 +2340,7 @@ CVFS::GetFileList( TStringVector& outputList             ,
 
     bool totalSuccess = true;
     CString path = ConformVfsDirPath( location );
-    
+
     MT::CScopeReaderLock lock( m_rwdataLock );
 
     // Get a list of all eligable mounts
@@ -2379,7 +2379,7 @@ CVFS::GetDirList( TStringVector& outputList  ,
     CORE::CString::StringSet filters;
     filters.insert( nameFilter );
 
-    return GetDirList( outputList            , 
+    return GetDirList( outputList            ,
                        location              ,
                        recursive             ,
                        includePathInFilename ,
@@ -2660,7 +2660,7 @@ CVFS::AddDirToWatch( const CString& dirToWatch       ,
             totalSuccess = false;
         ++i;
     }
-    
+
     return totalSuccess;
 }
 
@@ -2690,7 +2690,7 @@ CVFS::RemoveDirToWatch( const CString& dirToWatch )
             totalSuccess = false;
         ++i;
     }
-    
+
     return totalSuccess;
 }
 
@@ -2701,7 +2701,7 @@ CVFS::RemoveAllWatches( void )
 {GUCEF_TRACE;
 
     MT::CScopeReaderLock lock( m_rwdataLock );
-    
+
     bool totalSuccess = true;
     TMountVector::iterator i = m_mountList.begin();
     while ( i != m_mountList.end() )
@@ -2711,7 +2711,7 @@ CVFS::RemoveAllWatches( void )
             totalSuccess = false;
         ++i;
     }
-    
+
     return totalSuccess;
 }
 
@@ -2722,7 +2722,7 @@ CVFS::GetAllWatchedDirs( CString::StringSet& dirs ) const
 {GUCEF_TRACE;
 
     MT::CScopeReaderLock lock( m_rwdataLock );
-    
+
     bool totalSuccess = true;
     TMountVector::const_iterator i = m_mountList.begin();
     while ( i != m_mountList.end() )
@@ -2745,7 +2745,7 @@ CVFS::GetAllWatchedDirs( CString::StringSet& dirs ) const
             totalSuccess = false;
         ++i;
     }
-    
+
     return totalSuccess;
 }
 

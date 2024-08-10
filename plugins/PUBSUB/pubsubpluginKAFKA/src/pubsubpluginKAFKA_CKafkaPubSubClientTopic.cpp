@@ -23,6 +23,7 @@
 //-------------------------------------------------------------------------*/
 
 #include <string.h>
+#include <math.h>
 
 #ifndef GUCEF_MT_CSCOPEMUTEX_H
 #include "gucefMT_CScopeMutex.h"
@@ -143,7 +144,7 @@ CKafkaPubSubClientTopic::Shutdown( void )
     MT::CScopeMutex lock( m_lock );
 
     m_client = GUCEF_NULL;
-    
+
     Disconnect();
     Clear();
     SignalUpcomingDestruction();
@@ -165,7 +166,7 @@ CKafkaPubSubClientTopic::Clear( void )
 {GUCEF_TRACE;
 
     MT::CScopeMutex lock( m_lock );
-    
+
     GUCEF_DELETE m_metricsTimer;
     m_metricsTimer = GUCEF_NULL;
 
@@ -438,9 +439,9 @@ CKafkaPubSubClientTopic::RdKafkaStatsCallback( rd_kafka_t *rk  ,
 /*-------------------------------------------------------------------------*/
 
 void
-CKafkaPubSubClientTopic::RdKafkaLogCallback( const rd_kafka_t *rk , 
+CKafkaPubSubClientTopic::RdKafkaLogCallback( const rd_kafka_t *rk ,
                                              int level            ,
-                                             const char *fac      , 
+                                             const char *fac      ,
                                              const char *buf      )
 {GUCEF_TRACE;
 
@@ -528,7 +529,7 @@ CKafkaPubSubClientTopic::SetupBasedOnConfig( void )
         kafkaConf->set( "rebalance_cb", static_cast< RdKafka::RebalanceCb* >( this ), errStr );
         kafkaConf->set( "offset_commit_cb", static_cast< RdKafka::OffsetCommitCb* >( this ), errStr );
 
-        rd_kafka_conf_set_log_cb( kafkaConf->c_ptr_global(), &RdKafkaLogCallback );  
+        rd_kafka_conf_set_log_cb( kafkaConf->c_ptr_global(), &RdKafkaLogCallback );
 
         if ( m_maxTotalMsgsInFlight > 0 )
         {
@@ -714,7 +715,7 @@ CKafkaPubSubClientTopic::SetupBasedOnConfig( void )
                 {
 		            GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "KafkaPubSubClientTopic:LoadConfig: Failed to resolve macros in consumerGroupName" );
                 }
-                
+
                 if ( RdKafka::Conf::CONF_OK == m_kafkaConsumerConf->set( "group.id", consumerGroupName, errStr ) )
                 {
 		            GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "KafkaPubSubClientTopic:LoadConfig: Set Kafka group.id to \"" +
@@ -766,7 +767,7 @@ CKafkaPubSubClientTopic::SetupBasedOnConfig( void )
             {
                 GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "KafkaPubSubClientTopic:LoadConfig: consumerName is mandatory but not configured. check the config" );
             }
-        }        
+        }
 
         RdKafka::KafkaConsumer* consumer = RdKafka::KafkaConsumer::create( m_kafkaConsumerConf, errStr );
 	    if ( consumer == GUCEF_NULL )
@@ -786,7 +787,7 @@ CKafkaPubSubClientTopic::SetupBasedOnConfig( void )
 
     if ( m_maxTotalMsgsInFlight > 0 )
         PrepStorageForReadMsgs( (UInt32) m_maxTotalMsgsInFlight );
-    
+
     return true;
 }
 
@@ -801,7 +802,7 @@ CKafkaPubSubClientTopic::PrepStorageForReadMsgs( CORE::UInt32 msgCount )
         // Add extra slots
         m_rdKafkaMsgs.resize( msgCount );
     }
-    
+
     if ( msgCount > m_pubsubMsgs.size() )
     {
         // Add extra slots
@@ -966,13 +967,13 @@ CKafkaPubSubClientTopic::Subscribe( void )
     if ( !IsConnected() )
         if ( !SetupBasedOnConfig() )
             return false;
-                                   
+
     if ( GUCEF_NULL != m_kafkaConsumer )
     {
         // First obtain the currently commited offsets if possible
         // this is optional but desired as it helps with troubleshooting and helps init the stats earlier
         RetrieveKafkaCommitedOffsets();
-        
+
         // Perform the actual subscribe
         std::vector< std::string > topics;
         topics.push_back( m_config.topicName );
@@ -1078,9 +1079,9 @@ CKafkaPubSubClientTopic::SubscribeStartingAtTopicIndex( const CORE::CVariant& in
     RdKafka::ErrorCode response;
 
     MT::CScopeMutex lock( m_lock );
-    
+
     m_shouldBeConnected = true;
-    
+
     // First we need to set up RdKafka with the relevant internal stuctures for our topics
     std::vector< std::string > topics;
     topics.push_back( m_config.topicName );
@@ -1221,9 +1222,9 @@ CKafkaPubSubClientTopic::SubscribeStartingAtMsgDateTime( const CORE::CDateTime& 
 {GUCEF_TRACE;
 
     MT::CScopeMutex lock( m_lock );
-    
+
     m_shouldBeConnected = true;
-    
+
     std::string errStr;
     RdKafka::ErrorCode response = RdKafka::ERR_NO_ERROR;
     CORE::UInt64 ticksSinceEpoch = msgDtBookmark.ToUnixEpochBasedTicksInMillisecs();
@@ -1489,10 +1490,10 @@ CKafkaPubSubClientTopic::IsConnected( void ) const
 
     {
         MT::CScopeMutex lock( m_lock );
-    
+
         // note that connected is a very relative term here, more like prepared to connect as needed if you are a producer
         if ( m_config.needPublishSupport )
-            if ( GUCEF_NULL == m_kafkaProducer )    
+            if ( GUCEF_NULL == m_kafkaProducer )
                 return false;
 
         if ( m_config.needSubscribeSupport )
@@ -1504,7 +1505,7 @@ CKafkaPubSubClientTopic::IsConnected( void ) const
 
 /*-------------------------------------------------------------------------*/
 
-bool 
+bool
 CKafkaPubSubClientTopic::IsSubscribed( void ) const
 {GUCEF_TRACE;
 
@@ -1545,15 +1546,15 @@ CKafkaPubSubClientTopic::IsHealthy( void ) const
         }
         else
         {
-            GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "KafkaPubSubClientTopic:IsHealthy: Topic " + m_config.topicName + " is now unhealthy" );         
+            GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "KafkaPubSubClientTopic:IsHealthy: Topic " + m_config.topicName + " is now unhealthy" );
         }
 
-        THealthStatusChangeEventData eData( newHealthyState ); 
-        NotifyObservers( HealthStatusChangeEvent, &eData ); 
+        THealthStatusChangeEventData eData( newHealthyState );
+        NotifyObservers( HealthStatusChangeEvent, &eData );
     }
 
     return newHealthyState;
-}            
+}
 
 /*-------------------------------------------------------------------------*/
 
@@ -1684,7 +1685,7 @@ CKafkaPubSubClientTopic::UpdateKafkaMsgsReceiveLag( void )
 {GUCEF_TRACE;
 
     bool totalSuccess = true;
-    
+
     m_metrics.hasKafkaMessagesReceiveLag = false;
     m_metrics.kafkaMessagesReceiveLagAvg = 0;
     m_metrics.kafkaMessagesReceiveLagMin = 0;
@@ -1695,22 +1696,22 @@ CKafkaPubSubClientTopic::UpdateKafkaMsgsReceiveLag( void )
     m_metrics.kafkaMessagesReceiveCommitLagMax = 0;
 
     if ( GUCEF_NULL != m_kafkaConsumer )
-    {        
+    {
         RdKafka::ErrorCode response = RdKafka::ERR_NO_ERROR;
 
         TRdKafkaTopicPartitionPtrVector kafkaPartitions;
-        response = m_kafkaConsumer->assignment( kafkaPartitions );    
+        response = m_kafkaConsumer->assignment( kafkaPartitions );
         if ( response != RdKafka::ERR_NO_ERROR )
                 return false;
 
         if ( !kafkaPartitions.empty() )
         {
             CORE::Int64 minLag = GUCEF_INT64MAX;
-            CORE::Int64 maxLag = GUCEF_INT64MIN;        
+            CORE::Int64 maxLag = GUCEF_INT64MIN;
             CORE::Int64 lag = 0;
-        
+
             CORE::Int64 commitMinLag = GUCEF_INT64MAX;
-            CORE::Int64 commitMaxLag = GUCEF_INT64MIN;        
+            CORE::Int64 commitMaxLag = GUCEF_INT64MIN;
             CORE::Int64 commitLag = 0;
 
             TRdKafkaTopicPartitionPtrVector::iterator i = kafkaPartitions.begin();
@@ -1719,16 +1720,16 @@ CKafkaPubSubClientTopic::UpdateKafkaMsgsReceiveLag( void )
                 RdKafka::TopicPartition* partition = (*i);
                 if ( GUCEF_NULL != partition )
                 {
-                    CORE::Int64 lowOffset = 0;
-                    CORE::Int64 highOffset = 0;
+                    int64_t lowOffset = 0;
+                    int64_t highOffset = 0;
                     response = m_kafkaConsumer->get_watermark_offsets( partition->topic(), partition->partition(), &lowOffset, &highOffset );
                     if ( response == RdKafka::ERR_NO_ERROR )
                     {
                         if ( RdKafka::Topic::OFFSET_INVALID != highOffset )
                         {
-                            // We use the ack'd minimum offsets known to the topic as the earliest most up-to-date carat of where we 
+                            // We use the ack'd minimum offsets known to the topic as the earliest most up-to-date carat of where we
                             // are reading wise which can be a little ahead of the read position that was actually commited to Kafka
-                            
+
                             TInt32ToInt64Map::iterator n = m_consumerReadOffsets.find( partition->partition() );
                             if ( n != m_consumerReadOffsets.end() )
                             {
@@ -1738,8 +1739,8 @@ CKafkaPubSubClientTopic::UpdateKafkaMsgsReceiveLag( void )
                                 if ( currentReadCursorLag < minLag )
                                     minLag = currentReadCursorLag;
                                 if ( currentReadCursorLag > maxLag )
-                                    maxLag = currentReadCursorLag;                        
-                            
+                                    maxLag = currentReadCursorLag;
+
                                 lag += currentReadCursorLag;
 
                                 TInt32ToInt64Map::iterator m = m_kafkaCommitedConsumerOffsets.find( partition->partition() );
@@ -1753,7 +1754,7 @@ CKafkaPubSubClientTopic::UpdateKafkaMsgsReceiveLag( void )
                                         if ( currentReadCursorCommitedOffsetLag < commitMinLag )
                                             commitMinLag = currentReadCursorCommitedOffsetLag;
                                         if ( currentReadCursorCommitedOffsetLag > commitMaxLag )
-                                            commitMaxLag = currentReadCursorCommitedOffsetLag;   
+                                            commitMaxLag = currentReadCursorCommitedOffsetLag;
 
                                         commitLag += currentReadCursorCommitedOffsetLag;
                                     }
@@ -1951,7 +1952,7 @@ CKafkaPubSubClientTopic::ConvertKafkaConsumerStartOffset( CORE::Int64 startOffse
         if ( RdKafka::ERR_NO_ERROR != err )
         {
             ++m_kafkaErrorReplies;
-            
+
             std::string errStr = RdKafka::err2str( err );
             GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "KafkaPubSubClientTopic: Failed to convert offset description \"STORED\" into offset for partition " +
                     CORE::Int32ToString( partitionId ) + ". Cannot obtain partition assignment. ErrorCode : " + errStr );
@@ -1962,7 +1963,7 @@ CKafkaPubSubClientTopic::ConvertKafkaConsumerStartOffset( CORE::Int64 startOffse
         if ( RdKafka::ERR_NO_ERROR != err )
         {
             ++m_kafkaErrorReplies;
-            
+
             std::string errStr = RdKafka::err2str( err );
             GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "KafkaPubSubClientTopic: Failed to convert offset description \"STORED\" into offset for partition " +
                     CORE::Int32ToString( partitionId ) + ". Cannot obtain commited offsets . ErrorCode : " + errStr );
@@ -2025,7 +2026,7 @@ CKafkaPubSubClientTopic::GetConsumerConfigSetting( const CORE::CString& keyName,
 
 /*-------------------------------------------------------------------------*/
 
-Int64 
+Int64
 CKafkaPubSubClientTopic::GetConsumerConfigSettingAsInt64( const CORE::CString& keyName, Int64 defaultValue ) const
 {GUCEF_TRACE;
 
@@ -2056,7 +2057,7 @@ CKafkaPubSubClientTopic::offset_commit_cb( RdKafka::ErrorCode err               
             commitInfo += "Topic \"" + partitions[ i ]->topic() + "\" is at partition \"" + CORE::Int32ToString( partitions[ i ]->partition() ).STL_String() + "\" at offset \"" + ConvertKafkaConsumerStartOffset( partitions[ i ]->offset() ).STL_String() + "\". ";
         }
         GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, commitInfo );
-    }    
+    }
     else
     {
         #ifdef GUCEF_DEBUG_MODE
@@ -2072,14 +2073,14 @@ CKafkaPubSubClientTopic::offset_commit_cb( RdKafka::ErrorCode err               
         if ( RdKafka::ERR__NO_OFFSET == err )
         {
             GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_IMPORTANT, "KafkaPubSubClientTopic: No offsets are stored server-side for this client id. If this is unexpected check your offset storage health and retention policies. Will switch to using a default initial setting" );
-            
+
             // check our config to see how we want to handle this scenario
             Int64 requestTimeout = GetConsumerConfigSettingAsInt64( "request.timeout.ms", 3000 );
-            CORE::CString offsetResetSetting = GetConsumerConfigSetting( "auto.offset.reset", DefaultOffsetResetValue );            
+            CORE::CString offsetResetSetting = GetConsumerConfigSetting( "auto.offset.reset", DefaultOffsetResetValue );
             if ( offsetResetSetting.Lowercase() == "stored" )
             {
-                GUCEF_WARNING_LOG( CORE::LOGLEVEL_NORMAL, "KafkaPubSubClientTopic: The \"auto.offset.reset\" setting is set to \"" + offsetResetSetting + " which is not correct for an invalid/no offset scenario. Overruling to " + DefaultOffsetResetValue );    
-                offsetResetSetting = DefaultOffsetResetValue; 
+                GUCEF_WARNING_LOG( CORE::LOGLEVEL_NORMAL, "KafkaPubSubClientTopic: The \"auto.offset.reset\" setting is set to \"" + offsetResetSetting + " which is not correct for an invalid/no offset scenario. Overruling to " + DefaultOffsetResetValue );
+                offsetResetSetting = DefaultOffsetResetValue;
             }
             GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "KafkaPubSubClientTopic: Using offset reset setting of \"" + offsetResetSetting + "\" with request timeout of " + CORE::ToString( requestTimeout ) );
 
@@ -2087,7 +2088,7 @@ CKafkaPubSubClientTopic::offset_commit_cb( RdKafka::ErrorCode err               
             for ( unsigned int i=0; i<partitions.size(); ++i )
             {
                 int64_t partitionOffset = partitions[ i ]->offset();
-                if ( RdKafka::Topic::OFFSET_INVALID == partitionOffset                                                || 
+                if ( RdKafka::Topic::OFFSET_INVALID == partitionOffset                                                ||
                      RdKafka::Topic::OFFSET_INVALID == m_kafkaCommitedConsumerOffsets[ partitions[ i ]->partition() ] )
                 {
                     Int64 newPartitionOffset = ConvertKafkaConsumerStartOffset( offsetResetSetting, partitions[ i ]->partition(), (Int32) requestTimeout );
@@ -2114,12 +2115,12 @@ CKafkaPubSubClientTopic::offset_commit_cb( RdKafka::ErrorCode err               
                 int64_t partitionOffset = partitions[ i ]->offset();
                 if ( 0 <= partitionOffset )
                 {
-                    m_kafkaCommitedConsumerOffsets[ partitions[ i ]->partition() ] = partitionOffset; 
+                    m_kafkaCommitedConsumerOffsets[ partitions[ i ]->partition() ] = partitionOffset;
                 }
-                
+
             }
         }
-    }    
+    }
 }
 
 /*-------------------------------------------------------------------------*/
@@ -2135,12 +2136,12 @@ CKafkaPubSubClientTopic::rebalance_cb( RdKafka::KafkaConsumer* consumer         
     {
         GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "KafkaPubSubClientTopic:rebalance_cb: Assigning partitions" );
         RdKafka::ErrorCode assignSuccess = consumer->assign( partitions );
-        
+
         // Check if we can use the newly assigned partition's offsets
         bool hasInvalidOffsets = false;
         for ( unsigned int i=0; i<partitions.size(); ++i )
         {
-            Int64 paritionOffset = partitions[ i ]->offset();           
+            Int64 paritionOffset = partitions[ i ]->offset();
             if ( RdKafka::Topic::OFFSET_INVALID == paritionOffset )
             {
                 GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "KafkaPubSubClientTopic:rebalance_cb: We were given OFFSET_INVALID for topic \"" + m_config.topicName + "\"" );
@@ -2153,18 +2154,18 @@ CKafkaPubSubClientTopic::rebalance_cb( RdKafka::KafkaConsumer* consumer         
         // in such a case no need for an extra call to Kafka
         bool updatedKafkaCommitedConsumerOffsets = false;
         if ( !hasInvalidOffsets )
-        {            
+        {
             GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "KafkaPubSubClientTopic:rebalance_cb: We were given offsets for topic \"" + m_config.topicName + "\". Will use those as the new 'commited' offsets" );
-            
+
             m_kafkaCommitedConsumerOffsets.clear();
             for ( unsigned int i=0; i<partitions.size(); ++i )
             {
                 Int32 partitionId = partitions[ i ]->partition();
-                Int64 paritionOffset = partitions[ i ]->offset();           
+                Int64 paritionOffset = partitions[ i ]->offset();
                 m_kafkaCommitedConsumerOffsets[ partitionId ] = paritionOffset;
                 m_consumerAckdOffsets[ partitionId ] = paritionOffset;
 
-                GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "KafkaPubSubClientTopic:rebalance_cb: partition " + 
+                GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "KafkaPubSubClientTopic:rebalance_cb: partition " +
                     CORE::ToString( partitionId ) + " is now at offset " + CORE::ToString( paritionOffset ) );
             }
             updatedKafkaCommitedConsumerOffsets = true;
@@ -2182,16 +2183,16 @@ CKafkaPubSubClientTopic::rebalance_cb( RdKafka::KafkaConsumer* consumer         
                 for ( unsigned int i=0; i<partitions.size(); ++i )
                 {
                     Int32 partitionId = partitions[ i ]->partition();
-                    Int64 paritionOffset = partitions[ i ]->offset();           
+                    Int64 paritionOffset = partitions[ i ]->offset();
 
                     TInt32ToInt64Map::iterator c = m_kafkaCommitedConsumerOffsets.find( partitionId );
                     if ( c != m_kafkaCommitedConsumerOffsets.end() )
                     {
                         Int64 comittedOffset = (*c).second;
                         partitions[ i ]->set_offset( comittedOffset );
-                        m_consumerAckdOffsets[ partitionId ] = comittedOffset; 
+                        m_consumerAckdOffsets[ partitionId ] = comittedOffset;
 
-                        GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "KafkaPubSubClientTopic:rebalance_cb: Changing offset for partition " + CORE::ToString( partitionId ) + 
+                        GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "KafkaPubSubClientTopic:rebalance_cb: Changing offset for partition " + CORE::ToString( partitionId ) +
                             " from " + CORE::ToString( paritionOffset ) + " to committed value " + CORE::ToString( comittedOffset )   );
                     }
                     else
@@ -2199,7 +2200,7 @@ CKafkaPubSubClientTopic::rebalance_cb( RdKafka::KafkaConsumer* consumer         
                         // this should never happen
                         hasInvalidOffsets = true;
                         partitions[ i ]->set_offset( RdKafka::Topic::OFFSET_INVALID );
-                        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "KafkaPubSubClientTopic:rebalance_cb: Offset for partition " + CORE::ToString( partitionId ) + 
+                        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "KafkaPubSubClientTopic:rebalance_cb: Offset for partition " + CORE::ToString( partitionId ) +
                             " with value " + CORE::ToString( paritionOffset ) + " could not be updated to a committed value since the partition is not available as part of the commited set" );
                     }
                 }
@@ -2219,26 +2220,26 @@ CKafkaPubSubClientTopic::rebalance_cb( RdKafka::KafkaConsumer* consumer         
             for ( unsigned int i=0; i<partitions.size(); ++i )
             {
                 Int32 partitionId = partitions[ i ]->partition();
-                Int64 paritionOffset = partitions[ i ]->offset(); 
+                Int64 paritionOffset = partitions[ i ]->offset();
 
                 int64_t high = 0; int64_t low = 0;
                 RdKafka::ErrorCode err = m_kafkaConsumer->get_watermark_offsets( m_config.topicName, partitionId, &low, &high );
                 if ( RdKafka::ERR_NO_ERROR == err )
-                {            
+                {
                     GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "KafkaPubSubClientTopic:rebalance_cb: The watermark offsets for topic \"" + m_config.topicName +
-                            "\" and partition " + CORE::ToString( partitionId ) + " are: Low=" + CORE::ToString( low ) + ", High=" + CORE::ToString( high ) );
-                    
+                            "\" and partition " + CORE::ToString( partitionId ) + " are: Low=" + CORE::ToString( (Int64)low ) + ", High=" + CORE::ToString( (Int64)high ) );
+
                     // Does the offset for this partition need fixing? Some may already be Ok
                     if ( RdKafka::Topic::OFFSET_INVALID == paritionOffset )
                     {
                         // Try using the locally available in ram 'last ack'd' offsets
-                        TInt32ToInt64Map::iterator a = m_consumerAckdOffsets.find( partitionId );                
+                        TInt32ToInt64Map::iterator a = m_consumerAckdOffsets.find( partitionId );
                         if ( a != m_consumerAckdOffsets.end() )
                         {
                             // We have last ack'd offsets in memory on our end for this partition
                             // in this case its safe to use the last ack'd offsets as long as they are within watermark range. This limits replay volume due to commit lag
                             Int64 lastAckdOffset = (*a).second;
-                    
+
                             if ( RdKafka::Topic::OFFSET_INVALID != lastAckdOffset && lastAckdOffset >= low && lastAckdOffset <= high )
                             {
                                 // Great! The offset is in range and thus can be used as a substitute
@@ -2260,7 +2261,7 @@ CKafkaPubSubClientTopic::rebalance_cb( RdKafka::KafkaConsumer* consumer         
                     }
                 }
                 else
-                {                        
+                {
                     ++m_kafkaErrorReplies;
                     GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "KafkaPubSubClientTopic:rebalance_cb: Unable to obtain low and high watermarks for topic \"" + m_config.topicName +
                             "\" and partition " + CORE::ToString( partitionId ) + ". Without this information our only option is a full reset" );
@@ -2270,14 +2271,14 @@ CKafkaPubSubClientTopic::rebalance_cb( RdKafka::KafkaConsumer* consumer         
 
         // Any luck yet? If not fall back to a reset to default offset values, starting from scratch
         if ( hasInvalidOffsets || m_kafkaCommitedConsumerOffsets.empty() )
-        {            
+        {
             Int64 requestTimeout = GetConsumerConfigSettingAsInt64( "request.timeout.ms", 3000 );
 
             hasInvalidOffsets = false;
             for ( unsigned int i=0; i<partitions.size(); ++i )
             {
                 Int32 partitionId = partitions[ i ]->partition();
-                Int64 paritionOffset = partitions[ i ]->offset(); 
+                Int64 paritionOffset = partitions[ i ]->offset();
                 CORE::Int64 startOffset = (CORE::Int64) RdKafka::Topic::OFFSET_INVALID;
 
                 // Does the offset for this partition need fixing? Some may already be Ok
@@ -2288,19 +2289,19 @@ CKafkaPubSubClientTopic::rebalance_cb( RdKafka::KafkaConsumer* consumer         
                     {
                         partitions[ i ]->set_offset( startOffset );
                         m_kafkaCommitedConsumerOffsets[ partitionId ] = startOffset;
-                        m_consumerAckdOffsets[ partitionId ] = startOffset; 
+                        m_consumerAckdOffsets[ partitionId ] = startOffset;
                         m_receivedMsgAcks[ partitionId ].clear();
                         updatedKafkaCommitedConsumerOffsets = true;
 
-                        GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "KafkaPubSubClientTopic:rebalance_cb: Changing offset for partition " + CORE::ToString( partitionId ) + 
-                            " from " + CORE::ToString( paritionOffset ) + " to reset value " + CORE::ToString( startOffset ) );                        
+                        GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "KafkaPubSubClientTopic:rebalance_cb: Changing offset for partition " + CORE::ToString( partitionId ) +
+                            " from " + CORE::ToString( paritionOffset ) + " to reset value " + CORE::ToString( startOffset ) );
                     }
                     else
                     {
                         // This should not happen
                         hasInvalidOffsets = true;
-                        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "KafkaPubSubClientTopic:rebalance_cb: Offset for partition " + CORE::ToString( partitionId ) + 
-                            " with offset " + CORE::ToString( paritionOffset ) + " cannot be updated to a reset value since the reset value is invalid: " + CORE::ToString( startOffset ) );   
+                        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "KafkaPubSubClientTopic:rebalance_cb: Offset for partition " + CORE::ToString( partitionId ) +
+                            " with offset " + CORE::ToString( paritionOffset ) + " cannot be updated to a reset value since the reset value is invalid: " + CORE::ToString( startOffset ) );
                     }
                 }
             }
@@ -2312,7 +2313,7 @@ CKafkaPubSubClientTopic::rebalance_cb( RdKafka::KafkaConsumer* consumer         
             for ( unsigned int i=0; i<partitions.size(); ++i )
             {
                 Int32 partitionId = partitions[ i ]->partition();
-                Int64 paritionOffset = partitions[ i ]->offset();           
+                Int64 paritionOffset = partitions[ i ]->offset();
                 if ( RdKafka::Topic::OFFSET_INVALID == paritionOffset )
                 {
                     GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "KafkaPubSubClientTopic:rebalance_cb: We still have OFFSET_INVALID for partition " + CORE::ToString( partitionId )  + " of topic \"" + m_config.topicName + "\"" );
@@ -2385,7 +2386,7 @@ CKafkaPubSubClientTopic::UpdateIsHealthyStatus( bool newStatus )
         // the caller might only know about one aspect of health
         // The IsHealthy check itself will update the status and perform eventing if needed
         newStatus = IsHealthy();
-    }    
+    }
 }
 
 /*-------------------------------------------------------------------------*/
@@ -2500,7 +2501,7 @@ CKafkaPubSubClientTopic::IsSubscriptionAtEndOfData( void ) const
 
     if ( m_isSubscribed )
         return m_isSubscriptionAtEndOfData;
-    
+
     bool isSubscriptionAtEndOfData = m_isSubscriptionAtEndOfData;
     if ( QueryKafkaIfSubscriptionIsAtEndOfData( isSubscriptionAtEndOfData ) )
         return isSubscriptionAtEndOfData;
@@ -2513,9 +2514,9 @@ CKafkaPubSubClientTopic::IsSubscriptionAtEndOfData( void ) const
 bool
 CKafkaPubSubClientTopic::QueryKafkaIfSubscriptionIsAtEndOfData( bool& isSubscriptionAtEndOfData ) const
 {GUCEF_TRACE;
-    
+
     MT::CScopeMutex lock( m_lock );
-    
+
     if ( GUCEF_NULL == m_kafkaConsumer )
         return false;
 
@@ -2523,12 +2524,12 @@ CKafkaPubSubClientTopic::QueryKafkaIfSubscriptionIsAtEndOfData( bool& isSubscrip
     {
         TInt32ToInt64Map::const_iterator i = m_consumerReadOffsets.begin();
         while ( i != m_consumerReadOffsets.end() )
-        {    
+        {
             CORE::Int32 partitionId = (*i).first;
             CORE::Int64 readPosition = (*i).second;
-        
-            CORE::Int64 lowOffset = 0;
-            CORE::Int64 highOffset = 0;
+
+            int64_t lowOffset = 0;
+            int64_t highOffset = 0;
             RdKafka::ErrorCode response = m_kafkaConsumer->get_watermark_offsets( m_config.topicName, partitionId, &lowOffset, &highOffset );
             if ( response == RdKafka::ERR_NO_ERROR )
             {
@@ -2557,8 +2558,8 @@ CKafkaPubSubClientTopic::QueryKafkaIfSubscriptionIsAtEndOfData( bool& isSubscrip
 /*-------------------------------------------------------------------------*/
 
 bool
-CKafkaPubSubClientTopic::ProcessRdKafkaMessage( RdKafka::Message& message , 
-                                                CORE::UInt32 msgIndex     , 
+CKafkaPubSubClientTopic::ProcessRdKafkaMessage( RdKafka::Message& message ,
+                                                CORE::UInt32 msgIndex     ,
                                                 bool& isFiltered          )
 {GUCEF_TRACE;
 
@@ -2642,11 +2643,11 @@ CKafkaPubSubClientTopic::ProcessRdKafkaMessage( RdKafka::Message& message ,
                         m_msgsAckdSinceLastOffsetCommit = true;  // Since something was recieved we want to set the flag to ensure we start commiting offsets again
                     }
                 }
-                
+
                 LinkReceivedMsg( message, msgIndex );
                 success = true;
             }
-            
+
             // We will consider the ability to receive and process messages as healthy
             UpdateIsHealthyStatus( true );
             break;
@@ -2662,7 +2663,7 @@ CKafkaPubSubClientTopic::ProcessRdKafkaMessage( RdKafka::Message& message ,
                 // The signal from Kafka merely triggers a more hollistic check
                 if ( IsSubscriptionAtEndOfData() )
                 {
-                    if ( !NotifyObservers( SubscriptionEndOfDataEvent ) ) 
+                    if ( !NotifyObservers( SubscriptionEndOfDataEvent ) )
                         return success;
                 }
             }
@@ -2672,7 +2673,7 @@ CKafkaPubSubClientTopic::ProcessRdKafkaMessage( RdKafka::Message& message ,
         case RdKafka::ERR__UNKNOWN_PARTITION:
         {
             ++m_kafkaErrorReplies;
-            
+
             GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "KafkaPubSubClientTopic: Kafka consume error: UNKNOWN_PARTITION: " + message.errstr() );
             UpdateIsHealthyStatus( false );
             break;
@@ -2680,7 +2681,7 @@ CKafkaPubSubClientTopic::ProcessRdKafkaMessage( RdKafka::Message& message ,
         case RdKafka::ERR__UNKNOWN_TOPIC:
         {
             ++m_kafkaErrorReplies;
-            
+
             GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "KafkaPubSubClientTopic: Kafka consume error: UNKNOWN_TOPIC: " + message.errstr() );
             UpdateIsHealthyStatus( false );
             break;
@@ -2688,14 +2689,14 @@ CKafkaPubSubClientTopic::ProcessRdKafkaMessage( RdKafka::Message& message ,
         case RdKafka::ERR__MAX_POLL_EXCEEDED:
         {
             ++m_kafkaErrorReplies;
-            
+
             GUCEF_WARNING_LOG( CORE::LOGLEVEL_IMPORTANT, "KafkaPubSubClientTopic: Kafka consume error: MAX_POLL_EXCEEDED: " + message.errstr() );
             break;
         }
         default:
         {
             ++m_kafkaErrorReplies;
-            
+
             GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "KafkaPubSubClientTopic: Kafka consume error: " + message.errstr() );
             UpdateIsHealthyStatus( false );
             break;
@@ -2729,7 +2730,7 @@ CKafkaPubSubClientTopic::event_cb( RdKafka::Event& event )
                 {
                     ++m_kafkaErrorReplies;
                     ++m_kafkaConnectionErrors;
-                    
+
                     // Per GitHub comment from edenhill on Dec 18, 2018 for issue #2159:
                     //  "It will re-resolve the address on each re-connect attempt, but it will not log equal sub-sequent errors."
                     GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "KafkaPubSubClientTopic:event_cb: Unable to resolve Kafka broker DNS for Kafka topic \"" + m_config.topicName +
@@ -2739,13 +2740,13 @@ CKafkaPubSubClientTopic::event_cb( RdKafka::Event& event )
                     break;
                 }
                 case RdKafka::ERR__TRANSPORT:
-                {             
+                {
                     ++m_kafkaErrorReplies;
                     ++m_kafkaConnectionErrors;
 
                     // Per GitHub comment from edenhill on Dec 18, 2018 for issue #2159:
                     //  "It will re-resolve the address on each re-connect attempt, but it will not log equal sub-sequent errors."
-                    GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "KafkaPubSubClientTopic:event_cb: Unable to establish or retain connection to Kafka brokers for Kafka topic \"" + m_config.topicName + 
+                    GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "KafkaPubSubClientTopic:event_cb: Unable to establish or retain connection to Kafka brokers for Kafka topic \"" + m_config.topicName +
                         "\". event msg=\"" + event.str() + "\". error as string =\"" + RdKafka::err2str( event.err() ) + "\"" );
                     if ( !NotifyObservers( ConnectionErrorEvent ) ) return;
                     UpdateIsHealthyStatus( false );
@@ -2930,27 +2931,27 @@ CKafkaPubSubClientTopic::CommitConsumerOffsets( bool useAsyncCommit )
             // Match the current Topic objects with our simplistic bookkeeping and sync them
             std::vector<RdKafka::TopicPartition*>::iterator p = partitions.begin();
             while ( p != partitions.end() )
-            {                
+            {
                 CORE::Int32 partitionId = (*p)->partition();
                 CORE::Int64 partitionOffset = (*p)->offset();
-                
+
                 // try to find ackd offsets for the given partition
                 // note that if no messages have been recieved and/or ackd yet then this will not yield anything
-                
+
                 TInt32ToInt64Map::iterator o = m_consumerAckdOffsets.find( partitionId );
                 if ( o != m_consumerAckdOffsets.end() )
                 {
                     CORE::Int64 ackdOffset = (*o).second;
-                    
+
                     GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "KafkaPubSubClientTopic:CommitConsumerOffsets: Ackd offsets are available for partition " + CORE::ToString( partitionId ) +
                         ". Current offset is " + CORE::ToString( partitionOffset ) + ". Ackd offset is " + CORE::ToString( ackdOffset ) );
 
                     (*p)->set_offset( ackdOffset );
                 }
                 else
-                {                    
+                {
                     // We dont have any acks for this partition we can use to update the offset
-                    // as such fall back to the commited offsets collection                    
+                    // as such fall back to the commited offsets collection
                     TInt32ToInt64Map::iterator o2 = m_kafkaCommitedConsumerOffsets.find( partitionId );
                     if ( o2 != m_kafkaCommitedConsumerOffsets.end() )
                     {
@@ -2958,7 +2959,7 @@ CKafkaPubSubClientTopic::CommitConsumerOffsets( bool useAsyncCommit )
 
                         GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "KafkaPubSubClientTopic:CommitConsumerOffsets: No ackd offsets are available for partition " + CORE::ToString( partitionId ) +
                             ". Current offset is " + CORE::ToString( partitionOffset ) + ". falling back to local copy of commited offset " + CORE::ToString( commitedOffset ) );
-                        
+
                         (*p)->set_offset( commitedOffset );
                     }
                     else
@@ -3095,7 +3096,7 @@ CKafkaPubSubClientTopic::ProcessMsgAcks( void )
             if ( p == m_consumerAckdOffsets.end() )
             {
                 CORE::Int64 commitedOffset = 0;
-                TInt32ToInt64Map::iterator k = m_kafkaCommitedConsumerOffsets.find( partitionId ); 
+                TInt32ToInt64Map::iterator k = m_kafkaCommitedConsumerOffsets.find( partitionId );
                 if ( k == m_kafkaCommitedConsumerOffsets.end() )
                 {
                     if ( RetrieveKafkaCommitedOffsets() )
@@ -3109,8 +3110,8 @@ CKafkaPubSubClientTopic::ProcessMsgAcks( void )
 
                     GUCEF_DEBUG_LOG( CORE::LOGLEVEL_IMPORTANT, "KafkaPubSubClientTopic: No ackd offset found for partition " + CORE::ToString( partitionId ) +
                         " using Kafka commited offset as the new ack starting position: " + CORE::ToString( commitedOffset )  );
-                
-                    m_consumerAckdOffsets[ partitionId ] = commitedOffset; 
+
+                    m_consumerAckdOffsets[ partitionId ] = commitedOffset;
                     p = m_consumerAckdOffsets.find( partitionId );
                 }
                 else
@@ -3127,7 +3128,7 @@ CKafkaPubSubClientTopic::ProcessMsgAcks( void )
             if ( p != m_consumerAckdOffsets.end() )
             {
                 CORE::Int64& currentOffset = (*p).second;
-                           
+
                 TInt64Set::iterator a = ackdOffsets.begin();
                 CORE::Int64 ackdOffset = (*a);
                 if ( currentOffset == ackdOffset || currentOffset+1 == ackdOffset )
@@ -3142,19 +3143,19 @@ CKafkaPubSubClientTopic::ProcessMsgAcks( void )
                             ackdOffset = nextAckdOffset;
                         else
                             break;
-                        
+
                         ++a;
                     }
 
                     // Now we move the consumer offset to the new position
-                    GUCEF_DEBUG_LOG( CORE::LOGLEVEL_IMPORTANT, "KafkaPubSubClientTopic: Moving ackd commit offset from " + 
+                    GUCEF_DEBUG_LOG( CORE::LOGLEVEL_IMPORTANT, "KafkaPubSubClientTopic: Moving ackd commit offset from " +
                         CORE::ToString( currentOffset ) + " to " + CORE::ToString( ackdOffset ) + " for partition " + CORE::ToString( partitionId ) );
                     currentOffset = ackdOffset;
                     offsetsChanged = true;
                 }
                 else
                 {
-                    GUCEF_DEBUG_LOG( CORE::LOGLEVEL_IMPORTANT, "KafkaPubSubClientTopic: Ackd offset " + 
+                    GUCEF_DEBUG_LOG( CORE::LOGLEVEL_IMPORTANT, "KafkaPubSubClientTopic: Ackd offset " +
                         CORE::ToString( ackdOffset ) + " is too far from current offset " + CORE::ToString( currentOffset ) + " for partition " + CORE::ToString( partitionId ) );
                 }
             }
@@ -3186,7 +3187,7 @@ CKafkaPubSubClientTopic::CleanupMsgAcks( void )
             {
                 CORE::Int64 ackdOffset = *(ackdOffsets.begin());
                 if ( ackdOffset <= currentOffset )
-                    ackdOffsets.erase( ackdOffsets.begin() );    
+                    ackdOffsets.erase( ackdOffsets.begin() );
                 else
                     break;
             }
@@ -3241,16 +3242,16 @@ CKafkaPubSubClientTopic::OnPulseCycle( CORE::CNotifier* notifier    ,
 
     if ( GUCEF_NULL != m_kafkaConsumer && m_isSubscribed )
     {
-        if ( m_requestedConsumeDelayInMs == 0 || 
+        if ( m_requestedConsumeDelayInMs == 0 ||
              m_requestedConsumeDelayInMs <= GetPulseGenerator()->GetTimeSinceTickCountInMilliSecs( m_tickCountAtConsumeDelayRequest ) )
-        {        
+        {
             m_requestedConsumeDelayInMs = 0;
-            
+
             UInt32 maxMsgsToRead = 100;
             if ( m_maxTotalMsgsInFlight > 0 )
             {
                 maxMsgsToRead = (UInt32) m_maxTotalMsgsInFlight;
-                PrepStorageForReadMsgs( maxMsgsToRead );                
+                PrepStorageForReadMsgs( maxMsgsToRead );
             }
 
             // Try to fetch a bunch of messages in one go
@@ -3274,7 +3275,7 @@ CKafkaPubSubClientTopic::OnPulseCycle( CORE::CNotifier* notifier    ,
                     {
                         m_isSubscriptionAtEndOfData = true;
                         if ( GUCEF_NULL != m_client )
-                        {                        
+                        {
                             if ( m_client->GetConfig().desiredFeatures.supportsSubscriptionEndOfDataEvent )
                             {
                                 if ( !NotifyObservers( SubscriptionEndOfDataEvent ) )
@@ -3290,7 +3291,7 @@ CKafkaPubSubClientTopic::OnPulseCycle( CORE::CNotifier* notifier    ,
                 if ( ProcessRdKafkaMessage( *msg, msgRead+1, isFiltered ) && !isFiltered )
                 {
                     ++msgRead;
-                    m_rdKafkaMsgs[ msgRead ] = msg;                    
+                    m_rdKafkaMsgs[ msgRead ] = msg;
                 }
             }
 
@@ -3300,11 +3301,11 @@ CKafkaPubSubClientTopic::OnPulseCycle( CORE::CNotifier* notifier    ,
             {
                 if ( !NotifyObservers( MsgsRecievedEvent, &m_pubsubMsgsRefs ) )
                     return;
-            
+
                 m_pubsubMsgsRefs.clear();
             }
 
-            // Cleanup all the messages we received from RdKafka            
+            // Cleanup all the messages we received from RdKafka
             for ( CORE::Int32 i=0; i<=msgRead; ++i )
             {
                 RdKafka::Message* msg = m_rdKafkaMsgs[ i ];
@@ -3361,7 +3362,7 @@ CKafkaPubSubClientTopic::DeriveBookmarkFromMsg( const PUBSUB::CIPubSubMsg& msg, 
 
 /*-------------------------------------------------------------------------*/
 
-const CORE::CString& 
+const CORE::CString&
 CKafkaPubSubClientTopic::GetClassTypeName( void ) const
 {GUCEF_TRACE;
 

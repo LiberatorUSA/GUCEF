@@ -1,5 +1,5 @@
 /*
- *  gucefWEB: GUCEF module providing Web application functionality 
+ *  gucefWEB: GUCEF module providing Web application functionality
  *  for standardized protocols
  *
  *  Copyright (C) 1998 - 2020.  Dinand Vanvelzen
@@ -24,7 +24,7 @@
 //-------------------------------------------------------------------------*/
 
 #include <string.h>
-#include <time.h> 
+#include <time.h>
 
 #ifndef GUCEF_CORE_CTASKMANAGER_H
 #include "gucefCORE_CTaskManager.h"
@@ -101,8 +101,8 @@ CAsyncHttpRequestData::~CAsyncHttpRequestData()
 
 /*-------------------------------------------------------------------------*/
 
-CORE::CICloneable* 
-CAsyncHttpRequestData::Clone( void ) const 
+CORE::CICloneable*
+CAsyncHttpRequestData::Clone( void ) const
 {GUCEF_TRACE;
 
     return GUCEF_NEW CAsyncHttpRequestData( *this );
@@ -110,7 +110,7 @@ CAsyncHttpRequestData::Clone( void ) const
 
 /*-------------------------------------------------------------------------*/
 
-void 
+void
 CAsyncHttpServerRequestHandler::RegisterEvents( void )
 {GUCEF_TRACE;
 
@@ -120,7 +120,7 @@ CAsyncHttpServerRequestHandler::RegisterEvents( void )
 /*-------------------------------------------------------------------------*/
 
 CAsyncHttpServerRequestHandler::CAsyncHttpServerRequestHandler( void )
-    : CORE::CTaskConsumer() 
+    : CORE::CTaskConsumer()
     , m_requestHandler()
 {GUCEF_TRACE;
 
@@ -187,7 +187,7 @@ CAsyncHttpServerRequestHandler::OnTaskCycle( CORE::CICloneable* taskData )
         return true;
     }
 
-    if ( GUCEF_NULL == m_requestHandler )
+    if ( m_requestHandler.IsNULL() )
     {
         m_requestHandler = httpRequestData->httpServer->GetRequestHandlerFactory()->Create();
         if ( m_requestHandler.IsNULL() )
@@ -196,11 +196,11 @@ CAsyncHttpServerRequestHandler::OnTaskCycle( CORE::CICloneable* taskData )
 
     CAsyncHttpResponseData* response = GUCEF_NEW CAsyncHttpResponseData( httpRequestData );
     m_requestHandler->OnRequest( *httpRequestData, *response );
-    
-    if ( !CORE::CCoreGlobal::Instance()->GetTaskManager().GetThreadPool()->QueueTask( CAsyncHttpServerResponseHandler::TaskType, 
-                                                                                      response, 
-                                                                                      GUCEF_NULL, 
-                                                                                      GUCEF_NULL, 
+
+    if ( !CORE::CCoreGlobal::Instance()->GetTaskManager().GetThreadPool()->QueueTask( CAsyncHttpServerResponseHandler::TaskType,
+                                                                                      response,
+                                                                                      GUCEF_NULL,
+                                                                                      GUCEF_NULL,
                                                                                       true ) )
     {
         // Failed to queue task to send the response to the client

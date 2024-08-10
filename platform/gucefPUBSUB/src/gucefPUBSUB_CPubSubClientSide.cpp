@@ -523,7 +523,7 @@ CPubSubClientSide::OnMetricsTimerCycle( CORE::CNotifier* notifier    ,
 {GUCEF_TRACE;
 
     MT::CScopeReaderLock lock( m_rwdataLock );
-    
+
 
 }
 
@@ -731,7 +731,7 @@ CPubSubClientSide::OnTopicAccessDestroyed( CORE::CNotifier* notifier    ,
         TopicPtrMap::iterator i = m_topicPtrs.find( topicAccess.GetPointerAlways() );
         if ( i != m_topicPtrs.end() )
         {
-            TopicLinkPtr topicLink = (*i).second; 
+            TopicLinkPtr topicLink = (*i).second;
 
             GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientSide(" + CORE::ToString( this ) +
                 "):OnTopicAccessDestroyed: Removing topic link info for destroyed topic " + topicAccess->GetTopicName() +
@@ -746,7 +746,7 @@ CPubSubClientSide::OnTopicAccessDestroyed( CORE::CNotifier* notifier    ,
             GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientSide(" + CORE::ToString( this ) +
                 "):OnTopicAccessDestroyed: Cannot find topic link info for destroyed topic " + topicAccess->GetTopicName() );
         }
-        
+
         m_topicPtrs.erase( topicAccess.GetPointerAlways() );
     }
 }
@@ -770,7 +770,7 @@ CPubSubClientSide::OnTopicsAccessAutoCreated( CORE::CNotifier* notifier    ,
             if ( !topicAccess.IsNULL() )
             {
                 MT::CScopeWriterLock lock( m_rwdataLock );
-                
+
                 GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientSide(" + CORE::ToString( this ) +
                     "):OnTopicsAccessAutoCreated: Configuring topic link for new auto topic " + topicAccess->GetTopicName() );
 
@@ -820,11 +820,11 @@ CPubSubClientSide::OnTopicsAccessAutoDestroyed( CORE::CNotifier* notifier    ,
             if ( !topicAccess.IsNULL() )
             {
                 MT::CScopeWriterLock lock( m_rwdataLock );
-                
+
                 TopicPtrMap::iterator i = m_topicPtrs.find( topicAccess.GetPointerAlways() );
                 if ( i != m_topicPtrs.end() )
                 {
-                    TopicLinkPtr topicLink = (*i).second; 
+                    TopicLinkPtr topicLink = (*i).second;
 
                     GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientSide(" + CORE::ToString( this ) +
                         "):OnTopicsAccessAutoDestroyed: Removing topic link info for destroyed topic " + topicAccess->GetTopicName() +
@@ -834,7 +834,7 @@ CPubSubClientSide::OnTopicsAccessAutoDestroyed( CORE::CNotifier* notifier    ,
                     //      send them to dead letter ?
 
                     m_topicPtrs.erase( topicAccess.GetPointerAlways() );
-                
+
                 }
                 else
                 {
@@ -926,7 +926,7 @@ CPubSubClientSide::BroadcastPublishMsgsSync( const TMsgCollection& msgs )
 {GUCEF_TRACE;
 
     MT::CScopeReaderLock readerLock( m_rwdataLock );
-    
+
     CORE::UInt32 topicsToPublishOn = 0;
     CORE::UInt32 topicsPublishedOn = 0;
     bool totalSuccess = true;
@@ -957,7 +957,7 @@ CPubSubClientSide::BroadcastPublishMsgsSync( const TMsgCollection& msgs )
     if ( !totalSuccess )
     {
         GUCEF_WARNING_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientSide(" + CORE::ToString( this ) +
-            "):BroadcastPublishMsgsSync: Failures encountered broadcasting messages to " + CORE::ToString( topicsToPublishOn ) + 
+            "):BroadcastPublishMsgsSync: Failures encountered broadcasting messages to " + CORE::ToString( topicsToPublishOn ) +
             " successfully broadcast to " + CORE::ToString( topicsPublishedOn ) + " topics" );
     }
     else
@@ -981,10 +981,10 @@ CPubSubClientSide::PublishMsgsSync( const TMsgCollection& msgs              ,
     try
     {
         MT::CScopeReaderLock readerLock( m_rwdataLock );
-        
+
         if ( GUCEF_NULL == specificTargetTopic )
         {
-            if ( m_sideSettings.treatPublishWithoutTargetTopicAsBroadcast )
+            if ( m_sideSettings->treatPublishWithoutTargetTopicAsBroadcast )
             {
                 // No target topic is specific, treat as broadcast to all topics
                 return BroadcastPublishMsgsSync( msgs );
@@ -995,7 +995,7 @@ CPubSubClientSide::PublishMsgsSync( const TMsgCollection& msgs              ,
         TopicPtrMap::iterator i = m_topicPtrs.find( specificTargetTopic );
         if ( i != m_topicPtrs.end() )
         {
-            TopicLinkPtr topicLink = (*i).second; 
+            TopicLinkPtr topicLink = (*i).second;
             return topicLink->PublishMsgsSync( msgs );
         }
         else
@@ -1052,11 +1052,11 @@ CPubSubClientSide::TopicLink::PublishMsgsSync( const TMsgCollection& msgs )
 
     MT::CScopeMutex lock( m_dataLock );
     CORE::CObserverNotificationHold hold( this );
-    
+
     if ( GUCEF_NULL == side )
         return false;
     const CPubSubSideChannelSettingsPtr sideSettings = side->GetSideSettings();
-    
+
     if ( topic->IsPublishingSupported() )
     {
         currentPublishActionIds.clear();
@@ -1096,7 +1096,7 @@ CPubSubClientSide::TopicLink::PublishMsgsSync( const TMsgCollection& msgs )
 
 /*-------------------------------------------------------------------------*/
 
-bool 
+bool
 CPubSubClientSide::TopicLink::ApplySettings( const CPubSubSideChannelSettingsPtr sideSettings )
 {GUCEF_TRACE;
 
@@ -1126,13 +1126,13 @@ CPubSubClientSide::TopicLink::ApplySettings( const CPubSubSideChannelSettingsPtr
 
 /*-------------------------------------------------------------------------*/
 
-void 
+void
 CPubSubClientSide::TopicLink::SetTopic( CPubSubClientTopicBasicPtr newTopic )
 {GUCEF_TRACE;
 
     MT::CScopeMutex lock( m_dataLock );
 
-    UnsubscribeFrom( topic.GetPointerAlways() );    
+    UnsubscribeFrom( topic.GetPointerAlways() );
     topic = newTopic;
 
     if ( !topic.IsNULL() )
@@ -1148,7 +1148,7 @@ CPubSubClientSide::TopicLink::SetTopic( CPubSubClientTopicBasicPtr newTopic )
 
 /*-------------------------------------------------------------------------*/
 
-CPubSubClientTopicBasicPtr 
+CPubSubClientTopicBasicPtr
 CPubSubClientSide::TopicLink::GetTopic( void ) const
 {GUCEF_TRACE;
 
@@ -1157,7 +1157,7 @@ CPubSubClientSide::TopicLink::GetTopic( void ) const
 
 /*-------------------------------------------------------------------------*/
 
-void 
+void
 CPubSubClientSide::TopicLink::SetParentSide( CPubSubClientSide* parentSide )
 {GUCEF_TRACE;
 
@@ -1167,7 +1167,7 @@ CPubSubClientSide::TopicLink::SetParentSide( CPubSubClientSide* parentSide )
 
 /*-------------------------------------------------------------------------*/
 
-void 
+void
 CPubSubClientSide::TopicLink::SetFlowRouter( CPubSubFlowRouter* router )
 {GUCEF_TRACE;
 
@@ -1202,7 +1202,7 @@ CPubSubClientSide::TopicLink::SetPulseGenerator( CORE::PulseGeneratorPtr newPuls
 
 /*-------------------------------------------------------------------------*/
 
-CORE::UInt64 
+CORE::UInt64
 CPubSubClientSide::TopicLink::GetTotalMsgsInFlight( void ) const
 {GUCEF_TRACE;
 
@@ -1211,7 +1211,7 @@ CPubSubClientSide::TopicLink::GetTotalMsgsInFlight( void ) const
 
 /*-------------------------------------------------------------------------*/
 
-CORE::CString 
+CORE::CString
 CPubSubClientSide::TopicLink::GetMetricFriendlyTopicName( void ) const
 {GUCEF_TRACE;
 
@@ -1221,7 +1221,7 @@ CPubSubClientSide::TopicLink::GetMetricFriendlyTopicName( void ) const
 
 /*-------------------------------------------------------------------------*/
 
-void 
+void
 CPubSubClientSide::TopicLink::SetPubsubBookmarkPersistence( TIPubSubBookmarkPersistenceBasicPtr persistance )
 {GUCEF_TRACE;
 
@@ -1231,7 +1231,7 @@ CPubSubClientSide::TopicLink::SetPubsubBookmarkPersistence( TIPubSubBookmarkPers
 
 /*-------------------------------------------------------------------------*/
 
-TIPubSubBookmarkPersistenceBasicPtr 
+TIPubSubBookmarkPersistenceBasicPtr
 CPubSubClientSide::TopicLink::GetPubsubBookmarkPersistence( void ) const
 {GUCEF_TRACE;
 
@@ -1331,7 +1331,7 @@ CPubSubClientSide::PublishMsgs( const CPubSubClientTopic::TPubSubMsgsRefVector& 
     TopicLinkPtr topicLink;
     {
         MT::CScopeReaderLock readerLock( m_rwdataLock );
-    
+
         TopicPtrMap::iterator i = m_topicPtrs.find( specificTargetTopic );
         if ( i != m_topicPtrs.end() )
         {
@@ -1346,7 +1346,7 @@ CPubSubClientSide::PublishMsgs( const CPubSubClientTopic::TPubSubMsgsRefVector& 
                 if ( newTopicObj == specificTargetTopic )
                 {
                     MT::CScopeWriterLock writeLock( readerLock );
-                
+
                     // This is a publish on a topic for which we have not received the topic creation event notification yet
                     // in multi-threaded setups the order in which the events arrive vs other event listeners on the same can vary depending
                     // depending on thread timings
@@ -1455,7 +1455,7 @@ CPubSubClientSide::TopicLink::OnCheckForTimedOutInFlightMessagesTimerCycle( CORE
 
     MT::CScopeMutex lock( m_dataLock );
     CORE::CObserverNotificationHold hold( this );
-    
+
     CORE::UInt64 totalMsgsInFlightCount = 0;
     CORE::CDateTime cycleNowDt = CORE::CDateTime::NowUTCDateTime();
 
@@ -1464,7 +1464,7 @@ CPubSubClientSide::TopicLink::OnCheckForTimedOutInFlightMessagesTimerCycle( CORE
     if ( !topic.IsNULL() && topic->IsPublishingSupported() && GUCEF_NULL != side )
     {
         const CPubSubSideChannelSettingsPtr sideSettings = side->GetSideSettings();
-        
+
         GUCEF_DEBUG_LOG( CORE::LOGLEVEL_IMPORTANT, "TopicLink(" + CORE::ToString( this ) +
         "):OnCheckForTimedOutInFlightMessagesTimerCycle: Topic " + topic->GetTopicName() + " has " + CORE::ToString( inFlightMsgs.size() ) + " messages in flight" );
 
@@ -1591,12 +1591,12 @@ CPubSubClientSide::ProcessMailbox( void )
     if ( m_sideSettings->treatPublishWithoutTargetTopicAsBroadcast )
     {
         MT::CScopeReaderLock readerLock( m_rwdataLock );
-        bool totalSuccess = true; 
+        bool totalSuccess = true;
 
         if ( m_sideSettings->treatPublishWithoutTargetTopicAsBroadcast )
         {
             UInt64 approxTotalMsgsInFlight = 0;
-           
+
             TopicPtrMap::iterator i = m_topicPtrs.begin();
             while ( i != m_topicPtrs.end() )
             {
@@ -1629,14 +1629,14 @@ CPubSubClientSide::ProcessMailbox( void )
                 if ( !m_broadcastMailbox.ReInsertSPtrBulkMail( msgs ) )
                 {
                     GUCEF_ERROR_LOG( CORE::LOGLEVEL_CRITICAL, "PubSubClientSide(" + CORE::ToString( this ) +
-                        "):RetryPublishFailedMsgsAndProcessMailbox: Failed to reinsert " + CORE::ToString( msgs.size() ) + 
+                        "):RetryPublishFailedMsgsAndProcessMailbox: Failed to reinsert " + CORE::ToString( msgs.size() ) +
                         " messages into the mailbox after an exception occured" );
                 }
             }
         }
         return totalSuccess;
-    }    
-    
+    }
+
     return true;
 }
 
@@ -1655,11 +1655,11 @@ CPubSubClientSide::TopicLink::RetryPublishFailedMsgs( void )
             // We already have the max nr of messages in-flight, dont try to add more right now
             return true;
         }
-    }                                
+    }
     if ( awaitingFailureReport )
     {
         // We are awaiting a failure report, lets not complicate things with more messages in flight
-        return true;        
+        return true;
     }
 
     MT::CScopeMutex lock( m_dataLock );
@@ -1688,7 +1688,7 @@ CPubSubClientSide::TopicLink::RetryPublishFailedMsgs( void )
                 "):RetryPublishFailedMsgs: Topic " + topic->GetTopicName() + " has " + CORE::ToString( publishFailedMsgs.size() ) + " messages queued for retry" );
 
             const CPubSubSideChannelSettingsPtr sideSettings = side->GetSideSettings();
-            
+
             TopicLink::TUInt64Set inFlightDiscardList;
             TopicLink::TUInt64Set::iterator n = publishFailedMsgs.begin();
             while ( n != publishFailedMsgs.end() )
@@ -1884,7 +1884,7 @@ CPubSubClientSide::TopicLink::PublishMailboxMsgs( void )
 {GUCEF_TRACE;
 
     MT::CScopeMutex lock( m_dataLock );
-    
+
     bool totalSuccess = true;
     if ( !topic.IsNULL() && GUCEF_NULL != side )
     {
@@ -1907,7 +1907,7 @@ CPubSubClientSide::TopicLink::PublishMailboxMsgs( void )
                 bool timeoutOccured = false;
                 try
                 {
-                    
+
                     CPubSubClientTopic::TIPubSubMsgSPtrVector::iterator i = msgs.begin();
                     publishSuccess = PublishMsgsSync< CPubSubClientTopic::TIPubSubMsgSPtrVector >( msgs );
                     totalSuccess = publishSuccess && totalSuccess;
@@ -1927,13 +1927,13 @@ CPubSubClientSide::TopicLink::PublishMailboxMsgs( void )
                         if ( timeoutOccured )
                         {
                             GUCEF_ERROR_LOG( CORE::LOGLEVEL_CRITICAL, "TopicLink(" + CORE::ToString( this ) +
-                                "):PublishMailboxMsgs: Failed to pop back " + CORE::ToString( msgs.size() ) + 
+                                "):PublishMailboxMsgs: Failed to pop back " + CORE::ToString( msgs.size() ) +
                                 " messages into the mailbox after a timeout exception occured" );
                         }
                         else
                         {
                             GUCEF_ERROR_LOG( CORE::LOGLEVEL_CRITICAL, "TopicLink(" + CORE::ToString( this ) +
-                                "):PublishMailboxMsgs: Failed to pop back " + CORE::ToString( msgs.size() ) + 
+                                "):PublishMailboxMsgs: Failed to pop back " + CORE::ToString( msgs.size() ) +
                                 " messages into the mailbox after a failure to publish occured" );
                         }
                     }
@@ -1941,22 +1941,22 @@ CPubSubClientSide::TopicLink::PublishMailboxMsgs( void )
             }
         }
         catch ( const timeout_exception& )
-        {            
+        {
             totalSuccess = false;
             if ( !msgMailbox.ReInsertSPtrBulkMail( msgs ) )
             {
                 GUCEF_ERROR_LOG( CORE::LOGLEVEL_CRITICAL, "TopicLink(" + CORE::ToString( this ) +
-                    "):PublishMailboxMsgs: Failed to pop back " + CORE::ToString( msgs.size() ) + 
+                    "):PublishMailboxMsgs: Failed to pop back " + CORE::ToString( msgs.size() ) +
                     " messages into the mailbox after a timeout exception occured" );
-            }            
+            }
         }
         catch ( const std::exception& e )
-        {            
+        {
             totalSuccess = false;
             if ( !msgMailbox.ReInsertSPtrBulkMail( msgs ) )
             {
                 GUCEF_ERROR_LOG( CORE::LOGLEVEL_CRITICAL, "TopicLink(" + CORE::ToString( this ) +
-                    "):PublishMailboxMsgs: Failed to pop back " + CORE::ToString( msgs.size() ) + 
+                    "):PublishMailboxMsgs: Failed to pop back " + CORE::ToString( msgs.size() ) +
                     " messages into the mailbox after an exception occured" );
             }
             throw e;
@@ -2017,7 +2017,7 @@ CPubSubClientSide::TopicLink::DetachFromTopic( void )
         return;
 
     GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "TopicLink(" + CORE::ToString( this ) +
-        "):DetachFromTopic: Detaching from topic implementation " + CORE::ToString( topicCopy.GetPointerAlways() ) + 
+        "):DetachFromTopic: Detaching from topic implementation " + CORE::ToString( topicCopy.GetPointerAlways() ) +
         " for topic \"" + topicCopy->GetTopicName() + "\"" );
 
     // Stop the influx of new event messages into our logic before anything else
@@ -2041,7 +2041,7 @@ CPubSubClientSide::TopicLink::UpdateTopicMetrics( void )
 {GUCEF_TRACE;
 
     MT::CScopeMutex lock( m_dataLock );
-    
+
     if ( !metrics.IsNULL() )
     {
         if ( metrics->hasSupportForPublishing )
@@ -2094,7 +2094,7 @@ CPubSubClientSide::TopicLink::OnPubSubTopicMsgsReceived( CORE::CNotifier* notifi
                 "):OnPubSubTopicMsgsReceived: Received " + CORE::ToString( msgs.size() ) + " message(s) from pubsub client on side: " + side->GetSideId() );
 
             MT::CScopeMutex lock( m_dataLock );
-            
+
             // We now broadcast the received messages to all other sides which is the purpose of this class
             if ( GUCEF_NULL != flowRouter )
             {
@@ -2212,7 +2212,7 @@ CPubSubClientSide::TopicLink::UpdateReceivedMessagesBookmarkAsNeeded( const CIPu
         return true; // not supported, treat as fyi no-op
 
     MT::CScopeMutex lock( m_dataLock );
-    
+
     // Check criterea for our generic bookmark persistance
     const CPubSubSideChannelSettingsPtr sideSettings = side->GetSideSettings();
     if ( !pubsubBookmarkPersistence.IsNULL() &&
@@ -2255,7 +2255,7 @@ CPubSubClientSide::TopicLink::UpdateReceivedMessagesBookmarkAsNeeded( const CIPu
 {GUCEF_TRACE;
 
     MT::CScopeMutex lock( m_dataLock );
-    
+
     if ( clientFeatures.supportsBookmarkingConcept )
     {
         // Deriving a bookmark from a message is preferred if supported due to the reduced administrative overhead
@@ -2372,7 +2372,7 @@ CPubSubClientSide::TopicLink::ProcessAcknowledgeReceiptsMailbox( void )
 {GUCEF_TRACE;
 
     MT::CScopeMutex lock( publishAckdMsgsMailbox.GetLock() );
-    
+
     CIPubSubMsg::TNoLockSharedPtr msg;
     while ( publishAckdMsgsMailbox.PeekMail( lock, msg, GUCEF_NULL ) )
     {
@@ -2388,10 +2388,10 @@ CPubSubClientSide::TopicLink::ProcessAcknowledgeReceiptsMailbox( void )
                     "):ProcessAcknowledgeReceiptsMailbox: Failed to sync ack receipt of message. " + CPubSubClientSide::GetMsgAttributesForLog( *msg ) );
             }
         }
-        catch ( const timeout_exception& )        
+        catch ( const timeout_exception& )
         {
             GUCEF_EXCEPTION_LOG( CORE::LOGLEVEL_NORMAL, "TopicLink(" + CORE::ToString( this ) +
-                        "):ProcessAcknowledgeReceiptsMailbox: caught timeout_exception while attempting to ack msg receipt. " + 
+                        "):ProcessAcknowledgeReceiptsMailbox: caught timeout_exception while attempting to ack msg receipt. " +
                         CPubSubClientSide::GetMsgAttributesForLog( *msg ) );
             break;
         }
@@ -2423,7 +2423,7 @@ CPubSubClientSide::AcknowledgeReceipt( CIPubSubMsg::TNoLockSharedPtr& msg )
     else
     {
         GUCEF_WARNING_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientSide(" + CORE::ToString( this ) +
-                    "):AcknowledgeReceiptSync: Message origin topic is not familiar when trying to ack msg receipt. " + 
+                    "):AcknowledgeReceiptSync: Message origin topic is not familiar when trying to ack msg receipt. " +
                     CPubSubClientSide::GetMsgAttributesForLog( *msg ) );
     }
     return false;
@@ -2486,7 +2486,7 @@ CPubSubClientSide::TopicLink::OnPubSubTopicMsgsPublished( CORE::CNotifier* notif
                             "):OnPubSubTopicMsgsPublished: Ignoring msg acks from client because we are not tracking msgs for acks" );
         return;
     }
-    
+
     const CPubSubClientTopic::TMsgsPublishedEventData& eData = *static_cast< CPubSubClientTopic::TMsgsPublishedEventData* >( eventData );
     const CPubSubClientTopic::TPublishActionIdVector* publishActionIds = eData;
     CPubSubClientTopic* topicNotifier = static_cast< CPubSubClientTopic* >( notifier );
@@ -2497,7 +2497,7 @@ CPubSubClientSide::TopicLink::OnPubSubTopicMsgsPublished( CORE::CNotifier* notif
 
     MT::CScopeMutex lock( m_dataLock );
     CORE::CObserverNotificationHold hold( this );
-    
+
     // Here we translate the publish action IDs back into the original messages
     // Subsequently we use said original messages to ack that to the message origin that we received the message
     // This is what allows us to provide a garanteed handling garantee since its an explicit handoff all the way through
@@ -2654,7 +2654,7 @@ CPubSubClientSide::TopicLink::Clear( void )
 {GUCEF_TRACE;
 
     MT::CScopeMutex lock( m_dataLock );
-    
+
     msgMailbox.Clear();
     publishAckdMsgsMailbox.Clear();
 
@@ -2681,11 +2681,11 @@ CPubSubClientSide::TopicLink::Clear( void )
 
 /*-------------------------------------------------------------------------*/
 
-void 
+void
 CPubSubClientSide::TopicLink::SetJournal( CIPubSubJournalBasicPtr newJournal )
 {GUCEF_TRACE;
 
-    MT::CScopeMutex lock( m_dataLock );    
+    MT::CScopeMutex lock( m_dataLock );
     journal = newJournal;
 }
 
@@ -2756,7 +2756,7 @@ CPubSubClientSide::ConfigureTopicLink( CPubSubSideChannelSettingsPtr pubSubSideS
     }
 
     const CORE::CString& topicName = topic->GetTopicName();
-    
+
     CPubSubClientTopicConfigPtr topicConfig = pubSubSideSettings->GetTopicConfig( topicName );
     if ( topicConfig.IsNULL() )
     {
@@ -2793,7 +2793,7 @@ CPubSubClientSide::ConfigureTopicLink( CPubSubSideChannelSettingsPtr pubSubSideS
         {
             TopicNameMap::iterator t = m_topics.find( topic->GetTopicName() );
             if ( t == m_topics.end() )
-            {            
+            {
                 topicLink = TopicLink::CreateSharedObj();
 
                 if ( !topicLink.IsNULL() )
@@ -2814,15 +2814,15 @@ CPubSubClientSide::ConfigureTopicLink( CPubSubSideChannelSettingsPtr pubSubSideS
             }
             else
             {
-                topicLink = (*t).second;                
+                topicLink = (*t).second;
                 CPubSubClientTopicBasicPtr originalTopic = topicLink->GetTopic();
-                
+
                 if ( topic != originalTopic )
-                {                
+                {
                     // If we get here we had a pre-existing topic link for a topic of this name.
                     // However the implementation, the topic object, is now different.
                     // This can occur when we perform a swap-out/reset of the underlying implementation
-                    // such as to solve issues like bad state in some backend implementation                
+                    // such as to solve issues like bad state in some backend implementation
 
                     GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientSide(" + CORE::ToString( this ) +
                         "):ConfigureTopicLink: Found pre-existing topic link for topic with name \"" + topicName +
@@ -2838,7 +2838,7 @@ CPubSubClientSide::ConfigureTopicLink( CPubSubSideChannelSettingsPtr pubSubSideS
         else
         {
             // make sure the topic name based index references the latest understanding of the correct topic link
-            m_topics[ topic->GetTopicName() ] = topicLink; 
+            m_topics[ topic->GetTopicName() ] = topicLink;
         }
 
         // Create and configure the pub-sub bookmark persistence
@@ -2856,14 +2856,14 @@ CPubSubClientSide::ConfigureTopicLink( CPubSubSideChannelSettingsPtr pubSubSideS
 
         topicLink->SetFlowRouter( m_flowRouter );
         topicLink->SetParentSide( this );
-        topicLink->SetTopic( topic );                
+        topicLink->SetTopic( topic );
         topicLink->ApplySettings( pubSubSideSettings );
         topicLink->SetClientFeatures( m_clientFeatures );
         topicLink->SetPubsubBookmarkPersistence( pubsubBookmarkPersistence );
         topicLink->SetPubsubBookmarkNamespace( m_bookmarkNamespace );
         topicLink->SetJournal( topic->GetJournal() );
 
-        // Set the pulse generator last because we dont want to still be configuring the topic link 
+        // Set the pulse generator last because we dont want to still be configuring the topic link
         // while the associated thread already starts running updates on the same
         topicLink->SetPulseGenerator( pulseGenerator );
     }
@@ -2879,7 +2879,7 @@ CPubSubClientSide::GetLatestBookmark( const CPubSubClientTopic& topic ,
 {GUCEF_TRACE;
 
     MT::CScopeReaderLock lock( m_rwdataLock );
-    
+
     if ( m_pubsubBookmarkPersistence.IsNULL() || m_pubsubClient.IsNULL() )
         return false;
 
@@ -3007,11 +3007,11 @@ CPubSubClientSide::DetachFromClient( CPubSubClientPtr pubsubClient )
         "):DetachFromClient: Detaching from underlying pubsub client implementation of type \"" + pubsubClient->GetType() + "\" for side with id " +
         GetSideId() );
 
-    // If we already had in-flight messages and the like but due to some reason (bad state?) we have to swap out the 
+    // If we already had in-flight messages and the like but due to some reason (bad state?) we have to swap out the
     // underlying implementation, we need to take care to put things in a defined state, not soley dependent on the timing of the swap
 
     // guard against the list changing while we are going through it due to auto cleanup actions
-    TopicPtrMap topicListCopy = m_topicPtrs; 
+    TopicPtrMap topicListCopy = m_topicPtrs;
 
     TopicPtrMap::iterator t = topicListCopy.begin();
     while ( t != topicListCopy.end() )
@@ -3065,7 +3065,7 @@ CPubSubClientSide::PerformPubSubClientSetup( bool hardReset )
         {
             DetachFromClient( m_pubsubClient );
         }
-        
+
         // Create and configure the pub-sub client
         pubSubConfig.pulseGenerator = GetPulseGenerator();
         pubSubConfig.metricsPrefix = m_sideSettings->metricsPrefix;
@@ -3145,7 +3145,7 @@ CPubSubClientSide::ConnectPubSubClient( bool reset )
 
     if ( !reset && IsConnectedAndSubscribedAsNeeded() )
         return true;
-    
+
     MT::CObjectScopeLock lock( this );
     CORE::CObserverNotificationHold hold( this );
 
@@ -3302,7 +3302,7 @@ CPubSubClientSide::IsPubSubClientInfraReadyToConnect( void ) const
 
 /*-------------------------------------------------------------------------*/
 
-bool 
+bool
 CPubSubClientSide::IsConnectedAndSubscribedAsNeeded( void ) const
 {GUCEF_TRACE;
 
@@ -3501,7 +3501,7 @@ CPubSubClientSide::LoadConfig( const CPubSubSideChannelSettingsPtr sideSettings 
 
     if ( sideSettings.IsNULL() )
         return false;
-    
+
     GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientSide(" + CORE::ToString( this ) +
         "):LoadConfig: Loading new side settings for side: " + m_sideId );
 

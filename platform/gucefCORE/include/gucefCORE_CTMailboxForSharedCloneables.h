@@ -106,7 +106,7 @@ class CTMailboxForSharedCloneables : public MT::CMailboxForCloneables
      */
     bool ReInsertSPtrBulkMail( TMailSPtrList& mailList            ,
                                bool bestEffortSkipIfNeeded = true );
-    
+
     private:
 
     CTMailboxForSharedCloneables( const CTMailboxForSharedCloneables& src );             /**< not implemented */
@@ -127,7 +127,7 @@ CTMailboxForSharedCloneables< CloneableType, PtrLockType >::CTMailboxForSharedCl
 }
 
 /*-------------------------------------------------------------------------*/
-    
+
 template< typename CloneableType, class PtrLockType >
 CTMailboxForSharedCloneables< CloneableType, PtrLockType >::~CTMailboxForSharedCloneables()
 {GUCEF_TRACE;
@@ -149,7 +149,7 @@ CTMailboxForSharedCloneables< CloneableType, PtrLockType >::GetMailSPtr( TMailSP
         mail = TMailSPtr( static_cast< CloneableType* >( m_mailQueue.front() ) );
         m_mailQueue.pop_front();
         return true;
-    }    
+    }
     return false;
 }
 
@@ -165,9 +165,9 @@ CTMailboxForSharedCloneables< CloneableType, PtrLockType >::GetSPtrBulkMail( TMa
 
     if ( m_mailQueue.empty() )
         return false; // nothing to read, early out
-    
+
     // We know how many mail items we will read so lets not perform unnessesary reallocs of the vector's underlying memory
-    if ( maxMailItems > 0 )    
+    if ( maxMailItems > 0 )
     {
         size_t itemsToRead = GUCEF_SMALLEST( m_mailQueue.size(), (size_t) maxMailItems );
         mailList.reserve( itemsToRead );
@@ -176,7 +176,7 @@ CTMailboxForSharedCloneables< CloneableType, PtrLockType >::GetSPtrBulkMail( TMa
     {
         mailList.reserve( m_mailQueue.size() );
     }
-    
+
     Int32 mailItemsRead = 0;
     while ( mailItemsRead < maxMailItems || maxMailItems < 0 )
     {
@@ -187,15 +187,15 @@ CTMailboxForSharedCloneables< CloneableType, PtrLockType >::GetSPtrBulkMail( TMa
             CICloneable* clonable = m_mailQueue.front();
             CloneableType* derivedClonable = static_cast< CloneableType* >( clonable );
             TMailSPtr objPtr( derivedClonable );
-            mailList.push_back( objPtr );            
+            mailList.push_back( objPtr );
             GUCEF_ASSERT( objPtr.GetPointerAlways() == static_cast< CloneableType* >( m_mailQueue.front() ) );
             m_mailQueue.pop_front();
 
             #else
-            
-            mailList.push_back( TMailSPtr( static_cast< CloneableType* >( m_mailQueue.front() ) ) );            
+
+            mailList.push_back( TMailSPtr( static_cast< CloneableType* >( m_mailQueue.front() ) ) );
             m_mailQueue.pop_front();
-            
+
             #endif
 
             ++mailItemsRead;
@@ -220,7 +220,7 @@ CTMailboxForSharedCloneables< CloneableType, PtrLockType >::ReInsertSPtrBulkMail
     MT::CObjectScopeLock lock( this );
 
     bool errorOccured = false;
-    TMailSPtrList::iterator i = mailList.begin();
+    typename TMailSPtrList::iterator i = mailList.begin();
     while ( i != mailList.end() )
     {
         // Note that this only works if the shared pointer holds the last remaining reference

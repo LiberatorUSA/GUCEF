@@ -55,7 +55,7 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-using namespace GUCEF::REDISINFO; 
+using namespace GUCEF::REDISINFO;
 
 namespace GUCEF {
 namespace PUBSUBPLUGIN {
@@ -125,11 +125,11 @@ CRedisClusterPubSubClient::CRedisClusterPubSubClient( const PUBSUB::CPubSubClien
     m_config.metricsPrefix += "redis.";
 
     if ( config.desiredFeatures.supportsSubscribing )
-        m_threadPool = CORE::CCoreGlobal::Instance()->GetTaskManager().GetOrCreateThreadPool( 
-                "RedisClusterPubSubClient(" + CORE::ToString( this ) + ")", 
-                m_config.pulseGenerator, 
+        m_threadPool = CORE::CCoreGlobal::Instance()->GetTaskManager().GetOrCreateThreadPool(
+                "RedisClusterPubSubClient(" + CORE::ToString( this ) + ")",
+                m_config.pulseGenerator,
                 true );
-    
+
     RegisterEventHandlers();
 
     if ( !m_journal.IsNULL() )
@@ -142,7 +142,7 @@ CRedisClusterPubSubClient::~CRedisClusterPubSubClient()
 {GUCEF_TRACE;
 
     MT::CScopeMutex lock( m_lock );
-    
+
     if ( !m_threadPool.IsNULL() )
     {
         m_threadPool->RequestAllThreadsToStop( true, false );
@@ -193,10 +193,10 @@ CRedisClusterPubSubClient::SetPulseGenerator( CORE::PulseGeneratorPtr newPulseGe
 {GUCEF_TRACE;
 
     MT::CScopeMutex lock( m_lock );
-    
+
     CORE::CTSGNotifier::SetPulseGenerator( newPulseGenerator );
     m_config.pulseGenerator = newPulseGenerator;
-    
+
     if ( GUCEF_NULL != m_metricsTimer )
     {
         m_metricsTimer->SetPulseGenerator( newPulseGenerator );
@@ -247,7 +247,7 @@ CRedisClusterPubSubClient::GetThreadPool( void )
 
 /*-------------------------------------------------------------------------*/
 
-bool 
+bool
 CRedisClusterPubSubClient::IsTrackingAcksNeeded( void ) const
 {GUCEF_TRACE;
 
@@ -257,7 +257,7 @@ CRedisClusterPubSubClient::IsTrackingAcksNeeded( void ) const
 /*-------------------------------------------------------------------------*/
 
 bool
-CRedisClusterPubSubClient::GetSupportedFeatures( PUBSUB::CPubSubClientFeatures& features ) const 
+CRedisClusterPubSubClient::GetSupportedFeatures( PUBSUB::CPubSubClientFeatures& features ) const
 {GUCEF_TRACE;
 
     features.supportsBinaryPayloads = true;             // Redis strings are binary safe so yes redis natively supports binary data
@@ -289,9 +289,9 @@ CRedisClusterPubSubClient::GetSupportedFeatures( PUBSUB::CPubSubClientFeatures& 
     features.supportsDerivingBookmarkFromMsg = true;    // The Redis auto-generated msgId acts as a topic index and as such we can derive a bookmark from a message
     features.supportsDiscoveryOfAvailableTopics = true; // we support scanning for available Redis streams
     features.supportsGlobPatternTopicNames = true;      // we support glob pattern matching the scan of available Redis streams
-    features.supportsPatternBasedAggregateTopic = false; // @TODO: Look into supporting this with 
+    features.supportsPatternBasedAggregateTopic = false; // @TODO: Look into supporting this with
     features.supportsSubscriptionMsgArrivalDelayRequests = true;    // we support delaying the redis read thread on a per read cycle basis
-    
+
     // the following features we enable based on expresed desired functionality, we support either
     features.supportsSubscriptionEndOfDataEvent = m_config.desiredFeatures.supportsSubscriptionEndOfDataEvent;
     return true;
@@ -367,10 +367,10 @@ CRedisClusterPubSubClient::GetTopicAccess( const CORE::CString& topicName )
 
 /*-------------------------------------------------------------------------*/
 
-void 
+void
 CRedisClusterPubSubClient::GetAllCreatedTopicAccess( PubSubClientTopicSet& topicAccess )
 {GUCEF_TRACE;
-        
+
     MT::CObjectScopeLock lock( this );
 
     TTopicMap::iterator i = m_topicMap.begin();
@@ -453,7 +453,7 @@ CRedisClusterPubSubClient::AutoCreateMultiTopicAccess( const TTopicConfigPtrToSt
         while ( m != topicsToCreate.end() )
         {
             PUBSUB::CPubSubClientTopicConfigPtr templateTopicConfig( ((*m).first) );
-            if ( !templateTopicConfig.IsNULL() ) 
+            if ( !templateTopicConfig.IsNULL() )
             {
                 const CORE::CString::StringSet& topicNameList = (*m).second;
 
@@ -461,7 +461,7 @@ CRedisClusterPubSubClient::AutoCreateMultiTopicAccess( const TTopicConfigPtrToSt
                 while ( i != topicNameList.end() )
                 {
                     CRedisClusterPubSubClientTopicConfigPtr topicConfig = CRedisClusterPubSubClientTopicConfig::CreateSharedObj();
-                    topicConfig->LoadConfig( *templateTopicConfig.GetPointerAlways() ); 
+                    topicConfig->LoadConfig( *templateTopicConfig.GetPointerAlways() );
                     topicConfig->topicName = (*i);
 
                     CRedisClusterPubSubClientTopicPtr tAccess;
@@ -471,7 +471,7 @@ CRedisClusterPubSubClient::AutoCreateMultiTopicAccess( const TTopicConfigPtrToSt
                         tAccess = ( GUCEF_NEW CRedisClusterPubSubClientTopic( this ) )->CreateSharedPtr();
                         if ( tAccess->LoadConfig( *topicConfig ) )
                         {
-                            m_topicMap[ topicConfig->topicName ] = tAccess;                            
+                            m_topicMap[ topicConfig->topicName ] = tAccess;
                             topicAccess.insert( tAccess );
                             m_config.topics.push_back( topicConfig );
                             ++newTopicAccessCount;
@@ -626,7 +626,7 @@ CRedisClusterPubSubClient::AutoDestroyTopicAccess( const CORE::CString::StringSe
                 PUBSUB::CPubSubClientTopicBasicPtr tAccess = (*t);
 
                 CORE::CString topicName = tAccess->GetTopicName();
-                m_topicMap.erase( topicName );                
+                m_topicMap.erase( topicName );
                 {
                     CRedisClusterPubSubClientTopicBasicPtr topicAccess = tAccess.StaticCast< CRedisClusterPubSubClientTopic >();
                     topicAccess->Shutdown();
@@ -677,16 +677,16 @@ CRedisClusterPubSubClient::GetTopicConfig( const CORE::CString& topicName )
 
 /*-------------------------------------------------------------------------*/
 
-PUBSUB::CPubSubClientTopicConfigPtr 
+PUBSUB::CPubSubClientTopicConfigPtr
 CRedisClusterPubSubClient::GetOrCreateTopicConfig( const CORE::CString& topicName )
 {GUCEF_TRACE;
 
     MT::CScopeMutex lock( m_lock );
-    
+
     PUBSUB::CPubSubClientTopicConfigPtr preExistingConfig = GetTopicConfig( topicName );
     if ( !preExistingConfig.IsNULL() )
         return preExistingConfig;
-    
+
     if ( !m_config.defaultTopicConfig.IsNULL() )
     {
         CRedisClusterPubSubClientTopicConfigPtr newTopicConfig = CRedisClusterPubSubClientTopicConfig::CreateSharedObj();
@@ -763,11 +763,11 @@ CRedisClusterPubSubClient::DetermineIfTrackingAcksIsNeeded( void ) const
 
     PUBSUB::CPubSubClientFeatures features;
     GetSupportedFeatures( features );
-    
+
     // Whether we need to track successfull message handoff (garanteed handling) depends both on whether we want that extra reliability per the config
     // (optional since nothing is free and this likely degrades performance a bit) but also whether the backend even supports it.
     // If the backend doesnt support it all we will be able to do between the sides is fire-and-forget
-    
+
     bool doWeWantIt = ( m_config.desiredFeatures.supportsSubscribing &&                         // <- does it apply in this context ?
                         ( m_config.desiredFeatures.supportsSubscriberMsgReceivedAck ||          // <- do we want it?
                           m_config.desiredFeatures.supportsSubscribingUsingBookmark  )
@@ -779,8 +779,8 @@ CRedisClusterPubSubClient::DetermineIfTrackingAcksIsNeeded( void ) const
     bool canWeNotWantIt = features.supportsAbsentMsgReceivedAck &&          // <- Is it even an option to not do it regardless of desired features
                           ( !features.supportsBookmarkingConcept ||         // <- if we need to perform client-side bookmarking then its not really an option to forgo acks if you want a reliable handoff and thus bookmark progression
                              features.supportsBookmarkingConcept && features.supportsSubscribingUsingBookmark && features.supportsServerSideBookmarkPersistance );
-                              
-    bool acksNeeded =  ( doWeWantIt && isItSupported ) || 
+
+    bool acksNeeded =  ( doWeWantIt && isItSupported ) ||
                        ( !canWeNotWantIt && isItSupported );
 
     return acksNeeded;
@@ -1036,7 +1036,7 @@ CRedisClusterPubSubClient::Connect( bool reset )
 
     if ( !reset && IsConnected() )
         return true;
-    
+
     if ( !Disconnect() )
         return false;
 
@@ -1071,7 +1071,7 @@ CRedisClusterPubSubClient::Connect( bool reset )
         if ( !m_config.desiredFeatures.supportsPublishing )
         {
             clientRole = sw::redis::Role::SLAVE;
-            GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "RedisClusterPubSubClient(" + CORE::ToString( this ) + 
+            GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "RedisClusterPubSubClient(" + CORE::ToString( this ) +
                 "):Connect: Since there is no desire to publish data we will signal a willingness to use read-only replica nodes" );
         }
 
@@ -1086,7 +1086,7 @@ CRedisClusterPubSubClient::Connect( bool reset )
         {
             if ( 0 == strcmp( e.what(), "no slave node available" ) )
             {
-                GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "RedisClusterPubSubClient(" + CORE::ToString( this ) + 
+                GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "RedisClusterPubSubClient(" + CORE::ToString( this ) +
                     "):Connect: Since there are no slave nodes available we will adapt to connect to primary nodes only" );
 
                 clientRole = sw::redis::Role::MASTER;
@@ -1153,7 +1153,7 @@ CRedisClusterPubSubClient::IsHealthy( void ) const
 {GUCEF_TRACE;
 
     MT::CScopeMutex lock( m_lock );
-    
+
     if ( !m_topicMap.empty() )
     {
         // Aggregate the health status of all topics
@@ -1168,7 +1168,7 @@ CRedisClusterPubSubClient::IsHealthy( void ) const
         // Notify if there was a change in status
         if ( allHealthy != m_isHealthy )
         {
-            m_isHealthy = allHealthy;        
+            m_isHealthy = allHealthy;
 
             if ( m_isHealthy )
             {
@@ -1176,12 +1176,12 @@ CRedisClusterPubSubClient::IsHealthy( void ) const
             }
             else
             {
-                GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "RedisClusterPubSubClient:IsHealthy: overall health status is now unhealthy" );         
+                GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "RedisClusterPubSubClient:IsHealthy: overall health status is now unhealthy" );
             }
 
             lock.EarlyUnlock();
-            THealthStatusChangeEventData eData( allHealthy ); 
-            NotifyObservers( HealthStatusChangeEvent, &eData );         
+            THealthStatusChangeEventData eData( allHealthy );
+            NotifyObservers( HealthStatusChangeEvent, &eData );
         }
 
         return allHealthy;
@@ -1201,7 +1201,7 @@ CRedisClusterPubSubClient::IsInitialized( void ) const
 
 /*-------------------------------------------------------------------------*/
 
-void 
+void
 CRedisClusterPubSubClient::RegisterTopicEventHandlers( PUBSUB::CPubSubClientTopic* topic )
 {GUCEF_TRACE;
 
@@ -1294,7 +1294,7 @@ CRedisClusterPubSubClient::OnMetricsTimerCycle( CORE::CNotifier* notifier    ,
         GUCEF_METRIC_COUNT( topicMetricsPrefix + ".redisErrorReplies", topicMetrics.redisErrorReplies, 1.0f );
         GUCEF_METRIC_COUNT( topicMetricsPrefix + ".redisTimeouts", topicMetrics.redisTimeouts, 1.0f );
         GUCEF_METRIC_COUNT( topicMetricsPrefix + ".msgsInFlight", topicMetrics.msgsInFlight, 1.0f );
-        
+
         if ( topicConfig.needSubscribeSupport )
         {
             GUCEF_METRIC_COUNT( topicMetricsPrefix + ".msgsReceived", topicMetrics.msgsReceived, 1.0f );
@@ -1475,7 +1475,7 @@ CRedisClusterPubSubClient::OnRedisKeyCacheUpdate( CORE::CNotifier* notifier    ,
     {
         if ( !NotifyObservers( TopicDiscoveryEvent, &updateInfo->newKeys ) ) return;
     }
-    
+
     // Build a bulk creation map linking template config to stream names
     // This allows for better batch processing down the line, reducing overhead
     TTopicConfigPtrToStringSetMap bulkCreationMap;
@@ -1483,7 +1483,7 @@ CRedisClusterPubSubClient::OnRedisKeyCacheUpdate( CORE::CNotifier* notifier    ,
     while ( n != updateInfo->newKeys.end() )
     {
         const PUBSUB::CPubSubClientTopicConfigPtr templateConfig = FindTemplateConfigForTopicName( (*n) );
-        if ( GUCEF_NULL != templateConfig )
+        if ( !templateConfig.IsNULL() )
         {
             bulkCreationMap[ templateConfig ].insert( (*n) );
         }
@@ -1515,7 +1515,7 @@ CRedisClusterPubSubClient::Lock( UInt32 lockWaitTimeoutInMs ) const
 /*-------------------------------------------------------------------------*/
 
 MT::TLockStatus
-CRedisClusterPubSubClient::Unlock( void ) const 
+CRedisClusterPubSubClient::Unlock( void ) const
 {GUCEF_TRACE;
 
     return m_lock.Unlock();
@@ -1523,7 +1523,7 @@ CRedisClusterPubSubClient::Unlock( void ) const
 
 /*-------------------------------------------------------------------------*/
 
-const CORE::CString& 
+const CORE::CString&
 CRedisClusterPubSubClient::GetClassTypeName( void ) const
 {GUCEF_TRACE;
 
@@ -1543,7 +1543,7 @@ CRedisClusterPubSubClient::SetJournal( PUBSUB::CIPubSubJournalBasicPtr journal )
 
 /*-------------------------------------------------------------------------*/
 
-PUBSUB::CIPubSubJournalBasicPtr 
+PUBSUB::CIPubSubJournalBasicPtr
 CRedisClusterPubSubClient::GetJournal( void ) const
 {GUCEF_TRACE;
 
