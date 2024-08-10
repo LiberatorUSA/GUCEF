@@ -34,11 +34,11 @@ defines( { "BUILDING_LIBCURL", "HAVE_BUILTIN_CPU_SUPPORTS" } )
   
 
 configuration( { LINUX32 } )
-defines( { "CURL_DISABLE_LDAP", "HAVE_STRUCT_TIMEVAL" } )
+defines( { "HAVE_CONFIG_H" } )
   
 
 configuration( { LINUX64 } )
-defines( { "CURL_DISABLE_LDAP", "HAVE_STRUCT_TIMEVAL" } )
+defines( { "HAVE_CONFIG_H" } )
   links( { "Advapi32.lib", "Wldap32.lib", "Ws2_32.lib" } )
   
 
@@ -73,6 +73,7 @@ files( {
   "lib/connect.h",
   "lib/content_encoding.h",
   "lib/cookie.h",
+  "lib/curl-config.h",
   "lib/curl_addrinfo.h",
   "lib/curl_base64.h",
   "lib/curl_ctype.h",

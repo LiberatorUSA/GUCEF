@@ -25,8 +25,7 @@
     </Module>
     <Module Platform="linux">
         <Preprocessor>
-			<Define String="HAVE_STRUCT_TIMEVAL" />
-			<Define String="CURL_DISABLE_LDAP" />
+			<Define String="HAVE_CONFIG_H" />
         </Preprocessor>
         <Dependencies>
         </Dependencies>
