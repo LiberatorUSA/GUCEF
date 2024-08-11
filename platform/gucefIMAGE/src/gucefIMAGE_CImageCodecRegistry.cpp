@@ -28,6 +28,21 @@
 #define GUCEF_CORE_LOGGING_H
 #endif /* GUCEF_CORE_LOGGING_H ? */
 
+#ifndef GUCEF_CORE_CCOREGLOBAL_H
+#include "gucefCORE_CCoreGlobal.h"
+#define GUCEF_CORE_CCOREGLOBAL_H
+#endif /* GUCEF_CORE_CCOREGLOBAL_H ? */
+
+#ifndef GUCEF_CORE_CPLUGINCONTROL_H
+#include "CPluginControl.h"
+#define GUCEF_CORE_CPLUGINCONTROL_H
+#endif /* GUCEF_CORE_CPLUGINCONTROL_H ? */
+
+#ifndef GUCEF_CORE_CGUCEFAPPLICATION_H
+#include "CGUCEFApplication.h"
+#define GUCEF_CORE_CGUCEFAPPLICATION_H
+#endif /* GUCEF_CORE_CGUCEFAPPLICATION_H ? */
+
 #include "gucefIMAGE_CImageCodecRegistry.h"
 
 /*-------------------------------------------------------------------------//
@@ -49,6 +64,7 @@ CImageCodecRegistry::CImageCodecRegistry( void )
     : CORE::CTONRegistry< CIImageCodec, MT::CMutex >()
 {GUCEF_TRACE;
 
+    RegisterEventHandlers();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -56,6 +72,35 @@ CImageCodecRegistry::CImageCodecRegistry( void )
 CImageCodecRegistry::~CImageCodecRegistry()
 {GUCEF_TRACE;
 
+    UnregisterAll();
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CImageCodecRegistry::RegisterEventHandlers( void )
+{GUCEF_TRACE;
+
+    TEventCallback callback( this, &CImageCodecRegistry::OnSomeShutdownEvent );
+    AsObserver().SubscribeTo( &CORE::CCoreGlobal::Instance()->GetApplication()  ,
+                              CORE::CGUCEFApplication::AppShutdownCompleteEvent ,
+                              callback                                         );
+    TEventCallback callback2( this, &CImageCodecRegistry::OnSomeShutdownEvent );
+    AsObserver().SubscribeTo( &CORE::CCoreGlobal::Instance()->GetPluginControl()       ,
+                              CORE::CPluginControl::UnregisterOfAllPluginsStartedEvent ,
+                              callback2                                                );
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CImageCodecRegistry::OnSomeShutdownEvent( CORE::CNotifier* notifier    ,
+                                          const CORE::CEvent& eventid  ,
+                                          CORE::CICloneable* eventdata )
+{GUCEF_TRACE;
+
+    GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "ImageCodecRegistry: Triggering cleanup due to shutdown event" );
+    UnregisterAll();
 }
 
 /*-------------------------------------------------------------------------//

@@ -26,6 +26,11 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+#ifndef GUCEF_CORE_CLONEABLES_H
+#include "cloneables.h"
+#define GUCEF_CORE_CLONEABLES_H
+#endif /* GUCEF_CORE_CLONEABLES_H ? */
+
 #ifndef GUCEF_CORE_CGLOBALLYCONFIGURABLE_H
 #include "gucefCORE_CGloballyConfigurable.h"
 #define GUCEF_CORE_CGLOBALLYCONFIGURABLE_H
@@ -88,8 +93,19 @@ class GUCEF_CORE_PUBLIC_CPP CPluginControl : public CTSGNotifier          ,
 
     typedef CString::StringSet  TStringSet;
 
-    static const CEvent PluginLoadedEvent;
-    static const CEvent PluginUnloadedEvent;
+    static const CEvent PluginLoadedEvent;                       /**< event fired when the module of a given plugin has been loaded into the process */
+    static const CEvent PluginUnregisterStartedEvent;            /**< event fired when a given plugin's functionality is about to be unregistered as usable by the process */
+    static const CEvent PluginUnregisteredEvent;                 /**< event fired when a given plugin's functionality has been unregistered from being usable by the process */
+    static const CEvent PluginUnloadStartedEvent;                /**< event fired when the module of a given plugin is about to be unloaded from the process */
+    static const CEvent PluginUnloadedEvent;                     /**< event fired when the module of a given plugin has been unloaded from the process */
+    static const CEvent UnregisterOfAllPluginsStartedEvent;      /**< event fired when functionality for all plugins is about to be unregistered as usable by the process. Use this to trigger factory unregistrations etc */
+    static const CEvent UnloadOfAllPluginsStartedEvent;          /**< event fired when the modules of all plugins are about to be unloaded from the process */
+
+    typedef TCloneableStringPair    TPluginLoadedEventData;
+    typedef TCloneableStringPair    TPluginUnregisteredEventData;
+    typedef TCloneableStringPair    TPluginUnregisterStartedEventData;
+    typedef TCloneableStringPair    TPluginUnloadedEventData;
+    typedef TCloneableStringPair    TPluginUnloadStartedEventData;
 
     static void RegisterEvents( void );
 

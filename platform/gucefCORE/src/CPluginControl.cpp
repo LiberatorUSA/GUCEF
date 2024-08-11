@@ -109,7 +109,12 @@ static CLoaderDelegatedPluginLoadLogic loaderDelegatedPluginLoadLogic;
 static CSimplisticPluginLoadLogic simplisticPluginLoadLogic;
 
 const CEvent CPluginControl::PluginLoadedEvent = "GUCEF::CORE::CPluginControl::PluginLoadedEvent";
+const CEvent CPluginControl::PluginUnregisterStartedEvent = "GUCEF::CORE::CPluginControl::PluginUnregisterStartedEvent";
+const CEvent CPluginControl::PluginUnregisteredEvent = "GUCEF::CORE::CPluginControl::PluginUnregisteredEvent";
+const CEvent CPluginControl::PluginUnloadStartedEvent = "GUCEF::CORE::CPluginControl::PluginUnloadStartedEvent";
 const CEvent CPluginControl::PluginUnloadedEvent = "GUCEF::CORE::CPluginControl::PluginUnloadedEvent";
+const CEvent CPluginControl::UnregisterOfAllPluginsStartedEvent = "GUCEF::CORE::CPluginControl::UnregisterOfAllPluginsStartedEvent";
+const CEvent CPluginControl::UnloadOfAllPluginsStartedEvent = "GUCEF::CORE::CPluginControl::UnloadOfAllPluginsStartedEvent";
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -122,7 +127,12 @@ CPluginControl::RegisterEvents( void )
 {GUCEF_TRACE;
 
     PluginLoadedEvent.Initialize();
+    PluginUnregisterStartedEvent.Initialize();
+    PluginUnregisteredEvent.Initialize();
+    PluginUnloadStartedEvent.Initialize();
     PluginUnloadedEvent.Initialize();
+    UnregisterOfAllPluginsStartedEvent.Initialize();
+    UnloadOfAllPluginsStartedEvent.Initialize();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -200,9 +210,9 @@ CPluginControl::LoadAllPluginsOfType( const CString& pluginTypeToLoad )
             if ( pluginTypeToLoad == pluginMetaData->GetPluginType() )
             {
                 // Try to load this module since it is of the type we are looking for
-                success = success & LoadPlugin( pluginMetaData ,
-                                                pluginGroup    ,
-                                                (*i).first     );
+                success = success && LoadPlugin( pluginMetaData ,
+                                                 pluginGroup    ,
+                                                 (*i).first     );
             }
             ++n;
         }
@@ -239,9 +249,9 @@ CPluginControl::LoadAllPluginsOfTypeInGroup( const CString& pluginTypeToLoad ,
             if ( pluginTypeToLoad == pluginMetaData->GetPluginType() )
             {
                 // Try to load this module since it is of the type we are looking for
-                success = success & LoadPlugin( pluginMetaData ,
-                                                pluginGroup    ,
-                                                (*i).first     );
+                success = success && LoadPlugin( pluginMetaData ,
+                                                 pluginGroup    ,
+                                                 (*i).first     );
             }
             ++n;
         }
@@ -276,9 +286,9 @@ CPluginControl::LoadPluginGroup( const CString& groupName )
             TPluginMetaDataPtr pluginMetaData = (*n);
 
             // Try to load this module since it is of the type we are looking for
-            success = success & LoadPlugin( pluginMetaData ,
-                                            pluginGroup    ,
-                                            (*i).first     );
+            success = success && LoadPlugin( pluginMetaData ,
+                                             pluginGroup    ,
+                                             (*i).first     );
             ++n;
         }
     }
@@ -311,9 +321,9 @@ CPluginControl::LoadAll( void )
             TPluginMetaDataPtr pluginMetaData = (*n);
 
             // Try to load this module since it is of the type we are looking for
-            success = success & LoadPlugin( pluginMetaData ,
-                                            pluginGroup    ,
-                                            (*i).first     );
+            success = success && LoadPlugin( pluginMetaData ,
+                                             pluginGroup    ,
+                                             (*i).first     );
             ++n;
         }
         ++i;
@@ -355,7 +365,7 @@ CPluginControl::LoadPlugin( TPluginMetaDataPtr& pluginMetaData ,
                                                      groupName            ,
                                                      &versionInfo         );
 
-                if ( NULL == modulePtr )
+                if ( GUCEF_NULL == modulePtr )
                 {
                     filename = pluginMetaData->GetAltModuleFilename();
                     if ( !filename.IsNULLOrEmpty() )
@@ -370,7 +380,7 @@ CPluginControl::LoadPlugin( TPluginMetaDataPtr& pluginMetaData ,
                 ++i;
             }
 
-            if ( NULL == modulePtr )
+            if ( GUCEF_NULL == modulePtr )
             {
                 // We were not able to load the module, no point in proceeding
                 GUCEF_ERROR_LOG( LOGLEVEL_NORMAL, "PluginControl: Failed to load module with name \"" +
@@ -389,7 +399,7 @@ CPluginControl::LoadPlugin( TPluginMetaDataPtr& pluginMetaData ,
                                                  groupName                                           ,
                                                  &versionInfo                                        );
 
-            if ( NULL == modulePtr )
+            if ( GUCEF_NULL == modulePtr )
             {
                 CString filename = pluginMetaData->GetAltModuleFilename();
                 if ( !filename.IsNULLOrEmpty() )
@@ -401,7 +411,7 @@ CPluginControl::LoadPlugin( TPluginMetaDataPtr& pluginMetaData ,
                 }
             }
 
-            if ( NULL == modulePtr )
+            if ( GUCEF_NULL == modulePtr )
             {
                 // We were not able to load the module, no point in proceeding
                 GUCEF_ERROR_LOG( LOGLEVEL_NORMAL, "PluginControl: Failed to load module with name \"" +
@@ -416,6 +426,9 @@ CPluginControl::LoadPlugin( TPluginMetaDataPtr& pluginMetaData ,
         GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "PluginControl: Loaded module with name \"" +
                                 pluginMetaData->GetModuleFilename() + "\" and group \"" + groupName + "\" and version " +
                                 VersionToString( pluginMetaData->GetVersion() ) );
+
+        TPluginLoadedEventData pluginLoadedEventData( CString::StringPair( groupName, pluginMetaData->GetModuleFilename() ) );
+        if ( !NotifyObservers( PluginLoadedEvent, &pluginLoadedEventData ) ) return false;
 
         // Now that the module itself has been successfully loaded we can hand of the module specifics to the appropriote
         // plugin manager which in turn can check and load all symbols etc. The plugin manager will hand us a CIPlugin based
@@ -675,12 +688,18 @@ CPluginControl::UnloadPlugin( TPluginPtr& pluginPtr     ,
     TPluginLoadLogicMap::iterator m = m_pluginLoadLogicProviders.find( pluginLoaderLogicToUse );
     if ( m != m_pluginLoadLogicProviders.end() )
     {
+        TPluginUnloadStartedEventData pluginUnloadStartedEventData( CString::StringPair( groupName, moduleFilename ) );
+        if ( !NotifyObservers( PluginUnloadStartedEvent, &pluginUnloadStartedEventData ) ) return false;
+
         (*m).second->UnloadPlugin( pluginPtr->GetModulePointer() );
 
         // We will unload the module
         GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "PluginControl: Unloaded module with name \"" +
                                 pluginMetaData->GetModuleFilename() + "\" and group \"" + groupName + "\" and version " +
                                 VersionToString( pluginMetaData->GetVersion() ) + " using plugin loader logic of type \"" + pluginLoaderLogicToUse + '\"' );
+        
+        TPluginUnloadedEventData pluginUnloadedEventData( CString::StringPair( groupName, moduleFilename ) );
+        if ( !NotifyObservers( PluginUnloadedEvent, &pluginUnloadedEventData ) ) return false;
         return true;
     }
 
@@ -721,9 +740,9 @@ CPluginControl::UnloadAllPluginsOfTypeInGroup( const CString& pluginTypeToLoad ,
                 if ( pluginTypeToLoad == pluginMetaData->GetPluginType() )
                 {
                     // Try to unload this module since it is of the type we are looking for
-                    success = success & UnloadPlugin( plugin      ,
-                                                      pluginGroup ,
-                                                      (*i).first  );
+                    success = success && UnloadPlugin( plugin      ,
+                                                       pluginGroup ,
+                                                       (*i).first  );
                 }
             }
             ++n;
@@ -762,9 +781,9 @@ CPluginControl::UnloadAllPluginsOfType( const CString& pluginTypeToUnload )
                 if ( pluginTypeToUnload == pluginMetaData->GetPluginType() )
                 {
                     // Try to unload this module since it is of the type we are looking for
-                    success = success & UnloadPlugin( plugin      ,
-                                                      pluginGroup ,
-                                                      (*i).first  );
+                    success = success && UnloadPlugin( plugin      ,
+                                                       pluginGroup ,
+                                                       (*i).first  );
                 }
             }
             ++n;
@@ -799,7 +818,7 @@ CPluginControl::UnloadPluginGroup( const CString& groupName )
             TPluginPtr plugin = (*n);
 
             // Try to unload this module since it is of the type we are looking for
-            success = success & UnloadPlugin( plugin      ,
+            success = success && UnloadPlugin( plugin      ,
                                               pluginGroup ,
                                               (*i).first  );
             ++n;
@@ -868,6 +887,8 @@ CPluginControl::UnregisterAll( void )
 
     GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "PluginControl: Unregistering all modules" );
 
+    if ( !NotifyObservers( UnregisterOfAllPluginsStartedEvent ) ) return false;
+
     // When we unload all we have to take into account intra-dependencies
     // as such we unload indirectly via group and module names vs accessing
     // the modules directly. That administration might get invalided as we
@@ -885,7 +906,7 @@ CPluginControl::UnregisterAll( void )
         TStringSet::iterator n = modules.begin();
         while ( n != modules.end() )
         {
-            success = success & UnregisterPlugin( (*i), (*n) );
+            success = success && UnregisterPlugin( (*i), (*n) );
             ++n;
         }
         ++i;
@@ -913,6 +934,8 @@ CPluginControl::UnloadAll( void )
 
     GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "PluginControl: Unloading all modules" );
 
+    if ( !NotifyObservers( UnloadOfAllPluginsStartedEvent ) ) return false;
+
     // When we unload all we have to take into account intra-dependencies
     // as such we unload indirectly via group and module names vs accessing
     // the modules directly. That administration might get invalided as we
@@ -930,7 +953,7 @@ CPluginControl::UnloadAll( void )
         TStringSet::iterator n = modules.begin();
         while ( n != modules.end() )
         {
-            success = success & UnloadPlugin( (*i), (*n) );
+            success = success && UnloadPlugin( (*i), (*n) );
             ++n;
         }
         ++i;

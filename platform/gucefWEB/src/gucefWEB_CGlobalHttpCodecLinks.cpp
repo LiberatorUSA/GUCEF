@@ -33,6 +33,11 @@
 #define GUCEF_CORE_CCOREGLOBAL_H
 #endif /* GUCEF_CORE_CCOREGLOBAL_H ? */
 
+#ifndef GUCEF_CORE_CPLUGINCONTROL_H
+#include "CPluginControl.h"
+#define GUCEF_CORE_CPLUGINCONTROL_H
+#endif /* GUCEF_CORE_CPLUGINCONTROL_H ? */
+
 #ifndef GUCEF_CORE_CONFIGSTORE_H
 #include "CConfigStore.h"
 #define GUCEF_CORE_CONFIGSTORE_H
@@ -83,9 +88,10 @@ CGlobalHttpCodecLinks::CGlobalHttpCodecLinks( void )
     
     CORE::CConfigStore& configStore = CORE::CCoreGlobal::Instance()->GetConfigStore();
     CORE::CGUCEFApplication& app = CORE::CCoreGlobal::Instance()->GetApplication();
+    CORE::CPluginControl& pluginControl = CORE::CCoreGlobal::Instance()->GetPluginControl();
     CORE::CStdCodecPluginManager& codecPluginMngr = CORE::CCoreGlobal::Instance()->GetStdCodecPluginManager();
 
-    TEventCallback callback( this, &CGlobalHttpCodecLinks::OnAppShutdown );
+    TEventCallback callback( this, &CGlobalHttpCodecLinks::OnSomeShutdownEvent );
     SubscribeTo( &app, CORE::CGUCEFApplication::AppShutdownEvent, callback );
 
     TEventCallback callback2( this, &CGlobalHttpCodecLinks::OnEventThatMightHaveChangedCodecs );
@@ -102,6 +108,9 @@ CGlobalHttpCodecLinks::CGlobalHttpCodecLinks( void )
 
     TEventCallback callback6( this, &CGlobalHttpCodecLinks::OnEventThatMightHaveChangedEncodeCodecs );
     SubscribeTo( &codecPluginMngr, codecPluginMngr.StdCodecUnregisteredEvent, callback6 );
+
+    TEventCallback callback7( this, &CGlobalHttpCodecLinks::OnSomeShutdownEvent );
+    SubscribeTo( &pluginControl, CORE::CPluginControl::UnregisterOfAllPluginsStartedEvent, callback7 );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -159,9 +168,9 @@ CGlobalHttpCodecLinks::OnEventThatMightHaveChangedCodecs( CORE::CNotifier* notif
 /*-------------------------------------------------------------------------*/
 
 void 
-CGlobalHttpCodecLinks::OnAppShutdown( CORE::CNotifier* notifier    ,
-                                      const CORE::CEvent& eventid  ,
-                                      CORE::CICloneable* eventdata )
+CGlobalHttpCodecLinks::OnSomeShutdownEvent( CORE::CNotifier* notifier    ,
+                                            const CORE::CEvent& eventid  ,
+                                            CORE::CICloneable* eventdata )
 {GUCEF_TRACE;
 
     RemoveEncodingCodecLinks();

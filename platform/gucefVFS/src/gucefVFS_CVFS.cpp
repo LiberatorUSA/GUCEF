@@ -98,6 +98,11 @@
 #define GUCEF_CORE_CONFIGSTORE_H
 #endif /* GUCEF_CORE_CONFIGSTORE_H ? */
 
+#ifndef GUCEF_CORE_CPLUGINCONTROL_H
+#include "CPluginControl.h"
+#define GUCEF_CORE_CPLUGINCONTROL_H
+#endif /* GUCEF_CORE_CPLUGINCONTROL_H ? */
+
 #ifndef GUCEF_CORE_CGUCEFAPPLICATION_H
 #include "CGUCEFApplication.h"
 #define GUCEF_CORE_CGUCEFAPPLICATION_H
@@ -217,10 +222,14 @@ CVFS::RegisterEventHandlers( void )
     SubscribeTo( &CORE::CCoreGlobal::Instance()->GetConfigStore() ,
                  CORE::CConfigStore::GlobalConfigLoadFailedEvent  ,
                  callback2                                        );
-    TEventCallback callback3( this, &CVFS::OnAppShutdownCompleted );
+    TEventCallback callback3( this, &CVFS::OnSomeShutdownEvent );
     SubscribeTo( &CORE::CCoreGlobal::Instance()->GetApplication()  ,
                  CORE::CGUCEFApplication::AppShutdownCompleteEvent ,
                  callback3                                         );
+    TEventCallback callback4( this, &CVFS::OnSomeShutdownEvent );
+    SubscribeTo( &CORE::CCoreGlobal::Instance()->GetPluginControl()       ,
+                 CORE::CPluginControl::UnregisterOfAllPluginsStartedEvent ,
+                 callback4                                                );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -543,13 +552,14 @@ CVFS::OnGlobalConfigLoadFinished( CORE::CNotifier* notifier    ,
 /*-------------------------------------------------------------------------*/
 
 void
-CVFS::OnAppShutdownCompleted( CORE::CNotifier* notifier    ,
-                              const CORE::CEvent& eventid  ,
-                              CORE::CICloneable* eventdata )
+CVFS::OnSomeShutdownEvent( CORE::CNotifier* notifier    ,
+                           const CORE::CEvent& eventid  ,
+                           CORE::CICloneable* eventdata )
 {GUCEF_TRACE;
 
     MT::CScopeWriterLock lock( m_rwdataLock );
 
+    GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "VFS: Triggering cleanup due to shutdown event" );
     UnmountAllArchives();
     UnregisterAllArchiveFactories();
 }

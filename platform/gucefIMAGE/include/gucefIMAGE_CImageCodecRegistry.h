@@ -72,6 +72,15 @@ class GUCEF_IMAGE_EXPORT_CPP CImageCodecRegistry : public CORE::CTONRegistry< CI
     virtual ~CImageCodecRegistry();
 
     private:
+
+    typedef CORE::CTEventHandlerFunctor< CImageCodecRegistry >          TEventCallback;
+
+    void RegisterEventHandlers( void );
+
+    void
+    OnSomeShutdownEvent( CORE::CNotifier* notifier    ,
+                         const CORE::CEvent& eventid  ,
+                         CORE::CICloneable* eventdata );
     
     CImageCodecRegistry( const CImageCodecRegistry& src );              /**< not implemented, don't use */
     CImageCodecRegistry& operator=( const CImageCodecRegistry& src );   /**< not implemented, don't use */

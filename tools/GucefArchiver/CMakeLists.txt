@@ -11,7 +11,12 @@
 
 # Configuration for module: GucefArchiver
 
+set( HEADER_FILES 
+  include/GucefArchiver.h
+)
+
 set( SOURCE_FILES 
+  src/GucefArchiver.cpp
   src/main.cpp
 )
 
@@ -34,7 +39,7 @@ add_dependencies( ${MODULE_NAME} gucefCORE gucefKAITAI gucefMT gucefVFS )
 target_link_libraries( ${MODULE_NAME} gucefCORE gucefKAITAI gucefMT gucefVFS )
 set_property( TARGET ${MODULE_NAME} APPEND_STRING PROPERTY COMPILE_DEFINITIONS "GUCEF_ARCHIVER_BUILD_MODULE" )
 
-include_directories( ../../common/include ../../platform/gucefCORE/include ../../platform/gucefKAITAI/includes ../../platform/gucefMT/include ../../platform/gucefVFS/include )
+include_directories( ../../common/include ../../platform/gucefCORE/include ../../platform/gucefKAITAI/includes ../../platform/gucefMT/include ../../platform/gucefVFS/include include )
 
 if ( ANDROID )
   include_directories( ../../platform/gucefCORE/include/android )

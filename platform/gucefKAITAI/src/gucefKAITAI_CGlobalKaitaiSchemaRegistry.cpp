@@ -184,8 +184,8 @@ CGlobalKaitaiSchemaRegistry::LoadConfig( const CORE::CDataNode& cfg )
             ++i;
         }
         CORE::CDataNode::TConstDataNodeSet uriSchemaSourceSet = schemaSourcesNode->FindChildrenOfType( "uriSchemaSource" );
-        i = vfsSchemaSourceSet.begin();
-        while ( i != vfsSchemaSourceSet.end() )
+        i = uriSchemaSourceSet.begin();
+        while ( i != uriSchemaSourceSet.end() )
         {
             const CORE::CDataNode* schemaSourceNode = (*i);
             

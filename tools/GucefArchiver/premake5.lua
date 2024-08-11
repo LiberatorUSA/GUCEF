@@ -44,14 +44,23 @@ defines( { "GUCEF_ARCHIVER_BUILD_MODULE" } )
 
 
 configuration( {} )
+vpaths { ["Headers"] = { "**.h", "**.hpp", "**.hxx" } }
+files( {
+  "include/GucefArchiver.h"
+ } )
+
+
+
+configuration( {} )
 vpaths { ["Source"] = { "**.c", "**.cpp", "**.cs", "**.asm" } }
 files( {
+  "src/GucefArchiver.cpp",
   "src/main.cpp"
  } )
 
 
 configuration( {} )
-includedirs( { "../../common/include", "../../platform/gucefCORE/include", "../../platform/gucefKAITAI/includes", "../../platform/gucefMT/include", "../../platform/gucefVFS/include" } )
+includedirs( { "../../common/include", "../../platform/gucefCORE/include", "../../platform/gucefKAITAI/includes", "../../platform/gucefMT/include", "../../platform/gucefVFS/include", "include" } )
 
 configuration( { "ANDROID" } )
 includedirs( { "../../platform/gucefCORE/include/android" } )

@@ -103,9 +103,9 @@ class GUCEF_WEB_PUBLIC_CPP CGlobalHttpCodecLinks : public CHttpCodecLinks ,
                                                     const CORE::CEvent& eventid               ,
                                                     CORE::CICloneable* eventdata = GUCEF_NULL );
 
-    virtual void OnAppShutdown( CORE::CNotifier* notifier                 ,
-                                const CORE::CEvent& eventid               ,
-                                CORE::CICloneable* eventdata = GUCEF_NULL );
+    virtual void OnSomeShutdownEvent( CORE::CNotifier* notifier                 ,
+                                      const CORE::CEvent& eventid               ,
+                                      CORE::CICloneable* eventdata = GUCEF_NULL );
 
     private:
 

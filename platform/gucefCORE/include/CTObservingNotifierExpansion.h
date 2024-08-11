@@ -31,7 +31,15 @@
 #define GUCEF_CORE_CIOBSERVER_H
 #endif /* GUCEF_CORE_CIOBSERVER_H ? */
 
+#ifndef GUCEF_CORE_CTOBSERVINGNOTIFIERCOMPONENT_H
 #include "CTObservingNotifierComponent.h"
+#define GUCEF_CORE_CTOBSERVINGNOTIFIERCOMPONENT_H
+#endif /* GUCEF_CORE_CTOBSERVINGNOTIFIERCOMPONENT_H ? */
+
+#ifndef GUCEF_CORE_CTEVENTHANDLERFUNCTOR_H
+#include "gucefCORE_CTEventHandlerFunctor.h"
+#define GUCEF_CORE_CTEVENTHANDLERFUNCTOR_H
+#endif /* GUCEF_CORE_CTEVENTHANDLERFUNCTOR_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
