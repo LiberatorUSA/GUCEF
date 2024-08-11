@@ -40,6 +40,11 @@
 #define GUCEF_CORE_IOACCESS_H
 #endif /* GUCEF_CORE_IOACCESS_H ? */
 
+#ifndef GUCEF_CORE_C_VALUEMAP_PARSER_CALLBACKS_H
+#include "gucefCORE_c_valuemap_parser_callbacks.h"
+#define GUCEF_CORE_C_VALUEMAP_PARSER_CALLBACKS_H
+#endif /* GUCEF_CORE_C_VALUEMAP_PARSER_CALLBACKS_H ? */
+
 #ifndef GUCEF_IMAGE_IMAGEDATA_H
 #include "gucefIMAGE_imagedata.h"          /* plugin API structures */
 #define GUCEF_IMAGE_IMAGEDATA_H
@@ -163,7 +168,6 @@ CODECPLUGIN_GetCodecSetNextItem( void* plugdata ,
 /*---------------------------------------------------------------------------*/
 
 /*
- *
  *  Note that when using this image codec API the Codec Family is always "ImageCodec"
  *  For images decoded using this function you need to use
  *      IMGCODECPLUGIN_FreeImageStorage
@@ -176,6 +180,18 @@ IMGCODECPLUGIN_DecodeImage( void* pluginData      ,
                             TIOAccess* input      ,
                             TImage** imageOutput  ,
                             void** imageData      );
+
+/*---------------------------------------------------------------------------*/
+
+/*
+ *  Note that when using this image codec API the Codec Family is always "ImageCodec"
+ */
+GUCEF_CODEC_EXPORT_C UInt32 GUCEF_PLUGIN_CALLSPEC_PREFIX
+IMGCODECPLUGIN_DecodeImageMetaData( void* pluginData                       ,
+                                    void* codecData                        ,
+                                    const char* codecType                  ,
+                                    TIOAccess* input                       ,
+                                    TValueMapParserCallbacks* mapCallbacks );
 
 /*---------------------------------------------------------------------------*/
 

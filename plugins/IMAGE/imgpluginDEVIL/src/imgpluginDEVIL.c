@@ -1,18 +1,19 @@
 /*
- * Copyright (C) Dinand Vanvelzen. 2002 - 2006.  All rights reserved.
+ *  imgpluginDEVIL: GUCEF image codec plugin providing an adapter for the DevIL library
  *
- * All source code herein is the property of Dinand Vanvelzen. You may not sell
- * or otherwise commercially exploit the source or things you created based on
- * the source.
+ *  Copyright (C) 1998 - 2024.  Dinand Vanvelzen
  *
- * THE SOFTWARE IS PROVIDED "AS-IS" AND WITHOUT WARRANTY OF ANY KIND,
- * EXPRESS, IMPLIED OR OTHERWISE, INCLUDING WITHOUT LIMITATION, ANY 
- * WARRANTY OF MERCHANTABILITY OR FITNESS FOR A PARTICULAR PURPOSE.
- * IN NO EVENT SHALL DINAND VANVELZEN BE LIABLE FOR ANY SPECIAL, INCIDENTAL, 
- * INDIRECT OR CONSEQUENTIAL DAMAGES OF ANY KIND, OR ANY DAMAGES WHATSOEVER 
- * RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER OR NOT ADVISED OF 
- * THE POSSIBILITY OF DAMAGE, AND ON ANY THEORY OF LIABILITY, ARISING OUT 
- * OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE. 
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *    http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
  */
 
 /*-------------------------------------------------------------------------//
@@ -871,6 +872,25 @@ IMGCODECPLUGIN_DecodeImage( void* pluginData      ,
     currentResource = NULL;
     
     return 1;
+}
+
+/*---------------------------------------------------------------------------*/
+
+UInt32 GUCEF_PLUGIN_CALLSPEC_PREFIX
+IMGCODECPLUGIN_DecodeImageMetaData( void* pluginData                       ,
+                                    void* codecData                        ,
+                                    const char* codecType                  ,
+                                    TIOAccess* input                       ,
+                                    TValueMapParserCallbacks* mapCallbacks )
+{
+    /* this library does not support metadata */
+    if ( GUCEF_NULL != mapCallbacks )
+    {
+        mapCallbacks->OnValueMapBegin( mapCallbacks->privateData, 0, 0 );
+        mapCallbacks->OnValueMapEnd( mapCallbacks->privateData );
+        return 1;
+    }
+    return 0;
 }
 
 /*---------------------------------------------------------------------------*/

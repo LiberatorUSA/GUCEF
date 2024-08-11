@@ -70,25 +70,25 @@ class GUCEF_CORE_PUBLIC_CPP CStdCodecPlugin : public CICodecPlugin
 
     CStdCodecPlugin( void );
 
-    virtual ~CStdCodecPlugin();
+    virtual ~CStdCodecPlugin() GUCEF_VIRTUAL_OVERRIDE;
 
-    virtual bool GetCodecs( CCodecSet& codecSet );
+    virtual bool GetCodecs( CCodecSet& codecSet ) GUCEF_VIRTUAL_OVERRIDE;
 
-    virtual bool GetCodecList( CCodecList& codecList );
+    virtual bool GetCodecList( CCodecList& codecList ) GUCEF_VIRTUAL_OVERRIDE;
 
     virtual bool Encode( CIOAccess& source         ,
                          CIOAccess& dest           ,
                          const CString& familyName ,
-                         const CString& typeName   );
+                         const CString& typeName   ) GUCEF_VIRTUAL_OVERRIDE;
 
     virtual bool Decode( CIOAccess& source         ,
                          CIOAccess& dest           ,
                          const CString& familyName ,
-                         const CString& typeName   );
+                         const CString& typeName   ) GUCEF_VIRTUAL_OVERRIDE;
 
-    virtual TPluginMetaDataPtr GetMetaData( void ) const;
+    virtual TPluginMetaDataPtr GetMetaData( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
-    virtual void* GetModulePointer( void );
+    virtual void* GetModulePointer( void ) GUCEF_VIRTUAL_OVERRIDE;
 
     virtual bool Link( void* modulePtr                   ,
                        TPluginMetaDataPtr pluginMetaData );

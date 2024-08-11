@@ -266,7 +266,7 @@ CFileSystemUriResourceAccessor::GetPartialResource( const CUri& uri        ,
         CFileAccess fsFile;
         if ( fsFile.Open( fsPath, "rb" ) )
         {
-            if ( 0 != fsFile.Seek( SEEK_SET, byteOffset ) )
+            if ( 0 != fsFile.Seek( byteOffset, SEEK_SET ) )
             {            
                 destination.Write( fsFile, bytesToGet );
                 fsFile.Close();
@@ -385,7 +385,7 @@ CFileSystemUriResourceAccessor::UpdatePartialResource( const CUri& uri    ,
         CFileAccess fsFile;
         if ( fsFile.Open( fsPath, "rb+" ) )
         {
-            if ( 0 != fsFile.Seek( SEEK_SET, byteOffset ) )
+            if ( 0 != fsFile.Seek( byteOffset, SEEK_SET ) )
             {            
                 fsFile.Write( src, bytesToWrite );
                 fsFile.Close();

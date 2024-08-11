@@ -132,21 +132,21 @@ typedef void   ( GUCEF_CALLSPEC_PREFIX *TIOAccessfunction_free ) ( void* mem ) G
  */
 struct SIOAccess
 {
-        TIOAccessfunction_open   open;    /* open the resource for I/O */
-        TIOAccessfunction_close  close;   /* close the recource */
-        TIOAccessfunction_write  write;   /* writes to to the output medium */
-        TIOAccessfunction_opened opened;  /* is the recource opened for reading ? */
-        TIOAccessfunction_readl  readl;   /* read a line of text (allocates mem)*/
-        TIOAccessfunction_reads  reads;   /* read a string (allocates mem)*/
-        TIOAccessfunction_read   read;    /* read a number of bytes */
-        TIOAccessfunction_tell   tell;    /* get the current offset in bytes */
-        TIOAccessfunction_seek   seek;    /* move to a different part */
-        TIOAccessfunction_setpos setpos;  /* move to a different part */
-        TIOAccessfunction_getc   getc;    /* get a character */
-        TIOAccessfunction_eof    eof;     /* are we at the end of the recource */
-        TIOAccessfunction_free   memfree; /* free memory allocated with one of the other functions here */
+    TIOAccessfunction_open   open;    /* open the resource for I/O */
+    TIOAccessfunction_close  close;   /* close the recource */
+    TIOAccessfunction_write  write;   /* writes to to the output medium */
+    TIOAccessfunction_opened opened;  /* is the recource opened for reading ? */
+    TIOAccessfunction_readl  readl;   /* read a line of text (allocates mem)*/
+    TIOAccessfunction_reads  reads;   /* read a string (allocates mem)*/
+    TIOAccessfunction_read   read;    /* read a number of bytes */
+    TIOAccessfunction_tell   tell;    /* get the current offset in bytes */
+    TIOAccessfunction_seek   seek;    /* move to a different part */
+    TIOAccessfunction_setpos setpos;  /* move to a different part */
+    TIOAccessfunction_getc   getc;    /* get a character */
+    TIOAccessfunction_eof    eof;     /* are we at the end of the recource */
+    TIOAccessfunction_free   memfree; /* free memory allocated with one of the other functions here */
 
-        void *privdata;                   /* internally used data, Don't touch !!! */
+    void *privdata;                   /* internally used data, Don't touch !!! */
 };
 
 typedef struct SIOAccess TIOAccess;

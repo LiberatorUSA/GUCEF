@@ -177,6 +177,7 @@ LOCAL_SRC_FILES := \
   src/gucefCORE_CIPulseGeneratorDriver.cpp \
   src/gucefCORE_CITaskConsumer.cpp \
   src/gucefCORE_CITime.cpp \
+  src/gucefCORE_CIValueMapParserCallbacks.cpp \
   src/gucefCORE_CIValueToDataNodeSerializer.cpp \
   src/gucefCORE_CIniDataStoreCodec.cpp \
   src/gucefCORE_CIniParser.cpp \
@@ -226,6 +227,7 @@ LOCAL_SRC_FILES := \
   src/gucefCORE_CValueConstraint.cpp \
   src/gucefCORE_CValueConstraintList.cpp \
   src/gucefCORE_CValueDefinition.cpp \
+  src/gucefCORE_CValueMapBuilder.cpp \
   src/gucefCORE_CVariant.cpp \
   src/gucefCORE_CVariantBinarySerializer.cpp \
   src/gucefCORE_CVersion.cpp \

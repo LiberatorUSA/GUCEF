@@ -1,20 +1,19 @@
 /*
- *  gucefCORE: GUCEF module providing O/S abstraction and generic solutions
- *  Copyright (C) 2002 - 2007.  Dinand Vanvelzen
+ *  gucefIMAGE: GUCEF module providing image utilities
  *
- *  This library is free software; you can redistribute it and/or
- *  modify it under the terms of the GNU Lesser General Public
- *  License as published by the Free Software Foundation; either
- *  version 2.1 of the License, or (at your option) any later version.
+ *  Copyright (C) 1998 - 2024.  Dinand Vanvelzen
  *
- *  This library is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- *  Lesser General Public License for more details.
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
  *
- *  You should have received a copy of the GNU Lesser General Public
- *  License along with this library; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+ *    http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
  */
 
 /*-------------------------------------------------------------------------//
@@ -44,6 +43,11 @@
 #include "gucefCORE_GenericPluginAPI.h"
 #define GUCEF_CORE_GENERICPLUGINAPI_H
 #endif /* GUCEF_CORE_GENERICPLUGINAPI_H ? */
+
+#ifndef GUCEF_CORE_CVALUEMAPBUILDER_H
+#include "gucefCORE_CValueMapBuilder.h"
+#define GUCEF_CORE_CVALUEMAPBUILDER_H
+#endif /* GUCEF_CORE_CVALUEMAPBUILDER_H ? */
 
 #ifndef GUCEF_CORE_LOGGING_H
 #include "gucefCORE_Logging.h"
@@ -87,9 +91,10 @@ const CString CImageCodecPlugin::ImageCodecFamilyName = "ImageCodec";
 
 enum EImageCodecPluginFuncPtrType
 {
-    ICPLUGINFUNCPTR_ENCODEIMAGE = 0  ,
-    ICPLUGINFUNCPTR_DECODEIMAGE      ,
-    ICPLUGINFUNCPTR_FREEIMAGESTORAGE ,
+    ICPLUGINFUNCPTR_ENCODEIMAGE = 0     ,
+    ICPLUGINFUNCPTR_DECODEIMAGE         ,
+    ICPLUGINFUNCPTR_DECODEIMAGEMETADATA ,
+    ICPLUGINFUNCPTR_FREEIMAGESTORAGE    ,
 
     ICPLUGINFUNCPTR_COUNT
 };
@@ -102,6 +107,7 @@ enum EImageCodecPluginFuncPtrType
 
 typedef UInt32 ( GUCEF_PLUGIN_CALLSPEC_PREFIX *TIMGCODECPLUGFPTR_EncodeImage ) ( void* pluginData, void* codecData, const char* codecType, TImage* imageInput, CORE::TIOAccess* output ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
 typedef UInt32 ( GUCEF_PLUGIN_CALLSPEC_PREFIX *TIMGCODECPLUGFPTR_DecodeImage ) ( void* pluginData, void* codecData, const char* codecType, CORE::TIOAccess* input, TImage** imageOutput, void** imageData ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
+typedef UInt32 ( GUCEF_PLUGIN_CALLSPEC_PREFIX *TIMGCODECPLUGFPTR_DecodeImageMetaData ) ( void* pluginData, void* codecData, const char* codecType, CORE::TIOAccess* input, CORE::TValueMapParserCallbacks* mapCallbacks ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
 typedef UInt32 ( GUCEF_PLUGIN_CALLSPEC_PREFIX *TIMGCODECPLUGFPTR_FreeImageStorage ) ( TImage* image, void* imageData ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
 
 /*-------------------------------------------------------------------------//
@@ -148,14 +154,18 @@ CImageCodecPlugin::Link( void* modulePtr                        ,
     m_icFuncPointers[ ICPLUGINFUNCPTR_DECODEIMAGE ] = CORE::GetFunctionAddress( modulePtr                    ,
                                                                                 "IMGCODECPLUGIN_DecodeImage" ,
                                                                                 6*sizeof(void*)              ).funcPtr;
+    m_icFuncPointers[ ICPLUGINFUNCPTR_DECODEIMAGEMETADATA ] = CORE::GetFunctionAddress( modulePtr                            ,
+                                                                                        "IMGCODECPLUGIN_DecodeImageMetaData" ,
+                                                                                        6*sizeof(void*)                      ).funcPtr;
     m_icFuncPointers[ ICPLUGINFUNCPTR_FREEIMAGESTORAGE ] = CORE::GetFunctionAddress( modulePtr           ,
                                                                                      "IMGCODECPLUGIN_FreeImageStorage" ,
                                                                                      2*sizeof( void* )                 ).funcPtr;
 
     // Verify that all function pointers are loaded correctly
-    if ( ( NULL != m_icFuncPointers[ ICPLUGINFUNCPTR_ENCODEIMAGE ] )      &&
-         ( NULL != m_icFuncPointers[ ICPLUGINFUNCPTR_DECODEIMAGE ] )      &&
-         ( NULL != m_icFuncPointers[ ICPLUGINFUNCPTR_FREEIMAGESTORAGE ] )  )
+    if ( ( GUCEF_NULL != m_icFuncPointers[ ICPLUGINFUNCPTR_ENCODEIMAGE ] )         &&
+         ( GUCEF_NULL != m_icFuncPointers[ ICPLUGINFUNCPTR_DECODEIMAGE ] )         &&
+         ( GUCEF_NULL != m_icFuncPointers[ ICPLUGINFUNCPTR_DECODEIMAGEMETADATA ] ) &&
+         ( GUCEF_NULL != m_icFuncPointers[ ICPLUGINFUNCPTR_FREEIMAGESTORAGE ] )     )
     {
             // We have loaded & linked our plugin module
             GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "ImageCodecPlugin: Successfully linked module : " + CORE::PointerToString( modulePtr ) );
@@ -257,6 +267,29 @@ CImageCodecPlugin::Decode( CORE::CIOAccess& source ,
                                           dest                 ,
                                           ImageCodecFamilyName ,
                                           typeName             );
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool 
+CImageCodecPlugin::DecodeMetaData( CORE::CIOAccess& encodedInput ,
+                                   CORE::CValueList& metaData    ,
+                                   const CString& typeName       )
+{GUCEF_TRACE;
+
+    CORE::CValueMapBuilder mapBuilder;
+
+    if ( 0 != ( (TIMGCODECPLUGFPTR_DecodeImageMetaData) m_icFuncPointers[ ICPLUGINFUNCPTR_DECODEIMAGEMETADATA ] )( m_pluginData               ,
+                                                                                                                GUCEF_NULL                    ,
+                                                                                                                typeName.C_String()           ,
+                                                                                                                encodedInput.CStyleAccess()   ,
+                                                                                                                &mapBuilder.GetCStyleAccess() ) )
+    {
+        metaData = mapBuilder.map;
+        return true;
+    }
+
+    return false;
 }
 
 /*-------------------------------------------------------------------------//

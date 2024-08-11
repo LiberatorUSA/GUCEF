@@ -185,6 +185,7 @@ set( HEADER_FILES
   include/gucefCORE_CIPulseGeneratorDriver.h
   include/gucefCORE_CITaskConsumer.h
   include/gucefCORE_CITime.h
+  include/gucefCORE_CIValueMapParserCallbacks.h
   include/gucefCORE_CIValueToDataNodeSerializer.h
   include/gucefCORE_CIniDataStoreCodec.h
   include/gucefCORE_CIniParser.h
@@ -239,6 +240,7 @@ set( HEADER_FILES
   include/gucefCORE_CValueConstraint.h
   include/gucefCORE_CValueConstraintList.h
   include/gucefCORE_CValueDefinition.h
+  include/gucefCORE_CValueMapBuilder.h
   include/gucefCORE_CVariant.h
   include/gucefCORE_CVariantBinarySerializer.h
   include/gucefCORE_CVersion.h
@@ -255,6 +257,8 @@ set( HEADER_FILES
   include/gucefCORE_TaskStatus.h
   include/gucefCORE_ThreadStatus.h
   include/gucefCORE_VariantData.h
+  include/gucefCORE_c_document_parser_callbacks.h
+  include/gucefCORE_c_valuemap_parser_callbacks.h
   include/gucefCORE_cinterface.h
   include/gucefCORE_config.h
   include/gucefCORE_datanode_serializables.h
@@ -425,6 +429,7 @@ set( SOURCE_FILES
   src/gucefCORE_CIPulseGeneratorDriver.cpp
   src/gucefCORE_CITaskConsumer.cpp
   src/gucefCORE_CITime.cpp
+  src/gucefCORE_CIValueMapParserCallbacks.cpp
   src/gucefCORE_CIValueToDataNodeSerializer.cpp
   src/gucefCORE_CIniDataStoreCodec.cpp
   src/gucefCORE_CIniParser.cpp
@@ -474,6 +479,7 @@ set( SOURCE_FILES
   src/gucefCORE_CValueConstraint.cpp
   src/gucefCORE_CValueConstraintList.cpp
   src/gucefCORE_CValueDefinition.cpp
+  src/gucefCORE_CValueMapBuilder.cpp
   src/gucefCORE_CVariant.cpp
   src/gucefCORE_CVariantBinarySerializer.cpp
   src/gucefCORE_CVersion.cpp

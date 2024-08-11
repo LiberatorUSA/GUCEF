@@ -1,20 +1,19 @@
 /*
  *  imgpluginITV: GUCEF image codec plugin providing support for ITV images
- *  Copyright (C) 2002 - 2015.  Dinand Vanvelzen
  *
- *  This library is free software; you can redistribute it and/or
- *  modify it under the terms of the GNU Lesser General Public
- *  License as published by the Free Software Foundation; either
- *  version 2.1 of the License, or (at your option) any later version.
+ *  Copyright (C) 1998 - 2024.  Dinand Vanvelzen
  *
- *  This library is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- *  Lesser General Public License for more details.
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
  *
- *  You should have received a copy of the GNU Lesser General Public
- *  License along with this library; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+ *    http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
  */
 
 #ifndef IMGPLUGINITV_H
@@ -39,6 +38,11 @@
 #include "ioaccess.h"           /* C API for media abstraction  */
 #define GUCEF_CORE_IOACCESS_H
 #endif /* GUCEF_CORE_IOACCESS_H ? */
+
+#ifndef GUCEF_CORE_C_VALUEMAP_PARSER_CALLBACKS_H
+#include "gucefCORE_c_valuemap_parser_callbacks.h"
+#define GUCEF_CORE_C_VALUEMAP_PARSER_CALLBACKS_H
+#endif /* GUCEF_CORE_C_VALUEMAP_PARSER_CALLBACKS_H ? */
 
 #ifndef GUCEF_IMAGE_IMAGEDATA_H
 #include "gucefIMAGE_imagedata.h"          /* plugin API structures */
@@ -92,10 +96,12 @@ extern "C" {
 typedef ::GUCEF::CORE::TVersion NSVersion;
 typedef ::GUCEF::CORE::TCodecPluginLink NSCodecPluginLink;
 typedef ::GUCEF::CORE::TIOAccess NSIOAccess;
+typedef ::GUCEF::CORE::TValueMapParserCallbacks NSValueMapParserCallbacks;
 #else
 #define NSVersion TVersion
 #define NSCodecPluginLink TCodecPluginLink
 #define NSIOAccess TIOAccess;
+#define NSValueMapParserCallbacks TValueMapParserCallbacks;
 #endif
 
 /*
@@ -183,6 +189,18 @@ IMGCODECPLUGIN_DecodeImage( void* pluginData      ,
                             NSIOAccess* input     ,
                             TImage** imageOutput  ,
                             void** imageData      );
+
+/*---------------------------------------------------------------------------*/
+
+/*
+ *  Note that when using this image codec API the Codec Family is always "ImageCodec"
+ */
+GUCEF_CODEC_EXPORT_C UInt32 GUCEF_PLUGIN_CALLSPEC_PREFIX
+IMGCODECPLUGIN_DecodeImageMetaData( void* pluginData                        ,
+                                    void* codecData                         ,
+                                    const char* codecType                   ,
+                                    NSIOAccess* input                       ,
+                                    NSValueMapParserCallbacks* mapCallbacks );
 
 /*---------------------------------------------------------------------------*/
 

@@ -363,7 +363,7 @@ CPatchSetParser::SerializeFileEntry( const TFileEntry& fileEntry ,
 
     fileNode.SetAttribute( "Name", fileEntry.name );
     fileNode.SetAttribute( "Hash", fileEntry.hash );
-    fileNode.SetAttribute( "Size", CORE::Int32ToString( fileEntry.sizeInBytes ) );
+    fileNode.SetAttribute( "Size", CORE::ToString( fileEntry.sizeInBytes ) );
 
     const TFileLocations& locList = fileEntry.fileLocations;
     const TFileLocation* fileLoc = NULL;
@@ -393,7 +393,7 @@ CPatchSetParser::ParseAndWalkDirTree( const TDirEntry& patchSetDir   ,
     CORE::CDataNode newNode;
     newNode.SetName( "Dir" );
     newNode.SetAttribute( "Name", patchSetDir.name );
-    newNode.SetAttribute( "TotalSize", CORE::Int32ToString( patchSetDir.sizeInBytes ) );
+    newNode.SetAttribute( "TotalSize", CORE::ToString( patchSetDir.sizeInBytes ) );
     newNode.SetAttribute( "Hash", patchSetDir.hash );
 
     // Recursively add all sub-directories

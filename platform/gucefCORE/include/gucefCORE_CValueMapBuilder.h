@@ -16,8 +16,8 @@
  *  limitations under the License.
  */
 
-#ifndef GUCEF_CORE_CIDOCUMENTPARSERCALLBACKS_H
-#define GUCEF_CORE_CIDOCUMENTPARSERCALLBACKS_H
+#ifndef GUCEF_CORE_CVALUEMAPBUILDER_H
+#define GUCEF_CORE_CVALUEMAPBUILDER_H
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -25,20 +25,15 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#ifndef GUCEF_CORE_CSTRING_H
-#include "gucefCORE_CString.h"        /* framework string implementation */
-#define GUCEF_CORE_CSTRING_H
-#endif /* GUCEF_CORE_CSTRING_H ? */
+#ifndef GUCEF_CORE_CIVALUEMAPPARSERCALLBACKS_H
+#include "gucefCORE_CIValueMapParserCallbacks.h"   
+#define GUCEF_CORE_CIVALUEMAPPARSERCALLBACKS_H
+#endif /* GUCEF_CORE_CIVALUEMAPPARSERCALLBACKS_H ? */
 
-#ifndef GUCEF_CORE_CVARIANT_H
-#include "gucefCORE_CVariant.h"       /* framework variant implementation */
-#define GUCEF_CORE_CVARIANT_H
-#endif /* GUCEF_CORE_CVARIANT_H ? */
-
-#ifndef GUCEF_CORE_C_DOCUMENT_PARSER_CALLBACKS_H
-#include "gucefCORE_c_document_parser_callbacks.h"
-#define GUCEF_CORE_C_DOCUMENT_PARSER_CALLBACKS_H
-#endif /* GUCEF_CORE_C_DOCUMENT_PARSER_CALLBACKS_H ? */
+#ifndef GUCEF_CORE_CVALUELIST_H
+#include "CValueList.h"   
+#define GUCEF_CORE_CVALUELIST_H
+#endif /* GUCEF_CORE_CVALUELIST_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -56,39 +51,24 @@ namespace CORE {
 //-------------------------------------------------------------------------*/
 
 /**
- *  Interface class for document parse callbacks
- *  In XML lingo these are referred to as SAX parsers
- * 
- *  Implementing this type of interface allows you to interpret a varied range of schema formats
- *  due to the abstraction provided. You dont need to know if you are dealing with a JSON or XML or YAML or whatever document
- *  What matters is the information contained within the document itself, which can be accessed through this type of parser
+ *  Implementation which uses value map parser callbacks to contruct a ValueList class based map
  */
-class GUCEF_CORE_PUBLIC_CPP CIDocumentParserCallbacks
+class GUCEF_CORE_PUBLIC_CPP CValueMapBuilder : public CIValueMapParserCallbacks
 {
     public:
 
-    CIDocumentParserCallbacks( void );
-    CIDocumentParserCallbacks( const CIDocumentParserCallbacks& src ); 
-    virtual ~CIDocumentParserCallbacks();
-    CIDocumentParserCallbacks& operator=( const CIDocumentParserCallbacks& src );
+    CValueMapBuilder( void );
+    CValueMapBuilder( const CValueMapBuilder& src ); 
+    virtual ~CValueMapBuilder() GUCEF_VIRTUAL_OVERRIDE;
+    CValueMapBuilder& operator=( const CValueMapBuilder& src );
 
-    virtual void OnDocumentBegin( void ) = 0;
-    virtual void OnDocumentEnd( void ) = 0;
-    virtual void OnNodeBegin( const CVariant& nodeId, int nodeType ) = 0;
-    virtual void OnNodeEnd( const CVariant& nodeId ) = 0;
-    virtual void OnNodeAttribute( const CVariant& nodeId, const CVariant& attributeId, const CVariant& attributeValue ) = 0;
-    virtual void OnNodeValue( const CVariant& nodeId, const CVariant& nodeValue ) = 0;
-    virtual void OnNodeChildrenBegin( const CVariant& nodeId ) = 0;
-    virtual void OnNodeChildrenEnd( const CVariant& nodeId ) = 0;
-    virtual void OnParseError( Int32 errorCode, const CString& description ) = 0;
+    virtual void OnValueMapBegin( bool allowMultipleValuesPerKey, bool allowDuplicates ) GUCEF_VIRTUAL_OVERRIDE;
+    virtual void OnValueMapEnd( void ) GUCEF_VIRTUAL_OVERRIDE;
+    virtual void OnKeyValuePair( const CVariant& key, const CVariant& value ) GUCEF_VIRTUAL_OVERRIDE;
+    virtual void OnValueMapParseError( Int32 errorCode, const CString& description ) GUCEF_VIRTUAL_OVERRIDE;
 
-    TDocumentParserCallbacks& GetCStyleAccess( void );
-    
-    private:
+    CValueList map;
 
-    void InitCStyleAccess( void );
-
-    TDocumentParserCallbacks m_cStyleAccess;
 };
 
 /*-------------------------------------------------------------------------//
@@ -102,6 +82,6 @@ class GUCEF_CORE_PUBLIC_CPP CIDocumentParserCallbacks
 
 /*-------------------------------------------------------------------------*/
 
-#endif /* GUCEF_CORE_CIDOCUMENTPARSERCALLBACKS_H ? */
+#endif /* GUCEF_CORE_CDATANODEDOCUMENTBUILDER_H ? */
 
 /*-------------------------------------------------------------------------*/

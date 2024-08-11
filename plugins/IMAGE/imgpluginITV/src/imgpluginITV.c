@@ -366,41 +366,69 @@ IMGCODECPLUGIN_DecodeImage( void* pluginData      ,
     if ( 0 == strcmp( codecType, "itv5" ) ) // Image Palette
     {
         UInt16 ui16 = 0;
-        UInt32 dataSize = 0;
+        UInt64 dataSize = 0;
         
         /* setup the image struct in the same way for any simple single frame/level image */
         TImage* image = malloc( sizeof(TImage) );
-        image->imageInfo.version = GUCEF_IMAGE_TIMAGEINFO_VERSION;
-        image->imageInfo.nrOfFramesInImage = 1;
-        image->frames = malloc( sizeof(TImageFrame) );
-        image->frames[ 0 ].version = GUCEF_IMAGE_TIMAGEFRAME_VERSION;        
-        image->frames[ 0 ].frameInfo.version = GUCEF_IMAGE_TIMAGEFRAMEINFO_VERSION;
-        image->frames[ 0 ].frameInfo.nrOfMipmapLevels = 1;
-        image->frames[ 0 ].mipmapLevel = malloc( sizeof(TImageMipMapLevel) );
-        image->frames[ 0 ].mipmapLevel[ 0 ].version = GUCEF_IMAGE_TIMAGEMIPMAPLEVEL_VERSION;
-        image->frames[ 0 ].mipmapLevel[ 0 ].mipLevelInfo.version = GUCEF_IMAGE_TIMAGEMIPMAPLEVELINFO_VERSION;
+        if ( GUCEF_NULL != image )
+        {
+            image->imageInfo.version = GUCEF_IMAGE_TIMAGEINFO_VERSION;
+            image->imageInfo.nrOfFramesInImage = 1;
+            image->frames = malloc( sizeof(TImageFrame) );
+            if ( GUCEF_NULL != image->frames )
+            {
+                image->frames[ 0 ].version = GUCEF_IMAGE_TIMAGEFRAME_VERSION;        
+                image->frames[ 0 ].frameInfo.version = GUCEF_IMAGE_TIMAGEFRAMEINFO_VERSION;
+                image->frames[ 0 ].frameInfo.nrOfMipmapLevels = 1;
+                image->frames[ 0 ].mipmapLevel = malloc( sizeof(TImageMipMapLevel) );
+                if ( GUCEF_NULL != image->frames[ 0 ].mipmapLevel )
+                {
+                    image->frames[ 0 ].mipmapLevel[ 0 ].version = GUCEF_IMAGE_TIMAGEMIPMAPLEVEL_VERSION;
+                    image->frames[ 0 ].mipmapLevel[ 0 ].mipLevelInfo.version = GUCEF_IMAGE_TIMAGEMIPMAPLEVELINFO_VERSION;
 
-        /* setup properties which are fixed due to the codecType */
-        image->frames[ 0 ].mipmapLevel[ 0 ].mipLevelInfo.pixelComponentDataType = GUCEF_DATATYPE_UINT8;
-        image->frames[ 0 ].mipmapLevel[ 0 ].mipLevelInfo.pixelStorageFormat = PSF_RGB;
-        
-        input->seek( input, 0, SEEK_END );
-        dataSize = input->tell( input );
-        dataSize -= 55;
+                    /* setup properties which are fixed due to the codecType */
+                    image->frames[ 0 ].mipmapLevel[ 0 ].mipLevelInfo.pixelComponentDataType = GUCEF_DATATYPE_UINT8;
+                    image->frames[ 0 ].mipmapLevel[ 0 ].mipLevelInfo.pixelStorageFormat = PSF_RGB;
+                }
+            }
 
-        image->frames[ 0 ].mipmapLevel[ 0 ].mipLevelInfo.frameWidth = dataSize / 3;
-        image->frames[ 0 ].mipmapLevel[ 0 ].mipLevelInfo.frameHeight = 1;
-        image->frames[ 0 ].mipmapLevel[ 0 ].pixelDataSizeInBytes = dataSize;
+            input->seek( input, 0, SEEK_END );
+            dataSize = input->tell( input );
+            dataSize -= 55;
 
-        /* skip bytes till color values and read the RGB values */
-        input->setpos( input, 55 );        
-        image->frames[ 0 ].mipmapLevel[ 0 ].pixelData = malloc( dataSize );
-        if ( 1 != input->read( input, image->frames[ 0 ].mipmapLevel[ 0 ].pixelData, dataSize, 1 ) )
-            { IMGCODECPLUGIN_FreeImageStorage( image, *imageData ); return 0; }
+            image->frames[ 0 ].mipmapLevel[ 0 ].mipLevelInfo.frameWidth = dataSize / 3;
+            image->frames[ 0 ].mipmapLevel[ 0 ].mipLevelInfo.frameHeight = 1;
+            image->frames[ 0 ].mipmapLevel[ 0 ].pixelDataSizeInBytes = dataSize;
+
+            /* skip bytes till color values and read the RGB values */
+            input->setpos( input, 55 );        
+            image->frames[ 0 ].mipmapLevel[ 0 ].pixelData = malloc( dataSize );
+            if ( 1 != input->read( input, image->frames[ 0 ].mipmapLevel[ 0 ].pixelData, dataSize, 1 ) )
+                { IMGCODECPLUGIN_FreeImageStorage( image, *imageData ); return 0; }
     
-        *imageOutput = image;
-        *imageData = NULL;
+            *imageOutput = image;
+            *imageData = NULL;
 
+            return 1;
+        }
+    }
+    return 0;
+}
+
+/*---------------------------------------------------------------------------*/
+
+UInt32 GUCEF_PLUGIN_CALLSPEC_PREFIX
+IMGCODECPLUGIN_DecodeImageMetaData( void* pluginData                       ,
+                                    void* codecData                        ,
+                                    const char* codecType                  ,
+                                    TIOAccess* input                       ,
+                                    TValueMapParserCallbacks* mapCallbacks )
+{
+    /* this format does not support metadata */
+    if ( GUCEF_NULL != mapCallbacks )
+    {
+        mapCallbacks->OnValueMapBegin( mapCallbacks->privateData, 0, 0 );
+        mapCallbacks->OnValueMapEnd( mapCallbacks->privateData );
         return 1;
     }
     return 0;

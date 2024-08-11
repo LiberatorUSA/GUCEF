@@ -1,20 +1,19 @@
 /*
  *  gucefIMAGE: GUCEF module providing image utilities
- *  Copyright (C) 2002 - 2007.  Dinand Vanvelzen
  *
- *  This library is free software; you can redistribute it and/or
- *  modify it under the terms of the GNU Lesser General Public
- *  License as published by the Free Software Foundation; either
- *  version 2.1 of the License, or (at your option) any later version.
+ *  Copyright (C) 1998 - 2024.  Dinand Vanvelzen
  *
- *  This library is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- *  Lesser General Public License for more details.
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
  *
- *  You should have received a copy of the GNU Lesser General Public
- *  License along with this library; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+ *    http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
  */
 
 #ifndef GUCEF_IMAGE_CPLUGINIMAGECODECITEM_H
@@ -67,27 +66,30 @@ class CPluginImageCodecItem : public CIImageCodec
 
     CPluginImageCodecItem( const CPluginImageCodecItem& src );
 
-    virtual ~CPluginImageCodecItem();
+    virtual ~CPluginImageCodecItem() GUCEF_VIRTUAL_OVERRIDE;
 
     virtual bool Encode( const CImage& inputImage       ,
-                         CORE::CIOAccess& encodedOutput );
+                         CORE::CIOAccess& encodedOutput ) GUCEF_VIRTUAL_OVERRIDE;
 
     virtual bool Decode( CORE::CIOAccess& encodedInput ,
-                         CImage& outputImage           );
+                         CImage& outputImage           ) GUCEF_VIRTUAL_OVERRIDE;
 
     virtual bool Encode( CORE::CIOAccess& source ,
-                         CORE::CIOAccess& dest   );
+                         CORE::CIOAccess& dest   ) GUCEF_VIRTUAL_OVERRIDE;
 
     virtual bool Decode( CORE::CIOAccess& source ,
-                         CORE::CIOAccess& dest   );
+                         CORE::CIOAccess& dest   ) GUCEF_VIRTUAL_OVERRIDE;
 
-    virtual CORE::CString GetFamilyName( void ) const;
+    virtual bool DecodeMetaData( CORE::CIOAccess& source    ,
+                                 CORE::CValueList& metaData ) GUCEF_VIRTUAL_OVERRIDE;
 
-    virtual CORE::CString GetType( void ) const;
+    virtual CORE::CString GetFamilyName( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
-    virtual const CString& GetClassTypeName( void ) const;
+    virtual CORE::CString GetType( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
-    virtual CORE::CICloneable* Clone( void ) const;
+    virtual const CString& GetClassTypeName( void ) const GUCEF_VIRTUAL_OVERRIDE;
+
+    virtual CORE::CICloneable* Clone( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
     private:
 
