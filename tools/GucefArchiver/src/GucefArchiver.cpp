@@ -293,18 +293,18 @@ GucefArchiver::PerformWork( void )
                                     if ( extractedFile.Open( extractedFilePath, "wb" ) )
                                     {
                                         CORE::IOAccessPtr fileAccess = file->GetAccess();
-                                        CORE::UInt32 fileSize = fileAccess->GetSize();
-                                        CORE::UInt32 bytesExtracted = extractedFile.Write( *fileAccess );
+                                        CORE::UInt64 fileSize = fileAccess->GetSize();
+                                        CORE::UInt64 bytesExtracted = extractedFile.Write( *fileAccess );
                                         extractedFile.Close();
 
                                         if ( fileSize == bytesExtracted )
                                         {
-                                            GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Extracted " + CORE::UInt32ToString( bytesExtracted ) + " bytes into file: " + extractedFilePath );
+                                            GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Extracted " + CORE::ToString( bytesExtracted ) + " bytes into file: " + extractedFilePath );
                                         }
                                         else
                                         {
-                                            GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "Extracted " + CORE::UInt32ToString( bytesExtracted ) + " bytes instead of " +
-                                                        CORE::UInt32ToString( fileSize ) + " expected bytes into file: " + extractedFilePath + ". The file is probably corrupt" );
+                                            GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "Extracted " + CORE::ToString( bytesExtracted ) + " bytes instead of " +
+                                                        CORE::ToString( fileSize ) + " expected bytes into file: " + extractedFilePath + ". The file is probably corrupt" );
                                         }
                                     }
                                     else

@@ -73,7 +73,7 @@ CGlobalKaitaiSchemaRegistry::CGlobalKaitaiSchemaRegistry( void )
     , m_vfsInitIsComplete( false )
 {GUCEF_TRACE;
 
-    RegisterEvents();
+    RegisterEventHandlers();
 }
 
 /*-------------------------------------------------------------------------*/

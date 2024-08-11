@@ -242,11 +242,11 @@ CVFS::UnmountAllArchives( void )
 
     while ( !m_mountList.empty() )
     {
-        TMountEntry& mountEntry = *m_mountList.begin();
-        TArchiveUnmountedEventData eData( mountEntry.mountPath );
-        if ( mountEntry.archive->UnloadArchive() )
+        TMountEntryPtr mountEntry = (*m_mountList.begin());
+        TArchiveUnmountedEventData eData( mountEntry->mountPath );
+        if ( mountEntry->archive->UnloadArchive() )
         {
-            m_archivePtrToMountEntryLookup.erase( mountEntry.archive.GetPointerAlways() );
+            m_archivePtrToMountEntryLookup.erase( mountEntry->archive.GetPointerAlways() );
             m_mountList.erase( m_mountList.begin() );
             NotifyObservers( ArchiveUnmountedEvent, &eData );
         }
@@ -350,7 +350,7 @@ CVFS::OnArchiveDirectoryWatcherEvent( CORE::CNotifier* notifier    ,
         TArchivePtrToMountEntryMap::iterator i = m_archivePtrToMountEntryLookup.find( archive );
         if ( i != m_archivePtrToMountEntryLookup.end() )
         {
-            TMountEntry* mountEntry = (*i).second;
+            TMountEntryPtr mountEntry = (*i).second;
 
             if ( eventid == CORE::CDirectoryWatcherEvents::DirRenamedEvent )
             {
@@ -385,7 +385,7 @@ CVFS::OnArchiveDirectoryWatcherEvent( CORE::CNotifier* notifier    ,
         TArchivePtrToMountEntryMap::iterator i = m_archivePtrToMountEntryLookup.find( archive );
         if ( i != m_archivePtrToMountEntryLookup.end() )
         {
-            TMountEntry* mountEntry = (*i).second;
+            TMountEntryPtr mountEntry = (*i).second;
 
             if ( eventid == CORE::CDirectoryWatcherEvents::FileRenamedEvent )
             {
@@ -462,8 +462,8 @@ CVFS::IsConnected( void ) const
     TMountVector::const_iterator i = m_mountList.begin();
     while ( i != m_mountList.end() )
     {
-        const TMountEntry& mountEntry = (*i);
-        if ( !mountEntry.archive->IsConnected() )
+        const TMountEntryPtr mountEntry = (*i);
+        if ( !mountEntry->archive->IsConnected() )
         {
             isConnectedOverall = false;
             break;
@@ -486,8 +486,8 @@ CVFS::IsHealthy( void ) const
     TMountVector::const_iterator i = m_mountList.begin();
     while ( i != m_mountList.end() )
     {
-        const TMountEntry& mountEntry = (*i);
-        if ( !mountEntry.archive->IsHealthy() )
+        const TMountEntryPtr mountEntry = (*i);
+        if ( !mountEntry->archive->IsHealthy() )
         {
             isHealthyOverall = false;
             break;
@@ -585,11 +585,11 @@ CVFS::DeleteFile( const CString& filePath, bool okIfItDoesNotExist )
     TConstMountLinkVector::iterator i = mountLinks.begin();
     while ( i != mountLinks.end() )
     {
-        TConstMountLink& mountLink = (*i);
-        TArchivePtr archive = mountLink.mountEntry->archive;
-        if ( archive->FileExists( mountLink.remainder ) )
+        TConstMountLinkPtr& mountLink = (*i);
+        TArchivePtr archive = mountLink->mountEntry->archive;
+        if ( archive->FileExists( mountLink->remainder ) )
         {
-            return archive->DeleteFile( mountLink.remainder );
+            return archive->DeleteFile( mountLink->remainder );
         }
         ++i;
     }
@@ -626,19 +626,19 @@ CVFS::MoveFile( const CString& oldFilePath ,
     TConstMountLinkVector::iterator i = oldPathMountLinks.begin();
     while ( i != oldPathMountLinks.end() )
     {
-        TConstMountLink& oldMountLink = (*i);
+        TConstMountLinkPtr& oldMountLink = (*i);
         TConstMountLinkVector::iterator n = newPathMountLinks.begin();
         while ( n != newPathMountLinks.end() )
         {
-            TConstMountLink& newMountLink = (*n);
-            if ( oldMountLink.mountEntry == newMountLink.mountEntry )
+            TConstMountLinkPtr& newMountLink = (*n);
+            if ( oldMountLink->mountEntry == newMountLink->mountEntry )
             {
                 // Found a match where both old and new path are available via the same archive
                 // this takes priority over any cross-archive logical 'moves'
-                TArchivePtr archive = newMountLink.mountEntry->archive;
-                return archive->MoveFile( oldMountLink.remainder ,
-                                          newMountLink.remainder ,
-                                          overwrite              );
+                TArchivePtr archive = newMountLink->mountEntry->archive;
+                return archive->MoveFile( oldMountLink->remainder ,
+                                          newMountLink->remainder ,
+                                          overwrite               );
             }
             ++n;
         }
@@ -1264,22 +1264,22 @@ CVFS::StoreAsFile( const CORE::CString& file        ,
     TConstMountLinkVector::iterator i = mountLinks.begin();
     while ( i != mountLinks.end() )
     {
-        TConstMountLink& mountLink = (*i);
-        TArchivePtr archive = mountLink.mountEntry->archive;
+        TConstMountLinkPtr& mountLink = (*i);
+        TArchivePtr archive = mountLink->mountEntry->archive;
 
-        if ( archive->StoreAsFile( mountLink.remainder  ,
+        if ( archive->StoreAsFile( mountLink->remainder  ,
                                    data                 ,
                                    offset               ,
                                    overwrite            ) )
         {
             GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "Vfs: Stored " + CORE::UInt32ToString( data.GetDataSize() )  +
-                    " bytes as file content at offset " + CORE::UInt64ToString( offset ) + " using archive mounted at: " + mountLink.remainder );
+                    " bytes as file content at offset " + CORE::UInt64ToString( offset ) + " using archive mounted at: " + mountLink->remainder );
             return true;
         }
         else
         {
             GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "Vfs: Failed to store " + CORE::UInt32ToString( data.GetDataSize() )  +
-                    " bytes as file content at offset " + CORE::UInt64ToString( offset ) + " using archive mounted at: " + mountLink.remainder );
+                    " bytes as file content at offset " + CORE::UInt64ToString( offset ) + " using archive mounted at: " + mountLink->remainder );
         }
 
         ++i;
@@ -1317,12 +1317,12 @@ CVFS::GetFile( const CORE::CString& file          ,
     TConstMountLinkVector::iterator i = mountLinks.begin();
     while ( i != mountLinks.end() )
     {
-        TConstMountLink& mountLink = (*i);
+        TConstMountLinkPtr& mountLink = (*i);
 
         bool tryToGetFile = true;
         if ( fileMustExist )
         {
-            if ( !mountLink.mountEntry->archive->FileExists( mountLink.remainder ) )
+            if ( !mountLink->mountEntry->archive->FileExists( mountLink->remainder ) )
             {
                 tryToGetFile = false;
             }
@@ -1330,16 +1330,16 @@ CVFS::GetFile( const CORE::CString& file          ,
 
         if ( tryToGetFile )
         {
-            GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "Vfs: Found requested file using mount link remainder: " + mountLink.remainder );
-            TArchivePtr archive = mountLink.mountEntry->archive;
-            TBasicVfsResourcePtr filePtr = archive->GetFile( mountLink.remainder ,
+            GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "Vfs: Found requested file using mount link remainder: " + mountLink->remainder );
+            TArchivePtr archive = mountLink->mountEntry->archive;
+            TBasicVfsResourcePtr filePtr = archive->GetFile( mountLink->remainder ,
                                                              mode                ,
                                                              m_maxmemloadsize     ,
                                                              overwrite           );
 
             if ( !filePtr )
             {
-                GUCEF_ERROR_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "Vfs: Requested file pre-conditions passed but could not be loaded from mounted archive using mount link remainder: " + mountLink.remainder );
+                GUCEF_ERROR_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "Vfs: Requested file pre-conditions passed but could not be loaded from mounted archive using mount link remainder: " + mountLink->remainder );
             }
             return filePtr;
         }
@@ -1376,15 +1376,15 @@ CVFS::GetFileAs( const CORE::CString& file               ,
     TConstMountLinkVector::iterator i = mountLinks.begin();
     while ( i != mountLinks.end() )
     {
-        TConstMountLink& mountLink = (*i);
+        TConstMountLinkPtr& mountLink = (*i);
 
-        GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "Vfs: Found requested file using mount link remainder: " + mountLink.remainder );
-        TArchivePtr archive = mountLink.mountEntry->archive;
-        TBasicVfsResourcePtr filePtr = archive->GetFileAs( mountLink.remainder ,
-                                                           metaData            ,
-                                                           mode                ,
-                                                           m_maxmemloadsize    ,
-                                                           overwrite           );
+        GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "Vfs: Found requested file using mount link remainder: " + mountLink->remainder );
+        TArchivePtr archive = mountLink->mountEntry->archive;
+        TBasicVfsResourcePtr filePtr = archive->GetFileAs( mountLink->remainder ,
+                                                           metaData             ,
+                                                           mode                 ,
+                                                           m_maxmemloadsize     ,
+                                                           overwrite            );
 
         if ( filePtr )
             return filePtr;
@@ -1613,8 +1613,8 @@ CVFS::MountArchive( const CArchiveSettings& settings )
             {
                 // Successfully loaded/linked the archive
                 // We will add it to our mount list
-                TMountEntry archiveEntry;
-                archiveEntry.abspath = actualArchivePath;
+                TMountEntryPtr archiveEntry = MountEntry::CreateSharedObj();
+                archiveEntry->abspath = actualArchivePath;
 
                 //// Get the path where the archive is located relative to the root mount
                 //archiveEntry.path = archiveEntry.abspath.CutChars( mountEntry.abspath.Length(), true );
@@ -1629,18 +1629,17 @@ CVFS::MountArchive( const CArchiveSettings& settings )
                 //    }
                 //}
 
-                archiveEntry.path = actualArchivePath;
-                archiveEntry.writeable = updatedSettings.GetWriteableRequested();
-                archiveEntry.archive = archive;
-                archiveEntry.mountPath = updatedSettings.GetMountPath();
+                archiveEntry->path = actualArchivePath;
+                archiveEntry->writeable = updatedSettings.GetWriteableRequested();
+                archiveEntry->archive = archive;
+                archiveEntry->mountPath = updatedSettings.GetMountPath();
 
                 m_mountList.push_back( archiveEntry );
-                TMountEntry* pushedMountEntry = &m_mountList.back();
-                m_archivePtrToMountEntryLookup[ archive.GetPointerAlways() ] = pushedMountEntry;
+                m_archivePtrToMountEntryLookup[ archive.GetPointerAlways() ] = archiveEntry;
 
                 SubscribeTo( archive.GetPointerAlways() );
 
-                TArchiveMountedEventData eData( archiveEntry.mountPath );
+                TArchiveMountedEventData eData( archiveEntry->mountPath );
                 NotifyObservers( ArchiveMountedEvent, &eData );
                 return true;
             }
@@ -1685,23 +1684,22 @@ CVFS::MountArchive( const CString& archiveName           ,
         {
             // Successfully loaded/linked the archive
             // We will add it to our mount list
-            TMountEntry archiveEntry;
-            archiveEntry.path = archiveResource->GetFilename();
-            archiveEntry.abspath = archiveResource->GetFilePath();
-            archiveEntry.writeable = writeableRequest;
-            archiveEntry.archive = archive;
+            TMountEntryPtr archiveEntry = MountEntry::CreateSharedObj();
+            archiveEntry->path = archiveResource->GetFilename();
+            archiveEntry->abspath = archiveResource->GetFilePath();
+            archiveEntry->writeable = writeableRequest;
+            archiveEntry->archive = archive;
 
             // Regardless of how the settings are presented we want to ensure a conistent mounting scheme
             // As such we enforce having a start '/' and no trailing '/' for mount paths, with the start '/' signaling 'root'
-            archiveEntry.mountPath = ConformVfsDirPath( mountPoint );
+            archiveEntry->mountPath = ConformVfsDirPath( mountPoint );
 
             m_mountList.push_back( archiveEntry );
-            TMountEntry* pushedMountEntry = &m_mountList.back();
-            m_archivePtrToMountEntryLookup[ archive.GetPointerAlways() ] = pushedMountEntry;
+            m_archivePtrToMountEntryLookup[ archive.GetPointerAlways() ] = archiveEntry;
 
             SubscribeTo( archive.GetPointerAlways() );
 
-            TArchiveMountedEventData eData( archiveEntry.mountPath );
+            TArchiveMountedEventData eData( archiveEntry->mountPath );
             NotifyObservers( ArchiveMountedEvent, &eData );
             return true;
         }
@@ -1724,8 +1722,8 @@ CVFS::IsMountedArchive( const CString& location ) const
     TMountVector::const_iterator i = m_mountList.begin();
     while ( i != m_mountList.end() )
     {
-        const TMountEntry& archiveEntry = (*i);
-        if ( archiveEntry.mountPath == testLocation )
+        const TMountEntryPtr archiveEntry = (*i);
+        if ( archiveEntry->mountPath == testLocation )
         {
             return true;
         }
@@ -1749,12 +1747,12 @@ CVFS::GetMountedArchiveList( const CString& location ,
     TMountVector::const_iterator i = m_mountList.begin();
     while ( i != m_mountList.end() )
     {
-        const TMountEntry& archiveEntry = (*i);
+        const TMountEntryPtr archiveEntry = (*i);
 
-        if ( archiveEntry.mountPath.Length() > 0 )
+        if ( archiveEntry->mountPath.Length() > 0 )
         {
             // Check if the location is a root for the mount path
-            Int32 subSection = archiveEntry.mountPath.HasSubstr( location, true );
+            Int32 subSection = archiveEntry->mountPath.HasSubstr( location, true );
             if ( 0 == subSection )
             {
                 // We now know the archive is mounted in either the root of "location"
@@ -1764,7 +1762,7 @@ CVFS::GetMountedArchiveList( const CString& location ,
                     // Check if we have multiple subdirs beyond the "location" to get to
                     // the archive. If so then we cannot add this archive because recursive
                     // searching is not allowed.
-                    CString remainder = archiveEntry.mountPath.CutChars( subSection, true );
+                    CString remainder = archiveEntry->mountPath.CutChars( subSection, true );
                     if ( remainder.Length() > 0 )
                     {
                         // make sure we are using a single directory seperator scheme
@@ -1793,13 +1791,13 @@ CVFS::GetMountedArchiveList( const CString& location ,
                 }
 
                 // Now we must validate the filename with the given filter
-                CString filename = GUCEF::CORE::ExtractFilename( archiveEntry.mountPath );
+                CString filename = GUCEF::CORE::ExtractFilename( archiveEntry->mountPath );
                 if ( FilterValidation( filename ,
                                        filter   ) )
                 {
                     // Everything checks out, we have found a mounted archive that meets
                     // the criterea so we add it to the list
-                    outputList.insert( archiveEntry.mountPath );
+                    outputList.insert( archiveEntry->mountPath );
                 }
             }
         }
@@ -1826,11 +1824,11 @@ CVFS::GetActualFilePath( const CString& file ,
     TConstMountLinkVector::iterator i = mountLinks.begin();
     while ( i != mountLinks.end() )
     {
-        TConstMountLink& mountLink = (*i);
-        if ( mountLink.mountEntry->archive->FileExists( mountLink.remainder ) )
+        TConstMountLinkPtr& mountLink = (*i);
+        if ( mountLink->mountEntry->archive->FileExists( mountLink->remainder ) )
         {
-            path = mountLink.mountEntry->abspath;
-            CORE::AppendToPath( path, mountLink.remainder );
+            path = mountLink->mountEntry->abspath;
+            CORE::AppendToPath( path, mountLink->remainder );
             return true;
         }
         ++i;
@@ -1855,20 +1853,20 @@ CVFS::GetVfsPathForAbsolutePath( const CString& absolutePath ,
     TMountVector::const_iterator i = m_mountList.begin();
     while ( i != m_mountList.end() )
     {
-        const TMountEntry& mountEntry = (*i);
-        Int32 subStrIndex = realAbsPath.HasSubstr( mountEntry.abspath, true );
+        const TMountEntryPtr mountEntry = (*i);
+        Int32 subStrIndex = realAbsPath.HasSubstr( mountEntry->abspath, true );
         if ( subStrIndex == 0 )
         {
             // This mount entry has at least a partially matching path
-            CString remainder = realAbsPath.CutChars( mountEntry.abspath.Length(), true );
+            CString remainder = realAbsPath.CutChars( mountEntry->abspath.Length(), true );
 
             // Now we will try to locate a resource given that path so we can validate
             // that this is not a coincidence
-            if ( mountEntry.archive->FileExists( remainder ) )
+            if ( mountEntry->archive->FileExists( remainder ) )
             {
                 // We found a file given this remainer
                 // Now we construct the full relative path including mount path
-                relativePath = mountEntry.mountPath;
+                relativePath = mountEntry->mountPath;
                 CORE::AppendToPath( relativePath, remainder );
                 return true;
             }
@@ -1897,8 +1895,8 @@ CVFS::DirExists( const CString& dirPath ) const
     TConstMountLinkVector::iterator i = mountLinks.begin();
     while ( i != mountLinks.end() )
     {
-        TConstMountLink& mountLink = (*i);
-        if ( mountLink.mountEntry->archive->DirExists( mountLink.remainder ) )
+        TConstMountLinkPtr& mountLink = (*i);
+        if ( mountLink->mountEntry->archive->DirExists( mountLink->remainder ) )
         {
             return true;
         }
@@ -1926,8 +1924,8 @@ CVFS::FileExists( const CString& file ) const
     TConstMountLinkVector::iterator i = mountLinks.begin();
     while ( i != mountLinks.end() )
     {
-        TConstMountLink& mountLink = (*i);
-        if ( mountLink.mountEntry->archive->FileExists( mountLink.remainder ) )
+        TConstMountLinkPtr& mountLink = (*i);
+        if ( mountLink->mountEntry->archive->FileExists( mountLink->remainder ) )
         {
             return true;
         }
@@ -1972,13 +1970,13 @@ CVFS::UnmountArchiveByName( const CString& archiveName )
     TMountVector::iterator i = m_mountList.begin();
     while ( i != m_mountList.end() )
     {
-        TMountEntry& mountEntry = (*i);
-        if ( mountEntry.archive->GetArchiveName() == archiveName )
+        TMountEntryPtr mountEntry = (*i);
+        if ( mountEntry->archive->GetArchiveName() == archiveName )
         {
-            if ( mountEntry.archive->UnloadArchive() )
+            if ( mountEntry->archive->UnloadArchive() )
             {
-                TArchiveUnmountedEventData eData( mountEntry.mountPath );
-                m_archivePtrToMountEntryLookup.erase( mountEntry.archive.GetPointerAlways() );
+                TArchiveUnmountedEventData eData( mountEntry->mountPath );
+                m_archivePtrToMountEntryLookup.erase( mountEntry->archive.GetPointerAlways() );
                 m_mountList.erase( i );
 
                 lock.EarlyUnlock();
@@ -2067,8 +2065,8 @@ CVFS::SaveConfig( CORE::CDataNode& tree ) const
         CORE::CDataNode pathnode( "vfsroot" );
         for ( UInt32 i=0; i<count; ++i )
         {
-            pathnode.SetAttribute( "path", m_mountList[ i ].path );
-            if ( m_mountList[ i ].archive->IsWriteable() )
+            pathnode.SetAttribute( "path", m_mountList[ i ]->path );
+            if ( m_mountList[ i ]->archive->IsWriteable() )
             {
                 pathnode.SetAttribute( "writeable", "true" );
             }
@@ -2261,51 +2259,49 @@ CVFS::GetEligableMounts( const CString& location                ,
     TMountVector::const_iterator i = m_mountList.begin();
     while ( i != m_mountList.end() )
     {
-        const TMountEntry& mountEntry = (*i);
+        const TMountEntryPtr mountEntry = (*i);
 
         // Exclude non-writeable archives right away for 'mustBeWritable' scenarios
-        if ( !mustBeWritable || mustBeWritable == mountEntry.writeable )
+        if ( !mustBeWritable || mustBeWritable == mountEntry->writeable )
         {
-            if ( mountEntry.mountPath.Length() > 0 )
+            if ( mountEntry->mountPath.Length() > 0 )
             {
                 // Check to see if the mount path is the starting sub string of the location
-                if ( location.HasSubstr( mountEntry.mountPath, true ) == 0 )
+                if ( location.HasSubstr( mountEntry->mountPath, true ) == 0 )
                 {
                     // We need to make sure we dont accidentally match a partial directory name with a similarly names path
-                    if ( location.Length() == mountEntry.mountPath.Length() ||
-                       ( location[ mountEntry.mountPath.Length()-1 ] == '/' ) )
+                    if ( location.Length() == mountEntry->mountPath.Length() ||
+                       ( location[ mountEntry->mountPath.Length()-1 ] == '/' ) )
                     {
-                        TConstMountLink mountLink;
-                        mountLink.remainder = location.CutChars( mountEntry.mountPath.Length(), true );
+                        TConstMountLinkPtr mountLink = ConstMountLink::CreateSharedObjWithParam( mountEntry );
+                        mountLink->remainder = location.CutChars( mountEntry->mountPath.Length(), true );
 
                         // make sure the remainder does not have a path seperator prefix
-                        if ( mountLink.remainder.Length() > 0 )
+                        if ( mountLink->remainder.Length() > 0 )
                         {
-                            if ( ( mountLink.remainder[ 0 ] == '/' ) ||
-                                 ( mountLink.remainder[ 0 ] == '\\' ) )
+                            if ( ( mountLink->remainder[ 0 ] == '/' ) ||
+                                 ( mountLink->remainder[ 0 ] == '\\' ) )
                             {
                                 // remove the dir seperator prefix
-                                mountLink.remainder = mountLink.remainder.CutChars( 1, true );
+                                mountLink->remainder = mountLink->remainder.CutChars( 1, true );
                             }
                         }
 
-                        mountLink.mountEntry = &mountEntry;
                         mountLinkVector.push_back( mountLink );
 
                         GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "VFS: Found eligable mount link using archive of type \"" +
-                            mountEntry.archive->GetType() + "\" with remainder \"" + mountLink.remainder + "\". mustBeWritable=" + CORE::BoolToString( mustBeWritable ) );
+                            mountEntry->archive->GetType() + "\" with remainder \"" + mountLink->remainder + "\". mustBeWritable=" + CORE::BoolToString( mustBeWritable ) );
                     }
                 }
             }
             else
             {
-                TConstMountLink mountLink;
-                mountLink.remainder = location;
-                mountLink.mountEntry = &mountEntry;
+                TConstMountLinkPtr mountLink = ConstMountLink::CreateSharedObjWithParam( mountEntry );
+                mountLink->remainder = location;
                 mountLinkVector.push_back( mountLink );
 
                 GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "VFS: Found eligable mount link using archive of type \"" +
-                    mountEntry.archive->GetType() + "\" with remainder \"" + location + "\". mustBeWritable=" + CORE::BoolToString( mustBeWritable ) );
+                    mountEntry->archive->GetType() + "\" with remainder \"" + location + "\". mustBeWritable=" + CORE::BoolToString( mustBeWritable ) );
             }
         }
         ++i;
@@ -2361,14 +2357,14 @@ CVFS::GetFileList( TStringVector& outputList             ,
     TConstMountLinkVector::iterator i = mountLinks.begin();
     while ( i != mountLinks.end() )
     {
-        TConstMountLink& mountLink = (*i);
-        mountLink.mountEntry->archive->GetFileList( outputList                      ,
-                                                    mountLink.mountEntry->mountPath ,
-                                                    mountLink.remainder             ,
-                                                    recursive                       ,
-                                                    includePathInFilename           ,
-                                                    nameFilters                     ,
-                                                    maxListEntries                  );
+        TConstMountLinkPtr& mountLink = (*i);
+        mountLink->mountEntry->archive->GetFileList( outputList                       ,
+                                                     mountLink->mountEntry->mountPath ,
+                                                     mountLink->remainder             ,
+                                                     recursive                        ,
+                                                     includePathInFilename            ,
+                                                     nameFilters                      ,
+                                                     maxListEntries                   );
         ++i;
     }
 
@@ -2421,14 +2417,14 @@ CVFS::GetDirList( TStringVector& outputList             ,
     TConstMountLinkVector::iterator i = mountLinks.begin();
     while ( i != mountLinks.end() )
     {
-        TConstMountLink& mountLink = (*i);
-        mountLink.mountEntry->archive->GetDirList( outputList                      ,
-                                                   mountLink.mountEntry->mountPath ,
-                                                   mountLink.remainder             ,
-                                                   recursive                       ,
-                                                   includePathInFilename           ,
-                                                   nameFilters                     ,
-                                                   maxListEntries                  );
+        TConstMountLinkPtr& mountLink = (*i);
+        mountLink->mountEntry->archive->GetDirList( outputList                       ,
+                                                    mountLink->mountEntry->mountPath ,
+                                                    mountLink->remainder             ,
+                                                    recursive                        ,
+                                                    includePathInFilename            ,
+                                                    nameFilters                      ,
+                                                    maxListEntries                   );
         ++i;
     }
 
@@ -2507,9 +2503,9 @@ CVFS::SetFileMetaData( const CString& filename           ,
     TConstMountLinkVector::iterator i = mountLinks.begin();
     while ( i != mountLinks.end() )
     {
-        TConstMountLink& mountLink = (*i);
-        TArchivePtr archive = mountLink.mountEntry->archive;
-        if ( archive->SetFileMetaData( mountLink.remainder, metaData ) )
+        TConstMountLinkPtr& mountLink = (*i);
+        TArchivePtr archive = mountLink->mountEntry->archive;
+        if ( archive->SetFileMetaData( mountLink->remainder, metaData ) )
         {
             return true;
         }
@@ -2538,8 +2534,8 @@ CVFS::GetFileMetaData( const CString& filename           ,
     TConstMountLinkVector::iterator i = mountLinks.begin();
     while ( i != mountLinks.end() )
     {
-        TConstMountLink& mountLink = (*i);
-        if ( mountLink.mountEntry->archive->GetFileMetaData( mountLink.remainder, metaData ) )
+        TConstMountLinkPtr& mountLink = (*i);
+        if ( mountLink->mountEntry->archive->GetFileMetaData( mountLink->remainder, metaData ) )
         {
             if ( metaData.resourceExists )
                 return true;
@@ -2568,10 +2564,10 @@ CVFS::GetFileModificationTime( const CString& filename ) const
     TConstMountLinkVector::iterator i = mountLinks.begin();
     while ( i != mountLinks.end() )
     {
-        TConstMountLink& mountLink = (*i);
-        if ( mountLink.mountEntry->archive->FileExists( mountLink.remainder ) )
+        TConstMountLinkPtr& mountLink = (*i);
+        if ( mountLink->mountEntry->archive->FileExists( mountLink->remainder ) )
         {
-            CORE::CDateTime modificationTime = mountLink.mountEntry->archive->GetFileModificationTime( mountLink.remainder );
+            CORE::CDateTime modificationTime = mountLink->mountEntry->archive->GetFileModificationTime( mountLink->remainder );
             return modificationTime;
         }
         ++i;
@@ -2599,10 +2595,10 @@ CVFS::GetFileHash( const CORE::CString& file ) const
     TConstMountLinkVector::iterator i = mountLinks.begin();
     while ( i != mountLinks.end() )
     {
-        TConstMountLink& mountLink = (*i);
-        if ( mountLink.mountEntry->archive->FileExists( mountLink.remainder ) )
+        TConstMountLinkPtr& mountLink = (*i);
+        if ( mountLink->mountEntry->archive->FileExists( mountLink->remainder ) )
         {
-            CString hash = mountLink.mountEntry->archive->GetFileHash( mountLink.remainder );
+            CString hash = mountLink->mountEntry->archive->GetFileHash( mountLink->remainder );
             return hash;
         }
         ++i;
@@ -2630,10 +2626,10 @@ CVFS::GetFileSize( const CORE::CString& file ) const
     TConstMountLinkVector::iterator i = mountLinks.begin();
     while ( i != mountLinks.end() )
     {
-        TConstMountLink& mountLink = (*i);
-        if ( mountLink.mountEntry->archive->FileExists( mountLink.remainder ) )
+        TConstMountLinkPtr& mountLink = (*i);
+        if ( mountLink->mountEntry->archive->FileExists( mountLink->remainder ) )
         {
-            UInt64 fileSize = mountLink.mountEntry->archive->GetFileSize( mountLink.remainder );
+            UInt64 fileSize = mountLink->mountEntry->archive->GetFileSize( mountLink->remainder );
             return fileSize;
         }
         ++i;
@@ -2663,10 +2659,10 @@ CVFS::AddDirToWatch( const CString& dirToWatch       ,
     TConstMountLinkVector::iterator i = mountLinks.begin();
     while ( i != mountLinks.end() )
     {
-        TConstMountLink& mountLink = (*i);
-        TArchivePtr archiveToWatch = mountLink.mountEntry->archive;
+        TConstMountLinkPtr& mountLink = (*i);
+        TArchivePtr archiveToWatch = mountLink->mountEntry->archive;
 
-        if ( !archiveToWatch->AddDirToWatch( mountLink.remainder, options, tryToCreatePathIfNotExists ) )
+        if ( !archiveToWatch->AddDirToWatch( mountLink->remainder, options, tryToCreatePathIfNotExists ) )
             totalSuccess = false;
         ++i;
     }
@@ -2693,10 +2689,10 @@ CVFS::RemoveDirToWatch( const CString& dirToWatch )
     TConstMountLinkVector::iterator i = mountLinks.begin();
     while ( i != mountLinks.end() )
     {
-        TConstMountLink& mountLink = (*i);
-        TArchivePtr archiveToWatch = mountLink.mountEntry->archive;
+        TConstMountLinkPtr& mountLink = (*i);
+        TArchivePtr archiveToWatch = mountLink->mountEntry->archive;
 
-        if ( !archiveToWatch->RemoveDirToWatch( mountLink.remainder ) )
+        if ( !archiveToWatch->RemoveDirToWatch( mountLink->remainder ) )
             totalSuccess = false;
         ++i;
     }
@@ -2716,8 +2712,8 @@ CVFS::RemoveAllWatches( void )
     TMountVector::iterator i = m_mountList.begin();
     while ( i != m_mountList.end() )
     {
-        TMountEntry& mountEntry = (*i);
-        if ( !mountEntry.archive->RemoveAllWatches() )
+        TMountEntryPtr mountEntry = (*i);
+        if ( !mountEntry->archive->RemoveAllWatches() )
             totalSuccess = false;
         ++i;
     }
@@ -2737,16 +2733,16 @@ CVFS::GetAllWatchedDirs( CString::StringSet& dirs ) const
     TMountVector::const_iterator i = m_mountList.begin();
     while ( i != m_mountList.end() )
     {
-        const TMountEntry& mountEntry = (*i);
+        const TMountEntryPtr mountEntry = (*i);
 
         CString::StringSet archiveDirs;
-        if ( mountEntry.archive->GetAllWatchedDirs( archiveDirs ) )
+        if ( mountEntry->archive->GetAllWatchedDirs( archiveDirs ) )
         {
             CString::StringSet::const_iterator n = archiveDirs.begin();
             while ( n != archiveDirs.end() )
             {
                 const CString& archiveDir = (*n);
-                CString vfsPath = ConformVfsDirPath( CORE::CombinePath( mountEntry.mountPath, archiveDir ) );
+                CString vfsPath = ConformVfsDirPath( CORE::CombinePath( mountEntry->mountPath, archiveDir ) );
                 dirs.insert( vfsPath );
                 ++n;
             }
@@ -2817,6 +2813,30 @@ CVFS::ReadOnlyUnlock( void ) const
 {GUCEF_TRACE;
 
     return MT::CReadWriteLock::RwLockStateToLockStatus( m_rwdataLock.ReaderStop() );
+}
+
+/*-------------------------------------------------------------------------*/
+
+CVFS::MountEntry::MountEntry( void )
+    : CORE::CTSharedObjCreator< MountEntry, MT::CNoLock >( this )
+    , abspath()
+    , path()
+    , writeable( false )
+    , archive()
+    , archiveType()
+    , mountPath()
+{GUCEF_TRACE;
+
+}
+
+/*-------------------------------------------------------------------------*/
+
+CVFS::ConstMountLink::ConstMountLink( const TMountEntryPtr& srcMountEntry )
+    : CORE::CTSharedObjCreator< ConstMountLink, MT::CNoLock >( this )
+    , mountEntry( srcMountEntry )
+    , remainder()
+{GUCEF_TRACE;
+
 }
 
 /*-------------------------------------------------------------------------//

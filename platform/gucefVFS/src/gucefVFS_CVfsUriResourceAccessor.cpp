@@ -223,7 +223,7 @@ CVfsUriResourceAccessor::GetPartialResource( const CORE::CUri& uri        ,
         if ( !fileAccess.IsNULL() ) 
         {
             fileAccess->Open();
-            if ( 0 != fileAccess->Seek( SEEK_SET, byteOffset ) )
+            if ( 0 != fileAccess->Seek( byteOffset, SEEK_SET ) )
             {            
                 destination.Open();
                 destination.Write( *fileAccess, bytesToGet );            
@@ -364,7 +364,7 @@ CVfsUriResourceAccessor::UpdatePartialResource( const CORE::CUri& uri ,
         if ( !fileAccess.IsNULL() ) 
         {
             fileAccess->Open();
-            if ( 0 != fileAccess->Seek( SEEK_SET, byteOffset ) )
+            if ( 0 != fileAccess->Seek( byteOffset, SEEK_SET ) )
             {            
                 src.Open();
                 fileAccess->Write( src, bytesToWrite );            

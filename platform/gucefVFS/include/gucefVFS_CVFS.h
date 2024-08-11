@@ -672,8 +672,12 @@ class GUCEF_VFS_PUBLIC_CPP CVFS : public CORE::CTSGNotifier          ,
     
     private:
 
-    struct SMountEntry
+    class GUCEF_VFS_PRIVATE_CPP MountEntry : public CORE::CTSharedObjCreator< MountEntry, MT::CNoLock >
     {
+        public:
+
+        MountEntry( void );
+
         CORE::CString abspath;
         CORE::CString path;
         bool writeable;
@@ -681,20 +685,27 @@ class GUCEF_VFS_PUBLIC_CPP CVFS : public CORE::CTSGNotifier          ,
         CORE::CString archiveType;
         CORE::CString mountPath;
     };
-    typedef struct SMountEntry TMountEntry;
-    
-    struct SConstMountLink
+    typedef MountEntry::TSharedPtrType TMountEntryPtr;
+
+    class GUCEF_VFS_PRIVATE_CPP ConstMountLink : public CORE::CTSharedObjCreator< ConstMountLink, MT::CNoLock >
     {
-        const TMountEntry* mountEntry;
+        public:
+        
+        ConstMountLink( const TMountEntryPtr& srcMountEntry );
+
+        const TMountEntryPtr mountEntry;
         CString remainder;
+
+        private:
+        ConstMountLink( void );
     };
-    typedef struct SConstMountLink TConstMountLink;
+    typedef ConstMountLink::TSharedPtrType TConstMountLinkPtr;
     
-    typedef std::vector< TMountEntry, gucef_allocator< TMountEntry > >              TMountVector;
-    typedef std::vector< TConstMountLink, gucef_allocator< TConstMountLink > >      TConstMountLinkVector;
-    typedef CORE::CTSharedPtr< CORE::CDynamicBuffer, MT::CMutex >                   TDynamicBufferPtr;
-    typedef std::vector< CArchiveSettings, gucef_allocator< CArchiveSettings > >    TArchiveSettingsVector;
-    typedef std::map< VFS::CArchive*, TMountEntry* >                                TArchivePtrToMountEntryMap;
+    typedef std::vector< TMountEntryPtr, gucef_allocator< TMountEntryPtr > >         TMountVector;
+    typedef std::vector< TConstMountLinkPtr, gucef_allocator< TConstMountLinkPtr > > TConstMountLinkVector;
+    typedef CORE::CTSharedPtr< CORE::CDynamicBuffer, MT::CMutex >                    TDynamicBufferPtr;
+    typedef std::vector< CArchiveSettings, gucef_allocator< CArchiveSettings > >     TArchiveSettingsVector;
+    typedef std::map< VFS::CArchive*, TMountEntryPtr >                               TArchivePtrToMountEntryMap;
 
     typedef CORE::CTEventHandlerFunctor< CVFS >          TEventCallback;
     
