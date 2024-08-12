@@ -35,8 +35,8 @@ configuration( {} )
 kind( "ConsoleApp" )
 
 configuration( {} )
-links( { "gucefCOM", "gucefCOMCORE", "gucefCORE", "gucefMT", "gucefVFS", "gucefWEB" } )
-links( { "gucefCOM", "gucefCOMCORE", "gucefCORE", "gucefMT", "gucefVFS", "gucefWEB" } )
+links( { "gucefCOM", "gucefCOMCORE", "gucefCORE", "gucefIMAGE", "gucefMT", "gucefVFS", "gucefWEB" } )
+links( { "gucefCOM", "gucefCOMCORE", "gucefCORE", "gucefIMAGE", "gucefMT", "gucefVFS", "gucefWEB" } )
 
 
 configuration( {} )
@@ -56,7 +56,7 @@ files( {
 
 
 configuration( {} )
-includedirs( { "../../common/include", "../../platform/gucefCOM/include", "../../platform/gucefCOMCORE/include", "../../platform/gucefCORE/include", "../../platform/gucefMT/include", "../../platform/gucefVFS/include", "../../platform/gucefWEB/include", "include" } )
+includedirs( { "../../common/include", "../../platform/gucefCOM/include", "../../platform/gucefCOMCORE/include", "../../platform/gucefCORE/include", "../../platform/gucefIMAGE/include", "../../platform/gucefMT/include", "../../platform/gucefVFS/include", "../../platform/gucefWEB/include", "include" } )
 
 configuration( { "ANDROID" } )
 includedirs( { "../../platform/gucefCORE/include/android" } )

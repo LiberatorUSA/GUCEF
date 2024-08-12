@@ -31,6 +31,7 @@ LOCAL_C_INCLUDES := \
   $(MY_MODULE_PATH)/../../platform/gucefCOMCORE/include \
   $(MY_MODULE_PATH)/../../platform/gucefCORE/include \
   $(MY_MODULE_PATH)/../../platform/gucefCORE/include/android \
+  $(MY_MODULE_PATH)/../../platform/gucefIMAGE/include \
   $(MY_MODULE_PATH)/../../platform/gucefMT/include \
   $(MY_MODULE_PATH)/../../platform/gucefVFS/include \
   $(MY_MODULE_PATH)/../../platform/gucefWEB/include
@@ -40,6 +41,7 @@ LOCAL_SHARED_LIBRARIES := \
   gucefCOM \
   gucefCOMCORE \
   gucefCORE \
+  gucefIMAGE \
   gucefMT \
   gucefVFS \
   gucefWEB

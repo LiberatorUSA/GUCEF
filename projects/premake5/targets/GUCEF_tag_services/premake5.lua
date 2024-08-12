@@ -50,6 +50,7 @@ filter "ALL"
   include( "platform/gucefCOM" )
   include( "platform/gucefCOMCORE" )
   include( "platform/gucefCORE" )
+  include( "platform/gucefIMAGE" )
   include( "platform/gucefMT" )
   include( "platform/gucefPUBSUB" )
   include( "platform/gucefVFS" )
@@ -60,6 +61,7 @@ filter "ALL"
   include( "plugins/CORE/dstorepluginJSONPARSER" )
   include( "plugins/CORE/dstorepluginPARSIFALXML" )
   include( "plugins/CORE/dstorepluginYAML" )
+  include( "plugins/IMAGE/imgpluginFreeImage" )
   include( "plugins/PUBSUB/pubsubpluginAWSSQS" )
   include( "plugins/PUBSUB/pubsubpluginKAFKA" )
   include( "plugins/PUBSUB/pubsubpluginREDISCLUSTER" )
@@ -208,6 +210,7 @@ filter "IOS"
   include( "tools/udp2rediscluster" )
 
 filter "LINUX32"
+  include( "dependencies/FreeImage" )
   include( "dependencies/aws-cpp-sdk-core" )
   include( "dependencies/aws-cpp-sdk-s3" )
   include( "dependencies/aws-crt-cpp" )
@@ -235,6 +238,7 @@ filter "LINUX32"
   include( "platform/gucefCOM" )
   include( "platform/gucefCOMCORE" )
   include( "platform/gucefCORE" )
+  include( "platform/gucefIMAGE" )
   include( "platform/gucefMT" )
   include( "platform/gucefVFS" )
   include( "platform/gucefWEB" )
@@ -243,6 +247,7 @@ filter "LINUX32"
   include( "plugins/CORE/dstorepluginJSONPARSER" )
   include( "plugins/CORE/dstorepluginPARSIFALXML" )
   include( "plugins/CORE/dstorepluginYAML" )
+  include( "plugins/IMAGE/imgpluginFreeImage" )
   include( "plugins/SHARED/pluginglueAWSSDK" )
   include( "plugins/VFS/vfspluginAWSS3" )
   include( "plugins/VFS/vfspluginZIP" )
@@ -260,6 +265,7 @@ filter "LINUX32"
   include( "tools/udp2rediscluster" )
 
 filter "LINUX64"
+  include( "dependencies/FreeImage" )
   include( "dependencies/aws-cpp-sdk-core" )
   include( "dependencies/aws-cpp-sdk-s3" )
   include( "dependencies/aws-crt-cpp" )
@@ -287,6 +293,7 @@ filter "LINUX64"
   include( "platform/gucefCOM" )
   include( "platform/gucefCOMCORE" )
   include( "platform/gucefCORE" )
+  include( "platform/gucefIMAGE" )
   include( "platform/gucefMT" )
   include( "platform/gucefVFS" )
   include( "platform/gucefWEB" )
@@ -295,6 +302,7 @@ filter "LINUX64"
   include( "plugins/CORE/dstorepluginJSONPARSER" )
   include( "plugins/CORE/dstorepluginPARSIFALXML" )
   include( "plugins/CORE/dstorepluginYAML" )
+  include( "plugins/IMAGE/imgpluginFreeImage" )
   include( "plugins/SHARED/pluginglueAWSSDK" )
   include( "plugins/VFS/vfspluginAWSS3" )
   include( "plugins/VFS/vfspluginZIP" )
@@ -432,6 +440,7 @@ filter "UNIX"
   include( "tools/udp2rediscluster" )
 
 filter "WIN32"
+  include( "dependencies/FreeImage" )
   include( "dependencies/aws-cpp-sdk-core" )
   include( "dependencies/aws-cpp-sdk-s3" )
   include( "dependencies/aws-cpp-sdk-sqs" )
@@ -461,6 +470,7 @@ filter "WIN32"
   include( "platform/gucefCOM" )
   include( "platform/gucefCOMCORE" )
   include( "platform/gucefCORE" )
+  include( "platform/gucefIMAGE" )
   include( "platform/gucefMT" )
   include( "platform/gucefPUBSUB" )
   include( "platform/gucefVFS" )
@@ -471,6 +481,7 @@ filter "WIN32"
   include( "plugins/CORE/dstorepluginJSONPARSER" )
   include( "plugins/CORE/dstorepluginPARSIFALXML" )
   include( "plugins/CORE/dstorepluginYAML" )
+  include( "plugins/IMAGE/imgpluginFreeImage" )
   include( "plugins/PUBSUB/pubsubpluginAWSSQS" )
   include( "plugins/PUBSUB/pubsubpluginKAFKA" )
   include( "plugins/PUBSUB/pubsubpluginMSMQ" )
@@ -502,6 +513,7 @@ filter "WIN32"
   include( "tools/udp2rediscluster" )
 
 filter "WIN64"
+  include( "dependencies/FreeImage" )
   include( "dependencies/aws-cpp-sdk-core" )
   include( "dependencies/aws-cpp-sdk-s3" )
   include( "dependencies/aws-cpp-sdk-sqs" )
@@ -531,6 +543,7 @@ filter "WIN64"
   include( "platform/gucefCOM" )
   include( "platform/gucefCOMCORE" )
   include( "platform/gucefCORE" )
+  include( "platform/gucefIMAGE" )
   include( "platform/gucefMT" )
   include( "platform/gucefPUBSUB" )
   include( "platform/gucefVFS" )
@@ -541,6 +554,7 @@ filter "WIN64"
   include( "plugins/CORE/dstorepluginJSONPARSER" )
   include( "plugins/CORE/dstorepluginPARSIFALXML" )
   include( "plugins/CORE/dstorepluginYAML" )
+  include( "plugins/IMAGE/imgpluginFreeImage" )
   include( "plugins/PUBSUB/pubsubpluginAWSSQS" )
   include( "plugins/PUBSUB/pubsubpluginKAFKA" )
   include( "plugins/PUBSUB/pubsubpluginMSMQ" )

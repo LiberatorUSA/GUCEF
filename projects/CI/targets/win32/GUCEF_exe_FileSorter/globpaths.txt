@@ -1,4 +1,5 @@
 common/include/*
+dependencies/FreeImage/*
 dependencies/aws-cpp-sdk-core/*
 dependencies/aws-cpp-sdk-s3/*
 dependencies/aws-crt-cpp/*

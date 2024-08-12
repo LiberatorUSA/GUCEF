@@ -3,6 +3,7 @@
 	<Module Name="FileSorter" Platform="All" Type="Executable" Tags="services" >
 		<Dependencies>
 			<Dependency Name="gucefWEB" />
+			<Dependency Name="gucefIMAGE" />
 			<Dependency Name="gucefVFS" />
 			<Dependency Name="gucefCOM" />
 			<Dependency Name="gucefCOMCORE" />
@@ -11,6 +12,7 @@
 		</Dependencies>
 		<Linker>
 			<Dependency Name="gucefWEB" />
+			<Dependency Name="gucefIMAGE" />
 			<Dependency Name="gucefVFS" />
 			<Dependency Name="gucefCOM" />
 			<Dependency Name="gucefCOMCORE" />
@@ -25,6 +27,7 @@
 			<RuntimeDependency Name="dstorepluginYAML" />
 			<RuntimeDependency Name="codecspluginZLIB" />
 			<RuntimeDependency Name="codecspluginSTBRUMMEHASH" />
-		</RuntimeDependencies>			
+			<RuntimeDependency Name="imgpluginFreeImage" />
+		</RuntimeDependencies>
 	</Module>
 </ModuleInfoEntry>

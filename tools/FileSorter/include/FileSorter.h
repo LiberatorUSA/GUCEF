@@ -234,6 +234,7 @@ class FileSorterConfig : public CORE::CGloballyConfigurable
     CORE::CString dayFolderDecoration;
     bool sortAllFileTypes;
     TFileTypeSet fileTypesToSort;
+    bool tryToGetGeoInfoFromImages;
 
     private:
 

@@ -77,6 +77,11 @@
 #define GUCEF_WEB_CHTTPENCODINGTYPES_H
 #endif /* GUCEF_WEB_CHTTPENCODINGTYPES_H ? */
 
+#ifndef GUCEF_IMAGE_CIMAGE_H
+#include "gucefIMAGE_CImage.h"
+#define GUCEF_IMAGE_CIMAGE_H
+#endif /* GUCEF_IMAGE_CIMAGE_H ? */
+
 #include "FileSorter.h"
 
 /*-------------------------------------------------------------------------//
@@ -400,6 +405,7 @@ FileSorterConfig::FileSorterConfig( void )
     , dayFolderDecoration( "{month}.{day}.{year}" )
     , sortAllFileTypes( false )
     , fileTypesToSort()
+    , tryToGetGeoInfoFromImages( false ) 
 {GUCEF_TRACE;
 
 }
@@ -448,6 +454,8 @@ FileSorterConfig::LoadConfig( const CORE::CDataNode& globalConfig )
     CORE::CString fileTypesToSortStr = CORE::ToString( fileTypesToSortStrSet );
     fileTypesToSortStr = cfg->GetAttributeValueOrChildValueByName( "fileTypesToSort", fileTypesToSortStr ).AsString( fileTypesToSortStr, true );
     fileTypesToSortStrSet = CORE::StringToStringSet( fileTypesToSortStr );
+
+    tryToGetGeoInfoFromImages = cfg->GetAttributeValueOrChildValueByName( "tryToGetGeoInfoFromImages", tryToGetGeoInfoFromImages ).AsBool( tryToGetGeoInfoFromImages, true );
     fileTypesToSort = FileTypeConfig::GetFileTypesForStringSet( fileTypesToSortStrSet );
     
     const CORE::CDataNode* fileTypeConfigNode = cfg->FindChild( "FileTypeConfig" );
@@ -494,6 +502,25 @@ FileSorter::SortFile( const CORE::CString& currentVfsFilePath )
     const CORE::CString& typeSortRootFolder = m_appConfig.fileTypeConfig.GetSortRootFolderForFileType( fileType );    
         
     CORE::CString targetVfsPath = m_appConfig.vfsSortedTargetRootPath + "/" + typeSortRootFolder;
+    
+    if ( fileType == TFileType::FILETYPE_IMAGE &&
+         m_appConfig.tryToGetGeoInfoFromImages )
+    {
+        IMAGE::CImage img;
+        VFS::TBasicVfsResourcePtr file = vfs.GetFile( currentVfsFilePath, "rb", false );
+        if ( !file.IsNULL() )
+        {
+            CORE::IOAccessPtr ioAccess = file->GetAccess();
+            if ( !ioAccess.IsNULL() )
+            {
+                if ( img.Load( *ioAccess, fileExt, false, true ) )
+                {
+                    const CORE::CValueList& imgMetaData = img.GetMetaData();
+                    // @TODO: extract geo info from image meta data
+                }
+            }
+        }       
+    }
     
     if ( m_appConfig.useDateTimeFolderStructure )    
     {                               

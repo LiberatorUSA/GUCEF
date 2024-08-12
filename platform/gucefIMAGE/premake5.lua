@@ -55,8 +55,9 @@ files( {
   "include/gucefIMAGE_CPixelMap.h",
   "include/gucefIMAGE_CPluginImageCodecItem.h",
   "include/gucefIMAGE_ETypes.h",
+  "include/gucefIMAGE_c_image_tags.h",
+  "include/gucefIMAGE_c_imagedata.h",
   "include/gucefIMAGE_config.h",
-  "include/gucefIMAGE_imagedata.h",
   "include/gucefIMAGE_macros.h"
  } )
 

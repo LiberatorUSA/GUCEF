@@ -78,6 +78,9 @@ include $(MY_MODULE_PATH)/Android.mk
 MY_MODULE_PATH := $(PROJECT_ROOT_PATH)/../../../../platform/gucefCOM
 include $(MY_MODULE_PATH)/Android.mk
 
+MY_MODULE_PATH := $(PROJECT_ROOT_PATH)/../../../../platform/gucefIMAGE
+include $(MY_MODULE_PATH)/Android.mk
+
 MY_MODULE_PATH := $(PROJECT_ROOT_PATH)/../../../../platform/gucefVFS
 include $(MY_MODULE_PATH)/Android.mk
 
@@ -150,9 +153,6 @@ include $(MY_MODULE_PATH)/Android.mk
 MY_MODULE_PATH := $(PROJECT_ROOT_PATH)/../../../../tools/FilePusher
 include $(MY_MODULE_PATH)/Android.mk
 
-MY_MODULE_PATH := $(PROJECT_ROOT_PATH)/../../../../tools/FileSorter
-include $(MY_MODULE_PATH)/Android.mk
-
 MY_MODULE_PATH := $(PROJECT_ROOT_PATH)/../../../../tools/ProcessMetrics
 include $(MY_MODULE_PATH)/Android.mk
 
@@ -166,6 +166,9 @@ MY_MODULE_PATH := $(PROJECT_ROOT_PATH)/../../../../dependencies/aws-crt-cpp/crt/
 include $(MY_MODULE_PATH)/Android.mk
 
 MY_MODULE_PATH := $(PROJECT_ROOT_PATH)/../../../../dependencies/aws-crt-cpp/crt/aws-c-mqtt
+include $(MY_MODULE_PATH)/Android.mk
+
+MY_MODULE_PATH := $(PROJECT_ROOT_PATH)/../../../../tools/FileSorter
 include $(MY_MODULE_PATH)/Android.mk
 
 MY_MODULE_PATH := $(PROJECT_ROOT_PATH)/../../../../tools/GucefLogServiceApp

@@ -39,7 +39,7 @@
 #endif /* GUCEF_IMAGE_MACROS_H ? */
 
 #ifndef GUCEF_IMAGE_IMAGEDATA_H
-#include "gucefIMAGE_imagedata.h"               /* C-style shared header for image related types */
+#include "gucefIMAGE_c_imagedata.h"               /* C-style shared header for image related types */
 #define GUCEF_IMAGE_IMAGEDATA_H
 #endif /* GUCEF_IMAGE_IMAGEDATA_H ? */
 

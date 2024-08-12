@@ -102,6 +102,11 @@
 #define GUCEF_WEB_CWEBGLOBAL_H
 #endif /* GUCEF_WEB_CWEBGLOBAL_H ? */
 
+#ifndef GUCEF_IMAGE_CIMAGEGLOBAL_H
+#include "gucefIMAGE_CImageGlobal.h"
+#define GUCEF_IMAGE_CIMAGEGLOBAL_H
+#endif /* GUCEF_IMAGE_CIMAGEGLOBAL_H ? */
+
 #include "FileSorter.h"
 
 /*-------------------------------------------------------------------------//
@@ -252,6 +257,7 @@ GUCEF_OSSERVICEMAIN_BEGIN( "FileSorter" )
     COMCORE::CComCoreGlobal::Instance();
     COM::CComGlobal::Instance();
     VFS::CVfsGlobal::Instance();
+    IMAGE::CImageGlobal::Instance();
     WEB::CWebGlobal::Instance();
 
     // Check for config param first

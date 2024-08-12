@@ -75,6 +75,7 @@ GUCEF_IMPLEMENT_MSGEXCEPTION( CImage, EInvalidIndex );
 
 CImage::CImage( void )
     : m_frameList()
+    , m_metaData()
 {GUCEF_TRACE;
 
 }
@@ -83,6 +84,7 @@ CImage::CImage( void )
 
 CImage::CImage( const TFrameList& frameList )
     : m_frameList( frameList )
+    , m_metaData()
 {GUCEF_TRACE;
 
 }
@@ -91,6 +93,7 @@ CImage::CImage( const TFrameList& frameList )
 
 CImage::CImage( const TMipMapList& mipmapList )
     : m_frameList()
+    , m_metaData()
 {GUCEF_TRACE;
 
     m_frameList.push_back( mipmapList );
@@ -100,6 +103,7 @@ CImage::CImage( const TMipMapList& mipmapList )
 
 CImage::CImage( const TPixelMapPtr& pixelMapPtr )
     : m_frameList()
+    , m_metaData()
 {GUCEF_TRACE;
 
     TMipMapList mipmapList;
@@ -333,6 +337,8 @@ CImage::Clear( void )
     // Because we are using shared pointers all we have to do is clear the list
     // this will cause things to be de-allocated as needed
     m_frameList.clear();
+
+    m_metaData.Clear();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -438,28 +444,49 @@ CImage::GetTotalPixelStorageSize( void ) const
 
 bool
 CImage::Load( CORE::CIOAccess& data         ,
-              const CORE::CString& dataType )
+              const CORE::CString& dataType ,
+              bool loadImageData            ,
+              bool loadMetaData             )
 {GUCEF_TRACE;
 
     CImageCodecRegistry::TImageCodecPtr imageCodec;
     if ( CImageGlobal::Instance()->GetImageCodecRegistry().TryLookup( dataType, imageCodec, false ) )
     {
-        // We have found a codec we can use, now try to load the data
-        return imageCodec->Decode( data  ,
-                                   *this );
-    }
-
-    // Since no codec was found with the extended image interface we will see if we can use a codec with the basic interface
-    CORE::CCodecRegistry::TCodecFamilyRegistryPtr codecRegistry;
-    if ( CORE::CCoreGlobal::Instance()->GetCodecRegistry().TryLookup( "ImageCodec", codecRegistry, true ) )
-    {
-        CORE::CCodecRegistry::TICodecPtr codec;
-        if ( codecRegistry->TryLookup( dataType, codec, false ) )
+        bool success = true;
+        if ( loadImageData )
         {
             // We have found a codec we can use, now try to load the data
-            CIMGCodec codecUtil( codec );
-            return codecUtil.Decode( data  ,
-                                     *this );
+            success = success && imageCodec->Decode( data  ,
+                                                     *this );
+        }
+        if ( loadMetaData )
+        {
+            // We have found a codec we can use, now try to load the meta-data
+            success = success && imageCodec->DecodeMetaData( data       ,
+                                                             m_metaData );
+        }
+        return success;
+    }
+
+    // We have not found a codec with the extended image interface
+    // because meta data is requested we will not try to load the data
+    if ( loadMetaData )
+        return false;
+
+    if ( loadImageData )
+    {
+        // Since no codec was found with the extended image interface we will see if we can use a codec with the basic interface
+        CORE::CCodecRegistry::TCodecFamilyRegistryPtr codecRegistry;
+        if ( CORE::CCoreGlobal::Instance()->GetCodecRegistry().TryLookup( "ImageCodec", codecRegistry, true ) )
+        {
+            CORE::CCodecRegistry::TICodecPtr codec;
+            if ( codecRegistry->TryLookup( dataType, codec, false ) )
+            {
+                // We have found a codec we can use, now try to load the data
+                CIMGCodec codecUtil( codec );
+                return codecUtil.Decode( data  ,
+                                         *this );
+            }
         }
     }
     return false;
@@ -469,13 +496,15 @@ CImage::Load( CORE::CIOAccess& data         ,
 
 bool
 CImage::Load( const CORE::CString& filePath ,
-              const CORE::CString& dataType )
+              const CORE::CString& dataType ,
+              bool loadImageData            ,
+              bool loadMetaData             )
 {GUCEF_TRACE;
 
     CORE::CFileAccess fileAccess;
     if ( fileAccess.Open( filePath ) )
     {
-        return Load( fileAccess, dataType );
+        return Load( fileAccess, dataType, loadImageData, loadMetaData );
     }
     return false;
 }
@@ -544,6 +573,24 @@ CImage::Save( const CORE::CString& filePath )
 
     CORE::CString dataType = CORE::ExtractFileExtention( filePath );
     return Save( filePath, dataType );
+}
+
+/*-------------------------------------------------------------------------*/
+
+CORE::CValueList& 
+CImage::GetMetaData( void )
+{GUCEF_TRACE;
+
+    return m_metaData;
+}
+
+/*-------------------------------------------------------------------------*/
+
+const CORE::CValueList& 
+CImage::GetMetaData( void ) const
+{GUCEF_TRACE;
+
+    return m_metaData;
 }
 
 /*-------------------------------------------------------------------------//

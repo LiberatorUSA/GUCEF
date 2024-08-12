@@ -2,6 +2,7 @@ common/include/*
 dependencies/*
 platform/gucefCOM/*
 platform/gucefCORE/*
+platform/gucefIMAGE/*
 platform/gucefMT/*
 platform/gucefVFS/*
 platform/gucefWEB/*
@@ -10,6 +11,7 @@ plugins/CORE/codecspluginZLIB/*
 plugins/CORE/dstorepluginJSONPARSER/*
 plugins/CORE/dstorepluginPARSIFALXML/*
 plugins/CORE/dstorepluginYAML/*
+plugins/IMAGE/imgpluginFreeImage/*
 plugins/SHARED/pluginglueAWSSDK/*
 plugins/VFS/vfspluginAWSS3/*
 plugins/VFS/vfspluginZIP/*

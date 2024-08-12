@@ -35,10 +35,10 @@ if ( WIN32 )
 else()
   add_executable( ${MODULE_NAME} ${ALL_FILES} )
 endif()
-add_dependencies( ${MODULE_NAME} gucefCOM gucefCOMCORE gucefCORE gucefMT gucefVFS gucefWEB )
-target_link_libraries( ${MODULE_NAME} gucefCOM gucefCOMCORE gucefCORE gucefMT gucefVFS gucefWEB )
+add_dependencies( ${MODULE_NAME} gucefCOM gucefCOMCORE gucefCORE gucefIMAGE gucefMT gucefVFS gucefWEB )
+target_link_libraries( ${MODULE_NAME} gucefCOM gucefCOMCORE gucefCORE gucefIMAGE gucefMT gucefVFS gucefWEB )
 
-include_directories( ../../common/include ../../platform/gucefCOM/include ../../platform/gucefCOMCORE/include ../../platform/gucefCORE/include ../../platform/gucefMT/include ../../platform/gucefVFS/include ../../platform/gucefWEB/include include )
+include_directories( ../../common/include ../../platform/gucefCOM/include ../../platform/gucefCOMCORE/include ../../platform/gucefCORE/include ../../platform/gucefIMAGE/include ../../platform/gucefMT/include ../../platform/gucefVFS/include ../../platform/gucefWEB/include include )
 
 if ( ANDROID )
   include_directories( ../../platform/gucefCORE/include/android )
