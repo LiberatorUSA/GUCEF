@@ -899,6 +899,208 @@ IMGCODECPLUGIN_DecodeImage( void* pluginData      ,
 
 /*---------------------------------------------------------------------------*/
 
+void
+MapFreeImageMetaDataTag( FREE_IMAGE_MDMODEL model               , 
+                         FITAG* tag                             , 
+                         TValueMapParserCallbacks* mapCallbacks )
+{
+    if ( tag != GUCEF_NULL )
+    {
+        WORD tagId = FreeImage_GetTagID( tag );
+        FREE_IMAGE_MDTYPE tagType = FreeImage_GetTagType( tag );
+        DWORD tagLength = FreeImage_GetTagLength( tag );
+        const void* tagValue = FreeImage_GetTagValue( tag );
+
+        TVariantData keyVariant;
+        TVariantData valueVariant;
+
+        keyVariant.union_data.uint16_data = tagId;
+        keyVariant.containedType = GUCEF_DATATYPE_UINT16;
+
+        switch ( tagType )
+        {
+            case FIDT_BYTE:
+            {
+                valueVariant.union_data.uint8_data = *(UInt8*) tagValue;
+                valueVariant.containedType = GUCEF_DATATYPE_UINT8;
+                break;
+            }
+            case FIDT_ASCII:
+            {
+                valueVariant.union_data.heap_data.heap_data_is_linked = 1;
+                valueVariant.union_data.heap_data.union_data.char_heap_data = (char*) tagValue;
+                valueVariant.union_data.heap_data.heap_data_size = tagLength;
+                valueVariant.containedType = GUCEF_DATATYPE_ASCII_STRING;
+                break;
+            }
+            case FIDT_SHORT:
+            {
+                valueVariant.union_data.uint16_data = *(UInt16*) tagValue;
+                valueVariant.containedType = GUCEF_DATATYPE_UINT16;
+                break;
+            }
+            case FIDT_LONG:
+            {
+                valueVariant.union_data.uint32_data = *(UInt32*) tagValue;
+                valueVariant.containedType = GUCEF_DATATYPE_UINT32;
+                break;
+            }
+            case FIDT_SBYTE:
+            {
+                valueVariant.union_data.int8_data = *(Int8*) tagValue;
+                valueVariant.containedType = GUCEF_DATATYPE_INT8;
+                break;
+            }
+            case FIDT_UNDEFINED:
+            {
+                valueVariant.union_data.heap_data.union_data.void_heap_data = (void*) tagValue;
+                valueVariant.union_data.heap_data.heap_data_size = tagLength;
+                valueVariant.union_data.heap_data.heap_data_is_linked = 1;
+                valueVariant.containedType = GUCEF_DATATYPE_BINARY_BLOB;
+                break;
+            }
+            case FIDT_SSHORT:
+            {
+                valueVariant.union_data.int16_data = *(Int16*) tagValue;
+                valueVariant.containedType = GUCEF_DATATYPE_INT16;
+                break;
+            }
+            case FIDT_SLONG:
+            {
+                valueVariant.union_data.int32_data = *(Int32*) tagValue;
+                valueVariant.containedType = GUCEF_DATATYPE_INT32;
+                break;
+            }
+            case FIDT_FLOAT:
+            {
+                valueVariant.union_data.float32_data = *(Float32*)tagValue;
+                valueVariant.containedType = GUCEF_DATATYPE_FLOAT32;
+                break;
+            }
+            case FIDT_DOUBLE:
+            {
+                valueVariant.union_data.float64_data = *(Float64*) tagValue;
+                valueVariant.containedType = GUCEF_DATATYPE_FLOAT64;
+                break;
+            }
+            case FIDT_IFD:
+            {
+                if ( tagLength <= GUCEF_VARIANT_BSOB_SIZE )
+                {
+                    memcpy( valueVariant.union_data.bsob_data, tagValue, tagLength );
+                    valueVariant.containedType = GUCEF_DATATYPE_BINARY_BSOB;
+                }
+                else
+                {
+                    valueVariant.union_data.heap_data.union_data.void_heap_data = (void*) tagValue;
+                    valueVariant.union_data.heap_data.heap_data_size = tagLength;
+                    valueVariant.union_data.heap_data.heap_data_is_linked = 1;
+                    valueVariant.containedType = GUCEF_DATATYPE_BINARY_BLOB;
+                }
+                break;
+            }
+            case FIDT_IFD8:
+            case FIDT_LONG8:
+            {
+                valueVariant.union_data.uint64_data = *(UInt64*) tagValue;
+                valueVariant.containedType = GUCEF_DATATYPE_UINT64;
+                break;
+            }
+            case FIDT_SLONG8:
+            {
+                valueVariant.union_data.uint64_data = *(Int64*) tagValue;
+                valueVariant.containedType = GUCEF_DATATYPE_INT64;
+                break;
+            }
+            default:
+            {
+                return;    
+            }
+        }
+
+        mapCallbacks->OnKeyValuePair( mapCallbacks->privateData, &keyVariant, &valueVariant );
+    }
+}
+
+/*---------------------------------------------------------------------------*/
+
+void
+MapFreeImageMetaData( FREE_IMAGE_MDMODEL model               , 
+                      FIBITMAP* dib                          , 
+                      TValueMapParserCallbacks* mapCallbacks )
+{
+    BOOL result = 0;
+    FITAG* tag = GUCEF_NULL;
+    FIMETADATA* metaData = FreeImage_FindFirstMetadata( model, dib, &tag );
+    while ( metaData != GUCEF_NULL )
+    {
+        MapFreeImageMetaDataTag( model, tag, mapCallbacks );
+        result = FreeImage_FindNextMetadata( metaData, &tag );
+        if ( 0 == result )
+            break;
+    }
+    FreeImage_FindCloseMetadata( metaData );
+}
+
+/*---------------------------------------------------------------------------*/
+
+UInt32 GUCEF_PLUGIN_CALLSPEC_PREFIX
+IMGCODECPLUGIN_DecodeImageMetaData( void* pluginData                       ,
+                                    void* codecData                        ,
+                                    const char* codecType                  ,
+                                    TIOAccess* input                       ,
+                                    TValueMapParserCallbacks* mapCallbacks )
+{
+    /* this library does not support metadata */
+    if ( GUCEF_NULL != mapCallbacks )
+    {
+        FREE_IMAGE_FORMAT fif = FIF_UNKNOWN;
+        FIBITMAP* dib = GUCEF_NULL;
+        
+        mapCallbacks->OnValueMapBegin( mapCallbacks->privateData, 0, 0 );
+
+        fif = FreeImage_GetFileTypeFromHandle( &io, (fi_handle) input, 0 );
+
+        if ( fif == FIF_UNKNOWN )
+        {
+            fif = FreeImage_GetFIFFromFormat( codecType );
+            if ( fif == FIF_UNKNOWN )
+            {
+                fif = GetFileTypeFromExt( codecType );
+            }
+        }
+
+	    /* Load the bitmap */
+        if( fif != FIF_UNKNOWN )
+        {
+            dib = FreeImage_LoadFromHandle( fif, &io, (fi_handle) input, 0 );
+            if ( dib != NULL )
+            {
+                /* now we map the metadata */
+                MapFreeImageMetaData( FIMD_COMMENTS, dib, mapCallbacks );
+                MapFreeImageMetaData( FIMD_EXIF_MAIN, dib, mapCallbacks );
+                MapFreeImageMetaData( FIMD_EXIF_EXIF, dib, mapCallbacks );
+                MapFreeImageMetaData( FIMD_EXIF_GPS, dib, mapCallbacks );
+                MapFreeImageMetaData( FIMD_EXIF_MAKERNOTE, dib, mapCallbacks );
+                MapFreeImageMetaData( FIMD_EXIF_INTEROP, dib, mapCallbacks );       
+                MapFreeImageMetaData( FIMD_IPTC, dib, mapCallbacks );
+                MapFreeImageMetaData( FIMD_XMP, dib, mapCallbacks );
+                MapFreeImageMetaData( FIMD_GEOTIFF, dib, mapCallbacks );
+                MapFreeImageMetaData( FIMD_ANIMATION, dib, mapCallbacks );
+                MapFreeImageMetaData( FIMD_CUSTOM, dib, mapCallbacks );
+
+                FreeImage_Unload( dib );
+                dib = GUCEF_NULL;
+
+                return 1;
+            }
+	    }
+    }
+    return 0;
+}
+
+/*---------------------------------------------------------------------------*/
+
 UInt32 GUCEF_PLUGIN_CALLSPEC_PREFIX
 IMGCODECPLUGIN_EncodeImage( void* pluginData      ,
                             void* codecData       ,
