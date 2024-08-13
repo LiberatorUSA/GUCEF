@@ -81,7 +81,7 @@ class GUCEF_CORE_PUBLIC_CPP CValueList : public CIConfigurable          ,
 
     typedef CVariant::VariantVector                 TVariantVector;
     typedef CString::StringVector                   TStringVector;
-    typedef std::map< CString, TVariantVector >     TValueMap;
+    typedef std::map< CVariant, TVariantVector >    TValueMap;
 
     CValueList( void );
 
@@ -146,7 +146,45 @@ class GUCEF_CORE_PUBLIC_CPP CValueList : public CIConfigurable          ,
      *
      *  @exception EUnknownKey thrown if the given key is unknown
      */
+    CVariant& GetValue( const CVariant& key );
+
+    /**
+     *  Returns the first value associated with the
+     *  given key.
+     *
+     *  @exception EUnknownKey thrown if the given key is unknown
+     */
     const CVariant& GetValue( const CString& key ) const;
+
+    /**
+     *  Returns the first value associated with the
+     *  given key.
+     *
+     *  @exception EUnknownKey thrown if the given key is unknown
+     */
+    const CVariant& GetValue( const CVariant& key ) const;
+
+    /**
+     *  Attempt to assign or link the first value associated with the given key.
+     *  Note that this non-const version will be potentially more performant since its able to link data vs a deep copy
+     */
+    bool TryGetValue( const CString& key, CVariant& outValue, bool linkIfPossible = true );
+
+    /**
+     *  Attempt to assign or link the first value associated with the given key.
+     *  Note that this non-const version will be potentially more performant since its able to link data vs a deep copy
+     */
+    bool TryGetValue( const CVariant& key, CVariant& outValue, bool linkIfPossible = true );
+
+    /**
+     *  Attempt to assign or link the first value associated with the given key.
+     */
+    bool TryGetValue( const CString& key, CVariant& outValue ) const;
+
+    /**
+     *  Attempt to assign or link the first value associated with the given key.
+     */
+    bool TryGetValue( const CVariant& key, CVariant& outValue ) const;
 
     /**
      *  Returns the first value associated with the
@@ -154,7 +192,7 @@ class GUCEF_CORE_PUBLIC_CPP CValueList : public CIConfigurable          ,
      *  that no exception will be thrown if the key does not exist
      *  instead it will return an empty variant.
      */
-    CVariant GetValueAlways( const CString& key       ,
+    CVariant GetValueAlways( const CVariant& key      ,
                              const char* defaultValue ) const;
 
     /**
@@ -163,8 +201,8 @@ class GUCEF_CORE_PUBLIC_CPP CValueList : public CIConfigurable          ,
      *  that no exception will be thrown if the key does not exist
      *  instead it will return an empty variant.
      */
-    CVariant GetValueAlways( const CString& key          ,
-                             const CString& defaultValue ) const;
+    CVariant GetValueAlways( const CString& key           ,
+                             const CVariant& defaultValue ) const;
 
     /**
      *  Returns the first value associated with the
@@ -172,7 +210,16 @@ class GUCEF_CORE_PUBLIC_CPP CValueList : public CIConfigurable          ,
      *  that no exception will be thrown if the key does not exist
      *  instead it will return an empty variant.
      */
-    const CVariant& GetValueAlways( const CString& key                             ,
+    CVariant GetValueAlways( const CString& key                           ,
+                             const CString& defaultValue = CString::Empty ) const;
+
+    /**
+     *  Returns the first value associated with the
+     *  given key. This GetValue version differs from the others in
+     *  that no exception will be thrown if the key does not exist
+     *  instead it will return an empty variant.
+     */
+    const CVariant& GetValueAlways( const CVariant& key                            ,
                                     const CVariant& defaultValue = CVariant::Empty ) const;
 
     /**
@@ -202,9 +249,11 @@ class GUCEF_CORE_PUBLIC_CPP CValueList : public CIConfigurable          ,
      *  given key if any. Otherwise returns an empty list and will not throw an exception
      *  Aside from returning the multiple entries for the same key (if permitted) it will also
      *  perform sub string parsing for values per value entry
-     */
+     */    
+    TVariantVector GetValueVectorAlways( const CVariant& key, char valueSepChar ) const;
     TVariantVector GetValueVectorAlways( const CString& key, char valueSepChar ) const;
 
+    TVariantVector GetValueVectorAlways( const CVariant& key, char valueSepChar, const TVariantVector& defaultValues ) const;
     TVariantVector GetValueVectorAlways( const CString& key, char valueSepChar, const TVariantVector& defaultValues ) const;
 
     /**
@@ -262,13 +311,19 @@ class GUCEF_CORE_PUBLIC_CPP CValueList : public CIConfigurable          ,
      *
      *  @exception EIndexOutOfRange thrown if the given key index is invalid
      */
-    const CString& GetKey( const UInt32 index ) const;
+    const CVariant& GetKey( const UInt32 index ) const;
 
     bool HasKey( const CString& key ) const;
 
+    bool HasKey( const CVariant& key ) const;
+
     bool HasKeyAndValue( const CString& key, const CString& value ) const;
 
+    bool HasKeyAndValue( const CVariant& key, const CVariant& value ) const;
+
     void Delete( const CString& key );
+
+    void Delete( const CVariant& key );
 
     void DeleteAll( void );
 

@@ -146,7 +146,7 @@ CSubFileAccess::Read( void *dest      ,
     if ( pos + readBytes > m_offset + m_size )
     {        
         UInt64 remainder = m_size - ( pos - m_offset );
-        elements = remainder / esize; // intentional cutoff using int division
+        elements = (UInt32) ( remainder / esize ); // intentional cutoff using int division
         if ( 0 == elements ) 
             return 0;
     }

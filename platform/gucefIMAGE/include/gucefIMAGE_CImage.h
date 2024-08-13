@@ -37,6 +37,11 @@
 #define GUCEF_CORE_CVALUELIST_H
 #endif /* GUCEF_CORE_CVALUELIST_H ? */
 
+#ifndef GUCEF_CORE_CGEOLOCATION_H
+#include "gucefCORE_CGeoLocation.h"
+#define GUCEF_CORE_CGEOLOCATION_H
+#endif /* GUCEF_CORE_CGEOLOCATION_H ? */
+
 #ifndef GUCEF_IMAGE_CPIXELMAP_H
 #include "gucefIMAGE_CPixelMap.h"
 #define GUCEF_IMAGE_CPIXELMAP_H
@@ -164,6 +169,8 @@ class GUCEF_IMAGE_EXPORT_CPP CImage
     CORE::CValueList& GetMetaData( void );
 
     const CORE::CValueList& GetMetaData( void ) const;
+
+    bool TryGetGeoLocationFromMetaData( CORE::CGeoLocation& geoLoc ) const; 
 
     TImage* CreateCStyleAccess( void ) const;
 

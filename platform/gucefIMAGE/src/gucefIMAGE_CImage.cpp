@@ -37,6 +37,11 @@
 #define GUCEF_CORE_CCOREGLOBAL_H
 #endif /* GUCEF_CORE_CCOREGLOBAL_H ? */
 
+#ifndef GUCEF_IMAGE_IMAGETAGS_H
+#include "gucefIMAGE_c_image_tags.h"
+#define GUCEF_IMAGE_IMAGETAGS_H
+#endif /* GUCEF_IMAGE_IMAGETAGS_H ? */
+
 #ifndef GUCEF_IMAGE_CIMGCODEC_H
 #include "gucefIMAGE_CIMGCodec.h"
 #define GUCEF_IMAGE_CIMGCODEC_H
@@ -591,6 +596,35 @@ CImage::GetMetaData( void ) const
 {GUCEF_TRACE;
 
     return m_metaData;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool 
+CImage::TryGetGeoLocationFromMetaData( CORE::CGeoLocation& geoLoc ) const
+{GUCEF_TRACE;
+
+    // Try to get the GPS location from the meta-data
+    // latitude and longitude are required at minimum
+    CORE::CVariant latitude;
+    CORE::CVariant longitude;
+    if ( m_metaData.TryGetValue( GUCEF_IMAGE_TAG_GPS_LATITUDE, latitude ) &&
+         m_metaData.TryGetValue( GUCEF_IMAGE_TAG_GPS_LONGITUDE, longitude ) )
+    {
+        // altitude is an optional value, we will use it if its available
+        CORE::CVariant altitude;
+        if ( m_metaData.TryGetValue( GUCEF_IMAGE_TAG_GPS_ALTITUDE, altitude ) )
+        {
+            geoLoc = CORE::CGeoLocation( latitude.AsFloat64(), longitude.AsFloat64(), altitude.AsFloat64() );
+            return true;
+        }
+        else
+        {
+            geoLoc = CORE::CGeoLocation( latitude.AsFloat64(), longitude.AsFloat64() );
+            return true;
+        }
+    }
+    return false;
 }
 
 /*-------------------------------------------------------------------------//

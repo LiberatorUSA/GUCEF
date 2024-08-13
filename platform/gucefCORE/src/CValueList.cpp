@@ -475,7 +475,7 @@ CValueList::GetValueVectorAlways( const CString& key ) const
 /*-------------------------------------------------------------------------*/
 
 CValueList::TVariantVector
-CValueList::GetValueVectorAlways( const CString& key                  ,
+CValueList::GetValueVectorAlways( const CVariant& key                 ,
                                   char valueSepChar                   ,
                                   const TVariantVector& defaultValues ) const
 {GUCEF_TRACE;
@@ -510,7 +510,33 @@ CValueList::GetValueVectorAlways( const CString& key                  ,
 /*-------------------------------------------------------------------------*/
 
 CValueList::TVariantVector
+CValueList::GetValueVectorAlways( const CString& key                  ,
+                                  char valueSepChar                   ,
+                                  const TVariantVector& defaultValues ) const
+{GUCEF_TRACE;
+
+    CVariant keyVar;
+    keyVar.LinkTo( key );
+
+    return GetValueVectorAlways( keyVar, valueSepChar, defaultValues );
+}
+
+/*-------------------------------------------------------------------------*/
+
+CValueList::TVariantVector
 CValueList::GetValueVectorAlways( const CString& key, char valueSepChar ) const
+{GUCEF_TRACE;
+
+    CVariant keyVar;
+    keyVar.LinkTo( key );
+
+    return GetValueVectorAlways( keyVar, valueSepChar );
+}
+
+/*-------------------------------------------------------------------------*/
+
+CValueList::TVariantVector
+CValueList::GetValueVectorAlways( const CVariant& key, char valueSepChar ) const
 {GUCEF_TRACE;
 
     TVariantVector emptyDefault;
@@ -520,7 +546,7 @@ CValueList::GetValueVectorAlways( const CString& key, char valueSepChar ) const
 /*-------------------------------------------------------------------------*/
 
 CVariant
-CValueList::GetValueAlways( const CString& key       ,
+CValueList::GetValueAlways( const CVariant& key      ,
                             const char* defaultValue ) const
 {GUCEF_TRACE;
 
@@ -536,15 +562,30 @@ CValueList::GetValueAlways( const CString& key          ,
                             const CString& defaultValue ) const
 {GUCEF_TRACE;
 
+    CVariant keyVar;
+    keyVar.LinkTo( key );
     CVariant defaultValueVar;
     defaultValueVar.LinkTo( defaultValue );
-    return GetValueAlways( key, defaultValueVar );
+
+    return GetValueAlways( keyVar, defaultValueVar );
+}
+
+/*-------------------------------------------------------------------------*/
+
+CVariant
+CValueList::GetValueAlways( const CString& key           ,
+                            const CVariant& defaultValue ) const
+{GUCEF_TRACE;
+
+    CVariant keyVar;
+    keyVar.LinkTo( key );
+    return GetValueAlways( keyVar, defaultValue );
 }
 
 /*-------------------------------------------------------------------------*/
 
 const CVariant&
-CValueList::GetValueAlways( const CString& key           ,
+CValueList::GetValueAlways( const CVariant& key          ,
                             const CVariant& defaultValue ) const
 {GUCEF_TRACE;
 
@@ -563,13 +604,25 @@ const CVariant&
 CValueList::GetValue( const CString& key ) const
 {GUCEF_TRACE;
 
+    CVariant keyVar;
+    keyVar.LinkTo( key );
+
+    return GetValue( keyVar );
+}
+
+/*-------------------------------------------------------------------------*/
+
+const CVariant&
+CValueList::GetValue( const CVariant& key ) const
+{GUCEF_TRACE;
+
     TValueMap::const_iterator i = m_list.find( key );
     if ( i != m_list.end() )
     {
         return (*i).second[ 0 ];
     }
 
-    GUCEF_EMSGTHROW( EUnknownKey, CString( "CValueList::GetValue(): The given key \"" + key + "\" is not found" ).C_String() );
+    GUCEF_EMSGTHROW( EUnknownKey, CString( "CValueList::GetValue(): The given key \"" + key.AsString() + "\" is not found" ).C_String() );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -578,13 +631,85 @@ CVariant&
 CValueList::GetValue( const CString& key )
 {GUCEF_TRACE;
 
+    CVariant keyVar;
+    keyVar.LinkTo( key );
+
+    return GetValue( keyVar );
+}
+
+/*-------------------------------------------------------------------------*/
+
+CVariant&
+CValueList::GetValue( const CVariant& key )
+{GUCEF_TRACE;
+
     TValueMap::iterator i = m_list.find( key );
     if ( i != m_list.end() )
     {
         return (*i).second[ 0 ];
     }
 
-    GUCEF_EMSGTHROW( EUnknownKey, "CValueList::GetValue(): The given key is not found" );
+    GUCEF_EMSGTHROW( EUnknownKey, CString( "CValueList::GetValue(): The given key \"" + key.AsString() + "\" is not found" ).C_String() );
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CValueList::TryGetValue( const CString& key, CVariant& outValue ) const
+{GUCEF_TRACE;
+
+    CVariant keyVar;
+    keyVar.LinkTo( key );
+
+    return TryGetValue( keyVar, outValue );
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CValueList::TryGetValue( const CVariant& key, CVariant& outValue ) const
+{GUCEF_TRACE;
+
+    TValueMap::const_iterator i = m_list.find( key );
+    if ( i != m_list.end() )
+    {
+        outValue = (*i).second[ 0 ];
+    }
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CValueList::TryGetValue( const CString& key, CVariant& outValue, bool linkIfPossible )
+{GUCEF_TRACE;
+
+    CVariant keyVar;
+    keyVar.LinkTo( key );
+
+    return TryGetValue( keyVar, outValue, linkIfPossible );
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CValueList::TryGetValue( const CVariant& key, CVariant& outValue, bool linkIfPossible )
+{GUCEF_TRACE;
+
+    TValueMap::iterator i = m_list.find( key );
+    if ( i != m_list.end() )
+    {
+        if ( linkIfPossible )
+        {
+            outValue.LinkTo( (*i).second[ 0 ] );
+        }
+        else
+        {
+            outValue = (*i).second[ 0 ];
+        }
+        return true;
+    }
+    return false;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -764,7 +889,7 @@ CValueList::GetPair( const CString& key ) const
 
 /*-------------------------------------------------------------------------*/
 
-const CString&
+const CVariant&
 CValueList::GetKey( const UInt32 index ) const
 {GUCEF_TRACE;
 
@@ -785,6 +910,18 @@ bool
 CValueList::HasKey( const CString& key ) const
 {GUCEF_TRACE;
 
+    CVariant keyVar;
+    keyVar.LinkTo( key );
+
+    return HasKey( keyVar );
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CValueList::HasKey( const CVariant& key ) const
+{GUCEF_TRACE;
+
     return m_list.end() != m_list.find( key );
 }
 
@@ -793,6 +930,21 @@ CValueList::HasKey( const CString& key ) const
 bool 
 CValueList::HasKeyAndValue( const CString& key   , 
                             const CString& value ) const
+{GUCEF_TRACE;
+
+    CVariant keyVar;
+    keyVar.LinkTo( key );
+    CVariant valueVar;
+    valueVar.LinkTo( value );
+
+    return HasKeyAndValue( keyVar, valueVar );
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool 
+CValueList::HasKeyAndValue( const CVariant& key   , 
+                            const CVariant& value ) const
 {GUCEF_TRACE;
 
     TValueMap::const_iterator i = m_list.find( key );
@@ -836,6 +988,18 @@ CValueList::GetKeysWithWildcardKeyMatch( const CString& searchStr ,
 
 void
 CValueList::Delete( const CString& key )
+{GUCEF_TRACE;
+
+    CVariant keyVar;
+    keyVar.LinkTo( key );
+
+    Delete( keyVar );
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CValueList::Delete( const CVariant& key )
 {GUCEF_TRACE;
 
     m_list.erase( key );

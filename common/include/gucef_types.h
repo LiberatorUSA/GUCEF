@@ -402,6 +402,8 @@ typedef enum EBasicDataType TBasicDataType;
 #define GUCEF_FLOAT32_COMPARISON_EPSILON   ( (Float32) 0.00001f )
 #define GUCEF_FLOAT64_COMPARISON_EPSILON   ( (Float64) 0.00001 )
 
+#define GUCEF_FLOAT64_PI    3.1415926535897931
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //

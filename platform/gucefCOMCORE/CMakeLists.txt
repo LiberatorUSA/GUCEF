@@ -38,6 +38,7 @@ set( HEADER_FILES
   include/gucefCOMCORE_CIDiscoveryCapability.h
   include/gucefCOMCORE_CIDiscoveryClient.h
   include/gucefCOMCORE_CIDiscoveryEntry.h
+  include/gucefCOMCORE_CIGeoLocationLookupServiceProvider.h
   include/gucefCOMCORE_CIMessage.h
   include/gucefCOMCORE_CINetworkInterface.h
   include/gucefCOMCORE_CIPv4Address.h
@@ -79,6 +80,7 @@ set( SOURCE_FILES
   src/gucefCOMCORE_CIDiscoveryCapability.cpp
   src/gucefCOMCORE_CIDiscoveryClient.cpp
   src/gucefCOMCORE_CIDiscoveryEntry.cpp
+  src/gucefCOMCORE_CIGeoLocationLookupServiceProvider.cpp
   src/gucefCOMCORE_CIMessage.cpp
   src/gucefCOMCORE_CINetworkInterface.cpp
   src/gucefCOMCORE_CIPv4Address.cpp

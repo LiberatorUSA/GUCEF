@@ -41,6 +41,11 @@
 #define GUCEF_CORE_DVCPPOSWRAP_H
 #endif /* GUCEF_CORE_DVCPPOSWRAP_H ? */
 
+#ifndef GUCEF_CORE_LOGGING_H
+#include "gucefCORE_Logging.h"
+#define GUCEF_CORE_LOGGING_H
+#endif /* GUCEF_CORE_LOGGING_H ? */
+
 #include "dvcppstringutils.h"   /* function prototypes of the functions implemented here */
 
 #ifndef GUCEF_CORE_NO_MD5_SUPPORT
@@ -1597,7 +1602,74 @@ Utf8toUtf16( const std::string& str ,
 
     #else
 
-    return false;
+    std::vector<wchar_t> utf16_str;
+    size_t i = 0;
+    while ( i < str.size() ) 
+    {
+        uint32_t codepoint = 0;
+        unsigned char ch = str[ i ];
+        if ( ch <= 0x7F ) 
+        {
+            codepoint = ch;
+            i += 1;
+        } 
+        else if ( ch <= 0xBF ) 
+        {
+            GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "Utf8toUtf16: Invalid UTF-8 sequence" );
+            return false;
+        } 
+        else if ( ch <= 0xDF ) 
+        {
+            if ( i + 1 >= str.size() ) 
+            {
+                GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "Utf8toUtf16: Invalid UTF-8 sequence" );
+                return false;
+            }
+
+            codepoint = ((ch & 0x1F) << 6) | (str[i + 1] & 0x3F);
+            i += 2;
+        } 
+        else if ( ch <= 0xEF ) 
+        {
+            if ( i + 2 >= str.size() ) 
+            {
+                GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "Utf8toUtf16: Invalid UTF-8 sequence" );
+                return false;
+            }
+
+            codepoint = ((ch & 0x0F) << 12) | ((str[i + 1] & 0x3F) << 6) | (str[i + 2] & 0x3F);
+            i += 3;
+        } 
+        else if ( ch <= 0xF7 ) 
+        {
+            if ( i + 3 >= str.size() )
+            {
+                GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "Utf8toUtf16: Invalid UTF-8 sequence" );
+                return false;
+            }
+
+            codepoint = ((ch & 0x07) << 18) | ((str[i + 1] & 0x3F) << 12) | ((str[i + 2] & 0x3F) << 6) | (str[i + 3] & 0x3F);
+            i += 4;
+        } 
+        else 
+        {
+            GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "Utf8toUtf16: Invalid UTF-8 sequence" );
+            return false;
+        }
+
+        if ( codepoint <= 0xFFFF ) 
+        {
+            utf16_str.push_back( static_cast< UInt16 >( codepoint ) );
+        } else 
+        {
+            codepoint -= 0x10000;
+            utf16_str.push_back( static_cast< UInt16 >( (codepoint >> 10) + 0xD800) );
+            utf16_str.push_back( static_cast< UInt16 >( (codepoint & 0x3FF) + 0xDC00) );
+        }
+    }
+
+    wstr = std::wstring( utf16_str.begin(), utf16_str.end() );
+    return true;
 
     #endif
 }

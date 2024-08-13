@@ -1092,9 +1092,12 @@ IMGCODECPLUGIN_DecodeImageMetaData( void* pluginData                       ,
                 FreeImage_Unload( dib );
                 dib = GUCEF_NULL;
 
+                mapCallbacks->OnValueMapEnd( mapCallbacks->privateData );
                 return 1;
             }
 	    }
+
+        mapCallbacks->OnValueMapEnd( mapCallbacks->privateData );
     }
     return 0;
 }

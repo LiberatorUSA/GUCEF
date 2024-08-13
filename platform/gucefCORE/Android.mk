@@ -156,6 +156,7 @@ LOCAL_SRC_FILES := \
   src/gucefCORE_CForwardingNotifier.cpp \
   src/gucefCORE_CFunctionRegistry.cpp \
   src/gucefCORE_CGenericValueToDataNodeSerializer.cpp \
+  src/gucefCORE_CGeoLocation.cpp \
   src/gucefCORE_CGlobalConfigValueList.cpp \
   src/gucefCORE_CGloballyConfigurable.cpp \
   src/gucefCORE_CIConfigurable.cpp \

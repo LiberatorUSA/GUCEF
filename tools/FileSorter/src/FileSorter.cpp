@@ -405,7 +405,7 @@ FileSorterConfig::FileSorterConfig( void )
     , dayFolderDecoration( "{month}.{day}.{year}" )
     , sortAllFileTypes( false )
     , fileTypesToSort()
-    , tryToGetGeoInfoFromImages( false ) 
+    , tryToGetMetaDataInfoFromImages( false ) 
 {GUCEF_TRACE;
 
 }
@@ -455,7 +455,7 @@ FileSorterConfig::LoadConfig( const CORE::CDataNode& globalConfig )
     fileTypesToSortStr = cfg->GetAttributeValueOrChildValueByName( "fileTypesToSort", fileTypesToSortStr ).AsString( fileTypesToSortStr, true );
     fileTypesToSortStrSet = CORE::StringToStringSet( fileTypesToSortStr );
 
-    tryToGetGeoInfoFromImages = cfg->GetAttributeValueOrChildValueByName( "tryToGetGeoInfoFromImages", tryToGetGeoInfoFromImages ).AsBool( tryToGetGeoInfoFromImages, true );
+    tryToGetMetaDataInfoFromImages = cfg->GetAttributeValueOrChildValueByName( "tryToGetMetaDataInfoFromImages", tryToGetMetaDataInfoFromImages ).AsBool( tryToGetMetaDataInfoFromImages, true );
     fileTypesToSort = FileTypeConfig::GetFileTypesForStringSet( fileTypesToSortStrSet );
     
     const CORE::CDataNode* fileTypeConfigNode = cfg->FindChild( "FileTypeConfig" );
@@ -504,7 +504,7 @@ FileSorter::SortFile( const CORE::CString& currentVfsFilePath )
     CORE::CString targetVfsPath = m_appConfig.vfsSortedTargetRootPath + "/" + typeSortRootFolder;
     
     if ( fileType == TFileType::FILETYPE_IMAGE &&
-         m_appConfig.tryToGetGeoInfoFromImages )
+         m_appConfig.tryToGetMetaDataInfoFromImages )
     {
         IMAGE::CImage img;
         VFS::TBasicVfsResourcePtr file = vfs.GetFile( currentVfsFilePath, "rb", false );
@@ -515,8 +515,11 @@ FileSorter::SortFile( const CORE::CString& currentVfsFilePath )
             {
                 if ( img.Load( *ioAccess, fileExt, false, true ) )
                 {
-                    const CORE::CValueList& imgMetaData = img.GetMetaData();
-                    // @TODO: extract geo info from image meta data
+                    CORE::CGeoLocation geoLocationOfImg;
+                    if ( img.TryGetGeoLocationFromMetaData( geoLocationOfImg ) )
+                    {
+                        // @TODO
+                    }    
                 }
             }
         }       
@@ -671,7 +674,7 @@ FileSorter::OnVfsInitializationCompleted( CORE::CNotifier* notifier    ,
 
     VFS::CVFS& vfs = VFS::CVfsGlobal::Instance()->GetVfs();
     
-    if ( vfs.AddDirToWatch(m_appConfig.vfsInboxPath, true ) )
+    if ( vfs.AddDirToWatch( m_appConfig.vfsInboxPath, true ) )
     {
         GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "FileSorter: Added VFS path  \"" + m_appConfig.vfsInboxPath + "\" to watch list" );
     }
@@ -705,12 +708,19 @@ FileSorter::OnInboxWatchTimerCycle( CORE::CNotifier* notifier    ,
                                     CORE::CICloneable* eventData )
 {GUCEF_TRACE;
 
-    m_inboxWatchTimer.SetEnabled( false ); // stop the timer while we process just in case it takes a while
+    if ( !m_appConfig.vfsInboxPath.IsNULLOrEmpty() )
+    {
+        m_inboxWatchTimer.SetEnabled( false ); // stop the timer while we process just in case it takes a while
 
-    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "FileSorter: Performing periodic scan of VFS path  \"" + m_appConfig.vfsInboxPath + "\"" );
-    SortFilesInVfsPath( m_appConfig.vfsInboxPath );
+        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "FileSorter: Performing periodic scan of VFS path  \"" + m_appConfig.vfsInboxPath + "\"" );
+        SortFilesInVfsPath( m_appConfig.vfsInboxPath );
 
-    m_inboxWatchTimer.SetEnabled( true );
+        m_inboxWatchTimer.SetEnabled( true );
+    }
+    else
+    {
+        GUCEF_WARNING_LOG( CORE::LOGLEVEL_NORMAL, "FileSorter: Cannot perform periodic scan of 'inbox' VFS path since none is configured" );
+    }
 }
 
 /*-------------------------------------------------------------------------*/

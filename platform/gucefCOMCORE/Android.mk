@@ -48,6 +48,7 @@ LOCAL_SRC_FILES := \
   src/gucefCOMCORE_CIDiscoveryCapability.cpp \
   src/gucefCOMCORE_CIDiscoveryClient.cpp \
   src/gucefCOMCORE_CIDiscoveryEntry.cpp \
+  src/gucefCOMCORE_CIGeoLocationLookupServiceProvider.cpp \
   src/gucefCOMCORE_CIMessage.cpp \
   src/gucefCOMCORE_CINetworkInterface.cpp \
   src/gucefCOMCORE_CIPv4Address.cpp \
