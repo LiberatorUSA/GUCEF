@@ -154,9 +154,10 @@ GUCEF_OSMAIN_BEGIN
 
     CORE::CPlatformNativeConsoleWindow consoleWindow;
     bool showConsole = defaultShowConsoleState;
-    if ( keyValueList.HasKey( "showConsole" ) )
+    CORE::CVariant value;
+    if ( keyValueList.TryGetValue( "showConsole", value ) )
     {
-        showConsole = CORE::StringToBool( keyValueList.GetValue( "showConsole" ) );
+        showConsole = value.AsBool( showConsole );
     }
     if ( showConsole )
     {
@@ -167,9 +168,9 @@ GUCEF_OSMAIN_BEGIN
     // Do we want to use the console logger?
     CORE::CPlatformNativeConsoleLogger* consoleOut = NULL;
     bool useConsoleLogger = defaultUseConsoleLoggerState;
-    if ( keyValueList.HasKey( "useConsoleLogger" ) )
+    if ( keyValueList.TryGetValue( "useConsoleLogger", value ) )
     {
-        showConsole = CORE::StringToBool( keyValueList.GetValue( "useConsoleLogger" ) );
+        useConsoleLogger = value.AsBool( useConsoleLogger );
     }
     if ( showConsole )
     {
@@ -184,17 +185,17 @@ GUCEF_OSMAIN_BEGIN
 
     // Get the desired listnen port for the server
     CORE::UInt16 serverListnenPort = defaultListnenPort;
-    if ( keyValueList.HasKey( "port" ) )
+    if ( keyValueList.TryGetValue( "port", value ) )
     {
-        serverListnenPort = CORE::StringToUInt16( keyValueList.GetValue( "port" ) );
+        serverListnenPort = value.AsUInt16( serverListnenPort );
         GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "GucefLogServiceApp: Changing server port from default " + CORE::UInt16ToString( defaultListnenPort ) + " to " + CORE::UInt16ToString( serverListnenPort ) );
     }
 
     // Get the desired output path for the log files
     CORE::CString logFilesOutputDir = "$MODULEDIR$";
-    if ( keyValueList.HasKey( "outputDir" ) )
+    if ( keyValueList.TryGetValue( "outputDir", value ) )
     {
-        logFilesOutputDir = keyValueList.GetValue( "outputDir" );
+        logFilesOutputDir = value.AsString( logFilesOutputDir, true );
     }
     else
     {

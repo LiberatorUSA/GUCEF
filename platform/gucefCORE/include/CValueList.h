@@ -178,6 +178,17 @@ class GUCEF_CORE_PUBLIC_CPP CValueList : public CIConfigurable          ,
 
     /**
      *  Attempt to assign or link the first value associated with the given key.
+     *  Note that this non-const version will be potentially more performant since its able to link data vs a deep copy
+     */
+    bool TryGetValue( const char* key, CVariant& outValue, bool linkIfPossible = true );
+
+    /**
+     *  Attempt to assign or link the first value associated with the given key.
+     */
+    bool TryGetValue( const char* key, CVariant& outValue ) const;
+
+    /**
+     *  Attempt to assign or link the first value associated with the given key.
      */
     bool TryGetValue( const CString& key, CVariant& outValue ) const;
 
@@ -201,6 +212,42 @@ class GUCEF_CORE_PUBLIC_CPP CValueList : public CIConfigurable          ,
      *  that no exception will be thrown if the key does not exist
      *  instead it will return an empty variant.
      */
+    CVariant GetValueAlways( const CString& key       ,
+                             const char* defaultValue ) const;
+
+    /**
+     *  Returns the first value associated with the
+     *  given key. This GetValue version differs from the others in
+     *  that no exception will be thrown if the key does not exist
+     *  instead it will return an empty variant.
+     */
+    CVariant GetValueAlways( const char* key          ,
+                             const char* defaultValue ) const;
+
+    /**
+     *  Returns the first value associated with the
+     *  given key. This GetValue version differs from the others in
+     *  that no exception will be thrown if the key does not exist
+     *  instead it will return an empty variant.
+     */
+    CVariant GetValueAlways( const char* key              ,
+                             const CVariant& defaultValue ) const;
+
+    /**
+     *  Returns the first value associated with the
+     *  given key. This GetValue version differs from the others in
+     *  that no exception will be thrown if the key does not exist
+     *  instead it will return an empty variant.
+     */
+    CVariant GetValueAlways( const char* key             ,
+                             const CString& defaultValue ) const;
+
+    /**
+     *  Returns the first value associated with the
+     *  given key. This GetValue version differs from the others in
+     *  that no exception will be thrown if the key does not exist
+     *  instead it will return an empty variant.
+     */
     CVariant GetValueAlways( const CString& key           ,
                              const CVariant& defaultValue ) const;
 
@@ -210,8 +257,8 @@ class GUCEF_CORE_PUBLIC_CPP CValueList : public CIConfigurable          ,
      *  that no exception will be thrown if the key does not exist
      *  instead it will return an empty variant.
      */
-    CVariant GetValueAlways( const CString& key                           ,
-                             const CString& defaultValue = CString::Empty ) const;
+    CVariant GetValueAlways( const CString& key          ,
+                             const CString& defaultValue ) const;
 
     /**
      *  Returns the first value associated with the
@@ -313,6 +360,8 @@ class GUCEF_CORE_PUBLIC_CPP CValueList : public CIConfigurable          ,
      */
     const CVariant& GetKey( const UInt32 index ) const;
 
+    bool HasKey( const char* key ) const;
+    
     bool HasKey( const CString& key ) const;
 
     bool HasKey( const CVariant& key ) const;
@@ -321,6 +370,8 @@ class GUCEF_CORE_PUBLIC_CPP CValueList : public CIConfigurable          ,
 
     bool HasKeyAndValue( const CVariant& key, const CVariant& value ) const;
 
+    void Delete( const char* key );
+    
     void Delete( const CString& key );
 
     void Delete( const CVariant& key );

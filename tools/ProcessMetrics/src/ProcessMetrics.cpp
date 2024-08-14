@@ -1599,7 +1599,7 @@ ProcessMetrics::LoadConfig( const CORE::CValueList& appConfig   ,
         procInfo.startIfNotRunning = true;
         ++i;
     }
-    TStringSet exeProcsToRestart = appConfig.GetValueAlways( "exeProcsToRestart" ).AsString().ParseUniqueElements( ';', false );
+    TStringSet exeProcsToRestart = appConfig.GetValueAlways( "exeProcsToRestart", CORE::CString::Empty ).AsString().ParseUniqueElements( ';', false );
     i = exeProcsToRestart.begin();
     while ( i != exeProcsToRestart.end() )
     {
@@ -1674,7 +1674,7 @@ ProcessMetrics::LoadConfig( const CORE::CValueList& appConfig   ,
 
     if ( m_enableRestApi )
     {
-        m_httpServer.SetPort( CORE::StringToUInt16( CORE::ResolveVars( appConfig.GetValueAlways( "restApiPort" ) ), 10000 ) );
+        m_httpServer.SetPort( appConfig.GetValueAlways( "restApiPort", 10000 ).AsUInt16( 10000, true ) );
 
         m_httpRouter.SetResourceMapping( "/info", RestApiProcessMetricsInfoResource::THTTPServerResourcePtr( new RestApiProcessMetricsInfoResource( this ) )  );
         m_httpRouter.SetResourceMapping( "/config/appargs", RestApiProcessMetricsInfoResource::THTTPServerResourcePtr( new RestApiProcessMetricsConfigResource( this, true ) )  );

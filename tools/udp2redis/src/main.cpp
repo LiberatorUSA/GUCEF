@@ -245,8 +245,8 @@ GUCEF_OSSERVICEMAIN_BEGIN( "udp2redis" )
     // Check for config param first
     CORE::CValueList keyValueList;
     ParseParams( argc, argv, keyValueList );
-    CORE::CString bootstrapConfigPathParam = keyValueList.GetValueAlways( "BootstrapConfigPath" );
-    CORE::CString configPathParam = keyValueList.GetValueAlways( "ConfigPath" );
+    CORE::CString bootstrapConfigPathParam = keyValueList.GetValueAlways( "BootstrapConfigPath", CORE::CVariant::Empty );
+    CORE::CString configPathParam = keyValueList.GetValueAlways( "ConfigPath", CORE::CVariant::Empty );
     keyValueList.Clear();
 
     // Load settings from a config file (if any) and then override with params (if any)

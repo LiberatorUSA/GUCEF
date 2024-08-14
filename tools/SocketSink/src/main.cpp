@@ -372,10 +372,10 @@ class SocketSink : public CORE::CObserver
 
         CORE::CPlatformNativeConsoleWindow consoleWindow;
         bool provideConsoleWindow = false;
-        CORE::CString valueStr = keyValueList.GetValueAlways( "ProvideConsoleWindow" );
-        if ( !valueStr.IsNULLOrEmpty() )
+        CORE::CVariant value;
+        if ( keyValueList.TryGetValue( "ProvideConsoleWindow", value ) )
         {
-            provideConsoleWindow = CORE::StringToBool( valueStr );
+            provideConsoleWindow = value.AsBool( provideConsoleWindow );
             if ( provideConsoleWindow )
             {
                 consoleWindow.CreateConsole();
@@ -383,31 +383,27 @@ class SocketSink : public CORE::CObserver
         }
 
         bool enableUdp = false;
-        valueStr = keyValueList.GetValueAlways( "EnableUdp" );
-        if ( !valueStr.IsNULLOrEmpty() )
+        if ( keyValueList.TryGetValue( "EnableUdp", value ) )
         {
-            enableUdp = CORE::StringToBool( valueStr );
+            enableUdp = value.AsBool( enableUdp );
         }
         bool enableTcp = false;
-        valueStr = keyValueList.GetValueAlways( "EnableTcp" );
-        if ( !valueStr.IsNULLOrEmpty() )
+        if ( keyValueList.TryGetValue( "EnableTcp", value ) )
         {
-            enableTcp = CORE::StringToBool( valueStr );
+            enableTcp = value.AsBool( enableTcp );
         }
 
         CORE::Int32 minLogLevel = CORE::LOGLEVEL_BELOW_NORMAL;
-        valueStr = keyValueList.GetValueAlways( "MinimalLogLevel" );
-        if ( !valueStr.IsNULLOrEmpty() )
+        if ( keyValueList.TryGetValue( "MinimalLogLevel", value ) )
         {
-            minLogLevel = CORE::StringToInt32( valueStr );
+            minLogLevel = value.AsInt32( minLogLevel );
             CORE::CCoreGlobal::Instance()->GetLogManager().SetMinLogLevel( minLogLevel );
         }
 
         CORE::UInt32 flushTimerInterval = 360000;
-        valueStr = keyValueList.GetValueAlways( "UdpFlushTimerInterval" );
-        if ( !valueStr.IsNULLOrEmpty() )
+        if ( keyValueList.TryGetValue( "UdpFlushTimerInterval", value ) )
         {
-            minLogLevel = CORE::StringToUInt32( valueStr );
+            minLogLevel = value.AsUInt32( flushTimerInterval );
             m_udpFlushTimer.SetInterval( flushTimerInterval );
         }
 
@@ -419,55 +415,49 @@ class SocketSink : public CORE::CObserver
                 GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "SocketSink: Failed to open udp output file at: " + udpOutputFilePath );
             }
 
-            valueStr = keyValueList.GetValueAlways( "UdpBufferSize" );
-            if ( !valueStr.IsNULLOrEmpty() )
+            if ( keyValueList.TryGetValue( "UdpBufferSize", value ) )
             {
-                m_udpSocket.SetRecievedDataBufferSize( CORE::StringToUInt32( valueStr ) );
-                GUCEF_LOG( CORE::LOGLEVEL_IMPORTANT, "SocketSink: Set UDP buffer size as " + valueStr + ". For non-payload-delimited packets this should match the packet size" );
+                m_udpSocket.SetRecievedDataBufferSize( value.AsUInt32() );
+                GUCEF_LOG( CORE::LOGLEVEL_IMPORTANT, "SocketSink: Set UDP buffer size as " + value.AsString() + ". For non-payload-delimited packets this should match the packet size" );
             }
 
             m_udpAddNewLine = false;
-            valueStr = keyValueList.GetValueAlways( "AddNewLineAfterUdpData" );
-            if ( !valueStr.IsNULLOrEmpty() )
+            if ( keyValueList.TryGetValue( "AddNewLineAfterUdpData", value ) )
             {
-                m_udpAddNewLine = CORE::StringToBool( valueStr );
+                m_udpAddNewLine = value.AsBool( m_udpAddNewLine );
                 GUCEF_LOG( CORE::LOGLEVEL_IMPORTANT, "SocketSink: Add new line is true for UDP: Make sure you are sending text!" );
             }
 
             m_flushThreshold = -1;
-            valueStr = keyValueList.GetValueAlways( "UdpFlushThreshold" );
-            if ( !valueStr.IsNULLOrEmpty() )
+            if ( keyValueList.TryGetValue( "UdpFlushThreshold", value ) )
             {
-                m_flushThreshold = CORE::StringToInt64( valueStr );
-                GUCEF_LOG( CORE::LOGLEVEL_IMPORTANT, "SocketSink: Set UDP flush threshold to " + valueStr );
+                m_flushThreshold = value.AsInt64( m_flushThreshold );
+                GUCEF_LOG( CORE::LOGLEVEL_IMPORTANT, "SocketSink: Set UDP flush threshold to " + value.AsString() );
             }
 
             m_udpFileBuffer.SetAutoEnlarge( true );
-            valueStr = keyValueList.GetValueAlways( "UdpFileBufferSize" );
-            if ( !valueStr.IsNULLOrEmpty() )
+            if ( keyValueList.TryGetValue( "UdpFileBufferSize", value ) )
             {
-                m_udpFileBuffer.SetBufferSize( CORE::StringToUInt32( valueStr ) );
-                GUCEF_LOG( CORE::LOGLEVEL_IMPORTANT, "SocketSink: Set UDP file buffer size to: " + valueStr );
+                m_udpFileBuffer.SetBufferSize( value.AsUInt32() );
+                GUCEF_LOG( CORE::LOGLEVEL_IMPORTANT, "SocketSink: Set UDP file buffer size to: " + value.AsString() );
             }
 
-            valueStr = keyValueList.GetValueAlways( "UdpPort" );
-            if ( !valueStr.IsNULLOrEmpty() )
+            if ( keyValueList.TryGetValue( "UdpPort", value ) )
             {
-                if ( m_udpSocket.Open( CORE::StringToUInt16( valueStr ) ) )
+                if ( m_udpSocket.Open( value.AsUInt16() ) )
                 {
-                    GUCEF_LOG( CORE::LOGLEVEL_IMPORTANT, "SocketSink: Opened UDP port " + valueStr );
+                    GUCEF_LOG( CORE::LOGLEVEL_IMPORTANT, "SocketSink: Opened UDP port " + value.AsString() );
                 }
                 else
                 {
-                    GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "SocketSink: Failed to open udp port " + valueStr );
+                    GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "SocketSink: Failed to open udp port " + value.AsString() );
                 }
             }
 
             m_doUdpForwarding = false;
-            valueStr = keyValueList.GetValueAlways( "DoUdpForwarding" );
-            if ( !valueStr.IsNULLOrEmpty() )
+            if ( keyValueList.TryGetValue( "DoUdpForwarding", value ) )
             {
-                m_doUdpForwarding = CORE::StringToBool( valueStr );
+                m_doUdpForwarding = value.AsBool( m_doUdpForwarding );
             }
 
             CORE::UInt16 fwdPort = CORE::StringToUInt16( keyValueList.GetValueAlways( "UdpFwdPort" ) );

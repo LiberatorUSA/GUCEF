@@ -2194,11 +2194,11 @@ bool
 PubSub2Storage::LoadConfig( const CORE::CValueList& appConfig )
 {GUCEF_TRACE;
 
-    m_globalStandbyEnabled = CORE::StringToBool( appConfig.GetValueAlways( "GlobalStandbyEnabled" ), false );
-    m_channelCount = CORE::StringToUInt16( CORE::ResolveVars( appConfig.GetValueAlways( "ChannelCount", "1" ) ) );
-    m_storageStartChannelID = CORE::StringToInt32( CORE::ResolveVars(  appConfig.GetValueAlways( "StorageStartChannelID", "1" ) ) );
+    m_globalStandbyEnabled = appConfig.GetValueAlways( "GlobalStandbyEnabled", m_globalStandbyEnabled ).AsBool( false );
+    m_channelCount = appConfig.GetValueAlways( "ChannelCount", 1 ).AsUInt16( 1, true );
+    m_storageStartChannelID = appConfig.GetValueAlways( "StorageStartChannelID", 1 ).AsUInt16( 1, true );
 
-    bool applyCpuThreadAffinityByDefault = CORE::StringToBool( CORE::ResolveVars( appConfig.GetValueAlways( "ApplyCpuThreadAffinityByDefault" )  ), false );    
+    bool applyCpuThreadAffinityByDefault = appConfig.GetValueAlways( "ApplyCpuThreadAffinityByDefault", false ).AsBool( false );
     CORE::UInt32 logicalCpuCount = CORE::GetLogicalCPUCount();
 
     CORE::UInt32 currentCpu = 0;
@@ -2241,7 +2241,7 @@ PubSub2Storage::LoadConfig( const CORE::CValueList& appConfig )
 
     m_appConfig = appConfig;
 
-    m_httpServer.SetPort( CORE::StringToUInt16( CORE::ResolveVars( appConfig.GetValueAlways( "RestApiPort" ) ), 10000 ) );
+    m_httpServer.SetPort( appConfig.GetValueAlways( "RestApiPort", 10000 ).AsUInt16( 10000, true ) );
     m_httpRouter.SetResourceMapping( "/info", RestApiPubSub2StorageInfoResource::THTTPServerResourcePtr( new RestApiPubSub2StorageInfoResource( this ) )  );
     m_httpRouter.SetResourceMapping( "/config/appargs", RestApiPubSub2StorageConfigResource::THTTPServerResourcePtr( new RestApiPubSub2StorageConfigResource( this, true ) )  );
     m_httpRouter.SetResourceMapping( "/config", RestApiPubSub2StorageConfigResource::THTTPServerResourcePtr( new RestApiPubSub2StorageConfigResource( this, false ) )  );

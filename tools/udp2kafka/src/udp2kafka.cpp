@@ -1850,10 +1850,10 @@ Udp2Kafka::LoadConfig( const CORE::CValueList& appConfig   ,
         }
 
         settingName = settingPrefix + ".WantsTestPackage";
-        channelSettings.wantsTestPackage = CORE::StringToBool( appConfig.GetValueAlways( settingName, "false" ) );
+        channelSettings.wantsTestPackage = appConfig.GetValueAlways( settingName ).AsBool( channelSettings.wantsTestPackage );
 
         settingName = settingPrefix + ".MetricsPrefix";
-        channelSettings.metricsPrefix = CORE::ResolveVars( appConfig.GetValueAlways( settingName, "udp2kafka.ch{channelID}." ) );
+        channelSettings.metricsPrefix = appConfig.GetValueAlways( settingName, "udp2kafka.ch{channelID}." ).AsString( CORE::CString::Empty );
         channelSettings.metricsPrefix = channelSettings.metricsPrefix.ReplaceSubstr( "{channelID}", CORE::Int32ToString( channelId ) );
         channelSettings.metricsPrefix = channelSettings.metricsPrefix.ReplaceSubstr( "{topicName}", channelSettings.channelTopicName );
 

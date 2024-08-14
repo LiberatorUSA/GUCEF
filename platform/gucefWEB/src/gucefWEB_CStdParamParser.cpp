@@ -118,13 +118,13 @@ CStdParamParser::ParseStdParams( const CString& params, CStdParams& outStdParams
     CORE::CValueList paramOptions;
     paramOptions.SetMultiple( params, '&', '=' );
 
-    const CORE::CString& viewTypeStr = paramOptions.GetValueAlways( "view" );
-    if ( !viewTypeStr.IsNULLOrEmpty() )
+    CORE::CVariant param;
+    if ( paramOptions.TryGetValue( "view", param ) )
     {
         // A view type is presented
         // We will look for the supported keywords. If found we initial sync view type and lod
         // lod can later be overwritten to provide more granularity via a numerical representation
-        
+        CORE::CString viewTypeStr = param.AsString();
         if ( "index" == viewTypeStr )
         {
             outStdParams.viewType = VIEW_TYPE_INDEX_ONLY;
@@ -158,10 +158,9 @@ CStdParamParser::ParseStdParams( const CString& params, CStdParams& outStdParams
         }
     }
 
-    const CORE::CString& lodStr = paramOptions.GetValueAlways( "lod" );
-    if ( !lodStr.IsNULLOrEmpty() )
+    if ( paramOptions.TryGetValue( "lod", param ) )
     {
-        outStdParams.levelOfDetail = CORE::StringToUInt32( lodStr, outStdParams.levelOfDetail );
+        outStdParams.levelOfDetail = param.AsUInt32( outStdParams.levelOfDetail );
         outStdParams.levelOfDetailWasProvided = true;
         foundParams = true;
     }

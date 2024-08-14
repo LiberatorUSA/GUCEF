@@ -92,8 +92,7 @@ CImageCodecPluginManager::RegisterPlugin( void* modulePtr                       
         pluginMetaData->GetParams( pluginParams );
 
         bool overrideExistingCodecs = false;
-        CORE::CString overrideSettingStr = pluginParams.GetValueAlways( "overrideExistingCodecs", "false" );
-        overrideExistingCodecs = CORE::StringToBool( overrideSettingStr );
+        overrideExistingCodecs = pluginParams.GetValueAlways( "overrideExistingCodecs", false ).AsBool( overrideExistingCodecs );
 
         CImageCodecRegistry& registry = CImageGlobal::Instance()->GetImageCodecRegistry();
         CORE::CStdCodecPlugin::CCodecList codecList;

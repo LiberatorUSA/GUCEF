@@ -123,15 +123,16 @@ GUCEFPlugin_Load( CORE::UInt32 argc, const char** argv ) GUCEF_PLUGIN_CALLSPEC_S
     }
     
     CORE::UInt16 logServicePort = 43557;
-    if ( keyValueList.HasKey( "logServicePort" ) )
+    CORE::CVariant value;
+    if ( keyValueList.TryGetValue( "logServicePort", value ) )
     {
-        logServicePort = CORE::StringToUInt16( keyValueList.GetValueAlways( "logServicePort" ) );
+        logServicePort = value.AsUInt16( logServicePort );
     }
 
     bool blockingConnect = true;
-    if ( keyValueList.HasKey( "blockingConnect" ) )
+    if ( keyValueList.TryGetValue( "blockingConnect", value ) )
     {
-        blockingConnect = CORE::StringToBool( keyValueList.GetValueAlways( "blockingConnect" ) );
+        blockingConnect = value.AsBool( blockingConnect );
     }
 
     if ( NULL == g_svcClient )

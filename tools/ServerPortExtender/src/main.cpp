@@ -336,14 +336,15 @@ GUCEF_OSSERVICEMAIN_BEGIN( "ServerPortExtender" )
     GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Flushed to log @ " + logFilename );
 
     GUCEF_OSMAIN_SIGNAL_HANDLER( GucefAppSignalHandler );
+    CORE::CVariant value;
 
     // Do we want to display the console window?
     #ifdef GUCEF_MSWIN_BUILD
     CORE::CMSWinConsoleLogger* consoleOut = NULL;
     bool showConsole = true;
-    if ( keyValueList.HasKey( "showConsole" ) )
+    if ( keyValueList.TryGetValue( "showConsole", value ) )
     {
-        showConsole = CORE::StringToBool( keyValueList.GetValue( "showConsole" ) );
+        showConsole = value.AsBool( showConsole );
     }
     if ( showConsole )
     {
@@ -356,10 +357,10 @@ GUCEF_OSSERVICEMAIN_BEGIN( "ServerPortExtender" )
 
     // Check if we want to do a diagnostic test
     bool runTest = false;
-    if ( keyValueList.HasKey( "runTest" ) )
+    if ( keyValueList.TryGetValue( "runTest", value ) )
     {
         GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "SPE: Found request for diagnostic test,.. running test" );
-        runTest = CORE::StringToBool( keyValueList.GetValue( "runTest" ) );
+        runTest = value.AsBool( runTest );
     }
     if ( runTest )
     {
@@ -368,9 +369,9 @@ GUCEF_OSSERVICEMAIN_BEGIN( "ServerPortExtender" )
 
     // Check for the application role
     bool actAsServer = true;
-    if ( keyValueList.HasKey( "appRole" ) )
+    if ( keyValueList.TryGetValue( "appRole", value ) )
     {
-        CORE::CString appRole = keyValueList.GetValue( "appRole" );
+        CORE::CString appRole = value.AsString().Lowercase();
         if ( appRole == "client" )
         {
             actAsServer = false;
@@ -382,23 +383,23 @@ GUCEF_OSSERVICEMAIN_BEGIN( "ServerPortExtender" )
         GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "SPE: application role set to server" );
 
         CORE::UInt16 extendedServerPort = 10234;
-        if ( keyValueList.HasKey( "extendedServerPort" ) )
+        if ( keyValueList.TryGetValue( "extendedServerPort", value ) )
         {
-            extendedServerPort = keyValueList.GetValue( "extendedServerPort" ).AsUInt16();
+            extendedServerPort = value.AsUInt16( extendedServerPort );
         }
         GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "SPE: extended server port set to " + CORE::UInt16ToString( extendedServerPort ) );
 
         CORE::UInt16 serverControlPort = 10236;
-        if ( keyValueList.HasKey( "serverControlPort" ) )
+        if ( keyValueList.TryGetValue( "serverControlPort", value ) )
         {
-            serverControlPort = keyValueList.GetValue( "serverControlPort" ).AsUInt16();
+            serverControlPort = value.AsUInt16( serverControlPort ); 
         }
         GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "SPE: server control port set to " + CORE::UInt16ToString( serverControlPort ) );
 
         CORE::UInt16 reversedServerPort = 10235;
-        if ( keyValueList.HasKey( "reversedServerPort" ) )
+        if ( keyValueList.TryGetValue( "reversedServerPort", value ) )
         {
-            reversedServerPort = keyValueList.GetValue( "reversedServerPort" ).AsUInt16();
+            reversedServerPort = value.AsUInt16( reversedServerPort );
         }
         GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "SPE: reversed server port set to " + CORE::UInt16ToString( reversedServerPort ) );
 
@@ -416,37 +417,37 @@ GUCEF_OSSERVICEMAIN_BEGIN( "ServerPortExtender" )
         GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "SPE: application role set to client" );
 
         CORE::UInt16 actualServerPort = 10234;
-        if ( keyValueList.HasKey( "actualServerPort" ) )
+        if ( keyValueList.TryGetValue( "actualServerPort", value ) )
         {
-            actualServerPort = keyValueList.GetValue( "actualServerPort" ).AsUInt16();
+            actualServerPort = value.AsUInt16( actualServerPort );
         }
         GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "SPE: actual server port set to " + CORE::UInt16ToString( actualServerPort ) );
 
         CORE::CString actualServerHostname = "localhost";
-        if ( keyValueList.HasKey( "actualServerHostname" ) )
+        if ( keyValueList.TryGetValue( "actualServerHostname", value ) )
         {
-            actualServerHostname = keyValueList.GetValue( "actualServerHostname" ).AsString();
+            actualServerHostname = value.AsString( actualServerHostname );
         }
         GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "SPE: actual server hostname set to " + actualServerHostname );
 
         CORE::UInt16 reversedServerPort = 10235;
-        if ( keyValueList.HasKey( "reversedServerPort" ) )
+        if ( keyValueList.TryGetValue( "reversedServerPort", value ) )
         {
-            reversedServerPort = keyValueList.GetValue( "reversedServerPort" ).AsUInt16();
+            reversedServerPort = value.AsUInt16( reversedServerPort );
         }
         GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "SPE: reversed server port set to " + CORE::UInt16ToString( reversedServerPort ) );
 
         CORE::CString speServerHostname = "localhost";
-        if ( keyValueList.HasKey( "speServerHostname" ) )
+        if ( keyValueList.TryGetValue( "speServerHostname", value ) )
         {
-            speServerHostname = keyValueList.GetValue( "speServerHostname" ).AsString();
+            speServerHostname = value.AsString( speServerHostname );
         }
         GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "SPE: SPE server hostname set to " + speServerHostname );
 
         CORE::UInt16 speServerPort = 10236;
-        if ( keyValueList.HasKey( "speServerControlPort" ) )
+        if ( keyValueList.TryGetValue( "speServerControlPort", value ) )
         {
-            speServerPort = keyValueList.GetValue( "speServerControlPort" ).AsUInt16();
+            speServerPort = value.AsUInt16( speServerPort );
         }
         GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "SPE: SPE server port set to " + CORE::UInt16ToString( speServerPort ) );
 
