@@ -1547,19 +1547,24 @@ CVariant::Set( const void* data, UInt32 dataSize, UInt8 varType, bool linkOnlyFo
         {
             if ( linkOnlyForDynMem )
             {
-                m_variantData.union_data.heap_data.heap_data_is_linked = 1;
-                m_variantData.union_data.heap_data.heap_data_size = dataSize;
-                if ( dataSize > 0 )
+                m_variantData.union_data.heap_data.heap_data_is_linked = 1;                
+                if ( dataSize > 0 && GUCEF_NULL != data )
+                {
                     m_variantData.union_data.heap_data.union_data.void_heap_data = const_cast< void* >( data );
+                    m_variantData.union_data.heap_data.heap_data_size = dataSize;
+                }
                 else
+                {
                     m_variantData.union_data.heap_data.union_data.void_heap_data = GUCEF_NULL;
+                    m_variantData.union_data.heap_data.heap_data_size = 0;
+                }
                 m_variantData.containedType = varType;
                 return true;
             }
             else
             {
                 m_variantData.union_data.heap_data.heap_data_is_linked = 0;                
-                if ( dataSize > 0 )
+                if ( dataSize > 0 && GUCEF_NULL != data )
                 {
                     if ( GUCEF_NULL != HeapReserve( dataSize ) )
                     {
@@ -1640,6 +1645,12 @@ CVariant&
 CVariant::LinkTo( const char* externalBuffer, UInt8 varType )
 {GUCEF_TRACE;
 
+    if ( GUCEF_NULL == externalBuffer )
+    {
+        Set( GUCEF_NULL, 0, varType, true );
+        return *this;
+    }
+    
     switch ( varType )
     {
         case GUCEF_DATATYPE_ASCII_STRING:
