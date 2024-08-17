@@ -46,6 +46,11 @@
 #define GUCEF_CORE_CDATETIME_H
 #endif /* GUCEF_CORE_CDATETIME_H ? */
 
+#ifndef GUCEF_CORE_CTFRACTION_H
+#include "gucefCORE_CTFraction.h"
+#define GUCEF_CORE_CTFRACTION_H
+#endif /* GUCEF_CORE_CTFRACTION_H ? */
+
 #ifndef GUCEF_CORE_VARIANTDATA_H
 #include "gucefCORE_VariantData.h"
 #define GUCEF_CORE_VARIANTDATA_H
@@ -78,8 +83,6 @@ class CDynamicBuffer;
  *  Strings always use dynamic memory allocations whereas this is not always the case
  *  with a variant. Various operations such as comparison can potentially also be faster 
  *  depending on the type interactions involved.
- *
- *  TODO: Later support will be added for ExactFloat in which case a fidelity gain is an additional benefit
  */
 class GUCEF_CORE_PUBLIC_CPP CVariant
 {
@@ -127,6 +130,13 @@ class GUCEF_CORE_PUBLIC_CPP CVariant
     CVariant( UInt64  data );
     CVariant( Float32 data );
     CVariant( Float64 data );
+
+    CVariant( TInt32Fraction data );
+    CVariant( TUInt32Fraction data );
+    CVariant( const TInt64Int32Fraction& data );
+    CVariant( const TUInt64UInt32Fraction& data );
+    CVariant( const TInt64Fraction& data );
+    CVariant( const TUInt64Fraction& data );
     
     /**
      *  Creates a private copy of the ASCII string data and sets the type as such
@@ -162,8 +172,13 @@ class GUCEF_CORE_PUBLIC_CPP CVariant
     CVariant( UInt8 varType, const CString& stringFormData, const CVariant& defaultValue = CVariant::Empty );
     
     bool IsInteger( void ) const;
+    bool IsSignedInteger( void ) const;
+    bool IsUnsignedInteger( void ) const;
     bool IsFloat( void ) const;
     bool IsNumber( void ) const;
+    bool IsFraction( void ) const;
+    bool IsSignedFraction( void ) const;
+    bool IsUnsignedFraction( void ) const;
     bool IsString( void ) const;
     bool IsBoolean( void ) const;
     bool IsBinary( void ) const;
@@ -215,6 +230,17 @@ class GUCEF_CORE_PUBLIC_CPP CVariant
     CDateTime       AsDateTime( const CDateTime& defaultIfNeeded = CDateTime::Empty, bool resolveVarsIfApplicable = false ) const;
     size_t          AsSizeT( size_t defaultIfNeeded = 0, bool resolveVarsIfApplicable = false ) const;
 
+    TInt8Fraction         AsInt8Fraction( const TInt8Fraction& defaultIfNeeded = TInt8Fraction(), bool resolveVarsIfApplicable = false ) const;
+    TUInt8Fraction        AsUInt8Fraction( const TUInt8Fraction& defaultIfNeeded = TUInt8Fraction(), bool resolveVarsIfApplicable = false ) const;
+    TInt16Fraction        AsInt16Fraction( const TInt16Fraction& defaultIfNeeded = TInt16Fraction(), bool resolveVarsIfApplicable = false ) const;
+    TUInt16Fraction       AsUInt16Fraction( const TUInt16Fraction& defaultIfNeeded = TUInt16Fraction(), bool resolveVarsIfApplicable = false ) const;
+    TInt32Fraction        AsInt32Fraction( const TInt32Fraction& defaultIfNeeded = TInt32Fraction(), bool resolveVarsIfApplicable = false ) const;
+    TUInt32Fraction       AsUInt32Fraction( const TUInt32Fraction& defaultIfNeeded = TUInt32Fraction(), bool resolveVarsIfApplicable = false ) const;
+    TInt64Fraction        AsInt64Fraction( const TInt64Fraction& defaultIfNeeded = TInt64Fraction(), bool resolveVarsIfApplicable = false ) const;
+    TUInt64Fraction       AsUInt64Fraction( const TUInt64Fraction& defaultIfNeeded = TUInt64Fraction(), bool resolveVarsIfApplicable = false ) const;
+    TInt64Int32Fraction   AsInt64Int32Fraction( const TInt64Int32Fraction& defaultIfNeeded = TInt64Int32Fraction(), bool resolveVarsIfApplicable = false ) const;
+    TUInt64UInt32Fraction AsUInt64UInt32Fraction( const TUInt64UInt32Fraction& defaultIfNeeded = TUInt64UInt32Fraction(), bool resolveVarsIfApplicable = false ) const;
+
     template < typename TemplateBsobType >
     TemplateBsobType AsBsob( void ) const;
 
@@ -251,6 +277,12 @@ class GUCEF_CORE_PUBLIC_CPP CVariant
     CVariant& operator=( UInt64  data );
     CVariant& operator=( Float32 data );
     CVariant& operator=( Float64 data );
+    CVariant& operator=( TInt32T2Fraction data );
+    CVariant& operator=( TUInt32T2Fraction data );
+    CVariant& operator=( const TInt64WInt32Fraction& data );
+    CVariant& operator=( const TUInt64WUInt32Fraction& data );
+    CVariant& operator=( const TInt64T2Fraction& data );
+    CVariant& operator=( const TUInt64T2Fraction& data );
     CVariant& operator=( const CDynamicBuffer& data );
     CVariant& operator=( const CAsciiString& data );
     CVariant& operator=( const CUtf8String& data );
@@ -288,6 +320,7 @@ class GUCEF_CORE_PUBLIC_CPP CVariant
     CVariant& LinkTo( const char* externalBuffer, UInt32 bufferSize, UInt8 varType = GUCEF_DATATYPE_ASCII_STRING );
     CVariant& LinkTo( const char* externalBuffer, UInt8 varType = GUCEF_DATATYPE_ASCII_STRING );
     CVariant& LinkTo( const CVariant& src );
+    CVariant& LinkTo( const TVariantData* src );
     CVariant& LinkTo( const TVariantData& src );
     CVariant& LinkTo( const CAsciiString& src );
     CVariant& LinkTo( const CUtf8String& src );
@@ -386,9 +419,12 @@ template <> inline Int64 CVariant::AsTValue( const Int64 defaultIfNeeded, bool r
 template <> inline UInt64 CVariant::AsTValue( const UInt64 defaultIfNeeded, bool resolveVarsIfApplicable ) const {GUCEF_TRACE; return AsUInt64( defaultIfNeeded, resolveVarsIfApplicable ); }
 template <> inline Float32 CVariant::AsTValue( const Float32 defaultIfNeeded, bool resolveVarsIfApplicable ) const {GUCEF_TRACE; return AsFloat32( defaultIfNeeded, resolveVarsIfApplicable ); }
 template <> inline Float64 CVariant::AsTValue( const Float64 defaultIfNeeded, bool resolveVarsIfApplicable ) const {GUCEF_TRACE; return AsFloat64( defaultIfNeeded, resolveVarsIfApplicable ); }
+//template <> inline size_t CVariant::AsTValue( const size_t defaultIfNeeded, bool resolveVarsIfApplicable ) const {GUCEF_TRACE; return AsSizeT( defaultIfNeeded, resolveVarsIfApplicable ); }
 template <> inline CAsciiString CVariant::AsTValue( const CAsciiString defaultIfNeeded, bool resolveVarsIfApplicable ) const {GUCEF_TRACE; return AsAsciiString( defaultIfNeeded, resolveVarsIfApplicable ); }
 template <> inline CUtf8String CVariant::AsTValue( const CUtf8String defaultIfNeeded, bool resolveVarsIfApplicable ) const {GUCEF_TRACE; return AsUtf8String( defaultIfNeeded, resolveVarsIfApplicable ); }
 template <> inline CDateTime CVariant::AsTValue( const CDateTime defaultIfNeeded, bool resolveVarsIfApplicable ) const {GUCEF_TRACE; return AsDateTime( defaultIfNeeded, resolveVarsIfApplicable ); }
+template <> inline std::string CVariant::AsTValue( const std::string defaultIfNeeded, bool resolveVarsIfApplicable ) const {GUCEF_TRACE; return AsString( defaultIfNeeded, resolveVarsIfApplicable ).STL_String(); }
+template <> inline std::wstring CVariant::AsTValue( const std::wstring defaultIfNeeded, bool resolveVarsIfApplicable ) const {GUCEF_TRACE; return ToWString( AsString( ToString( defaultIfNeeded ), resolveVarsIfApplicable ) ); }
 
 /*-------------------------------------------------------------------------*/
 

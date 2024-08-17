@@ -422,11 +422,11 @@ CValueList::SetUsingKvCombo( const CString& keyAndValue       ,
 /*-------------------------------------------------------------------------*/
 
 void
-CValueList::Set( const CString& key    ,
+CValueList::Set( const CVariant& key   ,
                  const CVariant& value )
 {GUCEF_TRACE;
 
-    if ( key.Length() > 0 )
+    if ( !key.IsNULLOrEmpty() )
     {
         TVariantVector& values = m_list[ key ];
         if ( m_allowDuplicates )
@@ -455,6 +455,32 @@ CValueList::Set( const CString& key    ,
             values.push_back( value );
         }
     }
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CValueList::Set( const char* key       ,
+                 const CVariant& value )
+{GUCEF_TRACE;
+
+    CVariant keyVar;
+    keyVar.LinkTo( key );
+    
+    Set( keyVar, value );
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CValueList::Set( const CString& key   ,
+                 const CVariant& value )
+{GUCEF_TRACE;
+
+    CVariant keyVar;
+    keyVar.LinkTo( key );
+    
+    Set( keyVar, value );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -744,6 +770,7 @@ CValueList::TryGetValue( const CVariant& key, CVariant& outValue ) const
     if ( i != m_list.end() )
     {
         outValue = (*i).second[ 0 ];
+        return true;
     }
     return false;
 }
@@ -920,9 +947,10 @@ CValueList::GetAllPairs( const UInt32 index          ,
 /*-------------------------------------------------------------------------*/
 
 CString
-CValueList::GetAllPairs( const CString& seperatorStr ,
-                         bool envelopElements        ,
-                         const CString& envelopStr   ) const
+CValueList::GetAllPairs( const CString& keyValueSeperatorStr ,
+                         const CString& kvPairSeperatorStr   ,
+                         bool envelopElements                ,
+                         const CString& envelopStr           ) const
 {GUCEF_TRACE;
 
     CString resultStr;
@@ -938,7 +966,7 @@ CValueList::GetAllPairs( const CString& seperatorStr ,
         {
             if ( !first )
             {
-                resultStr += seperatorStr;
+                resultStr += kvPairSeperatorStr;
             }
             else
             {
@@ -946,9 +974,9 @@ CValueList::GetAllPairs( const CString& seperatorStr ,
             }
 
             if ( envelopElements )
-                resultStr += envelopStr + key + envelopStr + '=' + envelopStr + (*n) + envelopStr;
+                resultStr += envelopStr + key + envelopStr + keyValueSeperatorStr + envelopStr + (*n) + envelopStr;
             else
-                resultStr += key + '=' + (*n);
+                resultStr += key + keyValueSeperatorStr + (*n);
             ++n;
         }
         ++i;

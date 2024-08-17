@@ -264,6 +264,19 @@ typedef double          Float64;  /* 8 bytes, signed, decimal */
 #define GUCEF_DATATYPE_LE_TIMESTAMP_IN_MS_SINCE_UNIX_EPOCH          57  /**< Little Endian UInt64 based timestamp using milliseconds since unix epoch */
 #define GUCEF_DATATYPE_BE_TIMESTAMP_IN_MS_SINCE_UNIX_EPOCH          58  /**< Little Endian UInt64 based timestamp using milliseconds since unix epoch */
 
+#define GUCEF_DATATYPE_INT32T2_LE_FRACTION          60       /**< 2 sequentially stored 32bit signed integers in little endian representing a fraction value */
+#define GUCEF_DATATYPE_INT32T2_BE_FRACTION          61       /**< 2 sequentially stored 32bit signed integers in big endian representing a fraction value */
+#define GUCEF_DATATYPE_UINT32T2_LE_FRACTION         62       /**< 2 sequentially stored 32bit unsigned integers in little endian representing a fraction value */
+#define GUCEF_DATATYPE_UINT32T2_BE_FRACTION         63       /**< 2 sequentially stored 32bit unsigned integers in big endian representing a fraction value */
+#define GUCEF_DATATYPE_INT64T2_LE_FRACTION          64       /**< 2 sequentially stored 64bit signed integers in little endian representing a fraction value */
+#define GUCEF_DATATYPE_INT64T2_BE_FRACTION          65       /**< 2 sequentially stored 64bit signed integers in big endian representing a fraction value */
+#define GUCEF_DATATYPE_UINT64T2_LE_FRACTION         66       /**< 2 sequentially stored 64bit unsigned integers in little endian representing a fraction value */
+#define GUCEF_DATATYPE_UINT64T2_BE_FRACTION         67       /**< 2 sequentially stored 64bit unsigned integers in big endian representing a fraction value */
+#define GUCEF_DATATYPE_INT64_INT32_LE_FRACTION      68       /**< sequentially stored 64bit signed integers followed by a 32 bit signed integer in little endian representing a fraction value */
+#define GUCEF_DATATYPE_INT64_INT32_BE_FRACTION      69       /**< sequentially stored 64bit signed integers followed by a 32 bit signed integer in big endian representing a fraction value */
+#define GUCEF_DATATYPE_UINT64_UINT32_LE_FRACTION    70       /**< sequentially stored 64bit unsigned integers followed by a 32 bit unsigned integer in little endian representing a fraction value */
+#define GUCEF_DATATYPE_UINT64_UINT32_BE_FRACTION    71       /**< sequentially stored 64bit unsigned integers followed by a 32 bit unsigned integer in big endian representing a fraction value */
+
 #define GUCEF_DATATYPE_ARRAY                    250      /**< data type representing an array container concept */
 #define GUCEF_DATATYPE_OBJECT                   251      /**< data type representing an object container concept */
 #define GUCEF_DATATYPE_NIL                      252      /**< representing data that is zero or nought. The word nil started to be used in the mid 19th century as a contraction of nihil, a Latin word that means nothing */
@@ -299,6 +312,19 @@ typedef double          Float64;  /* 8 bytes, signed, decimal */
 #define GUCEF_DATATYPE_NAME_LE_TIMESTAMP_IN_MS_SINCE_UNIX_EPOCH    "LE_TIMESTAMP_IN_MS_SINCE_UNIX_EPOCH"
 #define GUCEF_DATATYPE_NAME_BE_TIMESTAMP_IN_MS_SINCE_UNIX_EPOCH    "BE_TIMESTAMP_IN_MS_SINCE_UNIX_EPOCH"
 
+#define GUCEF_DATATYPE_NAME_INT32T2_LE_FRACTION      "INT32T2_LE_FRACTION"
+#define GUCEF_DATATYPE_NAME_INT32T2_BE_FRACTION      "INT32T2_BE_FRACTION"
+#define GUCEF_DATATYPE_NAME_UINT32T2_LE_FRACTION     "UINT32T2_LE_FRACTION"
+#define GUCEF_DATATYPE_NAME_UINT32T2_BE_FRACTION     "UINT32T2_BE_FRACTION"
+#define GUCEF_DATATYPE_NAME_INT64T2_LE_FRACTION      "INT64T2_LE_FRACTION"
+#define GUCEF_DATATYPE_NAME_INT64T2_BE_FRACTION      "INT64T2_BE_FRACTION"
+#define GUCEF_DATATYPE_NAME_UINT64T2_LE_FRACTION     "UINT64T2_LE_FRACTION"
+#define GUCEF_DATATYPE_NAME_UINT64T2_BE_FRACTION     "UINT64T2_BE_FRACTION"
+#define GUCEF_DATATYPE_NAME_INT64_INT32_LE_FRACTION  "INT64_INT32_LE_FRACTION"
+#define GUCEF_DATATYPE_NAME_INT64_INT32_BE_FRACTION  "INT64_INT32_BE_FRACTION"
+#define GUCEF_DATATYPE_NAME_UINT64_UINT32_LE_FRACTION "UINT64_UINT32_LE_FRACTION"
+#define GUCEF_DATATYPE_NAME_UINT64_UINT32_BE_FRACTION "UINT64_UINT32_BE_FRACTION"
+
 #define GUCEF_DATATYPE_NAME_ARRAY                    "ARRAY"
 #define GUCEF_DATATYPE_NAME_OBJECT                   "OBJECT"
 #define GUCEF_DATATYPE_NAME_NIL                      "NIL"
@@ -313,6 +339,12 @@ typedef double          Float64;  /* 8 bytes, signed, decimal */
     #define GUCEF_DATATYPE_BOOLEAN_UTF32_STRING                     GUCEF_DATATYPE_BOOLEAN_UTF32_LE_STRING
     #define GUCEF_DATATYPE_TIMESTAMP_IN_SECS_SINCE_UNIX_EPOCH       GUCEF_DATATYPE_LE_TIMESTAMP_IN_SECS_SINCE_UNIX_EPOCH
     #define GUCEF_DATATYPE_TIMESTAMP_IN_MS_SINCE_UNIX_EPOCH         GUCEF_DATATYPE_LE_TIMESTAMP_IN_MS_SINCE_UNIX_EPOCH
+    #define GUCEF_DATATYPE_INT32T2_FRACTION                         GUCEF_DATATYPE_INT32T2_LE_FRACTION
+    #define GUCEF_DATATYPE_UINT32T2_FRACTION                        GUCEF_DATATYPE_UINT32T2_LE_FRACTION
+    #define GUCEF_DATATYPE_INT64T2_FRACTION                         GUCEF_DATATYPE_INT64T2_LE_FRACTION
+    #define GUCEF_DATATYPE_UINT64T2_FRACTION                        GUCEF_DATATYPE_UINT64T2_LE_FRACTION
+    #define GUCEF_DATATYPE_INT64_INT32_FRACTION                     GUCEF_DATATYPE_INT64_INT32_LE_FRACTION
+    #define GUCEF_DATATYPE_UINT64_UINT32_FRACTION                   GUCEF_DATATYPE_UINT64_UINT32_LE_FRACTION
 
     #define GUCEF_DATATYPE_NAME_UTF16_STRING                        GUCEF_DATATYPE_NAME_UTF16_LE_STRING    
     #define GUCEF_DATATYPE_NAME_UTF32_STRING                        GUCEF_DATATYPE_NAME_UTF32_LE_STRING
@@ -320,6 +352,12 @@ typedef double          Float64;  /* 8 bytes, signed, decimal */
     #define GUCEF_DATATYPE_NAME_BOOLEAN_UTF32_STRING                GUCEF_DATATYPE_NAME_BOOLEAN_UTF32_LE_STRING
     #define GUCEF_DATATYPE_NAME_TIMESTAMP_IN_SECS_SINCE_UNIX_EPOCH  GUCEF_DATATYPE_NAME_LE_TIMESTAMP_IN_SECS_SINCE_UNIX_EPOCH
     #define GUCEF_DATATYPE_NAME_TIMESTAMP_IN_MS_SINCE_UNIX_EPOCH    GUCEF_DATATYPE_NAME_LE_TIMESTAMP_IN_MS_SINCE_UNIX_EPOCH
+    #define GUCEF_DATATYPE_NAME_INT32T2_FRACTION                    GUCEF_DATATYPE_NAME_INT32T2_LE_FRACTION
+    #define GUCEF_DATATYPE_NAME_UINT32T2_FRACTION                   GUCEF_DATATYPE_NAME_UINT32T2_LE_FRACTION
+    #define GUCEF_DATATYPE_NAME_INT64T2_FRACTION                    GUCEF_DATATYPE_NAME_INT64T2_LE_FRACTION
+    #define GUCEF_DATATYPE_NAME_UINT64T2_FRACTION                   GUCEF_DATATYPE_NAME_UINT64T2_LE_FRACTION
+    #define GUCEF_DATATYPE_NAME_INT64_INT32_FRACTION                GUCEF_DATATYPE_NAME_INT64_INT32_LE_FRACTION
+    #define GUCEF_DATATYPE_NAME_UINT64_UINT32_FRACTION              GUCEF_DATATYPE_NAME_UINT64_UINT32_LE_FRACTION
 
 #else
 
@@ -329,6 +367,12 @@ typedef double          Float64;  /* 8 bytes, signed, decimal */
     #define GUCEF_DATATYPE_BOOLEAN_UTF32_STRING                     GUCEF_DATATYPE_BOOLEAN_UTF32_BE_STRING
     #define GUCEF_DATATYPE_TIMESTAMP_IN_SECS_SINCE_UNIX_EPOCH       GUCEF_DATATYPE_BE_TIMESTAMP_IN_SECS_SINCE_UNIX_EPOCH
     #define GUCEF_DATATYPE_TIMESTAMP_IN_MS_SINCE_UNIX_EPOCH         GUCEF_DATATYPE_BE_TIMESTAMP_IN_MS_SINCE_UNIX_EPOCH
+    #define GUCEF_DATATYPE_INT32T2_FRACTION                         GUCEF_DATATYPE_INT32T2_BE_FRACTION
+    #define GUCEF_DATATYPE_UINT32T2_FRACTION                        GUCEF_DATATYPE_UINT32T2_BE_FRACTION
+    #define GUCEF_DATATYPE_INT64T2_FRACTION                         GUCEF_DATATYPE_INT64T2_BE_FRACTION
+    #define GUCEF_DATATYPE_UINT64T2_FRACTION                        GUCEF_DATATYPE_UINT64T2_BE_FRACTION
+    #define GUCEF_DATATYPE_INT64_INT32_FRACTION                     GUCEF_DATATYPE_INT64_INT32_BE_FRACTION
+    #define GUCEF_DATATYPE_UINT64_UINT32_FRACTION                   GUCEF_DATATYPE_UINT64_UINT32_BE_FRACTION
 
     #define GUCEF_DATATYPE_NAME_UTF16_STRING                        GUCEF_DATATYPE_NAME_UTF16_BE_STRING    
     #define GUCEF_DATATYPE_NAME_UTF32_STRING                        GUCEF_DATATYPE_NAME_UTF32_BE_STRING
@@ -336,6 +380,12 @@ typedef double          Float64;  /* 8 bytes, signed, decimal */
     #define GUCEF_DATATYPE_NAME_BOOLEAN_UTF32_STRING                GUCEF_DATATYPE_NAME_BOOLEAN_UTF32_BE_STRING
     #define GUCEF_DATATYPE_NAME_TIMESTAMP_IN_SECS_SINCE_UNIX_EPOCH  GUCEF_DATATYPE_NAME_BE_TIMESTAMP_IN_SECS_SINCE_UNIX_EPOCH
     #define GUCEF_DATATYPE_NAME_TIMESTAMP_IN_MS_SINCE_UNIX_EPOCH    GUCEF_DATATYPE_NAME_BE_TIMESTAMP_IN_MS_SINCE_UNIX_EPOCH
+    #define GUCEF_DATATYPE_NAME_INT32T2_FRACTION                    GUCEF_DATATYPE_NAME_INT32T2_BE_FRACTION
+    #define GUCEF_DATATYPE_NAME_UINT32T2_FRACTION                   GUCEF_DATATYPE_NAME_UINT32T2_BE_FRACTION
+    #define GUCEF_DATATYPE_NAME_INT64T2_FRACTION                    GUCEF_DATATYPE_NAME_INT64T2_BE_FRACTION
+    #define GUCEF_DATATYPE_NAME_UINT64T2_FRACTION                   GUCEF_DATATYPE_NAME_UINT64T2_BE_FRACTION
+    #define GUCEF_DATATYPE_NAME_INT64_INT32_FRACTION                GUCEF_DATATYPE_NAME_INT64_INT32_BE_FRACTION
+    #define GUCEF_DATATYPE_NAME_UINT64_UINT32_FRACTION              GUCEF_DATATYPE_NAME_UINT64_UINT32_BE_FRACTION
 
 #endif
 
@@ -382,16 +432,30 @@ enum EBasicDataType
     DATATYPE_UTF16_BE_STRING            = GUCEF_DATATYPE_UTF16_BE_STRING            ,
     DATATYPE_UTF32_LE_STRING            = GUCEF_DATATYPE_UTF32_LE_STRING            ,
     DATATYPE_UTF32_BE_STRING            = GUCEF_DATATYPE_UTF32_BE_STRING            ,
-    DATATYPE_ARRAY                      = GUCEF_DATATYPE_ARRAY                      ,
-    DATATYPE_OBJECT                     = GUCEF_DATATYPE_OBJECT                     ,
-    DATATYPE_SET                        = GUCEF_DATATYPE_SET                        ,
     DATATYPE_BOOLEAN_INT32              = GUCEF_DATATYPE_BOOLEAN_INT32              ,
     DATATYPE_BOOLEAN_ASCII_STRING       = GUCEF_DATATYPE_BOOLEAN_ASCII_STRING       ,
     DATATYPE_BOOLEAN_UTF8_STRING        = GUCEF_DATATYPE_BOOLEAN_UTF8_STRING        ,
     DATATYPE_BOOLEAN_UTF16_LE_STRING    = GUCEF_DATATYPE_BOOLEAN_UTF16_LE_STRING    ,
     DATATYPE_BOOLEAN_UTF16_BE_STRING    = GUCEF_DATATYPE_BOOLEAN_UTF16_BE_STRING    ,
     DATATYPE_BOOLEAN_UTF32_LE_STRING    = GUCEF_DATATYPE_BOOLEAN_UTF32_LE_STRING    ,
-    DATATYPE_BOOLEAN_UTF32_BE_STRING    = GUCEF_DATATYPE_BOOLEAN_UTF32_BE_STRING 
+    DATATYPE_BOOLEAN_UTF32_BE_STRING    = GUCEF_DATATYPE_BOOLEAN_UTF32_BE_STRING    ,
+    DATATYPE_INT32T2_LE_FRACTION        = GUCEF_DATATYPE_INT32T2_LE_FRACTION        ,
+    DATATYPE_INT32T2_BE_FRACTION        = GUCEF_DATATYPE_INT32T2_BE_FRACTION        ,
+    DATATYPE_UINT32T2_LE_FRACTION       = GUCEF_DATATYPE_UINT32T2_LE_FRACTION       ,
+    DATATYPE_UINT32T2_BE_FRACTION       = GUCEF_DATATYPE_UINT32T2_BE_FRACTION       ,
+    DATATYPE_INT64T2_LE_FRACTION        = GUCEF_DATATYPE_INT64T2_LE_FRACTION        ,
+    DATATYPE_INT64T2_BE_FRACTION        = GUCEF_DATATYPE_INT64T2_BE_FRACTION        ,
+    DATATYPE_UINT64T2_LE_FRACTION       = GUCEF_DATATYPE_UINT64T2_LE_FRACTION       ,
+    DATATYPE_UINT64T2_BE_FRACTION       = GUCEF_DATATYPE_UINT64T2_BE_FRACTION       ,
+    DATATYPE_INT64_INT32_LE_FRACTION    = GUCEF_DATATYPE_INT64_INT32_LE_FRACTION    ,
+    DATATYPE_INT64_INT32_BE_FRACTION    = GUCEF_DATATYPE_INT64_INT32_BE_FRACTION    ,
+    DATATYPE_UINT64_UINT32_LE_FRACTION  = GUCEF_DATATYPE_UINT64_UINT32_LE_FRACTION  ,
+    DATATYPE_UINT64_UINT32_BE_FRACTION  = GUCEF_DATATYPE_UINT64_UINT32_BE_FRACTION  ,
+    DATATYPE_ARRAY                      = GUCEF_DATATYPE_ARRAY                      ,
+    DATATYPE_OBJECT                     = GUCEF_DATATYPE_OBJECT                     ,
+    DATATYPE_NIL                        = GUCEF_DATATYPE_NIL                        ,
+    DATATYPE_NULL                       = GUCEF_DATATYPE_NULL                       ,
+    DATATYPE_SET                        = GUCEF_DATATYPE_SET                        
 };
 typedef enum EBasicDataType TBasicDataType;
 

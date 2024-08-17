@@ -951,6 +951,7 @@ MapFreeImageMetaDataTag( FREE_IMAGE_MDMODEL model               ,
                 valueVariant.containedType = GUCEF_DATATYPE_INT8;
                 break;
             }
+            case FIDT_NOTYPE:
             case FIDT_UNDEFINED:
             {
                 valueVariant.union_data.heap_data.union_data.void_heap_data = (void*) tagValue;
@@ -983,6 +984,31 @@ MapFreeImageMetaDataTag( FREE_IMAGE_MDMODEL model               ,
                 valueVariant.containedType = GUCEF_DATATYPE_FLOAT64;
                 break;
             }
+	        case FIDT_RATIONAL: 
+            {
+                /* 
+                    its 2 32 bit unsigned integers, the first is the numerator and the second is the denominator
+                */
+                UInt32 numerator = ( (UInt32*) tagValue )[ 0 ];
+                UInt32 denominator = ( (UInt32*) tagValue )[ 1 ];                
+                valueVariant.union_data.fraction_data.union_data.uint32t2_data.numerator = numerator;
+                valueVariant.union_data.fraction_data.union_data.uint32t2_data.denominator = denominator;
+                valueVariant.containedType = GUCEF_DATATYPE_UINT32T2_FRACTION;
+                break;
+            }            
+            case FIDT_SRATIONAL: 
+            {
+                /* 
+                    its 2 32 bit signed integers, the first is the numerator and the second is the denominator
+                */
+                Int32 numerator = ( (Int32*) tagValue )[ 0 ];
+                Int32 denominator = ( (Int32*) tagValue )[ 1 ];                
+                valueVariant.union_data.fraction_data.union_data.int32t2_data.numerator = numerator;
+                valueVariant.union_data.fraction_data.union_data.int32t2_data.denominator = denominator;
+                valueVariant.containedType = GUCEF_DATATYPE_INT32T2_FRACTION;
+                break;
+            }
+            case FIDT_PALETTE:
             case FIDT_IFD:
             {
                 if ( tagLength <= GUCEF_VARIANT_BSOB_SIZE )
@@ -1077,17 +1103,17 @@ IMGCODECPLUGIN_DecodeImageMetaData( void* pluginData                       ,
             if ( dib != NULL )
             {
                 /* now we map the metadata */
-                MapFreeImageMetaData( FIMD_COMMENTS, dib, mapCallbacks );
-                MapFreeImageMetaData( FIMD_EXIF_MAIN, dib, mapCallbacks );
-                MapFreeImageMetaData( FIMD_EXIF_EXIF, dib, mapCallbacks );
+                //MapFreeImageMetaData( FIMD_COMMENTS, dib, mapCallbacks );
+               // MapFreeImageMetaData( FIMD_EXIF_MAIN, dib, mapCallbacks );
+               // MapFreeImageMetaData( FIMD_EXIF_EXIF, dib, mapCallbacks );
                 MapFreeImageMetaData( FIMD_EXIF_GPS, dib, mapCallbacks );
-                MapFreeImageMetaData( FIMD_EXIF_MAKERNOTE, dib, mapCallbacks );
-                MapFreeImageMetaData( FIMD_EXIF_INTEROP, dib, mapCallbacks );       
-                MapFreeImageMetaData( FIMD_IPTC, dib, mapCallbacks );
-                MapFreeImageMetaData( FIMD_XMP, dib, mapCallbacks );
-                MapFreeImageMetaData( FIMD_GEOTIFF, dib, mapCallbacks );
-                MapFreeImageMetaData( FIMD_ANIMATION, dib, mapCallbacks );
-                MapFreeImageMetaData( FIMD_CUSTOM, dib, mapCallbacks );
+               // MapFreeImageMetaData( FIMD_EXIF_MAKERNOTE, dib, mapCallbacks );
+               // MapFreeImageMetaData( FIMD_EXIF_INTEROP, dib, mapCallbacks );       
+               // MapFreeImageMetaData( FIMD_IPTC, dib, mapCallbacks );
+               // MapFreeImageMetaData( FIMD_XMP, dib, mapCallbacks );
+               // MapFreeImageMetaData( FIMD_GEOTIFF, dib, mapCallbacks );
+               // MapFreeImageMetaData( FIMD_ANIMATION, dib, mapCallbacks );
+               // MapFreeImageMetaData( FIMD_CUSTOM, dib, mapCallbacks );
 
                 FreeImage_Unload( dib );
                 dib = GUCEF_NULL;

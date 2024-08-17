@@ -130,6 +130,76 @@
   #endif
 #endif
 
+/*-------------------------------------------------------------------------*/
+
+#if defined(__cplusplus)
+    
+    #if __cplusplus >= 199711L // type_traits header was added in C++11
+      #include <type_traits>
+    #else
+
+    // backfill for C++11 type_traits
+    namespace std {
+
+    // Base template for is_signed trait
+    template <typename T>
+    struct is_signed {
+        static const bool value = false;
+    };
+
+    // Specializations for signed types
+    template <>
+    struct is_signed<signed char> {
+        static const bool value = true;
+    };
+
+    template <>
+    struct is_signed<short> {
+        static const bool value = true;
+    };
+
+    template <>
+    struct is_signed<int> {
+        static const bool value = true;
+    };
+
+    template <>
+    struct is_signed<long> {
+        static const bool value = true;
+    };
+
+    // Base template for is_unsigned trait
+    template <typename T>
+    struct is_unsigned {
+        static const bool value = false;
+    };
+
+    // Specializations for unsigned types
+    template <>
+    struct is_unsigned<unsigned char> {
+        static const bool value = true;
+    };
+
+    template <>
+    struct is_unsigned<unsigned short> {
+        static const bool value = true;
+    };
+
+    template <>
+    struct is_unsigned<unsigned int> {
+        static const bool value = true;
+    };
+
+    template <>
+    struct is_unsigned<unsigned long> {
+        static const bool value = true;
+    };
+
+    }; // namespace std
+    
+    #endif
+
+#endif
 
 /*-------------------------------------------------------------------------*/
 

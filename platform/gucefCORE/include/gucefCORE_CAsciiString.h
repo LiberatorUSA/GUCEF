@@ -141,6 +141,8 @@ class GUCEF_CORE_PUBLIC_CPP CAsciiString
 
     bool operator<( const CAsciiString& other ) const;
 
+    bool operator<=( const CAsciiString& other ) const;
+
     char operator[]( const UInt32 index ) const;
 
     char& operator[]( const UInt32 index );

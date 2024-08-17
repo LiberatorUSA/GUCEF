@@ -180,7 +180,7 @@ CHTTPClient::Post( const CORE::CString& host                                    
     CORE::CDynamicBuffer payload;
     if ( GUCEF_NULL != valuelistAsContent )
     {
-        CORE::CString kvContent = valuelistAsContent->GetAllPairs( "&" );
+        CORE::CString kvContent = valuelistAsContent->GetAllPairs( "=", "&", false );
         payload.LinkTo( kvContent.C_String(), kvContent.Length() );
     }
     return Post( host, port, path, contentType, payload );

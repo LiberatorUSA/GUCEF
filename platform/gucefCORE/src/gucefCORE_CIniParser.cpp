@@ -170,13 +170,14 @@ CIniParser::SaveTo( CIOAccess& file ) const
 
     if ( file.IsValid() && file.IsWriteable() )
     {
-        const CString valueSepStr = GUCEF_EOL;
+        const CString kvPairSepStr = GUCEF_EOL;
+        const CString keyValueSepStr = "=";
 
         TIniData::const_iterator i = m_iniData.begin();
         while ( i != m_iniData.end() )
         {
             CString keyString = GUCEF_EOL "[" + (*i).sectionName + "]" GUCEF_EOL;
-            CString values = (*i).sectionData.GetAllPairs( valueSepStr, true, "\"" );
+            CString values = (*i).sectionData.GetAllPairs( keyValueSepStr, kvPairSepStr, true, "\"" );
 
             file.Write( keyString );
             file.Write( values );
@@ -194,13 +195,14 @@ bool
 CIniParser::SaveTo( CString& outputIniString ) const
 {GUCEF_TRACE;
 
-    const CString valueSepStr = GUCEF_EOL;
+    const CString kvPairSepStr = GUCEF_EOL;
+    const CString keyValueSepStr = "=";
 
     TIniData::const_iterator i = m_iniData.begin();
     while ( i != m_iniData.end() )
     {
         outputIniString += GUCEF_EOL "[" + (*i).sectionName + "]" GUCEF_EOL;
-        outputIniString += (*i).sectionData.GetAllPairs( valueSepStr );
+        outputIniString += (*i).sectionData.GetAllPairs( keyValueSepStr, kvPairSepStr );
         ++i;
     }
     return true;

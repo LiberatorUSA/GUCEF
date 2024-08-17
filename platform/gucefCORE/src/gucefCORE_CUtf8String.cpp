@@ -587,6 +587,15 @@ CUtf8String::operator<( const CUtf8String& other ) const
 /*-------------------------------------------------------------------------*/
 
 bool
+CUtf8String::operator<=( const CUtf8String& other ) const
+{GUCEF_TRACE;
+
+    return ( *this < other ) || ( *this == other );
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
 CUtf8String::IsNULLOrEmpty( void ) const
 {GUCEF_TRACE;
 

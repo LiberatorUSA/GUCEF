@@ -469,6 +469,8 @@ CImage::Load( CORE::CIOAccess& data         ,
             // We have found a codec we can use, now try to load the meta-data
             success = success && imageCodec->DecodeMetaData( data       ,
                                                              m_metaData );
+
+            GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "Image:Load: The following image meta-data is available: " + ToString( m_metaData ) );
         }
         return success;
     }

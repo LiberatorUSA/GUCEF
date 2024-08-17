@@ -209,6 +209,7 @@ LOCAL_SRC_FILES := \
   src/gucefCORE_CSubFileAccess.cpp \
   src/gucefCORE_CTEventHandlerFunctor.cpp \
   src/gucefCORE_CTEventHandlerFunctorProxy.cpp \
+  src/gucefCORE_CTFraction.cpp \
   src/gucefCORE_CTIOAccessToStlStream.cpp \
   src/gucefCORE_CTIOAccessToStlStreambuff.cpp \
   src/gucefCORE_CTMultiRegistry.cpp \

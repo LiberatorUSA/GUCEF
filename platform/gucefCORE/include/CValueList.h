@@ -79,9 +79,11 @@ class GUCEF_CORE_PUBLIC_CPP CValueList : public CIConfigurable          ,
 {
     public:
 
-    typedef CVariant::VariantVector                 TVariantVector;
-    typedef CString::StringVector                   TStringVector;
-    typedef std::map< CVariant, TVariantVector >    TValueMap;
+    typedef CVariant::VariantVector                         TVariantVector;
+    typedef CString::StringVector                           TStringVector;
+    //typedef std::pair< const CVariant, TVariantVector >     TVariantAndVariantVectorPair;
+    //typedef std::map< CVariant, TVariantVector, std::less< CVariant >, gucef_allocator< TVariantAndVariantVectorPair > >   TValueMap;
+    typedef std::map< CVariant, TVariantVector >   TValueMap;
 
     CValueList( void );
 
@@ -89,7 +91,7 @@ class GUCEF_CORE_PUBLIC_CPP CValueList : public CIConfigurable          ,
 
     CValueList& operator=( const CValueList& src );
 
-    virtual ~CValueList();
+    virtual ~CValueList() GUCEF_VIRTUAL_OVERRIDE;
 
     /**
      *  Returns the first value associated with the
@@ -129,7 +131,13 @@ class GUCEF_CORE_PUBLIC_CPP CValueList : public CIConfigurable          ,
                           const CString* optionalKeyPrefix = GUCEF_NULL ,
                           UInt8 valueType = GUCEF_DATATYPE_STRING       );
 
+    void Set( const char* key       ,
+              const CVariant& value );
+
     void Set( const CString& key    ,
+              const CVariant& value );
+
+    void Set( const CVariant& key   ,
               const CVariant& value );
 
     /**
@@ -349,7 +357,8 @@ class GUCEF_CORE_PUBLIC_CPP CValueList : public CIConfigurable          ,
 
     CString GetAllPairs( const UInt32 index, const CString& seperatorStr ) const;
 
-    CString GetAllPairs( const CString& seperatorStr                ,
+    CString GetAllPairs( const CString& keyValueSeperatorStr        ,
+                         const CString& kvPairSeperatorStr          ,
                          bool envelopElements = false               ,
                          const CString& envelopStr = CString::Empty ) const;
 
@@ -459,6 +468,10 @@ class GUCEF_CORE_PUBLIC_CPP CValueList : public CIConfigurable          ,
     CString m_configKeyNamespace;
 };
 
+/*-------------------------------------------------------------------------*/
+
+inline CString ToString( const CValueList& values ) { return values.GetAllPairs( "=", ",", true, "\"" ); }
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //
@@ -471,19 +484,3 @@ class GUCEF_CORE_PUBLIC_CPP CValueList : public CIConfigurable          ,
 /*-------------------------------------------------------------------------*/
 
 #endif /* GUCEF_CORE_CVALUELIST_H */
-
-/*-------------------------------------------------------------------------//
-//                                                                         //
-//      Info & Changes                                                     //
-//                                                                         //
-//-------------------------------------------------------------------------//
-
-- 18-08-2007 :
-        - Updated to use STL containers and added the ability to map multiple
-          values to a single key.
-        - Instead of empty strings an exception will now be thrown if an invalid
-          key name or index is used to access an entry.
-- 21-09-2005 :
-        - initial version
-
---------------------------------------------------------------------------*/

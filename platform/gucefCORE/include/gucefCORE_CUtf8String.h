@@ -172,6 +172,8 @@ class GUCEF_CORE_PUBLIC_CPP CUtf8String
 
     bool operator<( const CUtf8String& other ) const;
 
+    bool operator<=( const CUtf8String& other ) const;
+
     /** 
      *  Uses the concept of code point indeces to index into the string
      *  Uses CodepointAtIndex()

@@ -456,6 +456,15 @@ CAsciiString::operator<( const CAsciiString& other ) const
 /*-------------------------------------------------------------------------*/
 
 bool
+CAsciiString::operator<=( const CAsciiString& other ) const
+{GUCEF_TRACE;
+
+    return ( *this < other ) || ( *this == other );
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
 CAsciiString::IsNULLOrEmpty( void ) const
 {GUCEF_TRACE;
 

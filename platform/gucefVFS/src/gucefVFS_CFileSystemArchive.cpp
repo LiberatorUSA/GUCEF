@@ -548,8 +548,8 @@ CFileSystemArchive::LoadFromDisk( const CString& filePath                 ,
     // Create a file path for this root
     CString path = CORE::CombinePath( m_rootDir, filePath.ReplaceChar( GUCEF_DIRSEPCHAROPPOSITE, GUCEF_DIRSEPCHAR ) );
 
-    bool isAppend( ( strchr( mode, 'a' ) != NULL ) || ( strchr( mode, '+' ) != NULL ) );
-    bool needwriteable( ( strchr( mode, 'a' ) != NULL ) || ( strchr( mode, 'w' ) != NULL ) || ( strchr( mode, '+' ) != NULL ) );
+    bool isAppend( ( strchr( mode, 'a' ) != GUCEF_NULL ) || ( strchr( mode, '+' ) != GUCEF_NULL ) );
+    bool needwriteable( ( strchr( mode, 'a' ) != GUCEF_NULL ) || ( strchr( mode, 'w' ) != GUCEF_NULL ) || ( strchr( mode, '+' ) != GUCEF_NULL ) );
 
     if ( GUCEF_NULL == metaData )
     {
@@ -591,19 +591,39 @@ CFileSystemArchive::LoadFromDisk( const CString& filePath                 ,
          ( exists && isAppend )                    )
     {
         // Attempt to get access to the file
-        CORE::FileAccessPtr fa( GUCEF_NULL == metaData ? GUCEF_NEW CORE::CFileAccess( path, mode ) : GUCEF_NEW CORE::CFileAccess( path, *metaData, mode ) );
-        if ( !fa.IsNULL() && !fa->IsValid() )
+        CORE::FileAccessPtr fileAccess( GUCEF_NEW CORE::CFileAccess() );
+        if ( fileAccess.IsNULL() )
         {
-            // try a different root
-            fa.Unlink();
+            // memory issue
             return TBasicVfsResourcePtr();
+        }
+
+        if ( GUCEF_NULL == metaData )
+        {
+            if ( !fileAccess->Open( path, mode ) )
+            {
+                // try a different root
+                GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "FileSystemArchive:LoadFromDisk: Failed to open access to file: " + path );
+                fileAccess.Unlink();
+                return TBasicVfsResourcePtr();
+            }
+        }
+        else
+        {
+            if ( !fileAccess->Open( path, *metaData, mode ) )
+            {
+                // try a different root
+                GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "FileSystemArchive:LoadFromDisk: Failed to open access to file: " + path );
+                fileAccess.Unlink();
+                return TBasicVfsResourcePtr();
+            }
         }
 
         if ( ( strcmp( mode, "rb" ) == 0 ) ||
              ( strcmp( mode, "r" ) == 0 )   )
         {
             // check if we can load the file into memory
-            UInt64 fsize = CORE::Filesize( path.C_String() );
+            UInt64 fsize = CORE::FileSize( path );
             if ( fsize <= memLoadSize )
             {
                 // Create the memory buffer
@@ -611,9 +631,9 @@ CFileSystemArchive::LoadFromDisk( const CString& filePath                 ,
                 CORE::DynamicBufferAccessPtr bufferAccess( GUCEF_NEW CORE::CDynamicBufferAccess( bufferPtr.GetPointer(), false ) );
 
                 // Copy the file into the buffer
-                if ( fsize == bufferAccess->Write( *(fa.GetPointerAlways()) ) )
+                if ( fsize == bufferAccess->Write( *(fileAccess.GetPointerAlways()) ) )
                 {
-                    fa.Unlink();
+                    fileAccess.Unlink();
 
                     // reset the carat so the user can access the file from the beginning
                     bufferAccess->Setpos( 0 );
@@ -631,16 +651,16 @@ CFileSystemArchive::LoadFromDisk( const CString& filePath                 ,
                 {
                     // Something went wrong while trying to load the file into the buffer
                     // try a different root
-                    fa->Setpos( 0 );
+                    fileAccess->Setpos( 0 );
                     bufferAccess.Unlink();
                 }
             }
         }
 
         // return the file handle
-        return TVfsResourcePtr( GUCEF_NEW CVFSHandle( fa       ,
-                                                      path     ,
-                                                      filePath ) );
+        return TVfsResourcePtr( GUCEF_NEW CVFSHandle( fileAccess ,
+                                                      path       ,
+                                                      filePath   ) );
 
     }
 

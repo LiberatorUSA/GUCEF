@@ -89,6 +89,11 @@
 #define GUCEF_PATCHER_H
 #endif /* GUCEF_PATCHER_H ? */
 
+#ifndef GUCEF_KAITAI_H
+//#include "gucefKAITAI.h"  /* GUCEF platform KAITAI module */
+#define GUCEF_KAITAI_H
+#endif /* GUCEF_KAITAI_H ? */
+
 #ifndef GUCEF_DRN_H
 //#include "gucefDRN.h"     /* GUCEF platform DRN module */
 #define GUCEF_DRN_H

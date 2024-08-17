@@ -526,6 +526,30 @@ inline CString ToString( void ) { return typeid( typeNameParam ).name(); }
 
 /*-------------------------------------------------------------------------*/
 
+/**
+ *  Helper for templates to convert a string to a build-in type
+ */
+template < typename numberType >
+inline
+numberType
+StringToNumber( const CString& str, numberType defaultIfNeeded = 0 )
+{GUCEF_TRACE;
+    return defaultIfNeeded;
+}
+
+template <> inline Int8 StringToNumber< Int8 >( const CString& str, Int8 defaultIfNeeded ) {GUCEF_TRACE; return StringToInt8( str, defaultIfNeeded ); }
+template <> inline UInt8 StringToNumber< UInt8 >( const CString& str, UInt8 defaultIfNeeded ) {GUCEF_TRACE; return StringToUInt8( str, defaultIfNeeded ); }
+template <> inline Int16 StringToNumber< Int16 >( const CString& str, Int16 defaultIfNeeded ) {GUCEF_TRACE; return StringToInt16( str, defaultIfNeeded ); }
+template <> inline UInt16 StringToNumber< UInt16 >( const CString& str, UInt16 defaultIfNeeded ) {GUCEF_TRACE; return StringToUInt16( str, defaultIfNeeded ); }
+template <> inline Int32 StringToNumber< Int32 >( const CString& str, Int32 defaultIfNeeded ) {GUCEF_TRACE; return StringToInt32( str, defaultIfNeeded ); }
+template <> inline UInt32 StringToNumber< UInt32 >( const CString& str, UInt32 defaultIfNeeded ) {GUCEF_TRACE; return StringToUInt32( str, defaultIfNeeded ); }
+template <> inline Int64 StringToNumber< Int64 >( const CString& str, Int64 defaultIfNeeded ) {GUCEF_TRACE; return StringToInt64( str, defaultIfNeeded ); }
+template <> inline UInt64 StringToNumber< UInt64 >( const CString& str, UInt64 defaultIfNeeded ) {GUCEF_TRACE; return StringToUInt64( str, defaultIfNeeded ); }
+template <> inline Float32 StringToNumber< Float32 >( const CString& str, Float32 defaultIfNeeded ) {GUCEF_TRACE; return StringToFloat( str, defaultIfNeeded ); }
+template <> inline Float64 StringToNumber< Float64 >( const CString& str, Float64 defaultIfNeeded ) {GUCEF_TRACE; return StringToDouble( str, defaultIfNeeded ); }
+
+/*-------------------------------------------------------------------------*/
+
 inline CString::StringSet ToStringSet( const CUtf8String& str ) { return StringToStringSet( str ); }
 inline CString::StringSet ToStringSet( const CAsciiString& str ) { return StringToStringSet( str ); }
 inline CString::StringSet ToStringSet( const CUtf8String::StringVector& vec ) { CString::StringSet set; CUtf8String::StringVector::const_iterator i=vec.begin(); while ( i != vec.end() ) { set.insert( (*i) ); ++i; } return set; }

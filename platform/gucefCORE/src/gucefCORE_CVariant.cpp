@@ -315,6 +315,76 @@ CVariant::CVariant( const CVariant& data ,
 
 /*-------------------------------------------------------------------------*/
 
+CVariant::CVariant( TInt32Fraction data )
+    : m_variantData()
+{GUCEF_TRACE;
+
+    memset( &m_variantData, 0, sizeof( m_variantData ) );
+    m_variantData.containedType = GUCEF_DATATYPE_INT32T2_FRACTION;
+    m_variantData.union_data.fraction_data.union_data.int32t2_data.numerator = data.GetNumerator();
+    m_variantData.union_data.fraction_data.union_data.int32t2_data.denominator = data.GetDenominator();    
+}
+
+/*-------------------------------------------------------------------------*/
+
+CVariant::CVariant( TUInt32Fraction data )
+    : m_variantData()
+{GUCEF_TRACE;
+
+    memset( &m_variantData, 0, sizeof( m_variantData ) );
+    m_variantData.containedType = GUCEF_DATATYPE_UINT32T2_FRACTION;
+    m_variantData.union_data.fraction_data.union_data.uint32t2_data.numerator = data.GetNumerator();
+    m_variantData.union_data.fraction_data.union_data.uint32t2_data.denominator = data.GetDenominator();  
+}
+
+/*-------------------------------------------------------------------------*/
+
+CVariant::CVariant( const TInt64Int32Fraction& data )
+    : m_variantData()
+{GUCEF_TRACE;
+
+    memset( &m_variantData, 0, sizeof( m_variantData ) );
+    m_variantData.containedType = GUCEF_DATATYPE_INT64_INT32_FRACTION;
+    m_variantData.union_data.fraction_data.union_data.int64_int32_data.numerator = data.GetNumerator();
+    m_variantData.union_data.fraction_data.union_data.int64_int32_data.denominator = data.GetDenominator();  
+}
+
+/*-------------------------------------------------------------------------*/
+
+CVariant::CVariant( const TUInt64UInt32Fraction& data )
+    : m_variantData()
+{GUCEF_TRACE;
+
+    memset( &m_variantData, 0, sizeof( m_variantData ) );
+    m_variantData.containedType = GUCEF_DATATYPE_UINT64_UINT32_FRACTION;
+    m_variantData.union_data.fraction_data.union_data.uint64_uint32_data.numerator = data.GetNumerator();
+    m_variantData.union_data.fraction_data.union_data.uint64_uint32_data.denominator = data.GetDenominator();  
+}
+
+/*-------------------------------------------------------------------------*/
+
+CVariant::CVariant( const TInt64Fraction& data )
+    : m_variantData()
+{GUCEF_TRACE;
+
+    TInt64T2Fraction cData = { data.GetNumerator(), data.GetDenominator() };    
+    memset( &m_variantData, 0, sizeof( m_variantData ) );
+    Set( &cData, sizeof( cData ), GUCEF_DATATYPE_INT64T2_FRACTION );
+}
+
+/*-------------------------------------------------------------------------*/
+
+CVariant::CVariant( const TUInt64Fraction& data )
+    : m_variantData()
+{GUCEF_TRACE;
+
+    TUInt64T2Fraction cData = { data.GetNumerator(), data.GetDenominator() };    
+    memset( &m_variantData, 0, sizeof( m_variantData ) );
+    Set( &cData, sizeof( cData ), GUCEF_DATATYPE_UINT64T2_FRACTION );
+}
+
+/*-------------------------------------------------------------------------*/
+
 bool 
 CVariant::Set( const TVariantData* src, bool linkOnlyForDynMem )
 {GUCEF_TRACE;
@@ -413,6 +483,60 @@ CVariant::IsInteger( void ) const
 /*-------------------------------------------------------------------------*/
 
 bool
+CVariant::IsSignedInteger( void ) const
+{GUCEF_TRACE;
+
+    switch ( m_variantData.containedType )
+    {
+        case GUCEF_DATATYPE_INT8:
+        case GUCEF_DATATYPE_LE_INT16:
+        case GUCEF_DATATYPE_BE_INT16:
+        case GUCEF_DATATYPE_LE_INT32:
+        case GUCEF_DATATYPE_BE_INT32:
+        case GUCEF_DATATYPE_LE_INT64:
+        case GUCEF_DATATYPE_BE_INT64:
+        {
+            return true;
+        }
+        default:
+        {
+            return false;
+        }
+    }
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CVariant::IsUnsignedInteger( void ) const
+{GUCEF_TRACE;
+
+    switch ( m_variantData.containedType )
+    {
+        case GUCEF_DATATYPE_UINT8:
+        case GUCEF_DATATYPE_LE_UINT16:
+        case GUCEF_DATATYPE_BE_UINT16:
+        case GUCEF_DATATYPE_LE_UINT32:
+        case GUCEF_DATATYPE_BE_UINT32:
+        case GUCEF_DATATYPE_LE_UINT64:
+        case GUCEF_DATATYPE_BE_UINT64:
+        case GUCEF_DATATYPE_LE_TIMESTAMP_IN_SECS_SINCE_UNIX_EPOCH:
+        case GUCEF_DATATYPE_BE_TIMESTAMP_IN_SECS_SINCE_UNIX_EPOCH:
+        case GUCEF_DATATYPE_LE_TIMESTAMP_IN_MS_SINCE_UNIX_EPOCH:
+        case GUCEF_DATATYPE_BE_TIMESTAMP_IN_MS_SINCE_UNIX_EPOCH:
+        {
+            return true;
+        }
+        default:
+        {
+            return false;
+        }
+    }
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
 CVariant::IsFloat( void ) const
 {GUCEF_TRACE;
 
@@ -436,8 +560,86 @@ bool
 CVariant::IsNumber( void ) const
 {GUCEF_TRACE;
 
-    return IsInteger() || IsFloat() || 
+    return IsInteger() || IsFloat() || IsFraction() ||
         m_variantData.containedType == GUCEF_DATATYPE_NUMERIC;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CVariant::IsFraction( void ) const
+{GUCEF_TRACE;
+
+    switch ( m_variantData.containedType )
+    {
+        case GUCEF_DATATYPE_INT32T2_LE_FRACTION:
+        case GUCEF_DATATYPE_INT32T2_BE_FRACTION:
+        case GUCEF_DATATYPE_UINT32T2_LE_FRACTION:
+        case GUCEF_DATATYPE_UINT32T2_BE_FRACTION:
+        case GUCEF_DATATYPE_INT64T2_LE_FRACTION:
+        case GUCEF_DATATYPE_INT64T2_BE_FRACTION:
+        case GUCEF_DATATYPE_UINT64T2_LE_FRACTION:
+        case GUCEF_DATATYPE_UINT64T2_BE_FRACTION:
+        case GUCEF_DATATYPE_INT64_INT32_LE_FRACTION:
+        case GUCEF_DATATYPE_INT64_INT32_BE_FRACTION:
+        case GUCEF_DATATYPE_UINT64_UINT32_LE_FRACTION:
+        case GUCEF_DATATYPE_UINT64_UINT32_BE_FRACTION:
+        {
+            return true;
+        }
+        default:
+        {
+            return false;
+        }
+    }
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CVariant::IsSignedFraction( void ) const
+{GUCEF_TRACE;
+
+    switch ( m_variantData.containedType )
+    {
+        case GUCEF_DATATYPE_INT32T2_LE_FRACTION:
+        case GUCEF_DATATYPE_INT32T2_BE_FRACTION:
+        case GUCEF_DATATYPE_INT64T2_LE_FRACTION:
+        case GUCEF_DATATYPE_INT64T2_BE_FRACTION:
+        case GUCEF_DATATYPE_INT64_INT32_LE_FRACTION:
+        case GUCEF_DATATYPE_INT64_INT32_BE_FRACTION:
+        {
+            return true;
+        }
+        default:
+        {
+            return false;
+        }
+    }
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CVariant::IsUnsignedFraction( void ) const
+{GUCEF_TRACE;
+
+    switch ( m_variantData.containedType )
+    {
+        case GUCEF_DATATYPE_UINT32T2_LE_FRACTION:
+        case GUCEF_DATATYPE_UINT32T2_BE_FRACTION:
+        case GUCEF_DATATYPE_UINT64T2_LE_FRACTION:
+        case GUCEF_DATATYPE_UINT64T2_BE_FRACTION:
+        case GUCEF_DATATYPE_UINT64_UINT32_LE_FRACTION:
+        case GUCEF_DATATYPE_UINT64_UINT32_BE_FRACTION:
+        {
+            return true;
+        }
+        default:
+        {
+            return false;
+        }
+    }
 }
 
 /*-------------------------------------------------------------------------*/
@@ -532,6 +734,10 @@ CVariant::UsesDynamicMemory( UInt8 typeId )
         case GUCEF_DATATYPE_BINARY_BLOB:
         case GUCEF_DATATYPE_DATETIME_ISO8601_ASCII_STRING:
         case GUCEF_DATATYPE_DATETIME_ISO8601_UTF8_STRING:
+        case GUCEF_DATATYPE_INT64T2_LE_FRACTION:
+        case GUCEF_DATATYPE_INT64T2_BE_FRACTION:
+        case GUCEF_DATATYPE_UINT64T2_LE_FRACTION:
+        case GUCEF_DATATYPE_UINT64T2_BE_FRACTION:
         {
             return true;
         }
@@ -616,6 +822,10 @@ CVariant::IsNULLOrEmpty( void ) const
             return 0 == m_variantData.union_data.heap_data.heap_data_size ||
                    ( 4 == m_variantData.union_data.heap_data.heap_data_size && 0 == *( (const UInt32*) m_variantData.union_data.heap_data.union_data.char_heap_data ) );
         }
+        case GUCEF_DATATYPE_INT64T2_LE_FRACTION:
+        case GUCEF_DATATYPE_INT64T2_BE_FRACTION:
+        case GUCEF_DATATYPE_UINT64T2_LE_FRACTION:
+        case GUCEF_DATATYPE_UINT64T2_BE_FRACTION:
         case GUCEF_DATATYPE_BINARY_BLOB:
         {
             return 0 == m_variantData.union_data.heap_data.heap_data_size;
@@ -727,8 +937,8 @@ CVariant::AsBool( bool defaultIfNeeded, bool resolveVarsIfApplicable ) const
         {
             if ( IsInteger() )
                 return 0 != AsUInt64();
-            if ( IsFloat() )
-                return 0 != AsFloat64();
+            if ( IsFloat() || IsFraction() )
+                return std::fabs( AsFloat64() - 0.0 ) < GUCEF_FLOAT64_COMPARISON_EPSILON;
 
             return defaultIfNeeded;
         }
@@ -758,6 +968,12 @@ CVariant::AsInt8( Int8 defaultIfNeeded, bool resolveVarsIfApplicable ) const
         case GUCEF_DATATYPE_BOOLEAN_UTF8_STRING: return (Int8) ( resolveVarsIfApplicable ? ( StringToBool( ResolveVars( AsString() ) ) ? 1 : 0 ) : AsBool() ? 1 : 0 );
         case GUCEF_DATATYPE_ASCII_STRING: return (Int8) ( resolveVarsIfApplicable ? StringToInt8( AsString(), defaultIfNeeded ) : StringToInt8( AsString(), defaultIfNeeded ) );
         case GUCEF_DATATYPE_UTF8_STRING: return (Int8) ( resolveVarsIfApplicable ? StringToInt8( AsString(), defaultIfNeeded ) : StringToInt8( AsString(), defaultIfNeeded ) );
+        case GUCEF_DATATYPE_INT32T2_FRACTION: return (Int8) AsFloat64();
+        case GUCEF_DATATYPE_UINT32T2_FRACTION: return (Int8) AsFloat64();
+        case GUCEF_DATATYPE_INT64T2_FRACTION: return (Int8) AsFloat64();
+        case GUCEF_DATATYPE_UINT64T2_FRACTION: return (Int8) AsFloat64();
+        case GUCEF_DATATYPE_INT64_INT32_FRACTION: return (Int8) AsFloat64();
+        case GUCEF_DATATYPE_UINT64_UINT32_FRACTION: return (Int8) AsFloat64();
         default: return defaultIfNeeded;
     }
 }
@@ -785,6 +1001,12 @@ CVariant::AsUInt8( UInt8 defaultIfNeeded, bool resolveVarsIfApplicable ) const
         case GUCEF_DATATYPE_BOOLEAN_UTF8_STRING: return (UInt8) ( resolveVarsIfApplicable ? ( StringToBool( ResolveVars( AsString() ) ) ? 1 : 0 ) : AsBool() ? 1 : 0 );
         case GUCEF_DATATYPE_ASCII_STRING: return (UInt8) ( resolveVarsIfApplicable ? StringToUInt8( AsString(), defaultIfNeeded ) : StringToUInt8( AsString(), defaultIfNeeded ) );
         case GUCEF_DATATYPE_UTF8_STRING: return (UInt8) ( resolveVarsIfApplicable ? StringToUInt8( AsString(), defaultIfNeeded ) : StringToUInt8( AsString(), defaultIfNeeded ) );
+        case GUCEF_DATATYPE_INT32T2_FRACTION: return (UInt8) AsFloat64();
+        case GUCEF_DATATYPE_UINT32T2_FRACTION: return (UInt8) AsFloat64();
+        case GUCEF_DATATYPE_INT64T2_FRACTION: return (UInt8) AsFloat64();
+        case GUCEF_DATATYPE_UINT64T2_FRACTION: return (UInt8) AsFloat64();
+        case GUCEF_DATATYPE_INT64_INT32_FRACTION: return (UInt8) AsFloat64();
+        case GUCEF_DATATYPE_UINT64_UINT32_FRACTION: return (UInt8) AsFloat64();
         default: return defaultIfNeeded;
     }
 }
@@ -812,6 +1034,12 @@ CVariant::AsInt16( Int16 defaultIfNeeded, bool resolveVarsIfApplicable ) const
         case GUCEF_DATATYPE_BOOLEAN_UTF8_STRING: return (Int16) ( resolveVarsIfApplicable ? ( StringToBool( ResolveVars( AsString() ) ) ? 1 : 0 ) : AsBool() ? 1 : 0 );
         case GUCEF_DATATYPE_ASCII_STRING: return (Int16) ( resolveVarsIfApplicable ? StringToInt16( AsString(), defaultIfNeeded ) : StringToInt16( AsString(), defaultIfNeeded ) );
         case GUCEF_DATATYPE_UTF8_STRING: return (Int16) ( resolveVarsIfApplicable ? StringToInt16( AsString(), defaultIfNeeded ) : StringToInt16( AsString(), defaultIfNeeded ) );
+        case GUCEF_DATATYPE_INT32T2_FRACTION: return (Int16) AsFloat64();
+        case GUCEF_DATATYPE_UINT32T2_FRACTION: return (Int16) AsFloat64();
+        case GUCEF_DATATYPE_INT64T2_FRACTION: return (Int16) AsFloat64();
+        case GUCEF_DATATYPE_UINT64T2_FRACTION: return (Int16) AsFloat64();
+        case GUCEF_DATATYPE_INT64_INT32_FRACTION: return (Int16) AsFloat64();
+        case GUCEF_DATATYPE_UINT64_UINT32_FRACTION: return (Int16) AsFloat64();
         default: return defaultIfNeeded;
     }
 }
@@ -839,6 +1067,12 @@ CVariant::AsUInt16( UInt16 defaultIfNeeded, bool resolveVarsIfApplicable ) const
         case GUCEF_DATATYPE_BOOLEAN_UTF8_STRING: return (UInt16) ( resolveVarsIfApplicable ? ( StringToBool( ResolveVars( AsString() ) ) ? 1 : 0 ) : AsBool() ? 1 : 0 );
         case GUCEF_DATATYPE_ASCII_STRING: return (UInt16) ( resolveVarsIfApplicable ? StringToUInt16( AsString(), defaultIfNeeded ) : StringToUInt16( AsString(), defaultIfNeeded ) );
         case GUCEF_DATATYPE_UTF8_STRING: return (UInt16) ( resolveVarsIfApplicable ? StringToUInt16( AsString(), defaultIfNeeded ) : StringToUInt16( AsString(), defaultIfNeeded ) );
+        case GUCEF_DATATYPE_INT32T2_FRACTION: return (UInt16) AsFloat64();
+        case GUCEF_DATATYPE_UINT32T2_FRACTION: return (UInt16) AsFloat64();
+        case GUCEF_DATATYPE_INT64T2_FRACTION: return (UInt16) AsFloat64();
+        case GUCEF_DATATYPE_UINT64T2_FRACTION: return (UInt16) AsFloat64();
+        case GUCEF_DATATYPE_INT64_INT32_FRACTION: return (UInt16) AsFloat64();
+        case GUCEF_DATATYPE_UINT64_UINT32_FRACTION: return (UInt16) AsFloat64();
         default: return defaultIfNeeded;
     }
 }
@@ -866,6 +1100,12 @@ CVariant::AsInt32( Int32 defaultIfNeeded, bool resolveVarsIfApplicable ) const
         case GUCEF_DATATYPE_BOOLEAN_UTF8_STRING: return (Int32) ( resolveVarsIfApplicable ? ( StringToBool( ResolveVars( AsString() ) ) ? 1 : 0 ) : AsBool() ? 1 : 0 );
         case GUCEF_DATATYPE_ASCII_STRING: return (Int32) ( resolveVarsIfApplicable ? StringToInt32( AsString(), defaultIfNeeded ) : StringToInt32( AsString(), defaultIfNeeded ) );
         case GUCEF_DATATYPE_UTF8_STRING: return (Int32) ( resolveVarsIfApplicable ? StringToInt32( AsString(), defaultIfNeeded ) : StringToInt32( AsString(), defaultIfNeeded ) );
+        case GUCEF_DATATYPE_INT32T2_FRACTION: return (Int32) AsFloat64();
+        case GUCEF_DATATYPE_UINT32T2_FRACTION: return (Int32) AsFloat64();
+        case GUCEF_DATATYPE_INT64T2_FRACTION: return (Int32) AsFloat64();
+        case GUCEF_DATATYPE_UINT64T2_FRACTION: return (Int32) AsFloat64();
+        case GUCEF_DATATYPE_INT64_INT32_FRACTION: return (Int32) AsFloat64();
+        case GUCEF_DATATYPE_UINT64_UINT32_FRACTION: return (Int32) AsFloat64();
         default: return defaultIfNeeded;
     }
 }
@@ -893,6 +1133,12 @@ CVariant::AsUInt32( UInt32 defaultIfNeeded, bool resolveVarsIfApplicable ) const
         case GUCEF_DATATYPE_BOOLEAN_UTF8_STRING: return (UInt32) ( resolveVarsIfApplicable ? ( StringToBool( ResolveVars( AsString() ) ) ? 1 : 0 ) : AsBool() ? 1 : 0 );
         case GUCEF_DATATYPE_ASCII_STRING: return (UInt32) ( resolveVarsIfApplicable ? StringToUInt32( AsString(), defaultIfNeeded ) : StringToUInt32( AsString(), defaultIfNeeded ) );
         case GUCEF_DATATYPE_UTF8_STRING: return (UInt32) ( resolveVarsIfApplicable ? StringToUInt32( AsString(), defaultIfNeeded ) : StringToUInt32( AsString(), defaultIfNeeded ) );
+        case GUCEF_DATATYPE_INT32T2_FRACTION: return (UInt32) AsFloat64();
+        case GUCEF_DATATYPE_UINT32T2_FRACTION: return (UInt32) AsFloat64();
+        case GUCEF_DATATYPE_INT64T2_FRACTION: return (UInt32) AsFloat64();
+        case GUCEF_DATATYPE_UINT64T2_FRACTION: return (UInt32) AsFloat64();
+        case GUCEF_DATATYPE_INT64_INT32_FRACTION: return (UInt32) AsFloat64();
+        case GUCEF_DATATYPE_UINT64_UINT32_FRACTION: return (UInt32) AsFloat64();
         default: return defaultIfNeeded;
     }
 }
@@ -924,6 +1170,12 @@ CVariant::AsInt64( Int64 defaultIfNeeded, bool resolveVarsIfApplicable ) const
         case GUCEF_DATATYPE_BOOLEAN_UTF8_STRING: return (Int64) ( resolveVarsIfApplicable ? ( StringToBool( ResolveVars( AsString() ) ) ? 1 : 0 ) : AsBool() ? 1 : 0 );
         case GUCEF_DATATYPE_ASCII_STRING: return (Int64) ( resolveVarsIfApplicable ? StringToInt64( AsString(), defaultIfNeeded ) : StringToInt64( AsString(), defaultIfNeeded ) );
         case GUCEF_DATATYPE_UTF8_STRING: return (Int64) ( resolveVarsIfApplicable ? StringToInt64( AsString(), defaultIfNeeded ) : StringToInt64( AsString(), defaultIfNeeded ) );
+        case GUCEF_DATATYPE_INT32T2_FRACTION: return (Int64) AsFloat64();
+        case GUCEF_DATATYPE_UINT32T2_FRACTION: return (Int64) AsFloat64();
+        case GUCEF_DATATYPE_INT64T2_FRACTION: return (Int64) AsFloat64();
+        case GUCEF_DATATYPE_UINT64T2_FRACTION: return (Int64) AsFloat64();
+        case GUCEF_DATATYPE_INT64_INT32_FRACTION: return (Int64) AsFloat64();
+        case GUCEF_DATATYPE_UINT64_UINT32_FRACTION: return (Int64) AsFloat64();
         default: return defaultIfNeeded;
     }
 }
@@ -955,6 +1207,12 @@ CVariant::AsUInt64( UInt64 defaultIfNeeded, bool resolveVarsIfApplicable ) const
         case GUCEF_DATATYPE_BOOLEAN_UTF8_STRING: return (UInt64) ( resolveVarsIfApplicable ? ( StringToBool( ResolveVars( AsString() ) ) ? 1 : 0 ) : AsBool() ? 1 : 0 );
         case GUCEF_DATATYPE_ASCII_STRING: return (UInt64) ( resolveVarsIfApplicable ? StringToUInt64( AsString(), defaultIfNeeded ) : StringToUInt64( AsString(), defaultIfNeeded ) );
         case GUCEF_DATATYPE_UTF8_STRING: return (UInt64) ( resolveVarsIfApplicable ? StringToUInt64( AsString(), defaultIfNeeded ) : StringToUInt64( AsString(), defaultIfNeeded ) );
+        case GUCEF_DATATYPE_INT32T2_FRACTION: return (UInt64) AsFloat64();
+        case GUCEF_DATATYPE_UINT32T2_FRACTION: return (UInt64) AsFloat64();
+        case GUCEF_DATATYPE_INT64T2_FRACTION: return (UInt64) AsFloat64();
+        case GUCEF_DATATYPE_UINT64T2_FRACTION: return (UInt64) AsFloat64();
+        case GUCEF_DATATYPE_INT64_INT32_FRACTION: return (UInt64) AsFloat64();
+        case GUCEF_DATATYPE_UINT64_UINT32_FRACTION: return (UInt64) AsFloat64();
         default: return defaultIfNeeded;
     }
 }
@@ -986,6 +1244,12 @@ CVariant::AsSizeT( size_t defaultIfNeeded, bool resolveVarsIfApplicable ) const
         case GUCEF_DATATYPE_BOOLEAN_UTF8_STRING: return (size_t) ( resolveVarsIfApplicable ? ( StringToBool( ResolveVars( AsString() ) ) ? 1 : 0 ) : AsBool() ? 1 : 0 );
         case GUCEF_DATATYPE_ASCII_STRING: return (size_t) ( resolveVarsIfApplicable ? StringToUInt64( AsString(), defaultIfNeeded ) : StringToUInt64( AsString(), defaultIfNeeded ) );
         case GUCEF_DATATYPE_UTF8_STRING: return (size_t) ( resolveVarsIfApplicable ? StringToUInt64( AsString(), defaultIfNeeded ) : StringToUInt64( AsString(), defaultIfNeeded ) );
+        case GUCEF_DATATYPE_INT32T2_FRACTION: return (size_t) AsFloat64();
+        case GUCEF_DATATYPE_UINT32T2_FRACTION: return (size_t) AsFloat64();
+        case GUCEF_DATATYPE_INT64T2_FRACTION: return (size_t) AsFloat64();
+        case GUCEF_DATATYPE_UINT64T2_FRACTION: return (size_t) AsFloat64();
+        case GUCEF_DATATYPE_INT64_INT32_FRACTION: return (size_t) AsFloat64();
+        case GUCEF_DATATYPE_UINT64_UINT32_FRACTION: return (size_t) AsFloat64();
         default: return defaultIfNeeded;
     }
 }
@@ -1013,7 +1277,38 @@ CVariant::AsFloat32( Float32 defaultIfNeeded, bool resolveVarsIfApplicable ) con
         case GUCEF_DATATYPE_BOOLEAN_UTF8_STRING: return (Float32) ( resolveVarsIfApplicable ? ( StringToBool( ResolveVars( AsString() ) ) ? 1.0f : 0.0f ) : AsBool() ? 1.0f : 0.0f );
         case GUCEF_DATATYPE_ASCII_STRING: return (Float32) ( resolveVarsIfApplicable ? StringToFloat( AsString(), defaultIfNeeded ) : StringToFloat( AsString(), defaultIfNeeded ) );
         case GUCEF_DATATYPE_UTF8_STRING: return (Float32) ( resolveVarsIfApplicable ? StringToFloat( AsString(), defaultIfNeeded ) : StringToFloat( AsString(), defaultIfNeeded ) );
-        default: return defaultIfNeeded;
+        case GUCEF_DATATYPE_INT32T2_FRACTION: return ( (Float32) TInt32Fraction( m_variantData.union_data.fraction_data.union_data.int32t2_data ).ToFloat32() );
+        case GUCEF_DATATYPE_UINT32T2_FRACTION: return ( (Float32) TUInt32Fraction( m_variantData.union_data.fraction_data.union_data.uint32t2_data ).ToFloat32() );
+        case GUCEF_DATATYPE_INT64_INT32_FRACTION: return ( (Float32) TInt64Int32Fraction( m_variantData.union_data.fraction_data.union_data.int64_int32_data ).ToFloat32() );
+        case GUCEF_DATATYPE_UINT64_UINT32_FRACTION: return ( (Float32) TUInt64UInt32Fraction( m_variantData.union_data.fraction_data.union_data.uint64_uint32_data ).ToFloat32() );
+        case GUCEF_DATATYPE_INT64T2_FRACTION: 
+        {
+            if ( GUCEF_NULL != m_variantData.union_data.heap_data.union_data.void_heap_data    &&
+                 sizeof(TInt64T2Fraction) <= m_variantData.union_data.heap_data.heap_data_size )
+            {
+                return TInt64Fraction( *m_variantData.union_data.heap_data.union_data.fraction_int64t2_data ).ToFloat32();
+            }
+            else
+            {
+                return defaultIfNeeded;
+            }            
+        }
+        case GUCEF_DATATYPE_UINT64T2_FRACTION:
+        {
+            if ( GUCEF_NULL != m_variantData.union_data.heap_data.union_data.void_heap_data    &&
+                 sizeof(TUInt64T2Fraction) <= m_variantData.union_data.heap_data.heap_data_size )
+            {
+                return TUInt64Fraction( *m_variantData.union_data.heap_data.union_data.fraction_uint64t2_data ).ToFloat32();
+            }
+            else
+            {
+                return defaultIfNeeded;
+            }            
+        }
+        default: 
+        {
+            return defaultIfNeeded;
+        }
     }
 }
 
@@ -1036,10 +1331,36 @@ CVariant::AsFloat64( Float64 defaultIfNeeded, bool resolveVarsIfApplicable ) con
         case GUCEF_DATATYPE_FLOAT32: return (Float64) m_variantData.union_data.float32_data;
         case GUCEF_DATATYPE_FLOAT64: return m_variantData.union_data.float64_data;
         case GUCEF_DATATYPE_BOOLEAN_INT32: return (Float64) m_variantData.union_data.int32_data;
-        case GUCEF_DATATYPE_BOOLEAN_ASCII_STRING: return (Float32) ( resolveVarsIfApplicable ? ( StringToBool( ResolveVars( AsString() ) ) ? 1.0l : 0.0l ) : AsBool() ? 1.0l : 0.0l );
-        case GUCEF_DATATYPE_BOOLEAN_UTF8_STRING: return (Float32) ( resolveVarsIfApplicable ? ( StringToBool( ResolveVars( AsString() ) ) ? 1.0l : 0.0l ) : AsBool() ? 1.0l : 0.0l );
-        case GUCEF_DATATYPE_ASCII_STRING: return (Float32) ( resolveVarsIfApplicable ? StringToDouble( AsString(), defaultIfNeeded ) : StringToDouble( AsString(), defaultIfNeeded ) );
-        case GUCEF_DATATYPE_UTF8_STRING: return (Float32) ( resolveVarsIfApplicable ? StringToDouble( AsString(), defaultIfNeeded ) : StringToDouble( AsString(), defaultIfNeeded ) );
+        case GUCEF_DATATYPE_BOOLEAN_ASCII_STRING: return (Float64) ( resolveVarsIfApplicable ? ( StringToBool( ResolveVars( AsString() ) ) ? 1.0l : 0.0l ) : AsBool() ? 1.0l : 0.0l );
+        case GUCEF_DATATYPE_BOOLEAN_UTF8_STRING: return (Float64) ( resolveVarsIfApplicable ? ( StringToBool( ResolveVars( AsString() ) ) ? 1.0l : 0.0l ) : AsBool() ? 1.0l : 0.0l );
+        case GUCEF_DATATYPE_ASCII_STRING: return (Float64) ( resolveVarsIfApplicable ? StringToDouble( AsString(), defaultIfNeeded ) : StringToDouble( AsString(), defaultIfNeeded ) );
+        case GUCEF_DATATYPE_UTF8_STRING: return (Float64) ( resolveVarsIfApplicable ? StringToDouble( AsString(), defaultIfNeeded ) : StringToDouble( AsString(), defaultIfNeeded ) );
+        case GUCEF_DATATYPE_INT32T2_FRACTION: return ( (Float64) m_variantData.union_data.fraction_data.union_data.int32t2_data.numerator ) / ( (Float64) m_variantData.union_data.fraction_data.union_data.int32t2_data.denominator );
+        case GUCEF_DATATYPE_UINT32T2_FRACTION: return ( (Float64) m_variantData.union_data.fraction_data.union_data.uint32t2_data.numerator ) / ( (Float64) m_variantData.union_data.fraction_data.union_data.uint32t2_data.denominator );
+        case GUCEF_DATATYPE_INT64T2_FRACTION: 
+        {
+            if ( GUCEF_NULL != m_variantData.union_data.heap_data.union_data.void_heap_data    &&
+                 sizeof(TInt64T2Fraction) <= m_variantData.union_data.heap_data.heap_data_size )
+            {
+                return TInt64Fraction( *m_variantData.union_data.heap_data.union_data.fraction_int64t2_data ).ToFloat64();
+            }
+            else
+            {
+                return defaultIfNeeded;
+            }            
+        }
+        case GUCEF_DATATYPE_UINT64T2_FRACTION:
+        {
+            if ( GUCEF_NULL != m_variantData.union_data.heap_data.union_data.void_heap_data    &&
+                 sizeof(TUInt64T2Fraction) <= m_variantData.union_data.heap_data.heap_data_size )
+            {
+                return TUInt64Fraction( *m_variantData.union_data.heap_data.union_data.fraction_uint64t2_data ).ToFloat64();
+            }
+            else
+            {
+                return defaultIfNeeded;
+            }            
+        }
         default: return defaultIfNeeded;
     }
 }
@@ -1059,7 +1380,10 @@ char
 CVariant::AsChar( char defaultIfNeeded ) const
 {GUCEF_TRACE;
 
-    return *AsCharPtr( &defaultIfNeeded );
+    const char* charPtr = AsCharPtr( GUCEF_NULL );
+    if ( GUCEF_NULL != charPtr )
+        return *charPtr;
+    return defaultIfNeeded;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -1084,7 +1408,13 @@ CVariant::AsVoidPtr( const void* defaultIfNeeded ) const
         case GUCEF_DATATYPE_BE_TIMESTAMP_IN_SECS_SINCE_UNIX_EPOCH: return &m_variantData.union_data.uint64_data;
         case GUCEF_DATATYPE_LE_TIMESTAMP_IN_MS_SINCE_UNIX_EPOCH: return &m_variantData.union_data.uint64_data;
         case GUCEF_DATATYPE_BE_TIMESTAMP_IN_MS_SINCE_UNIX_EPOCH: return &m_variantData.union_data.uint64_data;
-        case GUCEF_DATATYPE_BOOLEAN_INT32: return &m_variantData.union_data.int32_data;
+        case GUCEF_DATATYPE_BOOLEAN_INT32: return &m_variantData.union_data.int32_data;        
+        case GUCEF_DATATYPE_BINARY_BSOB: return m_variantData.union_data.bsob_data;
+        case GUCEF_DATATYPE_INT32T2_FRACTION: return &m_variantData.union_data.fraction_data.union_data.int32t2_data;
+        case GUCEF_DATATYPE_UINT32T2_FRACTION: return &m_variantData.union_data.fraction_data.union_data.uint32t2_data;
+        case GUCEF_DATATYPE_INT64_INT32_FRACTION: return &m_variantData.union_data.fraction_data.union_data.int64_int32_data;
+        case GUCEF_DATATYPE_UINT64_UINT32_FRACTION: return &m_variantData.union_data.fraction_data.union_data.uint64_uint32_data;
+
         case GUCEF_DATATYPE_BOOLEAN_ASCII_STRING: return m_variantData.union_data.heap_data.union_data.char_heap_data;
         case GUCEF_DATATYPE_BOOLEAN_UTF8_STRING: return m_variantData.union_data.heap_data.union_data.char_heap_data;
         case GUCEF_DATATYPE_DATETIME_ISO8601_ASCII_STRING: return m_variantData.union_data.heap_data.union_data.char_heap_data;
@@ -1092,8 +1422,13 @@ CVariant::AsVoidPtr( const void* defaultIfNeeded ) const
         case GUCEF_DATATYPE_ASCII_STRING: return m_variantData.union_data.heap_data.union_data.char_heap_data;
         case GUCEF_DATATYPE_UTF8_STRING: return m_variantData.union_data.heap_data.union_data.char_heap_data;
         case GUCEF_DATATYPE_BINARY_BLOB: return m_variantData.union_data.heap_data.union_data.void_heap_data;
-        case GUCEF_DATATYPE_BINARY_BSOB: return m_variantData.union_data.bsob_data;
-        default: return defaultIfNeeded;
+        case GUCEF_DATATYPE_INT64T2_FRACTION: return m_variantData.union_data.heap_data.union_data.fraction_int64t2_data;
+        case GUCEF_DATATYPE_UINT64T2_FRACTION: return m_variantData.union_data.heap_data.union_data.fraction_uint64t2_data;
+
+        default: 
+        {
+            return defaultIfNeeded;
+        }
     }
 }
 
@@ -1168,6 +1503,13 @@ CVariant::ByteSize( bool includeNullTerm ) const
                 return m_variantData.union_data.heap_data.heap_data_size-4;
             return m_variantData.union_data.heap_data.heap_data_size;
         }
+
+        case GUCEF_DATATYPE_INT32T2_FRACTION: return sizeof m_variantData.union_data.fraction_data.union_data.int32t2_data;
+        case GUCEF_DATATYPE_UINT32T2_FRACTION: return sizeof m_variantData.union_data.fraction_data.union_data.uint32t2_data;
+        case GUCEF_DATATYPE_INT64_INT32_FRACTION: return sizeof m_variantData.union_data.fraction_data.union_data.int64_int32_data;
+        case GUCEF_DATATYPE_UINT64_UINT32_FRACTION: return sizeof m_variantData.union_data.fraction_data.union_data.uint64_uint32_data;
+        case GUCEF_DATATYPE_INT64T2_FRACTION: return m_variantData.union_data.heap_data.heap_data_size;
+        case GUCEF_DATATYPE_UINT64T2_FRACTION: return m_variantData.union_data.heap_data.heap_data_size;
 
         case GUCEF_DATATYPE_NULL:
         case GUCEF_DATATYPE_NIL:
@@ -1312,6 +1654,76 @@ CVariant::operator=( Float64 data )
     Clear();
     m_variantData.union_data.float64_data = data;
     m_variantData.containedType = GUCEF_DATATYPE_FLOAT64;
+    return *this;
+}
+
+/*-------------------------------------------------------------------------*/
+
+CVariant& 
+CVariant::operator=( TInt32T2Fraction data )
+{GUCEF_TRACE;
+
+    Clear();
+    m_variantData.union_data.fraction_data.union_data.int32t2_data = data;
+    m_variantData.containedType = GUCEF_DATATYPE_INT32T2_FRACTION;
+    return *this;
+}
+
+/*-------------------------------------------------------------------------*/
+
+CVariant& 
+CVariant::operator=( TUInt32T2Fraction data )
+{GUCEF_TRACE;
+
+    Clear();
+    m_variantData.union_data.fraction_data.union_data.uint32t2_data = data;
+    m_variantData.containedType = GUCEF_DATATYPE_UINT32T2_FRACTION;
+    return *this;
+}
+
+/*-------------------------------------------------------------------------*/
+
+CVariant& 
+CVariant::operator=( const TInt64T2Fraction& data )
+{GUCEF_TRACE;
+
+    Clear();
+    Set( &data, sizeof data, GUCEF_DATATYPE_INT64T2_FRACTION, false );
+    return *this;
+}
+
+/*-------------------------------------------------------------------------*/
+
+CVariant& 
+CVariant::operator=( const TUInt64T2Fraction& data )
+{GUCEF_TRACE;
+
+    Clear();
+    Set( &data, sizeof data, GUCEF_DATATYPE_UINT64T2_FRACTION, false );
+    return *this;
+}
+
+/*-------------------------------------------------------------------------*/
+
+CVariant& 
+CVariant::operator=( const TInt64WInt32Fraction& data )
+{GUCEF_TRACE;
+
+    Clear();
+    m_variantData.union_data.fraction_data.union_data.int64_int32_data = data;
+    m_variantData.containedType = GUCEF_DATATYPE_INT64_INT32_FRACTION;
+    return *this;
+}
+
+/*-------------------------------------------------------------------------*/
+
+CVariant& 
+CVariant::operator=( const TUInt64WUInt32Fraction& data )
+{GUCEF_TRACE;
+
+    Clear();
+    m_variantData.union_data.fraction_data.union_data.uint64_uint32_data = data;
+    m_variantData.containedType = GUCEF_DATATYPE_UINT64_UINT32_FRACTION;
     return *this;
 }
 
@@ -1544,6 +1956,10 @@ CVariant::Set( const void* data, UInt32 dataSize, UInt8 varType, bool linkOnlyFo
         case GUCEF_DATATYPE_BOOLEAN_UTF8_STRING:
         case GUCEF_DATATYPE_DATETIME_ISO8601_ASCII_STRING:
         case GUCEF_DATATYPE_DATETIME_ISO8601_UTF8_STRING:
+        case GUCEF_DATATYPE_INT64T2_LE_FRACTION:
+        case GUCEF_DATATYPE_INT64T2_BE_FRACTION:
+        case GUCEF_DATATYPE_UINT64T2_LE_FRACTION:
+        case GUCEF_DATATYPE_UINT64T2_BE_FRACTION:
         {
             if ( linkOnlyForDynMem )
             {
@@ -1583,6 +1999,47 @@ CVariant::Set( const void* data, UInt32 dataSize, UInt8 varType, bool linkOnlyFo
                 }
             }
         }
+        case GUCEF_DATATYPE_INT32T2_FRACTION: 
+        {
+            if ( GUCEF_NULL == data || dataSize < (2*sizeof( Int32 )) )
+                return false;
+            
+            m_variantData.union_data.fraction_data.union_data.int32t2_data.numerator = ((Int32*)data)[ 0 ];
+            m_variantData.union_data.fraction_data.union_data.int32t2_data.denominator = ((Int32*)data)[ 1 ];            
+            m_variantData.containedType = GUCEF_DATATYPE_INT32T2_FRACTION;
+            return true;
+        }
+        case GUCEF_DATATYPE_UINT32T2_FRACTION: 
+        {
+            if ( GUCEF_NULL == data || dataSize < (2*sizeof( UInt32 )) )
+                return false;
+            
+            m_variantData.union_data.fraction_data.union_data.uint32t2_data.numerator = ((UInt32*)data)[ 0 ];
+            m_variantData.union_data.fraction_data.union_data.uint32t2_data.denominator = ((UInt32*)data)[ 1 ];            
+            m_variantData.containedType = GUCEF_DATATYPE_UINT32T2_FRACTION;
+            return true;
+        }
+        case GUCEF_DATATYPE_INT64_INT32_FRACTION: 
+        {
+            if ( GUCEF_NULL == data || dataSize < ( sizeof( Int64 ) + sizeof( Int32 ) ) )
+                return false;
+            
+            m_variantData.union_data.fraction_data.union_data.int64_int32_data.numerator = *(Int64*) data;
+            m_variantData.union_data.fraction_data.union_data.int64_int32_data.denominator = *(Int32*) ( ((char*)data)+sizeof(Int64) );
+            m_variantData.containedType = GUCEF_DATATYPE_INT64_INT32_FRACTION;
+            return true;
+        }
+        case GUCEF_DATATYPE_UINT64_UINT32_FRACTION: 
+        {
+            if ( GUCEF_NULL == data || dataSize < ( sizeof( UInt64 ) + sizeof( UInt32 ) ) )
+                return false;
+            
+            m_variantData.union_data.fraction_data.union_data.uint64_uint32_data.numerator = *(UInt64*) data;
+            m_variantData.union_data.fraction_data.union_data.uint64_uint32_data.denominator = *(UInt32*) ( ((char*)data)+sizeof(UInt64) );
+            m_variantData.containedType = GUCEF_DATATYPE_UINT64_UINT32_FRACTION;
+            return true;
+        }
+
         case GUCEF_DATATYPE_NULL:
         case GUCEF_DATATYPE_NIL:
         {
@@ -1681,6 +2138,16 @@ CVariant::LinkTo( const TVariantData& src )
 {GUCEF_TRACE;
 
     Set( &src, true );
+    return *this;
+}
+
+/*-------------------------------------------------------------------------*/
+
+CVariant& 
+CVariant::LinkTo( const TVariantData* src )
+{GUCEF_TRACE;
+
+    Set( src, true );
     return *this;
 }
 
@@ -1873,6 +2340,67 @@ CVariant::SetFromString( UInt8 varType, const CString& data, const CVariant& def
         case GUCEF_DATATYPE_ASCII_STRING:          { return SetString( varType, data, defaultValue ); }
         case GUCEF_DATATYPE_UTF8_STRING:           { return SetString( varType, data, defaultValue ); }
         case GUCEF_DATATYPE_BINARY_BLOB:           { return Base64Decode( data, HeapReserve( data.ByteSize()-1 ), data.ByteSize()-1, m_variantData.union_data.heap_data.heap_data_size ); }
+
+        case GUCEF_DATATYPE_INT32T2_FRACTION: 
+        {
+            TInt32Fraction fraction;
+            if ( fraction.FromString( data ) )
+            {
+                *this = fraction;
+                return true;
+            }
+            return false;
+        }
+        case GUCEF_DATATYPE_UINT32T2_FRACTION: 
+        {
+            TUInt32Fraction fraction;
+            if ( fraction.FromString( data ) )
+            {
+                *this = fraction;
+                return true;
+            }
+            return false;
+        }
+        case GUCEF_DATATYPE_INT64_INT32_FRACTION: 
+        {
+            TInt64Int32Fraction fraction;
+            if ( fraction.FromString( data ) )
+            {
+                *this = fraction;
+                return true;
+            }
+            return false;
+        }
+        case GUCEF_DATATYPE_UINT64_UINT32_FRACTION: 
+        {
+            TUInt64UInt32Fraction fraction;
+            if ( fraction.FromString( data ) )
+            {
+                *this = fraction;
+                return true;
+            }
+            return false;
+        }
+        case GUCEF_DATATYPE_INT64T2_FRACTION: 
+        {
+            TInt64Fraction fraction;
+            if ( fraction.FromString( data ) )
+            {
+                *this = fraction;
+                return true;
+            }
+            return false;
+        }
+        case GUCEF_DATATYPE_UINT64T2_FRACTION: 
+        {
+            TUInt64Fraction fraction;
+            if ( fraction.FromString( data ) )
+            {
+                *this = fraction;
+                return true;
+            }
+            return false;
+        }
         case GUCEF_DATATYPE_UNKNOWN:               { return false; }
         default:                                   { return false; }
     }
@@ -1884,71 +2412,57 @@ bool
 CVariant::operator==( const CVariant& other ) const
 {GUCEF_TRACE;
 
-    switch ( m_variantData.containedType )
+    if ( IsInteger() && other.IsInteger() )
     {
-        case GUCEF_DATATYPE_UINT8:
-        case GUCEF_DATATYPE_LE_UINT16:
-        case GUCEF_DATATYPE_BE_UINT16:
-        case GUCEF_DATATYPE_LE_UINT32:
-        case GUCEF_DATATYPE_BE_UINT32:
-        case GUCEF_DATATYPE_LE_TIMESTAMP_IN_SECS_SINCE_UNIX_EPOCH:
-        case GUCEF_DATATYPE_BE_TIMESTAMP_IN_SECS_SINCE_UNIX_EPOCH:
-        case GUCEF_DATATYPE_LE_TIMESTAMP_IN_MS_SINCE_UNIX_EPOCH:
-        case GUCEF_DATATYPE_BE_TIMESTAMP_IN_MS_SINCE_UNIX_EPOCH:
-        case GUCEF_DATATYPE_LE_UINT64:
-        case GUCEF_DATATYPE_BE_UINT64:
-        {
-            return AsUInt64() == other.AsUInt64();
-        }
-        case GUCEF_DATATYPE_INT8:
-        case GUCEF_DATATYPE_LE_INT16:
-        case GUCEF_DATATYPE_LE_INT32:
-        case GUCEF_DATATYPE_LE_INT64:
-        case GUCEF_DATATYPE_BE_INT16:
-        case GUCEF_DATATYPE_BE_INT32:
-        case GUCEF_DATATYPE_BE_INT64:
-        {
-            return AsInt64() == other.AsInt64();
-        }
-        case GUCEF_DATATYPE_FLOAT32:
-        {
-            return ( (Float32) std::fabs( AsFloat64() - other.AsFloat64() ) ) < GUCEF_FLOAT32_COMPARISON_EPSILON;
-        }
-        case GUCEF_DATATYPE_FLOAT64:
-        {
-            return std::fabs( AsFloat64() - other.AsFloat64() ) < GUCEF_FLOAT64_COMPARISON_EPSILON;
-        }
-        case GUCEF_DATATYPE_BOOLEAN_INT32:
-        case GUCEF_DATATYPE_BOOLEAN_ASCII_STRING:
-        case GUCEF_DATATYPE_BOOLEAN_UTF8_STRING:
-        {
-            return AsBool() == other.AsBool();
-        }
-        case GUCEF_DATATYPE_BINARY_BSOB:
-        case GUCEF_DATATYPE_BINARY_BLOB:
-        {
-            if ( ByteSize() == other.ByteSize() )
-            {
-                return 0 == memcmp( AsVoidPtr(), other.AsVoidPtr(), ByteSize() );
-            }
-            return false;
-        }
-        case GUCEF_DATATYPE_ASCII_STRING:
-        case GUCEF_DATATYPE_UTF8_STRING:
-        {
-            // @todo: optimize
-            return AsString() == other.AsString();
-        }
+        bool isSignedInt = IsSignedInteger();
+        bool otherSignedInt = other.IsSignedInteger();
 
-        // Essentially allowing nill == nill for a variant
-        case GUCEF_DATATYPE_NIL: { return GUCEF_DATATYPE_NIL == other.m_variantData.containedType; }
-        case GUCEF_DATATYPE_NULL: { return GUCEF_DATATYPE_NULL == other.m_variantData.containedType; }
-        case GUCEF_DATATYPE_UNKNOWN: { return GUCEF_DATATYPE_UNKNOWN == other.m_variantData.containedType; }
-
-        default:
+        if ( isSignedInt && otherSignedInt )
         {
-            return false;
+            return AsInt64() < other.AsInt64();
         }
+        else
+        if ( !isSignedInt && !otherSignedInt )
+        {
+            return AsUInt64() < other.AsUInt64();
+        }
+        else
+        {
+            // Comparing signed and unsigned integers
+            return AsInt64() < other.AsInt64();
+        }    
+    }
+    else
+    if ( IsFloat() && other.IsFloat() )
+    {
+        return std::fabs( AsFloat64() - other.AsFloat64() ) < GUCEF_FLOAT64_COMPARISON_EPSILON;
+    }   
+    else
+    if ( IsBoolean() || other.IsBoolean() )
+    {
+        return AsBool() == other.AsBool();
+    } 
+    else
+    if ( IsFraction() || other.IsFraction() )
+    {
+        return std::fabs( AsFloat64() - other.AsFloat64() ) < GUCEF_FLOAT64_COMPARISON_EPSILON;
+    } 
+    else
+    {
+        // strings and blobs
+        
+        UInt32 byteSize = ByteSize();
+        UInt32 otherByteSize = other.ByteSize();
+
+        if ( byteSize > 0 && otherByteSize > 0 )
+        {
+            // Mostly nonsensical, but can be used for sorting a set
+            UInt32 smallestByteSize = GUCEF_SMALLEST( byteSize, otherByteSize );
+            return 0 == memcmp( AsVoidPtr(), other.AsVoidPtr(), smallestByteSize );
+        }
+        
+        // Essentially allowing nill == nill for a variant etc
+        return ( byteSize == otherByteSize && m_variantData.containedType == other.m_variantData.containedType );
     }
 }
 
@@ -1967,66 +2481,50 @@ bool
 CVariant::operator<( const CVariant& other ) const
 {GUCEF_TRACE;
 
-    switch ( m_variantData.containedType )
+    if ( IsInteger() && other.IsInteger() )
     {
-        case GUCEF_DATATYPE_UINT8:
-        case GUCEF_DATATYPE_LE_UINT16:
-        case GUCEF_DATATYPE_BE_UINT16:
-        case GUCEF_DATATYPE_LE_UINT32:
-        case GUCEF_DATATYPE_BE_UINT32:
-        case GUCEF_DATATYPE_LE_TIMESTAMP_IN_SECS_SINCE_UNIX_EPOCH:
-        case GUCEF_DATATYPE_BE_TIMESTAMP_IN_SECS_SINCE_UNIX_EPOCH:
-        case GUCEF_DATATYPE_LE_TIMESTAMP_IN_MS_SINCE_UNIX_EPOCH:
-        case GUCEF_DATATYPE_BE_TIMESTAMP_IN_MS_SINCE_UNIX_EPOCH:
-        case GUCEF_DATATYPE_LE_UINT64:
-        case GUCEF_DATATYPE_BE_UINT64:
-        {
-            return AsUInt64() < other.AsUInt64();
-        }
-        case GUCEF_DATATYPE_INT8:
-        case GUCEF_DATATYPE_LE_INT16:
-        case GUCEF_DATATYPE_LE_INT32:
-        case GUCEF_DATATYPE_LE_INT64:
-        case GUCEF_DATATYPE_BE_INT16:
-        case GUCEF_DATATYPE_BE_INT32:
-        case GUCEF_DATATYPE_BE_INT64:
+        bool isSignedInt = IsSignedInteger();
+        bool otherSignedInt = other.IsSignedInteger();
+
+        if ( isSignedInt && otherSignedInt )
         {
             return AsInt64() < other.AsInt64();
         }
-        case GUCEF_DATATYPE_FLOAT32:
-        case GUCEF_DATATYPE_FLOAT64:
+        else
+        if ( !isSignedInt && !otherSignedInt )
         {
-            return AsFloat64() < other.AsFloat64();
+            return AsUInt64() < other.AsUInt64();
         }
-        case GUCEF_DATATYPE_BOOLEAN_INT32:
-        case GUCEF_DATATYPE_BOOLEAN_ASCII_STRING:
-        case GUCEF_DATATYPE_BOOLEAN_UTF8_STRING:
+        else
+        {
+            // Comparing signed and unsigned integers
+            return AsInt64() < other.AsInt64();
+        }    
+    }
+    else
+    if ( IsFloat() && other.IsFloat() )
+    {
+        return AsFloat64() < other.AsFloat64();
+    }   
+    else
+    if ( IsBoolean() || other.IsBoolean() )
+    {
+        return AsBool() < other.AsBool();
+    } 
+    else
+    {
+        // strings and blobs
+        
+        UInt32 byteSize = ByteSize();
+        UInt32 otherByteSize = other.ByteSize();
+
+        if ( byteSize > 0 && otherByteSize > 0 )
         {
             // Mostly nonsensical, but can be used for sorting a set
-            return AsBool() < other.AsBool();
+            UInt32 smallestByteSize = GUCEF_SMALLEST( byteSize, otherByteSize );
+            return 0 > memcmp( AsVoidPtr(), other.AsVoidPtr(), smallestByteSize );
         }
-        case GUCEF_DATATYPE_BINARY_BSOB:
-        case GUCEF_DATATYPE_BINARY_BLOB:
-        {
-            // Mostly nonsensical, but can be used for sorting a set
-            UInt32 byteSize = SMALLEST( ByteSize(), other.ByteSize() );
-            return 0 > memcmp( AsVoidPtr(), other.AsVoidPtr(), byteSize );
-        }
-        case GUCEF_DATATYPE_ASCII_STRING:
-        case GUCEF_DATATYPE_UTF8_STRING:
-        {
-            // @todo: optimize
-            return AsString() < other.AsString();
-        }
-        case GUCEF_DATATYPE_UNKNOWN:
-        {
-            // Mostly nonsensical, but can be used for sorting a set
-            return GUCEF_DATATYPE_UNKNOWN < other.m_variantData.containedType;
-        }
-        default:
-        {
-            return false;
-        }
+        return byteSize < otherByteSize;
     }
 }
 
@@ -2045,66 +2543,50 @@ bool
 CVariant::operator<=( const CVariant& other ) const
 {GUCEF_TRACE;
 
-    switch ( m_variantData.containedType )
+    if ( IsInteger() && other.IsInteger() )
     {
-        case GUCEF_DATATYPE_UINT8:
-        case GUCEF_DATATYPE_LE_UINT16:
-        case GUCEF_DATATYPE_BE_UINT16:
-        case GUCEF_DATATYPE_LE_UINT32:
-        case GUCEF_DATATYPE_BE_UINT32:
-        case GUCEF_DATATYPE_LE_TIMESTAMP_IN_SECS_SINCE_UNIX_EPOCH:
-        case GUCEF_DATATYPE_BE_TIMESTAMP_IN_SECS_SINCE_UNIX_EPOCH:
-        case GUCEF_DATATYPE_LE_TIMESTAMP_IN_MS_SINCE_UNIX_EPOCH:
-        case GUCEF_DATATYPE_BE_TIMESTAMP_IN_MS_SINCE_UNIX_EPOCH:
-        case GUCEF_DATATYPE_LE_UINT64:
-        case GUCEF_DATATYPE_BE_UINT64:
-        {
-            return AsUInt64() <= other.AsUInt64();
-        }
-        case GUCEF_DATATYPE_INT8:
-        case GUCEF_DATATYPE_LE_INT16:
-        case GUCEF_DATATYPE_LE_INT32:
-        case GUCEF_DATATYPE_LE_INT64:
-        case GUCEF_DATATYPE_BE_INT16:
-        case GUCEF_DATATYPE_BE_INT32:
-        case GUCEF_DATATYPE_BE_INT64:
+        bool isSignedInt = IsSignedInteger();
+        bool otherSignedInt = other.IsSignedInteger();
+
+        if ( isSignedInt && otherSignedInt )
         {
             return AsInt64() <= other.AsInt64();
         }
-        case GUCEF_DATATYPE_FLOAT32:
-        case GUCEF_DATATYPE_FLOAT64:
+        else
+        if ( !isSignedInt && !otherSignedInt )
         {
-            return AsFloat64() <= other.AsFloat64();
+            return AsUInt64() <= other.AsUInt64();
         }
-        case GUCEF_DATATYPE_BOOLEAN_INT32:
-        case GUCEF_DATATYPE_BOOLEAN_ASCII_STRING:
-        case GUCEF_DATATYPE_BOOLEAN_UTF8_STRING:
+        else
+        {
+            // Comparing signed and unsigned integers
+            return AsInt64() <= other.AsInt64();
+        }    
+    }
+    else
+    if ( IsFloat() && other.IsFloat() )
+    {
+        return AsFloat64() <= other.AsFloat64();
+    }   
+    else
+    if ( IsBoolean() || other.IsBoolean() )
+    {
+        return AsBool() <= other.AsBool();
+    } 
+    else
+    {
+        // strings and blobs
+
+        UInt32 byteSize = ByteSize();
+        UInt32 otherByteSize = other.ByteSize();
+
+        if ( byteSize > 0 && otherByteSize > 0 )
         {
             // Mostly nonsensical, but can be used for sorting a set
-            return AsBool() <= other.AsBool();
+            UInt32 smallestByteSize = GUCEF_SMALLEST( byteSize, otherByteSize );
+            return 0 >= memcmp( AsVoidPtr(), other.AsVoidPtr(), smallestByteSize );
         }
-        case GUCEF_DATATYPE_BINARY_BSOB:
-        case GUCEF_DATATYPE_BINARY_BLOB:
-        {
-            // Mostly nonsensical, but can be used for sorting a set
-            UInt32 byteSize = SMALLEST( ByteSize(), other.ByteSize() );
-            return 0 >= memcmp( AsVoidPtr(), other.AsVoidPtr(), byteSize );
-        }
-        case GUCEF_DATATYPE_ASCII_STRING:
-        case GUCEF_DATATYPE_UTF8_STRING:
-        {
-            // @todo: fix
-            return AsString() < other.AsString() || AsString() == other.AsString();
-        }
-        case GUCEF_DATATYPE_UNKNOWN:
-        {
-            // Mostly nonsensical, but can be used for sorting a set
-            return GUCEF_DATATYPE_UNKNOWN <= other.m_variantData.containedType;
-        }
-        default:
-        {
-            return false;
-        }
+        return byteSize <= otherByteSize;
     }
 }
 
@@ -2142,11 +2624,22 @@ CVariant::AsAsciiString( const CAsciiString& defaultIfNeeded, bool resolveVarsIf
     if ( GUCEF_DATATYPE_ASCII_STRING == m_variantData.containedType        ||
          GUCEF_DATATYPE_BOOLEAN_ASCII_STRING == m_variantData.containedType )
     {
-        if ( 0 == m_variantData.union_data.heap_data.heap_data_size ||
-             ( 1 == m_variantData.union_data.heap_data.heap_data_size && '\0' == *( (const char*) m_variantData.union_data.heap_data.union_data.char_heap_data ) ) )
-            return defaultIfNeeded;
+        if ( resolveVarsIfApplicable )
+        {
+            if ( 0 == m_variantData.union_data.heap_data.heap_data_size ||
+                 ( 1 == m_variantData.union_data.heap_data.heap_data_size && '\0' == *( (const char*) m_variantData.union_data.heap_data.union_data.char_heap_data ) ) )
+                return ResolveVars( ToString( defaultIfNeeded ) );
 
-        return CAsciiString( (const char*) m_variantData.union_data.heap_data.union_data.char_heap_data, m_variantData.union_data.heap_data.heap_data_size );
+            return ResolveVars( ToString( CAsciiString( (const char*) m_variantData.union_data.heap_data.union_data.char_heap_data, m_variantData.union_data.heap_data.heap_data_size ) ) );
+        }
+        else
+        {
+            if ( 0 == m_variantData.union_data.heap_data.heap_data_size ||
+                 ( 1 == m_variantData.union_data.heap_data.heap_data_size && '\0' == *( (const char*) m_variantData.union_data.heap_data.union_data.char_heap_data ) ) )
+                return defaultIfNeeded;
+
+            return CAsciiString( (const char*) m_variantData.union_data.heap_data.union_data.char_heap_data, m_variantData.union_data.heap_data.heap_data_size );
+        }
     }
     return ToAsciiString( AsString( defaultIfNeeded ) );
 }
@@ -2191,15 +2684,15 @@ CVariant::AsString( const CString& defaultIfNeeded, bool resolveVarsIfApplicable
         switch ( m_variantData.containedType )
         {
             case GUCEF_DATATYPE_UINT8:                 
-                { return ToString( AsUInt8( StringToUInt8( ResolveVars( defaultIfNeeded ), 0 ) ) ); }
+                { return ToString( AsUInt8() ); }
             
             case GUCEF_DATATYPE_LE_UINT16:                
             case GUCEF_DATATYPE_BE_UINT16:                
-                { return ToString( AsUInt16( StringToUInt16( ResolveVars( defaultIfNeeded ), 0 ) ) ); }
+                { return ToString( AsUInt16() ); }
 
             case GUCEF_DATATYPE_LE_UINT32:                
             case GUCEF_DATATYPE_BE_UINT32:                
-                { return ToString( AsUInt32( StringToUInt32( ResolveVars( defaultIfNeeded ), 0 ) ) ); }
+                { return ToString( AsUInt32() ); }
 
             case GUCEF_DATATYPE_LE_TIMESTAMP_IN_SECS_SINCE_UNIX_EPOCH:
             case GUCEF_DATATYPE_BE_TIMESTAMP_IN_SECS_SINCE_UNIX_EPOCH:
@@ -2207,28 +2700,30 @@ CVariant::AsString( const CString& defaultIfNeeded, bool resolveVarsIfApplicable
             case GUCEF_DATATYPE_BE_TIMESTAMP_IN_MS_SINCE_UNIX_EPOCH:
             case GUCEF_DATATYPE_LE_UINT64:     
             case GUCEF_DATATYPE_BE_UINT64:     
-                { return ToString( AsUInt64( StringToUInt64( ResolveVars( defaultIfNeeded ), 0 ) ) ); }
+                { return ToString( AsUInt64() ); }
 
             case GUCEF_DATATYPE_INT8:                  
-                { return ToString( AsInt8( StringToInt8( ResolveVars( defaultIfNeeded ), 0 ) ) ); }
+                { return ToString( AsInt8() ); }
             
             case GUCEF_DATATYPE_LE_INT16:                 
             case GUCEF_DATATYPE_BE_INT16:                 
-                { return ToString( AsInt16( StringToInt16( ResolveVars( defaultIfNeeded ), 0 ) ) ); }
+                { return ToString( AsInt16() ); }
 
             case GUCEF_DATATYPE_LE_INT32:                 
             case GUCEF_DATATYPE_BE_INT32:                 
-                { return ToString( AsInt32( StringToInt32( ResolveVars( defaultIfNeeded ), 0 ) ) ); }
+                { return ToString( AsInt32() ); }
 
             case GUCEF_DATATYPE_LE_INT64:                 
             case GUCEF_DATATYPE_BE_INT64:                 
-                { return ToString( AsInt64( StringToInt64( ResolveVars( defaultIfNeeded ), 0 ) ) ); }
+                { return ToString( AsInt64() ); }
 
-            case GUCEF_DATATYPE_FLOAT32:               { return ToString( AsFloat32( StringToFloat( ResolveVars( defaultIfNeeded ), 0.0f ) ) ); }
-            case GUCEF_DATATYPE_FLOAT64:               { return ToString( AsFloat64( StringToDouble( ResolveVars( defaultIfNeeded ), 0.0 ) ) ); }
+            case GUCEF_DATATYPE_FLOAT32:               
+                { return ToString( AsFloat32() ); }
+            case GUCEF_DATATYPE_FLOAT64:               
+                { return ToString( AsFloat64() ); }
 
             case GUCEF_DATATYPE_BOOLEAN_INT32:         
-                { return ToString( AsBool( StringToBool( ResolveVars( defaultIfNeeded ), false ) ) ); }
+                { return ToString( AsBool() ); }
 
             case GUCEF_DATATYPE_BOOLEAN_ASCII_STRING:  { return ResolveVars( ToString( AsAsciiString( ToAsciiString( ResolveVars( defaultIfNeeded ) ) ) ) ); }
             case GUCEF_DATATYPE_BOOLEAN_UTF8_STRING:   { return ResolveVars( ToString( AsUtf8String( ToUtf8String( ResolveVars( defaultIfNeeded ) ) ) ) ); }
@@ -2236,6 +2731,9 @@ CVariant::AsString( const CString& defaultIfNeeded, bool resolveVarsIfApplicable
             case GUCEF_DATATYPE_ASCII_STRING:          { return ResolveVars( ToString( AsAsciiString( ToAsciiString( ResolveVars( defaultIfNeeded ) ) ) ) ); }
             case GUCEF_DATATYPE_DATETIME_ISO8601_UTF8_STRING:
             case GUCEF_DATATYPE_UTF8_STRING:           { return ResolveVars( ToString( AsUtf8String( ToUtf8String( ResolveVars( defaultIfNeeded ) ) ) ) ); }
+
+            case GUCEF_DATATYPE_INT32T2_FRACTION:      { return ToString( m_variantData.union_data.fraction_data.union_data.int32t2_data.denominator ) + '/' + ToString( m_variantData.union_data.fraction_data.union_data.int32t2_data.numerator ); }
+            case GUCEF_DATATYPE_UINT32T2_FRACTION:     { return ToString( m_variantData.union_data.fraction_data.union_data.uint32t2_data.denominator ) + '/' + ToString( m_variantData.union_data.fraction_data.union_data.uint32t2_data.numerator ); }
 
             // @TODO: we dont have native UTF16 support yet, so convert to UTF8
             case GUCEF_DATATYPE_UTF16_LE_STRING:           
@@ -2286,6 +2784,9 @@ CVariant::AsString( const CString& defaultIfNeeded, bool resolveVarsIfApplicable
             case GUCEF_DATATYPE_BOOLEAN_UTF8_STRING:   { return ToString( AsUtf8String( ToUtf8String( defaultIfNeeded ) ) ); }
             case GUCEF_DATATYPE_ASCII_STRING:          { return ToString( AsAsciiString( ToAsciiString( defaultIfNeeded ) ) ); }
             case GUCEF_DATATYPE_UTF8_STRING:           { return ToString( AsUtf8String( ToUtf8String( defaultIfNeeded ) ) ); }
+
+            case GUCEF_DATATYPE_INT32T2_FRACTION:      { return ToString( m_variantData.union_data.fraction_data.union_data.int32t2_data.denominator ) + '/' + ToString( m_variantData.union_data.fraction_data.union_data.int32t2_data.numerator ); }
+            case GUCEF_DATATYPE_UINT32T2_FRACTION:     { return ToString( m_variantData.union_data.fraction_data.union_data.uint32t2_data.denominator ) + '/' + ToString( m_variantData.union_data.fraction_data.union_data.uint32t2_data.numerator ); }
             
             // @TODO: we dont have native UTF16 support yet, so convert to UTF8
             case GUCEF_DATATYPE_UTF16_LE_STRING:           
@@ -2371,6 +2872,656 @@ CVariant::AsDateTime( const CDateTime& defaultIfNeeded, bool resolveVarsIfApplic
         
         default:
             return defaultIfNeeded;
+    }
+}
+
+/*-------------------------------------------------------------------------*/
+
+TInt8Fraction         
+CVariant::AsInt8Fraction( const TInt8Fraction& defaultIfNeeded, bool resolveVarsIfApplicable ) const
+{GUCEF_TRACE;
+
+    switch ( m_variantData.containedType )
+    {
+        case GUCEF_DATATYPE_INT32T2_FRACTION:
+        {
+            return TInt8Fraction( static_cast< Int8 >( m_variantData.union_data.fraction_data.union_data.int32t2_data.numerator ), 
+                                  static_cast< Int8 >( m_variantData.union_data.fraction_data.union_data.int32t2_data.denominator ) );
+        }
+        case GUCEF_DATATYPE_UINT32T2_FRACTION:
+        {
+            return TInt8Fraction( static_cast< Int8 >( m_variantData.union_data.fraction_data.union_data.uint32t2_data.numerator ), 
+                                  static_cast< Int8 >( m_variantData.union_data.fraction_data.union_data.uint32t2_data.denominator ) );
+        }
+        case GUCEF_DATATYPE_INT64T2_FRACTION:
+        {
+            if ( m_variantData.union_data.heap_data.union_data.void_heap_data != GUCEF_NULL   &&
+                 m_variantData.union_data.heap_data.heap_data_size >= sizeof( TInt64T2Fraction ) )
+            {
+                return TInt8Fraction( static_cast< Int8 >( m_variantData.union_data.heap_data.union_data.fraction_int64t2_data->numerator ), 
+                                      static_cast< Int8 >( m_variantData.union_data.heap_data.union_data.fraction_int64t2_data->denominator ) );
+            }
+            return defaultIfNeeded;
+        }
+        case GUCEF_DATATYPE_UINT64T2_FRACTION:
+        {
+            if ( m_variantData.union_data.heap_data.union_data.void_heap_data != GUCEF_NULL   &&
+                 m_variantData.union_data.heap_data.heap_data_size >= sizeof( TUInt64T2Fraction ) )
+            {
+                return TInt8Fraction( static_cast< Int8 >( m_variantData.union_data.heap_data.union_data.fraction_uint64t2_data->numerator ), 
+                                      static_cast< Int8 >( m_variantData.union_data.heap_data.union_data.fraction_uint64t2_data->denominator ) );
+            }
+            return defaultIfNeeded;
+        }
+        case GUCEF_DATATYPE_INT64_INT32_FRACTION:
+        {
+            return TInt8Fraction( static_cast< Int8 >( m_variantData.union_data.fraction_data.union_data.int64_int32_data.numerator ), 
+                                  static_cast< Int8 >( m_variantData.union_data.fraction_data.union_data.int64_int32_data.denominator ) );
+        }
+        case GUCEF_DATATYPE_UINT64_UINT32_FRACTION:
+        {
+            return TInt8Fraction( static_cast< Int8 >( m_variantData.union_data.fraction_data.union_data.uint64_uint32_data.numerator ), 
+                                  static_cast< Int8 >( m_variantData.union_data.fraction_data.union_data.uint64_uint32_data.denominator ) );
+        }
+        case GUCEF_DATATYPE_FLOAT32:
+        {
+            return TInt8Fraction::ConvertFloat32ToFraction( AsFloat32() );
+        }
+        case GUCEF_DATATYPE_FLOAT64:
+        {
+            return TInt8Fraction::ConvertFloat64ToFraction( AsFloat64() );
+        }
+        default:
+        {
+            if ( IsInteger() )
+                return TInt8Fraction( AsInt8(), 1 );
+            return defaultIfNeeded;
+        }
+    }
+}
+
+/*-------------------------------------------------------------------------*/
+
+TUInt8Fraction
+CVariant::AsUInt8Fraction( const TUInt8Fraction& defaultIfNeeded, bool resolveVarsIfApplicable ) const
+{GUCEF_TRACE;
+
+    switch ( m_variantData.containedType )
+    {
+        case GUCEF_DATATYPE_INT32T2_FRACTION:
+        {
+            return TUInt8Fraction( static_cast< UInt8 >( m_variantData.union_data.fraction_data.union_data.int32t2_data.numerator ), 
+                                   static_cast< UInt8 >( m_variantData.union_data.fraction_data.union_data.int32t2_data.denominator ) );
+        }
+        case GUCEF_DATATYPE_UINT32T2_FRACTION:
+        {
+            return TUInt8Fraction( static_cast< UInt8 >( m_variantData.union_data.fraction_data.union_data.uint32t2_data.numerator ), 
+                                   static_cast< UInt8 >( m_variantData.union_data.fraction_data.union_data.uint32t2_data.denominator ) );
+        }
+        case GUCEF_DATATYPE_INT64T2_FRACTION:
+        {
+            if ( m_variantData.union_data.heap_data.union_data.void_heap_data != GUCEF_NULL   &&
+                 m_variantData.union_data.heap_data.heap_data_size >= sizeof( TInt64T2Fraction ) )
+            {
+                return TUInt8Fraction( static_cast< UInt8 >( m_variantData.union_data.heap_data.union_data.fraction_int64t2_data->numerator ), 
+                                       static_cast< UInt8 >( m_variantData.union_data.heap_data.union_data.fraction_int64t2_data->denominator ) );
+            }
+            return defaultIfNeeded;
+        }
+        case GUCEF_DATATYPE_UINT64T2_FRACTION:
+        {
+            if ( m_variantData.union_data.heap_data.union_data.void_heap_data != GUCEF_NULL   &&
+                 m_variantData.union_data.heap_data.heap_data_size >= sizeof( TUInt64T2Fraction ) )
+            {
+                return TUInt8Fraction( static_cast< UInt8 >( m_variantData.union_data.heap_data.union_data.fraction_uint64t2_data->numerator ), 
+                                       static_cast< UInt8 >( m_variantData.union_data.heap_data.union_data.fraction_uint64t2_data->denominator ) );
+            }
+            return defaultIfNeeded;
+        }
+        case GUCEF_DATATYPE_INT64_INT32_FRACTION:
+        {
+            return TUInt8Fraction( static_cast< UInt8 >( m_variantData.union_data.fraction_data.union_data.int64_int32_data.numerator ), 
+                                   static_cast< UInt8 >( m_variantData.union_data.fraction_data.union_data.int64_int32_data.denominator ) );
+        }
+        case GUCEF_DATATYPE_UINT64_UINT32_FRACTION:
+        {
+            return TUInt8Fraction( static_cast< UInt8 >( m_variantData.union_data.fraction_data.union_data.uint64_uint32_data.numerator ), 
+                                   static_cast< UInt8 >( m_variantData.union_data.fraction_data.union_data.uint64_uint32_data.denominator ) );
+        }
+        case GUCEF_DATATYPE_FLOAT32:
+        {
+            return TUInt8Fraction::ConvertFloat32ToFraction( AsFloat32() );
+        }
+        case GUCEF_DATATYPE_FLOAT64:
+        {
+            return TUInt8Fraction::ConvertFloat64ToFraction( AsFloat64() );
+        }
+        default:
+        {
+            if ( IsInteger() )
+                return TUInt8Fraction( AsUInt8(), 1 );
+            return defaultIfNeeded;
+        }
+    }
+}
+
+/*-------------------------------------------------------------------------*/
+
+TInt16Fraction         
+CVariant::AsInt16Fraction( const TInt16Fraction& defaultIfNeeded, bool resolveVarsIfApplicable ) const
+{GUCEF_TRACE;
+
+    switch ( m_variantData.containedType )
+    {
+        case GUCEF_DATATYPE_INT32T2_FRACTION:
+        {
+            return TInt16Fraction( static_cast< Int16 >( m_variantData.union_data.fraction_data.union_data.int32t2_data.numerator ), 
+                                  static_cast< Int16 >( m_variantData.union_data.fraction_data.union_data.int32t2_data.denominator ) );
+        }
+        case GUCEF_DATATYPE_UINT32T2_FRACTION:
+        {
+            return TInt16Fraction( static_cast< Int16 >( m_variantData.union_data.fraction_data.union_data.uint32t2_data.numerator ), 
+                                  static_cast< Int16 >( m_variantData.union_data.fraction_data.union_data.uint32t2_data.denominator ) );
+        }
+        case GUCEF_DATATYPE_INT64T2_FRACTION:
+        {
+            if ( m_variantData.union_data.heap_data.union_data.void_heap_data != GUCEF_NULL   &&
+                 m_variantData.union_data.heap_data.heap_data_size >= sizeof( TInt64T2Fraction ) )
+            {
+                return TInt16Fraction( static_cast< Int16 >( m_variantData.union_data.heap_data.union_data.fraction_int64t2_data->numerator ), 
+                                      static_cast< Int16 >( m_variantData.union_data.heap_data.union_data.fraction_int64t2_data->denominator ) );
+            }
+            return defaultIfNeeded;
+        }
+        case GUCEF_DATATYPE_UINT64T2_FRACTION:
+        {
+            if ( m_variantData.union_data.heap_data.union_data.void_heap_data != GUCEF_NULL   &&
+                 m_variantData.union_data.heap_data.heap_data_size >= sizeof( TUInt64T2Fraction ) )
+            {
+                return TInt16Fraction( static_cast< Int16 >( m_variantData.union_data.heap_data.union_data.fraction_uint64t2_data->numerator ), 
+                                      static_cast< Int16 >( m_variantData.union_data.heap_data.union_data.fraction_uint64t2_data->denominator ) );
+            }
+            return defaultIfNeeded;
+        }
+        case GUCEF_DATATYPE_INT64_INT32_FRACTION:
+        {
+            return TInt16Fraction( static_cast< Int16 >( m_variantData.union_data.fraction_data.union_data.int64_int32_data.numerator ), 
+                                  static_cast< Int16 >( m_variantData.union_data.fraction_data.union_data.int64_int32_data.denominator ) );
+        }
+        case GUCEF_DATATYPE_UINT64_UINT32_FRACTION:
+        {
+            return TInt16Fraction( static_cast< Int16 >( m_variantData.union_data.fraction_data.union_data.uint64_uint32_data.numerator ), 
+                                  static_cast< Int16 >( m_variantData.union_data.fraction_data.union_data.uint64_uint32_data.denominator ) );
+        }
+        case GUCEF_DATATYPE_FLOAT32:
+        {
+            return TInt16Fraction::ConvertFloat32ToFraction( AsFloat32() );
+        }
+        case GUCEF_DATATYPE_FLOAT64:
+        {
+            return TInt16Fraction::ConvertFloat64ToFraction( AsFloat64() );
+        }
+        default:
+        {
+            if ( IsInteger() )
+                return TInt16Fraction( AsInt16(), 1 );
+            return defaultIfNeeded;
+        }
+    }
+}
+
+/*-------------------------------------------------------------------------*/
+
+TUInt16Fraction
+CVariant::AsUInt16Fraction( const TUInt16Fraction& defaultIfNeeded, bool resolveVarsIfApplicable ) const
+{GUCEF_TRACE;
+
+    switch ( m_variantData.containedType )
+    {
+        case GUCEF_DATATYPE_INT32T2_FRACTION:
+        {
+            return TUInt16Fraction( static_cast< UInt16 >( m_variantData.union_data.fraction_data.union_data.int32t2_data.numerator ), 
+                                   static_cast< UInt16 >( m_variantData.union_data.fraction_data.union_data.int32t2_data.denominator ) );
+        }
+        case GUCEF_DATATYPE_UINT32T2_FRACTION:
+        {
+            return TUInt16Fraction( static_cast< UInt16 >( m_variantData.union_data.fraction_data.union_data.uint32t2_data.numerator ), 
+                                   static_cast< UInt16 >( m_variantData.union_data.fraction_data.union_data.uint32t2_data.denominator ) );
+        }
+        case GUCEF_DATATYPE_INT64T2_FRACTION:
+        {
+            if ( m_variantData.union_data.heap_data.union_data.void_heap_data != GUCEF_NULL   &&
+                 m_variantData.union_data.heap_data.heap_data_size >= sizeof( TInt64T2Fraction ) )
+            {
+                return TUInt16Fraction( static_cast< UInt16 >( m_variantData.union_data.heap_data.union_data.fraction_int64t2_data->numerator ), 
+                                       static_cast< UInt16 >( m_variantData.union_data.heap_data.union_data.fraction_int64t2_data->denominator ) );
+            }
+            return defaultIfNeeded;
+        }
+        case GUCEF_DATATYPE_UINT64T2_FRACTION:
+        {
+            if ( m_variantData.union_data.heap_data.union_data.void_heap_data != GUCEF_NULL   &&
+                 m_variantData.union_data.heap_data.heap_data_size >= sizeof( TUInt64T2Fraction ) )
+            {
+                return TUInt16Fraction( static_cast< UInt16 >( m_variantData.union_data.heap_data.union_data.fraction_uint64t2_data->numerator ), 
+                                       static_cast< UInt16 >( m_variantData.union_data.heap_data.union_data.fraction_uint64t2_data->denominator ) );
+            }
+            return defaultIfNeeded;
+        }
+        case GUCEF_DATATYPE_INT64_INT32_FRACTION:
+        {
+            return TUInt16Fraction( static_cast< UInt16 >( m_variantData.union_data.fraction_data.union_data.int64_int32_data.numerator ), 
+                                   static_cast< UInt16 >( m_variantData.union_data.fraction_data.union_data.int64_int32_data.denominator ) );
+        }
+        case GUCEF_DATATYPE_UINT64_UINT32_FRACTION:
+        {
+            return TUInt16Fraction( static_cast< UInt16 >( m_variantData.union_data.fraction_data.union_data.uint64_uint32_data.numerator ), 
+                                   static_cast< UInt16 >( m_variantData.union_data.fraction_data.union_data.uint64_uint32_data.denominator ) );
+        }
+        case GUCEF_DATATYPE_FLOAT32:
+        {
+            return TUInt16Fraction::ConvertFloat32ToFraction( AsFloat32() );
+        }
+        case GUCEF_DATATYPE_FLOAT64:
+        {
+            return TUInt16Fraction::ConvertFloat64ToFraction( AsFloat64() );
+        }
+        default:
+        {
+            if ( IsInteger() )
+                return TUInt16Fraction( AsUInt16(), 1 );
+            return defaultIfNeeded;
+        }
+    }
+}
+
+/*-------------------------------------------------------------------------*/
+
+TInt32Fraction         
+CVariant::AsInt32Fraction( const TInt32Fraction& defaultIfNeeded, bool resolveVarsIfApplicable ) const
+{GUCEF_TRACE;
+
+    switch ( m_variantData.containedType )
+    {
+        case GUCEF_DATATYPE_INT32T2_FRACTION:
+        {
+            return TInt32Fraction( static_cast< Int32 >( m_variantData.union_data.fraction_data.union_data.int32t2_data.numerator ), 
+                                   static_cast< Int32 >( m_variantData.union_data.fraction_data.union_data.int32t2_data.denominator ) );
+        }
+        case GUCEF_DATATYPE_UINT32T2_FRACTION:
+        {
+            return TInt32Fraction( static_cast< Int32 >( m_variantData.union_data.fraction_data.union_data.uint32t2_data.numerator ), 
+                                   static_cast< Int32 >( m_variantData.union_data.fraction_data.union_data.uint32t2_data.denominator ) );
+        }
+        case GUCEF_DATATYPE_INT64T2_FRACTION:
+        {
+            if ( m_variantData.union_data.heap_data.union_data.void_heap_data != GUCEF_NULL   &&
+                 m_variantData.union_data.heap_data.heap_data_size >= sizeof( TInt64T2Fraction ) )
+            {
+                return TInt32Fraction( static_cast< Int32 >( m_variantData.union_data.heap_data.union_data.fraction_int64t2_data->numerator ), 
+                                       static_cast< Int32 >( m_variantData.union_data.heap_data.union_data.fraction_int64t2_data->denominator ) );
+            }
+            return defaultIfNeeded;
+        }
+        case GUCEF_DATATYPE_UINT64T2_FRACTION:
+        {
+            if ( m_variantData.union_data.heap_data.union_data.void_heap_data != GUCEF_NULL   &&
+                 m_variantData.union_data.heap_data.heap_data_size >= sizeof( TUInt64T2Fraction ) )
+            {
+                return TInt32Fraction( static_cast< Int32 >( m_variantData.union_data.heap_data.union_data.fraction_uint64t2_data->numerator ), 
+                                       static_cast< Int32 >( m_variantData.union_data.heap_data.union_data.fraction_uint64t2_data->denominator ) );
+            }
+            return defaultIfNeeded;
+        }
+        case GUCEF_DATATYPE_INT64_INT32_FRACTION:
+        {
+            return TInt32Fraction( static_cast< Int32 >( m_variantData.union_data.fraction_data.union_data.int64_int32_data.numerator ), 
+                                   static_cast< Int32 >( m_variantData.union_data.fraction_data.union_data.int64_int32_data.denominator ) );
+        }
+        case GUCEF_DATATYPE_UINT64_UINT32_FRACTION:
+        {
+            return TInt32Fraction( static_cast< Int32 >( m_variantData.union_data.fraction_data.union_data.uint64_uint32_data.numerator ), 
+                                   static_cast< Int32 >( m_variantData.union_data.fraction_data.union_data.uint64_uint32_data.denominator ) );
+        }
+        case GUCEF_DATATYPE_FLOAT32:
+        {
+            return TInt32Fraction::ConvertFloat32ToFraction( AsFloat32() );
+        }
+        case GUCEF_DATATYPE_FLOAT64:
+        {
+            return TInt32Fraction::ConvertFloat64ToFraction( AsFloat64() );
+        }
+        default:
+        {
+            if ( IsInteger() )
+                return TInt32Fraction( AsInt32(), 1 );
+            return defaultIfNeeded;
+        }
+    }
+}
+
+/*-------------------------------------------------------------------------*/
+
+TUInt32Fraction
+CVariant::AsUInt32Fraction( const TUInt32Fraction& defaultIfNeeded, bool resolveVarsIfApplicable ) const
+{GUCEF_TRACE;
+
+    switch ( m_variantData.containedType )
+    {
+        case GUCEF_DATATYPE_INT32T2_FRACTION:
+        {
+            return TUInt32Fraction( static_cast< UInt32 >( m_variantData.union_data.fraction_data.union_data.int32t2_data.numerator ), 
+                                    static_cast< UInt32 >( m_variantData.union_data.fraction_data.union_data.int32t2_data.denominator ) );
+        }
+        case GUCEF_DATATYPE_UINT32T2_FRACTION:
+        {
+            return TUInt32Fraction( static_cast< UInt32 >( m_variantData.union_data.fraction_data.union_data.uint32t2_data.numerator ), 
+                                    static_cast< UInt32 >( m_variantData.union_data.fraction_data.union_data.uint32t2_data.denominator ) );
+        }
+        case GUCEF_DATATYPE_INT64T2_FRACTION:
+        {
+            if ( m_variantData.union_data.heap_data.union_data.void_heap_data != GUCEF_NULL   &&
+                 m_variantData.union_data.heap_data.heap_data_size >= sizeof( TInt64T2Fraction ) )
+            {
+                return TUInt32Fraction( static_cast< UInt32 >( m_variantData.union_data.heap_data.union_data.fraction_int64t2_data->numerator ), 
+                                        static_cast< UInt32 >( m_variantData.union_data.heap_data.union_data.fraction_int64t2_data->denominator ) );
+            }
+            return defaultIfNeeded;
+        }
+        case GUCEF_DATATYPE_UINT64T2_FRACTION:
+        {
+            if ( m_variantData.union_data.heap_data.union_data.void_heap_data != GUCEF_NULL   &&
+                 m_variantData.union_data.heap_data.heap_data_size >= sizeof( TUInt64T2Fraction ) )
+            {
+                return TUInt32Fraction( static_cast< UInt32 >( m_variantData.union_data.heap_data.union_data.fraction_uint64t2_data->numerator ), 
+                                        static_cast< UInt32 >( m_variantData.union_data.heap_data.union_data.fraction_uint64t2_data->denominator ) );
+            }
+            return defaultIfNeeded;
+        }
+        case GUCEF_DATATYPE_INT64_INT32_FRACTION:
+        {
+            return TUInt32Fraction( static_cast< UInt32 >( m_variantData.union_data.fraction_data.union_data.int64_int32_data.numerator ), 
+                                    static_cast< UInt32 >( m_variantData.union_data.fraction_data.union_data.int64_int32_data.denominator ) );
+        }
+        case GUCEF_DATATYPE_UINT64_UINT32_FRACTION:
+        {
+            return TUInt32Fraction( static_cast< UInt32 >( m_variantData.union_data.fraction_data.union_data.uint64_uint32_data.numerator ), 
+                                    static_cast< UInt32 >( m_variantData.union_data.fraction_data.union_data.uint64_uint32_data.denominator ) );
+        }
+        case GUCEF_DATATYPE_FLOAT32:
+        {
+            return TUInt32Fraction::ConvertFloat32ToFraction( AsFloat32() );
+        }
+        case GUCEF_DATATYPE_FLOAT64:
+        {
+            return TUInt32Fraction::ConvertFloat64ToFraction( AsFloat64() );
+        }
+        default:
+        {
+            if ( IsInteger() )
+                return TUInt32Fraction( AsUInt32(), 1 );
+            return defaultIfNeeded;
+        }
+    }
+}
+
+/*-------------------------------------------------------------------------*/
+
+TInt64Fraction         
+CVariant::AsInt64Fraction( const TInt64Fraction& defaultIfNeeded, bool resolveVarsIfApplicable ) const
+{GUCEF_TRACE;
+
+    switch ( m_variantData.containedType )
+    {
+        case GUCEF_DATATYPE_INT32T2_FRACTION:
+        {
+            return TInt64Fraction( static_cast< Int32 >( m_variantData.union_data.fraction_data.union_data.int32t2_data.numerator ), 
+                                   static_cast< Int32 >( m_variantData.union_data.fraction_data.union_data.int32t2_data.denominator ) );
+        }
+        case GUCEF_DATATYPE_UINT32T2_FRACTION:
+        {
+            return TInt64Fraction( static_cast< Int32 >( m_variantData.union_data.fraction_data.union_data.uint32t2_data.numerator ), 
+                                   static_cast< Int32 >( m_variantData.union_data.fraction_data.union_data.uint32t2_data.denominator ) );
+        }
+        case GUCEF_DATATYPE_INT64T2_FRACTION:
+        {
+            if ( m_variantData.union_data.heap_data.union_data.void_heap_data != GUCEF_NULL   &&
+                 m_variantData.union_data.heap_data.heap_data_size >= sizeof( TInt64T2Fraction ) )
+            {
+                return TInt64Fraction( static_cast< Int32 >( m_variantData.union_data.heap_data.union_data.fraction_int64t2_data->numerator ), 
+                                       static_cast< Int32 >( m_variantData.union_data.heap_data.union_data.fraction_int64t2_data->denominator ) );
+            }
+            return defaultIfNeeded;
+        }
+        case GUCEF_DATATYPE_UINT64T2_FRACTION:
+        {
+            if ( m_variantData.union_data.heap_data.union_data.void_heap_data != GUCEF_NULL   &&
+                 m_variantData.union_data.heap_data.heap_data_size >= sizeof( TUInt64T2Fraction ) )
+            {
+                return TInt64Fraction( static_cast< Int32 >( m_variantData.union_data.heap_data.union_data.fraction_uint64t2_data->numerator ), 
+                                       static_cast< Int32 >( m_variantData.union_data.heap_data.union_data.fraction_uint64t2_data->denominator ) );
+            }
+            return defaultIfNeeded;
+        }
+        case GUCEF_DATATYPE_INT64_INT32_FRACTION:
+        {
+            return TInt64Fraction( static_cast< Int32 >( m_variantData.union_data.fraction_data.union_data.int64_int32_data.numerator ), 
+                                   static_cast< Int32 >( m_variantData.union_data.fraction_data.union_data.int64_int32_data.denominator ) );
+        }
+        case GUCEF_DATATYPE_UINT64_UINT32_FRACTION:
+        {
+            return TInt64Fraction( static_cast< Int32 >( m_variantData.union_data.fraction_data.union_data.uint64_uint32_data.numerator ), 
+                                   static_cast< Int32 >( m_variantData.union_data.fraction_data.union_data.uint64_uint32_data.denominator ) );
+        }
+        case GUCEF_DATATYPE_FLOAT32:
+        {
+            return TInt64Fraction::ConvertFloat32ToFraction( AsFloat32() );
+        }
+        case GUCEF_DATATYPE_FLOAT64:
+        {
+            return TInt64Fraction::ConvertFloat64ToFraction( AsFloat64() );
+        }
+        default:
+        {
+            if ( IsInteger() )
+                return TInt64Fraction( AsInt64(), 1 );
+            return defaultIfNeeded;
+        }
+    }
+}
+
+/*-------------------------------------------------------------------------*/
+
+TUInt64Fraction
+CVariant::AsUInt64Fraction( const TUInt64Fraction& defaultIfNeeded, bool resolveVarsIfApplicable ) const
+{GUCEF_TRACE;
+
+    switch ( m_variantData.containedType )
+    {
+        case GUCEF_DATATYPE_INT32T2_FRACTION:
+        {
+            return TUInt64Fraction( static_cast< UInt32 >( m_variantData.union_data.fraction_data.union_data.int32t2_data.numerator ), 
+                                   static_cast< UInt32 >( m_variantData.union_data.fraction_data.union_data.int32t2_data.denominator ) );
+        }
+        case GUCEF_DATATYPE_UINT32T2_FRACTION:
+        {
+            return TUInt64Fraction( static_cast< UInt32 >( m_variantData.union_data.fraction_data.union_data.uint32t2_data.numerator ), 
+                                   static_cast< UInt32 >( m_variantData.union_data.fraction_data.union_data.uint32t2_data.denominator ) );
+        }
+        case GUCEF_DATATYPE_INT64T2_FRACTION:
+        {
+            if ( m_variantData.union_data.heap_data.union_data.void_heap_data != GUCEF_NULL   &&
+                 m_variantData.union_data.heap_data.heap_data_size >= sizeof( TInt64T2Fraction ) )
+            {
+                return TUInt64Fraction( static_cast< UInt32 >( m_variantData.union_data.heap_data.union_data.fraction_int64t2_data->numerator ), 
+                                       static_cast< UInt32 >( m_variantData.union_data.heap_data.union_data.fraction_int64t2_data->denominator ) );
+            }
+            return defaultIfNeeded;
+        }
+        case GUCEF_DATATYPE_UINT64T2_FRACTION:
+        {
+            if ( m_variantData.union_data.heap_data.union_data.void_heap_data != GUCEF_NULL   &&
+                 m_variantData.union_data.heap_data.heap_data_size >= sizeof( TUInt64T2Fraction ) )
+            {
+                return TUInt64Fraction( static_cast< UInt32 >( m_variantData.union_data.heap_data.union_data.fraction_uint64t2_data->numerator ), 
+                                       static_cast< UInt32 >( m_variantData.union_data.heap_data.union_data.fraction_uint64t2_data->denominator ) );
+            }
+            return defaultIfNeeded;
+        }
+        case GUCEF_DATATYPE_INT64_INT32_FRACTION:
+        {
+            return TUInt64Fraction( static_cast< UInt32 >( m_variantData.union_data.fraction_data.union_data.int64_int32_data.numerator ), 
+                                   static_cast< UInt32 >( m_variantData.union_data.fraction_data.union_data.int64_int32_data.denominator ) );
+        }
+        case GUCEF_DATATYPE_UINT64_UINT32_FRACTION:
+        {
+            return TUInt64Fraction( static_cast< UInt32 >( m_variantData.union_data.fraction_data.union_data.uint64_uint32_data.numerator ), 
+                                   static_cast< UInt32 >( m_variantData.union_data.fraction_data.union_data.uint64_uint32_data.denominator ) );
+        }
+        case GUCEF_DATATYPE_FLOAT32:
+        {
+            return TUInt64Fraction::ConvertFloat32ToFraction( AsFloat32() );
+        }
+        case GUCEF_DATATYPE_FLOAT64:
+        {
+            return TUInt64Fraction::ConvertFloat64ToFraction( AsFloat64() );
+        }
+        default:
+        {
+            if ( IsInteger() )
+                return TUInt64Fraction( AsUInt64(), 1 );
+            return defaultIfNeeded;
+        }
+    }
+}
+
+/*-------------------------------------------------------------------------*/
+
+TInt64Int32Fraction         
+CVariant::AsInt64Int32Fraction( const TInt64Int32Fraction& defaultIfNeeded, bool resolveVarsIfApplicable ) const
+{GUCEF_TRACE;
+
+    switch ( m_variantData.containedType )
+    {
+        case GUCEF_DATATYPE_INT32T2_FRACTION:
+        {
+            return TInt64Int32Fraction( static_cast< Int64 >( m_variantData.union_data.fraction_data.union_data.int32t2_data.numerator ), 
+                                        static_cast< Int32 >( m_variantData.union_data.fraction_data.union_data.int32t2_data.denominator ) );
+        }
+        case GUCEF_DATATYPE_UINT32T2_FRACTION:
+        {
+            return TInt64Int32Fraction( static_cast< Int64 >( m_variantData.union_data.fraction_data.union_data.uint32t2_data.numerator ), 
+                                        static_cast< Int32 >( m_variantData.union_data.fraction_data.union_data.uint32t2_data.denominator ) );
+        }
+        case GUCEF_DATATYPE_INT64T2_FRACTION:
+        {
+            if ( m_variantData.union_data.heap_data.union_data.void_heap_data != GUCEF_NULL   &&
+                 m_variantData.union_data.heap_data.heap_data_size >= sizeof( TInt64T2Fraction ) )
+            {
+                return TInt64Int32Fraction( static_cast< Int64 >( m_variantData.union_data.heap_data.union_data.fraction_int64t2_data->numerator ), 
+                                            static_cast< Int32 >( m_variantData.union_data.heap_data.union_data.fraction_int64t2_data->denominator ) );
+            }
+            return defaultIfNeeded;
+        }
+        case GUCEF_DATATYPE_UINT64T2_FRACTION:
+        {
+            if ( m_variantData.union_data.heap_data.union_data.void_heap_data != GUCEF_NULL   &&
+                 m_variantData.union_data.heap_data.heap_data_size >= sizeof( TUInt64T2Fraction ) )
+            {
+                return TInt64Int32Fraction( static_cast< Int64 >( m_variantData.union_data.heap_data.union_data.fraction_uint64t2_data->numerator ), 
+                                            static_cast< Int32 >( m_variantData.union_data.heap_data.union_data.fraction_uint64t2_data->denominator ) );
+            }
+            return defaultIfNeeded;
+        }
+        case GUCEF_DATATYPE_INT64_INT32_FRACTION:
+        {
+            return TInt64Int32Fraction( static_cast< Int64 >( m_variantData.union_data.fraction_data.union_data.int64_int32_data.numerator ), 
+                                        static_cast< Int32 >( m_variantData.union_data.fraction_data.union_data.int64_int32_data.denominator ) );
+        }
+        case GUCEF_DATATYPE_UINT64_UINT32_FRACTION:
+        {
+            return TInt64Int32Fraction( static_cast< Int64 >( m_variantData.union_data.fraction_data.union_data.uint64_uint32_data.numerator ), 
+                                        static_cast< Int32 >( m_variantData.union_data.fraction_data.union_data.uint64_uint32_data.denominator ) );
+        }
+        case GUCEF_DATATYPE_FLOAT32:
+        {
+            return TInt64Int32Fraction::ConvertFloat32ToFraction( AsFloat32() );
+        }
+        case GUCEF_DATATYPE_FLOAT64:
+        {
+            return TInt64Int32Fraction::ConvertFloat64ToFraction( AsFloat64() );
+        }
+        default:
+        {
+            if ( IsInteger() )
+                return TInt64Int32Fraction( AsInt64(), 1 );
+            return defaultIfNeeded;
+        }
+    }
+}
+
+/*-------------------------------------------------------------------------*/
+
+TUInt64UInt32Fraction         
+CVariant::AsUInt64UInt32Fraction( const TUInt64UInt32Fraction& defaultIfNeeded, bool resolveVarsIfApplicable ) const
+{GUCEF_TRACE;
+
+    switch ( m_variantData.containedType )
+    {
+        case GUCEF_DATATYPE_INT32T2_FRACTION:
+        {
+            return TUInt64UInt32Fraction( static_cast< UInt64 >( m_variantData.union_data.fraction_data.union_data.int32t2_data.numerator ), 
+                                          static_cast< UInt32 >( m_variantData.union_data.fraction_data.union_data.int32t2_data.denominator ) );
+        }
+        case GUCEF_DATATYPE_UINT32T2_FRACTION:
+        {
+            return TUInt64UInt32Fraction( static_cast< UInt64 >( m_variantData.union_data.fraction_data.union_data.uint32t2_data.numerator ), 
+                                          static_cast< UInt32 >( m_variantData.union_data.fraction_data.union_data.uint32t2_data.denominator ) );
+        }
+        case GUCEF_DATATYPE_INT64T2_FRACTION:
+        {
+            if ( m_variantData.union_data.heap_data.union_data.void_heap_data != GUCEF_NULL   &&
+                 m_variantData.union_data.heap_data.heap_data_size >= sizeof( TInt64T2Fraction ) )
+            {
+                return TUInt64UInt32Fraction( static_cast< UInt64 >( m_variantData.union_data.heap_data.union_data.fraction_int64t2_data->numerator ), 
+                                              static_cast< UInt32 >( m_variantData.union_data.heap_data.union_data.fraction_int64t2_data->denominator ) );
+            }
+            return defaultIfNeeded;
+        }
+        case GUCEF_DATATYPE_UINT64T2_FRACTION:
+        {
+            if ( m_variantData.union_data.heap_data.union_data.void_heap_data != GUCEF_NULL   &&
+                 m_variantData.union_data.heap_data.heap_data_size >= sizeof( TUInt64T2Fraction ) )
+            {
+                return TUInt64UInt32Fraction( static_cast< UInt64 >( m_variantData.union_data.heap_data.union_data.fraction_uint64t2_data->numerator ), 
+                                              static_cast< UInt32 >( m_variantData.union_data.heap_data.union_data.fraction_uint64t2_data->denominator ) );
+            }
+            return defaultIfNeeded;
+        }
+        case GUCEF_DATATYPE_INT64_INT32_FRACTION:
+        {
+            return TUInt64UInt32Fraction( static_cast< UInt64 >( m_variantData.union_data.fraction_data.union_data.int64_int32_data.numerator ), 
+                                          static_cast< UInt32 >( m_variantData.union_data.fraction_data.union_data.int64_int32_data.denominator ) );
+        }
+        case GUCEF_DATATYPE_UINT64_UINT32_FRACTION:
+        {
+            return TUInt64UInt32Fraction( static_cast< UInt64 >( m_variantData.union_data.fraction_data.union_data.uint64_uint32_data.numerator ), 
+                                          static_cast< UInt32 >( m_variantData.union_data.fraction_data.union_data.uint64_uint32_data.denominator ) );
+        }
+        case GUCEF_DATATYPE_FLOAT32:
+        {
+            return TUInt64UInt32Fraction::ConvertFloat32ToFraction( AsFloat32() );
+        }
+        case GUCEF_DATATYPE_FLOAT64:
+        {
+            return TUInt64UInt32Fraction::ConvertFloat64ToFraction( AsFloat64() );
+        }
+        default:
+        {
+            if ( IsInteger() )
+                return TUInt64UInt32Fraction( AsInt64(), 1 );
+            return defaultIfNeeded;
+        }
     }
 }
 
