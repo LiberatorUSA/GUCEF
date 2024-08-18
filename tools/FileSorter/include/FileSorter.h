@@ -235,6 +235,7 @@ class FileSorterConfig : public CORE::CGloballyConfigurable
     bool sortAllFileTypes;
     TFileTypeSet fileTypesToSort;
     bool tryToGetMetaDataInfoFromImages;
+    bool useMediaPropertyEarliestDt;
 
     private:
 

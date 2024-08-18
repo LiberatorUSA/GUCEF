@@ -340,6 +340,8 @@ The FreeImage solution is to instantiate the singleton before any other thread i
 i.e. inside the FreeImage_Initialise function (see Plugin.cpp). 
 */
 
+#ifdef __cplusplus
+
 class TagLib {
 public:
 
@@ -456,6 +458,8 @@ public:
 	FREE_IMAGE_MDMODEL getFreeImageModel(MDMODEL model);
 
 };
+
+#endif // __cplusplus
 
 // --------------------------------------------------------------------------
 // Constant strings

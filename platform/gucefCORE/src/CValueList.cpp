@@ -823,6 +823,100 @@ CValueList::TryGetValue( const CVariant& key, CVariant& outValue, bool linkIfPos
 
 /*-------------------------------------------------------------------------*/
 
+bool 
+CValueList::TryGetValueVector( const CString& key, TVariantVector& outValue, bool linkIfPossible )
+{GUCEF_TRACE;
+
+    CVariant keyVar;
+    keyVar.LinkTo( key );
+
+    return TryGetValueVector( keyVar, outValue, linkIfPossible );
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool 
+CValueList::TryGetValueVector( const char* key, TVariantVector& outValue, bool linkIfPossible )
+{GUCEF_TRACE;
+
+    CVariant keyVar;
+    keyVar.LinkTo( key );
+
+    return TryGetValueVector( keyVar, outValue, linkIfPossible );
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool 
+CValueList::TryGetValueVector( const CVariant& key, TVariantVector& outValue, bool linkIfPossible )
+{GUCEF_TRACE;
+
+    TValueMap::iterator i = m_list.find( key );
+    if ( i != m_list.end() )
+    {
+        if ( linkIfPossible )
+        {
+            TVariantVector& values = (*i).second;
+            outValue.reserve( values.size() );
+            TVariantVector::iterator n = values.begin();
+            while ( n != values.end() )
+            {
+                CVariant value;
+                outValue.push_back( value );
+                outValue.back().LinkTo( (*n) );
+                ++n;
+            }
+        }
+        else
+        {
+            outValue = (*i).second;
+        }
+        return true;
+    }
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool 
+CValueList::TryGetValueVector( const char* key, TVariantVector& outValue ) const
+{GUCEF_TRACE;
+
+    CVariant keyVar;
+    keyVar.LinkTo( key );
+
+    return TryGetValueVector( keyVar, outValue );
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool 
+CValueList::TryGetValueVector( const CString& key, TVariantVector& outValue ) const
+{GUCEF_TRACE;
+
+    CVariant keyVar;
+    keyVar.LinkTo( key );
+
+    return TryGetValueVector( keyVar, outValue );
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool 
+CValueList::TryGetValueVector( const CVariant& key, TVariantVector& outValue ) const
+{GUCEF_TRACE;
+
+    TValueMap::const_iterator i = m_list.find( key );
+    if ( i != m_list.end() )
+    {
+        outValue = (*i).second;
+        return true;
+    }
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
 CValueList::TVariantVector&
 CValueList::GetValueVector( const CString& key )
 {GUCEF_TRACE;

@@ -406,6 +406,7 @@ FileSorterConfig::FileSorterConfig( void )
     , sortAllFileTypes( false )
     , fileTypesToSort()
     , tryToGetMetaDataInfoFromImages( false ) 
+    , useMediaPropertyEarliestDt( true )
 {GUCEF_TRACE;
 
 }
@@ -456,6 +457,7 @@ FileSorterConfig::LoadConfig( const CORE::CDataNode& globalConfig )
     fileTypesToSortStrSet = CORE::StringToStringSet( fileTypesToSortStr );
 
     tryToGetMetaDataInfoFromImages = cfg->GetAttributeValueOrChildValueByName( "tryToGetMetaDataInfoFromImages", tryToGetMetaDataInfoFromImages ).AsBool( tryToGetMetaDataInfoFromImages, true );
+    useMediaPropertyEarliestDt = cfg->GetAttributeValueOrChildValueByName( "useMediaPropertyEarliestDt", useMediaPropertyEarliestDt ).AsBool( useMediaPropertyEarliestDt, true );
     fileTypesToSort = FileTypeConfig::GetFileTypesForStringSet( fileTypesToSortStrSet );
     
     const CORE::CDataNode* fileTypeConfigNode = cfg->FindChild( "FileTypeConfig" );
@@ -503,6 +505,7 @@ FileSorter::SortFile( const CORE::CString& currentVfsFilePath )
         
     CORE::CString targetVfsPath = m_appConfig.vfsSortedTargetRootPath + "/" + typeSortRootFolder;
     
+    CORE::CDateTime earliestMediaPropertyDt;
     if ( fileType == TFileType::FILETYPE_IMAGE &&
          m_appConfig.tryToGetMetaDataInfoFromImages )
     {
@@ -518,8 +521,52 @@ FileSorter::SortFile( const CORE::CString& currentVfsFilePath )
                     CORE::CGeoLocation geoLocationOfImg;
                     if ( img.TryGetGeoLocationFromMetaData( geoLocationOfImg ) )
                     {
-                        // @TODO
-                    }    
+                        // @TODO: Try to get location info from geo location using lookup service
+                    }   
+                    
+                    bool isTimezoneAware = false;
+                    CORE::CDateTime originalImageCreationDt;
+                    if ( img.TryGetOriginalImageCreationDtFromMetaData( originalImageCreationDt, isTimezoneAware ) )
+                    {
+                        if ( !isTimezoneAware )
+                        {
+                            // @TODO: Try to get timezone info from geo location using lookup service
+                            
+                            // Add the default filesystem timezone offset to the date time in the absence of timezone info
+                            // Its more likely to be 'less wrong' closer to what the filesystem offset is vs assuming UTC
+                            // this reinterprets the datetime as-is in a different timezone
+                            originalImageCreationDt.SetTimeZoneUTCOffsetInMins( m_appConfig.dirStructureUtcOffsetInMins ); 
+                            originalImageCreationDt = originalImageCreationDt.ToUTC();
+                        }
+                        
+                        if ( earliestMediaPropertyDt == CORE::CDateTime::Empty ||
+                             earliestMediaPropertyDt > originalImageCreationDt  )
+                        {
+                            earliestMediaPropertyDt = originalImageCreationDt;
+                        }
+                    }
+
+                    CORE::CDateTime imageLastModifiedDt;
+                    if ( img.TryGetImageLastModifiedDtFromMetaData( imageLastModifiedDt, isTimezoneAware ) )
+                    {
+                        if ( !isTimezoneAware )
+                        {
+                            // @TODO: Try to get timezone info from geo location using lookup service
+                            
+                            // Add the default filesystem timezone offset to the date time in the absence of timezone info
+                            // Its more likely to be 'less wrong' closer to what the filesystem offset is vs assuming UTC
+                            // this reinterprets the datetime as-is in a different timezone
+                            imageLastModifiedDt.SetTimeZoneUTCOffsetInMins( m_appConfig.dirStructureUtcOffsetInMins ); 
+                            imageLastModifiedDt = imageLastModifiedDt.ToUTC();
+                        }
+
+                        if ( earliestMediaPropertyDt == CORE::CDateTime::Empty ||
+                             earliestMediaPropertyDt > imageLastModifiedDt      )
+                        {
+                            earliestMediaPropertyDt = imageLastModifiedDt;
+                        }
+                    }
+                    
                 }
             }
         }       
@@ -535,6 +582,17 @@ FileSorter::SortFile( const CORE::CString& currentVfsFilePath )
             {
                 GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "FileSorter: Failed to get earliest date time for : " + currentVfsFilePath );
                 return false;
+            }
+
+            if ( m_appConfig.useMediaPropertyEarliestDt )
+            {
+                // if we have a media property date time, we use that as the earliest date time
+                // if it is in fact earlier than the file's earliest date time
+                if ( earliestMediaPropertyDt != CORE::CDateTime::Empty &&
+                     earliestMediaPropertyDt < earliestUtcFileDt        )
+                {
+                    earliestUtcFileDt = earliestMediaPropertyDt.ToUTC();
+                }
             }
             
             CORE::CDateTime sortPathDt = earliestUtcFileDt;

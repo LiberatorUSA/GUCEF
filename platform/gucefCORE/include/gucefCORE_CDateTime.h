@@ -88,6 +88,8 @@ class GUCEF_CORE_PUBLIC_CPP CDateTime : public CDate ,
 
     static CDateTime CompileDateTime( const char* __date__Macro = __DATE__, const char* __time__Macro = __TIME__ );
 
+    void SetTimeZoneUTCOffsetInMins( Int16 tzOffsetInMins );
+
     Int16 GetTimeZoneUTCOffsetInMins( void ) const;
 
     bool IsUTC( void ) const;

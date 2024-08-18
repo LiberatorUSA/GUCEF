@@ -170,7 +170,20 @@ class GUCEF_IMAGE_EXPORT_CPP CImage
 
     const CORE::CValueList& GetMetaData( void ) const;
 
+    /**
+     *  Helper member function to easily interpret the meta data and extract the geo location
+     */
     bool TryGetGeoLocationFromMetaData( CORE::CGeoLocation& geoLoc ) const; 
+
+    /**
+     *  Helper member function to easily interpret the meta data and extract the image creation datetime
+     */
+    bool TryGetOriginalImageCreationDtFromMetaData( CORE::CDateTime& imageCreationDt, bool& isTimezoneAware ) const;
+
+    /**
+     *  Helper member function to easily interpret the meta data and extract the image last modified datetime
+     */
+    bool TryGetImageLastModifiedDtFromMetaData( CORE::CDateTime& imageLastModifiedDt, bool& isTimezoneAware ) const;
 
     TImage* CreateCStyleAccess( void ) const;
 

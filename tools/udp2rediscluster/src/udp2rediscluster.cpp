@@ -2023,7 +2023,7 @@ Udp2RedisCluster::LoadConfig( const CORE::CDataNode& globalConfig )
     m_redisStreamStartChannelID = appConfig->GetAttributeValueOrChildValueByName( "redisStreamStartChannelID" ).AsInt32( m_redisStreamStartChannelID, true );
 
     CORE::CString::StringSet channelIDStrs = appConfig->GetAttributeValueOrChildValueByName( "channelIDs" ).AsString( CORE::CString::Empty, true ).ParseUniqueElements( ',', false );
-    m_channelCount = appConfig->GetAttributeValueOrChildValueByName( "channelCount" ).AsUInt16( channelIDStrs.empty() ? 1 : channelIDStrs.size(), true );
+    m_channelCount = appConfig->GetAttributeValueOrChildValueByName( "channelCount" ).AsUInt16( (UInt16) channelIDStrs.empty() ? 1 : (UInt16) channelIDStrs.size(), true );
 
     m_udpStartPort = appConfig->GetAttributeValueOrChildValueByName( "udpStartPort" ).AsUInt16( m_udpStartPort, true );
     CORE::Int32 udpPortChannelIdOffset = appConfig->GetAttributeValueOrChildValueByName( "udpPortChannelIdOffset" ).AsInt32( 20000, true );

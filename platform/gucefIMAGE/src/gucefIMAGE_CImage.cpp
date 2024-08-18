@@ -608,24 +608,104 @@ CImage::TryGetGeoLocationFromMetaData( CORE::CGeoLocation& geoLoc ) const
 
     // Try to get the GPS location from the meta-data
     // latitude and longitude are required at minimum
-    CORE::CVariant latitude;
-    CORE::CVariant longitude;
-    if ( m_metaData.TryGetValue( GUCEF_IMAGE_TAG_GPS_LATITUDE, latitude ) &&
-         m_metaData.TryGetValue( GUCEF_IMAGE_TAG_GPS_LONGITUDE, longitude ) )
+    CORE::CVariant::VariantVector latitude;
+    CORE::CVariant latitudeRef;
+    CORE::CVariant::VariantVector longitude;
+    CORE::CVariant longitudeRef;
+    CORE::CVariant::VariantVector altitude;
+
+    // The EXIF standard specifies that the latitude and longitude are stored as vectors of 3 fractions
+    // the first fraction is the degrees, the second the minutes and the third the seconds
+    if ( m_metaData.TryGetValueVector( GUCEF_IMAGE_TAG_EXIF_GPS_LATITUDE, latitude ) &&
+         m_metaData.TryGetValue( GUCEF_IMAGE_TAG_EXIF_GPS_LATITUDE_REF, latitudeRef ) &&
+         m_metaData.TryGetValueVector( GUCEF_IMAGE_TAG_EXIF_GPS_LONGITUDE, longitude ) &&
+         m_metaData.TryGetValue( GUCEF_IMAGE_TAG_EXIF_GPS_LONGITUDE_REF, longitudeRef ) )
     {
+        if ( latitude.size() < 3 || longitude.size() < 3 )
+            return false;      
+
+        Int32 latDegrees = latitude[ 0 ].AsInt32();
+        Int32 latMinutes = latitude[ 1 ].AsInt32();
+        Float32 latSeconds = latitude[ 2 ].AsFloat32();
+
+        Int32 lonDegrees = longitude[ 0 ].AsInt32();
+        Int32 lonMinutes = longitude[ 1 ].AsInt32();
+        Float32 lonSeconds = longitude[ 2 ].AsFloat32();
+
+        // Note that negative longitudes represent the western hemisphere
+        // Possible values are 'W' for west and 'E' for east
+        char longitudeRefValue = longitudeRef.AsChar();       
+        if ( longitudeRefValue == 'W' )
+            lonDegrees = -lonDegrees;
+
+        // Note that negative latitudes represent the southern hemisphere
+        // Possible values are 'S' for south and 'N' for north
+        char latitudeRefValue = latitudeRef.AsChar();    
+        if ( latitudeRefValue == 'S' )
+            latDegrees = -latDegrees;
+
         // altitude is an optional value, we will use it if its available
         CORE::CVariant altitude;
-        if ( m_metaData.TryGetValue( GUCEF_IMAGE_TAG_GPS_ALTITUDE, altitude ) )
+        CORE::CVariant altitudeRef;
+        if ( m_metaData.TryGetValue( GUCEF_IMAGE_TAG_EXIF_GPS_ALTITUDE, altitude )        &&
+             m_metaData.TryGetValue( GUCEF_IMAGE_TAG_EXIF_GPS_ALTITUDE_REF, altitudeRef ) )
         {
-            geoLoc = CORE::CGeoLocation( latitude.AsFloat64(), longitude.AsFloat64(), altitude.AsFloat64() );
+            Float64 altitudeInMeters = altitude.AsFloat64();
+            
+            // Note that negative altitude represent below sea level
+            // A ref value of 0 means sea level
+            char altitudeRefValue = altitudeRef.AsChar();        
+            if ( altitudeRefValue != 0 )
+                altitudeInMeters = -altitudeInMeters;
+
+            geoLoc = CORE::CGeoLocation( latDegrees, latMinutes, latSeconds,
+                                         lonDegrees, lonMinutes, lonSeconds,
+                                         altitudeInMeters );
             return true;
         }
         else
         {
-            geoLoc = CORE::CGeoLocation( latitude.AsFloat64(), longitude.AsFloat64() );
+            geoLoc = CORE::CGeoLocation( latDegrees, latMinutes, latSeconds ,
+                                         lonDegrees, lonMinutes, lonSeconds );
             return true;
         }
     }
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool 
+CImage::TryGetOriginalImageCreationDtFromMetaData( CORE::CDateTime& imageCreationDt, bool& isTimezoneAware ) const
+{GUCEF_TRACE;
+
+    // Try to get the image creation datetime from the meta-data
+    // The EXIF standard specifies that DATETIME_ORIGINAL is stored as a string in ISO 8601 format
+    CORE::CVariant imageCreation;
+    if ( m_metaData.TryGetValue( GUCEF_IMAGE_TAG_EXIF_IFD_DATETIME_ORIGINAL, imageCreation ) )
+    {
+        imageCreationDt = imageCreation.AsDateTime();
+        isTimezoneAware = false; // the EXIF standard sadly has no concept of timezones
+        return true;
+    }    
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool 
+CImage::TryGetImageLastModifiedDtFromMetaData( CORE::CDateTime& imageLastModifiedDt, bool& isTimezoneAware ) const
+{GUCEF_TRACE;
+
+    // Try to get the image creation datetime from the meta-data
+    // The EXIF standard specifies that DATETIME_ORIGINAL is stored as a string in ISO 8601 format
+    CORE::CVariant imageLastModified;
+    if ( m_metaData.TryGetValue( GUCEF_IMAGE_TAG_EXIF_IFD_DATETIME, imageLastModified ) )
+    {
+        imageLastModifiedDt = imageLastModified.AsDateTime();
+        isTimezoneAware = false; // the EXIF standard sadly has no concept of timezones
+        return true;
+    }    
     return false;
 }
 

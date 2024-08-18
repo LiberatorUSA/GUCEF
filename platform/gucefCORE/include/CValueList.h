@@ -351,6 +351,39 @@ class GUCEF_CORE_PUBLIC_CPP CValueList : public CIConfigurable          ,
      */
     const TVariantVector& GetValueVector( const UInt32 index ) const;
 
+    /**
+     *  Attempt to assign or link all the values associated with the given key.
+     *  Note that this non-const version will be potentially more performant since its able to link data vs a deep copy
+     */
+    bool TryGetValueVector( const CString& key, TVariantVector& outValue, bool linkIfPossible = true );
+
+    /**
+     *  Attempt to assign or link all the values associated with the given key.
+     *  Note that this non-const version will be potentially more performant since its able to link data vs a deep copy
+     */
+    bool TryGetValueVector( const CVariant& key, TVariantVector& outValue, bool linkIfPossible = true );
+
+    /**
+     *  Attempt to assign or link all the values associated with the given key.
+     *  Note that this non-const version will be potentially more performant since its able to link data vs a deep copy
+     */
+    bool TryGetValueVector( const char* key, TVariantVector& outValue, bool linkIfPossible = true );
+
+    /**
+     *  Attempt to assign all the values associated with the given key.
+     */
+    bool TryGetValueVector( const char* key, TVariantVector& outValue ) const;
+
+    /**
+     *  Attempt to assign all the values associated with the given key.
+     */
+    bool TryGetValueVector( const CString& key, TVariantVector& outValue ) const;
+
+    /**
+     *  Attempt to assign all the values associated with the given key.
+     */
+    bool TryGetValueVector( const CVariant& key, TVariantVector& outValue ) const;
+
     CString GetPair( const CString& key ) const;
 
     CString GetPair( const UInt32 index ) const;

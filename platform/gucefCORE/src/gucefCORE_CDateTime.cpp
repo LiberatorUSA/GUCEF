@@ -859,6 +859,15 @@ CDateTime::Compare( const CDateTime& other ) const
 
 /*-------------------------------------------------------------------------*/
 
+void 
+CDateTime::SetTimeZoneUTCOffsetInMins( Int16 tzOffsetInMins )
+{GUCEF_TRACE;
+
+    m_timezoneOffsetInMins = tzOffsetInMins;
+}
+
+/*-------------------------------------------------------------------------*/
+
 Int16
 CDateTime::GetTimeZoneUTCOffsetInMins( void ) const
 {GUCEF_TRACE;
@@ -942,14 +951,24 @@ CDateTime::GetTime( void ) const
 
 /*-------------------------------------------------------------------------*/
 
+// Returns the nr of bytes occupied by the timezone offset description 
+// the actual timezone offset is stored in the tzOffset output parameter
+// if no timezone offset is found, the tzOffset is set to 0 and -1 is returned
 Int32
 TimezoneOffsetInMinsFromIso8601DateTimeStringRemnant( const char* sourceBuffer, UInt32 sourceBufferSize, Int16& tzOffset )
 {GUCEF_TRACE;
 
+    tzOffset = 0;
+
     // We are looking for Z or +hh:mm or -hh:mm
     if ( sourceBufferSize > 0 )
     {
-        if ( *sourceBuffer == 'Z' )
+        if ( *sourceBuffer == '\0' )
+        {
+            tzOffset = 0;
+            return 0;
+        }
+        if ( *sourceBuffer == 'Z' || *sourceBuffer == '\0' )
         {
             tzOffset = 0;
             return 1;
@@ -988,8 +1007,7 @@ CDateTime::FromIso8601DateTimeString( const void* sourceBuffer, UInt32 sourceBuf
 
     // check what features we are dealing with
     const char* dtBuffer = static_cast< const char* >( sourceBuffer );
-    const char* dashPtr = (const char*) memchr( dtBuffer, '-', sourceBufferSize );
-    bool includesDelimeters = GUCEF_NULL != dashPtr && dashPtr < dtBuffer+5;
+    bool includesDelimeters = GUCEF_NULL != memchr( dtBuffer, ':', sourceBufferSize );
     bool includesMilliseconds = GUCEF_NULL != memchr( dtBuffer+13, '.', sourceBufferSize-13 ) || GUCEF_NULL != memchr( dtBuffer+13, ',', sourceBufferSize-13 );
 
     Int32 year=0;
@@ -1007,8 +1025,11 @@ CDateTime::FromIso8601DateTimeString( const void* sourceBuffer, UInt32 sourceBuf
                 if ( readParts == 7 )
                 {
                     Int32 tzBytes = TimezoneOffsetInMinsFromIso8601DateTimeStringRemnant( dtBuffer+23, sourceBufferSize-23, tzOffset );
-                    Set( (Int16) year, (UInt8) month, (UInt8) day, (UInt8) hours, (UInt8) minutes, (UInt8) seconds, (UInt16) milliseconds, tzOffset );
-                    return 23 + tzBytes > 0 ? tzBytes : 0;
+                    if ( tzBytes >= 0 )
+                    {
+                        Set( (Int16) year, (UInt8) month, (UInt8) day, (UInt8) hours, (UInt8) minutes, (UInt8) seconds, (UInt16) milliseconds, tzOffset );
+                        return 23 + tzBytes;
+                    }
                 }
             }
             return -1;
@@ -1022,8 +1043,11 @@ CDateTime::FromIso8601DateTimeString( const void* sourceBuffer, UInt32 sourceBuf
                 if ( readParts == 6 )
                 {
                     Int32 tzBytes = TimezoneOffsetInMinsFromIso8601DateTimeStringRemnant( dtBuffer+19, sourceBufferSize-19, tzOffset );
-                    Set( (Int16) year, (UInt8) month, (UInt8) day, (UInt8) hours, (UInt8) minutes, (UInt8) seconds, (UInt16) milliseconds, tzOffset );
-                    return 19 + tzBytes > 0 ? tzBytes : 0;
+                    if ( tzBytes >= 0 )
+                    {
+                        Set( (Int16) year, (UInt8) month, (UInt8) day, (UInt8) hours, (UInt8) minutes, (UInt8) seconds, (UInt16) milliseconds, tzOffset );
+                        return 19 + tzBytes;
+                    }
                 }
             }
             return -1;
@@ -1040,8 +1064,11 @@ CDateTime::FromIso8601DateTimeString( const void* sourceBuffer, UInt32 sourceBuf
                 if ( readParts == 7 )
                 {
                     Int32 tzBytes = TimezoneOffsetInMinsFromIso8601DateTimeStringRemnant( dtBuffer+18, sourceBufferSize-18, tzOffset );
-                    Set( (Int16) year, (UInt8) month, (UInt8) day, (UInt8) hours, (UInt8) minutes, (UInt8) seconds, (UInt16) milliseconds, tzOffset );
-                    return 18 + tzBytes > 0 ? tzBytes : 0;
+                    if ( tzBytes >= 0 )
+                    {
+                        Set( (Int16) year, (UInt8) month, (UInt8) day, (UInt8) hours, (UInt8) minutes, (UInt8) seconds, (UInt16) milliseconds, tzOffset );
+                        return 18 + tzBytes;
+                    }
                 }
             }
             return -1;
@@ -1055,8 +1082,11 @@ CDateTime::FromIso8601DateTimeString( const void* sourceBuffer, UInt32 sourceBuf
                 if ( readParts == 6 )
                 {
                     Int32 tzBytes = TimezoneOffsetInMinsFromIso8601DateTimeStringRemnant( dtBuffer+14, sourceBufferSize-14, tzOffset );
-                    Set( (Int16) year, (UInt8) month, (UInt8) day, (UInt8) hours, (UInt8) minutes, (UInt8) seconds, (UInt16) milliseconds, tzOffset );
-                    return 14 + tzBytes > 0 ? tzBytes : 0;
+                    if ( tzBytes >= 0 )
+                    {
+                        Set( (Int16) year, (UInt8) month, (UInt8) day, (UInt8) hours, (UInt8) minutes, (UInt8) seconds, (UInt16) milliseconds, tzOffset );
+                        return 14 + tzBytes;
+                    }
                 }
             }
             return -1;

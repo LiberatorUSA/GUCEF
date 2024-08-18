@@ -833,17 +833,17 @@ Udp2KafkaChannel::dr_cb( RdKafka::Message& message )
         GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "Kafka delivery report: error: " + message.errstr() + 
                                                 ", on topic: " + message.topic_name() + 
                                                 ", key: " + ( message.key() ? (*message.key()) : std::string( "NULL" ) ) + 
-                                                ", payload size: " + CORE::UInt32ToString( message.len() ).STL_String() +
+                                                ", payload size: " + CORE::ToString( message.len() ).STL_String() +
                                                 ", msg has " + MsgStatusToString( message.status() ) );
     }
     else 
     {
         ++m_kafkaMsgsTransmitted;
         GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "Kafka delivery report: " + MsgStatusToString( message.status() ) + ": topic: " + message.topic_name() + 
-                                                ", partition: " + CORE::Int32ToString( message.partition() ).STL_String() +
-                                                ", offset: " + CORE::Int64ToString( message.offset() ).STL_String() +
+                                                ", partition: " + CORE::ToString( message.partition() ).STL_String() +
+                                                ", offset: " + CORE::ToString( message.offset() ).STL_String() +
                                                 ", key: " + ( message.key() ? (*message.key()) : std::string( "NULL" ) ) + 
-                                                ", payload size: " + CORE::UInt32ToString( message.len() ).STL_String() );
+                                                ", payload size: " + CORE::ToString( message.len() ).STL_String() );
     }
 }
 

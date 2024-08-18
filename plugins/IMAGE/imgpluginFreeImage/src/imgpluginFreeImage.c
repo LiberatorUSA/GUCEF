@@ -32,6 +32,16 @@
 #define FREEIMAGE_H
 #endif /* FREEIMAGE_H ? */
 
+#ifndef FREEIMAGETAG_H
+#include "FreeImageTag.h"
+#define FREEIMAGETAG_H
+#endif /* FREEIMAGETAG_H ? */
+
+#ifndef GUCEF_IMAGE_IMAGETAGS_H
+#include "gucefIMAGE_c_image_tags.h"
+#define GUCEF_IMAGE_IMAGETAGS_H
+#endif /* GUCEF_IMAGE_IMAGETAGS_H ? */
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      MACROS                                                             //
@@ -899,6 +909,212 @@ IMGCODECPLUGIN_DecodeImage( void* pluginData      ,
 
 /*---------------------------------------------------------------------------*/
 
+DWORD
+MapFreeImageMetaDataTagIdForExifGPS( WORD fiTagId )
+{
+    switch ( fiTagId )
+    {
+        case TAG_GPS_VERSION_ID: return GUCEF_IMAGE_TAG_EXIF_GPS_VERSION_ID;
+        case TAG_GPS_LATITUDE_REF: return GUCEF_IMAGE_TAG_EXIF_GPS_LATITUDE_REF;
+        case TAG_GPS_LATITUDE: return GUCEF_IMAGE_TAG_EXIF_GPS_LATITUDE;
+        case TAG_GPS_LONGITUDE_REF: return GUCEF_IMAGE_TAG_EXIF_GPS_LONGITUDE_REF;
+        case TAG_GPS_LONGITUDE: return GUCEF_IMAGE_TAG_EXIF_GPS_LONGITUDE;
+        case TAG_GPS_ALTITUDE_REF: return GUCEF_IMAGE_TAG_EXIF_GPS_ALTITUDE_REF;
+        case TAG_GPS_ALTITUDE: return GUCEF_IMAGE_TAG_EXIF_GPS_ALTITUDE;
+        case TAG_GPS_SATELLITES: return GUCEF_IMAGE_TAG_EXIF_GPS_SATELLITES;
+        case TAG_GPS_STATUS: return GUCEF_IMAGE_TAG_EXIF_GPS_STATUS;
+        case TAG_GPS_DOP: return GUCEF_IMAGE_TAG_EXIF_GPS_DOP;  
+        case TAG_GPS_SPEED_REF: return GUCEF_IMAGE_TAG_EXIF_GPS_SPEED_REF;
+        case TAG_GPS_SPEED: return GUCEF_IMAGE_TAG_EXIF_GPS_SPEED;
+        case TAG_GPS_TRACK_REF: return GUCEF_IMAGE_TAG_EXIF_GPS_TRACK_REF;
+        case TAG_GPS_TRACK: return GUCEF_IMAGE_TAG_EXIF_GPS_TRACK;
+        case TAG_GPS_IMG_DIRECTION_REF: return GUCEF_IMAGE_TAG_EXIF_GPS_IMG_DIRECTION_REF;
+        case TAG_GPS_IMG_DIRECTION: return GUCEF_IMAGE_TAG_EXIF_GPS_IMG_DIRECTION;
+        case TAG_GPS_MAP_DATUM: return GUCEF_IMAGE_TAG_EXIF_GPS_MAP_DATUM;
+        case TAG_GPS_DEST_LATITUDE_REF: return GUCEF_IMAGE_TAG_EXIF_GPS_DEST_LATITUDE_REF;
+        case TAG_GPS_DEST_LATITUDE: return GUCEF_IMAGE_TAG_EXIF_GPS_DEST_LATITUDE;
+        case TAG_GPS_DEST_LONGITUDE_REF: return GUCEF_IMAGE_TAG_EXIF_GPS_DEST_LONGITUDE_REF;
+        case TAG_GPS_DEST_LONGITUDE: return GUCEF_IMAGE_TAG_EXIF_GPS_DEST_LONGITUDE;
+        case TAG_GPS_DEST_BEARING_REF: return GUCEF_IMAGE_TAG_EXIF_GPS_DEST_BEARING_REF;
+        case TAG_GPS_DEST_BEARING: return GUCEF_IMAGE_TAG_EXIF_GPS_DEST_BEARING;
+        case TAG_GPS_DEST_DISTANCE_REF: return GUCEF_IMAGE_TAG_EXIF_GPS_DEST_DISTANCE_REF;
+        case TAG_GPS_DEST_DISTANCE: return GUCEF_IMAGE_TAG_EXIF_GPS_DEST_DISTANCE;
+        case TAG_GPS_PROCESSING_METHOD: return GUCEF_IMAGE_TAG_EXIF_GPS_PROCESSING_METHOD;
+        case TAG_GPS_AREA_INFORMATION: return GUCEF_IMAGE_TAG_EXIF_GPS_AREA_INFORMATION;
+        case TAG_GPS_DIFFERENTIAL: return GUCEF_IMAGE_TAG_EXIF_GPS_DIFFERENTIAL;
+
+        default: 
+        {
+            return GUCEF_IMAGE_TAG_UNKNOWN;
+        }
+    }
+}
+
+/*---------------------------------------------------------------------------*/
+
+DWORD
+MapFreeImageMetaDataTagIdForExifMain( WORD fiTagId )
+{
+    switch ( fiTagId )
+    {
+        case TAG_IMAGE_WIDTH: return GUCEF_IMAGE_TAG_EXIF_IFD_IMAGE_WIDTH;
+        case TAG_IMAGE_HEIGHT: return GUCEF_IMAGE_TAG_EXIF_IFD_IMAGE_HEIGHT;
+        case TAG_BITS_PER_SAMPLE: return GUCEF_IMAGE_TAG_EXIF_IFD_BITS_PER_SAMPLE;
+        case TAG_COMPRESSION: return GUCEF_IMAGE_TAG_EXIF_IFD_COMPRESSION;
+        case TAG_PHOTOMETRIC_INTERPRETATION: return GUCEF_IMAGE_TAG_EXIF_IFD_PHOTOMETRIC_INTERPRETATION;
+        case TAG_ORIENTATION: return GUCEF_IMAGE_TAG_EXIF_IFD_ORIENTATION;
+        case TAG_SAMPLES_PER_PIXEL: return GUCEF_IMAGE_TAG_EXIF_IFD_SAMPLES_PER_PIXEL;
+        case TAG_PLANAR_CONFIGURATION: return GUCEF_IMAGE_TAG_EXIF_IFD_PLANAR_CONFIGURATION;
+        case TAG_YCBCR_SUBSAMPLING: return GUCEF_IMAGE_TAG_EXIF_IFD_YCBCR_SUBSAMPLING;
+        case TAG_YCBCR_POSITIONING: return GUCEF_IMAGE_TAG_EXIF_IFD_YCBCR_POSITIONING;
+        case TAG_X_RESOLUTION: return GUCEF_IMAGE_TAG_EXIF_IFD_X_RESOLUTION;
+        case TAG_Y_RESOLUTION: return GUCEF_IMAGE_TAG_EXIF_IFD_Y_RESOLUTION;
+        case TAG_RESOLUTION_UNIT: return GUCEF_IMAGE_TAG_EXIF_IFD_RESOLUTION_UNIT;
+
+        case TAG_STRIP_OFFSETS: return GUCEF_IMAGE_TAG_EXIF_IFD_STRIP_OFFSETS;
+        case TAG_ROWS_PER_STRIP: return GUCEF_IMAGE_TAG_EXIF_IFD_ROWS_PER_STRIP;
+        case TAG_STRIP_BYTE_COUNTS: return GUCEF_IMAGE_TAG_EXIF_IFD_STRIP_BYTE_COUNTS;
+        case TAG_JPEG_INTERCHANGE_FORMAT: return GUCEF_IMAGE_TAG_EXIF_IFD_JPEG_INTERCHANGE_FORMAT;
+        case TAG_JPEG_INTERCHANGE_FORMAT_LENGTH: return GUCEF_IMAGE_TAG_EXIF_IFD_JPEG_INTERCHANGE_FORMAT_LENGTH;
+
+        case TAG_DATETIME: return GUCEF_IMAGE_TAG_EXIF_IFD_DATETIME;
+        case TAG_IMAGE_DESCRIPTION: return GUCEF_IMAGE_TAG_EXIF_IFD_IMAGE_DESCRIPTION;
+        case TAG_MAKE: return GUCEF_IMAGE_TAG_EXIF_IFD_MAKE;
+        case TAG_MODEL: return GUCEF_IMAGE_TAG_EXIF_IFD_MODEL;
+        case TAG_SOFTWARE: return GUCEF_IMAGE_TAG_EXIF_IFD_SOFTWARE;
+        case TAG_ARTIST: return GUCEF_IMAGE_TAG_EXIF_IFD_ARTIST;
+        case TAG_COPYRIGHT: return GUCEF_IMAGE_TAG_EXIF_IFD_COPYRIGHT;
+
+        case TAG_EXIF_VERSION: return GUCEF_IMAGE_TAG_EXIF_IFD_VERSION;
+        case TAG_FLASHPIX_VERSION: return GUCEF_IMAGE_TAG_EXIF_IFD_FLASHPIX_VERSION;
+        case TAG_COLOR_SPACE: return GUCEF_IMAGE_TAG_EXIF_IFD_COLOR_SPACE;
+        case TAG_COMPONENTS_CONFIGURATION: return GUCEF_IMAGE_TAG_EXIF_IFD_COMPONENTS_CONFIGURATION;
+        case TAG_COMPRESSED_BITS_PER_PIXEL: return GUCEF_IMAGE_TAG_EXIF_IFD_COMPRESSED_BITS_PER_PIXEL;
+        case TAG_PIXEL_X_DIMENSION: return GUCEF_IMAGE_TAG_EXIF_IFD_PIXEL_X_DIMENSION;
+        case TAG_PIXEL_Y_DIMENSION: return GUCEF_IMAGE_TAG_EXIF_IFD_PIXEL_Y_DIMENSION;
+        case TAG_MARKER_NOTE: return GUCEF_IMAGE_TAG_EXIF_IFD_MARKER_NOTE;
+        case TAG_USER_COMMENT: return GUCEF_IMAGE_TAG_EXIF_IFD_USER_COMMENT;
+        case TAG_RELATED_SOUND_FILE: return GUCEF_IMAGE_TAG_EXIF_IFD_RELATED_SOUND_FILE;
+        case TAG_DATETIME_ORIGINAL: return GUCEF_IMAGE_TAG_EXIF_IFD_DATETIME_ORIGINAL;
+        case TAG_DATETIME_DIGITIZED: return GUCEF_IMAGE_TAG_EXIF_IFD_DATETIME_DIGITIZED;
+        case TAG_SUBSECOND_TIME: return GUCEF_IMAGE_TAG_EXIF_IFD_SUBSECOND_TIME;
+        case TAG_SUBSECOND_TIME_ORIGINAL: return GUCEF_IMAGE_TAG_EXIF_IFD_SUBSECOND_TIME_ORIGINAL;
+        case TAG_SUBSECOND_TIME_DIGITIZED: return GUCEF_IMAGE_TAG_EXIF_IFD_SUBSECOND_TIME_DIGITIZED;
+        case TAG_EXPOSURE_TIME: return GUCEF_IMAGE_TAG_EXIF_IFD_EXPOSURE_TIME;
+        case TAG_FNUMBER: return GUCEF_IMAGE_TAG_EXIF_IFD_FNUMBER;
+        case TAG_EXPOSURE_PROGRAM: return GUCEF_IMAGE_TAG_EXIF_IFD_EXPOSURE_PROGRAM;
+        case TAG_SPECTRAL_SENSITIVITY: return GUCEF_IMAGE_TAG_EXIF_IFD_SPECTRAL_SENSITIVITY;
+        case TAG_ISO_SPEED_RATINGS: return GUCEF_IMAGE_TAG_EXIF_IFD_ISO_SPEED_RATINGS;
+        case TAG_OECF: return GUCEF_IMAGE_TAG_EXIF_IFD_OECF;
+        case TAG_SHUTTER_SPEED_VALUE: return GUCEF_IMAGE_TAG_EXIF_IFD_SHUTTER_SPEED_VALUE;
+        case TAG_APERTURE_VALUE: return GUCEF_IMAGE_TAG_EXIF_IFD_APERTURE_VALUE;
+        case TAG_BRIGHTNESS_VALUE: return GUCEF_IMAGE_TAG_EXIF_IFD_BRIGHTNESS_VALUE;
+        case TAG_EXPOSURE_BIAS_VALUE: return GUCEF_IMAGE_TAG_EXIF_IFD_EXPOSURE_BIAS_VALUE;
+        case TAG_MAX_APERTURE_VALUE: return GUCEF_IMAGE_TAG_EXIF_IFD_MAX_APERTURE_VALUE;
+        case TAG_SUBJECT_DISTANCE: return GUCEF_IMAGE_TAG_EXIF_IFD_SUBJECT_DISTANCE;
+        case TAG_METERING_MODE: return GUCEF_IMAGE_TAG_EXIF_IFD_METERING_MODE;
+        case TAG_LIGHT_SOURCE: return GUCEF_IMAGE_TAG_EXIF_IFD_LIGHT_SOURCE;
+        case TAG_FLASH: return GUCEF_IMAGE_TAG_EXIF_IFD_FLASH;
+        case TAG_FOCAL_LENGTH: return GUCEF_IMAGE_TAG_EXIF_IFD_FOCAL_LENGTH;
+        case TAG_SUBJECT_AREA: return GUCEF_IMAGE_TAG_EXIF_IFD_SUBJECT_AREA;
+        case TAG_FLASH_ENERGY: return GUCEF_IMAGE_TAG_EXIF_IFD_FLASH_ENERGY;
+        case TAG_SPATIAL_FREQ_RESPONSE: return GUCEF_IMAGE_TAG_EXIF_IFD_SPATIAL_FREQ_RESPONSE;
+        case TAG_FOCAL_PLANE_X_RES: return GUCEF_IMAGE_TAG_EXIF_IFD_FOCAL_PLANE_X_RES;
+        case TAG_FOCAL_PLANE_Y_RES: return GUCEF_IMAGE_TAG_EXIF_IFD_FOCAL_PLANE_Y_RES;
+        case TAG_FOCAL_PLANE_UNIT: return GUCEF_IMAGE_TAG_EXIF_IFD_FOCAL_PLANE_UNIT;
+        case TAG_SUBJECT_LOCATION: return GUCEF_IMAGE_TAG_EXIF_IFD_SUBJECT_LOCATION;
+        case TAG_EXPOSURE_INDEX: return GUCEF_IMAGE_TAG_EXIF_IFD_EXPOSURE_INDEX;
+        case TAG_SENSING_METHOD: return GUCEF_IMAGE_TAG_EXIF_IFD_SENSING_METHOD;
+        case TAG_FILE_SOURCE: return GUCEF_IMAGE_TAG_EXIF_IFD_FILE_SOURCE;
+        case TAG_SCENE_TYPE: return GUCEF_IMAGE_TAG_EXIF_IFD_SCENE_TYPE;
+        case TAG_CFA_PATTERN: return GUCEF_IMAGE_TAG_EXIF_IFD_CFA_PATTERN;
+        case TAG_CUSTOM_RENDERED: return GUCEF_IMAGE_TAG_EXIF_IFD_CUSTOM_RENDERED;
+        case TAG_EXPOSURE_MODE: return GUCEF_IMAGE_TAG_EXIF_IFD_EXPOSURE_MODE;
+        case TAG_WHITE_BALANCE: return GUCEF_IMAGE_TAG_EXIF_IFD_WHITE_BALANCE;
+        case TAG_DIGITAL_ZOOM_RATIO: return GUCEF_IMAGE_TAG_EXIF_IFD_DIGITAL_ZOOM_RATIO;
+        case TAG_FOCAL_LENGTH_IN_35MM_FILM: return GUCEF_IMAGE_TAG_EXIF_IFD_FOCAL_LENGTH_IN_35MM_FILM;
+        case TAG_SCENE_CAPTURE_TYPE: return GUCEF_IMAGE_TAG_EXIF_IFD_SCENE_CAPTURE_TYPE;
+        case TAG_GAIN_CONTROL: return GUCEF_IMAGE_TAG_EXIF_IFD_GAIN_CONTROL;
+        case TAG_CONTRAST: return GUCEF_IMAGE_TAG_EXIF_IFD_CONTRAST;
+        case TAG_SATURATION: return GUCEF_IMAGE_TAG_EXIF_IFD_SATURATION;
+        case TAG_SHARPNESS: return GUCEF_IMAGE_TAG_EXIF_IFD_SHARPNESS;
+        case TAG_DEVICE_SETTING_DESCRIPTION: return GUCEF_IMAGE_TAG_EXIF_IFD_DEVICE_SETTING_DESCRIPTION;
+        case TAG_SUBJECT_DISTANCE_RANGE: return GUCEF_IMAGE_TAG_EXIF_IFD_SUBJECT_DISTANCE_RANGE;
+        case TAG_IMAGE_UNIQUE_ID: return GUCEF_IMAGE_TAG_EXIF_IFD_IMAGE_UNIQUE_ID;
+
+        default: 
+        {
+            return GUCEF_IMAGE_TAG_UNKNOWN;
+        }
+    }
+}
+
+/*---------------------------------------------------------------------------*/
+
+DWORD
+MapFreeImageMetaDataTagIdForIPTC( WORD fiTagId )
+{
+    switch ( fiTagId )
+    {
+        case TAG_RECORD_VERSION: return GUCEF_IMAGE_TAG_IPTC_RECORD_VERSION;
+        case TAG_CAPTION: return GUCEF_IMAGE_TAG_IPTC_CAPTION;
+        case TAG_WRITER: return GUCEF_IMAGE_TAG_IPTC_WRITER;
+        case TAG_HEADLINE: return GUCEF_IMAGE_TAG_IPTC_HEADLINE;
+        case TAG_SPECIAL_INSTRUCTIONS: return GUCEF_IMAGE_TAG_IPTC_SPECIAL_INSTRUCTIONS;
+        case TAG_BY_LINE: return GUCEF_IMAGE_TAG_IPTC_BY_LINE;
+        case TAG_BY_LINE_TITLE: return GUCEF_IMAGE_TAG_IPTC_BY_LINE_TITLE;
+        case TAG_CREDIT: return GUCEF_IMAGE_TAG_IPTC_CREDIT;
+        case TAG_SOURCE: return GUCEF_IMAGE_TAG_IPTC_SOURCE;
+        case TAG_OBJECT_NAME: return GUCEF_IMAGE_TAG_IPTC_OBJECT_NAME;
+        case TAG_DATE_CREATED: return GUCEF_IMAGE_TAG_IPTC_DATE_CREATED;
+        case TAG_CITY: return GUCEF_IMAGE_TAG_IPTC_CITY;
+        case TAG_PROVINCE_OR_STATE: return GUCEF_IMAGE_TAG_IPTC_PROVINCE_OR_STATE;
+        case TAG_COUNTRY_OR_PRIMARY_LOCATION: return GUCEF_IMAGE_TAG_IPTC_COUNTRY_OR_PRIMARY_LOCATION;
+        case TAG_ORIGINAL_TRANSMISSION_REFERENCE: return GUCEF_IMAGE_TAG_IPTC_ORIGINAL_TRANSMISSION_REFERENCE;
+        case TAG_CATEGORY: return GUCEF_IMAGE_TAG_IPTC_CATEGORY;
+        case TAG_SUPPLEMENTAL_CATEGORIES: return GUCEF_IMAGE_TAG_IPTC_SUPPLEMENTAL_CATEGORIES;
+        case TAG_URGENCY: return GUCEF_IMAGE_TAG_IPTC_URGENCY;
+        case TAG_KEYWORDS: return GUCEF_IMAGE_TAG_IPTC_KEYWORDS;
+        case TAG_COPYRIGHT_NOTICE: return GUCEF_IMAGE_TAG_IPTC_COPYRIGHT_NOTICE;
+        case TAG_RELEASE_DATE: return GUCEF_IMAGE_TAG_IPTC_RELEASE_DATE;
+        case TAG_RELEASE_TIME: return GUCEF_IMAGE_TAG_IPTC_RELEASE_TIME;
+        case TAG_TIME_CREATED: return GUCEF_IMAGE_TAG_IPTC_TIME_CREATED;
+        case TAG_ORIGINATING_PROGRAM: return GUCEF_IMAGE_TAG_IPTC_ORIGINATING_PROGRAM;
+
+        default: 
+        {
+            return GUCEF_IMAGE_TAG_UNKNOWN;
+        }
+    }
+}
+
+/*---------------------------------------------------------------------------*/
+
+DWORD
+MapFreeImageMetaDataTagId( FREE_IMAGE_MDMODEL fiModel, WORD fiTagId )
+{
+    switch ( fiModel )
+    {
+        case FIMD_COMMENTS: return GUCEF_IMAGE_TAG_UNKNOWN;
+        case FIMD_EXIF_MAIN: return MapFreeImageMetaDataTagIdForExifMain( fiTagId );
+        case FIMD_EXIF_EXIF: return GUCEF_IMAGE_TAG_UNKNOWN;
+        case FIMD_EXIF_GPS: return MapFreeImageMetaDataTagIdForExifGPS( fiTagId );
+        case FIMD_EXIF_MAKERNOTE: return GUCEF_IMAGE_TAG_UNKNOWN;
+        case FIMD_EXIF_INTEROP: return GUCEF_IMAGE_TAG_UNKNOWN;
+        case FIMD_IPTC: return MapFreeImageMetaDataTagIdForIPTC( fiTagId );
+        case FIMD_XMP: return GUCEF_IMAGE_TAG_UNKNOWN;
+        case FIMD_GEOTIFF: return GUCEF_IMAGE_TAG_UNKNOWN;
+        case FIMD_ANIMATION: return GUCEF_IMAGE_TAG_UNKNOWN;
+        case FIMD_CUSTOM: return GUCEF_IMAGE_TAG_UNKNOWN;
+        default: 
+        {
+            return GUCEF_IMAGE_TAG_UNKNOWN;
+        }
+    }
+}
+
+/*---------------------------------------------------------------------------*/
+
 void
 MapFreeImageMetaDataTag( FREE_IMAGE_MDMODEL model               , 
                          FITAG* tag                             , 
@@ -909,142 +1125,184 @@ MapFreeImageMetaDataTag( FREE_IMAGE_MDMODEL model               ,
         WORD tagId = FreeImage_GetTagID( tag );
         FREE_IMAGE_MDTYPE tagType = FreeImage_GetTagType( tag );
         DWORD tagLength = FreeImage_GetTagLength( tag );
+        DWORD tagCount =  FreeImage_GetTagCount( tag );
         const void* tagValue = FreeImage_GetTagValue( tag );
+        DWORD guTagId = MapFreeImageMetaDataTagId( model, tagId );
 
         TVariantData keyVariant;
         TVariantData valueVariant;
 
-        keyVariant.union_data.uint16_data = tagId;
-        keyVariant.containedType = GUCEF_DATATYPE_UINT16;
+        keyVariant.union_data.uint32_data = guTagId;
+        keyVariant.containedType = GUCEF_DATATYPE_UINT32;
 
         switch ( tagType )
         {
             case FIDT_BYTE:
             {
-                valueVariant.union_data.uint8_data = *(UInt8*) tagValue;
-                valueVariant.containedType = GUCEF_DATATYPE_UINT8;
+                for ( DWORD i=0; i<tagCount; ++i )
+                {
+                    valueVariant.union_data.uint8_data = ( (UInt8*) tagValue )[ i ];
+                    valueVariant.containedType = GUCEF_DATATYPE_UINT8;
+                    mapCallbacks->OnKeyValuePair( mapCallbacks->privateData, &keyVariant, &valueVariant );
+                }
                 break;
             }
             case FIDT_ASCII:
             {
                 valueVariant.union_data.heap_data.heap_data_is_linked = 1;
-                valueVariant.union_data.heap_data.union_data.char_heap_data = (char*) tagValue;
-                valueVariant.union_data.heap_data.heap_data_size = tagLength;
+                valueVariant.union_data.heap_data.union_data.char_heap_data = ( (char*) tagValue );
+                valueVariant.union_data.heap_data.heap_data_size = (UInt32) tagLength;
                 valueVariant.containedType = GUCEF_DATATYPE_ASCII_STRING;
+                mapCallbacks->OnKeyValuePair( mapCallbacks->privateData, &keyVariant, &valueVariant );
                 break;
             }
             case FIDT_SHORT:
             {
-                valueVariant.union_data.uint16_data = *(UInt16*) tagValue;
-                valueVariant.containedType = GUCEF_DATATYPE_UINT16;
+                for ( DWORD i=0; i<tagCount; ++i )
+                {                
+                    valueVariant.union_data.uint16_data = ( (UInt16*) tagValue )[ i ];
+                    valueVariant.containedType = GUCEF_DATATYPE_UINT16;
+                    mapCallbacks->OnKeyValuePair( mapCallbacks->privateData, &keyVariant, &valueVariant );
+                }
                 break;
             }
+            case FIDT_IFD:
+            case FIDT_PALETTE:
             case FIDT_LONG:
             {
-                valueVariant.union_data.uint32_data = *(UInt32*) tagValue;
-                valueVariant.containedType = GUCEF_DATATYPE_UINT32;
+                for ( DWORD i=0; i<tagCount; ++i )
+                {
+                    valueVariant.union_data.uint32_data = ( (UInt32*) tagValue )[ i ];
+                    valueVariant.containedType = GUCEF_DATATYPE_UINT32;
+                    mapCallbacks->OnKeyValuePair( mapCallbacks->privateData, &keyVariant, &valueVariant );
+                }
                 break;
             }
             case FIDT_SBYTE:
             {
-                valueVariant.union_data.int8_data = *(Int8*) tagValue;
-                valueVariant.containedType = GUCEF_DATATYPE_INT8;
+                for ( DWORD i=0; i<tagCount; ++i )
+                {
+                    valueVariant.union_data.int8_data = ( (Int8*) tagValue )[ i ];
+                    valueVariant.containedType = GUCEF_DATATYPE_INT8;
+                    mapCallbacks->OnKeyValuePair( mapCallbacks->privateData, &keyVariant, &valueVariant );
+                }
                 break;
             }
             case FIDT_NOTYPE:
             case FIDT_UNDEFINED:
             {
-                valueVariant.union_data.heap_data.union_data.void_heap_data = (void*) tagValue;
-                valueVariant.union_data.heap_data.heap_data_size = tagLength;
-                valueVariant.union_data.heap_data.heap_data_is_linked = 1;
-                valueVariant.containedType = GUCEF_DATATYPE_BINARY_BLOB;
+                for ( DWORD i=0; i<tagCount; ++i )
+                {
+                    valueVariant.union_data.heap_data.union_data.void_heap_data = ( ( (char*) tagValue ) + i*tagLength );
+                    valueVariant.union_data.heap_data.heap_data_size = tagLength;
+                    valueVariant.union_data.heap_data.heap_data_is_linked = 1;
+                    valueVariant.containedType = GUCEF_DATATYPE_BINARY_BLOB;
+                    mapCallbacks->OnKeyValuePair( mapCallbacks->privateData, &keyVariant, &valueVariant );
+                }
                 break;
             }
             case FIDT_SSHORT:
             {
-                valueVariant.union_data.int16_data = *(Int16*) tagValue;
-                valueVariant.containedType = GUCEF_DATATYPE_INT16;
+                for ( DWORD i=0; i<tagCount; ++i )
+                {
+                    valueVariant.union_data.int16_data = ( (Int16*) tagValue )[ i ];
+                    valueVariant.containedType = GUCEF_DATATYPE_INT16;
+                    mapCallbacks->OnKeyValuePair( mapCallbacks->privateData, &keyVariant, &valueVariant );
+                }
                 break;
             }
             case FIDT_SLONG:
             {
-                valueVariant.union_data.int32_data = *(Int32*) tagValue;
-                valueVariant.containedType = GUCEF_DATATYPE_INT32;
+                for ( DWORD i=0; i<tagCount; ++i )
+                {
+                    valueVariant.union_data.int32_data = ( (Int32*) tagValue )[ i ];
+                    valueVariant.containedType = GUCEF_DATATYPE_INT32;
+                    mapCallbacks->OnKeyValuePair( mapCallbacks->privateData, &keyVariant, &valueVariant );
+                }
                 break;
             }
             case FIDT_FLOAT:
             {
-                valueVariant.union_data.float32_data = *(Float32*)tagValue;
-                valueVariant.containedType = GUCEF_DATATYPE_FLOAT32;
+                for ( DWORD i=0; i<tagCount; ++i )
+                {
+                    valueVariant.union_data.float32_data = ( (Float32*) tagValue )[ i ];
+                    valueVariant.containedType = GUCEF_DATATYPE_FLOAT32;
+                    mapCallbacks->OnKeyValuePair( mapCallbacks->privateData, &keyVariant, &valueVariant );
+                }
                 break;
             }
             case FIDT_DOUBLE:
             {
-                valueVariant.union_data.float64_data = *(Float64*) tagValue;
-                valueVariant.containedType = GUCEF_DATATYPE_FLOAT64;
+                for ( DWORD i=0; i<tagCount; ++i )
+                {
+                    valueVariant.union_data.float64_data = ( (Float64*) tagValue )[ i ];
+                    valueVariant.containedType = GUCEF_DATATYPE_FLOAT64;
+                    mapCallbacks->OnKeyValuePair( mapCallbacks->privateData, &keyVariant, &valueVariant );
+                }
                 break;
             }
 	        case FIDT_RATIONAL: 
             {
                 /* 
-                    its 2 32 bit unsigned integers, the first is the numerator and the second is the denominator
+                    Every 'tagCount' instance is 2 32 bit unsigned integers, 
+                    the first is the numerator and the second is the denominator
                 */
-                UInt32 numerator = ( (UInt32*) tagValue )[ 0 ];
-                UInt32 denominator = ( (UInt32*) tagValue )[ 1 ];                
-                valueVariant.union_data.fraction_data.union_data.uint32t2_data.numerator = numerator;
-                valueVariant.union_data.fraction_data.union_data.uint32t2_data.denominator = denominator;
-                valueVariant.containedType = GUCEF_DATATYPE_UINT32T2_FRACTION;
+                for ( DWORD i=0; i<tagCount; ++i )
+                {
+                    UInt32 numerator = ( (UInt32*) tagValue )[ (i*2) + 0 ];
+                    UInt32 denominator = ( (UInt32*) tagValue )[ (i*2) + 1 ];                
+                    valueVariant.union_data.fraction_data.union_data.uint32t2_data.numerator = numerator;
+                    valueVariant.union_data.fraction_data.union_data.uint32t2_data.denominator = denominator;
+                    valueVariant.containedType = GUCEF_DATATYPE_UINT32T2_FRACTION;
+
+                    mapCallbacks->OnKeyValuePair( mapCallbacks->privateData, &keyVariant, &valueVariant );
+                }
                 break;
             }            
             case FIDT_SRATIONAL: 
             {
                 /* 
-                    its 2 32 bit signed integers, the first is the numerator and the second is the denominator
+                    Every 'tagCount' instance is 2 32 bit signed integers, 
+                    the first is the numerator and the second is the denominator
                 */
-                Int32 numerator = ( (Int32*) tagValue )[ 0 ];
-                Int32 denominator = ( (Int32*) tagValue )[ 1 ];                
-                valueVariant.union_data.fraction_data.union_data.int32t2_data.numerator = numerator;
-                valueVariant.union_data.fraction_data.union_data.int32t2_data.denominator = denominator;
-                valueVariant.containedType = GUCEF_DATATYPE_INT32T2_FRACTION;
-                break;
-            }
-            case FIDT_PALETTE:
-            case FIDT_IFD:
-            {
-                if ( tagLength <= GUCEF_VARIANT_BSOB_SIZE )
+                for ( DWORD i=0; i<tagCount; ++i )
                 {
-                    memcpy( valueVariant.union_data.bsob_data, tagValue, tagLength );
-                    valueVariant.containedType = GUCEF_DATATYPE_BINARY_BSOB;
-                }
-                else
-                {
-                    valueVariant.union_data.heap_data.union_data.void_heap_data = (void*) tagValue;
-                    valueVariant.union_data.heap_data.heap_data_size = tagLength;
-                    valueVariant.union_data.heap_data.heap_data_is_linked = 1;
-                    valueVariant.containedType = GUCEF_DATATYPE_BINARY_BLOB;
+                    Int32 numerator = ( (Int32*) tagValue )[ (i*2) + 0 ];
+                    Int32 denominator = ( (Int32*) tagValue )[ (i*2) + 1 ];                
+                    valueVariant.union_data.fraction_data.union_data.int32t2_data.numerator = numerator;
+                    valueVariant.union_data.fraction_data.union_data.int32t2_data.denominator = denominator;
+                    valueVariant.containedType = GUCEF_DATATYPE_INT32T2_FRACTION;
+
+                    mapCallbacks->OnKeyValuePair( mapCallbacks->privateData, &keyVariant, &valueVariant );
                 }
                 break;
             }
             case FIDT_IFD8:
             case FIDT_LONG8:
             {
-                valueVariant.union_data.uint64_data = *(UInt64*) tagValue;
-                valueVariant.containedType = GUCEF_DATATYPE_UINT64;
+                for ( DWORD i=0; i<tagCount; ++i )
+                {
+                    valueVariant.union_data.uint64_data = ( (UInt64*) tagValue )[ i ];
+                    valueVariant.containedType = GUCEF_DATATYPE_UINT64;
+                    mapCallbacks->OnKeyValuePair( mapCallbacks->privateData, &keyVariant, &valueVariant );
+                }
                 break;
             }
             case FIDT_SLONG8:
             {
-                valueVariant.union_data.uint64_data = *(Int64*) tagValue;
-                valueVariant.containedType = GUCEF_DATATYPE_INT64;
+                for ( DWORD i=0; i<tagCount; ++i )
+                {
+                    valueVariant.union_data.uint64_data = ( (Int64*) tagValue )[ i ];
+                    valueVariant.containedType = GUCEF_DATATYPE_INT64;
+                    mapCallbacks->OnKeyValuePair( mapCallbacks->privateData, &keyVariant, &valueVariant );
+                }
                 break;
             }
             default:
             {
                 return;    
             }
-        }
-
-        mapCallbacks->OnKeyValuePair( mapCallbacks->privateData, &keyVariant, &valueVariant );
+        }        
     }
 }
 
@@ -1083,7 +1341,7 @@ IMGCODECPLUGIN_DecodeImageMetaData( void* pluginData                       ,
         FREE_IMAGE_FORMAT fif = FIF_UNKNOWN;
         FIBITMAP* dib = GUCEF_NULL;
         
-        mapCallbacks->OnValueMapBegin( mapCallbacks->privateData, 0, 0 );
+        mapCallbacks->OnValueMapBegin( mapCallbacks->privateData, 1, 1 );
 
         fif = FreeImage_GetFileTypeFromHandle( &io, (fi_handle) input, 0 );
 
@@ -1104,12 +1362,12 @@ IMGCODECPLUGIN_DecodeImageMetaData( void* pluginData                       ,
             {
                 /* now we map the metadata */
                 //MapFreeImageMetaData( FIMD_COMMENTS, dib, mapCallbacks );
-               // MapFreeImageMetaData( FIMD_EXIF_MAIN, dib, mapCallbacks );
+                MapFreeImageMetaData( FIMD_EXIF_MAIN, dib, mapCallbacks );
                // MapFreeImageMetaData( FIMD_EXIF_EXIF, dib, mapCallbacks );
                 MapFreeImageMetaData( FIMD_EXIF_GPS, dib, mapCallbacks );
                // MapFreeImageMetaData( FIMD_EXIF_MAKERNOTE, dib, mapCallbacks );
                // MapFreeImageMetaData( FIMD_EXIF_INTEROP, dib, mapCallbacks );       
-               // MapFreeImageMetaData( FIMD_IPTC, dib, mapCallbacks );
+                MapFreeImageMetaData( FIMD_IPTC, dib, mapCallbacks );
                // MapFreeImageMetaData( FIMD_XMP, dib, mapCallbacks );
                // MapFreeImageMetaData( FIMD_GEOTIFF, dib, mapCallbacks );
                // MapFreeImageMetaData( FIMD_ANIMATION, dib, mapCallbacks );
