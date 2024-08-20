@@ -71,7 +71,6 @@ class GUCEF_KAITAI_PUBLIC_CPP CKaitaiSchemaRegistry : public CORE::CTONRegistry<
 
     typedef CORE::CTONRegistry< CKaitaiSchema, MT::CMutex >         TSchemaFamilyRegistry;
     typedef CORE::CTSharedPtr< TSchemaFamilyRegistry, MT::CMutex >  TSchemaFamilyRegistryPtr;
-    typedef TSchemaFamilyRegistry::TStringList                      TStringList;
     typedef TSchemaFamilyRegistry::TRegisteredObjPtr                TSchemaPtr;
     
     virtual const MT::CILockable* AsLockable( void ) const GUCEF_VIRTUAL_OVERRIDE;

@@ -46,6 +46,10 @@
 #include <string.h>
 #include <map>
 
+#ifdef __cplusplus >= 201103L 
+  #include <functional>
+#endif
+
 #include "ImfNamespace.h"
 
 OPENEXR_IMF_INTERNAL_NAMESPACE_SOURCE_ENTER 
@@ -63,6 +67,19 @@ Attribute::~Attribute () {}
 
 namespace {
 
+#ifdef __cplusplus >= 201300
+
+struct NameCompare: std::function < bool (const char *, const char *)>
+{
+    bool
+    operator () (const char *x, const char *y) const
+    {
+	return strcmp (x, y) < 0;
+    }
+};
+
+#else
+
 struct NameCompare: std::binary_function <const char *, const char *, bool>
 {
     bool
@@ -71,6 +88,8 @@ struct NameCompare: std::binary_function <const char *, const char *, bool>
 	return strcmp (x, y) < 0;
     }
 };
+
+#endif
 
 
 typedef Attribute* (*Constructor)();

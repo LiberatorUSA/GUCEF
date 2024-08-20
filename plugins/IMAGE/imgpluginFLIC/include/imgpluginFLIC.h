@@ -45,7 +45,7 @@
 #endif /* GUCEF_CORE_C_VALUEMAP_PARSER_CALLBACKS_H ? */
 
 #ifndef GUCEF_IMAGE_IMAGEDATA_H
-#include "gucefIMAGE_imagedata.h"          /* plugin API structures */
+#include "gucefIMAGE_c_imagedata.h"          /* plugin API structures */
 #define GUCEF_IMAGE_IMAGEDATA_H
 #endif /* GUCEF_IMAGE_IMAGEDATA_H ? */
 

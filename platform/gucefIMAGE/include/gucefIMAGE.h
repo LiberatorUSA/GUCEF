@@ -66,7 +66,7 @@ namespace GUCEF
  *      Image data storage structure
  */
 #ifndef GUCEF_IMAGE_IMAGEDATA_H
-#include "gucefIMAGE_imagedata.h"
+#include "gucefIMAGE_c_imagedata.h"
 #define GUCEF_IMAGE_IMAGEDATA_H
 #endif /* GUCEF_IMAGE_IMAGEDATA_H ? */
 
