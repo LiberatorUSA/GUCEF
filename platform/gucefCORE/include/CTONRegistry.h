@@ -92,9 +92,11 @@ class CTONRegistry : public CTObservingNotifierExpansion< CTRegistry< T, LockTyp
 {
     public:
 
-    typedef typename CTObservingNotifierExpansion< CTRegistry< T, LockType > >::TRegisteredObjPtr TRegisteredObjPtr;
-    typedef typename CTObservingNotifierExpansion< CTRegistry< T, LockType > >::TStringList TStringList;
-    typedef CTObservingNotifierExpansion< CTRegistry< T, LockType > > TExpansionBase;
+    typedef LockType                                                                                    TLockType;
+    typedef T                                                                                           TRegisteredType;
+    typedef typename CTObservingNotifierExpansion< CTRegistry< T, LockType > >::TRegisteredObjPtr       TRegisteredObjPtr;
+    typedef typename CTObservingNotifierExpansion< CTRegistry< T, LockType > >::TRegisteredObjPtrVector TRegisteredObjPtrVector;
+    typedef CTObservingNotifierExpansion< CTRegistry< T, LockType > >                                   TExpansionBase;
 
     CTONRegistry( void );
 
@@ -251,8 +253,8 @@ CTONRegistry< T, LockType >::UnregisterAll( void )
 
     TExpansionBase::Lock();
 
-    TStringList list;
-    this->GetList( list );
+    CString::StringVector list;
+    this->GetRegisteredObjNames( list );
 
     for ( UInt32 i=0; i<list.size(); ++i )
     {

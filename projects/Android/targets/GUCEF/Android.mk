@@ -270,6 +270,9 @@ include $(MY_MODULE_PATH)/Android.mk
 MY_MODULE_PATH := $(PROJECT_ROOT_PATH)/../../../../platform/gucefKAITAI
 include $(MY_MODULE_PATH)/Android.mk
 
+MY_MODULE_PATH := $(PROJECT_ROOT_PATH)/../../../../plugins/COMCORE/comcorepluginGEOOSM
+include $(MY_MODULE_PATH)/Android.mk
+
 MY_MODULE_PATH := $(PROJECT_ROOT_PATH)/../../../../plugins/CORE/dstorepluginPARSIFALXML
 include $(MY_MODULE_PATH)/Android.mk
 

@@ -60,13 +60,23 @@ CIGeoLocationLookupServiceProvider::TryLookupLocation( const CIPv4Address& ipAdd
                                                        CString& city                 ,
                                                        CString& street               ,
                                                        CString& streetNr             ,
-                                                       CString& zipOrPostalCode      )
+                                                       CString& zipOrPostalCode      ,
+                                                       Int16& timeZoneOffsetInMins   ,
+                                                       bool& hasTimeZoneOffsetInMins )
 {GUCEF_TRACE;
 
     CORE::CGeoLocation geoLocation;
     if ( TryLookupGeoLocation( ipAddress, geoLocation ) )
     {
-        return TryLookupLocation( geoLocation, country, stateOrProvice, city, street, streetNr, zipOrPostalCode );
+        return TryLookupLocation( geoLocation, 
+                                  country, 
+                                  stateOrProvice, 
+                                  city, 
+                                  street, 
+                                  streetNr, 
+                                  zipOrPostalCode, 
+                                  timeZoneOffsetInMins, 
+                                  hasTimeZoneOffsetInMins );
     }
     return false;
 }
@@ -80,13 +90,23 @@ CIGeoLocationLookupServiceProvider::TryLookupLocation( const CIPv6Address& ipAdd
                                                        CString& city                 ,
                                                        CString& street               ,
                                                        CString& streetNr             ,
-                                                       CString& zipOrPostalCode      )
+                                                       CString& zipOrPostalCode      ,
+                                                       Int16& timeZoneOffsetInMins   ,
+                                                       bool& hasTimeZoneOffsetInMins )
 {GUCEF_TRACE;
 
     CORE::CGeoLocation geoLocation;
     if ( TryLookupGeoLocation( ipAddress, geoLocation ) )
     {
-        return TryLookupLocation( geoLocation, country, stateOrProvice, city, street, streetNr, zipOrPostalCode );
+        return TryLookupLocation( geoLocation, 
+                                  country, 
+                                  stateOrProvice, 
+                                  city, 
+                                  street, 
+                                  streetNr, 
+                                  zipOrPostalCode, 
+                                  timeZoneOffsetInMins, 
+                                  hasTimeZoneOffsetInMins );
     }
     return false;
 }

@@ -71,8 +71,8 @@ class GUCEF_CORE_PUBLIC_CPP CCodecRegistry : public CTONRegistry< CTONRegistry< 
 
     typedef CTONRegistry< CICodec, MT::CMutex >             TCodecFamilyRegistry;
     typedef CTSharedPtr< TCodecFamilyRegistry, MT::CMutex > TCodecFamilyRegistryPtr;
-    typedef TCodecFamilyRegistry::TStringList               TStringList;
     typedef TCodecFamilyRegistry::TRegisteredObjPtr         TICodecPtr;
+    typedef TCodecFamilyRegistry::TRegisteredObjPtrVector   TICodecPtrVector;
     
     virtual const MT::CILockable* AsLockable( void ) const GUCEF_VIRTUAL_OVERRIDE;
 

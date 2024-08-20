@@ -118,6 +118,7 @@ filter "ALL"
   include( "platform/gucefVFS" )
   include( "platform/gucefWEB" )
   include( "plugins/COMCORE/comcorepluginDBL" )
+  include( "plugins/COMCORE/comcorepluginGEOOSM" )
   include( "plugins/CORE/codecspluginSTBRUMMEHASH" )
   include( "plugins/CORE/codecspluginZLIB" )
   include( "plugins/CORE/dstorepluginJSONPARSER" )

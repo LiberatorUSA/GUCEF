@@ -43,6 +43,7 @@ LOCAL_SRC_FILES := \
   src/gucefCOMCORE_CDnsCacheEntry.cpp \
   src/gucefCOMCORE_CDnsCacheRefreshTaskConsumer.cpp \
   src/gucefCOMCORE_CDnsResolver.cpp \
+  src/gucefCOMCORE_CGeoLocationLookupService.cpp \
   src/gucefCOMCORE_CICommunicationInterface.cpp \
   src/gucefCOMCORE_CIDiscovery.cpp \
   src/gucefCOMCORE_CIDiscoveryCapability.cpp \

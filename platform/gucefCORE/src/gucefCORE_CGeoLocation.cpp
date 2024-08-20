@@ -455,6 +455,15 @@ CGeoLocation::IsInEastDirectionFromMeridian( void ) const
 
 /*-------------------------------------------------------------------------*/
 
+bool 
+CGeoLocation::IsAboveSeaLevel( void ) const
+{GUCEF_TRACE;
+
+    return m_altitudeInMeters > 0;
+}
+
+/*-------------------------------------------------------------------------*/
+
 CGeoLocation& 
 CGeoLocation::FromISO6709String( const std::string& iso6709 )
 {GUCEF_TRACE;

@@ -171,17 +171,3 @@ class GUCEF_CORE_PUBLIC_CPP CDStoreCodec : public CICloneable
 /*-------------------------------------------------------------------------*/
 
 #endif /* GUCEF_CORE_CDSTORECODEC_H ? */
-
-/*-------------------------------------------------------------------------//
-//                                                                         //
-//      Info & Changes                                                     //
-//                                                                         //
-//-------------------------------------------------------------------------//
-
-- 26-04-2005 :
-        - Added overloaded BuildDataTree() that accepts an CIOAccess pointer
-          as data source.
-- 05-04-2005 :
-        - Initial implementation
-
------------------------------------------------------------------------------*/

@@ -221,6 +221,7 @@ set( HEADER_FILES
   include/gucefCORE_CTEventHandlerFunctor.h
   include/gucefCORE_CTEventHandlerFunctorProxy.h
   include/gucefCORE_CTFraction.h
+  include/gucefCORE_CTGlobalONRegistry.h
   include/gucefCORE_CTIOAccessToStlStream.h
   include/gucefCORE_CTIOAccessToStlStreambuff.h
   include/gucefCORE_CTLinkedCloneable.h
@@ -464,6 +465,7 @@ set( SOURCE_FILES
   src/gucefCORE_CTEventHandlerFunctor.cpp
   src/gucefCORE_CTEventHandlerFunctorProxy.cpp
   src/gucefCORE_CTFraction.cpp
+  src/gucefCORE_CTGlobalONRegistry.cpp
   src/gucefCORE_CTIOAccessToStlStream.cpp
   src/gucefCORE_CTIOAccessToStlStreambuff.cpp
   src/gucefCORE_CTMultiRegistry.cpp

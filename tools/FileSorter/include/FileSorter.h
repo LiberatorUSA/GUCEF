@@ -54,6 +54,11 @@
 #define GUCEF_CORE_CDATETIME_H
 #endif /* GUCEF_CORE_CDATETIME_H ? */
 
+#ifndef GUCEF_CORE_CGEOLOCATION_H
+#include "gucefCORE_CGeoLocation.h"
+#define GUCEF_CORE_CGEOLOCATION_H
+#endif /* GUCEF_CORE_CGEOLOCATION_H ? */
+
 #ifndef GUCEF_CORE_CFILESYSTEMDIRECTORYWATCHER_H
 #include "gucefCORE_CFileSystemDirectoryWatcher.h"
 #define GUCEF_CORE_CFILESYSTEMDIRECTORYWATCHER_H
@@ -243,6 +248,28 @@ class FileSorterConfig : public CORE::CGloballyConfigurable
 
 /*-------------------------------------------------------------------------*/
 
+class MediaMetaData
+{
+    public:
+
+    MediaMetaData( void );
+
+    CORE::CGeoLocation geoLocation;
+    bool hasGeoLocation;
+    CORE::CDateTime earliestMediaPropertyDt;
+    CORE::CString country;       
+    CORE::CString stateOrProvice;
+    CORE::CString city;
+    CORE::CString street;
+    CORE::CString streetNr;
+    CORE::CString zipOrPostalCode;
+    CORE::Int16 timeZoneOffsetInMins;
+    bool hasTimeZoneOffsetInMins; 
+
+};
+
+/*-------------------------------------------------------------------------*/
+
 class FileSorter : public CORE::CTSGNotifier
 {
     public:
@@ -270,6 +297,8 @@ class FileSorter : public CORE::CTSGNotifier
     bool SortInitialRootPaths( void );
 
     bool SortFilesInVfsPath( const CORE::CString& vfsRootPath );
+
+    bool GetMediaMetaDataFromImage( const CORE::CString& vfsFilePath, MediaMetaData& mediaMetaData );
 
     void OnAppStarted( CORE::CNotifier* notifier    ,
                        const CORE::CEvent& eventId  ,

@@ -33,6 +33,7 @@ set( HEADER_FILES
   include/gucefCOMCORE_CDnsCacheEntry.h
   include/gucefCOMCORE_CDnsCacheRefreshTaskConsumer.h
   include/gucefCOMCORE_CDnsResolver.h
+  include/gucefCOMCORE_CGeoLocationLookupService.h
   include/gucefCOMCORE_CICommunicationInterface.h
   include/gucefCOMCORE_CIDiscovery.h
   include/gucefCOMCORE_CIDiscoveryCapability.h
@@ -75,6 +76,7 @@ set( SOURCE_FILES
   src/gucefCOMCORE_CDnsCacheEntry.cpp
   src/gucefCOMCORE_CDnsCacheRefreshTaskConsumer.cpp
   src/gucefCOMCORE_CDnsResolver.cpp
+  src/gucefCOMCORE_CGeoLocationLookupService.cpp
   src/gucefCOMCORE_CICommunicationInterface.cpp
   src/gucefCOMCORE_CIDiscovery.cpp
   src/gucefCOMCORE_CIDiscoveryCapability.cpp

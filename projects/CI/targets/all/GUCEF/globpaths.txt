@@ -22,6 +22,7 @@ platform/gucefVFS/*
 platform/gucefWEB/*
 plugins/../*
 plugins/COMCORE/comcorepluginDBL/*
+plugins/COMCORE/comcorepluginGEOOSM/*
 plugins/CORE/codecspluginSTBRUMMEHASH/*
 plugins/CORE/codecspluginZLIB/*
 plugins/CORE/dstorepluginJSONPARSER/*

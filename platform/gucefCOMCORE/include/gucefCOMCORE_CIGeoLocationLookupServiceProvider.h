@@ -111,7 +111,9 @@ class GUCEF_COMCORE_EXPORT_CPP CIGeoLocationLookupServiceProvider
                                     CString& city                    ,
                                     CString& street                  ,
                                     CString& streetNr                ,
-                                    CString& zipOrPostalCode         ) = 0;
+                                    CString& zipOrPostalCode         ,
+                                    Int16& timeZoneOffsetInMins      ,
+                                    bool& hasTimeZoneOffsetInMins    ) = 0;
 
     /**
      *  Tries to lookup the location information based on the IPv4 address.
@@ -126,7 +128,9 @@ class GUCEF_COMCORE_EXPORT_CPP CIGeoLocationLookupServiceProvider
                                     CString& city                 ,
                                     CString& street               ,
                                     CString& streetNr             ,
-                                    CString& zipOrPostalCode      );
+                                    CString& zipOrPostalCode      ,
+                                    Int16& timeZoneOffsetInMins   ,
+                                    bool& hasTimeZoneOffsetInMins );
 
     /**
      *  Tries to lookup the location information based on the IPv4 address.
@@ -141,7 +145,9 @@ class GUCEF_COMCORE_EXPORT_CPP CIGeoLocationLookupServiceProvider
                                     CString& city                 ,
                                     CString& street               ,
                                     CString& streetNr             ,
-                                    CString& zipOrPostalCode      );
+                                    CString& zipOrPostalCode      ,
+                                    Int16& timeZoneOffsetInMins   ,
+                                    bool& hasTimeZoneOffsetInMins );
 };
 
 /*-------------------------------------------------------------------------//

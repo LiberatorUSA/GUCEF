@@ -95,8 +95,8 @@ template < class T, class LockType >
 class CTRegistry : public MT::CILockable
 {
     public:
-    typedef CTSharedPtr< T, LockType > TRegisteredObjPtr;
-    typedef std::vector< CString > TStringList;
+    typedef CTSharedPtr< T, LockType >       TRegisteredObjPtr;
+    typedef std::vector< TRegisteredObjPtr, gucef_allocator< TRegisteredObjPtr > > TRegisteredObjPtrVector;
 
     CTRegistry( void );
 
@@ -128,7 +128,9 @@ class CTRegistry : public MT::CILockable
 
     virtual UInt32 GetCount( void ) const;
 
-    virtual void GetList( TStringList& destList ) const;
+    virtual void GetRegisteredObjNames( CString::StringVector& out ) const;
+
+    virtual void GetRegisteredObjs( TRegisteredObjPtrVector& out ) const;
 
     virtual const MT::CILockable* AsLockable( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
@@ -143,9 +145,9 @@ class CTRegistry : public MT::CILockable
 
     private:
 
-    typedef std::map< CString, TRegisteredObjPtr* > TRegisteredObjList;
+    typedef std::map< CString, TRegisteredObjPtr* > TRegisteredObjMap;
 
-    TRegisteredObjList m_list;
+    TRegisteredObjMap m_list;
 };
 
 /*-------------------------------------------------------------------------//
@@ -168,7 +170,7 @@ CTRegistry< T, LockType >::CTRegistry( const CTRegistry& src )
     : m_list()
 {GUCEF_TRACE;
 
-    typename TRegisteredObjList::const_iterator i = src.m_list.begin();
+    typename TRegisteredObjMap::const_iterator i = src.m_list.begin();
     while ( i != src.m_list.end() )
     {
         m_list[ (*i).first ] = GUCEF_NEW TRegisteredObjPtr( *( (*i).second ) );
@@ -198,7 +200,7 @@ CTRegistry< T, LockType >::operator=( const CTRegistry& src )
         
         UnregisterAll();
 
-        typename TRegisteredObjList::const_iterator i = src.m_list.begin();
+        typename TRegisteredObjMap::const_iterator i = src.m_list.begin();
         while ( i != src.m_list.end() )
         {
             m_list[ (*i).first ] = GUCEF_NEW TRegisteredObjPtr( *( (*i).second ) );
@@ -227,7 +229,7 @@ CTRegistry< T, LockType >::Lookup( const CString& name ) const
 {GUCEF_TRACE;
 
     MT::CObjectScopeLock lock( this );
-    typename TRegisteredObjList::const_iterator i = m_list.find( name );
+    typename TRegisteredObjMap::const_iterator i = m_list.find( name );
     if ( i != m_list.end() )
     {
         // create a stack copy which is then returned.
@@ -250,7 +252,7 @@ CTRegistry< T, LockType >::TryLookup( const CString& name           ,
 
     if ( caseSensitive )
     {
-        typename TRegisteredObjList::const_iterator i = m_list.find( name );
+        typename TRegisteredObjMap::const_iterator i = m_list.find( name );
         if ( i != m_list.end() )
         {
             locatedObj = *( (*i).second );
@@ -261,7 +263,7 @@ CTRegistry< T, LockType >::TryLookup( const CString& name           ,
     }
     else
     {
-        typename TRegisteredObjList::const_iterator i = m_list.begin();
+        typename TRegisteredObjMap::const_iterator i = m_list.begin();
         while ( i != m_list.end() )
         {
             if ( (*i).first.Equals( name, caseSensitive ) )
@@ -286,7 +288,7 @@ CTRegistry< T, LockType >::Register( const CString& name                ,
 
     MT::CObjectScopeLock lock( this );
     
-    typename TRegisteredObjList::iterator i = m_list.find( name );
+    typename TRegisteredObjMap::iterator i = m_list.find( name );
     if ( i == m_list.end() )
     {
         m_list[ name ] = GUCEF_NEW TRegisteredObjPtr( sharedPtr );
@@ -308,7 +310,7 @@ CTRegistry< T, LockType >::TryRegister( const CString& name                ,
 
     MT::CObjectScopeLock lock( this );
     
-    typename TRegisteredObjList::iterator i = m_list.find( name );
+    typename TRegisteredObjMap::iterator i = m_list.find( name );
     if ( i == m_list.end() )
     {
         m_list[ name ] = GUCEF_NEW TRegisteredObjPtr( sharedPtr );
@@ -328,7 +330,7 @@ CTRegistry< T, LockType >::Unregister( const CString& name )
 
     MT::CObjectScopeLock lock( this );
     
-    typename TRegisteredObjList::iterator i = m_list.find( name );
+    typename TRegisteredObjMap::iterator i = m_list.find( name );
     if ( i != m_list.end() )
     {
         GUCEF_DELETE (*i).second;
@@ -349,7 +351,7 @@ CTRegistry< T, LockType >::TryUnregister( const CString& name )
 
     MT::CObjectScopeLock lock( this );
     
-    typename TRegisteredObjList::iterator i = m_list.find( name );
+    typename TRegisteredObjMap::iterator i = m_list.find( name );
     if ( i != m_list.end() )
     {
         GUCEF_DELETE (*i).second;
@@ -371,7 +373,7 @@ CTRegistry< T, LockType >::UnregisterAll( void )
     MT::CObjectScopeLock lock( this );
     GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "TRegistry<>(" + CORE::ToString( this ) + "): Unregistering All" );
 
-    typename TRegisteredObjList::iterator i = m_list.begin();
+    typename TRegisteredObjMap::iterator i = m_list.begin();
     while ( i != m_list.end() )
     {
         GUCEF_DELETE (*i).second;
@@ -395,15 +397,32 @@ CTRegistry< T, LockType >::GetCount( void ) const
 
 template< class T, class LockType >
 void
-CTRegistry< T, LockType >::GetList( TStringList& destList ) const
+CTRegistry< T, LockType >::GetRegisteredObjNames( CString::StringVector& out ) const
 {GUCEF_TRACE;
 
     MT::CObjectScopeReadOnlyLock lock( this );
 
-    typename TRegisteredObjList::const_iterator i = m_list.begin();
+    typename TRegisteredObjMap::const_iterator i = m_list.begin();
     while ( i != m_list.end() )
     {
-        destList.push_back( (*i).first );
+        out.push_back( (*i).first );
+        ++i;
+    }
+}
+
+/*-------------------------------------------------------------------------*/
+
+template< class T, class LockType >
+void
+CTRegistry< T, LockType >::GetRegisteredObjs( TRegisteredObjPtrVector& out ) const
+{GUCEF_TRACE;
+
+    MT::CObjectScopeReadOnlyLock lock( this );
+
+    typename TRegisteredObjMap::const_iterator i = m_list.begin();
+    while ( i != m_list.end() )
+    {
+        out.push_back( *((*i).second) );
         ++i;
     }
 }

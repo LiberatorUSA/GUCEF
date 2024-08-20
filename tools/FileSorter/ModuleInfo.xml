@@ -28,6 +28,7 @@
 			<RuntimeDependency Name="codecspluginZLIB" />
 			<RuntimeDependency Name="codecspluginSTBRUMMEHASH" />
 			<RuntimeDependency Name="imgpluginFreeImage" />
+			<RuntimeDependency Name="comcorepluginGEOOSM" />
 		</RuntimeDependencies>
 	</Module>
 </ModuleInfoEntry>

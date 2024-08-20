@@ -67,6 +67,16 @@
 #define GUCEF_VFS_CVFS_H
 #endif /* GUCEF_VFS_CVFS_H ? */
 
+#ifndef GUCEF_COMCORE_CCOMCOREGLOBAL_H
+#include "gucefCOMCORE_CComCoreGlobal.h"
+#define GUCEF_COMCORE_CCOMCOREGLOBAL_H
+#endif /* GUCEF_COMCORE_CCOMCOREGLOBAL_H ? */
+
+#ifndef GUCEF_COMCORE_CGEOLOCATIONLOOKUPSERVICE_H
+#include "gucefCOMCORE_CGeoLocationLookupService.h"
+#define GUCEF_COMCORE_CGEOLOCATIONLOOKUPSERVICE_H
+#endif /* GUCEF_COMCORE_CGEOLOCATIONLOOKUPSERVICE_H ? */
+
 #ifndef GUCEF_WEB_CDUMMYHTTPSERVERRESOURCE_H
 #include "gucefWEB_CDummyHTTPServerResource.h"
 #define GUCEF_WEB_CDUMMYHTTPSERVERRESOURCE_H
@@ -480,6 +490,127 @@ FileSorterConfig::GetClassTypeName( void ) const
 
 /*-------------------------------------------------------------------------*/
 
+MediaMetaData::MediaMetaData( void )
+    : geoLocation()
+    , hasGeoLocation( false )
+    , earliestMediaPropertyDt()
+    , country()
+    , stateOrProvice()
+    , city()
+    , street()
+    , streetNr()
+    , zipOrPostalCode()
+    , timeZoneOffsetInMins( 0 )
+    , hasTimeZoneOffsetInMins( false )
+{GUCEF_TRACE;
+
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+FileSorter::GetMediaMetaDataFromImage( const CORE::CString& vfsFilePath, MediaMetaData& mediaMetaData )
+{GUCEF_TRACE;
+
+    VFS::CVFS& vfs = VFS::CVfsGlobal::Instance()->GetVfs();
+    CORE::CString fileExt = CORE::ExtractFileExtention( vfsFilePath );
+    
+    IMAGE::CImage img;
+    VFS::TBasicVfsResourcePtr file = vfs.GetFile( vfsFilePath, "rb", false );
+    if ( !file.IsNULL() )
+    {
+        CORE::IOAccessPtr ioAccess = file->GetAccess();
+        if ( !ioAccess.IsNULL() )
+        {
+            if ( img.Load( *ioAccess, fileExt, false, true ) )
+            {                                    
+                if ( img.TryGetGeoLocationFromMetaData( mediaMetaData.geoLocation ) )
+                {
+                    mediaMetaData.hasGeoLocation = true;
+
+                    // Attempt to obtain other location information based on the geo location
+                    // This will require service providers to be registered capable of looking up geo location info
+                    COMCORE::CComCoreGlobal* comms = COMCORE::CComCoreGlobal::Instance();
+                    COMCORE::CGeoLocationLookupService& geoLookupService = comms->GetGeoLocationLookupService();
+                    if ( geoLookupService.TryLookupLocation( mediaMetaData.geoLocation, 
+                                                             mediaMetaData.country,
+                                                             mediaMetaData.stateOrProvice,
+                                                             mediaMetaData.city,
+                                                             mediaMetaData.street,
+                                                             mediaMetaData.streetNr,
+                                                             mediaMetaData.zipOrPostalCode,
+                                                             mediaMetaData.timeZoneOffsetInMins,
+                                                             mediaMetaData.hasTimeZoneOffsetInMins ) )
+                    {
+                    }
+                }   
+                    
+                bool isTimezoneAware = false;
+                CORE::CDateTime originalImageCreationDt;
+                if ( img.TryGetOriginalImageCreationDtFromMetaData( originalImageCreationDt, isTimezoneAware ) )
+                {
+                    if ( !isTimezoneAware )
+                    {
+                        // Use the timezone offset obtained from geo lookup, if available
+                        if ( mediaMetaData.hasTimeZoneOffsetInMins )
+                        {
+                            originalImageCreationDt.SetTimeZoneUTCOffsetInMins( mediaMetaData.timeZoneOffsetInMins );
+                            originalImageCreationDt = originalImageCreationDt.ToUTC();
+                        }
+                        else
+                        {
+                            // Add the default filesystem timezone offset to the date time in the absence of timezone info
+                            // Its more likely to be 'less wrong' closer to what the filesystem offset is vs assuming UTC
+                            // this reinterprets the datetime as-is in a different timezone thus assuming that the media was created in that timezone
+                            originalImageCreationDt.SetTimeZoneUTCOffsetInMins( m_appConfig.dirStructureUtcOffsetInMins ); 
+                            originalImageCreationDt = originalImageCreationDt.ToUTC();
+                        }
+                    }
+                        
+                    if ( mediaMetaData.earliestMediaPropertyDt == CORE::CDateTime::Empty ||
+                         mediaMetaData.earliestMediaPropertyDt > originalImageCreationDt  )
+                    {
+                        mediaMetaData.earliestMediaPropertyDt = originalImageCreationDt;
+                    }
+                }
+
+                CORE::CDateTime imageLastModifiedDt;
+                if ( img.TryGetImageLastModifiedDtFromMetaData( imageLastModifiedDt, isTimezoneAware ) )
+                {
+                    if ( !isTimezoneAware )
+                    {
+                        // Use the timezone offset obtained from geo lookup, if available
+                        if ( mediaMetaData.hasTimeZoneOffsetInMins )
+                        {
+                            originalImageCreationDt.SetTimeZoneUTCOffsetInMins( mediaMetaData.timeZoneOffsetInMins );
+                            originalImageCreationDt = originalImageCreationDt.ToUTC();
+                        }
+                        else
+                        {                            
+                            // Add the default filesystem timezone offset to the date time in the absence of timezone info
+                            // Its more likely to be 'less wrong' closer to what the filesystem offset is vs assuming UTC
+                            // this reinterprets the datetime as-is in a different timezone thus assuming that the media was created in that timezone
+                            imageLastModifiedDt.SetTimeZoneUTCOffsetInMins( m_appConfig.dirStructureUtcOffsetInMins ); 
+                            imageLastModifiedDt = imageLastModifiedDt.ToUTC();
+                        }
+                    }
+
+                    if ( mediaMetaData.earliestMediaPropertyDt == CORE::CDateTime::Empty ||
+                         mediaMetaData.earliestMediaPropertyDt > imageLastModifiedDt      )
+                    {
+                        mediaMetaData.earliestMediaPropertyDt = imageLastModifiedDt;
+                    }
+                }
+                
+                return true;
+            }
+        }
+    }
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
 bool
 FileSorter::SortFile( const CORE::CString& currentVfsFilePath )
 {GUCEF_TRACE;
@@ -505,71 +636,12 @@ FileSorter::SortFile( const CORE::CString& currentVfsFilePath )
         
     CORE::CString targetVfsPath = m_appConfig.vfsSortedTargetRootPath + "/" + typeSortRootFolder;
     
-    CORE::CDateTime earliestMediaPropertyDt;
+    // Some variables we may or may not be able to source from resource meta-data
+    MediaMetaData mediaMetaData;
     if ( fileType == TFileType::FILETYPE_IMAGE &&
          m_appConfig.tryToGetMetaDataInfoFromImages )
     {
-        IMAGE::CImage img;
-        VFS::TBasicVfsResourcePtr file = vfs.GetFile( currentVfsFilePath, "rb", false );
-        if ( !file.IsNULL() )
-        {
-            CORE::IOAccessPtr ioAccess = file->GetAccess();
-            if ( !ioAccess.IsNULL() )
-            {
-                if ( img.Load( *ioAccess, fileExt, false, true ) )
-                {
-                    CORE::CGeoLocation geoLocationOfImg;
-                    if ( img.TryGetGeoLocationFromMetaData( geoLocationOfImg ) )
-                    {
-                        // @TODO: Try to get location info from geo location using lookup service
-                    }   
-                    
-                    bool isTimezoneAware = false;
-                    CORE::CDateTime originalImageCreationDt;
-                    if ( img.TryGetOriginalImageCreationDtFromMetaData( originalImageCreationDt, isTimezoneAware ) )
-                    {
-                        if ( !isTimezoneAware )
-                        {
-                            // @TODO: Try to get timezone info from geo location using lookup service
-                            
-                            // Add the default filesystem timezone offset to the date time in the absence of timezone info
-                            // Its more likely to be 'less wrong' closer to what the filesystem offset is vs assuming UTC
-                            // this reinterprets the datetime as-is in a different timezone
-                            originalImageCreationDt.SetTimeZoneUTCOffsetInMins( m_appConfig.dirStructureUtcOffsetInMins ); 
-                            originalImageCreationDt = originalImageCreationDt.ToUTC();
-                        }
-                        
-                        if ( earliestMediaPropertyDt == CORE::CDateTime::Empty ||
-                             earliestMediaPropertyDt > originalImageCreationDt  )
-                        {
-                            earliestMediaPropertyDt = originalImageCreationDt;
-                        }
-                    }
-
-                    CORE::CDateTime imageLastModifiedDt;
-                    if ( img.TryGetImageLastModifiedDtFromMetaData( imageLastModifiedDt, isTimezoneAware ) )
-                    {
-                        if ( !isTimezoneAware )
-                        {
-                            // @TODO: Try to get timezone info from geo location using lookup service
-                            
-                            // Add the default filesystem timezone offset to the date time in the absence of timezone info
-                            // Its more likely to be 'less wrong' closer to what the filesystem offset is vs assuming UTC
-                            // this reinterprets the datetime as-is in a different timezone
-                            imageLastModifiedDt.SetTimeZoneUTCOffsetInMins( m_appConfig.dirStructureUtcOffsetInMins ); 
-                            imageLastModifiedDt = imageLastModifiedDt.ToUTC();
-                        }
-
-                        if ( earliestMediaPropertyDt == CORE::CDateTime::Empty ||
-                             earliestMediaPropertyDt > imageLastModifiedDt      )
-                        {
-                            earliestMediaPropertyDt = imageLastModifiedDt;
-                        }
-                    }
-                    
-                }
-            }
-        }       
+       GetMediaMetaDataFromImage( currentVfsFilePath, mediaMetaData );
     }
     
     if ( m_appConfig.useDateTimeFolderStructure )    
@@ -588,10 +660,10 @@ FileSorter::SortFile( const CORE::CString& currentVfsFilePath )
             {
                 // if we have a media property date time, we use that as the earliest date time
                 // if it is in fact earlier than the file's earliest date time
-                if ( earliestMediaPropertyDt != CORE::CDateTime::Empty &&
-                     earliestMediaPropertyDt < earliestUtcFileDt        )
+                if ( mediaMetaData.earliestMediaPropertyDt != CORE::CDateTime::Empty &&
+                     mediaMetaData.earliestMediaPropertyDt < earliestUtcFileDt        )
                 {
-                    earliestUtcFileDt = earliestMediaPropertyDt.ToUTC();
+                    earliestUtcFileDt = mediaMetaData.earliestMediaPropertyDt.ToUTC();
                 }
             }
             

@@ -58,6 +58,7 @@ namespace COMCORE {
 class CCom;
 class CDnsCache;
 class CDiscoveryManager;
+class CGeoLocationLookupService;
 
 /*-------------------------------------------------------------------------*/
 
@@ -72,6 +73,8 @@ class GUCEF_COMCORE_EXPORT_CPP CComCoreGlobal
     CDnsCache& GetDnsCache( void );
     
     CDiscoveryManager& GetDiscoveryManager( void );
+
+    CGeoLocationLookupService& GetGeoLocationLookupService( void );
 
     private:
     friend class CModule;
@@ -92,6 +95,7 @@ class GUCEF_COMCORE_EXPORT_CPP CComCoreGlobal
     CCom* m_com;
     CDnsCachePtr m_dnsCache;
     CDiscoveryManager* m_discoveryManager;
+    CGeoLocationLookupService* m_geoLocationLookupService;
 
     static MT::CMutex g_dataLock;
     static CComCoreGlobal* g_instance;

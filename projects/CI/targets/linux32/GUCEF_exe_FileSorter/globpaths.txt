@@ -17,6 +17,7 @@ platform/gucefIMAGE/*
 platform/gucefMT/*
 platform/gucefVFS/*
 platform/gucefWEB/*
+plugins/COMCORE/comcorepluginGEOOSM/*
 plugins/CORE/codecspluginSTBRUMMEHASH/*
 plugins/CORE/codecspluginZLIB/*
 plugins/CORE/dstorepluginJSONPARSER/*

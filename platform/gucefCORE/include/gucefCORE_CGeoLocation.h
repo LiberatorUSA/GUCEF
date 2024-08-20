@@ -110,6 +110,7 @@ class GUCEF_CORE_PUBLIC_CPP CGeoLocation
     bool IsInSouthernHemisphere( void ) const;
     bool IsInWestDirectionFromMeridian( void ) const;
     bool IsInEastDirectionFromMeridian( void ) const;
+    bool IsAboveSeaLevel( void ) const;
 
     /**
      *  Convert to ISO 6709 string

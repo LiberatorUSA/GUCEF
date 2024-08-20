@@ -105,6 +105,7 @@ add_subdirectory( ${CMAKE_CURRENT_SOURCE_DIR}/../../../../platform/gucefSMDRN ${
 add_subdirectory( ${CMAKE_CURRENT_SOURCE_DIR}/../../../../platform/gucefVFS ${CMAKE_BINARY_DIR}/gucefVFS )
 add_subdirectory( ${CMAKE_CURRENT_SOURCE_DIR}/../../../../platform/gucefWEB ${CMAKE_BINARY_DIR}/gucefWEB )
 add_subdirectory( ${CMAKE_CURRENT_SOURCE_DIR}/../../../../plugins/COMCORE/comcorepluginDBL ${CMAKE_BINARY_DIR}/comcorepluginDBL )
+add_subdirectory( ${CMAKE_CURRENT_SOURCE_DIR}/../../../../plugins/COMCORE/comcorepluginGEOOSM ${CMAKE_BINARY_DIR}/comcorepluginGEOOSM )
 add_subdirectory( ${CMAKE_CURRENT_SOURCE_DIR}/../../../../plugins/CORE/codecspluginSTBRUMMEHASH ${CMAKE_BINARY_DIR}/codecspluginSTBRUMMEHASH )
 add_subdirectory( ${CMAKE_CURRENT_SOURCE_DIR}/../../../../plugins/CORE/codecspluginZLIB ${CMAKE_BINARY_DIR}/codecspluginZLIB )
 add_subdirectory( ${CMAKE_CURRENT_SOURCE_DIR}/../../../../plugins/CORE/dstorepluginJSONPARSER ${CMAKE_BINARY_DIR}/dstorepluginJSONPARSER )

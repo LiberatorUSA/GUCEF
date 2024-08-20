@@ -92,6 +92,11 @@
 #define GUCEF_COMCORE_CDISCOVERYMANAGER_H
 #endif /* GUCEF_COMCORE_CDISCOVERYMANAGER_H ? */
 
+#ifndef GUCEF_COMCORE_CGEOLOCATIONLOOKUPSERVICE_H
+#include "gucefCOMCORE_CGeoLocationLookupService.h"
+#define GUCEF_COMCORE_CGEOLOCATIONLOOKUPSERVICE_H
+#endif /* GUCEF_COMCORE_CGEOLOCATIONLOOKUPSERVICE_H ? */
+
 #include "gucefCOMCORE_CComCoreGlobal.h"  /* definition of the class implemented here */
 
 #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
@@ -138,6 +143,7 @@ CComCoreGlobal::CComCoreGlobal( void )
     : m_com( GUCEF_NULL )
     , m_dnsCache()
     , m_discoveryManager( GUCEF_NULL )
+    , m_geoLocationLookupService( GUCEF_NULL )
 {GUCEF_TRACE;
 
 }
@@ -180,6 +186,7 @@ CComCoreGlobal::Initialize( void )
     m_com = GUCEF_NEW CCom();
     m_dnsCache = ( GUCEF_NEW CGlobalDnsCache() )->CreateSharedPtr();
     m_discoveryManager = GUCEF_NEW CDiscoveryManager();
+    m_geoLocationLookupService = GUCEF_NEW CGeoLocationLookupService();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -201,6 +208,8 @@ CComCoreGlobal::Shutdown( void )
     taskManager.UnregisterTaskConsumerFactory( CPingTaskConsumer::TaskType );
     taskManager.UnregisterTaskConsumerFactory( CDnsCacheRefreshTaskConsumer::TaskType );
     
+    GUCEF_DELETE m_geoLocationLookupService;
+    m_geoLocationLookupService = GUCEF_NULL;
     GUCEF_DELETE m_discoveryManager;
     m_discoveryManager = GUCEF_NULL;
     m_dnsCache.Unlink();
@@ -277,6 +286,15 @@ CComCoreGlobal::GetDiscoveryManager( void )
 {GUCEF_TRACE;
 
     return *m_discoveryManager;
+}
+
+/*-------------------------------------------------------------------------*/
+
+CGeoLocationLookupService& 
+CComCoreGlobal::GetGeoLocationLookupService( void )
+{GUCEF_TRACE;
+
+    return *m_geoLocationLookupService;
 }
 
 /*-------------------------------------------------------------------------//
