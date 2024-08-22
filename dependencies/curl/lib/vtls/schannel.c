@@ -37,7 +37,7 @@
 #  error "Can't compile SCHANNEL support without SSPI."
 #endif
 
-#include "schannel.h"
+#include "curl_schannel.h"
 #include "vtls.h"
 #include "sendf.h"
 #include "connect.h" /* for the connect timeout */

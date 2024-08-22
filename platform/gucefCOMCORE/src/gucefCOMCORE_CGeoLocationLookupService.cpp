@@ -56,14 +56,14 @@ CGeoLocationLookupService::CGeoLocationLookupService( void )
     : CORE::CGloballyConfigurable()
     , CIGeoLocationLookupServiceProvider()
     , m_registry()
-{GUCEF_TRACE
+{GUCEF_TRACE;
 
 }
 
 /*-------------------------------------------------------------------------*/
 
 CGeoLocationLookupService::~CGeoLocationLookupService()
-{GUCEF_TRACE
+{GUCEF_TRACE;
 
     m_registry.UnregisterAll();
 }
@@ -78,7 +78,7 @@ CGeoLocationLookupService::TryLookupGeoLocation( const CString& country         
                                                  const CString& streetNr         ,
                                                  const CString& zipOrPostalCode  , 
                                                  CORE::CGeoLocation& outLocation )
-{GUCEF_TRACE
+{GUCEF_TRACE;
 
     TGeoLocationLookupServiceRegistry::TRegisteredObjPtrVector objs;
     m_registry.GetRegisteredObjs( objs );
@@ -106,7 +106,7 @@ CGeoLocationLookupService::TryLookupGeoLocation( const CString& country         
 bool 
 CGeoLocationLookupService::TryLookupGeoLocation( const CIPv4Address& ipAddress   , 
                                                  CORE::CGeoLocation& outLocation ) 
-{GUCEF_TRACE
+{GUCEF_TRACE;
 
     TGeoLocationLookupServiceRegistry::TRegisteredObjPtrVector objs;
     m_registry.GetRegisteredObjs( objs );
@@ -129,7 +129,7 @@ CGeoLocationLookupService::TryLookupGeoLocation( const CIPv4Address& ipAddress  
 bool 
 CGeoLocationLookupService::TryLookupGeoLocation( const CIPv6Address& ipAddress   , 
                                                  CORE::CGeoLocation& outLocation ) 
-{GUCEF_TRACE
+{GUCEF_TRACE;
 
     TGeoLocationLookupServiceRegistry::TRegisteredObjPtrVector objs;
     m_registry.GetRegisteredObjs( objs );
@@ -159,7 +159,7 @@ CGeoLocationLookupService::TryLookupLocation( const CORE::CGeoLocation& geoLoc ,
                                               CString& zipOrPostalCode         ,
                                               Int16& timeZoneOffsetInMins      ,
                                               bool& hasTimeZoneOffsetInMins    )
-{GUCEF_TRACE
+{GUCEF_TRACE;
 
     TGeoLocationLookupServiceRegistry::TRegisteredObjPtrVector objs;
     m_registry.GetRegisteredObjs( objs );
@@ -188,7 +188,7 @@ CGeoLocationLookupService::TryLookupLocation( const CORE::CGeoLocation& geoLoc ,
 
 const CString& 
 CGeoLocationLookupService::GetClassTypeName( void ) const
-{GUCEF_TRACE
+{GUCEF_TRACE;
 
     return ClassTypeName;
 }

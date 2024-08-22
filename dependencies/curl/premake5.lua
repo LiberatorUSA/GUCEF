@@ -39,12 +39,12 @@ defines( { "HAVE_CONFIG_H" } )
 
 configuration( { LINUX64 } )
 defines( { "HAVE_CONFIG_H" } )
-  links( { "Advapi32.lib", "Wldap32.lib", "Ws2_32.lib" } )
+  links( { "Advapi32.lib", "CRYPT32.lib", "Wldap32.lib", "Ws2_32.lib" } )
   
 
 configuration( { WIN32 } )
 defines( { "CURL_DISABLE_LDAP", "_CRT_NONSTDC_NO_DEPRECATE", "_CRT_SECURE_NO_DEPRECATE" } )
-  links( { "Advapi32.lib", "Wldap32.lib", "Ws2_32.lib" } )
+  links( { "Advapi32.lib", "CRYPT32.lib", "Wldap32.lib", "Ws2_32.lib" } )
   
 
 configuration( { WIN64 } )
@@ -184,6 +184,7 @@ files( {
   "lib/vssh/ssh.h",
   "lib/vssh/wolfssh.h",
   "lib/vtls/bearssl.h",
+  "lib/vtls/curl_schannel.h",
   "lib/vtls/gskit.h",
   "lib/vtls/gtls.h",
   "lib/vtls/mbedtls.h",
@@ -191,7 +192,6 @@ files( {
   "lib/vtls/mesalink.h",
   "lib/vtls/nssg.h",
   "lib/vtls/openssl.h",
-  "lib/vtls/schannel.h",
   "lib/vtls/sectransp.h",
   "lib/vtls/vtls.h",
   "lib/vtls/wolfssl.h"

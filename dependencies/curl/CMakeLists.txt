@@ -142,6 +142,7 @@ set( HEADER_FILES
   lib/vssh/ssh.h
   lib/vssh/wolfssh.h
   lib/vtls/bearssl.h
+  lib/vtls/curl_schannel.h
   lib/vtls/gskit.h
   lib/vtls/gtls.h
   lib/vtls/mbedtls.h
@@ -149,7 +150,6 @@ set( HEADER_FILES
   lib/vtls/mesalink.h
   lib/vtls/nssg.h
   lib/vtls/openssl.h
-  lib/vtls/schannel.h
   lib/vtls/sectransp.h
   lib/vtls/vtls.h
   lib/vtls/wolfssl.h
@@ -355,12 +355,12 @@ if ( LINUX64 )
 endif( LINUX64 )
 
 if ( WIN32 )
-  target_link_libraries( ${MODULE_NAME} Advapi32.lib Wldap32.lib Ws2_32.lib )
+  target_link_libraries( ${MODULE_NAME} Advapi32.lib CRYPT32.lib Wldap32.lib Ws2_32.lib )
   set_property( TARGET ${MODULE_NAME} APPEND_STRING PROPERTY COMPILE_DEFINITIONS "CURL_DISABLE_LDAP;_CRT_NONSTDC_NO_DEPRECATE;_CRT_SECURE_NO_DEPRECATE" )
 endif( WIN32 )
 
 if ( WIN64 )
-  target_link_libraries( ${MODULE_NAME} Advapi32.lib Wldap32.lib Ws2_32.lib )
+  target_link_libraries( ${MODULE_NAME} Advapi32.lib CRYPT32.lib Wldap32.lib Ws2_32.lib )
   set_property( TARGET ${MODULE_NAME} APPEND_STRING PROPERTY COMPILE_DEFINITIONS "CURL_DISABLE_LDAP;_CRT_NONSTDC_NO_DEPRECATE;_CRT_SECURE_NO_DEPRECATE" )
 endif( WIN64 )
 

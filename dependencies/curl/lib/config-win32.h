@@ -757,4 +757,11 @@ Vista
 #  define ENABLE_IPV6 1
 #endif
 
+/* to enable Windows SSL  */
+#define USE_SCHANNEL 1
+#define USE_WINDOWS_SSPI 1   /* <- needed for SCHANNEL support */
+
+/* enable multiple SSL backends */
+#define CURL_WITH_MULTI_SSL 1
+
 #endif /* HEADER_CURL_CONFIG_WIN32_H */

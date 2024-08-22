@@ -35,7 +35,7 @@
 #endif
 
 #define EXPOSE_SCHANNEL_INTERNAL_STRUCTS
-#include "schannel.h"
+#include "curl_schannel.h"
 
 #ifdef HAS_MANUAL_VERIFY_API
 

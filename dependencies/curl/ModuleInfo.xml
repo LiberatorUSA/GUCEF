@@ -21,6 +21,7 @@
             <Dependency Name="Ws2_32.lib" />
             <Dependency Name="Advapi32.lib" />
             <Dependency Name="Wldap32.lib" />
+			<Dependency Name="CRYPT32.lib" />
         </Linker>
     </Module>
     <Module Platform="linux">
