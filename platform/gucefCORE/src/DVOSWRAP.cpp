@@ -413,7 +413,7 @@ struct SCpuDataPoint
     FILETIME globalKernelTime;
     FILETIME globalIdleTime;
     #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
-    AllLinuxProcCpuInfo infoFromProcCpu;
+    AllLinuxProcCpuInfo* infoFromProcCpu;
     #else
 
     #endif
@@ -1025,109 +1025,29 @@ GetLogicalCPUCount( void )
 /*--------------------------------------------------------------------------*/
 
 OSWRAP_BOOLINT
-GetProcessList( struct SProcessId** processList ,
-                UInt32* processCount            )
+GetProcessList( TProcessId** processList ,
+                UInt32* processCount     )
 {GUCEF_TRACE;
 
-    if ( GUCEF_NULL == processCount )
+    if ( GUCEF_NULL == processCount || GUCEF_NULL == processList )
         return OSWRAP_FALSE;
 
-    #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
-
-    DWORD reservedListSizeInBytes = 1024 * sizeof(DWORD);
-    DWORD usedListSizeInBytes = 0;
-    DWORD* win32ProcessList = GUCEF_NULL;
-    do
+    // Just call the C++ implementation and convert the result for C
+    TProcessIdVector procIds;
+    if ( GetProcessList( procIds ) )
     {
-        win32ProcessList = (DWORD*) realloc( win32ProcessList, reservedListSizeInBytes );
-        if ( GUCEF_NULL == win32ProcessList )
-            return OSWRAP_FALSE;
-
-        if ( 0 == ::EnumProcesses( win32ProcessList, reservedListSizeInBytes, &usedListSizeInBytes ) )
+        *processList = (TProcessId*) calloc( procIds.size(), sizeof(TProcessId) );
+        if ( GUCEF_NULL != *processList )
         {
-            return OSWRAP_FALSE;
-        }
-
-        if ( reservedListSizeInBytes != usedListSizeInBytes )
-        {
-            break;
-        }
-        else
-        {
-            // Guestimate: just double the storage
-            reservedListSizeInBytes *= 2;
-        }
-    }
-    while ( true );
-
-    *processCount = usedListSizeInBytes / sizeof(DWORD);
-    *processList = (struct SProcessId*) realloc( *processList, (*processCount) * sizeof(struct SProcessId) );
-
-    for ( UInt32 i=0; i<(*processCount); ++i )
-    {
-        (*processList)[ i ].pid = win32ProcessList[ i ];
-    }
-
-    free( win32ProcessList );
-
-    return OSWRAP_TRUE;
-
-    #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
-
-    UInt32 i=0;
-    UInt32 reservedListSizeInBytes = 1024 * sizeof(Int32);
-    UInt32 usedListSizeInBytes = 0;
-    Int32* linuxProcessList = (Int32*) malloc( reservedListSizeInBytes );
-    DIR* dp = ::opendir( "/proc/" );
-    struct dirent* dirFilesys = NULL;
-    while ( NULL != ( dirFilesys = ::readdir( dp ) ) )
-    {
-        if ( dirFilesys->d_type == DT_DIR )
-        {
-            if ( IsANumber( dirFilesys->d_name ) )
+            for ( size_t i=0; i<procIds.size(); ++i )
             {
-                linuxProcessList[ i ] = StringToInt32( dirFilesys->d_name );
-                ++i; usedListSizeInBytes += 4;
-
-                if ( usedListSizeInBytes >= reservedListSizeInBytes )
-                {
-                    // Guestimate: just double the storage
-                    reservedListSizeInBytes *= 2;
-
-                    linuxProcessList = (Int32*) realloc( linuxProcessList, reservedListSizeInBytes );
-                }
+                (*processList)[ i ] = procIds[ i ];
+                ++i;
             }
+            OSWRAP_TRUE;
         }
     }
-    ::closedir( dp );
-
-    *processCount = i;
-    if ( i > 0 )
-    {
-        *processList = (struct SProcessId*) malloc( i * sizeof(struct SProcessId) );
-        if ( GUCEF_NULL != (*processList) )
-        {
-            for ( UInt32 n=0; n<i; ++n )
-            {
-                (*processList)[ n ].pid = linuxProcessList[ n ];
-            }
-        }
-    }
-    else
-    {
-        *processList = NULL;
-    }
-    free( linuxProcessList );
-
-    return OSWRAP_TRUE;
-
-    #else
-
-    *processList = GUCEF_NULL;
-    *processCount = 0;
     return OSWRAP_FALSE;
-
-    #endif
 }
 
 /*--------------------------------------------------------------------------*/
@@ -1142,30 +1062,30 @@ FreeProcessList( TProcessId* processList )
 
 /*--------------------------------------------------------------------------*/
 
-TProcessId*
+TProcessId
 GetProcessIdAtIndex( TProcessId* processList ,
                      UInt32 index            )
 {GUCEF_TRACE;
 
     if ( GUCEF_NULL != processList )
-        return &processList[ index ];
-    return GUCEF_NULL;
+        return processList[ index ];
+    return 0;
 }
 
 /*--------------------------------------------------------------------------*/
 
 OSWRAP_BOOLINT
-IsProcessStillActive( TProcessId* pid, OSWRAP_BOOLINT* status )
+IsProcessStillActive( TProcessId pid, OSWRAP_BOOLINT* status )
 {GUCEF_TRACE;
 
-    if ( GUCEF_NULL != pid && GUCEF_NULL != status )
+    if ( GUCEF_NULL != status )
     {
         #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
 
         // To get the alive status of another proc we need a handle to it
         HANDLE hProcess = ::OpenProcess( PROCESS_QUERY_INFORMATION,
                                          FALSE,
-                                         pid->pid );
+                                         pid );
         if ( GUCEF_NULL == hProcess )
             return OSWRAP_FALSE;
 
@@ -1181,6 +1101,8 @@ IsProcessStillActive( TProcessId* pid, OSWRAP_BOOLINT* status )
 
         #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
 
+        // @TODO: check under /proc
+
         #else
 
         return OSWRAP_FALSE;
@@ -1192,38 +1114,12 @@ IsProcessStillActive( TProcessId* pid, OSWRAP_BOOLINT* status )
 
 /*--------------------------------------------------------------------------*/
 
-TProcessId*
-CopyProcessId( TProcessId* pid )
-{GUCEF_TRACE;
-
-    if ( GUCEF_NULL != pid )
-    {
-        TProcessId* pidCopy = (TProcessId*) malloc( sizeof(TProcessId) );
-        if ( GUCEF_NULL != pidCopy )
-            memcpy( pidCopy, pid, sizeof(TProcessId) );
-        return pidCopy;
-    }
-    return GUCEF_NULL;
-}
-
-/*--------------------------------------------------------------------------*/
-
-GUCEF_CORE_PUBLIC_C void
-FreeProcessId( TProcessId* pid )
-{GUCEF_TRACE;
-
-    if ( GUCEF_NULL != pid )
-        free( pid );
-}
-
-/*--------------------------------------------------------------------------*/
-
 UInt32
-GetProcessMemoryUsage( TProcessId* pid                     ,
+GetProcessMemoryUsage( TProcessId pid                      ,
                        TProcessMemoryUsageInfo* memUseInfo )
 {GUCEF_TRACE;
 
-    if ( GUCEF_NULL == pid || GUCEF_NULL == memUseInfo )
+    if ( GUCEF_NULL == memUseInfo )
         return OSWRAP_FALSE;
 
     memset( memUseInfo, 0, sizeof(TProcessMemoryUsageInfo) );
@@ -1232,7 +1128,7 @@ GetProcessMemoryUsage( TProcessId* pid                     ,
 
     HANDLE hProcess = ::OpenProcess(  PROCESS_QUERY_INFORMATION | PROCESS_VM_READ,
                                       FALSE,
-                                      pid->pid );
+                                      pid );
     if ( GUCEF_NULL == hProcess )
         return OSWRAP_FALSE;
 
@@ -1266,9 +1162,9 @@ GetProcessMemoryUsage( TProcessId* pid                     ,
     long librarySize = 0;
     long dirtyPages = 0;
     FILE* fp = NULL;
-    char procStatPath[ 24 ];
+    char procStatPath[ 64 ];
 
-    sprintf( procStatPath, "/proc/%d/statm", pid->pid );
+    sprintf( procStatPath, "/proc/%d/statm", pid );
     if ( (fp = ::fopen( procStatPath, "r" )) == NULL )
         return OSWRAP_FALSE;
     if ( ::fscanf( fp, "%ld%ld%ld%ld%ld%ld%ld", &totalProgramSize, &residentSetSize, &sharedPages, &codeSize, &dataAndStack, &librarySize, &dirtyPages ) < 1 )
@@ -1341,20 +1237,20 @@ GetGlobalMemoryUsage( TGlobalMemoryUsageInfo* memUseInfo )
 /*--------------------------------------------------------------------------*/
 
 UInt32
-GetExeNameForProcessId( TProcessId* pid        ,
+GetExeNameForProcessId( TProcessId pid         ,
                         char* outNameBuffer    ,
                         UInt32 nameBufferSize  ,
                         UInt32* usedBufferSize )
 {GUCEF_TRACE;
 
-    if ( GUCEF_NULL == pid || GUCEF_NULL == outNameBuffer || GUCEF_NULL == usedBufferSize )
+    if ( GUCEF_NULL == outNameBuffer || GUCEF_NULL == usedBufferSize )
         return OSWRAP_FALSE;
 
     #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
 
     HANDLE handle = ::OpenProcess( PROCESS_QUERY_LIMITED_INFORMATION,
                                    FALSE,
-                                   pid->pid /* This is the PID, you can find one from windows task manager */
+                                   pid /* This is the PID, you can find one from windows task manager */
                                  );
     if ( GUCEF_NULL != handle )
     {
@@ -1399,10 +1295,13 @@ GetExeNameForProcessId( TProcessId* pid        ,
 
     #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
 
+    if ( 0 == pid )
+        return OSWRAP_FALSE;
+
     // The following works on Linux 2.2 and later:
 
-    char procInfoPath[ 21 ];
-    sprintf( procInfoPath, "/proc/%d/exe", pid->pid );
+    char procInfoPath[ 64 ];
+    sprintf( procInfoPath, "/proc/%d/exe", pid );
     UInt32 maxNameBytes = PATH_MAX > nameBufferSize ? PATH_MAX : nameBufferSize;
     char* symLinkPath = (char*) malloc( maxNameBytes );
     ssize_t bytesWritten = ::readlink( procInfoPath, symLinkPath, maxNameBytes );
@@ -1634,10 +1533,10 @@ GetGlobalJiffies( UInt64* totalJiffies )
 /*--------------------------------------------------------------------------*/
 
 GUCEF_CORE_PUBLIC_C TProcCpuDataPoint*
-CreateProcCpuDataPoint( TProcessId* pid )
+CreateProcCpuDataPoint( TProcessId pid )
 {GUCEF_TRACE;
 
-    if ( GUCEF_NULL == pid || 0 == pid->pid )
+    if ( 0 == pid )
         return GUCEF_NULL;
 
     TProcCpuDataPoint* dataPoint = (TProcCpuDataPoint*) malloc( sizeof( TProcCpuDataPoint ) );
@@ -1647,10 +1546,10 @@ CreateProcCpuDataPoint( TProcessId* pid )
     memset( dataPoint, 0, sizeof( TProcCpuDataPoint ) );
 
     #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
-    dataPoint->pid = pid->pid;
+    dataPoint->pid = pid;
     dataPoint->hProcess = ::OpenProcess( PROCESS_QUERY_INFORMATION,
                                          FALSE,
-                                         pid->pid );
+                                         pid );
     if ( GUCEF_NULL != dataPoint->hProcess )
     {
         FILETIME dummy;
@@ -1659,9 +1558,9 @@ CreateProcCpuDataPoint( TProcessId* pid )
     }
 
     #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
-    dataPoint->pid = pid->pid;
+    dataPoint->pid = pid;
     GetGlobalJiffies( &dataPoint->globalJiffies );
-    GetProcJiffies( pid->pid, &dataPoint->procUserModeJiffies, &dataPoint->procKernelModeJiffies );
+    GetProcJiffies( pid, &dataPoint->procUserModeJiffies, &dataPoint->procKernelModeJiffies );
     #endif
 
     return dataPoint;
@@ -1671,7 +1570,7 @@ CreateProcCpuDataPoint( TProcessId* pid )
 
 GUCEF_CORE_PUBLIC_C TProcCpuDataPoint*
 CopyProcCpuDataPoint( TProcCpuDataPoint* srcCpuDataDataPoint ,
-                      TProcessId* newProcId                  )
+                      TProcessId newProcId                   )
 {GUCEF_TRACE;
 
     if ( GUCEF_NULL == srcCpuDataDataPoint )
@@ -1684,10 +1583,10 @@ CopyProcCpuDataPoint( TProcCpuDataPoint* srcCpuDataDataPoint ,
 
     #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
 
-    if ( GUCEF_NULL == newProcId )
+    if ( 0 == newProcId )
         dataPoint->pid = srcCpuDataDataPoint->pid;
     else
-        dataPoint->pid = newProcId->pid;
+        dataPoint->pid = newProcId;
 
     dataPoint->hProcess = ::OpenProcess( PROCESS_QUERY_INFORMATION,
                                          FALSE,
@@ -1706,10 +1605,10 @@ CopyProcCpuDataPoint( TProcCpuDataPoint* srcCpuDataDataPoint ,
 
     #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
 
-    if ( GUCEF_NULL == newProcId )
+    if ( 0 == newProcId )
         dataPoint->pid = srcCpuDataDataPoint->pid;
     else
-        dataPoint->pid = newProcId->pid;
+        dataPoint->pid = newProcId;
 
     dataPoint->globalJiffies = srcCpuDataDataPoint->globalJiffies;
     dataPoint->procUserModeJiffies = srcCpuDataDataPoint->procUserModeJiffies;
@@ -1743,15 +1642,15 @@ FreeProcCpuDataPoint( TProcCpuDataPoint* cpuDataDataPoint )
 /*--------------------------------------------------------------------------*/
 
 UInt32
-GetProcessCpuUsage( TProcessId* pid                             ,
+GetProcessCpuUsage( TProcessId pid                              ,
                     TProcCpuDataPoint* previousCpuDataDataPoint ,
                     TProcessCpuUsageInfo* cpuUseInfo            )
 {GUCEF_TRACE;
 
-    if ( GUCEF_NULL == pid || GUCEF_NULL == previousCpuDataDataPoint || GUCEF_NULL == cpuUseInfo )
+    if ( GUCEF_NULL == previousCpuDataDataPoint || GUCEF_NULL == cpuUseInfo )
         return OSWRAP_FALSE;
 
-    if ( previousCpuDataDataPoint->pid != pid->pid )
+    if ( previousCpuDataDataPoint->pid != pid )
         return OSWRAP_FALSE;
 
     memset( cpuUseInfo, 0, sizeof(TProcessCpuUsageInfo) );
@@ -1762,7 +1661,7 @@ GetProcessCpuUsage( TProcessId* pid                             ,
     {
         previousCpuDataDataPoint->hProcess = ::OpenProcess( PROCESS_QUERY_INFORMATION,
                                                             FALSE,
-                                                            pid->pid );
+                                                            pid );
         if ( GUCEF_NULL == previousCpuDataDataPoint->hProcess )
             return OSWRAP_FALSE;
     }
@@ -1824,7 +1723,7 @@ GetProcessCpuUsage( TProcessId* pid                             ,
     UInt64 procKernelModeJiffies = 0;
     UInt64 procUserModeJiffies = 0;
     if ( GetGlobalJiffies( &globalJiffies ) &&
-         GetProcJiffies( pid->pid, &procUserModeJiffies, &procKernelModeJiffies ) )
+         GetProcJiffies( pid, &procUserModeJiffies, &procKernelModeJiffies ) )
     {
         // Calculate the % of total CPU jiffies spent used by this proc during the time
         // that has passed between the 2 data sample points in time
@@ -1850,7 +1749,7 @@ GetProcessCpuUsage( TProcessId* pid                             ,
         return OSWRAP_FALSE;
     }
 
-    GetProcUptime( pid->pid, &cpuUseInfo->uptimeInMs );
+    GetProcUptime( pid, &cpuUseInfo->uptimeInMs );
 
     return OSWRAP_TRUE;
 
@@ -1870,7 +1769,6 @@ CreateCpuDataPoint( void )
     TCpuDataPoint* dataPoint = (TCpuDataPoint*) malloc( sizeof( TCpuDataPoint ) );
     if ( GUCEF_NULL == dataPoint )
         return GUCEF_NULL;
-
     memset( dataPoint, 0, sizeof( TCpuDataPoint ) );
 
     dataPoint->cpuStats.logicalCpuCount = GetLogicalCPUCount();
@@ -1918,6 +1816,10 @@ CreateCpuDataPoint( void )
     }
     memset( dataPoint->prevCpuPerfInfo, 0, cpuPerfInfoDataSize );
 
+    #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
+
+    dataPoint->infoFromProcCpu = GUCEF_NEW AllLinuxProcCpuInfo();
+
     #endif
 
     return dataPoint;
@@ -1942,6 +1844,11 @@ FreeCpuDataPoint( TCpuDataPoint* cpuDataPoint )
             free( cpuDataPoint->cpuPerfInfo );
         if ( GUCEF_NULL != cpuDataPoint->prevCpuPerfInfo )
             free( cpuDataPoint->prevCpuPerfInfo );
+
+        #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
+
+        GUCEF_DELETE cpuDataPoint->infoFromProcCpu;
+        cpuDataPoint->infoFromProcCpu = GUCEF_NULL;
 
         #endif
 
@@ -2054,17 +1961,21 @@ GetCpuStats( TCpuDataPoint* previousCpuDataDataPoint ,
 
     #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
 
-    //if ( previousCpuDataDataPoint->infoFromProcCpu.RefreshFromOS() )
+    //if ( previousCpuDataDataPoint->infoFromProcCpu->RefreshFromOS() )
+    if ( GUCEF_NULL != previousCpuDataDataPoint->infoFromProcCpu )
     {
         for ( UInt32 i=0; i<previousCpuDataDataPoint->cpuStats.logicalCpuCount; ++i )
         {
-            LinuxLogicalCpuInfo* linuxLCpuInfo = &previousCpuDataDataPoint->infoFromProcCpu.allCpuInfo[ i ];
-            TLogicalCpuStats* lCpuStats = &previousCpuDataDataPoint->cpuStats.logicalCpuStats[ i ];
-            memset( lCpuStats, 0, sizeof(TLogicalCpuStats) );
+            LinuxLogicalCpuInfo* linuxLCpuInfo = &previousCpuDataDataPoint->infoFromProcCpu->allCpuInfo[ i ];
+            if ( GUCEF_NULL != linuxLCpuInfo )
+            {
+                TLogicalCpuStats* lCpuStats = &previousCpuDataDataPoint->cpuStats.logicalCpuStats[ i ];
+                memset( lCpuStats, 0, sizeof(TLogicalCpuStats) );
 
-            lCpuStats->cpuCurrentFrequencyInMhz = linuxLCpuInfo->cpuMhz;
-            lCpuStats->cpuMaxFrequencyInMhz = 0.0;
-            lCpuStats->cpuSpecMaxFrequencyInMhz = 0.0;
+                lCpuStats->cpuCurrentFrequencyInMhz = linuxLCpuInfo->cpuMhz;
+                lCpuStats->cpuMaxFrequencyInMhz = 0.0;
+                lCpuStats->cpuSpecMaxFrequencyInMhz = 0.0;
+            }
         }
     }
 

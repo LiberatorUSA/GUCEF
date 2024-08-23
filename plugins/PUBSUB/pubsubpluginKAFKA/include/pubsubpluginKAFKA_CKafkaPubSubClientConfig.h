@@ -28,7 +28,7 @@
 #ifndef GUCEF_PUBSUB_CPUBSUBCLIENTCONFIG_H
 #include "gucefPUBSUB_CPubSubClientConfig.h"
 #define GUCEF_PUBSUB_CPUBSUBCLIENTCONFIG_H
-#endif /* GUCEF_PUBSUB_CPUBSUBCLIENTCONFIG_H ? *//
+#endif /* GUCEF_PUBSUB_CPUBSUBCLIENTCONFIG_H ? */
 
 #ifndef PUBSUBPLUGIN_KAFKA_MACROS_H
 #include "pubsubpluginKAFKA_macros.h"
@@ -66,9 +66,9 @@ class PUBSUBPLUGIN_KAFKA_PLUGIN_PRIVATE_CPP CKafkaPubSubClientConfig : public PU
     StringMap kafkaProducerGlobalConfigSettings;
     StringMap kafkaConsumerGlobalConfigSettings;
     StringMap kafkaConsumerDefaultTopicConfigSettings;
-    
+
     CKafkaPubSubClientConfig( void );
-    
+
     CKafkaPubSubClientConfig( const PUBSUB::CPubSubClientConfig& genericConfig );
 
     virtual ~CKafkaPubSubClientConfig() GUCEF_VIRTUAL_OVERRIDE;

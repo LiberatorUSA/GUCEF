@@ -55,6 +55,14 @@ namespace CORE {
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
+//      TYPES                                                              //
+//                                                                         //
+//-------------------------------------------------------------------------*/
+
+typedef std::vector< TProcessId, gucef_allocator< TProcessId > >    TProcessIdVector;
+
+/*-------------------------------------------------------------------------//
+//                                                                         //
 //      UTILITIES                                                          //
 //                                                                         //
 //-------------------------------------------------------------------------*/
@@ -81,8 +89,8 @@ GetEnv( const CString& key );
 
 /*--------------------------------------------------------------------------*/
 
-GUCEF_CORE_PUBLIC_CPP bool 
-GetExeNameForProcessId( TProcessId* pid  , 
+GUCEF_CORE_PUBLIC_CPP bool
+GetExeNameForProcessId( TProcessId pid   ,
                         CString& exeName );
 
 /*--------------------------------------------------------------------------*/
@@ -94,6 +102,15 @@ GetHostname( void );
 
 GUCEF_CORE_PUBLIC_CPP bool
 CommandLineExecute( const CString& command, CString& result, bool waitForExit );
+
+/*--------------------------------------------------------------------------*/
+
+/**
+ *  Obtains a list of Process IDs for all the processes running on the system as visible to the
+ *  account under which the software is executing
+ */
+GUCEF_CORE_PUBLIC_CPP bool
+GetProcessList( TProcessIdVector& processList );
 
 /*--------------------------------------------------------------------------*/
 
@@ -110,14 +127,14 @@ class GUCEF_CORE_PUBLIC_CPP CProcessInformation
     CString& GetImagePath( void );
 
     void SetCommandLineArgs( const CString& str );
-    
+
     CString& GetCommandLineArgs( void );
-    
+
     const TProcessInformation& GetCStyleAccess( void ) const;
 
     void Clear( void );
 
-    static bool TryGetProcessInformation( TProcessId* pid           ,
+    static bool TryGetProcessInformation( TProcessId pid            ,
                                           CProcessInformation& info );
 
     private:

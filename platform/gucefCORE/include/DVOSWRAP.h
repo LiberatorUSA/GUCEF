@@ -96,8 +96,13 @@ typedef union anyPointer TAnyPointer;
 
 /*-------------------------------------------------------------------------*/
 
-struct SProcessId;
-typedef struct SProcessId TProcessId;
+#if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
+typedef UInt32  TProcessId;
+#elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
+typedef pid_t   TProcessId;
+#else
+typedef UInt64  TProcessId;
+#endif
 
 /*-------------------------------------------------------------------------*/
 
@@ -347,7 +352,7 @@ GetProcessList( TProcessId** processList ,
 /**
  *  To be used with GetProcessList() to iterate the resulting processList
  */
-GUCEF_CORE_PUBLIC_C TProcessId*
+GUCEF_CORE_PUBLIC_C TProcessId
 GetProcessIdAtIndex( TProcessId* processList ,
                      UInt32 index            );
 
@@ -359,38 +364,24 @@ FreeProcessList( TProcessId* processList );
 /*--------------------------------------------------------------------------*/
 
 GUCEF_CORE_PUBLIC_C OSWRAP_BOOLINT
-IsProcessStillActive( TProcessId* pid, OSWRAP_BOOLINT* status );
+IsProcessStillActive( TProcessId pid, OSWRAP_BOOLINT* status );
 
 /*--------------------------------------------------------------------------*/
 
 GUCEF_CORE_PUBLIC_C OSWRAP_BOOLINT
-GetProcessInformation( TProcessId* pid,
+GetProcessInformation( TProcessId pid            ,
                        TProcessInformation* info );
 
 /*--------------------------------------------------------------------------*/
 
-/**
- *  Copies a PID structure.
- *  This allocated memory that needs to be freed with FreeProcessId()
- */
-GUCEF_CORE_PUBLIC_C TProcessId*
-CopyProcessId( TProcessId* pid );
-
-/*--------------------------------------------------------------------------*/
-
-GUCEF_CORE_PUBLIC_C void
-FreeProcessId( TProcessId* processList );
-
-/*--------------------------------------------------------------------------*/
-
 GUCEF_CORE_PUBLIC_C OSWRAP_BOOLINT
-GetProcessMemoryUsage( TProcessId* pid                     ,
+GetProcessMemoryUsage( TProcessId pid                      ,
                        TProcessMemoryUsageInfo* memUseInfo );
 
 /*--------------------------------------------------------------------------*/
 
 GUCEF_CORE_PUBLIC_C OSWRAP_BOOLINT
-GetExeNameForProcessId( TProcessId* pid        ,
+GetExeNameForProcessId( TProcessId pid         ,
                         char* outNameBuffer    ,
                         UInt32 nameBufferSize  ,
                         UInt32* usedBufferSize );
@@ -404,18 +395,18 @@ GetGlobalMemoryUsage( TGlobalMemoryUsageInfo* memUseInfo );
 /*--------------------------------------------------------------------------*/
 
 GUCEF_CORE_PUBLIC_C TProcCpuDataPoint*
-CreateProcCpuDataPoint( TProcessId* pid );
+CreateProcCpuDataPoint( TProcessId pid );
 
 /*--------------------------------------------------------------------------*/
 
 GUCEF_CORE_PUBLIC_C TProcCpuDataPoint*
 CopyProcCpuDataPoint( TProcCpuDataPoint* srcCpuDataDataPoint ,
-                      TProcessId* newProcId                  );
+                      TProcessId newProcId                   );
 
 /*--------------------------------------------------------------------------*/
 
 GUCEF_CORE_PUBLIC_C UInt32
-GetProcessCpuUsage( TProcessId* pid                             ,
+GetProcessCpuUsage( TProcessId pid                              ,
                     TProcCpuDataPoint* previousCpuDataDataPoint ,
                     TProcessCpuUsageInfo* cpuUseInfo            );
 

@@ -30,6 +30,11 @@
 #include <stdio.h>
 #include <assert.h>
 
+#ifndef GUCEF_CORE_DVSTRUTILS_H
+#include "dvstrutils.h"               /* needed for str to int */
+#define GUCEF_CORE_DVSTRUTILS_H
+#endif /* GUCEF_CORE_DVSTRUTILS_H ? */
+
 #ifndef GUCEF_CORE_LOGGING_H
 #include "gucefCORE_Logging.h"
 #define GUCEF_CORE_LOGGING_H
@@ -57,6 +62,15 @@
 
 #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
 
+  /* Do not use WIN32_LEAN_AND_MEAN because it will remove timeBeginPeriod() etc. */
+  #undef  WIN32_LEAN_AND_MEAN
+  #include <windows.h>                /* Windows API */
+  #include <psapi.h>
+  #include <powerbase.h>              /* needed for CPU stats */
+  #undef min
+  #undef max
+  #define MAX_DIR_LENGTH MAX_PATH
+
   #include <WinSock2.h>
 
   #ifndef GUCEF_CORE_MSWINUTILS_H
@@ -66,7 +80,14 @@
 
 #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
 
+  #include <sys/times.h>
+  #include <sys/types.h>
+  #include <sys/stat.h>
+  #include <limits.h>                 /* Linux OS limits */
+  #include <dlfcn.h>                  /* dynamic linking utilities */
+  #include <dirent.h>
   #include <unistd.h>
+  #define MAX_DIR_LENGTH PATH_MAX
 
 #endif
 
@@ -85,9 +106,9 @@ namespace CORE {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-typedef std::map< CString, CString > TStringMap;
+typedef CString::StringMap           TStringMap;
 typedef CString::StringVector        TStringVector;
-typedef std::pair< CString, CString > TStringPair;
+typedef CString::StringPair          TStringPair;
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -197,7 +218,7 @@ GetHostname( void )
 /*-------------------------------------------------------------------------*/
 
 bool
-GetExeNameForProcessId( TProcessId* pid  ,
+GetExeNameForProcessId( TProcessId pid   ,
                         CString& exeName )
 {GUCEF_TRACE;
 
@@ -326,6 +347,81 @@ CommandLineExecute( const CString& command ,
 
 /*--------------------------------------------------------------------------*/
 
+bool
+GetProcessList( TProcessIdVector& processList )
+{GUCEF_TRACE;
+
+    processList.clear();
+
+    #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
+
+    DWORD reservedListSizeInBytes = 1024 * sizeof(DWORD);
+    DWORD usedListSizeInBytes = 0;
+    DWORD* win32ProcessList = GUCEF_NULL;
+    do
+    {
+        win32ProcessList = (DWORD*) realloc( win32ProcessList, reservedListSizeInBytes );
+        if ( GUCEF_NULL == win32ProcessList )
+            return false;
+
+        if ( 0 == ::EnumProcesses( win32ProcessList, reservedListSizeInBytes, &usedListSizeInBytes ) )
+        {
+            return false;
+        }
+
+        if ( reservedListSizeInBytes != usedListSizeInBytes )
+        {
+            break;
+        }
+        else
+        {
+            // Guestimate: just double the storage
+            reservedListSizeInBytes *= 2;
+        }
+    }
+    while ( true );
+
+    UInt32 processCount = usedListSizeInBytes / sizeof(DWORD);
+    processList.reserve( processCount )
+    for ( UInt32 i=0; i<processCount; ++i )
+    {
+        processList.push_back( win32ProcessList[ i ] );
+    }
+
+    free( win32ProcessList );
+    win32ProcessList = GUCEF_NULL;
+
+    return true;
+
+    #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
+
+    processList.reserve( 1024 );
+
+    DIR* dp = ::opendir( "/proc/" );
+    struct dirent* dirFilesys = NULL;
+    while ( NULL != ( dirFilesys = ::readdir( dp ) ) )
+    {
+        if ( dirFilesys->d_type == DT_DIR )
+        {
+            if ( 1 == IsANumber( dirFilesys->d_name ) )
+            {
+                processList.push_back( (pid_t) StringToInt32( dirFilesys->d_name ) );
+            }
+        }
+    }
+    ::closedir( dp );
+
+    return true;
+
+    #else
+
+    return false;
+
+    #endif
+}
+
+/*--------------------------------------------------------------------------*/
+
 CProcessInformation::CProcessInformation( void )
     : m_commandLineArgs()
     , m_imagePath()
@@ -369,7 +465,7 @@ CProcessInformation::SetImagePath( const CString& str )
 
 /*--------------------------------------------------------------------------*/
 
-CString& 
+CString&
 CProcessInformation::GetImagePath( void )
 {GUCEF_TRACE;
 
@@ -389,7 +485,7 @@ CProcessInformation::SetCommandLineArgs( const CString& str )
 
 /*--------------------------------------------------------------------------*/
 
-CString& 
+CString&
 CProcessInformation::GetCommandLineArgs( void )
 {GUCEF_TRACE;
 
@@ -398,34 +494,34 @@ CProcessInformation::GetCommandLineArgs( void )
 
 /*--------------------------------------------------------------------------*/
 
-const TProcessInformation& 
+const TProcessInformation&
 CProcessInformation::GetCStyleAccess( void ) const
 {GUCEF_TRACE;
-    
+
     return m_cStyleAccess;
 }
 
 /*--------------------------------------------------------------------------*/
 
 bool
-CProcessInformation::TryGetProcessInformation( TProcessId* pid           ,
+CProcessInformation::TryGetProcessInformation( TProcessId pid            ,
                                                CProcessInformation& info )
 {GUCEF_TRACE;
 
-    if ( GUCEF_NULL != pid )
-    {                                                                 
+    if ( 0 != pid )
+    {
         #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
 
         // First open a handle to the other process
 
         CLIENT_ID clientId;
         clientId.UniqueThread = NULL;
-        clientId.UniqueProcess = UlongToHandle( pid->pid );
-        
+        clientId.UniqueProcess = UlongToHandle( pid );
+
         OBJECT_ATTRIBUTES objAttribs;
         InitializeObjectAttributes( &objAttribs, NULL, 0, NULL, NULL );
-        
-        HANDLE hProcess = 0;        
+
+        HANDLE hProcess = 0;
         ::NTSTATUS status = TryNtOpenProcess( &hProcess,
                                               (ACCESS_MASK) (PROCESS_VM_READ|PROCESS_QUERY_INFORMATION),
                                               &objAttribs,
@@ -435,30 +531,30 @@ CProcessInformation::TryGetProcessInformation( TProcessId* pid           ,
             GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "ProcessInformation:TryGetProcessInformation: Failed to open handle to process" );
             return false;
         }
-        
+
         // Now obtain basic starting off info about the process
-        
+
         bool totalSuccess = true;
 
-        PROCESS_BASIC_INFORMATION pbi;                
+        PROCESS_BASIC_INFORMATION pbi;
         _RTL_USER_PROCESS_PARAMETERS* pv = NULL;
         _RTL_USER_PROCESS_PARAMETERS procParameters;
         memset( &procParameters, 0, sizeof( procParameters ) );
-        
+
         ::NTSTATUS status2 = 0;
         PROCESSINFOCLASS procBasicInformation = PROCESSINFOCLASS::ProcessBasicInformation;
         status = TryNtQueryInformationProcess( hProcess, procBasicInformation, &pbi, sizeof(pbi), 0 );
         if ( WIN32_NT_SUCCESS( status ) )
         {
             // Now get the information we are after
-            
+
             status = TryNtReadVirtualMemory( hProcess, (_PEB*)&pbi.PebBaseAddress->ProcessParameters, &pv, sizeof(pv), 0 );
             status2 = TryNtReadVirtualMemory( hProcess, pv, &procParameters, sizeof(procParameters), 0 );
             if ( WIN32_NT_SUCCESS( status ) && WIN32_NT_SUCCESS( status2 ) )
             {
                 CDynamicBuffer buffer;
                 if ( procParameters.CommandLine.Length > 0 )
-                {                                         
+                {
                     UInt32 strByteSize = ( procParameters.CommandLine.Length * sizeof(WCHAR) ) + sizeof(WCHAR);
                     if ( buffer.SetBufferSize( strByteSize, false, true ) )
                     {
@@ -469,9 +565,9 @@ CProcessInformation::TryGetProcessInformation( TProcessId* pid           ,
                         {
                             // set the null terminator
                             *(PWSTR)RtlOffsetToPointer( cmdLineBuffer, procParameters.CommandLine.Length ) = 0;
-                            
+
                             CVariant convertor;
-                            convertor.LinkTo( cmdLineBuffer, buffer.GetDataSize(), GUCEF_DATATYPE_UTF16_STRING );                            
+                            convertor.LinkTo( cmdLineBuffer, buffer.GetDataSize(), GUCEF_DATATYPE_UTF16_STRING );
                             CString cmdLine = convertor.AsString();
 
                             // We only care about 'extra' params passed to a program not the default first argument on Windows which is automatically added
@@ -481,10 +577,10 @@ CProcessInformation::TryGetProcessInformation( TProcessId* pid           ,
                             {
                                 cmdLine = cmdLine.CutEnvelopedSubstr( "\"", "\"", 0 );
                                 if ( !cmdLine.IsNULLOrEmpty() && cmdLine[ 0 ] == ' ' )
-                                    cmdLine = cmdLine.CutChars( 1, true, 0 );    
+                                    cmdLine = cmdLine.CutChars( 1, true, 0 );
                             }
 
-                            info.SetCommandLineArgs( cmdLine ); 
+                            info.SetCommandLineArgs( cmdLine );
                         }
                         else
                         {
@@ -508,10 +604,10 @@ CProcessInformation::TryGetProcessInformation( TProcessId* pid           ,
                         {
                             // set the null terminator
                             *(PWSTR)RtlOffsetToPointer( imgPathBuffer, procParameters.ImagePathName.Length ) = 0;
-                            
+
                             CVariant convertor;
                             convertor.LinkTo( imgPathBuffer, buffer.GetDataSize(), GUCEF_DATATYPE_UTF16_STRING );
-                            info.SetImagePath( convertor.AsString() ); 
+                            info.SetImagePath( convertor.AsString() );
                         }
                         else
                         {
@@ -537,11 +633,11 @@ CProcessInformation::TryGetProcessInformation( TProcessId* pid           ,
         ::CloseHandle( hProcess );
 
         return totalSuccess;
-        
+
         #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
 
         // @TODO: Make the Linux variant
-        
+
         #else
 
         return OSWRAP_FALSE;

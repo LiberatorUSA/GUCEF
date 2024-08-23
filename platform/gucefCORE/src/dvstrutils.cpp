@@ -69,13 +69,17 @@ IsANumber( const char* str )
     if ( '\0' == *str )
         return 0;
 
+    bool foundDigit = false;
     while ( '\0' != *str )
     {
-        if ( ( *str < 48 || *str > 57 ) && *str != '.' )
+        if ( *str >= 48 && *str <= 57 )
+            foundDigit = true;
+        else
+        if ( *str != '.' )
             return 0;
         ++str;
     }
-    return 1;
+    return foundDigit ? 1 : 0;
 }
 
 /*--------------------------------------------------------------------------*/

@@ -164,9 +164,9 @@ CAsciiString::CAsciiString( const char* src      ,
     {
         if ( reexamineLength )
         {
-            length = (UInt32) strnlen( src, length );    
+            length = (UInt32) strnlen( src, length );
         }
-        
+
         // dont add null term twice
         if ( '\0' == src[ length-1 ] )
         {
@@ -317,7 +317,7 @@ bool
 CAsciiString::operator!=( const int NULLvalue ) const
 {GUCEF_TRACE;
 
-    if ( NULLvalue == (int) GUCEF_NULL )
+    if ( NULLvalue == static_cast< int >( GUCEF_NULL ) )
     {
         return m_length > 0;
     }
@@ -331,7 +331,7 @@ bool
 CAsciiString::operator==( const int NULLvalue ) const
 {GUCEF_TRACE;
 
-    if ( NULLvalue == NULL )
+    if ( NULLvalue == static_cast< int >( GUCEF_NULL ) )
     {
         return m_length == 0;
     }
@@ -342,7 +342,7 @@ CAsciiString::operator==( const int NULLvalue ) const
 /*-------------------------------------------------------------------------*/
 
 bool
-CAsciiString::operator==( const char *other ) const
+CAsciiString::operator==( const char* other ) const
 {GUCEF_TRACE;
 
     if ( GUCEF_NULL == m_string && GUCEF_NULL == other )
@@ -378,7 +378,7 @@ CAsciiString::operator==( const CAsciiString &other ) const
 /*-------------------------------------------------------------------------*/
 
 bool
-CAsciiString::operator!=( const CAsciiString &other ) const
+CAsciiString::operator!=( const CAsciiString& other ) const
 {GUCEF_TRACE;
 
     if ( GUCEF_NULL == m_string && GUCEF_NULL == other.m_string )
@@ -396,7 +396,7 @@ CAsciiString::operator!=( const CAsciiString &other ) const
 /*-------------------------------------------------------------------------*/
 
 bool
-CAsciiString::operator!=( const char *other ) const
+CAsciiString::operator!=( const char* other ) const
 {GUCEF_TRACE;
 
     if ( GUCEF_NULL == m_string && GUCEF_NULL == other )
@@ -431,7 +431,7 @@ CAsciiString::operator[]( const UInt32 index )
     static char outOfBoundsChar = '\0';
     if ( index <= m_length )
         return m_string[ index ];
-    
+
     GUCEF_ASSERT_ALWAYS;
     return outOfBoundsChar;
 }
@@ -803,9 +803,9 @@ CAsciiString::ReplaceChars( const char* oldchars ,
         for ( UInt32 n=0; n<nrOfOldChars; ++n )
         {
             if ( result.m_string[ i ] == oldchars[ n ] )
-                result.m_string[ i ] = newchar;    
+                result.m_string[ i ] = newchar;
         }
-        
+
     }
 
     return result;
@@ -895,7 +895,7 @@ CAsciiString::CutEnvelopedSubstr( const CUtf8String& envelopPrefix  ,
                 return CutChars( charCount, true, startIndex );
             }
             ++currentEnvelopedStrIndex;
-            
+
             startIndex = envSegIndex + envelopPostfix.Length();
             envSegIndex = HasSubstr( envelopPrefix, startIndex, true );
         }
@@ -990,12 +990,12 @@ CAsciiString::SubstrToIndex( UInt32 index     ,
 
     if ( !frontToBack )
     {
-         if ( index >= m_length ) 
+         if ( index >= m_length )
             return CAsciiString();
          return SubstrFromRange( index, m_length );
     }
 
-    if ( index >= m_length ) 
+    if ( index >= m_length )
         return CAsciiString( m_string, m_length );
     return SubstrFromRange( 0, index );
 }
@@ -1613,11 +1613,11 @@ CAsciiString::WildcardEquals( const StringSet& strsWithWildcards     ,
 
     if ( strsWithWildcards.empty() )
         return WildcardEquals( Empty, wildCardToken, caseSensitive, biDirectional );
-    
+
     StringSet::const_iterator i = strsWithWildcards.begin();
     while ( i != strsWithWildcards.end() )
     {
-        if ( WildcardEquals( (*i), wildCardToken, caseSensitive, biDirectional ) ) 
+        if ( WildcardEquals( (*i), wildCardToken, caseSensitive, biDirectional ) )
             return true;
         ++i;
     }
@@ -1751,10 +1751,10 @@ CAsciiString::IsFormattingValid( void ) const
 
 /*-------------------------------------------------------------------------*/
 
-CAsciiString 
+CAsciiString
 CAsciiString::ReadLine( CIOAccess* io )
 {GUCEF_TRACE;
-    
+
     if ( GUCEF_NULL != io )
     {
         CAsciiString resultStr;
@@ -1764,7 +1764,7 @@ CAsciiString::ReadLine( CIOAccess* io )
             if ( EOF != currentChar )
             {
                 if ( currentChar == '\0'        ||
-                     currentChar == '\n'        || 
+                     currentChar == '\n'        ||
                      currentChar == '\r'        ||
                      currentChar == GUCEF_DOS_EOF_CHAR )
                 {
@@ -1779,14 +1779,14 @@ CAsciiString::ReadLine( CIOAccess* io )
             }
         }
         return resultStr;
-    }     
-        
+    }
+
     return CAsciiString();
 }
 
 /*-------------------------------------------------------------------------*/
 
-CAsciiString 
+CAsciiString
 CAsciiString::ReadString( CIOAccess* io )
 {GUCEF_TRACE;
 
@@ -1799,7 +1799,7 @@ CAsciiString::ReadString( CIOAccess* io )
             if ( EOF != currentChar )
             {
                 if ( currentChar == '\0'          ||
-                     currentChar == '\n'          || 
+                     currentChar == '\n'          ||
                      currentChar == '\r'          ||
                      currentChar ==  GUCEF_DOS_EOF_CHAR ||
                      currentChar == '\t'          ||
@@ -1816,8 +1816,8 @@ CAsciiString::ReadString( CIOAccess* io )
             }
         }
         return resultStr;
-    }     
-        
+    }
+
     return CAsciiString();
 }
 

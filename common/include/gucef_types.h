@@ -39,6 +39,13 @@
 #define GUCEF_PLATFORM_H
 #endif /* GUCEF_PLATFORM_H ? */
 
+#ifdef __cplusplus
+  #include <limits>
+  #if __cplusplus >= 201103L
+    #include <cstdint>
+  #endif
+#endif /* __cplusplus ? */
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //
@@ -122,7 +129,7 @@ typedef double          Float64;  /* 8 bytes, signed, decimal */
   #define GUCEF_NS_FOR_BUILDINS
 #endif
 /*
- *      Maximum and minimal values for the build-in types 
+ *      Maximum and minimal values for the build-in types
  */
 #define GUCEF_INT8MAX     ( (GUCEF_NS_FOR_BUILDINS Int8) 127 )
 #define GUCEF_INT8MIN     ( (GUCEF_NS_FOR_BUILDINS Int8) (-128) )
@@ -193,7 +200,7 @@ typedef double          Float64;  /* 8 bytes, signed, decimal */
 
 #if GUCEF_PLATFORM_BYTEORDER_ENDIAN == GUCEF_BYTEORDER_LITTLE_ENDIAN
 
-    #define GUCEF_DATATYPE_UINT16       GUCEF_DATATYPE_LE_UINT16    
+    #define GUCEF_DATATYPE_UINT16       GUCEF_DATATYPE_LE_UINT16
     #define GUCEF_DATATYPE_INT16        GUCEF_DATATYPE_LE_INT16
     #define GUCEF_DATATYPE_UINT32       GUCEF_DATATYPE_LE_UINT32
     #define GUCEF_DATATYPE_INT32        GUCEF_DATATYPE_LE_INT32
@@ -202,7 +209,7 @@ typedef double          Float64;  /* 8 bytes, signed, decimal */
     #define GUCEF_DATATYPE_FLOAT32      GUCEF_DATATYPE_LE_FLOAT32
     #define GUCEF_DATATYPE_FLOAT64      GUCEF_DATATYPE_LE_FLOAT64
 
-    #define GUCEF_DATATYPE_NAME_UINT16       GUCEF_DATATYPE_NAME_LE_UINT16    
+    #define GUCEF_DATATYPE_NAME_UINT16       GUCEF_DATATYPE_NAME_LE_UINT16
     #define GUCEF_DATATYPE_NAME_INT16        GUCEF_DATATYPE_NAME_LE_INT16
     #define GUCEF_DATATYPE_NAME_UINT32       GUCEF_DATATYPE_NAME_LE_UINT32
     #define GUCEF_DATATYPE_NAME_INT32        GUCEF_DATATYPE_NAME_LE_INT32
@@ -213,7 +220,7 @@ typedef double          Float64;  /* 8 bytes, signed, decimal */
 
 #else
 
-    #define GUCEF_DATATYPE_UINT16       GUCEF_DATATYPE_BE_UINT16    
+    #define GUCEF_DATATYPE_UINT16       GUCEF_DATATYPE_BE_UINT16
     #define GUCEF_DATATYPE_INT16        GUCEF_DATATYPE_BE_INT16
     #define GUCEF_DATATYPE_UINT32       GUCEF_DATATYPE_BE_UINT32
     #define GUCEF_DATATYPE_INT32        GUCEF_DATATYPE_BE_INT32
@@ -222,7 +229,7 @@ typedef double          Float64;  /* 8 bytes, signed, decimal */
     #define GUCEF_DATATYPE_FLOAT32      GUCEF_DATATYPE_BE_FLOAT32
     #define GUCEF_DATATYPE_FLOAT64      GUCEF_DATATYPE_BE_FLOAT64
 
-    #define GUCEF_DATATYPE_NAME_UINT16       GUCEF_DATATYPE_NAME_BE_UINT16    
+    #define GUCEF_DATATYPE_NAME_UINT16       GUCEF_DATATYPE_NAME_BE_UINT16
     #define GUCEF_DATATYPE_NAME_INT16        GUCEF_DATATYPE_NAME_BE_INT16
     #define GUCEF_DATATYPE_NAME_UINT32       GUCEF_DATATYPE_NAME_BE_UINT32
     #define GUCEF_DATATYPE_NAME_INT32        GUCEF_DATATYPE_NAME_BE_INT32
@@ -256,8 +263,8 @@ typedef double          Float64;  /* 8 bytes, signed, decimal */
 #define GUCEF_DATATYPE_BINARY_BLOB              40      /**< binary large object of dynamically determined size */
 #define GUCEF_DATATYPE_BINARY_BSOB              41      /**< binary small object of size not exceeding multi-purpose fixed storage */
 
-#define GUCEF_DATATYPE_DATETIME_ISO8601_ASCII_STRING    50  /**< ASCII character set string value actually representing a date time value per the ISO 8601 convention */ 
-#define GUCEF_DATATYPE_DATETIME_ISO8601_UTF8_STRING     51  /**< UTF8 character set string value actually representing a date time value per the ISO 8601 convention */ 
+#define GUCEF_DATATYPE_DATETIME_ISO8601_ASCII_STRING    50  /**< ASCII character set string value actually representing a date time value per the ISO 8601 convention */
+#define GUCEF_DATATYPE_DATETIME_ISO8601_UTF8_STRING     51  /**< UTF8 character set string value actually representing a date time value per the ISO 8601 convention */
 
 #define GUCEF_DATATYPE_LE_TIMESTAMP_IN_SECS_SINCE_UNIX_EPOCH        55  /**< Little Endian UInt64 based timestamp using seconds since unix epoch */
 #define GUCEF_DATATYPE_BE_TIMESTAMP_IN_SECS_SINCE_UNIX_EPOCH        56  /**< Big Endian UInt64 based timestamp using seconds since unix epoch */
@@ -333,7 +340,7 @@ typedef double          Float64;  /* 8 bytes, signed, decimal */
 
 #if GUCEF_PLATFORM_BYTEORDER_ENDIAN == GUCEF_BYTEORDER_LITTLE_ENDIAN
 
-    #define GUCEF_DATATYPE_UTF16_STRING                             GUCEF_DATATYPE_UTF16_LE_STRING    
+    #define GUCEF_DATATYPE_UTF16_STRING                             GUCEF_DATATYPE_UTF16_LE_STRING
     #define GUCEF_DATATYPE_UTF32_STRING                             GUCEF_DATATYPE_UTF32_LE_STRING
     #define GUCEF_DATATYPE_BOOLEAN_UTF16_STRING                     GUCEF_DATATYPE_BOOLEAN_UTF16_LE_STRING
     #define GUCEF_DATATYPE_BOOLEAN_UTF32_STRING                     GUCEF_DATATYPE_BOOLEAN_UTF32_LE_STRING
@@ -346,7 +353,7 @@ typedef double          Float64;  /* 8 bytes, signed, decimal */
     #define GUCEF_DATATYPE_INT64_INT32_FRACTION                     GUCEF_DATATYPE_INT64_INT32_LE_FRACTION
     #define GUCEF_DATATYPE_UINT64_UINT32_FRACTION                   GUCEF_DATATYPE_UINT64_UINT32_LE_FRACTION
 
-    #define GUCEF_DATATYPE_NAME_UTF16_STRING                        GUCEF_DATATYPE_NAME_UTF16_LE_STRING    
+    #define GUCEF_DATATYPE_NAME_UTF16_STRING                        GUCEF_DATATYPE_NAME_UTF16_LE_STRING
     #define GUCEF_DATATYPE_NAME_UTF32_STRING                        GUCEF_DATATYPE_NAME_UTF32_LE_STRING
     #define GUCEF_DATATYPE_NAME_BOOLEAN_UTF16_STRING                GUCEF_DATATYPE_NAME_BOOLEAN_UTF16_LE_STRING
     #define GUCEF_DATATYPE_NAME_BOOLEAN_UTF32_STRING                GUCEF_DATATYPE_NAME_BOOLEAN_UTF32_LE_STRING
@@ -361,7 +368,7 @@ typedef double          Float64;  /* 8 bytes, signed, decimal */
 
 #else
 
-    #define GUCEF_DATATYPE_UTF16_STRING                             GUCEF_DATATYPE_UTF16_BE_STRING    
+    #define GUCEF_DATATYPE_UTF16_STRING                             GUCEF_DATATYPE_UTF16_BE_STRING
     #define GUCEF_DATATYPE_UTF32_STRING                             GUCEF_DATATYPE_UTF32_BE_STRING
     #define GUCEF_DATATYPE_BOOLEAN_UTF16_STRING                     GUCEF_DATATYPE_BOOLEAN_UTF16_BE_STRING
     #define GUCEF_DATATYPE_BOOLEAN_UTF32_STRING                     GUCEF_DATATYPE_BOOLEAN_UTF32_BE_STRING
@@ -374,7 +381,7 @@ typedef double          Float64;  /* 8 bytes, signed, decimal */
     #define GUCEF_DATATYPE_INT64_INT32_FRACTION                     GUCEF_DATATYPE_INT64_INT32_BE_FRACTION
     #define GUCEF_DATATYPE_UINT64_UINT32_FRACTION                   GUCEF_DATATYPE_UINT64_UINT32_BE_FRACTION
 
-    #define GUCEF_DATATYPE_NAME_UTF16_STRING                        GUCEF_DATATYPE_NAME_UTF16_BE_STRING    
+    #define GUCEF_DATATYPE_NAME_UTF16_STRING                        GUCEF_DATATYPE_NAME_UTF16_BE_STRING
     #define GUCEF_DATATYPE_NAME_UTF32_STRING                        GUCEF_DATATYPE_NAME_UTF32_BE_STRING
     #define GUCEF_DATATYPE_NAME_BOOLEAN_UTF16_STRING                GUCEF_DATATYPE_NAME_BOOLEAN_UTF16_BE_STRING
     #define GUCEF_DATATYPE_NAME_BOOLEAN_UTF32_STRING                GUCEF_DATATYPE_NAME_BOOLEAN_UTF32_BE_STRING
@@ -455,7 +462,7 @@ enum EBasicDataType
     DATATYPE_OBJECT                     = GUCEF_DATATYPE_OBJECT                     ,
     DATATYPE_NIL                        = GUCEF_DATATYPE_NIL                        ,
     DATATYPE_NULL                       = GUCEF_DATATYPE_NULL                       ,
-    DATATYPE_SET                        = GUCEF_DATATYPE_SET                        
+    DATATYPE_SET                        = GUCEF_DATATYPE_SET
 };
 typedef enum EBasicDataType TBasicDataType;
 

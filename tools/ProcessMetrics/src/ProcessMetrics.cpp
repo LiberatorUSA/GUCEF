@@ -251,7 +251,7 @@ const CORE::CEvent ProcessMetrics::CProcInfo::PidChangedEvent = "GUCEF::CORE::Pr
 /*-------------------------------------------------------------------------*/
 
 ProcessMetrics::CProcInfo::CProcInfo( void )
-    : pid( GUCEF_NULL )
+    : pid( 0 )
     , previousProcCpuDataDataPoint( GUCEF_NULL )
     , processInformation()
     , lastUptimeInMs( 0 )
@@ -279,8 +279,7 @@ ProcessMetrics::CProcInfo::Clear( void )
 
     CORE::FreeProcCpuDataPoint( previousProcCpuDataDataPoint );
     previousProcCpuDataDataPoint = GUCEF_NULL;
-    CORE::FreeProcessId( pid );
-    pid = GUCEF_NULL;
+    pid = 0;
     processInformation.Clear();
     lastUptimeInMs = 0;
     exeName.Clear();
@@ -299,7 +298,7 @@ ProcessMetrics::CProcInfo::operator=( const CProcInfo& src )
     {
         Clear();
 
-        pid = CORE::CopyProcessId( src.pid );
+        pid = src.pid;
         previousProcCpuDataDataPoint = CORE::CopyProcCpuDataPoint( previousProcCpuDataDataPoint, pid );
         processInformation = src.processInformation;
         lastUptimeInMs = src.lastUptimeInMs;
@@ -317,7 +316,7 @@ bool
 ProcessMetrics::CProcInfo::IsProcessStillActive( void )
 {GUCEF_TRACE;
 
-    if ( GUCEF_NULL != pid )
+    if ( 0 != pid )
     {
         OSWRAP_BOOLINT status = OSWRAP_TRUE;
         OSWRAP_BOOLINT checkSuccess = CORE::IsProcessStillActive( pid, &status );
@@ -378,8 +377,7 @@ ProcessMetrics::CProcInfo::Unlink( void )
 
     CORE::FreeProcCpuDataPoint( previousProcCpuDataDataPoint );
     previousProcCpuDataDataPoint = GUCEF_NULL;
-    CORE::FreeProcessId( pid );
-    pid = GUCEF_NULL;
+    pid = 0;
     lastUptimeInMs = 0;
 }
 
@@ -412,10 +410,10 @@ ProcessMetrics::CProcInfo::RefreshPID( CORE::TProcessId* procIds, CORE::UInt32 p
     bool success = false;
     for ( CORE::UInt32 i=0; i<procIdCount; ++i )
     {
-        CORE::TProcessId* searchPid = CORE::GetProcessIdAtIndex( procIds, i );
+        CORE::TProcessId searchPid = CORE::GetProcessIdAtIndex( procIds, i );
 
         CORE::CString searchExeName;
-        if ( GUCEF_NULL != searchPid && CORE::GetExeNameForProcessId( searchPid, searchExeName ) )
+        if ( 0 != searchPid && CORE::GetExeNameForProcessId( searchPid, searchExeName ) )
         {
             searchExeName = CORE::ExtractFilename( searchExeName );
             CORE::Int32 dotIndex = searchExeName.HasChar( '.', false );
@@ -436,13 +434,12 @@ ProcessMetrics::CProcInfo::RefreshPID( CORE::TProcessId* procIds, CORE::UInt32 p
 /*-------------------------------------------------------------------------*/
 
 bool
-ProcessMetrics::CProcInfo::RefreshPID( CORE::TProcessId* newProcId )
+ProcessMetrics::CProcInfo::RefreshPID( CORE::TProcessId newProcId )
 {GUCEF_TRACE;
 
-    if ( GUCEF_NULL != pid )
+    if ( 0 != pid )
     {
-        CORE::FreeProcessId( pid );
-        pid = GUCEF_NULL;
+        pid = 0;
         GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "ProcessMetrics: Refreshing pre-existing PID for \"" + exeName + "\"" );
     }
     else
@@ -450,8 +447,7 @@ ProcessMetrics::CProcInfo::RefreshPID( CORE::TProcessId* newProcId )
         GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "ProcessMetrics: Applying PID for \"" + exeName + "\"" );
     }
 
-    pid = CORE::CopyProcessId( newProcId );
-
+    pid = newProcId;
     if ( CORE::CProcessInformation::TryGetProcessInformation( pid, processInformation ) )
     {
         GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "ProcessMetrics: Obtained process information for \"" + exeName + "\"" );
@@ -586,45 +582,45 @@ void
 ProcessMetrics::RefreshPIDs( const CORE::CString::StringSet& refreshExeNames )
 {GUCEF_TRACE;
 
-    if ( refreshExeNames.empty() )
+    //if ( refreshExeNames.empty() )
         return;
 
-    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "ProcessMetrics: Refresing PID administration for " + CORE::ToString( refreshExeNames.size() ) + " items" );
+    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "ProcessMetrics: Refreshing PID administration for " + CORE::ToString( refreshExeNames.size() ) + " items" );
 
-    CORE::UInt32 procIdCount = 0;
-    CORE::TProcessId* procIds = GUCEF_NULL;
-    CORE::UInt32 retVal = CORE::GetProcessList( &procIds, &procIdCount );
-    if ( OSWRAP_TRUE == retVal )
+    CORE::TProcessIdVector procIds;
+    if ( CORE::GetProcessList( procIds ) )
     {
-        for ( CORE::UInt32 i=0; i<procIdCount; ++i )
+        size_t procIdCount = procIds.size();
+        for ( size_t i=0; i<procIdCount; ++i )
         {
-            CORE::TProcessId* pid = CORE::GetProcessIdAtIndex( procIds, i );
-
-            CORE::CString exeName;
-            if ( CORE::GetExeNameForProcessId( pid, exeName ) )
+            CORE::TProcessId pid = procIds[ i ];
+            if ( 0 != pid )
             {
-                exeName = CORE::ExtractFilename( exeName );
-                CORE::Int32 dotIndex = exeName.HasChar( '.', false );
-                if ( dotIndex >= 0 )
-                    exeName = exeName.SubstrToIndex( (CORE::UInt32) dotIndex, true );
-
-                TStringSet::iterator n = refreshExeNames.find( exeName );
-                if ( n != refreshExeNames.end() )
+                CORE::CString exeName;
+                if ( CORE::GetExeNameForProcessId( pid, exeName ) )
                 {
-                    TProcessIdMap::iterator m = m_exeProcsToWatch.find( exeName );
-                    if ( m != m_exeProcsToWatch.end() )
+                    exeName = CORE::ExtractFilename( exeName );
+                    CORE::Int32 dotIndex = exeName.HasChar( '.', false );
+                    if ( dotIndex >= 0 )
+                        exeName = exeName.SubstrToIndex( (CORE::UInt32) dotIndex, true );
+
+                    TStringSet::iterator n = refreshExeNames.find( exeName );
+                    if ( n != refreshExeNames.end() )
                     {
-                        CProcInfo& procInfo = (*m).second;
-                        if ( procInfo.RefreshPID( pid ) )
+                        TProcessIdMap::iterator m = m_exeProcsToWatch.find( exeName );
+                        if ( m != m_exeProcsToWatch.end() )
                         {
-                            GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "ProcessMetrics: Refreshed PID for \"" + procInfo.exeName + "\"" );
+                            CProcInfo& procInfo = (*m).second;
+                            if ( procInfo.RefreshPID( pid ) )
+                            {
+                                GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "ProcessMetrics: Refreshed PID for \"" + procInfo.exeName + "\"" );
+                            }
                         }
                     }
                 }
             }
         }
     }
-    CORE::FreeProcessList( procIds );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -897,15 +893,15 @@ ProcessMetrics::OnProcScanTimerCycle( CORE::CNotifier* notifier    ,
         {
             nonLockedOnProcs.insert( procInfo.exeName );
 
-            if ( procInfo.startIfNotRunning                                     &&
-                 ( GUCEF_NULL == procInfo.pid && 0 == procInfo.lastUptimeInMs )  )
+            if ( procInfo.startIfNotRunning                            &&
+                 ( 0 == procInfo.pid && 0 == procInfo.lastUptimeInMs )  )
             {
                 // this proc is not running and has not run before to the best of our knowledge
                 procsToLaunch.insert( procInfo.exeName );
             }
             else
-            if ( procInfo.restartIfStopsRunning                                  &&
-                 ( GUCEF_NULL != procInfo.pid || 0 != procInfo.lastUptimeInMs )  )
+            if ( procInfo.restartIfStopsRunning                        &&
+                 ( 0 != procInfo.pid || 0 != procInfo.lastUptimeInMs )  )
             {
                 // this proc was running and is requested to be auto-restarted
                 procsToLaunch.insert( procInfo.exeName );

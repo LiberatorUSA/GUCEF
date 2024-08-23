@@ -138,7 +138,7 @@ class RestApiProcessMetricsConfigResource : public WEB::CCodecBasedHTTPServerRes
 
     virtual ~RestApiProcessMetricsConfigResource();
 
-    virtual bool Serialize( const CORE::CString& resourcePath   , 
+    virtual bool Serialize( const CORE::CString& resourcePath   ,
                             CORE::CDataNode& output             ,
                             const CORE::CString& representation ,
                             const CORE::CString& params         ) GUCEF_VIRTUAL_OVERRIDE;
@@ -159,14 +159,14 @@ class MetricThreshold : public CORE::CIConfigurable
     CORE::CVariant maxThreshold;
     bool applyMinThreshold;
     bool applyMaxThreshold;
-    CORE::CString thresholdDescription;    
+    CORE::CString thresholdDescription;
     CORE::CString metricName;
     CORE::CString::StringSet procFilter;
 
     MetricThreshold( void );
 
     bool IsValid( void );
-    
+
     virtual bool SaveConfig( CORE::CDataNode& cfg ) const;
 
     virtual bool LoadConfig( const CORE::CDataNode& cfg );
@@ -220,16 +220,16 @@ class ProcessMetrics : public CORE::CObservingNotifier
     void ValidateMetricThresholds( const CORE::CVariant& metricValue ,
                                    const CORE::CString& metricName   ,
                                    const CORE::CString& procName     );
-    
+
     void PublishMetricThresholdExceeded( const CORE::CVariant& metricValue ,
                                          const CORE::CString& metricName   ,
                                          const CORE::CString& procName     ,
                                          const MetricThreshold& threshold  );
-    
+
     bool SetupPubSubClient( const CORE::CDataNode& cfg );
 
     static CORE::CString GenerateMetricsFriendlyString( const CORE::CString& str );
-    
+
     private:
 
     class CProcInfo : public CORE::CObservingNotifier
@@ -238,7 +238,7 @@ class ProcessMetrics : public CORE::CObservingNotifier
 
         static const CORE::CEvent PidChangedEvent;
 
-        CORE::TProcessId* pid;
+        CORE::TProcessId pid;
         CORE::TProcCpuDataPoint* previousProcCpuDataDataPoint;
         CORE::CProcessInformation processInformation;
         UInt64 lastUptimeInMs;
@@ -249,7 +249,7 @@ class ProcessMetrics : public CORE::CObservingNotifier
 
         CProcInfo( void );
 
-        ~CProcInfo();      
+        ~CProcInfo();
 
         CProcInfo& operator=( const CProcInfo& src );
 
@@ -259,7 +259,7 @@ class ProcessMetrics : public CORE::CObservingNotifier
 
         bool RefreshPID( CORE::TProcessId* allProcIds, CORE::UInt32 procIdCount );
 
-        bool RefreshPID( CORE::TProcessId* newProcId );
+        bool RefreshPID( CORE::TProcessId newProcId );
 
         bool IsProcessStillActive( void );
 
