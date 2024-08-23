@@ -354,7 +354,7 @@ COsmGeoLocationLookupService::ParseAddressLookupResult( const CORE::CDynamicBuff
             }
             else
             {
-                GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "OsmGeoLocationLookupService:ParseAddressLookupResult: Failed to find address node" );
+                GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "OsmGeoLocationLookupService:ParseAddressLookupResult: Failed to find address node" );
                 return false;
             }
 
@@ -418,6 +418,8 @@ COsmGeoLocationLookupService::TryLookupLocation( const CORE::CGeoLocation& geoLo
         {
             GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "OsmGeoLocationLookupService:TryLookupLocation: Successfully retrieved " +
                                 CORE::ToString( readBuffer.GetDataSize() ) + " bytes of data" );
+            
+            GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "OsmGeoLocationLookupService:TryLookupLocation: received payload: " + CORE::CString( (char*)readBuffer.GetConstBufferPtr(), readBuffer.GetDataSize() ) );
             
             success = success && ParseAddressLookupResult( readBuffer              , 
                                                            country                 , 

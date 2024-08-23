@@ -414,7 +414,23 @@ Float64
 CGeoLocation::ToDecimalDegrees( Int32 deg, Int32 min, Float64 sec ) 
 {GUCEF_TRACE;
 
-    return deg + min / 60.0 + sec / 3600.0;
+    bool degWasNegative = deg < 0;
+    bool minWasNegative = min < 0;
+    bool secWasNegative = sec < 0;
+
+    if ( degWasNegative ) 
+        deg = -deg;
+    if ( minWasNegative )
+        min = -min;
+    if ( secWasNegative )
+        sec = -sec;   
+
+    Float64 decDegrees = (Float64)deg + ( (Float64)min / 60.0 ) + ( (Float64)sec / 3600.0 );
+    
+    if ( degWasNegative || minWasNegative || secWasNegative ) 
+        decDegrees = -decDegrees;
+
+    return decDegrees;
 }
 
 /*-------------------------------------------------------------------------*/
