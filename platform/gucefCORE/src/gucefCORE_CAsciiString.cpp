@@ -670,7 +670,7 @@ CAsciiString::Reserve( const UInt32 bufferSize, Int32 newLength )
 {GUCEF_TRACE;
 
     GUCEF_DELETE []m_string;
-    m_string = NULL;
+    m_string = GUCEF_NULL;
 
     if ( bufferSize > 0 )
     {
@@ -720,7 +720,7 @@ void
 CAsciiString::SetLength( UInt32 newLength )
 {GUCEF_TRACE;
 
-    if ( NULL != m_string )
+    if ( GUCEF_NULL != m_string )
     {
         if ( m_length < newLength )
         {

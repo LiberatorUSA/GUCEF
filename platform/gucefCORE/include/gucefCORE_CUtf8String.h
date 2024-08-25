@@ -158,7 +158,9 @@ class GUCEF_CORE_PUBLIC_CPP CUtf8String
 
     bool operator==( const char *other ) const;
 
-    bool operator==( const Int32 NULLvalueOrUtf32 ) const;
+    bool operator==( const Int32 NULLvalue ) const;
+
+    bool operator==( const UInt32 NULLvalueOrUtf32 ) const;
 
     bool operator==( const char character ) const;
 
@@ -166,7 +168,9 @@ class GUCEF_CORE_PUBLIC_CPP CUtf8String
 
     bool operator!=( const char *other ) const;
 
-    bool operator!=( const Int32 NULLvalueOrUtf32 ) const;
+    bool operator!=( const Int32 NULLvalue ) const;
+
+    bool operator!=( const UInt32 NULLvalueOrUtf32 ) const;
 
     bool operator!=( const char character ) const;
 
@@ -181,7 +185,7 @@ class GUCEF_CORE_PUBLIC_CPP CUtf8String
      *
      *  @return UTF32 encoded singular code point at the code point index requested or 0 if index is invalid
      */
-    Int32 operator[]( const UInt32 index ) const;
+    UInt32 operator[]( const UInt32 index ) const;
 
     bool IsNULLOrEmpty( void ) const;
 
@@ -200,7 +204,7 @@ class GUCEF_CORE_PUBLIC_CPP CUtf8String
      *
      *  @return UTF32 encoded singular code point at the code point index requested or 0 if index is invalid
      */
-    Int32 CodepointAtIndex( const UInt32 index ) const;
+    UInt32 CodepointAtIndex( const UInt32 index ) const;
 
     /**
      *  UTF8 class specific:
@@ -236,7 +240,7 @@ class GUCEF_CORE_PUBLIC_CPP CUtf8String
      *  for this string.
      *  @return pointer to the next utf8 code point, if none exists or in case of error GUCEF_NULL is returned
      */ 
-    const char* NextCodepointPtr( const char* currentCpPos, Int32& currentUtf32Cp ) const;
+    const char* NextCodepointPtr( const char* currentCpPos, UInt32& currentUtf32Cp ) const;
 
     /**
      *  If you wish to manipulate characters in a char buffer
@@ -259,6 +263,7 @@ class GUCEF_CORE_PUBLIC_CPP CUtf8String
      *  Returns the size of the underlying storage used to store the string's code points
      *  It may exceed the number of code points due to UTF8s variable length encoding of 1-4 bytes per code point
      *  For a count of the number of code points used Length() instead
+     *  Note that the returned value includes the null terminator
      */
     UInt32 ByteSize( void ) const;
 
@@ -267,7 +272,7 @@ class GUCEF_CORE_PUBLIC_CPP CUtf8String
      *  Reserve() and DetermineLength() should be used in most cases instead.
      *  Mostly provided for compatibility with ASCII string handling
      */
-    void SetLength( UInt32 newLength, UInt32 maxCodePointSize = 1 );
+    void SetLength( UInt32 newLength, UInt32 maxCodePointSize = 4 );
 
     /**
      *  This function will give you the length of the string just like the regular Length()
@@ -349,6 +354,8 @@ class GUCEF_CORE_PUBLIC_CPP CUtf8String
 
     void Append( const char* appendstr );
 
+    void Append( const UInt32 utf32CodePoint );
+
     void Append( const Int32 utf32CodePoint );
 
     void Append( const CUtf8String& appendstr );
@@ -384,11 +391,20 @@ class GUCEF_CORE_PUBLIC_CPP CUtf8String
                                UInt32 length            ,
                                const CUtf8String& newSubstr ) const;
 
-    CUtf8String SubstrToChar( Int32 searchchar                       ,
+    CUtf8String SubstrToChar( UInt32 searchchar                      ,
                               bool frontToBack = true                ,
                               bool returnEmptyIfCharNotFound = false ) const;
 
-    CUtf8String SubstrToChar( Int32 searchchar                       ,
+    CUtf8String SubstrToChar( char searchchar                        ,
+                              bool frontToBack = true                ,
+                              bool returnEmptyIfCharNotFound = false ) const;
+
+    CUtf8String SubstrToChar( UInt32 searchchar                      ,
+                              UInt32 startIndex                      ,
+                              bool frontToBack = true                ,
+                              bool returnEmptyIfCharNotFound = false ) const;
+
+    CUtf8String SubstrToChar( char searchchar                        ,
                               UInt32 startIndex                      ,
                               bool frontToBack = true                ,
                               bool returnEmptyIfCharNotFound = false ) const;
@@ -413,10 +429,17 @@ class GUCEF_CORE_PUBLIC_CPP CUtf8String
 
     CUtf8String Trim( bool frontToBack ) const;
 
-    Int32 HasChar( Int32 searchchar        ,
+    Int32 HasChar( UInt32 searchchar       ,
                    bool frontToBack = true ) const;
 
-    Int32 HasChar( Int32 searchchar        ,
+    Int32 HasChar( char searchchar         ,
+                   bool frontToBack = true ) const;
+
+    Int32 HasChar( UInt32 searchchar       ,
+                   const UInt32 startIndex ,
+                   bool frontToBack        ) const;
+
+    Int32 HasChar( char searchchar         ,
                    const UInt32 startIndex ,
                    bool frontToBack        ) const;
 
@@ -473,14 +496,24 @@ class GUCEF_CORE_PUBLIC_CPP CUtf8String
 
     CUtf8String CompactRepeatingChar( const Int32 charToCompact ) const;
 
-    StringVector ParseElements( Int32 seperator              ,
+    StringVector ParseElements( UInt32 seperator             ,
                                 bool addEmptyElements = true ) const;
 
-    StringSet ParseUniqueElements( Int32 seperator              ,
+    StringSet ParseUniqueElements( UInt32 seperator             ,
                                    bool addEmptyElements = true ) const;
 
+    static StringVector ParseElements( const UInt8* bufferPtr ,
+                                       UInt32 bufferSize      ,
+                                       UInt32 seperator       ,
+                                       bool addEmptyElements  );
+
+    static StringSet ParseUniqueElements( const UInt8* bufferPtr ,
+                                          UInt32 bufferSize      ,
+                                          UInt32 seperator       ,
+                                          bool addEmptyElements  );
+
     bool WildcardEquals( const CUtf8String& strWithWildcards  ,
-                         const Int32 wildCardToken = '*'      ,
+                         const UInt32 wildCardToken = '*'     ,
                          const bool caseSensitive = true      ,
                          const bool biDirectional = false     ) const;
 
@@ -489,7 +522,7 @@ class GUCEF_CORE_PUBLIC_CPP CUtf8String
      *  as such we provide this variant as a convenience
      */
     bool WildcardEquals( const StringSet& strsWithWildcards ,
-                         const Int32 wildCardToken = '*'    ,
+                         const UInt32 wildCardToken = '*'   ,
                          const bool caseSensitive = true    ,
                          const bool biDirectional = false   ) const;
 
@@ -525,9 +558,9 @@ class GUCEF_CORE_PUBLIC_CPP CUtf8String
      *  Provides external code the ability to leverage UTF translation
      *  @return the number of bytes the UTF32 code point takes up when encoded as UTF8 inside the given buffer, -1 on error
      */
-    static Int32 EncodeUtf32CodePointToUtf8( const Int32 utf32CodePoint ,
-                                             char* outUtf8Buffer        ,
-                                             UInt32 outUtf8BufferSize   );
+    static Int32 EncodeUtf32CodePointToUtf8( const UInt32 utf32CodePoint ,
+                                             char* outUtf8Buffer         ,
+                                             UInt32 outUtf8BufferSize    );
     
     /**
      *  UTF8 class specific:
@@ -536,9 +569,9 @@ class GUCEF_CORE_PUBLIC_CPP CUtf8String
      */
     static Int32 EncodeUtf8CodePointToUtf32( const char* utf8Buffer        ,
                                              const UInt32 utf8BufferSize   ,
-                                             Int32& outUtf32CodePoint      );
+                                             UInt32& outUtf32CodePoint     );
 
-    static bool ReadUtf32CodePoint( CIOAccess* io, Int32* utf32CodePoint );
+    static bool ReadUtf32CodePoint( CIOAccess* io, UInt32* utf32CodePoint );
 
     static CUtf8String ReadLine( CIOAccess* io );
 
@@ -548,7 +581,7 @@ class GUCEF_CORE_PUBLIC_CPP CUtf8String
 
     //  Scans the UTF8 variable length string to the ptr address given to determine which code point index that is 
     // and the associated code point. Returns -1 if not a valid sub string pointer
-    Int32 CodepointIndexAtPtr( const char* subStrPtr, Int32& codePoint ) const;
+    Int32 CodepointIndexAtPtr( const char* subStrPtr, UInt32& codePoint ) const;
     
     private:
     char* m_string;    /**< our actual null-terminated UTF8 encoded string */

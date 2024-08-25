@@ -35,6 +35,11 @@
 #define GUCEF_CORE_DVSTRUTILS_H
 #endif /* GUCEF_CORE_DVSTRUTILS_H ? */
 
+#ifndef GUCEF_CORE_DVCPPSTRINGUTILS_H
+#include "dvcppstringutils.h"
+#define GUCEF_CORE_DVCPPSTRINGUTILS_H
+#endif /* GUCEF_CORE_DVCPPSTRINGUTILS_H ? */
+
 #ifndef GUCEF_CORE_LOGGING_H
 #include "gucefCORE_Logging.h"
 #define GUCEF_CORE_LOGGING_H
@@ -218,18 +223,149 @@ GetHostname( void )
 /*-------------------------------------------------------------------------*/
 
 bool
+GetExeImagePathForProcessId( TProcessId pid     ,
+                             CString& imagePath )
+{GUCEF_TRACE;
+
+    if ( 0 == pid )
+        return false;
+
+    imagePath.Clear();
+
+    #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
+
+    HANDLE handle = ::OpenProcess( PROCESS_QUERY_LIMITED_INFORMATION,
+                                   FALSE,
+                                   pid /* This is the PID, you can find one from windows task manager */
+                                 );
+    if ( GUCEF_NULL != handle )
+    {
+        #if 1
+
+        DWORD buffSize = (DWORD) nameBufferSize;
+        if ( ::QueryFullProcessImageNameW( handle, 0, outNameBuffer, &buffSize ) )
+        {
+            *usedBufferSize = (UInt32) buffSize;
+            ::CloseHandle( handle );
+            return true;
+        }
+        else
+        {
+            *outNameBuffer = '\0';
+            *usedBufferSize = 0;
+        }
+
+        #else
+
+        // Needs PROCESS_QUERY_INFORMATION | PROCESS_VM_READ,
+
+        HMODULE hMod = 0;
+        DWORD cbNeeded = 0;
+        if ( EnumProcessModules( handle, &hMod, sizeof(hMod), &cbNeeded ) )
+        {
+            *usedBufferSize = (UInt32) GetModuleBaseNameW( handle, hMod, outNameBuffer, nameBufferSize );
+            ::CloseHandle( handle );
+            return true;
+        }
+        else
+        {
+            *outNameBuffer = '\0';
+            *usedBufferSize = 0;
+        }
+
+        #endif
+
+        ::CloseHandle( handle );
+    }
+    return false;
+
+    #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
+
+    // The following works on Linux 2.2 and later:
+    // Intended to execute in user space
+
+    char procInfoPath[ 64 ];
+    sprintf( procInfoPath, "/proc/%d/exe", pid );
+
+    CString procImagePath;
+    UInt32 bufferSize = 1024;
+    ssize_t bytesWritten = 0;
+    while ( 0 == bytesWritten )
+    {
+        char* bufferPtr = procImagePath.Reserve( bufferSize );
+        if ( GUCEF_NULL != bufferPtr )
+        {
+            bytesWritten = ::readlink( procInfoPath, bufferPtr, bufferSize );
+            if ( bytesWritten <= 0 )
+            {
+                // Failed to read the link
+                // this is expected for some OS level and zombie procs
+                return false;
+            }
+            else
+            if ( bytesWritten < bufferSize )
+            {
+                procImagePath.DetermineLength();
+                imagePath = procImagePath;
+                return true;
+            }
+            else
+            {
+                // May have suffered truncation. try again
+                bufferSize += 1024;
+                bytesWritten = 0;
+            }
+        }
+        else
+        {
+            // bad alloc
+            return false;
+        }
+    }
+
+    return false;
+
+    #else
+
+    // platform not supported
+    return false;
+
+    #endif
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
 GetExeNameForProcessId( TProcessId pid   ,
                         CString& exeName )
 {GUCEF_TRACE;
 
-    UInt32 nameLength = 0;
-    char* nameBuffer = exeName.Reserve( 1024 );
-    if ( OSWRAP_TRUE == GetExeNameForProcessId( pid, nameBuffer, 1024, &nameLength ) )
+    if ( 0 == pid )
+        return false;
+
+    exeName.Clear();
+
+    #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
+
+    return GetExeImagePathForProcessId( pid, exeName );
+
+    #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
+
+    CString symLinkPath;
+    if ( GetExeImagePathForProcessId( pid, symLinkPath ) )
     {
-        exeName.SetLength( nameLength );
+        // The symlink can have the path prefixed from where the executable is linked
+        // We just want the name itself
+        exeName = ExtractFilename( symLinkPath );
         return true;
     }
     return false;
+
+    #else
+
+    return false;
+
+    #endif
 }
 
 /*-------------------------------------------------------------------------*/
@@ -405,7 +541,11 @@ GetProcessList( TProcessIdVector& processList )
         {
             if ( 1 == IsANumber( dirFilesys->d_name ) )
             {
-                processList.push_back( (pid_t) StringToInt32( dirFilesys->d_name ) );
+                Int32 parsedId = StringToInt32( dirFilesys->d_name, -1 );
+                if ( parsedId > 0 )
+                {
+                    processList.push_back( (pid_t) parsedId );
+                }
             }
         }
     }
@@ -636,15 +776,46 @@ CProcessInformation::TryGetProcessInformation( TProcessId pid            ,
 
         #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
 
-        // @TODO: Make the Linux variant
+        bool totalSuccess = true;
+
+        CString exeImagePath;
+        if ( GetExeImagePathForProcessId( pid, exeImagePath ) )
+            info.SetImagePath( exeImagePath );
+        else
+            totalSuccess = false;
+
+        CString cmdLineArgsPath = "/proc/" + ToString( pid ) + "/cmdline";
+
+        // the /proc/<prodId>/cmdline data is an array of null terminated strings
+        CDynamicBuffer cmdLineArgData;
+        if ( cmdLineArgData.LoadContentFromFile( cmdLineArgsPath ) )
+        {
+            // We need to make sure we read beyond the null terminators or we wont get all the args
+            CString::StringVector args = cmdLineArgData.ParseUtf8StringElements( '\0', false );
+            if ( args.size() > 1 )
+            {
+                // We only care about 'extra' params passed to a program not the default first argument on Windows which is automatically added
+                // this creates a asymmetrical relationship between setting and getting the command line which is platform specific, so we remove it
+                // we are already obtaining the image path anyway so that can be used to find the exe location
+                args.erase( args.begin() );
+
+                CString cmdLineArgs = ToString( args, ' ' );
+                info.SetCommandLineArgs( cmdLineArgs );
+            }
+        }
+        else
+            totalSuccess = false;
+
+        return totalSuccess;
 
         #else
 
-        return OSWRAP_FALSE;
+        return false;
 
         #endif
     }
-    return OSWRAP_FALSE;
+
+    return false;
 }
 
 /*-------------------------------------------------------------------------//

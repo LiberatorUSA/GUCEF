@@ -315,6 +315,24 @@ class GUCEF_CORE_PUBLIC_CPP CDynamicBuffer : public CICloneable
                 UInt32 offset = 0  ) const;
 
     /**
+     * @brief Helper to parse strings from a buffer
+     * @param seperatorCodePoint code point value of the seperator
+     * @param addEmptyElements whether to consider empty strings as elements
+     * @return the vector of parsed strings
+     */
+    CUtf8String::StringVector ParseUtf8StringElements( UInt32 seperatorCodePoint    ,
+                                                       bool addEmptyElements = true ) const;
+
+    /**
+     * @brief Helper to parse strings from a buffer
+     * @param seperatorCodePoint code point value of the seperator
+     * @param addEmptyElements whether to consider empty strings as elements
+     * @return the set of parsed strings
+     */
+    CUtf8String::StringSet ParseUniqueUtf8StringElements( UInt32 seperatorCodePoint    ,
+                                                          bool addEmptyElements = true ) const;
+
+    /**
      *  Down shifts the data in the buffer by "bytesToWipe" bytes and adjust the data size indicator accordingly
      *  Returns false if out of bounds.
      */

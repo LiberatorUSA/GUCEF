@@ -582,11 +582,12 @@ void
 ProcessMetrics::RefreshPIDs( const CORE::CString::StringSet& refreshExeNames )
 {GUCEF_TRACE;
 
-    //if ( refreshExeNames.empty() )
+    if ( refreshExeNames.empty() )
         return;
 
     GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "ProcessMetrics: Refreshing PID administration for " + CORE::ToString( refreshExeNames.size() ) + " items" );
 
+    size_t matchedItems = 0;
     CORE::TProcessIdVector procIds;
     if ( CORE::GetProcessList( procIds ) )
     {
@@ -610,11 +611,17 @@ ProcessMetrics::RefreshPIDs( const CORE::CString::StringSet& refreshExeNames )
                         TProcessIdMap::iterator m = m_exeProcsToWatch.find( exeName );
                         if ( m != m_exeProcsToWatch.end() )
                         {
+                            ++matchedItems;
+
                             CProcInfo& procInfo = (*m).second;
                             if ( procInfo.RefreshPID( pid ) )
                             {
                                 GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "ProcessMetrics: Refreshed PID for \"" + procInfo.exeName + "\"" );
                             }
+
+                            // early out if we matched all we are interested in
+                            if ( matchedItems >= refreshExeNames.size() )
+                                return;
                         }
                     }
                 }

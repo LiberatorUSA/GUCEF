@@ -1246,92 +1246,23 @@ GetExeNameForProcessId( TProcessId pid         ,
     if ( GUCEF_NULL == outNameBuffer || GUCEF_NULL == usedBufferSize )
         return OSWRAP_FALSE;
 
-    #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
-
-    HANDLE handle = ::OpenProcess( PROCESS_QUERY_LIMITED_INFORMATION,
-                                   FALSE,
-                                   pid /* This is the PID, you can find one from windows task manager */
-                                 );
-    if ( GUCEF_NULL != handle )
+    // Just call the C++ implementation
+    CString outStr;
+    if ( GetExeNameForProcessId( pid, outStr ) )
     {
-        #if 1
-
-        DWORD buffSize = (DWORD) nameBufferSize;
-        if ( ::QueryFullProcessImageNameA( handle, 0, outNameBuffer, &buffSize ) )
+        size_t nrOfBytes = (size_t) GUCEF_SMALLEST( nameBufferSize, outStr.ByteSize() );
+        char* srcStr = outStr.C_String();
+        if ( GUCEF_NULL != srcStr && nrOfBytes > 0 )
         {
-            *usedBufferSize = (UInt32) buffSize;
-            ::CloseHandle( handle );
-            return OSWRAP_TRUE;
-        }
-        else
-        {
-            *outNameBuffer = '\0';
-            *usedBufferSize = 0;
+            memcpy( outNameBuffer, srcStr, nrOfBytes );
+            srcStr[ nrOfBytes-1 ] = '\0'; // Garantee a null terminator
         }
 
-        #else
-
-        // Needs PROCESS_QUERY_INFORMATION | PROCESS_VM_READ,
-
-        HMODULE hMod = 0;
-        DWORD cbNeeded = 0;
-        if ( EnumProcessModules( handle, &hMod, sizeof(hMod), &cbNeeded ) )
-        {
-            *usedBufferSize = (UInt32) GetModuleBaseNameA( handle, hMod, outNameBuffer, nameBufferSize );
-            ::CloseHandle( handle );
-            return OSWRAP_TRUE;
-        }
-        else
-        {
-            *outNameBuffer = '\0';
-            *usedBufferSize = 0;
-        }
-
-        #endif
-
-        ::CloseHandle( handle );
-    }
-    return OSWRAP_FALSE;
-
-    #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
-
-    if ( 0 == pid )
-        return OSWRAP_FALSE;
-
-    // The following works on Linux 2.2 and later:
-
-    char procInfoPath[ 64 ];
-    sprintf( procInfoPath, "/proc/%d/exe", pid );
-    UInt32 maxNameBytes = PATH_MAX > nameBufferSize ? PATH_MAX : nameBufferSize;
-    char* symLinkPath = (char*) malloc( maxNameBytes );
-    ssize_t bytesWritten = ::readlink( procInfoPath, symLinkPath, maxNameBytes );
-    if ( bytesWritten <= 0 )
-    {
-        // Failed to read the link
-        // this is expected for some OS level and zombie procs
-        free( symLinkPath );
-        *outNameBuffer = '\0';
         *usedBufferSize = 0;
-        return OSWRAP_FALSE;
+        return OSWRAP_TRUE;
     }
 
-    // The symlink can have the path prefixed from where the executable is linked
-    // We just want the name itself
-    const char* symLinkFilename = Extract_Filename( symLinkPath );
-    UInt32 symLinkFilenameLength = strlen( symLinkFilename )+1;
-    if ( symLinkFilenameLength > maxNameBytes )
-        symLinkFilenameLength = maxNameBytes;
-    memcpy( outNameBuffer, symLinkFilename, symLinkFilenameLength );
-    outNameBuffer[ symLinkFilenameLength-1 ] = '\0';
-    *usedBufferSize = symLinkFilenameLength;
-    free( symLinkPath );
-    return OSWRAP_TRUE;
-
-    #else
-
     return OSWRAP_FALSE;
-
-    #endif
 }
 
 /*--------------------------------------------------------------------------*/

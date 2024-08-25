@@ -67,7 +67,7 @@ CUrlEncoder::EncodeToAscii( const CORE::CUtf8String& strToBeEncoded ,
     const char* utf8Cp = strToBeEncoded.C_String();
     for ( UInt32 i=0; i<strToBeEncoded.Length(); ++i )
     {              
-        Int32 codePoint = 0;
+        UInt32 codePoint = 0;
         const char* newUtf8Cp = strToBeEncoded.NextCodepointPtr( utf8Cp, codePoint );
         if ( GUCEF_NULL != newUtf8Cp )
         {
@@ -208,7 +208,7 @@ CUrlEncoder::DecodeFromAscii( const CORE::CAsciiString& strToBeDecoded ,
             }
 
             // Did we gather enough bytes to generate a complete utf8 code point?
-            Int32 utf32CodePoint = 0;
+            UInt32 utf32CodePoint = 0;
             Int32 bytesInCurrentUtf8CodePoint = CUtf8String::EncodeUtf8CodePointToUtf32( utf8TempBuffer, 5, utf32CodePoint ); 
             if ( -1 != bytesInCurrentUtf8CodePoint )
             {

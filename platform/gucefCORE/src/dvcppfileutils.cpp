@@ -553,6 +553,47 @@ CreatePathDirectories( const CString& path )
 
 /*-------------------------------------------------------------------------*/
 
+#if ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
+
+inline bool
+IsSpecialLinuxFile( const struct stat& fileStat )
+{GUCEF_TRACE;
+
+    // File type masks:
+    //  S_IFMT = bit mask for the file type bit fields
+    //  S_IFLNK = symbolic link
+    //  S_IFREG = regular file
+    //  S_IFCHR = character device
+    //  S_IFBLK = block device
+    //  S_IFIFO = FIFO
+    //  S_IFSOCK = socket
+
+    //bool isRegularFile = S_ISREG( fileStat.st_mode );
+    bool isDirectory = S_ISDIR( fileStat.st_mode );
+    bool isBlockDevice = S_ISBLK( fileStat.st_mode );
+    bool isSymLink = S_ISLNK( fileStat.st_mode );
+    bool isCharDevice = S_ISCHR( fileStat.st_mode );
+    bool isFifo = S_ISFIFO( fileStat.st_mode );
+    bool isSocket = S_ISSOCK( fileStat.st_mode );
+    //bool isSpecialNamed = S_ISNAM( fileStat.st_mode );
+    return !isDirectory && ( isSymLink || isCharDevice || isFifo || isSocket );
+}
+
+/*-------------------------------------------------------------------------*/
+
+inline bool
+IsLinuxUserSpaceApiFile( const CString& filename )
+{GUCEF_TRACE;
+
+    if ( filename.HasSubstr( "/proc/", 0, true ) == 0 )
+        return true;
+    return false;
+}
+
+#endif /* Linux or Android ? */
+
+/*-------------------------------------------------------------------------*/
+
 UInt64
 FileSize( const CString& filename )
 {GUCEF_TRACE;
@@ -580,11 +621,46 @@ FileSize( const CString& filename )
 
         #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
 
-        struct stat buf;
+        struct stat statInfo;
         int result;
-        result = stat( filename.C_String(), &buf );
+        result = stat( filename.C_String(), &statInfo );
         if ( result == 0 )
-            return buf.st_size;
+        {
+            if ( 0 == statInfo.st_size )
+            {
+                // A file size of 0 doesnt per se mean its actually 0 on Linux for special system files
+                // Those are generated on demand and are user space APIs
+                // As such the file size can also fluctuate but in a way that is no different from other
+                // file types where in between non-transactional/atomic operations someone could change a file
+                if ( IsSpecialLinuxFile( statInfo ) || IsLinuxUserSpaceApiFile( filename ) )
+                {                    
+                    FILE* fptr = fopen( filename.C_String(), "rb" );
+                    if ( NULL != fptr )
+                    {
+                        // Only way to get the data size for these is to actually read the data
+                        // data size is normally small so this should not take long
+                        UInt64 filesize = 0;
+                        size_t bytesRead = 0;
+                        char dummyBuffer[ 256 ];
+                        do
+                        {
+                            bytesRead = fread( dummyBuffer, 1, 256, fptr );
+                            filesize += bytesRead;
+                        }
+                        while ( bytesRead >= 256 );
+                        fclose( fptr );
+                        fptr = NULL;
+
+                        return filesize;
+                    }
+
+                    return 0;
+                }
+            }
+
+            return statInfo.st_size;
+
+        }
         return 0;
 
         #else

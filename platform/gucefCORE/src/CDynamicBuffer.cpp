@@ -50,10 +50,15 @@
 
 #include "CDynamicBuffer.h"     /* class definition */
 
+#ifndef GUCEF_CORE_CDYNAMICBUFFERACCESS_H
+#include "CDynamicBufferAccess.h"
+#define GUCEF_CORE_CDYNAMICBUFFERACCESS_H
+#endif /* GUCEF_CORE_CDYNAMICBUFFERACCESS_H ? */
+
 #ifndef GUCEF_CORE_GUCEF_ESSENTIALS_H
 #include "gucef_essentials.h"
 #define GUCEF_CORE_GUCEF_ESSENTIALS_H
-#endif /* GUCEF_CORE_GUCEF_ESSENTIALS_H ? */ 
+#endif /* GUCEF_CORE_GUCEF_ESSENTIALS_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -499,31 +504,42 @@ CDynamicBuffer::LoadContentFromFile( const CString& filePath   ,
     // Set the buffer to be the same size as the file
     Clear( true );    
     
-    UInt64 readBlockSize = 0;
-    if ( bytesToRead < 0 )
-    {
-        UInt64 fileSize = CORE::FileSize( filePath );
-        readBlockSize = fileSize - offsetInFile;
-    }
-    else
-    {
-        readBlockSize = (UInt32) bytesToRead;
-    }
-
     // Zero size file load equals successfull load
-    if ( 0 == readBlockSize )
+    if ( 0 == bytesToRead )
         return true;
     
-    SetBufferSize( (UInt32)readBlockSize, true );
-    
     // Load the entire file into memory
-    size_t actuallyRead = 0;
-    FILE* filePtr = fopen( filePath.C_String(), "rb" );
-    if ( NULL != filePtr )
+    // Note that the file size can changed between action and as such asking for file size
+    // is just done as a performance optimization. while in most cases it will be the same
+    // wrt bytes read vs reported file size and thus efficient without reallocations
+    // it will not be true 100% of the time for all files everywhere.
+
+    CDynamicBufferAccess bufferAccess( *this );
+    CFileAccess fileAccess;
+
+    if ( fileAccess.Open( filePath, "rb" ) )
     {
-        fseek( filePtr, offsetInFile, SEEK_SET );
-        actuallyRead = fread( _buffer, readBlockSize, 1, filePtr );
-        fclose( filePtr );
+        // this section is purely performance optimization to reduce reallocs
+        // it can be an extra filesystem op in the case of calling FileSize
+        // but the buffer to hold a file can be of substantial size thus a difficult realloc
+        if ( bytesToRead < 0 )
+        {
+            UInt64 fileSize = fileAccess.GetSize();
+            UInt64 expectedBytesToRead = fileSize - offsetInFile;
+            SetBufferSize( (UInt32) expectedBytesToRead, false );
+        }
+        else
+        {
+            SetBufferSize( (UInt32) bytesToRead, true );
+        }
+
+        // now perform the actual read
+        if ( 0 != offsetInFile )
+            fileAccess.Seek( offsetInFile, SEEK_SET );
+
+        UInt64 totalBytesRead = bufferAccess.Write( fileAccess, bytesToRead );
+
+        return true;
     }
     else
     {
@@ -531,17 +547,6 @@ CDynamicBuffer::LoadContentFromFile( const CString& filePath   ,
         Clear( false );
         return false;
     }
-    
-    // Sanity check to make sure we loaded the whole block
-    if ( actuallyRead == 1 )
-    {
-        m_dataSize = (UInt32) readBlockSize;
-        return true;
-    }
-    
-    // Failed to read the block
-    Clear( false );
-    return false;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -905,6 +910,25 @@ CDynamicBuffer::Find( const void* data        ,
     return -1;
 }
 
+/*-------------------------------------------------------------------------*/
+
+CUtf8String::StringVector
+CDynamicBuffer::ParseUtf8StringElements( UInt32 seperatorCodePoint ,
+                                         bool addEmptyElements     ) const
+{GUCEF_TRACE;
+
+    return CUtf8String::ParseElements( ( const UInt8* ) _buffer, m_dataSize, seperatorCodePoint, addEmptyElements );
+}
+
+/*-------------------------------------------------------------------------*/
+
+CUtf8String::StringSet
+CDynamicBuffer::ParseUniqueUtf8StringElements( UInt32 seperatorCodePoint ,
+                                               bool addEmptyElements     ) const
+{GUCEF_TRACE;
+
+    return CUtf8String::ParseUniqueElements( ( const UInt8* ) _buffer, m_dataSize, seperatorCodePoint, addEmptyElements );
+}
 /*-------------------------------------------------------------------------*/
 
 bool
