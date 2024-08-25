@@ -339,9 +339,9 @@
 
     #define GUCEF_OSMAIN_BEGIN_APPTYPE( appType )                                                      \
                                                                                                        \
-    static const unsigned char GUCEF_APP_TYPE = appType;                                               \
+    static unsigned char GUCEF_APP_TYPE = appType;                                                     \
     typedef void ( *gucef_installed_signal_handler_ptr)( int );                                        \
-    static gucef_installed_signal_handler_ptr gucef_installed_signal_handler = NULL;                   \
+    static gucef_installed_signal_handler_ptr gucef_installed_signal_handler = GUCEF_NULL;             \
                                                                                                        \
     void linux_sig_term_handler( int signum, siginfo_t* info, void* ptr )                              \
     {                                                                                                  \
@@ -351,7 +351,18 @@
                                                                                                        \
     int                                                                                                \
     main( int argc, char* argv[] )                                                                     \
-    {
+    {                                                                                                  \
+        if ( 0 != argc && argv != GUCEF_NULL )                                                         \
+        {                                                                                              \
+            for ( int i=0; i<argc; ++i )                                                               \
+            {                                                                                          \
+                if ( 0 == strcmp( argv[ i ], "--console" ) )                                           \
+                {                                                                                      \
+                    GUCEF_APP_TYPE = GUCEF_APP_TYPE_CONSOLE;                                           \
+                    break;                                                                             \
+                }                                                                                      \
+            }                                                                                          \
+        }
 
     #define GUCEF_OSMAIN_BEGIN      GUCEF_OSMAIN_BEGIN_APPTYPE( GUCEF_AUTO_APP_TYPE_CONSOLE )
 
