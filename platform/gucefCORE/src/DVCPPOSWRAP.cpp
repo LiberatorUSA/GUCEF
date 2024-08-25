@@ -240,41 +240,34 @@ GetExeImagePathForProcessId( TProcessId pid     ,
                                  );
     if ( GUCEF_NULL != handle )
     {
-        #if 1
+        std::wstring outNameBuffer;
+        outNameBuffer.resize( MAX_PATH );
+        DWORD buffSize = (DWORD) outNameBuffer.size();
 
-        DWORD buffSize = (DWORD) nameBufferSize;
-        if ( ::QueryFullProcessImageNameW( handle, 0, outNameBuffer, &buffSize ) )
+        bool mayBeTruncated = false;
+        bool hadError = false;
+        do
         {
-            *usedBufferSize = (UInt32) buffSize;
-            ::CloseHandle( handle );
+            BOOL result = ::QueryFullProcessImageNameW( handle, 0, &outNameBuffer[0], &buffSize );
+            if ( result != FALSE )
+            {
+                if ( buffSize == (DWORD) outNameBuffer.size() )
+                {
+                    outNameBuffer.resize( outNameBuffer.size() * 2 );
+                    buffSize = (DWORD) outNameBuffer.size();
+                    mayBeTruncated = true;
+                }
+            }
+        }
+        while ( !hadError && mayBeTruncated );
+        
+        if ( !hadError )
+        {
+            outNameBuffer.shrink_to_fit();
+            imagePath = ToString( outNameBuffer ).Trim( true );
+            ::CloseHandle( handle );    
             return true;
         }
-        else
-        {
-            *outNameBuffer = '\0';
-            *usedBufferSize = 0;
-        }
-
-        #else
-
-        // Needs PROCESS_QUERY_INFORMATION | PROCESS_VM_READ,
-
-        HMODULE hMod = 0;
-        DWORD cbNeeded = 0;
-        if ( EnumProcessModules( handle, &hMod, sizeof(hMod), &cbNeeded ) )
-        {
-            *usedBufferSize = (UInt32) GetModuleBaseNameW( handle, hMod, outNameBuffer, nameBufferSize );
-            ::CloseHandle( handle );
-            return true;
-        }
-        else
-        {
-            *outNameBuffer = '\0';
-            *usedBufferSize = 0;
-        }
-
-        #endif
-
         ::CloseHandle( handle );
     }
     return false;
@@ -496,9 +489,14 @@ GetProcessList( TProcessIdVector& processList )
     DWORD* win32ProcessList = GUCEF_NULL;
     do
     {
-        win32ProcessList = (DWORD*) realloc( win32ProcessList, reservedListSizeInBytes );
-        if ( GUCEF_NULL == win32ProcessList )
+        DWORD* newWin32ProcessList = (DWORD*) realloc( win32ProcessList, reservedListSizeInBytes );
+        if ( GUCEF_NULL == newWin32ProcessList )
+        {
+            if ( GUCEF_NULL != win32ProcessList )
+                free( win32ProcessList );
             return false;
+        }
+        win32ProcessList = newWin32ProcessList;
 
         if ( 0 == ::EnumProcesses( win32ProcessList, reservedListSizeInBytes, &usedListSizeInBytes ) )
         {
@@ -518,7 +516,7 @@ GetProcessList( TProcessIdVector& processList )
     while ( true );
 
     UInt32 processCount = usedListSizeInBytes / sizeof(DWORD);
-    processList.reserve( processCount )
+    processList.reserve( processCount );
     for ( UInt32 i=0; i<processCount; ++i )
     {
         processList.push_back( win32ProcessList[ i ] );
