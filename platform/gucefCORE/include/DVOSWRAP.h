@@ -364,7 +364,7 @@ FreeProcessList( TProcessId* processList );
 /*--------------------------------------------------------------------------*/
 
 GUCEF_CORE_PUBLIC_C OSWRAP_BOOLINT
-IsProcessStillActive( TProcessId pid, OSWRAP_BOOLINT* status );
+CheckOnProcessAliveStatus( TProcessId pid, OSWRAP_BOOLINT* status );
 
 /*--------------------------------------------------------------------------*/
 

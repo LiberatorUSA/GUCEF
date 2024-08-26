@@ -318,11 +318,10 @@ ProcessMetrics::CProcInfo::IsProcessStillActive( void )
 
     if ( 0 != pid )
     {
-        OSWRAP_BOOLINT status = OSWRAP_TRUE;
-        OSWRAP_BOOLINT checkSuccess = CORE::IsProcessStillActive( pid, &status );
-        if ( OSWRAP_TRUE == checkSuccess )
+        bool isProcAliveStatus = true;
+        if ( CORE::CheckOnProcessAliveStatus( pid, isProcAliveStatus ) )
         {
-            if ( status == OSWRAP_TRUE )
+            if ( isProcAliveStatus )
             {
                 // the proc is (still) alive per the O/S
                 if ( GUCEF_NULL != previousProcCpuDataDataPoint )

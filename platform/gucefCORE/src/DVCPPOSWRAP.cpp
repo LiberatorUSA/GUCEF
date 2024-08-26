@@ -215,6 +215,10 @@ GetHostname( void )
         return nameBuffer;
     }
 
+#else
+
+    GUCEF_WARNING_LOG( LOGLEVEL_NORMAL, "GetHostname: Platform has no supported implementation" );
+
 #endif
 
     return CString();
@@ -321,6 +325,7 @@ GetExeImagePathForProcessId( TProcessId pid     ,
     #else
 
     // platform not supported
+    GUCEF_WARNING_LOG( LOGLEVEL_NORMAL, "GetExeImagePathForProcessId: Platform has no supported implementation" );
     return false;
 
     #endif
@@ -356,6 +361,7 @@ GetExeNameForProcessId( TProcessId pid   ,
 
     #else
 
+    GUCEF_WARNING_LOG( LOGLEVEL_NORMAL, "GetExeNameForProcessId: Platform has no supported implementation" );
     return false;
 
     #endif
@@ -553,9 +559,57 @@ GetProcessList( TProcessIdVector& processList )
 
     #else
 
+    GUCEF_WARNING_LOG( LOGLEVEL_NORMAL, "GetProcessList: Platform has no supported implementation" );
     return false;
 
     #endif
+}
+
+/*--------------------------------------------------------------------------*/
+
+bool
+CheckOnProcessAliveStatus( TProcessId pid, bool& status )
+{GUCEF_TRACE;
+
+    #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
+
+    // To get the alive status of another proc we need a handle to it
+    HANDLE hProcess = ::OpenProcess( PROCESS_QUERY_INFORMATION,
+                                    FALSE,
+                                    pid );
+    if ( GUCEF_NULL == hProcess )
+        return false;
+
+    status = true;
+    DWORD exitCode = 0;
+    if ( ( ::GetExitCodeProcess( hProcess, &exitCode ) == FALSE ) || exitCode != STILL_ACTIVE )
+    {
+        status = false;
+    }
+
+    ::CloseHandle( hProcess );
+    return true;
+
+    #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
+
+    // If sig is 0, then no signal is sent, but existence and permission
+    // checks are still performed; this can be used to check for the
+    // existence of a process ID or process group ID that the caller is
+    // permitted to signal.
+    if ( ::kill( pid, 0 ) == 0 )
+    {
+        return true;
+    }
+    return false;
+
+    #else
+
+    // platform not supported
+    GUCEF_WARNING_LOG( LOGLEVEL_NORMAL, "CheckOnProcessAliveStatus: Platform has no supported implementation" );
+    return false;
+
+    #endif
+
 }
 
 /*--------------------------------------------------------------------------*/
@@ -807,7 +861,8 @@ CProcessInformation::TryGetProcessInformation( TProcessId pid            ,
         return totalSuccess;
 
         #else
-
+        
+        GUCEF_WARNING_LOG( LOGLEVEL_NORMAL, "ProcessInformation:TryGetProcessInformation: Platform has no supported implementation" );
         return false;
 
         #endif

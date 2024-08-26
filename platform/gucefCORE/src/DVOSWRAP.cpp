@@ -56,6 +56,7 @@
 
 #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
 
+  #include <sys/sysinfo.h>
   #include <sys/times.h>
   #include <sys/types.h>
   #include <sys/stat.h>
@@ -1075,39 +1076,18 @@ GetProcessIdAtIndex( TProcessId* processList ,
 /*--------------------------------------------------------------------------*/
 
 OSWRAP_BOOLINT
-IsProcessStillActive( TProcessId pid, OSWRAP_BOOLINT* status )
+CheckOnProcessAliveStatus( TProcessId pid, OSWRAP_BOOLINT* status )
 {GUCEF_TRACE;
 
     if ( GUCEF_NULL != status )
     {
-        #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
-
-        // To get the alive status of another proc we need a handle to it
-        HANDLE hProcess = ::OpenProcess( PROCESS_QUERY_INFORMATION,
-                                         FALSE,
-                                         pid );
-        if ( GUCEF_NULL == hProcess )
-            return OSWRAP_FALSE;
-
-        *status = OSWRAP_TRUE;
-        DWORD exitCode = 0;
-        if ( ( ::GetExitCodeProcess( hProcess, &exitCode ) == FALSE ) || exitCode != STILL_ACTIVE )
+        // Just call the C++ implementation
+        bool isAlive = false;
+        if ( CheckOnProcessAliveStatus( pid, isAlive ) )
         {
-            *status = OSWRAP_FALSE;
+            *status = isAlive ? OSWRAP_TRUE : OSWRAP_FALSE;
+            return OSWRAP_TRUE;
         }
-
-        ::CloseHandle( hProcess );
-        return OSWRAP_TRUE;
-
-        #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
-
-        // @TODO: check under /proc
-
-        #else
-
-        return OSWRAP_FALSE;
-
-        #endif
     }
     return OSWRAP_FALSE;
 }
@@ -1224,8 +1204,101 @@ GetGlobalMemoryUsage( TGlobalMemoryUsageInfo* memUseInfo )
 
     #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
 
-    // @todo
+    // VERBIAGE WARNING:
+    //
+    // Note that Linux considers memory that is used, but can be made available, as 'Available'
+    // Free memory is memory that is not used for any purpose at all including sneaky caching
+    // Hence from an application perspective, trying to guard against 'running out of memory' the
+    // value you care about on Linux is 'available' memory.
+    // The excess bytes of free > available is what Linux us used for things like buffers and disk caches
+
+    #if 1
+
+    struct sysinfo info;
+    if ( -1 != ::sysinfo( &info ) )
+    {
+        memUseInfo->totalPhysicalMemoryInBytes = (TGlobalMemoryUsageInfo::TMemStatInt) ( info.totalram * info.mem_unit );
+        memUseInfo->availablePhysicalMemoryInBytes = (TGlobalMemoryUsageInfo::TMemStatInt) ( ( info.freeram + info.bufferram + info.sharedram ) * info.mem_unit );
+        memUseInfo->memoryLoadPercentage = (UInt8) ( 100 - ( memUseInfo->availablePhysicalMemoryInBytes / ( 0.01 * memUseInfo->totalPhysicalMemoryInBytes ) ) );
+        memUseInfo->totalPageFileSizeInBytes = (TGlobalMemoryUsageInfo::TMemStatInt) ( info.totalswap * info.mem_unit );
+        memUseInfo->availablePageFileSizeInBytes = (TGlobalMemoryUsageInfo::TMemStatInt) ( info.freeswap * info.mem_unit );
+        return OSWRAP_TRUE;
+    }
     return OSWRAP_FALSE;
+
+    #else
+
+    CString memInfo;
+    if ( LoadTextFileAsString( "/proc/meminfo", memInfo, true, "\n" ) )
+    {
+        memInfo = memInfo.CompactRepeatingChar( ' ' );
+        memInfo = memInfo.ReplaceSubstr( " kB", CString::Empty );
+        CString::StringVector memInfoItems = memInfo.ParseElements( '\n', false );
+
+        TGlobalMemoryUsageInfo::TMemStatInt usedVirtualMemoryInBytes = 0;
+        CString::StringVector::iterator i = memInfoItems.begin();
+        while ( i != memInfoItems.end() )
+        {
+            // Note: these values are not in kB but in KiB contrary to what the manual and the file says
+            //       hence factor 1024 applies not 1000
+
+            const CString& memInfoEntry = (*i);
+            if ( 0 == memInfoEntry.HasSubstr( "MemTotal:", 0, true ) )
+            {
+                CString nrStr = memInfoEntry.SubstrToIndex( 10, false );
+                memUseInfo->totalPhysicalMemoryInBytes = (TGlobalMemoryUsageInfo::TMemStatInt) ( StringToUInt64( nrStr, 0 ) * 1024 );
+            }
+            else  /*  We dont currently have a place to store free vs available
+            if ( 0 == memInfoEntry.HasSubstr( "MemFree:", 0, true ) )
+            {
+                CString nrStr = memInfoEntry.SubstrToIndex( 9, false );
+                memUseInfo->freePhysicalMemoryInBytes = (TGlobalMemoryUsageInfo::TMemStatInt) ( StringToUInt64( nrStr, 0 ) * 1024 );
+            }
+            else  */
+            if ( 0 == memInfoEntry.HasSubstr( "MemAvailable:", 0, true ) )
+            {
+                // MemAvailable = MemFree + Buffers + Cached
+                CString nrStr = memInfoEntry.SubstrToIndex( 14, false );
+                memUseInfo->availablePhysicalMemoryInBytes = (TGlobalMemoryUsageInfo::TMemStatInt) ( StringToUInt64( nrStr, 0 ) * 1024 );
+            }
+            else
+            if ( 0 == memInfoEntry.HasSubstr( "SwapTotal:", 0, true ) )
+            {
+                CString nrStr = memInfoEntry.SubstrToIndex( 11, false );
+                memUseInfo->totalPageFileSizeInBytes = (TGlobalMemoryUsageInfo::TMemStatInt) ( StringToUInt64( nrStr, 0 ) * 1024 );
+            }
+            else
+            if ( 0 == memInfoEntry.HasSubstr( "SwapFree:", 0, true ) )
+            {
+                CString nrStr = memInfoEntry.SubstrToIndex( 10, false );
+                memUseInfo->availablePageFileSizeInBytes = (TGlobalMemoryUsageInfo::TMemStatInt) ( StringToUInt64( nrStr, 0 ) * 1024 );
+            }
+            else
+            if ( 0 == memInfoEntry.HasSubstr( "VmallocTotal:", 0, true ) )
+            {
+                CString nrStr = memInfoEntry.SubstrToIndex( 14, false );
+                memUseInfo->totalVirtualMemoryInBytes = (TGlobalMemoryUsageInfo::TMemStatInt) ( StringToUInt64( nrStr, 0 ) * 1024 );
+            }
+            else
+            if ( 0 == memInfoEntry.HasSubstr( "VmallocUsed:", 0, true ) )
+            {
+                CString nrStr = memInfoEntry.SubstrToIndex( 13, false );
+                usedVirtualMemoryInBytes = (TGlobalMemoryUsageInfo::TMemStatInt) ( StringToUInt64( nrStr, 0 ) * 1024 );
+            }
+
+            ++i;
+        }
+
+        if ( memUseInfo->totalVirtualMemoryInBytes > usedVirtualMemoryInBytes )
+            memUseInfo->availableVirtualMemoryInBytes = memUseInfo->totalVirtualMemoryInBytes - usedVirtualMemoryInBytes;
+        memUseInfo->memoryLoadPercentage = (UInt8) ( 100 - ( memUseInfo->availablePhysicalMemoryInBytes / ( 0.01 * memUseInfo->totalPhysicalMemoryInBytes ) ) );
+
+        return OSWRAP_TRUE;
+    }
+
+    return OSWRAP_FALSE;
+
+    #endif // alternate implementation
 
     #else
 

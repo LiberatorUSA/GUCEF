@@ -114,6 +114,18 @@ GetProcessList( TProcessIdVector& processList );
 
 /*--------------------------------------------------------------------------*/
 
+
+/**
+ * @brief Attempts to check if the process with the given process Id is still alive
+ * @param pid the process id
+ * @param status output param indicating the 'alive' status of the process
+ * @return whether we were able to obtain the alive status of the process
+ */
+GUCEF_CORE_PUBLIC_CPP bool
+CheckOnProcessAliveStatus( TProcessId pid, bool& status );
+
+/*--------------------------------------------------------------------------*/
+
 class GUCEF_CORE_PUBLIC_CPP CProcessInformation
 {
     public:
