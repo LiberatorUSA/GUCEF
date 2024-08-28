@@ -30,7 +30,7 @@
 #include <limits.h>
 
 #ifndef GUCEF_CORE_CONFIG_H
-#include "gucefCORE_config.h"     /* build defines */
+#include "gucefCORE_config.h"
 #define GUCEF_CORE_CONFIG_H
 #endif /* GUCEF_CORE_CONFIG_H ? */
 
@@ -39,10 +39,18 @@
 #define GUCEF_CORE_LOGGING_H
 #endif /* GUCEF_CORE_LOGGING_H ? */
 
-#include "dvstrutils.h"         /* My own string utils */
+#ifndef GUCEF_CORE_DVSTRUTILS_H
+#include "dvstrutils.h"
+#define GUCEF_CORE_DVSTRUTILS_H
+#endif /* GUCEF_CORE_DVSTRUTILS_H ? */
+
+#ifndef GUCEF_CORE_DVCPPSTRINGUTILS_H
+#include "dvcppstringutils.h"
+#define GUCEF_CORE_DVCPPSTRINGUTILS_H
+#endif /* GUCEF_CORE_DVCPPSTRINGUTILS_H ? */
 
 #ifndef GUCEF_CORE_DVFILEUTILS_H
-#include "dvfileutils.h"        /* all kinds of file utils */
+#include "dvfileutils.h"
 #define GUCEF_CORE_DVFILEUTILS_H
 #endif /* GUCEF_CORE_DVFILEUTILS_H ? */
 
@@ -61,6 +69,7 @@
   #include <unistd.h>             /* POSIX utilities */
   #include <limits.h>             /* Linux OS limits */
   #include <sys/stat.h>           /* needed for stat function */
+  #include <sys/statvfs.h>
   #include <errno.h>
   #include <fcntl.h>
   #define MAX_DIR_LENGTH PATH_MAX
@@ -496,7 +505,7 @@ bool
 DirExists( const CString& path )
 {GUCEF_TRACE;
 
-    if ( GUCEF_NULL != path )
+    if ( !path.IsNULLOrEmpty() )
     {
         #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
 
@@ -510,17 +519,17 @@ DirExists( const CString& path )
             FindClose( hFind );
 
             /* make sure we found a directory not a file */
-            return ( FileInfo.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY );
+            return ( FileInfo.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY ) > 0;
         }
-        return 0;
+        return false;
 
         #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
 
         struct stat buf;
         if ( stat( path.C_String(), &buf ) == 0 )
             if ( buf.st_mode & S_IFDIR != 0 )
-                return 1;
-        return 0;
+                return true;
+        return false;
 
         #else
 
@@ -530,7 +539,7 @@ DirExists( const CString& path )
 
         #endif
     }
-    return 0;
+    return false;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -589,6 +598,132 @@ IsLinuxUserSpaceApiFile( const CString& filename )
         return true;
     return false;
 }
+
+/*-------------------------------------------------------------------------*/
+
+bool
+TryResolveLinuxSymlinkPath( const CString& symlinkPath, CString& resolvedPath )
+{GUCEF_TRACE;
+
+    resolvedPath.Clear();
+
+    if ( !symlinkPath.IsNULLOrEmpty()  )
+    {
+        Int32 bytesRead = 0;
+        CString linkedPath;
+
+        linkedPath.Reserve( 256 );
+        if ( GUCEF_NULL != linkedPath.C_String() )
+        {
+            do
+            {
+                bytesRead = readlink( symlinkPath.C_String(), linkedPath.C_String(), linkedPath.ByteSize() );
+                if ( -1 == bytesRead )
+                {
+                    return false;
+                }
+                if ( bytesRead == (Int32) linkedPath.ByteSize() )
+                {
+                    // truncation may have occured
+                    linkedPath.Reserve( linkedPath.ByteSize() * 2 );
+                }
+            }
+            while ( GUCEF_NULL != linkedPath.C_String() && bytesRead == (Int32) linkedPath.ByteSize() );
+        }
+
+        linkedPath.DetermineLength();
+        resolvedPath = linkedPath.Trim( true );
+        return true;
+    }
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
+class CLinuxProcMountsInfo
+{
+    public:
+
+    CString device;
+    CString mountPoint;
+    CString filesystemType;
+    CString mountOptions;
+    bool dump;
+    Int32 pass;
+
+    CLinuxProcMountsInfo( void )
+        : device()
+        , mountPoint()
+        , filesystemType()
+        , mountOptions()
+        , dump( false )
+        , pass( 0 )
+    {GUCEF_TRACE;
+
+    }
+
+    bool TryParseString( const CString& str )
+    {GUCEF_TRACE;
+
+        CString::StringVector data = str.ParseElements( ' ', false );
+
+        // the information is stored positionally
+        if ( data.size() > 0 )
+            device = data[ 0 ];
+        if ( data.size() > 1 )
+            mountPoint = data[ 1 ];
+        if ( data.size() > 2 )
+            filesystemType = data[ 2 ];
+        if ( data.size() > 3 )
+            mountOptions = data[ 3 ];
+        if ( data.size() > 4 )
+            dump = StringToBool( data[ 4 ], false );
+        if ( data.size() > 5 )
+            pass = StringToInt32( data[ 5 ], 0 );
+
+        return true;
+    }
+
+};
+
+typedef std::vector< CLinuxProcMountsInfo, gucef_allocator< CLinuxProcMountsInfo > >  TLinuxProcMountsInfoVector;
+
+/*-------------------------------------------------------------------------*/
+
+bool
+ParseLinuxProcMounts( TLinuxProcMountsInfoVector& mounts )
+{GUCEF_TRACE;
+    
+    CString mountFileContent;
+    if ( LoadTextFileAsString( "/proc/mounts", mountFileContent, true, "\n" ) )
+    {
+        bool totalSuccess = true;
+
+        CString::StringVector lines = mountFileContent.ParseElements( '\n', false );
+        mounts.reserve( lines.size() );
+
+        CString::StringVector::iterator i = lines.begin();
+        while ( i != lines.end() )
+        {
+            const CString& line = (*i);
+
+            mounts.push_back( CLinuxProcMountsInfo() );
+            CLinuxProcMountsInfo& info = mounts.back();
+
+            if ( !info.TryParseString( line ) )
+            {
+                mounts.pop_back();
+                totalSuccess = false;
+            }
+            ++i;
+        }
+
+        return totalSuccess;
+    }
+
+    return false;
+}
+
 
 #endif /* Linux or Android ? */
 
@@ -717,10 +852,23 @@ GetFileSystemStorageVolumeInformationByDirPath( TStorageVolumeInformation& info,
 
     #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
 
-    return false;
+    struct statvfs fsStats;
+    if ( ::statvfs( path.C_String(), &fsStats ) != 0 )
+    {
+        // Error in getting file system statistics
+        GUCEF_DEBUG_LOG( LOGLEVEL_NORMAL, "GetFileSystemStorageVolumeInformationByDirPath: statvfs failed with error code: " + ToString( (UInt32) errno ) );
+        return false;
+    }
+
+    info.freeBytesAvailableToCaller = fsStats.f_bavail * fsStats.f_frsize;
+    info.totalNumberOfBytes = fsStats.f_blocks * fsStats.f_frsize;
+    info.totalNumberOfFreeBytes = fsStats.f_bfree * fsStats.f_frsize;
+    return true;
 
     #else
 
+    // Unsupported O/S build
+    GUCEF_WARNING_LOG( LOGLEVEL_NORMAL, "GetFileSystemStorageVolumeInformationByDirPath: Platform has no supported implementation" );
     return false;
 
     #endif
@@ -770,6 +918,8 @@ GetFileSystemStorageVolumeInformationByVolumeId( TStorageVolumeInformation& info
 
     #else
 
+    // Unsupported O/S build
+    GUCEF_WARNING_LOG( LOGLEVEL_NORMAL, "GetFileSystemStorageVolumeInformationByVolumeId: Platform has no supported implementation" );
     return false;
 
     #endif
@@ -820,6 +970,8 @@ GetFileSystemStorageVolumeIdByDirPath( CString& volumeId, const CString& path )
 
     #else
 
+    // Unsupported O/S build
+    GUCEF_WARNING_LOG( LOGLEVEL_NORMAL, "GetFileSystemStorageVolumeIdByDirPath: Platform has no supported implementation" );
     return false;
 
     #endif
@@ -867,6 +1019,22 @@ GetAllFileSystemStorageVolumes( CString::StringSet& volumeIds )
 
     #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
 
+    // A storage volume is a mounted filesystem
+
+    CFileSystemIterator fsIterator;
+    if ( fsIterator.FindFirst( "/dev/disk/by-uuid/" ) )
+    {
+        do
+        {
+            CString fsId = fsIterator.GetResourceName();
+            volumeIds.insert( fsId );
+        }
+        while ( fsIterator.FindNext() );
+
+        return true;
+    }
+
+    GUCEF_DEBUG_LOG( LOGLEVEL_NORMAL, "GetAllFileSystemStorageVolumes: Failed to open directory: /dev/disk/by-uuid/" );
     return false;
 
     #else
@@ -942,6 +1110,30 @@ GetAllFileSystemPathNamesForVolume( const CString& volumeId       ,
     }
 
     #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
+
+    CString fsPathByUuid = CombinePath( "/dev/disk/by-uuid/", volumeId );
+    CString fsDevPath;
+    if ( TryResolveLinuxSymlinkPath( fsPathByUuid, fsDevPath ) )
+    {
+        CString deviceId = LastSubDir( fsDevPath );
+
+        TLinuxProcMountsInfoVector mounts;
+        if ( ParseLinuxProcMounts( mounts ) )
+        {
+            TLinuxProcMountsInfoVector::iterator i = mounts.begin();
+            while ( i != mounts.end() )
+            {
+                const CLinuxProcMountsInfo& info = (*i);
+                CString mountDeviceId = LastSubDir( info.device );
+                if ( mountDeviceId == deviceId )
+                {
+                    pathNames.insert( info.mountPoint );
+                }
+                ++i;
+            }
+            return true;
+        }
+    }
 
     return false;
 
@@ -1019,6 +1211,7 @@ class CFileSystemIterator::CFileSystemIteratorOsData
  	public:
 
  	bool isActive;            // Flag indicating if the iterator is active
+    CString rootPath;
 
     #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
 
@@ -1028,24 +1221,73 @@ class CFileSystemIterator::CFileSystemIteratorOsData
 	CFileSystemIteratorOsData( void )
         : isActive( false )  // we start with an inactive iterator. A call to FindFirst will activate it potentially
         , find_handle( 0 )
-	{
+	{GUCEF_TRACE;
+
         memset( &find, 0, sizeof find );
 	}
 
     #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
 
-    DIR* dir;                 // Directory stream
-    struct dirent* entry;     // Pointer needed for functions to iterating directory entries. Stores entry name which is used to get stat
-    struct stat statinfo;     // Struct needed for determining info about an entry with stat().
+    DIR* dir;                   // Directory stream
+    struct dirent* entry;       // Pointer needed for functions to iterating directory entries. Stores entry name which is used to get stat
+    struct stat statinfo;       // Struct needed for determining info about an entry with stat().
+    CString linkedPath;         // Stores the resolved symlink linked path if any
+    struct stat linkedStatinfo; // Struct needed for determining info about an entry with stat().
 
 	CFileSystemIteratorOsData( void )
         : isActive( false )
+        , rootPath()
         , dir( GUCEF_NULL )
         , entry( GUCEF_NULL )
         , statinfo()
-	{
+        , linkedPath()
+        , linkedStatinfo()
+	{GUCEF_TRACE;
+
         memset( &statinfo, 0, sizeof statinfo );
+        memset( &linkedStatinfo, 0, sizeof statinfo );
 	}
+
+    void
+    ClearSymlinkInfo( void )
+    {GUCEF_TRACE;
+
+        linkedPath.Clear();
+        memset( &linkedStatinfo, 0, sizeof statinfo );
+    }
+
+    bool
+    ResolveSymlink( void )
+    {GUCEF_TRACE;
+
+        if ( GUCEF_NULL != entry && S_ISLNK( statinfo.st_mode ) > 0 )
+        {
+            if ( linkedPath.IsNULLOrEmpty() )
+            {
+                CString symlinkPath = entry->d_name;
+                if ( TryResolveLinuxSymlinkPath( symlinkPath, linkedPath ) )
+                {
+                    // Get info on the entry.
+                    if ( stat( linkedPath.C_String(), &linkedStatinfo ) >= 0 )
+                    {
+                        return true;
+                    }
+                }
+
+                ClearSymlinkInfo();
+                return false;
+            }
+
+            // Use cached info
+            // Expectation is that ClearSymlinkInfo was used for every new entry
+            return true;
+        }
+        else
+        {
+            ClearSymlinkInfo();
+        }
+        return false;
+    }
 
     #else
 
@@ -1098,12 +1340,14 @@ CFileSystemIterator::FindFirst( const CString& path )
 
     if ( -1 == path.HasChar( '*', false ) )
     {
-       CString filterPath = CombinePath( path, "*.*" );
+       m_osData->rootPath = path;
+        CString filterPath = CombinePath( path, "*.*" );
        std::wstring wFilterPath = ToWString( filterPath );
        m_osData->find_handle = _wfindfirst64( wFilterPath.c_str(), &m_osData->find );
     }
     else
     {
+        m_osData->rootPath = StripFilename( path );
         std::wstring wPath = ToWString( path );
         m_osData->find_handle = _wfindfirst64( wPath.c_str(), &m_osData->find );
     }
@@ -1115,6 +1359,7 @@ CFileSystemIterator::FindFirst( const CString& path )
         _findclose( m_osData->find_handle );
         m_osData->find_handle = 0;
 
+        m_osData->rootPath.Clear();
         return false;
     }
 
@@ -1135,62 +1380,83 @@ CFileSystemIterator::FindFirst( const CString& path )
     /*
      *	Attempt to open the directory
      */
-    m_osData->dir = opendir( path.C_String() );
+    m_osData->dir = ::opendir( path.C_String() );
     if ( GUCEF_NULL == m_osData->dir )
     {
         // Could not open directory
 	    return false;
     }
+    m_osData->rootPath = path;
+    m_osData->ClearSymlinkInfo();
 
-    /*
-     *	change working dir to be able to read file information
-     */
-    chdir( path.C_String() );
+    // change working dir to be able to read file information
+    ::chdir( path.C_String() );
 
-    /*
-     *	Read first entry
-     */
-    m_osData->entry = readdir( m_osData->dir );
-    while( m_osData->entry )
+    // Read first entry
+    m_osData->entry = ::readdir( m_osData->dir );
+    if ( GUCEF_NULL != m_osData->entry )
     {
-        /*
-         *	Get info on the entry.
-         *	We only want regular files and directory entry's. We ignore the
-         *	rest.
-         */
+        // Normally the first 2 entries are always '.' and '..'
+        // We dont want to complicate the caller's lives so skip them here
+        bool isSkipable = false;
+        do
+        {
+            isSkipable = false;
+            if ( ( 0 == strcmp( ".", m_osData->entry->d_name ) )  ||
+                 ( 0 == strcmp( "..", m_osData->entry->d_name ) ) )
+            {
+                isSkipable = true;
+                m_osData->entry = ::readdir( m_osData->dir );
+            }
+        }
+        while ( isSkipable && ( GUCEF_NULL != m_osData->entry ) );
+
+        if ( GUCEF_NULL != m_osData->entry )
+        {
+            // Get info on the entry.
+            ::lstat( m_osData->entry->d_name, &m_osData->statinfo );
+
+            m_osData->isActive = true;
+            return true;
+        }
+    }
+    m_osData->isActive = false;
+    return false;
+
+/*  @TODO: Add filter support ?
+
+    while( m_osData->entry )
+    }
+    {
+        // Get info on the entry.
+        // We only want regular files and directory entry's. We ignore the
+        // rest.
         stat( m_osData->entry->d_name, &m_osData->statinfo );
         if ( S_ISREG( m_osData->statinfo.st_mode ) || S_ISDIR( m_osData->statinfo.st_mode ) )
         {
-        	/*
-             *	We found either a regular file or a directory
-             *	entry which is now our current entry.
-             */
-            return m_osData;
+            // We found either a regular file or a directory
+            // entry which is now our current entry.
+            m_osData->isActive = true;
+            return true;
         }
 
-        /*
-         *	This entry is not what we want,.. skip to the next entry
-         */
+        // This entry is not what we want,.. skip to the next entry
         m_osData->entry = readdir( m_osData->dir );
     }
 
-    /*
-     *	there was an error reading the entry data or no entry was found
-     *	on the path specified that was a regular file or directory.
-     */
-    if ( NULL != m_osData->dir )
+    // there was an error reading the entry data or no entry was found
+    // on the path specified that was a regular file or directory.
+    if ( GUCEF_NULL != m_osData->dir )
     {
         closedir( m_osData->dir );
     }
-    free( m_osData );
-    return NULL;
+    return false;
+     */
 
     #else
 
-    /*
-     *	Unsupported O/S build
-     */
-
+    // Unsupported O/S build
+    GUCEF_WARNING_LOG( LOGLEVEL_NORMAL, "FileSystemIterator:FindFirst: Platform has no supported implementation" );
     return false;
 
     #endif
@@ -1212,43 +1478,49 @@ CFileSystemIterator::FindNext( void )
 
     #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
 
-    /*
-     *	Read next entry
-     */
+    // Read next entry
+    m_osData->ClearSymlinkInfo();
     m_osData->entry = readdir( m_osData->dir );
+    if ( GUCEF_NULL != m_osData->entry )
+    {
+        // Get info on the entry.
+        ::lstat( m_osData->entry->d_name, &m_osData->statinfo );
+
+        return true;
+    }
+    m_osData->isActive = false;
+    return false;
+
+    /* @TODO: Add filter support ?
+
     while ( GUCEF_NULL != m_osData->entry )
     {
-        /*
-         *	Get info on the entry.
-         *	We only want regular files and directory entry's. We ignore the
-         *	rest.
-         */
+        // Get info on the entry.
+        // We only want regular files and directory entry's. We ignore the
+        // rest.
         stat( m_osData->entry->d_name, &m_osData->statinfo );
-        if ( S_ISREG( m_osData->statinfo.st_mode ) || S_ISDIR( m_osData->statinfo.st_mode ) )
+        if ( S_ISREG( m_osData->statinfo.st_mode ) ||  // regular file
+             S_ISLNK( m_osData->statinfo.st_mode ) ||  // symlink
+             S_ISDIR( m_osData->statinfo.st_mode ) )   // directory
         {
-        	/*
-             *	We found either a regular file or a directory
-             *	entry which is now our current entry.
-             */
+            // We found either a regular file or a directory
+            // entry which is now our current entry.
             return true;
         }
 
-        /*
-         *	This entry is not what we want,.. skip to the next entry
-         */
+        // This entry is not what we want,.. skip to the next entry
         m_osData->entry = readdir( m_osData->dir );
     }
 
-    /*
-     *	Could not find any other entry's that where either a regular file
-     *	or a directory.
-     */
+    // Could not find any other entry's that where either a regular file
+    // or a directory.
+
+    */
 
     #else
 
-        /*
-         *	Unsupported O/S build
-         */
+    // Unsupported O/S build
+    GUCEF_WARNING_LOG( LOGLEVEL_NORMAL, "FileSystemIterator:FindNext: Platform has no supported implementation" );
     #endif
 
     return false;
@@ -1270,6 +1542,7 @@ CFileSystemIterator::FindClose( void )
 
     #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
 
+    m_osData->ClearSymlinkInfo();
     if ( GUCEF_NULL != m_osData->dir )
     {
         ::closedir( m_osData->dir );
@@ -1278,10 +1551,8 @@ CFileSystemIterator::FindClose( void )
 
     #else
 
-    /*
-     *	Unsupported O/S build
-     */
-
+    // Unsupported O/S build
+    GUCEF_WARNING_LOG( LOGLEVEL_NORMAL, "FileSystemIterator:FindClose: Platform has no supported implementation" );
     #endif
 
     m_osData->isActive = false;
@@ -1302,14 +1573,25 @@ CFileSystemIterator::IsADirectory( void ) const
 
         #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
 
-        return S_ISDIR( m_osData->statinfo.st_mode ) > 0;
+        if ( S_ISDIR( m_osData->statinfo.st_mode ) > 0 )
+            return true;
+
+        // for symlinks check if the link refers to a file or dir
+        if ( S_ISLNK( m_osData->statinfo.st_mode ) > 0 )
+        {
+            if ( m_osData->ResolveSymlink() )
+            {
+                if ( S_ISDIR( m_osData->linkedStatinfo.st_mode ) > 0 )
+                    return true;
+            }
+        }
+
+        return false;
 
         #else
 
-        /*
-         *	Unsupported O/S build
-         */
-
+        // Unsupported O/S build
+        GUCEF_WARNING_LOG( LOGLEVEL_NORMAL, "FileSystemIterator:IsADirectory: Platform has no supported implementation" );
         #endif
     }
     return false;
@@ -1329,14 +1611,55 @@ CFileSystemIterator::IsAFile( void ) const
 
         #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
 
-        return S_ISREG( m_osData->statinfo.st_mode ) > 0;
+        if ( S_ISREG( m_osData->statinfo.st_mode ) > 0 )
+            return true;
+
+        // for symlinks check if the link refers to a file or dir
+        if ( S_ISLNK( m_osData->statinfo.st_mode ) > 0 )
+        {
+            if ( m_osData->ResolveSymlink() )
+            {
+                if ( S_ISREG( m_osData->linkedStatinfo.st_mode ) > 0 )
+                    return true;
+            }
+        }
+
+        return false;
 
         #else
 
-        /*
-         *	Unsupported O/S build
-         */
+        // Unsupported O/S build
+        GUCEF_WARNING_LOG( LOGLEVEL_NORMAL, "FileSystemIterator:IsAFile: Platform has no supported implementation" );
+        #endif
+    }
 
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CFileSystemIterator::IsSymlink( void ) const
+{GUCEF_TRACE;
+
+    if ( GUCEF_NULL != m_osData && m_osData->isActive )
+    {
+        #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
+
+        // @TODO: implement for Windows
+        return false;
+
+        #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
+
+        // for symlinks check if the link refers to a file or dir
+        if ( S_ISLNK( m_osData->statinfo.st_mode ) > 0 )
+            return true;
+        return false;
+
+        #else
+
+        // Unsupported O/S build
+        GUCEF_WARNING_LOG( LOGLEVEL_NORMAL, "FileSystemIterator:IsSymlink: Platform has no supported implementation" );
         #endif
     }
 
@@ -1357,14 +1680,136 @@ CFileSystemIterator::GetResourceName( void ) const
 
         #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
 
+        // Even though we want to return the name of the symlink we will resolve the link
+        // just so we know if its a dir or file which helps us to use the correct string function
+        // while similar it matters for how trailing slashes are handled
+        if ( S_ISLNK( m_osData->statinfo.st_mode ) > 0 )
+        {
+            if ( m_osData->ResolveSymlink() )
+            {
+                if ( S_ISREG( m_osData->linkedStatinfo.st_mode ) > 0 )
+                {
+                    return ExtractFilename( m_osData->entry->d_name );
+                }
+                else
+                {
+                    return LastSubDir( m_osData->entry->d_name );
+                }
+            }
+        }
+
+        if ( S_ISREG( m_osData->statinfo.st_mode ) > 0 )
+        {
+            return ExtractFilename( m_osData->entry->d_name );
+        }
+        else
+        {
+            return LastSubDir( m_osData->entry->d_name );
+        }
+
+        #else
+
+        // Unsupported O/S build
+        GUCEF_WARNING_LOG( LOGLEVEL_NORMAL, "FileSystemIterator:GetResourceName: Platform has no supported implementation" );
+        #endif
+    }
+    return CString::Empty;
+}
+
+/*-------------------------------------------------------------------------*/
+
+CString
+CFileSystemIterator::GetSymlinkedResourceName( void ) const
+{GUCEF_TRACE;
+
+    if ( GUCEF_NULL != m_osData && m_osData->isActive )
+    {
+        #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
+
+        // @TODO
+        return CString::Empty;
+
+        #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
+
+        // We want to return the name of resource beyond the symlink
+        if ( S_ISLNK( m_osData->statinfo.st_mode ) > 0 )
+        {
+            if ( m_osData->ResolveSymlink() )
+            {
+                if ( S_ISREG( m_osData->linkedStatinfo.st_mode ) > 0 )
+                {
+                    return ExtractFilename( m_osData->linkedPath );
+                }
+                else
+                {
+                    return LastSubDir( m_osData->linkedPath );
+                }
+            }
+        }
+        return CString::Empty;
+
+        #else
+
+        // Unsupported O/S build
+        GUCEF_WARNING_LOG( LOGLEVEL_NORMAL, "FileSystemIterator:GetResourceName: Platform has no supported implementation" );
+        #endif
+    }
+    return CString::Empty;
+}
+
+/*-------------------------------------------------------------------------*/
+
+CString
+CFileSystemIterator::GetResourcePath( void ) const
+{GUCEF_TRACE;
+
+    if ( GUCEF_NULL != m_osData && m_osData->isActive )
+    {
+        #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
+
+        return CombinePath( m_osData->rootPath, GetResourceName() );
+
+        #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
+
         return m_osData->entry->d_name;
 
         #else
 
-        /*
-         *	Unsupported O/S build
-         */
+        // Unsupported O/S build
+        GUCEF_WARNING_LOG( LOGLEVEL_NORMAL, "FileSystemIterator:GetResourcePath: Platform has no supported implementation" );
+        #endif
+    }
+    return CString::Empty;
+}
 
+/*-------------------------------------------------------------------------*/
+
+CString
+CFileSystemIterator::GetSymlinkedResourcePath( void ) const
+{GUCEF_TRACE;
+
+    if ( GUCEF_NULL != m_osData && m_osData->isActive )
+    {
+        #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
+
+        // @TODO
+        return CString::Empty;
+
+        #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
+
+        if ( S_ISLNK( m_osData->statinfo.st_mode ) > 0 )
+        {
+            if ( m_osData->ResolveSymlink() )
+            {
+                return m_osData->linkedPath;
+            }
+        }
+        return CString::Empty;
+
+        #else
+
+        // Unsupported O/S build
+        GUCEF_WARNING_LOG( LOGLEVEL_NORMAL, "FileSystemIterator:GetResourcePath: Platform has no supported implementation" );
         #endif
     }
     return CString::Empty;
@@ -1426,11 +1871,47 @@ CFileSystemIterator::TryReadMetaData( CResourceMetaData& metaData )
         /*
          *	Unsupported O/S build
          */
-
+        GUCEF_WARNING_LOG( LOGLEVEL_NORMAL, "FileSystemIterator:TryReadMetaData: Platform has no supported implementation" );
         #endif
     }
 
     return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CFileSystemIterator::TryReadSymlinkedMetaData( CResourceMetaData& metaData )
+{GUCEF_TRACE;
+
+    #if ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
+
+    if ( S_ISLNK( m_osData->statinfo.st_mode ) > 0 )
+    {
+        if ( m_osData->ResolveSymlink() )
+        {
+            metaData.creationDateTime = CDateTime( m_osData->linkedStatinfo.st_ctime, true );
+            metaData.hasCreationDateTime = true;
+            metaData.modifiedDateTime = CDateTime( m_osData->linkedStatinfo.st_mtim, true );
+            metaData.hasModifiedDateTime = true;
+            metaData.lastAccessedDateTime = CDateTime( m_osData->linkedStatinfo.st_atim, true );
+            metaData.hasLastAccessedDateTime = true;
+            metaData.resourceSizeInBytes = (UInt64) m_osData->linkedStatinfo.st_size;
+            metaData.hasResourceSizeInBytes = true;
+
+            return true;
+        }
+    }
+
+    return false;
+
+    #else
+
+    /*
+     *	Unsupported O/S build
+     */
+    GUCEF_WARNING_LOG( LOGLEVEL_NORMAL, "FileSystemIterator:TryReadSymlinkMetaData: Platform has no supported implementation" );
+    #endif
 }
 
 /*-------------------------------------------------------------------------//

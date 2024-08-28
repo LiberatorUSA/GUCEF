@@ -1219,24 +1219,33 @@ StringSetToStringVector( const CString::StringSet& strSet ,
 /*-------------------------------------------------------------------------*/
 
 CString
-LastSubDir( const CString& path )
+LastSubDir( const CString& path, UInt32 dirSepCp )
 {GUCEF_TRACE;
 
     if ( !path.IsNULLOrEmpty() )
     {
-        CString lastSubDir;
-        UInt32 offset = Last_Subdir( path.C_String() );
-        if ( offset > 0 )
+        Int32 lastSepCpIndex = path.HasChar( dirSepCp, false );
+        if ( lastSepCpIndex < 0 )
+            return path; // assume the entire thing is the last sub-dir
+
+        if ( lastSepCpIndex+1 == path.Length() )
         {
-            lastSubDir.Set( path.C_String()+offset, path.Length() - offset );
+            // We have a trailing seperator
+            // for a directory that means we want the section until the next seperator minus the trailing seperator
+            Int32 nextSepCpIndex = path.HasChar( dirSepCp, (UInt32) lastSepCpIndex, false );
+            if ( nextSepCpIndex < 0 )
+                return path.SubstrToIndex( lastSepCpIndex+1, false );// assume the entire thing minus seperator is the last sub-dir
+            else
+                return path.SubstrFromRange( nextSepCpIndex+1, lastSepCpIndex ); // extract the sub-section we need
         }
         else
         {
-            lastSubDir = path;
+            // We dont have a trailing seperator
+            // for a directory that means we want the section until the next seperator
+            return path.SubstrToIndex( lastSepCpIndex+1, false );
         }
-        return lastSubDir;
     }
-    return path;
+    return CString::Empty;
 }
 
 /*-------------------------------------------------------------------------*/

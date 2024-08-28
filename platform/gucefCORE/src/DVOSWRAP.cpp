@@ -477,6 +477,10 @@ LoadModuleDynamicly( const char* filename )
     modulePtr = (void*) dlopen( fName, RTLD_NOW );
     if ( GUCEF_NULL == modulePtr )
     {
+        GUCEF_DEBUG_LOG( LOGLEVEL_NORMAL, "dlopen() reports error: " + CString( dlerror() ) );
+    }
+    if ( GUCEF_NULL == modulePtr )
+    {
         // It is possible the load failed due to missing "lib" prefix on linux/android.
         // Check for this and compensate as needed
         CString fileOnly = ExtractFilename( fName );
@@ -485,7 +489,6 @@ LoadModuleDynamicly( const char* filename )
             // No module name previous "lib" prefix was found, we will add one and try to load again
             fileOnly = "lib" + fileOnly;
             CString newFilePath = CombinePath( StripFilename( fName ), fileOnly );
-
             modulePtr = (void*) dlopen( newFilePath.C_String(), RTLD_NOW );
         }
     }
@@ -520,10 +523,7 @@ LoadModuleDynamicly( const char* filename )
         }
     }
 
-    if ( GUCEF_NULL == modulePtr )
-    {
-        GUCEF_DEBUG_LOG( LOGLEVEL_NORMAL, "LoadModuleDynamicly() reports error: " + CString( dlerror() ) );
-    }
+
 
     #elif ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
 

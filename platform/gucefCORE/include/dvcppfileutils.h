@@ -215,9 +215,15 @@ class GUCEF_CORE_PUBLIC_CPP CFileSystemIterator
 
     bool IsADirectory( void ) const;
     bool IsAFile( void ) const;
+    bool IsSymlink( void ) const;
 
     bool TryReadMetaData( CResourceMetaData& metaData );
     CString GetResourceName( void ) const;
+    CString GetResourcePath( void ) const;
+
+    bool TryReadSymlinkedMetaData( CResourceMetaData& metaData );
+    CString GetSymlinkedResourceName( void ) const;
+    CString GetSymlinkedResourcePath( void ) const;
 
     private:
 

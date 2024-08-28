@@ -1163,7 +1163,11 @@ void *utf8valid_s(const void *str, size_t maxBufferSize, size_t* cpCount )
   return utf8_null;
 }
 
-int utf8makevalid(void *str, const utf8_int32_t replacement) {
+int utf8makevalid(void *str, const utf8_int32_t replacement)
+{
+    if ( NULL == str )
+        return 0;
+
   char *read = (char *)str;
   char *write = read;
   const char r = (char)replacement;
@@ -1721,6 +1725,9 @@ utf8_int32_t utf8uprcodepoint(utf8_int32_t cp) {
 void *utf8rcodepoint(const void *utf8_restrict str,
                      utf8_uint32_t *utf8_restrict out_codepoint) {
   const char *s = (const char *)str;
+
+  if ( NULL == str )
+    return NULL;
 
   if (0xf0 == (0xf8 & s[0])) {
     // 4 byte utf8 codepoint

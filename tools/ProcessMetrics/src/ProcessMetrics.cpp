@@ -1366,8 +1366,12 @@ ProcessMetrics::OnMetricsTimerCycle( CORE::CNotifier* notifier    ,
                             const CORE::CString& pathName = *storageVolumePathNames.begin();
                             m_storageVolumeIdsToPaths[ storageVolumeId ] = pathName;
                         }
-                        ++i;
+                        else
+                        {
+                            GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "ProcessMetrics: Storage volume id: " + storageVolumeId + " has no associated paths" );
+                        }
                     }
+                    ++i;
                 }
             }
         }

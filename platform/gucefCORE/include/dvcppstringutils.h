@@ -373,7 +373,7 @@ StringToDouble( const CString& str, double defaultIfNeeded = 0 );
 /*-------------------------------------------------------------------------*/
 
 GUCEF_CORE_PUBLIC_CPP CString
-LastSubDir( const CString& path );
+LastSubDir( const CString& path, UInt32 dirSepCp = GUCEF_DIRSEPCHAR );
 
 /*-------------------------------------------------------------------------*/
 
