@@ -1503,7 +1503,11 @@ GetProcJiffies( pid_t pid, UInt64* userModeJiffies, UInt64* kernelModeJiffies )
 
 bool
 GetGlobalJiffies( UInt64* totalJiffies )
-{
+{GUCEF_TRACE;
+
+    if ( GUCEF_NULL == totalJiffies )
+        return false;
+    
     FILE* fp = NULL;
     if ( ( fp = ::fopen( "/proc/stat", "r" ) ) == NULL )
         return false;

@@ -95,7 +95,37 @@ set( SOURCE_FILES
 
 
 
-if (WIN32)
+if (LINUX32)
+  set( PLATFORM_HEADER_FILES 
+    include/linux/gucefCOMCORE_CLinuxNetworkInterface.h
+  )
+
+  set( PLATFORM_HEADER_INSTALL "LINUX32" )
+  source_group( "Platform Header Files" FILES ${PLATFORM_HEADER_FILES} )
+
+  set( PLATFORM_SOURCE_FILES 
+    src/linux/gucefCOMCORE_CLinuxNetworkInterface.cpp
+  )
+
+  set( PLATFORM_SOURCE_INSTALL "LINUX32" )
+  source_group( "Platform Source Files" FILES ${PLATFORM_SOURCE_FILES} )
+
+elseif (LINUX64)
+  set( PLATFORM_HEADER_FILES 
+    include/linux/gucefCOMCORE_CLinuxNetworkInterface.h
+  )
+
+  set( PLATFORM_HEADER_INSTALL "LINUX64" )
+  source_group( "Platform Header Files" FILES ${PLATFORM_HEADER_FILES} )
+
+  set( PLATFORM_SOURCE_FILES 
+    src/linux/gucefCOMCORE_CLinuxNetworkInterface.cpp
+  )
+
+  set( PLATFORM_SOURCE_INSTALL "LINUX64" )
+  source_group( "Platform Source Files" FILES ${PLATFORM_SOURCE_FILES} )
+
+elseif (WIN32)
   set( PLATFORM_HEADER_FILES 
     include/mswin/gucefCOMCORE_CWin32NetworkInterface.h
     include/mswin/gucefCOMCORE_CWin32SerialPort.h
@@ -167,11 +197,11 @@ if ( ANDROID )
 endif( ANDROID )
 
 if ( LINUX32 )
-  include_directories( ../gucefCORE/include/linux )
+  include_directories( ../gucefCORE/include/linux include/linux )
 endif( LINUX32 )
 
 if ( LINUX64 )
-  include_directories( ../gucefCORE/include/linux )
+  include_directories( ../gucefCORE/include/linux include/linux )
 endif( LINUX64 )
 
 if ( WIN32 )

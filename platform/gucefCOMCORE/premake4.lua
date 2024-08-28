@@ -137,6 +137,32 @@ files( {
 
 
 
+configuration( { "LINUX32" } )
+    vpaths { ["Platform Headers"] = { "**.h", "**.hpp", "**.hxx" } }
+    files( {
+      "include/linux/gucefCOMCORE_CLinuxNetworkInterface.h"
+    } )
+
+    vpaths { ["Platform Source"] = { "**.c", "**.cpp", "**.cs", "**.asm" } }
+    files( {
+      "src/linux/gucefCOMCORE_CLinuxNetworkInterface.cpp"
+    } )
+
+
+
+configuration( { "LINUX64" } )
+    vpaths { ["Platform Headers"] = { "**.h", "**.hpp", "**.hxx" } }
+    files( {
+      "include/linux/gucefCOMCORE_CLinuxNetworkInterface.h"
+    } )
+
+    vpaths { ["Platform Source"] = { "**.c", "**.cpp", "**.cs", "**.asm" } }
+    files( {
+      "src/linux/gucefCOMCORE_CLinuxNetworkInterface.cpp"
+    } )
+
+
+
 configuration( { "WIN32" } )
     vpaths { ["Platform Headers"] = { "**.h", "**.hpp", "**.hxx" } }
     files( {
@@ -181,10 +207,10 @@ configuration( { "ANDROID" } )
 includedirs( { "../gucefCORE/include/android" } )
 
 configuration( { "LINUX32" } )
-includedirs( { "../gucefCORE/include/linux" } )
+includedirs( { "../gucefCORE/include/linux", "include/linux" } )
 
 configuration( { "LINUX64" } )
-includedirs( { "../gucefCORE/include/linux" } )
+includedirs( { "../gucefCORE/include/linux", "include/linux" } )
 
 configuration( { "WIN32" } )
 includedirs( { "../gucefCORE/include/mswin", "../gucefMT/include/mswin", "include/mswin" } )

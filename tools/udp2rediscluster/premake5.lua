@@ -79,10 +79,10 @@ configuration( { "IOS" } )
 includedirs( { "../../dependencies/hiredis" } )
 
 configuration( { "LINUX32" } )
-includedirs( { "../../dependencies/hiredis", "../../platform/gucefCORE/include/linux" } )
+includedirs( { "../../dependencies/hiredis", "../../platform/gucefCOMCORE/include/linux", "../../platform/gucefCORE/include/linux" } )
 
 configuration( { "LINUX64" } )
-includedirs( { "../../dependencies/hiredis", "../../platform/gucefCORE/include/linux" } )
+includedirs( { "../../dependencies/hiredis", "../../platform/gucefCOMCORE/include/linux", "../../platform/gucefCORE/include/linux" } )
 
 configuration( { "NACL" } )
 includedirs( { "../../dependencies/hiredis" } )

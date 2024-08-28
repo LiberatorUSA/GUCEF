@@ -368,10 +368,10 @@ configuration( { "IOS" } )
 includedirs( { "../../../dependencies/hiredis", "../../../tools/redisinfo/include/" } )
 
 configuration( { "LINUX32" } )
-includedirs( { "../../../dependencies/hiredis", "../../../platform/gucefCORE/include/linux", "../../../tools/redisinfo/include/" } )
+includedirs( { "../../../dependencies/hiredis", "../../../platform/gucefCOMCORE/include/linux", "../../../platform/gucefCORE/include/linux", "../../../tools/redisinfo/include/" } )
 
 configuration( { "LINUX64" } )
-includedirs( { "../../../dependencies/hiredis", "../../../platform/gucefCORE/include/linux", "../../../tools/redisinfo/include/" } )
+includedirs( { "../../../dependencies/hiredis", "../../../platform/gucefCOMCORE/include/linux", "../../../platform/gucefCORE/include/linux", "../../../tools/redisinfo/include/" } )
 
 configuration( { "NACL" } )
 includedirs( { "../../../dependencies/hiredis", "../../../tools/redisinfo/include/" } )

@@ -385,11 +385,11 @@ if ( IOS )
 endif( IOS )
 
 if ( LINUX32 )
-  include_directories( ../../../dependencies/hiredis ../../../platform/gucefCORE/include/linux ../../../tools/redisinfo/include/ )
+  include_directories( ../../../dependencies/hiredis ../../../platform/gucefCOMCORE/include/linux ../../../platform/gucefCORE/include/linux ../../../tools/redisinfo/include/ )
 endif( LINUX32 )
 
 if ( LINUX64 )
-  include_directories( ../../../dependencies/hiredis ../../../platform/gucefCORE/include/linux ../../../tools/redisinfo/include/ )
+  include_directories( ../../../dependencies/hiredis ../../../platform/gucefCOMCORE/include/linux ../../../platform/gucefCORE/include/linux ../../../tools/redisinfo/include/ )
 endif( LINUX64 )
 
 if ( NACL )

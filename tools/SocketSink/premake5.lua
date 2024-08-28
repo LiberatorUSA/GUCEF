@@ -53,10 +53,10 @@ configuration( { "ANDROID" } )
 includedirs( { "../../platform/gucefCORE/include/android" } )
 
 configuration( { "LINUX32" } )
-includedirs( { "../../platform/gucefCORE/include/linux" } )
+includedirs( { "../../platform/gucefCOMCORE/include/linux", "../../platform/gucefCORE/include/linux" } )
 
 configuration( { "LINUX64" } )
-includedirs( { "../../platform/gucefCORE/include/linux" } )
+includedirs( { "../../platform/gucefCOMCORE/include/linux", "../../platform/gucefCORE/include/linux" } )
 
 configuration( { "WIN32" } )
 includedirs( { "../../platform/gucefCOMCORE/include/mswin", "../../platform/gucefCORE/include/mswin", "../../platform/gucefMT/include/mswin" } )

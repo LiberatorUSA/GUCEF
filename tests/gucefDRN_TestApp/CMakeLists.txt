@@ -57,11 +57,11 @@ if ( ANDROID )
 endif( ANDROID )
 
 if ( LINUX32 )
-  include_directories( ../../platform/gucefCORE/include/linux )
+  include_directories( ../../platform/gucefCOMCORE/include/linux ../../platform/gucefCORE/include/linux )
 endif( LINUX32 )
 
 if ( LINUX64 )
-  include_directories( ../../platform/gucefCORE/include/linux )
+  include_directories( ../../platform/gucefCOMCORE/include/linux ../../platform/gucefCORE/include/linux )
 endif( LINUX64 )
 
 if ( WIN32 )
