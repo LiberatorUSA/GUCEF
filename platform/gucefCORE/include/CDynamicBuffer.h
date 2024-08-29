@@ -93,8 +93,8 @@ class GUCEF_CORE_PUBLIC_CPP CDynamicBuffer : public CICloneable
     /**
      *      Initializes the buffer to the given size
      */
-    CDynamicBuffer( UInt32 initialsize ,
-                    bool autoenlarge   );
+    CDynamicBuffer( UInt32 initialsize      ,
+                    bool autoenlarge = true );
 
     /**
      *      Copy constructor, creates a dynamic buffer that is an exact copy

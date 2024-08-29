@@ -1396,7 +1396,11 @@ GetDurationSinceFiletimeInMs( LPFILETIME since )
 
 bool
 GetProcUptime( pid_t pid, UInt64* uptimeInMs )
-{
+{GUCEF_TRACE;
+
+    if ( GUCEF_NULL == uptimeInMs )
+        return false;
+
     FILE* fp = NULL;
     char procStatPath[ 22 ];
     *uptimeInMs = 0;
@@ -1483,7 +1487,11 @@ Table 1-3: Contents of the stat files (as of 2.6.22-rc3)
 
 bool
 GetProcJiffies( pid_t pid, UInt64* userModeJiffies, UInt64* kernelModeJiffies )
-{
+{GUCEF_TRACE;
+
+    if ( GUCEF_NULL == userModeJiffies || GUCEF_NULL == kernelModeJiffies )
+        return false;
+
     FILE* fp = NULL;
     char procStatPath[ 22 ];
     sprintf( procStatPath, "/proc/%d/stat", pid );

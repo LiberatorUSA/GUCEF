@@ -70,6 +70,13 @@
   #define GUCEF_COMCORE_CWIN32NETWORKINTERFACE_H
   #endif /* GUCEF_COMCORE_CWIN32NETWORKINTERFACE_H ? */
 
+#elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
+
+  #ifndef GUCEF_COMCORE_CLINUXNETWORKINTERFACE_H
+  #include "gucefCOMCORE_CLinuxNetworkInterface.h"
+  #define GUCEF_COMCORE_CLINUXNETWORKINTERFACE_H
+  #endif /* GUCEF_COMCORE_CLINUXNETWORKINTERFACE_H ? */
+
 #endif
 
 /*-------------------------------------------------------------------------//
@@ -183,7 +190,7 @@ CCom::CCom()
 
 CCom::~CCom()
 {GUCEF_TRACE;
-    
+
     MT::CScopeMutex lock( _mutex );
     m_sockets.clear();
     memset( &_stats, 0, sizeof(_stats) );
@@ -278,12 +285,12 @@ CCom::GetCommunicationPortList( const CORE::CString& portType ,
         CWin32SerialPort::PopulatePortList( portList );
         return true;
         #endif
-    }    
+    }
     return false;
 }
 
 /*-------------------------------------------------------------------------*/
-    
+
 CICommunicationInterfacePtr
 CCom::GetCommunicationPort( const CORE::CString& portType ,
                             const CORE::CString& portId   )
@@ -322,7 +329,7 @@ CCom::GetCommunicationPort( const CORE::CString& portType ,
 
         #endif
     }
-     
+
     return CICommunicationInterfacePtr();
 }
 
@@ -336,19 +343,29 @@ CCom::LazyInitNetworkInterfaces( void ) const
     if ( m_nics.empty() )
     {
         #if ( GUCEF_PLATFORM_MSWIN == GUCEF_PLATFORM )
+
         CWin32NetworkInterface::EnumNetworkAdapters( m_nics );
+
+        #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
+
+        CLinuxNetworkInterface::EnumNetworkAdapters( m_nics );
+
+        #else
+
+        GUCEF_WARNING_LOG( LOGLEVEL_NORMAL, "Com:LazyInitNetworkInterfaces: Platform has no supported implementation" );
+
         #endif
     }
 }
 
 /*-------------------------------------------------------------------------*/
 
-bool 
+bool
 CCom::GetNetworkInterfaceList( TStringList& interfaceIDs ) const
 {GUCEF_TRACE;
 
     LazyInitNetworkInterfaces();
-    
+
     MT::CScopeMutex lock( _mutex );
     TINetworkInterfacePtrVector::const_iterator i = m_nics.begin();
     while ( i != m_nics.end() )
@@ -361,12 +378,12 @@ CCom::GetNetworkInterfaceList( TStringList& interfaceIDs ) const
 
 /*-------------------------------------------------------------------------*/
 
-CINetworkInterfacePtr 
+CINetworkInterfacePtr
 CCom::GetNetworkInterface( const CORE::CString& interfaceID )
 {GUCEF_TRACE;
 
     LazyInitNetworkInterfaces();
-    
+
     MT::CScopeMutex lock( _mutex );
     TINetworkInterfacePtrVector::const_iterator i = m_nics.begin();
     while ( i != m_nics.end() )
@@ -382,26 +399,26 @@ CCom::GetNetworkInterface( const CORE::CString& interfaceID )
 
 /*-------------------------------------------------------------------------*/
 
-bool 
+bool
 CCom::GetAllNetworkInterfaces( CINetworkInterface::TINetworkInterfacePtrVector& interfaces ) const
 {GUCEF_TRACE;
 
     LazyInitNetworkInterfaces();
-    
+
     MT::CScopeMutex lock( _mutex );
-    interfaces = m_nics; 
+    interfaces = m_nics;
     return true;
 }
 
 /*-------------------------------------------------------------------------*/
 
-bool 
+bool
 CCom::GetAllNetworkInterfaceIPInfo( CINetworkInterface::TIPInfoVector& ipInfo )
 {GUCEF_TRACE;
 
     LazyInitNetworkInterfaces();
-    
-    MT::CScopeMutex lock( _mutex );   
+
+    MT::CScopeMutex lock( _mutex );
     bool totalSuccess = true;
     TINetworkInterfacePtrVector::const_iterator i = m_nics.begin();
     while ( i != m_nics.end() )

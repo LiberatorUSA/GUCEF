@@ -168,6 +168,10 @@ GUCEF_COMCORE_EXPORT_CPP void
 IPv4AddressSetToIPv4AddressVector( const CIPv4Address::TIPv4AddressSet& sortedSet , 
                                    CIPv4Address::TIPv4AddressVector& vec          );
 
+/*-------------------------------------------------------------------------*/
+
+inline CString ToString( const CIPv4Address& ip ) { return ip.AddressAndPortAsString(); }
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //

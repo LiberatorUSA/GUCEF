@@ -24,6 +24,8 @@
 
 #if ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
 
+#include <fstream>
+
 #include "gucefCOMCORE_CLinuxNetworkInterface.h"
 
 #ifndef GUCEF_MT_COBJECTSCOPELOCK_H
@@ -41,6 +43,24 @@
 #define GUCEF_CORE_LOGGING_H
 #endif /* GUCEF_CORE_LOGGING_H ? */
 
+#ifndef GUCEF_COMCORE_CCOM_H
+#include "CCom.h"
+#define GUCEF_COMCORE_CCOM_H
+#endif /* GUCEF_COMCORE_CCOM_H ? */
+
+#ifndef GUCEF_COMCORE_CCOMCOREGLOBAL_H
+#include "gucefCOMCORE_CComCoreGlobal.h"
+#define GUCEF_COMCORE_CCOMCOREGLOBAL_H
+#endif /* GUCEF_COMCORE_CCOMCOREGLOBAL_H ? */
+
+#include <ifaddrs.h>
+#include <net/if.h>
+#include <netdb.h>
+#include <sys/ioctl.h>
+#include <sys/socket.h>
+#include <arpa/inet.h>
+#include <net/if.h>
+#include <linux/rtnetlink.h>
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -57,161 +77,522 @@ namespace COMCORE {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-bool
-CLinuxNetworkInterface::SetupAdapterInfo( void* pAdaptInfoVoid )
+CString
+GetDefaultLinuxNetworkGateway( void )
+{GUCEF_TRACE;
+
+    int sock = ::socket(AF_NETLINK, SOCK_RAW, NETLINK_ROUTE);
+    if ( sock < 0 )
+    {
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "GetDefaultLinuxNetworkGateway: socket failed" );
+        return CString::Empty;
+    }
+
+    struct {
+        struct nlmsghdr nlmsg;
+        struct rtmsg rtmsg;
+        char buf[8192];
+    } request;
+
+    memset(&request, 0, sizeof(request));
+    request.nlmsg.nlmsg_len = NLMSG_LENGTH(sizeof(struct rtmsg));
+    request.nlmsg.nlmsg_type = RTM_GETROUTE;
+    request.nlmsg.nlmsg_flags = NLM_F_REQUEST | NLM_F_DUMP;
+    request.nlmsg.nlmsg_seq = 1;
+    request.nlmsg.nlmsg_pid = getpid();
+    request.rtmsg.rtm_family = AF_INET;
+
+    if ( ::send( sock, &request, request.nlmsg.nlmsg_len, 0) < 0 )
+    {
+        close( sock );
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "GetDefaultLinuxNetworkGateway: socket send failed" );
+        return CString::Empty;
+    }
+
+    char buffer[8192];
+    int len = ::recv( sock, buffer, sizeof(buffer), 0 );
+    if ( len < 0 )
+    {
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "GetDefaultLinuxNetworkGateway: socket recv failed" );
+        ::close( sock );
+        return CString::Empty;
+    }
+
+    struct nlmsghdr *nlh = (struct nlmsghdr *)buffer;
+    for (; NLMSG_OK(nlh, len); nlh = NLMSG_NEXT(nlh, len))
+    {
+        if (nlh->nlmsg_type == NLMSG_DONE)
+        {
+            break;
+        }
+        if (nlh->nlmsg_type == NLMSG_ERROR)
+        {
+            GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "GetDefaultLinuxNetworkGateway: Error in netlink message" );
+            ::close( sock );
+            return CString::Empty;
+        }
+
+        struct rtmsg* rtm = (struct rtmsg *)NLMSG_DATA(nlh);
+        if (rtm->rtm_table != RT_TABLE_MAIN)
+        {
+            continue;
+        }
+
+        struct rtattr* rta = (struct rtattr *)RTM_RTA(rtm);
+        int rta_len = RTM_PAYLOAD(nlh);
+        for (; RTA_OK(rta, rta_len); rta = RTA_NEXT(rta, rta_len))
+        {
+            if (rta->rta_type == RTA_GATEWAY)
+            {
+                char gateway[INET_ADDRSTRLEN];
+                ::inet_ntop(AF_INET, RTA_DATA(rta), gateway, sizeof(gateway));
+                ::close(sock);
+                return CString(gateway);
+            }
+        }
+    }
+
+    ::close(sock);
+    GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "GetDefaultLinuxNetworkGateway: No default gateway found" );
+    return CString::Empty;
+}
+
+/*-------------------------------------------------------------------------*/
+
+CORE::CString
+GetDhcpLeaseTimestampFromSystemdJournal( const CORE::CString& interfaceName )
+{GUCEF_TRACE;
+
+    char buffer[128];
+    std::string result;
+    std::string command = "journalctl -u systemd-networkd -u NetworkManager --no-pager | grep 'DHCPv4 lease acquired' | grep '" + interfaceName.STL_String() + "'";
+    FILE* pipe = ::popen( command.c_str(), "r" );
+    if ( GUCEF_NULL == pipe )
+    {
+        GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "GetDhcpLeaseTimestampFromSystemdJournal: popen() failed" );
+        return CString::Empty;
+    }
+
+    try
+    {
+        while ( fgets(buffer, sizeof(buffer), pipe) != GUCEF_NULL )
+        {
+            result += buffer;
+        }
+    }
+    catch (...)
+    {
+        ::pclose( pipe );
+        return CString::Empty;
+    }
+    ::pclose( pipe );
+
+    if ( result.empty() )
+    {
+        GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "GetDhcpLeaseTimestampFromSystemdJournal: No DHCP lease timestamp found" );
+        return CString::Empty;
+    }
+
+    // Extract the timestamp from the log entry
+    std::string::size_type pos = result.find(" ");
+    if ( pos != std::string::npos )
+    {
+        return result.substr(0, pos);
+    }
+
+    GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "GetDhcpLeaseTimestampFromSystemdJournal: No DHCP lease timestamp found" );
+    return CString::Empty;
+}
+
+/*-------------------------------------------------------------------------*/
+
+struct EtcNetworkInterface
 {
-	IP_ADAPTER_INFO* pAdaptInfo = (IP_ADAPTER_INFO*) pAdaptInfoVoid;
-	IP_ADDR_STRING* pNext			= NULL;
-	IP_PER_ADAPTER_INFO* pPerAdapt	= NULL;
-	ULONG ulLen						= 0;
-	ULONG errorCode					= 0;
+    CString iface;
+    CString address;
+    CString netmask;
+    CString gateway;
+};
+typedef std::map< CString, struct EtcNetworkInterface >    TStringToNetworkInterface;
 
-	if( NULL == pAdaptInfo )
-		return false;
+/*-------------------------------------------------------------------------*/
 
-	m_name = pAdaptInfo->AdapterName;
-	m_desc = pAdaptInfo->Description;
+//  Debian-based systems:
+//     The traditional location is /etc/network/interfaces.
+void
+ParseEtcNetworkInterfacesFile( const CString& filePath                      ,
+                               std::vector<EtcNetworkInterface>& interfaces )
+{GUCEF_TRACE;
 
-	m_priWins.SetAddress( pAdaptInfo->PrimaryWinsServer.IpAddress.String );
-	m_secWins.SetAddress( pAdaptInfo->SecondaryWinsServer.IpAddress.String );
-	m_nicIndex = pAdaptInfo->Index;
-	m_adapterType = pAdaptInfo->Type;
-	m_dhcpUsed = 0 != pAdaptInfo->DhcpEnabled;
-	m_winsUsed = 0 != pAdaptInfo->HaveWins;
-	m_leaseObtained = pAdaptInfo->LeaseObtained;
-	m_leaseExpires = pAdaptInfo->LeaseExpires;
-	m_dhcpAddr.SetAddress( pAdaptInfo->DhcpServer.IpAddress.String );
+    std::ifstream file( filePath.C_String() );
+    if ( !file.is_open() )
+    {
+        GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "ParseEtcNetworkInterfacesFile: Unable to open file " + filePath );
+        return;
+    }
 
-	if( pAdaptInfo->CurrentIpAddress )
-	{
-		m_curIpAddr.ip.SetAddress( pAdaptInfo->CurrentIpAddress->IpAddress.String );
-		m_curIpAddr.subnet.SetAddress( pAdaptInfo->CurrentIpAddress->IpMask.String );
-	}
-	else
-	{
-		m_curIpAddr.Clear();
-	}
+    std::string line;
+    EtcNetworkInterface currentInterface;
+    bool inInterfaceBlock = false;
 
-	// since an adapter may have more than one ip address we need
-	// to populate the array we have setup with all available
-	// ip addresses.
-	pNext = &( pAdaptInfo->IpAddressList );
-	while( pNext )
-	{
-		m_ipAddresses.push_back( CIPInfo( pNext->IpAddress.String, pNext->IpMask.String, false ) );
-		pNext = pNext->Next;
-	}
+    while (std::getline(file, line))
+    {
+        if (line.find("iface") == 0)
+        {
+            if (inInterfaceBlock)
+            {
+                interfaces.push_back(currentInterface);
+                currentInterface = EtcNetworkInterface();
+            }
+            inInterfaceBlock = true;
+            currentInterface.iface = line;
+        }
+        else
+        if (line.find("address") == 0)
+        {
+            currentInterface.address = line;
+        }
+        else
+        if (line.find("netmask") == 0)
+        {
+            currentInterface.netmask = line;
+        }
+        else
+        if (line.find("gateway") == 0)
+        {
+            currentInterface.gateway = line;
+        }
+    }
 
-	// an adapter usually has just one gateway however the provision exists
-	// for more than one so to "play" as nice as possible we allow for it here
-	// as well.
-	pNext = &( pAdaptInfo->GatewayList );
-	while( pNext )
-	{
-		CIPv4Address address;
-		if ( address.SetAddress( pNext->IpAddress.String ) )
-			m_gatewayList.push_back( address );
-		pNext = pNext->Next;
-	}
+    if (inInterfaceBlock)
+    {
+        interfaces.push_back(currentInterface);
+    }
 
-	// we need to generate a IP_PER_ADAPTER_INFO structure in order
-	// to get the list of dns addresses used by this adapter.
-	bool obtainedtPerAdapterInfo = false;
-	CORE::CDynamicBuffer perAdapterInfoBuffer;
-	errorCode = ::GetPerAdapterInfo( m_nicIndex, NULL, &ulLen );
-	if( errorCode == ERROR_BUFFER_OVERFLOW || errorCode == ERROR_INVALID_PARAMETER )
-	{
-		if ( perAdapterInfoBuffer.SetBufferSize( ulLen ) )
-		{
-			pPerAdapt = (IP_PER_ADAPTER_INFO*) perAdapterInfoBuffer.GetBufferPtr();
-			errorCode = ::GetPerAdapterInfo( m_nicIndex, pPerAdapt, &ulLen );
-			if( errorCode == ERROR_SUCCESS )
-			{
-				obtainedtPerAdapterInfo = true;
-				perAdapterInfoBuffer.SetDataSize( ulLen );
-			}
-			else
-			{
-				GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "CLinuxNetworkInterface: Failed to obtain per adapter information using Win32 GetPerAdapterInfo()" );
-			}
-		}
-		else
-		{
-			GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "CLinuxNetworkInterface: Failed to allocate required storage to hold per adapter information. Need " + CORE::UInt32ToString( ulLen ) + " bytes" );
-		}
-	}
-	else
-	{
-		GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "CLinuxNetworkInterface: Failed to get required storage size to hold per adapter information using Win32 GetPerAdapterInfo()" );
-	}
+    file.close();
+}
 
-	if ( obtainedtPerAdapterInfo )
-	{
-		pNext = &( pPerAdapt->DnsServerList );
-		while( pNext != NULL )
-		{
-			CHostAddress address( pNext->IpAddress.String );
-			m_dnsAddresses.push_back( address );
-			pNext = pNext->Next;
-		}
-	}
+/*-------------------------------------------------------------------------*/
 
-	return obtainedtPerAdapterInfo;
+void
+ParseEtcNetworkInterfacesFile( const CString& filePath               ,
+                               TStringToNetworkInterface& interfaces )
+{GUCEF_TRACE;
+
+    std::vector<EtcNetworkInterface> interfacesVec;
+    ParseEtcNetworkInterfacesFile( filePath, interfacesVec );
+
+    if ( !interfacesVec.empty() )
+    {
+        std::vector<EtcNetworkInterface>::iterator i = interfacesVec.begin();
+        while ( i != interfacesVec.end() )
+        {
+            const EtcNetworkInterface& nic = (*i);
+            interfaces[ nic.iface ] = nic;
+            ++i;
+        }
+    }
 }
 
 /*-------------------------------------------------------------------------*/
 
 bool
 CLinuxNetworkInterface::EnumNetworkAdapters( TINetworkInterfacePtrVector& interfaces )
-{
-	IP_ADAPTER_INFO* pAdptInfo	= NULL;
-	IP_ADAPTER_INFO* pNextAd	= NULL;
-	ULONG ulLen					= 0;
-	ULONG errorCode				= 0;
+{GUCEF_TRACE;   
 
-	CORE::CDynamicBuffer adapterInfoBuffer;
-	errorCode = ::GetAdaptersInfo( NULL, &ulLen );
-	if( errorCode == ERROR_BUFFER_OVERFLOW )
-	{
-		if ( adapterInfoBuffer.SetBufferSize( ulLen ) )
-		{
-			pAdptInfo = (IP_ADAPTER_INFO*) adapterInfoBuffer.GetBufferPtr();
-			errorCode = ::GetAdaptersInfo( pAdptInfo, &ulLen );
-			if( errorCode != ERROR_SUCCESS )
-			{
-				GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "CLinuxNetworkInterface: Failed to obtain adapter information using Win32 GetAdaptersInfo()" );
-				return false;
-			}
-			else
-			{
-				adapterInfoBuffer.SetDataSize( ulLen );
-			}
-		}
-		else
-		{
-			GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "CLinuxNetworkInterface: Failed to allocate required storage to hold adapter information. Need " + CORE::UInt32ToString( ulLen ) + " bytes" );
-			return false;
-		}
-	}
-	else
-	{
-        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "CLinuxNetworkInterface: Failed to get required storage size to hold adapter information using GetAdaptersInfo()" );
-		return false;
-	}
+    TStringToNetworkInterface etcInterfaces;
+    ParseEtcNetworkInterfacesFile( "/etc/network/interfaces", etcInterfaces );
 
-	// loop through for all available interfaces and setup an associated
-	// CNetworkAdapter class.
-	pNextAd = pAdptInfo;
-	while( pNextAd != NULL )
-	{
-		CLinuxNetworkInterfacePtr nic = CLinuxNetworkInterfacePtr( GUCEF_NEW CLinuxNetworkInterface() );
-		if ( nic->SetupAdapterInfo( pNextAd ) )
-		{
-			interfaces.push_back( nic.StaticCast< CINetworkInterface >() );
-		}
-		pNextAd = pNextAd->Next;
-	}
+    struct ifaddrs* ifaddr = GUCEF_NULL;
+    struct ifaddrs* ifa = GUCEF_NULL;    
 
+    // Get the list of network interfaces
+    if ( ::getifaddrs( &ifaddr ) == -1)
+    {
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "LinuxNetworkInterface:EnumNetworkAdapters: getifaddrs failed" );
+        return false;
+    }
+
+    // Iterate through the list of interfaces
+    typedef std::map< CString, CLinuxNetworkInterfacePtr > TNicMap;
+    TNicMap nicMap;
+    for ( ifa = ifaddr; ifa != GUCEF_NULL; ifa = ifa->ifa_next )
+    {
+        if ( ifa->ifa_addr == GUCEF_NULL)
+        {
+            continue;
+        }
+
+        int family = ifa->ifa_addr->sa_family;
+
+        // Check if the interface is an Ethernet interface
+        if ( family == AF_INET || family == AF_INET6 )
+        {
+            if ( ifa->ifa_flags & IFF_LOOPBACK )
+            {
+                continue; // Skip loopback interfaces
+            }
+
+            // Get the IP address
+            bool getnameinfoSuccess = true;
+            CORE::CString host;
+            host.Reserve( (UInt32) NI_MAXHOST );
+            int s = 0;
+            do
+            {
+                s = ::getnameinfo( ifa->ifa_addr,
+                                   (family == AF_INET) ? sizeof(struct sockaddr_in) :
+                                                         sizeof(struct sockaddr_in6),
+                                   (char*)host.C_String(),
+                                   host.ByteSize(),
+                                   GUCEF_NULL,
+                                   0,
+                                   NI_NUMERICHOST  );
+                if ( s == 0 )
+                {
+                    getnameinfoSuccess = true;
+
+                    // this function provides no way to know how many bytes were written.
+                    // only that it wont overflow the input buffer.
+                    // As such we need to consider the entire buffer as valid data
+                    host.DetermineLength();
+                }
+                else
+                {
+                    getnameinfoSuccess = false;
+                    if ( s == EAI_OVERFLOW )
+                    {
+                        // just try again with a larger buffer
+                        if ( GUCEF_NULL == host.Reserve( host.ByteSize() * 2 ) )
+                            break; // out of memory ?
+                    }
+                    else
+                    {
+                        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "LinuxNetworkInterface:EnumNetworkAdapters: getnameinfo failed with error code " + CORE::ToString( s ) );
+                        s = 0;
+                        break;
+                    }
+                }
+            }
+            while ( s != 0 );
+
+            if ( !getnameinfoSuccess )
+                continue; // no joy, try a different entry if any
+
+            // the same nic id can be encountered multiple times in the list
+            // for example once for IPv4 and once for IPv6
+            // as such we need to check if we already created a nic with the given id
+            CLinuxNetworkInterfacePtr nic;
+            TNicMap::iterator n = nicMap.find( host );
+            if ( n == nicMap.end() )
+            {
+                nic = CLinuxNetworkInterfacePtr( GUCEF_NEW CLinuxNetworkInterface() );
+                nicMap[ host ] = nic;
+
+                nic->m_name = ifa->ifa_name;
+                nic->m_nicIndex = ::if_nametoindex( ifa->ifa_name );
+
+                // Linux typically only has 1 global network gateway
+                nic->m_defGateway.SetAddress( GetDefaultLinuxNetworkGateway() );
+
+                CString dhcpLeaseStr = GetDhcpLeaseTimestampFromSystemdJournal( nic->m_name );
+                if ( !dhcpLeaseStr.IsNULLOrEmpty() )
+                {
+                    int fg=0; // @TODO
+                }
+
+                TStringToNetworkInterface::iterator m = etcInterfaces.find( nic->m_name );
+                if ( m != etcInterfaces.end() )
+                {
+                    const EtcNetworkInterface& etcNic = (*m).second;
+
+                    CIPv4Address nicGateway;
+                    if ( nicGateway.SetAddress( etcNic.gateway ) )
+                    {
+                        nic->m_gatewayList.push_back( nicGateway );
+                    }
+                }
+            }
+            if ( nic.IsNULL() )
+            {
+                GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "LinuxNetworkInterface:EnumNetworkAdapters: No nic object" );
+                continue;
+            }
+
+            // Now start filling in information for the NIC
+
+            GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "LinuxNetworkInterface:EnumNetworkAdapters: found interface \"" +
+                nic->m_name + "\" host " + host + " with index " + CORE::ToString( nic->m_nicIndex ) );
+
+            int fd = ::socket( family, SOCK_DGRAM, 0 );
+            if ( family == AF_INET )
+            {
+                CIPv4Address ipv4;
+                if ( ipv4.SetAddress( host ) )
+                {
+                    nic->m_curIpAddr.ip = ipv4;
+
+                    // Get additional IPv4 information via ioctl()
+
+                    if ( fd != -1)
+                    {
+                        struct ifreq ifr;
+                        ::strncpy( ifr.ifr_name, nic->m_name.C_String(), GUCEF_SMALLEST( IFNAMSIZ-1, nic->m_name.ByteSize() ) );
+                        ifr.ifr_name[ IFNAMSIZ-1 ] = '\0';
+
+                        int ioctlResult = ::ioctl( fd, SIOCGIFNETMASK, &ifr );
+                        if ( ioctlResult != -1 )
+                        {
+                            struct sockaddr_in* netmask = (struct sockaddr_in*) &ifr.ifr_netmask;
+                            char netmask_str[ INET_ADDRSTRLEN ];
+                            ::inet_ntop( AF_INET, &netmask->sin_addr, netmask_str, INET_ADDRSTRLEN );
+
+                            GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "LinuxNetworkInterface:EnumNetworkAdapters: Subnet Mask: " + CString( netmask_str ) );
+
+                            // Calculate the subnet
+                            struct in_addr ip_addr, subnet_mask, subnet;
+                            ip_addr.s_addr = ipv4.GetAddressInHostByteOrder();
+
+                            ::inet_pton( AF_INET, netmask_str, &subnet_mask );
+                            subnet.s_addr = ip_addr.s_addr & subnet_mask.s_addr;
+
+                            char subnet_str[INET_ADDRSTRLEN];
+                            ::inet_ntop( AF_INET, &subnet, subnet_str, INET_ADDRSTRLEN );
+
+                            CIPv4Address subnetIpv4;
+                            subnetIpv4.SetAddress( subnet.s_addr );
+
+                            GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "LinuxNetworkInterface:EnumNetworkAdapters: Subnet: " + ToString( subnetIpv4 ) );
+                            nic->m_curIpAddr.subnet = subnetIpv4;
+                        }
+                        else
+                        {
+                            GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "LinuxNetworkInterface:EnumNetworkAdapters: ioctl has error getting SIOCGIFNETMASK: " + CString( errno ) );
+                        }
+                    }
+                }
+                else
+                {
+                    GUCEF_WARNING_LOG( CORE::LOGLEVEL_NORMAL, "LinuxNetworkInterface:EnumNetworkAdapters: Failed to parse IPv4 of interface \"" + nic->m_name + "\" host " + host );
+                }
+
+            }
+            else
+            {
+                CIPv6Address ipv6;
+                //if ( ipv6 )
+                    // @TODO
+            }
+
+            // Get additional information via ioctl()
+
+            struct ifreq ifr;
+            ::strncpy( ifr.ifr_name, nic->m_name.C_String(), GUCEF_SMALLEST( IFNAMSIZ-1, nic->m_name.ByteSize() ) );
+            ifr.ifr_name[ IFNAMSIZ-1 ] = '\0';
+
+            int ioctlResult = ::ioctl( fd, SIOCGIFHWADDR, &ifr );
+            if ( ioctlResult != -1 )
+            {
+                unsigned char* mac = reinterpret_cast< unsigned char* >( ifr.ifr_hwaddr.sa_data );
+
+                char macAddress[ 24 ];
+                sprintf( macAddress, "%02x:%02x:%02x:%02x:%02x:%02x", mac[0], mac[1], mac[2], mac[3], mac[4], mac[5] );
+                CString macAddressStr = macAddress;
+
+                nic->m_macAddrs.insert( macAddressStr );
+                GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "LinuxNetworkInterface:EnumNetworkAdapters: MAC: " + macAddressStr );
+            }
+            else
+            {
+                GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "LinuxNetworkInterface:EnumNetworkAdapters: ioctl has error getting SIOCGIFHWADDR: " + CString( errno ) );
+            }
+
+            ::close( fd );
+
+            interfaces.push_back( nic.StaticCast< CINetworkInterface >() );
+
+        }
+    }
+
+    // Free the memory allocated by getifaddrs
+    ::freeifaddrs( ifaddr );
+    ifaddr = GUCEF_NULL;
+
+
+
+
+
+
+   /*
+    CORE::CString content;
+    if ( LoadTextFileAsString( "/proc/net/dev", content, true, "\n" ) )
+    {
+        CORE::CString::StringVector lines = content.ParseElements( '\n', false );
+        CORE::CString::StringVector::iterator i = lines.begin();
+
+        // Skip the first two lines (headers)
+        ++i; ++i;
+
+        while ( i != lines.end() )
+        {
+            const CORE::CString& line = (*i);
+            CORE::CString interfaceName;
+
+            Int32 colonIndex = line.HasChar( ':', true );
+            if ( colonIndex > 0 )
+            {
+                interfaceName = line.SubstrToIndex( colonIndex, true ).Trim( true );
+                if ( !interfaceName.IsNULLOrEmpty() )
+                {
+                    CLinuxNetworkInterfacePtr nic = CLinuxNetworkInterfacePtr( GUCEF_NEW CLinuxNetworkInterface() );
+                    nic->m_name = interfaceName;
+
+                    interfaces.push_back( nic.StaticCast< CINetworkInterface >() );
+                }
+            }
+            ++i;
+        }
+    }
+
+    GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "LinuxNetworkInterface: Failed to obtain info from /proc/net/dev" );
+    return false;
+}
+   /*
+        std::istringstream iss(line);
+        std::string interface;
+        iss >> interface;
+
+        // Remove the colon at the end of the interface name
+        if (interface.back() == ':') {
+            interface.pop_back();
+        }
+
+        if (interface == iface_name) {
+            unsigned long rx_bytes, rx_packets, rx_errs, rx_drop, rx_fifo, rx_frame, rx_compressed, rx_multicast;
+            unsigned long tx_bytes, tx_packets, tx_errs, tx_drop, tx_fifo, tx_colls, tx_carrier, tx_compressed;
+
+            iss >> rx_bytes >> rx_packets >> rx_errs >> rx_drop >> rx_fifo >> rx_frame >> rx_compressed >> rx_multicast
+                >> tx_bytes >> tx_packets >> tx_errs >> tx_drop >> tx_fifo >> tx_colls >> tx_carrier >> tx_compressed;
+
+            std::cout << "Statistics for interface: " << iface_name << std::endl;
+            std::cout << std::setw(15) << "RX Bytes: " << rx_bytes << std::endl;
+            std::cout << std::setw(15) << "RX Packets: " << rx_packets << std::endl;
+            std::cout << std::setw(15) << "RX Errors: " << rx_errs << std::endl;
+            std::cout << std::setw(15) << "RX Dropped: " << rx_drop << std::endl;
+            std::cout << std::setw(15) << "TX Bytes: " << tx_bytes << std::endl;
+            std::cout << std::setw(15) << "TX Packets: " << tx_packets << std::endl;
+            std::cout << std::setw(15) << "TX Errors: " << tx_errs << std::endl;
+            std::cout << std::setw(15) << "TX Dropped: " << tx_drop << std::endl;
+
+            return;
+        }
+    }
+
+    std::cerr << "Interface " << iface_name << " not found." << std::endl;
+}
+
+
+*/
 	return true;
 }
 
@@ -221,6 +602,7 @@ CLinuxNetworkInterface::CLinuxNetworkInterface( void )
     : CINetworkInterface()
     , m_name()
     , m_desc()
+    , m_macAddrs()
     , m_priWins()
     , m_secWins()
     , m_defGateway()
@@ -438,7 +820,7 @@ CLinuxNetworkInterface::GetOsAdapterIndex( void ) const
 bool
 CLinuxNetworkInterface::GetMetrics( CNetworkInterfaceMetrics& metrics ) const
 {GUCEF_TRACE;
-
+     /*
 	if ( GUCEF_NULL != COMCORE::GetIfEntry2 )
 	{
 		MT::CObjectScopeLock lock( this );
@@ -535,7 +917,7 @@ CLinuxNetworkInterface::GetMetrics( CNetworkInterfaceMetrics& metrics ) const
 		{
 			GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "CLinuxNetworkInterface: Failed to obtain adapter stats using Win32 GetIfEntry()" );
 		}
-	}
+	}   */
 	return false;
 }
 

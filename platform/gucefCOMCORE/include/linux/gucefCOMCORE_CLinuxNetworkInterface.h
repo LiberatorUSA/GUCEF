@@ -47,13 +47,13 @@ namespace GUCEF {
 namespace COMCORE {
 
 /*-------------------------------------------------------------------------//
-//                                                                         //
+//                                                                        //
 //      CLASSES                                                            //
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
 
-class CLinuxNetworkInterface : public virtual CINetworkInterface
+class CLinuxNetworkInterface : public CINetworkInterface
 {
     public:
 
@@ -110,14 +110,12 @@ class CLinuxNetworkInterface : public virtual CINetworkInterface
     CLinuxNetworkInterface( const CLinuxNetworkInterface& src );            /**< not implemented, doesnt make sense */
     CLinuxNetworkInterface& operator=( const CLinuxNetworkInterface& src ); /**< not implemented, doesnt make sense */
 
-    private:
-
-    bool SetupAdapterInfo( void* pAdaptInfoVoid );
 
     private:
 
     CString m_name;
     CString m_desc;
+    CString::StringSet m_macAddrs;
     CIPv4Address m_priWins;
     CIPv4Address m_secWins;
     CIPv4Address m_defGateway;

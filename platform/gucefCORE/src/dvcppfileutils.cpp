@@ -860,9 +860,9 @@ GetFileSystemStorageVolumeInformationByDirPath( TStorageVolumeInformation& info,
         return false;
     }
 
-    info.freeBytesAvailableToCaller = fsStats.f_bavail * fsStats.f_frsize;
-    info.totalNumberOfBytes = fsStats.f_blocks * fsStats.f_frsize;
-    info.totalNumberOfFreeBytes = fsStats.f_bfree * fsStats.f_frsize;
+    info.freeBytesAvailableToCaller = fsStats.f_bavail * fsStats.f_bsize;
+    info.totalNumberOfBytes = fsStats.f_blocks * fsStats.f_bsize;
+    info.totalNumberOfFreeBytes = fsStats.f_bfree * fsStats.f_bsize;
     return true;
 
     #else
@@ -913,6 +913,21 @@ GetFileSystemStorageVolumeInformationByVolumeId( TStorageVolumeInformation& info
     return GetFileSystemStorageVolumeInformationByDirPath( info, ToString( wVolumeRootPath ) );
 
     #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
+
+    CString::StringSet paths;
+    if ( GetAllFileSystemPathNamesForVolume( volumeId, paths ) )
+    {
+        CString::StringSet::iterator i = paths.begin();
+        while ( i != paths.end() )
+        {
+            const CString& path = (*i);
+            if ( GetFileSystemStorageVolumeInformationByDirPath( info, path ) )
+            {
+                return true;
+            }
+            ++i;
+        }
+    }
 
     return false;
 

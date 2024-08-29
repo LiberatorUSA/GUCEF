@@ -1400,7 +1400,7 @@ CKafkaPubSubClientTopic::GetCurrentBookmark( void )
 
         if ( !m_consumerAckdOffsets.empty() )
         {
-            CORE::CDynamicBuffer consumerOffsetsBuffer( m_consumerAckdOffsets.size() * ( sizeof(CORE::UInt32) + sizeof(CORE::Int64) ) );
+            CORE::CDynamicBuffer consumerOffsetsBuffer( (UInt32) ( m_consumerAckdOffsets.size() * ( sizeof(CORE::UInt32) + sizeof(CORE::Int64) ) ) );
 
             CORE::UInt32 byteOffset = 0;
             TInt32ToInt64Map::iterator i = m_consumerAckdOffsets.begin();
