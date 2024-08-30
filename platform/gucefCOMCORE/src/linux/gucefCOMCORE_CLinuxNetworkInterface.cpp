@@ -25,6 +25,14 @@
 #if ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
 
 #include <fstream>
+#include <ifaddrs.h>
+#include <net/if.h>
+#include <netdb.h>
+#include <sys/ioctl.h>
+#include <sys/socket.h>
+#include <arpa/inet.h>
+#include <net/if.h>
+#include <linux/rtnetlink.h>
 
 #include "gucefCOMCORE_CLinuxNetworkInterface.h"
 
@@ -33,10 +41,35 @@
 #define GUCEF_MT_COBJECTSCOPELOCK_H
 #endif /* GUCEF_MT_COBJECTSCOPELOCK_H ? */
 
+#ifndef GUCEF_CORE_CDATANODEDOCUMENTBUILDER_H
+#include "gucefCORE_CDataNodeDocumentBuilder.h"
+#define GUCEF_CORE_CDATANODEDOCUMENTBUILDER_H
+#endif /* GUCEF_CORE_CDATANODEDOCUMENTBUILDER_H ? */
+
+#ifndef GUCEF_CORE_CCOREGLOBAL_H
+#include "gucefCORE_CCoreGlobal.h"
+#define GUCEF_CORE_CCOREGLOBAL_H
+#endif /* GUCEF_CORE_CCOREGLOBAL_H ? */
+
+#ifndef GUCEF_CORE_CDSTORECODECREGISTRY_H
+#include "CDStoreCodecRegistry.h"
+#define GUCEF_CORE_CDSTORECODECREGISTRY_H
+#endif /* GUCEF_CORE_CDSTORECODECREGISTRY_H ? */
+
 #ifndef GUCEF_CORE_DVCPPSTRINGUTILS_H
 #include "dvcppstringutils.h"
 #define GUCEF_CORE_DVCPPSTRINGUTILS_H
 #endif /* GUCEF_CORE_DVCPPSTRINGUTILS_H ? */
+
+#ifndef GUCEF_CORE_DVCPPFILEUTILS_H
+#include "dvcppfileutils.h"
+#define GUCEF_CORE_DVCPPFILEUTILS_H
+#endif /* GUCEF_CORE_DVCPPFILEUTILS_H ? */
+
+#ifndef GUCEF_CORE_CINIPARSER_H
+#include "gucefCORE_CIniParser.h"
+#define GUCEF_CORE_CINIPARSER_H
+#endif /* GUCEF_CORE_CINIPARSER_H ? */
 
 #ifndef GUCEF_CORE_LOGGING_H
 #include "gucefCORE_Logging.h"
@@ -53,15 +86,6 @@
 #define GUCEF_COMCORE_CCOMCOREGLOBAL_H
 #endif /* GUCEF_COMCORE_CCOMCOREGLOBAL_H ? */
 
-#include <ifaddrs.h>
-#include <net/if.h>
-#include <netdb.h>
-#include <sys/ioctl.h>
-#include <sys/socket.h>
-#include <arpa/inet.h>
-#include <net/if.h>
-#include <linux/rtnetlink.h>
-
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //
@@ -76,6 +100,25 @@ namespace COMCORE {
 //      IMPLEMENTATION                                                     //
 //                                                                         //
 //-------------------------------------------------------------------------*/
+
+CORE::CDStoreCodecRegistry::TDStoreCodecPtr
+GetYamlCodec( void )
+{GUCEF_TRACE;
+
+    CORE::CCoreGlobal* coreGlobal = CORE::CCoreGlobal::Instance();
+    CORE::CDStoreCodecRegistry& dstoreCodecRegistry = coreGlobal->GetDStoreCodecRegistry();
+    CORE::CDStoreCodecRegistry::TDStoreCodecPtr yamlCodec;
+    if ( dstoreCodecRegistry.TryGetYamlCodec( yamlCodec ) )
+    {
+        GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "Linux networking: located YAML codec" );
+        return yamlCodec;
+    }
+
+    GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "Linux networking: Failed to locate a YAML codec" );
+    return yamlCodec;
+}
+
+/*-------------------------------------------------------------------------*/
 
 CString
 GetDefaultLinuxNetworkGateway( void )
@@ -213,22 +256,23 @@ struct EtcNetworkInterface
     CString netmask;
     CString gateway;
 };
-typedef std::map< CString, struct EtcNetworkInterface >    TStringToNetworkInterface;
+typedef std::vector< EtcNetworkInterface, gucef_allocator< EtcNetworkInterface > >  TEtcNetworkInterfaceVector;
+typedef std::map< CString, struct EtcNetworkInterface >                             TStringToEtcNetworkInterface;
 
 /*-------------------------------------------------------------------------*/
 
 //  Debian-based systems:
 //     The traditional location is /etc/network/interfaces.
-void
-ParseEtcNetworkInterfacesFile( const CString& filePath                      ,
-                               std::vector<EtcNetworkInterface>& interfaces )
+bool
+ParseEtcNetworkInterfacesFile( const CString& filePath                ,
+                               TEtcNetworkInterfaceVector& interfaces )
 {GUCEF_TRACE;
 
     std::ifstream file( filePath.C_String() );
     if ( !file.is_open() )
     {
         GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "ParseEtcNetworkInterfacesFile: Unable to open file " + filePath );
-        return;
+        return false;
     }
 
     std::string line;
@@ -270,28 +314,383 @@ ParseEtcNetworkInterfacesFile( const CString& filePath                      ,
     }
 
     file.close();
+    return !interfaces.empty();
 }
 
 /*-------------------------------------------------------------------------*/
 
-void
-ParseEtcNetworkInterfacesFile( const CString& filePath               ,
-                               TStringToNetworkInterface& interfaces )
+bool
+ParseEtcNetworkInterfacesFile( const CString& filePath                  ,
+                               TStringToEtcNetworkInterface& interfaces )
 {GUCEF_TRACE;
 
-    std::vector<EtcNetworkInterface> interfacesVec;
-    ParseEtcNetworkInterfacesFile( filePath, interfacesVec );
-
-    if ( !interfacesVec.empty() )
+    TEtcNetworkInterfaceVector interfacesVec;
+    if ( ParseEtcNetworkInterfacesFile( filePath, interfacesVec ) )
     {
-        std::vector<EtcNetworkInterface>::iterator i = interfacesVec.begin();
+        TEtcNetworkInterfaceVector::iterator i = interfacesVec.begin();
         while ( i != interfacesVec.end() )
         {
             const EtcNetworkInterface& nic = (*i);
             interfaces[ nic.iface ] = nic;
             ++i;
         }
+        return true;
     }
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
+class NetplanConfig
+{
+    public:
+
+    bool usesDhcp4;
+    bool usesDhcp6;
+    CString macaddressStr;
+    CString interfaceName;
+    CString setInterfaceName;
+    CIPv4Address::TIPv4AddressSet ipv4DnsServers;
+    CIPInfo::TIPv4InfoSet ipv4Infos;
+
+    NetplanConfig( void )
+        : usesDhcp4( false )
+        , usesDhcp6( false )
+        , macaddressStr()
+        , interfaceName()
+        , setInterfaceName()
+        , ipv4DnsServers()
+        , ipv4Infos()
+    {GUCEF_TRACE;
+    }
+
+};
+typedef std::vector< NetplanConfig, gucef_allocator< NetplanConfig > >  TNetplanConfigVector;
+typedef std::map< CString, NetplanConfig >                              TStringToNetplanConfig;
+
+/*-------------------------------------------------------------------------*/
+
+bool
+ParseNetplanFile( const CString& filePath                               ,
+                  TNetplanConfigVector& configs                         ,
+                  CORE::CDStoreCodecRegistry::TDStoreCodecPtr yamlCodec )
+{GUCEF_TRACE;
+
+    bool addedConfigs = false;
+
+    if ( !yamlCodec.IsNULL() )
+    {
+        // using the codec parse the resource into a usable document
+        CORE::CDataNodeDocumentBuilder configDoc;
+        if ( yamlCodec->BuildDataTree( &configDoc.document, filePath ) )
+        {
+            CORE::CDataNode::TDataNodeSet entries = configDoc.document.FindNodesOfType( "ethernets", true );
+            CORE::CDataNode::TDataNodeSet::iterator i = entries.begin();
+            while ( i != entries.end() )
+            {
+                CORE::CDataNode* ethernetsEntry = (*i);
+                if ( GUCEF_NULL != ethernetsEntry )
+                {
+                    CORE::CDataNode* interfaceNode = ethernetsEntry->GetChildAtIndex( 0 );
+                    if ( GUCEF_NULL != interfaceNode )
+                    {
+                        NetplanConfig netplanConfig;
+                        netplanConfig.interfaceName = interfaceNode->GetName();
+
+                        netplanConfig.usesDhcp4 = interfaceNode->GetAttributeValueOrChildValueByName( "dhcp4" ).AsBool( netplanConfig.usesDhcp4 );
+                        netplanConfig.usesDhcp6 = interfaceNode->GetAttributeValueOrChildValueByName( "dhcp6" ).AsBool( netplanConfig.usesDhcp6 );
+
+
+                        CORE::CDataNode* matchNode = interfaceNode->FindChild( "match" );
+                        if ( GUCEF_NULL != matchNode )
+                        {
+                            netplanConfig.macaddressStr = matchNode->GetAttributeValueOrChildValueByName( "macaddress" ).AsString();
+                        }
+
+                        CORE::CDataNode* nameserversNode = interfaceNode->FindChild( "nameservers" );
+                        if ( GUCEF_NULL != nameserversNode )
+                        {
+                            CORE::CDataNode* addressesNode = nameserversNode->FindChild( "addresses" );
+                            if ( GUCEF_NULL != addressesNode && GUCEF_DATATYPE_ARRAY == addressesNode->GetNodeType() )
+                            {
+                                CORE::CDataNode::TVariantVector addressesVars = addressesNode->GetChildrenValues();
+                                CORE::CDataNode::TVariantVector::iterator v = addressesVars.begin();
+                                while ( v != addressesVars.end() )
+                                {
+                                    const CORE::CVariant& var = (*v);
+                                    CIPv4Address dnsIp;
+
+                                    if ( dnsIp.SetAddress( var.AsString() ) )
+                                    {
+                                        netplanConfig.ipv4DnsServers.insert( dnsIp );
+                                    }
+                                    ++v;
+                                }
+                            }                            
+                        }
+
+                        CORE::CDataNode* addressesNode = interfaceNode->FindChild( "addresses" );
+                        if ( GUCEF_NULL != addressesNode && GUCEF_DATATYPE_ARRAY == addressesNode->GetNodeType() )
+                        {
+                            // IP addressess are in CIDR notation
+                            CORE::CDataNode::TVariantVector addressesVars = addressesNode->GetChildrenValues();
+                            CORE::CDataNode::TVariantVector::iterator v = addressesVars.begin();
+                            while ( v != addressesVars.end() )
+                            {
+                                const CORE::CVariant& var = (*v);
+                                CIPInfo ipInfoForInterface;
+
+                                if ( ipInfoForInterface.TrySetFromCIDRNotationString( var.AsString() ) )
+                                {
+                                    netplanConfig.ipv4Infos.insert( ipInfoForInterface );
+                                }
+                                ++v;
+                            }
+                        }
+
+                        netplanConfig.setInterfaceName = interfaceNode->GetAttributeValueOrChildValueByName( "set-name" ).AsString();
+
+                        GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "ParseNetplanFile: Found config for interface " + netplanConfig.interfaceName );                        
+                        configs.push_back( netplanConfig );
+                        addedConfigs = true;
+                    }
+                }
+                ++i;
+            }
+        }
+    }
+
+    return addedConfigs;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+ParseNetplanFile( const CString& filePath                               ,
+                  TStringToNetplanConfig& interfaces                    ,
+                  CORE::CDStoreCodecRegistry::TDStoreCodecPtr yamlCodec )
+{GUCEF_TRACE;
+
+    TNetplanConfigVector interfacesVec;
+    if ( ParseNetplanFile( filePath, interfacesVec, yamlCodec ) )
+    {
+        TNetplanConfigVector::iterator i = interfacesVec.begin();
+        while ( i != interfacesVec.end() )
+        {
+            const NetplanConfig& nic = (*i);
+
+            CString interfaceKeyName = nic.setInterfaceName.IsNULLOrEmpty() ? nic.interfaceName : nic.setInterfaceName;
+            interfaces[ interfaceKeyName ] = nic;
+            ++i;
+        }
+        return true;
+    }
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+ParseAllNetplanFiles( const CString& rootPath,
+                      TStringToNetplanConfig& configs ,
+                      CORE::CDStoreCodecRegistry::TDStoreCodecPtr yamlCodec )
+{GUCEF_TRACE;
+
+    CORE::CFileSystemIterator fsIterator;
+
+    if ( fsIterator.FindFirst( rootPath ) )
+    {
+        bool someSuccess = false;
+        do
+        {
+            CString filePath = fsIterator.GetResourcePath();
+
+            // Netplan files are YAML formatted files with yaml extension
+            CString fileExt = CORE::ExtractFileExtention( filePath );
+            if ( fileExt.Lowercase() == "yaml" )
+            {
+                if ( ParseNetplanFile( filePath, configs, yamlCodec ) )
+                    someSuccess = true;
+            }
+        }
+        while ( fsIterator.FindNext() );
+        return someSuccess;
+    }
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
+class NetworkManagerConfig
+{
+    public:
+
+    bool usesDhcp4;
+    bool usesDhcp6;
+    CString macaddressStr;
+    CString interfaceName;
+    CString setInterfaceName;
+    CIPv4Address::TIPv4AddressSet ipv4DnsServers;
+    CIPInfo::TIPv4InfoSet ipv4Infos;
+
+    NetworkManagerConfig( void )
+        : usesDhcp4( false )
+        , usesDhcp6( false )
+        , macaddressStr()
+        , interfaceName()
+        , setInterfaceName()
+        , ipv4DnsServers()
+        , ipv4Infos()
+    {GUCEF_TRACE;
+    }
+
+};
+typedef std::vector< NetworkManagerConfig, gucef_allocator< NetworkManagerConfig > >  TNetworkManagerConfigVector;
+typedef std::map< CString, NetworkManagerConfig >                                     TStringToNetworkManagerConfig;
+
+/*-------------------------------------------------------------------------*/
+
+bool
+ParseNetworkManagerFile( const CString& filePath                   ,
+                         TStringToNetworkManagerConfig& interfaces )
+{GUCEF_TRACE;
+
+    CORE::CIniParser iniParser;
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+ParseAllNetworkManagerFiles( const CString& rootPath                ,
+                             TStringToNetworkManagerConfig& configs )
+{GUCEF_TRACE;
+    
+    CORE::CFileSystemIterator fsIterator;
+
+    if ( fsIterator.FindFirst( rootPath ) )
+    {
+        bool someSuccess = false;
+        do
+        {
+            CString filePath = fsIterator.GetResourcePath();
+
+            // NetworkManager files are ini style files with conf extension
+            CString fileExt = CORE::ExtractFileExtention( filePath );
+            if ( fileExt.Lowercase() == "conf" )
+            {
+                if ( ParseNetworkManagerFile( filePath, configs ) )
+                    someSuccess = true;
+            }
+        }
+        while ( fsIterator.FindNext() );
+        return someSuccess;
+    }
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
+class CLinuxNetworkInterface::NetworkConfigDiscoveryCache
+{
+    public:
+
+    bool performedDiscovery;
+    CIPv4Address defaultIPv4Gateway;
+    bool hasDefaultIPv4Gateway;
+    TStringToEtcNetworkInterface etcInterfaces;
+    TStringToNetplanConfig netplanInterfaces;
+    TStringToNetworkManagerConfig networkManagerInterfaces;
+    CORE::CDStoreCodecRegistry::TDStoreCodecPtr yamlCodec;
+
+    NetworkConfigDiscoveryCache( void )
+        : performedDiscovery( false )
+        , defaultIPv4Gateway()
+        , hasDefaultIPv4Gateway( false )
+        , etcInterfaces()
+        , netplanInterfaces()
+        , yamlCodec()
+    {GUCEF_TRACE;
+
+    }
+};
+
+/*-------------------------------------------------------------------------*/
+
+void
+CLinuxNetworkInterface::FillExtraInfoFromConfig( NetworkConfigDiscoveryCache& cache )
+{GUCEF_TRACE;
+
+    bool discoverySuccess = false;
+
+    if ( !cache.performedDiscovery )
+    {
+        // Linux typically only has 1 global network gateway
+        CString defaultIPv4GatewayStr = GetDefaultLinuxNetworkGateway();
+        if ( !defaultIPv4GatewayStr.IsNULLOrEmpty() )
+                cache.hasDefaultIPv4Gateway = cache.defaultIPv4Gateway.SetAddress( defaultIPv4GatewayStr );
+
+        // Grab a YAML codec since some config files use the yaml format
+        cache.yamlCodec = GetYamlCodec();
+    }
+
+    if ( cache.hasDefaultIPv4Gateway )
+        m_defGateway = cache.defaultIPv4Gateway;
+
+    //  Debian-based systems:
+    //     The traditional location is /etc/network/interfaces.
+    TStringToEtcNetworkInterface etcInterfaces;
+    if ( cache.performedDiscovery || ParseEtcNetworkInterfacesFile( "/etc/network/interfaces", cache.etcInterfaces ) )
+    {
+        TStringToEtcNetworkInterface::iterator m = cache.etcInterfaces.find( m_name );
+        if ( m != etcInterfaces.end() )
+        {
+            discoverySuccess = true;
+            const EtcNetworkInterface& etcNic = (*m).second;
+
+            CIPv4Address nicGateway;
+            if ( nicGateway.SetAddress( etcNic.gateway ) )
+            {
+                m_gatewayList.push_back( nicGateway );
+            }
+        }
+    }
+
+    // Netplan (used in Ubuntu 18.04 and later):
+    //     Configuration files are located in /etc/netplan/.
+    if ( cache.performedDiscovery || ParseAllNetplanFiles( "/etc/netplan/", cache.netplanInterfaces, cache.yamlCodec ) )
+    {
+        TStringToNetplanConfig::iterator m = cache.netplanInterfaces.find( m_name );
+        if ( m != cache.netplanInterfaces.end() )
+        {
+            discoverySuccess = true;
+            const NetplanConfig& netplanConfig = (*m).second;
+
+            m_dhcpUsedforIpv4 = netplanConfig.usesDhcp4;
+            m_dhcpUsedforIpv6 = netplanConfig.usesDhcp6;
+
+            if ( !netplanConfig.macaddressStr.IsNULLOrEmpty() )
+                m_macAddrs.insert( netplanConfig.macaddressStr );
+
+            m_ipv4Addresses = netplanConfig.ipv4Infos;
+        }
+    }
+
+    // NetworkManager:
+    //     Configuration files are typically located in /etc/NetworkManager/system-connections/
+    if ( cache.performedDiscovery || ParseAllNetworkManagerFiles( "/etc/NetworkManager/system-connections/", cache.networkManagerInterfaces ) )
+    {
+        // @TODO
+    }
+
+    CString dhcpLeaseStr = GetDhcpLeaseTimestampFromSystemdJournal( m_name );
+    if ( !dhcpLeaseStr.IsNULLOrEmpty() )
+    {
+        int fg=0; // @TODO
+    }
+
+    // We need at least one success story before we stop re-doing discovery
+    cache.performedDiscovery = discoverySuccess;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -299,9 +698,6 @@ ParseEtcNetworkInterfacesFile( const CString& filePath               ,
 bool
 CLinuxNetworkInterface::EnumNetworkAdapters( TINetworkInterfacePtrVector& interfaces )
 {GUCEF_TRACE;   
-
-    TStringToNetworkInterface etcInterfaces;
-    ParseEtcNetworkInterfacesFile( "/etc/network/interfaces", etcInterfaces );
 
     struct ifaddrs* ifaddr = GUCEF_NULL;
     struct ifaddrs* ifa = GUCEF_NULL;    
@@ -312,6 +708,10 @@ CLinuxNetworkInterface::EnumNetworkAdapters( TINetworkInterfacePtrVector& interf
         GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "LinuxNetworkInterface:EnumNetworkAdapters: getifaddrs failed" );
         return false;
     }
+
+    // keep a cache of discovered network config info so we dont have to redo all
+    // the work per interface
+    struct NetworkConfigDiscoveryCache networkConfigDiscoveryCache;
 
     // Iterate through the list of interfaces
     typedef std::map< CString, CLinuxNetworkInterfacePtr > TNicMap;
@@ -392,26 +792,7 @@ CLinuxNetworkInterface::EnumNetworkAdapters( TINetworkInterfacePtrVector& interf
                 nic->m_name = ifa->ifa_name;
                 nic->m_nicIndex = ::if_nametoindex( ifa->ifa_name );
 
-                // Linux typically only has 1 global network gateway
-                nic->m_defGateway.SetAddress( GetDefaultLinuxNetworkGateway() );
-
-                CString dhcpLeaseStr = GetDhcpLeaseTimestampFromSystemdJournal( nic->m_name );
-                if ( !dhcpLeaseStr.IsNULLOrEmpty() )
-                {
-                    int fg=0; // @TODO
-                }
-
-                TStringToNetworkInterface::iterator m = etcInterfaces.find( nic->m_name );
-                if ( m != etcInterfaces.end() )
-                {
-                    const EtcNetworkInterface& etcNic = (*m).second;
-
-                    CIPv4Address nicGateway;
-                    if ( nicGateway.SetAddress( etcNic.gateway ) )
-                    {
-                        nic->m_gatewayList.push_back( nicGateway );
-                    }
-                }
+                nic->FillExtraInfoFromConfig( networkConfigDiscoveryCache );
             }
             if ( nic.IsNULL() )
             {
@@ -610,10 +991,11 @@ CLinuxNetworkInterface::CLinuxNetworkInterface( void )
     , m_curIpAddr()
     , m_nicIndex( 0 )
     , m_adapterType( 0 )
-    , m_dhcpUsed( false )
+    , m_dhcpUsedforIpv4( false )
+    , m_dhcpUsedforIpv6( false )
     , m_winsUsed( false )
     , m_dnsAddresses()
-    , m_ipAddresses()
+    , m_ipv4Addresses()
     , m_gatewayList()
     , m_leaseObtained( 0 )
     , m_leaseExpires( 0 )
@@ -701,7 +1083,7 @@ CLinuxNetworkInterface::GetNrOfIPAddresses( void ) const
 {GUCEF_TRACE;
 
 	MT::CObjectScopeLock lock( this );
-	return (UInt32) m_ipAddresses.size();
+	return (UInt32) m_ipv4Addresses.size();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -711,8 +1093,8 @@ CLinuxNetworkInterface::GetIPInfo( TIPInfoVector& ipInfo, bool includeUninitiali
 {GUCEF_TRACE;
 
 	MT::CObjectScopeLock lock( this );
-	TIPInfoVector::const_iterator i = m_ipAddresses.begin();
-	while ( i != m_ipAddresses.end() )
+	CIPInfo::TIPv4InfoSet::const_iterator i = m_ipv4Addresses.begin();
+	while ( i != m_ipv4Addresses.end() )
 	{
 		if ( includeUninitialized || 0 != (*i).ip.GetAddress() )
 			ipInfo.push_back( (*i) );
@@ -724,11 +1106,21 @@ CLinuxNetworkInterface::GetIPInfo( TIPInfoVector& ipInfo, bool includeUninitiali
 /*-------------------------------------------------------------------------*/
 
 bool
-CLinuxNetworkInterface::IsDhcpUsed( void ) const
+CLinuxNetworkInterface::IsDhcpUsedForIPv4( void ) const
 {GUCEF_TRACE;
 
 	MT::CObjectScopeLock lock( this );
-	return m_dhcpUsed;
+	return m_dhcpUsedforIpv4;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CLinuxNetworkInterface::IsDhcpUsedForIPv6( void ) const
+{GUCEF_TRACE;
+
+	MT::CObjectScopeLock lock( this );
+	return m_dhcpUsedforIpv6;
 }
 
 /*-------------------------------------------------------------------------*/

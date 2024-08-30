@@ -214,7 +214,7 @@ DetectScalarType( yaml_event_t* ymlEvent )
          * look for all digits and a dot
          */
         UInt8 allDigits = 1;
-        UInt8 foundDot = 0;
+        UInt8 foundDotCount = 0;
         size_t scalarSize = ymlEvent->data.scalar.length;
         yaml_char_t* value = ymlEvent->data.scalar.value;
         for ( size_t i=0; i<scalarSize; ++i )
@@ -222,7 +222,12 @@ DetectScalarType( yaml_event_t* ymlEvent )
             yaml_char_t c = value[ i ];
             if ( c == '.' )
             {
-                foundDot = 1;
+                ++foundDotCount;
+                if ( foundDotCount > 1 )
+                {
+                    allDigits = 0;
+                    break;
+                }
             }
             if ( !( c >= '0' && c <= '9' || c == '+' || c == '-' || c == '.' ) )
             {
@@ -274,7 +279,7 @@ DetectScalarType( yaml_event_t* ymlEvent )
                 
             }
         }
-        else if ( 0 == foundDot )
+        else if ( 0 == foundDotCount )
             return GUCEF_DATATYPE_INT64;
         else
             return GUCEF_DATATYPE_FLOAT64;

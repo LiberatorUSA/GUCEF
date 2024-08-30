@@ -63,6 +63,21 @@ class GUCEF_CORE_PUBLIC_CPP CDStoreCodecRegistry : public CTRegistry< CDStoreCod
 
     virtual const CILockable* AsLockable( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
+    /**
+     *  Convenience helper function for the commonly used YAML codec
+     */
+    bool TryGetYamlCodec( TDStoreCodecPtr& yamlCodec ) const;
+
+    /**
+     *  Convenience helper function for the commonly used JSON codec
+     */
+    bool TryGetJsonCodec( TDStoreCodecPtr& jsonCodec ) const;
+
+    /**
+     *  Convenience helper function for the commonly used XML codec
+     */
+    bool TryGetXmlCodec( TDStoreCodecPtr& xmlCodec ) const;
+
     protected:
     
     virtual MT::TLockStatus Lock( UInt32 lockWaitTimeoutInMs = GUCEF_MT_DEFAULT_LOCK_TIMEOUT_IN_MS ) const GUCEF_VIRTUAL_OVERRIDE;

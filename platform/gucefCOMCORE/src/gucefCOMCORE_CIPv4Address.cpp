@@ -406,6 +406,15 @@ CIPv4Address::operator<( const CIPv4Address& other ) const
 
 /*-------------------------------------------------------------------------*/
 
+UInt32
+CIPv4Address::CidrToSubnetMask( Int32 cidr )
+{GUCEF_TRACE;
+
+    return (cidr == 0) ? 0 : (~0U << (32 - cidr));
+}
+
+/*-------------------------------------------------------------------------*/
+
 void
 IPv4AddressSetToIPv4AddressVector( const CIPv4Address::TIPv4AddressSet& sortedSet , 
                                    CIPv4Address::TIPv4AddressVector& vec          )

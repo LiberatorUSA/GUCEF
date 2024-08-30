@@ -131,6 +131,46 @@ CIPInfo::Clear( void )
     subnet.Clear();
 }
 
+/*-------------------------------------------------------------------------*/
+
+bool
+CIPInfo::TrySetFromCIDRNotationString( const CString& cidrIpv4Str )
+{GUCEF_TRACE;
+
+    Clear();
+
+    if ( !cidrIpv4Str.IsNULLOrEmpty() )
+    {
+        // We only accept CIDR notation thus the / is mandatory
+        Int32 lastCpIndex = cidrIpv4Str.HasChar( '/', false );
+        if ( lastCpIndex > 0 )
+        {
+            CString ipv4Str = cidrIpv4Str.SubstrToIndex( lastCpIndex, true );
+
+            if ( ip.SetAddress( ipv4Str ) )
+            {                
+                CString cidrBlockStr = cidrIpv4Str.SubstrToIndex( lastCpIndex+1, false );
+                if ( !cidrBlockStr.IsNULLOrEmpty() )
+                {
+                    Int32 cidrBlockSize = CORE::StringToUInt32( cidrBlockStr, -1 );
+                    if ( cidrBlockSize == 0 )
+                        return true;
+                    if ( cidrBlockSize > 0 )
+                    {
+                        UInt32 subnetMask = CIPv4Address::CidrToSubnetMask( cidrBlockSize );
+                        unsigned int subnetAddressInNetworkOrder = ip.GetAddress() & subnetMask;
+                        subnet.SetAddress( subnetAddressInNetworkOrder );
+                        return true;
+                    }
+                }
+            }
+        }
+    }
+
+    Clear();
+    return false;
+}
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //

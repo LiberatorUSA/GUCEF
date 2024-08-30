@@ -156,6 +156,11 @@ class GUCEF_COMCORE_EXPORT_CPP CIPv4Address
     static UInt16 HostByteOrderToNetworkByteOrder( UInt16 nrInHostByteOrder );
     static UInt32 HostByteOrderToNetworkByteOrder( UInt32 nrInHostByteOrder );
 
+    /**
+     *  Function to calculate subnet mask from CIDR notation
+     */
+    static UInt32 CidrToSubnetMask( Int32 cidr );
+
     private:
     
     UInt16 m_port;

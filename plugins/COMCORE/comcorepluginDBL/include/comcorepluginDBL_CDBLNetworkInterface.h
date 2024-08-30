@@ -78,7 +78,9 @@ class CDBLNetworkInterface : public virtual COMCORE::CINetworkInterface
 
     virtual bool GetIPInfo( TIPInfoVector& ipInfo, bool includeUninitialized = false ) const GUCEF_VIRTUAL_OVERRIDE;
 		
-    virtual bool IsDhcpUsed( void ) const GUCEF_VIRTUAL_OVERRIDE;		
+    virtual bool IsDhcpUsedForIPv4( void ) const GUCEF_VIRTUAL_OVERRIDE;
+
+    virtual bool IsDhcpUsedForIPv6( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
     virtual CORE::CDateTime GetDhcpLeaseObtainedTime( void ) const GUCEF_VIRTUAL_OVERRIDE;
 

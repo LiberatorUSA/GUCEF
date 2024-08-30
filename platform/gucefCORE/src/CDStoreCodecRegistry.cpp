@@ -89,6 +89,34 @@ CDStoreCodecRegistry::Unlock( void ) const
     return _datalock.Unlock();
 }
 
+/*-------------------------------------------------------------------------*/
+
+bool
+CDStoreCodecRegistry::TryGetYamlCodec( TDStoreCodecPtr& yamlCodec ) const
+{GUCEF_TRACE;
+
+    return ( TryLookup( "yaml", yamlCodec, false ) && !yamlCodec.IsNULL() ) ||
+           ( TryLookup( "yml", yamlCodec, false ) && !yamlCodec.IsNULL() );
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CDStoreCodecRegistry::TryGetJsonCodec( TDStoreCodecPtr& jsonCodec ) const
+{GUCEF_TRACE;
+
+    return TryLookup( "json", jsonCodec, false ) && !jsonCodec.IsNULL();
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CDStoreCodecRegistry::TryGetXmlCodec( TDStoreCodecPtr& xmlCodec ) const
+{GUCEF_TRACE;
+
+    return TryLookup( "xml", xmlCodec, false ) && !xmlCodec.IsNULL();
+}
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //

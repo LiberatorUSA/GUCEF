@@ -185,10 +185,18 @@ CDBLNetworkInterface::GetIPInfo( TIPInfoVector& ipInfo, bool includeUninitialize
 /*-------------------------------------------------------------------------*/
 
 bool
-CDBLNetworkInterface::IsDhcpUsed( void ) const
+CDBLNetworkInterface::IsDhcpUsedForIPv4( void ) const
 {GUCEF_TRACE;
 
-	MT::CObjectScopeLock lock( this );
+	return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CDBLNetworkInterface::IsDhcpUsedForIPv6( void ) const
+{GUCEF_TRACE;
+
 	return false;
 }
 

@@ -55,14 +55,18 @@ namespace COMCORE {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+// @TODO: label as IPv4
 class GUCEF_COMCORE_EXPORT_CPP CIPInfo
 {
     public:
 
-    typedef std::vector< CIPInfo, gucef_allocator< CIPInfo > >    TIPInfoVector;
+    typedef std::vector< CIPInfo, gucef_allocator< CIPInfo > >                       TIPInfoVector;
+    typedef std::set< CIPInfo, std::less< CIPInfo >, gucef_allocator< CIPInfo > >    TIPv4InfoSet;
 
     CIPv4Address ip;
     CIPv4Address subnet;
+
+    bool TrySetFromCIDRNotationString( const CString& cidrIpv4Str );
 
     /**
      *  This operator is only implemented to facilitate ordering

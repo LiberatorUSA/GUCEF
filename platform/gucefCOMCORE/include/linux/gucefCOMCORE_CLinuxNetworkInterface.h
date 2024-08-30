@@ -57,6 +57,8 @@ class CLinuxNetworkInterface : public CINetworkInterface
 {
     public:
 
+    typedef CORE::CTSharedPtr< CLinuxNetworkInterface, MT::CMutex >  CLinuxNetworkInterfacePtr;
+
     static bool EnumNetworkAdapters( TINetworkInterfacePtrVector& interfaces );
 
     virtual ~CLinuxNetworkInterface() GUCEF_VIRTUAL_OVERRIDE;
@@ -79,7 +81,9 @@ class CLinuxNetworkInterface : public CINetworkInterface
 
     virtual bool GetIPInfo( TIPInfoVector& ipInfo, bool includeUninitialized = false ) const GUCEF_VIRTUAL_OVERRIDE;
 		
-    virtual bool IsDhcpUsed( void ) const GUCEF_VIRTUAL_OVERRIDE;		
+    virtual bool IsDhcpUsedForIPv4( void ) const GUCEF_VIRTUAL_OVERRIDE;
+
+    virtual bool IsDhcpUsedForIPv6( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
     virtual CORE::CDateTime GetDhcpLeaseObtainedTime( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
@@ -113,6 +117,12 @@ class CLinuxNetworkInterface : public CINetworkInterface
 
     private:
 
+    class NetworkConfigDiscoveryCache;
+
+    void FillExtraInfoFromConfig( NetworkConfigDiscoveryCache& cache );
+
+    private:
+
     CString m_name;
     CString m_desc;
     CString::StringSet m_macAddrs;
@@ -123,10 +133,11 @@ class CLinuxNetworkInterface : public CINetworkInterface
     CIPInfo m_curIpAddr;    // this is also in the ip address list but this is the address currently active.
     UInt32 m_nicIndex;      // machine index of the adapter.
     UInt32 m_adapterType;	
-    bool m_dhcpUsed;
+    bool m_dhcpUsedforIpv4;
+    bool m_dhcpUsedforIpv6;
     bool m_winsUsed;		
     THostAddressVector m_dnsAddresses;
-    TIPInfoVector m_ipAddresses;
+    CIPInfo::TIPv4InfoSet m_ipv4Addresses;
     TIPv4AddressVector m_gatewayList;
     time_t m_leaseObtained;
     time_t m_leaseExpires;
@@ -135,7 +146,7 @@ class CLinuxNetworkInterface : public CINetworkInterface
 
 /*-------------------------------------------------------------------------*/
 
-typedef CORE::CTSharedPtr< CLinuxNetworkInterface, MT::CMutex >  CLinuxNetworkInterfacePtr;
+typedef CLinuxNetworkInterface::CLinuxNetworkInterfacePtr  CLinuxNetworkInterfacePtr;
 
 /*-------------------------------------------------------------------------//
 //                                                                         //

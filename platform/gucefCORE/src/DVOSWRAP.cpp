@@ -490,6 +490,10 @@ LoadModuleDynamicly( const char* filename )
             fileOnly = "lib" + fileOnly;
             CString newFilePath = CombinePath( StripFilename( fName ), fileOnly );
             modulePtr = (void*) dlopen( newFilePath.C_String(), RTLD_NOW );
+            if ( GUCEF_NULL == modulePtr )
+            {
+                GUCEF_DEBUG_LOG( LOGLEVEL_NORMAL, "dlopen() reports error: " + CString( dlerror() ) );
+            }
         }
     }
 
@@ -509,6 +513,8 @@ LoadModuleDynamicly( const char* filename )
 
             if ( GUCEF_NULL == modulePtr )
             {
+                GUCEF_DEBUG_LOG( LOGLEVEL_NORMAL, "dlopen() reports error: " + CString( dlerror() ) );
+
                 // It is possible the load failed due to missing "lib" prefix on linux/android.
                 // Check for this and compensate as needed
                 if ( 0 != fileOnly.HasSubstr( "lib" ) )
@@ -518,6 +524,10 @@ LoadModuleDynamicly( const char* filename )
                     newFilePath = CombinePath( pathOnly, fileOnly );
 
                     modulePtr = (void*) dlopen( newFilePath.C_String(), RTLD_NOW );
+                    if ( GUCEF_NULL == modulePtr )
+                    {
+                        GUCEF_DEBUG_LOG( LOGLEVEL_NORMAL, "dlopen() reports error: " + CString( dlerror() ) );
+                    }
                 }
             }
         }

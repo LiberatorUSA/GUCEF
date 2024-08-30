@@ -94,7 +94,7 @@ CWin32NetworkInterface::SetupAdapterInfo( void* pAdaptInfoVoid )
 	m_secWins.SetAddress( pAdaptInfo->SecondaryWinsServer.IpAddress.String );
 	m_nicIndex = pAdaptInfo->Index;		
 	m_adapterType = pAdaptInfo->Type;	
-	m_dhcpUsed = 0 != pAdaptInfo->DhcpEnabled;
+	m_dhcpUsedForIPv4 = 0 != pAdaptInfo->DhcpEnabled;
 	m_winsUsed = 0 != pAdaptInfo->HaveWins;	
 	m_leaseObtained = pAdaptInfo->LeaseObtained;
 	m_leaseExpires = pAdaptInfo->LeaseExpires;
@@ -246,7 +246,8 @@ CWin32NetworkInterface::CWin32NetworkInterface( void )
     , m_curIpAddr()
     , m_nicIndex( 0 )
     , m_adapterType( 0 )	
-    , m_dhcpUsed( false )
+    , m_dhcpUsedForIPv4( false )
+    , m_dhcpUsedForIPv6( false )
     , m_winsUsed( false )		
     , m_dnsAddresses()
     , m_ipAddresses()
@@ -360,11 +361,21 @@ CWin32NetworkInterface::GetIPInfo( TIPInfoVector& ipInfo, bool includeUninitiali
 /*-------------------------------------------------------------------------*/
 		
 bool 
-CWin32NetworkInterface::IsDhcpUsed( void ) const
+CWin32NetworkInterface::IsDhcpUsedForIPv4( void ) const
 {GUCEF_TRACE;
 
 	MT::CObjectScopeLock lock( this );
-	return m_dhcpUsed;
+	return m_dhcpUsedForIPv4;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CWin32NetworkInterface::IsDhcpUsedForIPv6( void ) const
+{GUCEF_TRACE;
+
+	MT::CObjectScopeLock lock( this );
+	return m_dhcpUsedForIPv6;
 }
 
 /*-------------------------------------------------------------------------*/

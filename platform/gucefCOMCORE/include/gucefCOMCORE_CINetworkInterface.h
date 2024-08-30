@@ -143,7 +143,9 @@ class GUCEF_COMCORE_EXPORT_CPP CINetworkInterface : public virtual CICommunicati
 
     virtual bool GetIPInfo( TIPInfoVector& ipInfo, bool includeUninitialized = false ) const = 0;
 		
-    virtual bool IsDhcpUsed( void ) const = 0;		
+    virtual bool IsDhcpUsedForIPv4( void ) const = 0;
+
+    virtual bool IsDhcpUsedForIPv6( void ) const = 0;
 
     virtual CORE::CDateTime GetDhcpLeaseObtainedTime( void ) const = 0;
 

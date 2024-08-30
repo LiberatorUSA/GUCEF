@@ -36,6 +36,16 @@ extern "C" {
 #   else
 #       define  YAML_DECLARE(type)  __declspec(dllimport) type
 #   endif
+#elif defined(__GNUC__)
+# if ( __GNUC__ >= 4 )/* DV edit: for later GCC versions we have to explicitly export */
+#   if defined(YAML_DECLARE_STATIC)
+#       define  YAML_DECLARE(type)  type
+#   elif defined(YAML_DECLARE_EXPORT)
+#       define  YAML_DECLARE(type) __attribute__ ((__visibility__("default"))) type
+#   else
+#       define  YAML_DECLARE(type) __attribute__ ((__visibility__("default"))) type
+#   endif
+# endif
 #else
 #   define  YAML_DECLARE(type)  type
 #endif
@@ -55,7 +65,7 @@ extern "C" {
  * number, and @c Z is the patch version number.
  */
 
-YAML_DECLARE(const char *)
+const char* __attribute__ ((__visibility__("default")))
 yaml_get_version_string(void);
 
 /**

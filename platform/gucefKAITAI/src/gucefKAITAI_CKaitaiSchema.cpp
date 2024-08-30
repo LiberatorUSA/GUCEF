@@ -271,7 +271,7 @@ CKaitaiSchema::LoadSchema( CORE::IOAccessPtr schemaResource )
     CORE::CCoreGlobal* coreGlobal = CORE::CCoreGlobal::Instance();
     CORE::CDStoreCodecRegistry& dstoreCodecRegistry = coreGlobal->GetDStoreCodecRegistry();
     CORE::CDStoreCodecRegistry::TDStoreCodecPtr yamlCodec;
-    if ( dstoreCodecRegistry.TryLookup( "yaml", yamlCodec, false ) && yamlCodec )
+    if ( dstoreCodecRegistry.TryGetYamlCodec( yamlCodec ) )
     {
         // using the codec parse the resource into a usable document
         CORE::CDataNode schemaDocument;
