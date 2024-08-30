@@ -1926,6 +1926,7 @@ CFileSystemIterator::TryReadSymlinkedMetaData( CResourceMetaData& metaData )
      *	Unsupported O/S build
      */
     GUCEF_WARNING_LOG( LOGLEVEL_NORMAL, "FileSystemIterator:TryReadSymlinkMetaData: Platform has no supported implementation" );
+    return false;
     #endif
 }
 
