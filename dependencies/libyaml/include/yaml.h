@@ -65,7 +65,7 @@ extern "C" {
  * number, and @c Z is the patch version number.
  */
 
-const char* __attribute__ ((__visibility__("default")))
+YAML_DECLARE(const char *)
 yaml_get_version_string(void);
 
 /**
