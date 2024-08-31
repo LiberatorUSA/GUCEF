@@ -791,8 +791,6 @@ CLinuxNetworkInterface::EnumNetworkAdapters( TINetworkInterfacePtrVector& interf
 
                 nic->m_name = ifa->ifa_name;
                 nic->m_nicIndex = ::if_nametoindex( ifa->ifa_name );
-
-                nic->FillExtraInfoFromConfig( networkConfigDiscoveryCache );
             }
             if ( nic.IsNULL() )
             {
@@ -890,6 +888,8 @@ CLinuxNetworkInterface::EnumNetworkAdapters( TINetworkInterfacePtrVector& interf
 
             ::close( fd );
 
+            nic->FillExtraInfoFromConfig( networkConfigDiscoveryCache );
+
             interfaces.push_back( nic.StaticCast< CINetworkInterface >() );
 
         }
@@ -898,9 +898,6 @@ CLinuxNetworkInterface::EnumNetworkAdapters( TINetworkInterfacePtrVector& interf
     // Free the memory allocated by getifaddrs
     ::freeifaddrs( ifaddr );
     ifaddr = GUCEF_NULL;
-
-
-
 
 
 
@@ -938,41 +935,6 @@ CLinuxNetworkInterface::EnumNetworkAdapters( TINetworkInterfacePtrVector& interf
     GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "LinuxNetworkInterface: Failed to obtain info from /proc/net/dev" );
     return false;
 }
-   /*
-        std::istringstream iss(line);
-        std::string interface;
-        iss >> interface;
-
-        // Remove the colon at the end of the interface name
-        if (interface.back() == ':') {
-            interface.pop_back();
-        }
-
-        if (interface == iface_name) {
-            unsigned long rx_bytes, rx_packets, rx_errs, rx_drop, rx_fifo, rx_frame, rx_compressed, rx_multicast;
-            unsigned long tx_bytes, tx_packets, tx_errs, tx_drop, tx_fifo, tx_colls, tx_carrier, tx_compressed;
-
-            iss >> rx_bytes >> rx_packets >> rx_errs >> rx_drop >> rx_fifo >> rx_frame >> rx_compressed >> rx_multicast
-                >> tx_bytes >> tx_packets >> tx_errs >> tx_drop >> tx_fifo >> tx_colls >> tx_carrier >> tx_compressed;
-
-            std::cout << "Statistics for interface: " << iface_name << std::endl;
-            std::cout << std::setw(15) << "RX Bytes: " << rx_bytes << std::endl;
-            std::cout << std::setw(15) << "RX Packets: " << rx_packets << std::endl;
-            std::cout << std::setw(15) << "RX Errors: " << rx_errs << std::endl;
-            std::cout << std::setw(15) << "RX Dropped: " << rx_drop << std::endl;
-            std::cout << std::setw(15) << "TX Bytes: " << tx_bytes << std::endl;
-            std::cout << std::setw(15) << "TX Packets: " << tx_packets << std::endl;
-            std::cout << std::setw(15) << "TX Errors: " << tx_errs << std::endl;
-            std::cout << std::setw(15) << "TX Dropped: " << tx_drop << std::endl;
-
-            return;
-        }
-    }
-
-    std::cerr << "Interface " << iface_name << " not found." << std::endl;
-}
-
-
 */
 	return true;
 }
@@ -1212,21 +1174,49 @@ CLinuxNetworkInterface::GetOsAdapterIndex( void ) const
 bool
 CLinuxNetworkInterface::GetMetrics( CNetworkInterfaceMetrics& metrics ) const
 {GUCEF_TRACE;
+
+
+   /*
+        std::istringstream iss(line);
+        std::string interface;
+        iss >> interface;
+
+        // Remove the colon at the end of the interface name
+        if (interface.back() == ':') {
+            interface.pop_back();
+        }
+
+        if (interface == iface_name) {
+            unsigned long rx_bytes, rx_packets, rx_errs, rx_drop, rx_fifo, rx_frame, rx_compressed, rx_multicast;
+            unsigned long tx_bytes, tx_packets, tx_errs, tx_drop, tx_fifo, tx_colls, tx_carrier, tx_compressed;
+
+            iss >> rx_bytes >> rx_packets >> rx_errs >> rx_drop >> rx_fifo >> rx_frame >> rx_compressed >> rx_multicast
+                >> tx_bytes >> tx_packets >> tx_errs >> tx_drop >> tx_fifo >> tx_colls >> tx_carrier >> tx_compressed;
+
+            std::cout << "Statistics for interface: " << iface_name << std::endl;
+            std::cout << std::setw(15) << "RX Bytes: " << rx_bytes << std::endl;
+            std::cout << std::setw(15) << "RX Packets: " << rx_packets << std::endl;
+            std::cout << std::setw(15) << "RX Errors: " << rx_errs << std::endl;
+            std::cout << std::setw(15) << "RX Dropped: " << rx_drop << std::endl;
+            std::cout << std::setw(15) << "TX Bytes: " << tx_bytes << std::endl;
+            std::cout << std::setw(15) << "TX Packets: " << tx_packets << std::endl;
+            std::cout << std::setw(15) << "TX Errors: " << tx_errs << std::endl;
+            std::cout << std::setw(15) << "TX Dropped: " << tx_drop << std::endl;
+
+            return;
+        }
+    }
+
+    std::cerr << "Interface " << iface_name << " not found." << std::endl;
+}
+
+
+*/
+
      /*
-	if ( GUCEF_NULL != COMCORE::GetIfEntry2 )
-	{
+
 		MT::CObjectScopeLock lock( this );
 
-		// Make sure the struct is zeroed out
-		COMCORE::MIB_IF_ROW2 interfaceInfo;
-		SecureZeroMemory((PVOID) &interfaceInfo, sizeof(COMCORE::MIB_IF_ROW2) );
-		interfaceInfo.InterfaceIndex = m_nicIndex;
-
-		lock.EarlyUnlock();
-
-		DWORD queryResult = COMCORE::GetIfEntry2( &interfaceInfo );
-		if ( queryResult == NO_ERROR )
-		{
 			metrics.inboundOctets = interfaceInfo.InOctets;
 			metrics.hasInboundOctets = true;
 			metrics.inboundErroredPackets = interfaceInfo.InErrors;
@@ -1263,53 +1253,7 @@ CLinuxNetworkInterface::GetMetrics( CNetworkInterfaceMetrics& metrics ) const
 			metrics.inboundNonUnicastPackets = interfaceInfo.InNUcastPkts;
 			metrics.hasInboundNonUnicastPackets = true;
 
-			return true;
-		}
-		else
-		{
-			GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "CLinuxNetworkInterface: Failed to obtain adapter stats using Win32 GetIfEntry2()" );
-		}
-	}
-	else
-	{
-		MT::CObjectScopeLock lock( this );
-
-		// Make sure the struct is zeroed out
-		::MIB_IFROW interfaceInfo;
-		SecureZeroMemory((PVOID) &interfaceInfo, sizeof(::MIB_IFROW) );
-		interfaceInfo.dwIndex = m_nicIndex;
-
-		lock.EarlyUnlock();
-
-		DWORD queryResult = ::GetIfEntry( &interfaceInfo );
-		if ( queryResult == NO_ERROR )
-		{
-			metrics.inboundOctets = interfaceInfo.dwInOctets;
-			metrics.hasInboundOctets = true;
-			metrics.inboundErroredPackets = interfaceInfo.dwInErrors;
-			metrics.hasInboundErroredPackets = true;
-			metrics.inboundDiscardedPackets = interfaceInfo.dwInDiscards;
-			metrics.hasInboundDiscardedPackets = true;
-			metrics.inboundUnknownProtocolPackets = interfaceInfo.dwInUnknownProtos;
-			metrics.hasInboundUnknownProtocolPackets = true;
-			metrics.inboundUnicastPackets = interfaceInfo.dwInUcastPkts;
-			metrics.hasInboundUnicastPackets = true;
-			metrics.outboundErroredPackets = interfaceInfo.dwOutErrors;
-			metrics.hasOutboundErroredPackets = true;
-			metrics.outboundDiscardedPackets = interfaceInfo.dwOutDiscards;
-			metrics.hasOutboundDiscardedPackets = true;
-			metrics.outboundOctets = interfaceInfo.dwOutOctets;
-			metrics.hasOutboundOctets = true;
-			metrics.outboundUnicastPackets = interfaceInfo.dwOutUcastPkts;
-			metrics.hasOutboundUnicastPackets = true;
-
-			return true;
-		}
-		else
-		{
-			GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "CLinuxNetworkInterface: Failed to obtain adapter stats using Win32 GetIfEntry()" );
-		}
-	}   */
+*/
 	return false;
 }
 

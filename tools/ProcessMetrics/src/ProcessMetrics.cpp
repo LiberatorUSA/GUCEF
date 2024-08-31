@@ -1201,6 +1201,121 @@ ProcessMetrics::OnMetricsTimerCycle( CORE::CNotifier* notifier    ,
     {
         COMCORE::CCom& comms = COMCORE::CComCoreGlobal::Instance()->GetCom();
 
+        COMCORE::CNetworkInterfaceMetrics globalNetworkMetrics;
+        if ( comms.GetGlobalNetworkMetrics( globalNetworkMetrics ) )
+        {
+            static const CORE::CString networkMetricNamePrefix = "ProcessMetrics.Network.global";
+
+            if ( m_gatherGlobalNetworkStatInboundOctets && globalNetworkMetrics.hasInboundOctets )
+            {
+                CORE::CString networkMetricName = networkMetricNamePrefix + ".InboundOctets";
+                GUCEF_METRIC_GAUGE( networkMetricName, globalNetworkMetrics.inboundOctets, 1.0f );
+                ValidateMetricThresholds( CORE::CVariant( globalNetworkMetrics.inboundOctets ), networkMetricName, CORE::CString::Empty );
+            }
+            if ( m_gatherGlobalNetworkStatInboundUnicastOctets && globalNetworkMetrics.hasInboundUnicastOctets )
+            {
+                CORE::CString networkMetricName = networkMetricNamePrefix + ".InboundUnicastOctets";
+                GUCEF_METRIC_GAUGE( networkMetricName, globalNetworkMetrics.inboundUnicastOctets, 1.0f );
+                ValidateMetricThresholds( CORE::CVariant( globalNetworkMetrics.inboundUnicastOctets ), networkMetricName, CORE::CString::Empty );
+            }
+            if ( m_gatherGlobalNetworkStatInboundUnicastPackets && globalNetworkMetrics.hasInboundUnicastPackets )
+            {
+                CORE::CString networkMetricName = networkMetricNamePrefix + ".InboundUnicastPackets";
+                GUCEF_METRIC_GAUGE( networkMetricName, globalNetworkMetrics.inboundUnicastPackets, 1.0f );
+                ValidateMetricThresholds( CORE::CVariant( globalNetworkMetrics.inboundUnicastPackets ), networkMetricName, CORE::CString::Empty );
+            }
+            if ( m_gatherGlobalNetworkStatInboundNonUnicastPackets && globalNetworkMetrics.hasInboundNonUnicastPackets )
+            {
+                CORE::CString networkMetricName = networkMetricNamePrefix + ".InboundNonUnicastPackets";
+                GUCEF_METRIC_GAUGE( networkMetricName, globalNetworkMetrics.inboundNonUnicastPackets, 1.0f );
+                ValidateMetricThresholds( CORE::CVariant( globalNetworkMetrics.inboundNonUnicastPackets ), networkMetricName, CORE::CString::Empty );
+            }
+            if ( m_gatherGlobalNetworkStatInboundErroredPackets && globalNetworkMetrics.hasInboundErroredPackets )
+            {
+                CORE::CString networkMetricName = networkMetricNamePrefix + ".InboundErroredPackets";
+                GUCEF_METRIC_GAUGE( networkMetricName, globalNetworkMetrics.inboundErroredPackets, 1.0f );
+                ValidateMetricThresholds( CORE::CVariant( globalNetworkMetrics.inboundErroredPackets ), networkMetricName, CORE::CString::Empty );
+            }
+            if ( m_gatherGlobalNetworkStatInboundDiscardedPackets && globalNetworkMetrics.hasInboundDiscardedPackets )
+            {
+                CORE::CString networkMetricName = networkMetricNamePrefix + ".InboundDiscardedPackets";
+                GUCEF_METRIC_GAUGE( networkMetricName, globalNetworkMetrics.inboundDiscardedPackets, 1.0f );
+                ValidateMetricThresholds( CORE::CVariant( globalNetworkMetrics.inboundDiscardedPackets ), networkMetricName, CORE::CString::Empty );
+            }
+            if ( m_gatherGlobalNetworkStatOutboundOctets && globalNetworkMetrics.hasOutboundOctets )
+            {
+                CORE::CString networkMetricName = networkMetricNamePrefix + ".OutboundOctets";
+                GUCEF_METRIC_GAUGE( networkMetricName, globalNetworkMetrics.outboundOctets, 1.0f );
+                ValidateMetricThresholds( CORE::CVariant( globalNetworkMetrics.outboundOctets ), networkMetricName, CORE::CString::Empty );
+            }
+            if ( m_gatherGlobalNetworkStatOutboundUnicastOctets && globalNetworkMetrics.hasOutboundUnicastOctets )
+            {
+                CORE::CString networkMetricName = networkMetricNamePrefix + ".OutboundUnicastOctets";
+                GUCEF_METRIC_GAUGE( networkMetricName, globalNetworkMetrics.outboundUnicastOctets, 1.0f );
+                ValidateMetricThresholds( CORE::CVariant( globalNetworkMetrics.outboundUnicastOctets ), networkMetricName, CORE::CString::Empty );
+            }
+            if ( m_gatherGlobalNetworkStatOutboundUnicastPackets && globalNetworkMetrics.hasOutboundUnicastPackets )
+            {
+                CORE::CString networkMetricName = networkMetricNamePrefix + ".OutboundUnicastPackets";
+                GUCEF_METRIC_GAUGE( networkMetricName, globalNetworkMetrics.outboundUnicastPackets, 1.0f );
+                ValidateMetricThresholds( CORE::CVariant( globalNetworkMetrics.outboundUnicastPackets ), networkMetricName, CORE::CString::Empty );
+            }
+            if ( m_gatherGlobalNetworkStatOutboundNonUnicastPackets && globalNetworkMetrics.hasOutboundNonUnicastPackets )
+            {
+                CORE::CString networkMetricName = networkMetricNamePrefix + ".OutboundNonUnicastPackets";
+                GUCEF_METRIC_GAUGE( networkMetricName, globalNetworkMetrics.outboundNonUnicastPackets, 1.0f );
+                ValidateMetricThresholds( CORE::CVariant( globalNetworkMetrics.outboundNonUnicastPackets ), networkMetricName, CORE::CString::Empty );
+            }
+            if ( m_gatherGlobalNetworkStatOutboundErroredPackets && globalNetworkMetrics.hasOutboundErroredPackets )
+            {
+                CORE::CString networkMetricName = networkMetricNamePrefix + ".OutboundErroredPackets";
+                GUCEF_METRIC_GAUGE( networkMetricName, globalNetworkMetrics.outboundErroredPackets, 1.0f );
+                ValidateMetricThresholds( CORE::CVariant( globalNetworkMetrics.outboundErroredPackets ), networkMetricName, CORE::CString::Empty );
+            }
+            if ( m_gatherGlobalNetworkStatOutboundDiscardedPackets && globalNetworkMetrics.hasOutboundDiscardedPackets )
+            {
+                CORE::CString networkMetricName = networkMetricNamePrefix + ".OutboundDiscardedPackets";
+                GUCEF_METRIC_GAUGE( networkMetricName, globalNetworkMetrics.outboundDiscardedPackets, 1.0f );
+                ValidateMetricThresholds( CORE::CVariant( globalNetworkMetrics.outboundDiscardedPackets ), networkMetricName, CORE::CString::Empty );
+            }
+            if ( m_gatherGlobalNetworkStatInboundMulticastOctets && globalNetworkMetrics.hasInboundMulticastOctets )
+            {
+                CORE::CString networkMetricName = networkMetricNamePrefix + ".InboundMulticastOctets";
+                GUCEF_METRIC_GAUGE( networkMetricName, globalNetworkMetrics.inboundMulticastOctets, 1.0f );
+                ValidateMetricThresholds( CORE::CVariant( globalNetworkMetrics.inboundMulticastOctets ), networkMetricName, CORE::CString::Empty );
+            }
+            if ( m_gatherGlobalNetworkStatOutboundMulticastOctets && globalNetworkMetrics.hasOutboundMulticastOctets )
+            {
+                CORE::CString networkMetricName = networkMetricNamePrefix + ".OutboundMulticastOctets";
+                GUCEF_METRIC_GAUGE( networkMetricName, globalNetworkMetrics.outboundMulticastOctets, 1.0f );
+                ValidateMetricThresholds( CORE::CVariant( globalNetworkMetrics.outboundMulticastOctets ), networkMetricName, CORE::CString::Empty );
+            }
+            if ( m_gatherGlobalNetworkStatInboundBroadcastOctets && globalNetworkMetrics.hasInboundBroadcastOctets )
+            {
+                CORE::CString networkMetricName = networkMetricNamePrefix + ".InboundBroadcastOctets";
+                GUCEF_METRIC_GAUGE( networkMetricName, globalNetworkMetrics.inboundBroadcastOctets, 1.0f );
+                ValidateMetricThresholds( CORE::CVariant( globalNetworkMetrics.inboundBroadcastOctets ), networkMetricName, CORE::CString::Empty );
+            }
+            if ( m_gatherGlobalNetworkStatOutboundBroadcastOctets && globalNetworkMetrics.hasOutboundBroadcastOctets )
+            {
+                CORE::CString networkMetricName = networkMetricNamePrefix + ".OutboundBroadcastOctets";
+                GUCEF_METRIC_GAUGE( networkMetricName, globalNetworkMetrics.outboundBroadcastOctets, 1.0f );
+                ValidateMetricThresholds( CORE::CVariant( globalNetworkMetrics.outboundBroadcastOctets ), networkMetricName, CORE::CString::Empty );
+            }
+            if ( m_gatherGlobalNetworkStatTransmitLinkSpeedBitsPerSec && globalNetworkMetrics.hasTransmitLinkSpeedBitsPerSec )
+            {
+                CORE::CString networkMetricName = networkMetricNamePrefix + ".TransmitLinkSpeedBitsPerSec";
+                GUCEF_METRIC_GAUGE( networkMetricName, globalNetworkMetrics.transmitLinkSpeedBitsPerSec, 1.0f );
+                ValidateMetricThresholds( CORE::CVariant( globalNetworkMetrics.transmitLinkSpeedBitsPerSec ), networkMetricName, CORE::CString::Empty );
+            }
+            if ( m_gatherGlobalNetworkStatReceiveLinkSpeedBitsPerSec && globalNetworkMetrics.hasReceiveLinkSpeedBitsPerSec )
+            {
+                CORE::CString networkMetricName = networkMetricNamePrefix + ".ReceiveLinkSpeedBitsPerSec";
+                GUCEF_METRIC_GAUGE( networkMetricName, globalNetworkMetrics.receiveLinkSpeedBitsPerSec, 1.0f );
+                ValidateMetricThresholds( CORE::CVariant( globalNetworkMetrics.receiveLinkSpeedBitsPerSec ), networkMetricName, CORE::CString::Empty );
+            }
+        }
+
         COMCORE::CCom::TINetworkInterfacePtrVector nics;
         if ( comms.GetAllNetworkInterfaces( nics ) )
         {
@@ -1316,7 +1431,7 @@ ProcessMetrics::OnMetricsTimerCycle( CORE::CNotifier* notifier    ,
                     }
                     if ( m_gatherGlobalNetworkStatReceiveLinkSpeedBitsPerSec && nicMetrics.hasReceiveLinkSpeedBitsPerSec )
                     {
-                        CORE::CString nicMetricName = nicMetricNamePrefix + nic->GetAdapterName() + "ReceiveLinkSpeedBitsPerSec";
+                        CORE::CString nicMetricName = nicMetricNamePrefix + nic->GetAdapterName() + ".ReceiveLinkSpeedBitsPerSec";
                         GUCEF_METRIC_GAUGE( nicMetricName, nicMetrics.receiveLinkSpeedBitsPerSec, 1.0f );
                         ValidateMetricThresholds( CORE::CVariant( nicMetrics.receiveLinkSpeedBitsPerSec ), nicMetricName, CORE::CString::Empty );
                     }

@@ -147,6 +147,259 @@ GetMSWinInternetProxyFromRegistry( CORE::CString& remoteHost ,
     return false;
 }
 
+/*-------------------------------------------------------------------------*/
+#elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
+
+typedef std::map< CString, UInt64 >     TStringToUInt64Map;
+
+// Note: On devices that run Android 10 or higher, apps cannot access /proc/net without root
+bool
+GetProcNetNetstatInfo( TStringToUInt64Map& tcpStats ,
+                       TStringToUInt64Map& ipStats  ,
+                       TStringToUInt64Map& mtpStats )
+{GUCEF_TRACE;
+
+    CORE::CString fileContent;
+    if ( CORE::LoadTextFileAsString( "/proc/net/netstat", fileContent, true, "\n" ) )
+    {
+        CORE::CString::StringVector lines = fileContent.ParseElements( '\n', false );
+
+        CORE::CString::StringVector keys;
+        CORE::CString::StringVector values;
+        bool isKeyLine = true;
+
+        CORE::CString::StringVector::iterator i = lines.begin();
+        while ( i != lines.end() )
+        {
+            const CORE::CString& line = (*i);
+            CORE::CString typePrefix = line.SubstrToChar( ':', true );
+
+            if ( isKeyLine )
+            {
+                keys = line.SubstrToIndex( typePrefix.Length()+1, false ).ParseElements( ' ', false );
+            }
+            else
+            {
+                values = line.SubstrToIndex( typePrefix.Length()+1, false ).ParseElements( ' ', false );
+
+                TStringToUInt64Map* mapToUse = GUCEF_NULL;
+                if ( "TcpExt" == typePrefix )
+                    mapToUse = &tcpStats;
+                else
+                if ( "IpExt" == typePrefix )
+                    mapToUse = &ipStats;
+                else
+                if ( "MPTcpExt" == typePrefix )
+                    mapToUse = &mtpStats;
+
+                size_t elementCount = GUCEF_SMALLEST( keys.size(), values.size() );
+                if ( GUCEF_NULL != mapToUse )
+                {
+                    for ( size_t n=0; n<elementCount; ++n )
+                    {
+                        (*mapToUse)[ keys[ n ] ] = StringToUInt64( values[ n ], 0 );
+                    }
+                }
+
+                keys.clear();
+                values.clear();
+            }
+
+            ++i;
+            isKeyLine = !isKeyLine;
+        }
+
+        return !tcpStats.empty() || !ipStats.empty() || !mtpStats.empty();
+    }
+    else
+    {
+        GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "GetProcNetNetstatInfo: Cannot read /proc/net/netstat" );
+    }
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+GetProcNetNetstatInfo( CNetworkInterfaceMetrics& metrics )
+{GUCEF_TRACE;
+
+    TStringToUInt64Map tcpStats;
+    TStringToUInt64Map ipStats;
+    TStringToUInt64Map mtpStats;
+
+    if ( GetProcNetNetstatInfo( tcpStats ,
+                                ipStats  ,
+                                mtpStats ) )
+    {
+        // Lookup all our known ipStats
+        TStringToUInt64Map::iterator i = ipStats.find( "InErrs" );
+        if ( i != ipStats.end() )
+        {
+            metrics.inboundErroredPackets = (*i).second;
+            metrics.hasInboundErroredPackets = true;
+        }
+        i = ipStats.find( "OutErrs" );
+        if ( i != ipStats.end() )
+        {
+            metrics.outboundErroredPackets = (*i).second;
+            metrics.hasOutboundErroredPackets = true;
+        }
+        i = ipStats.find( "InDiscards" );
+        if ( i != ipStats.end() )
+        {
+            metrics.inboundDiscardedPackets = (*i).second;
+            metrics.hasInboundDiscardedPackets = true;
+        }
+        i = ipStats.find( "OutDiscards" );
+        if ( i != ipStats.end() )
+        {
+            metrics.outboundDiscardedPackets = (*i).second;
+            metrics.hasOutboundDiscardedPackets = true;
+        }
+        i = ipStats.find( "InOctets" );
+        if ( i != ipStats.end() )
+        {
+            metrics.inboundOctets = (*i).second;
+            metrics.hasInboundOctets = true;
+        }
+        i = ipStats.find( "OutOctets" );
+        if ( i != ipStats.end() )
+        {
+            metrics.outboundOctets = (*i).second;
+            metrics.hasOutboundOctets = true;
+        }
+        i = ipStats.find( "InMcastOctets" );
+        if ( i != ipStats.end() )
+        {
+            metrics.inboundMulticastOctets = (*i).second;
+            metrics.hasInboundMulticastOctets = true;
+        }
+        i = ipStats.find( "OutMcastOctets" );
+        if ( i != ipStats.end() )
+        {
+            metrics.outboundMulticastOctets = (*i).second;
+            metrics.hasOutboundMulticastOctets = true;
+        }
+        i = ipStats.find( "InBcastOctets" );
+        if ( i != ipStats.end() )
+        {
+            metrics.inboundBroadcastOctets = (*i).second;
+            metrics.hasInboundBroadcastOctets = true;
+        }
+        i = ipStats.find( "OutBcastOctets" );
+        if ( i != ipStats.end() )
+        {
+            metrics.outboundBroadcastOctets = (*i).second;
+            metrics.hasOutboundBroadcastOctets = true;
+        }
+        i = ipStats.find( "InUcastOctets" );
+        if ( i != ipStats.end() )
+        {
+            metrics.inboundUnicastOctets = (*i).second;
+            metrics.hasInboundUnicastOctets = true;
+        }
+        i = ipStats.find( "OutUcastOctets" );
+        if ( i != ipStats.end() )
+        {
+            metrics.inboundUnicastOctets = (*i).second;
+            metrics.hasInboundUnicastOctets = true;
+        }
+        i = ipStats.find( "InUnknownProtos" );
+        if ( i != ipStats.end() )
+        {
+            metrics.inboundUnknownProtocolPackets = (*i).second;
+            metrics.hasInboundUnknownProtocolPackets = true;
+        }
+        i = ipStats.find( "OutUnknownProtos" );
+        if ( i != ipStats.end() )
+        {
+            metrics.outboundUnknownProtocolPackets = (*i).second;
+            metrics.hasOutboundUnknownProtocolPackets = true;
+        }
+        i = ipStats.find( "InUcastPkts" );
+        if ( i != ipStats.end() )
+        {
+            metrics.inboundUnicastPackets = (*i).second;
+            metrics.hasInboundUnicastPackets = true;
+        }
+        i = ipStats.find( "OutUcastPkts" );
+        if ( i != ipStats.end() )
+        {
+            metrics.outboundUnicastPackets = (*i).second;
+            metrics.hasOutboundUnicastPackets = true;
+        }
+
+        UInt64 InMcastPkts = 0;
+        bool hasInMcastPkts = false;
+        i = ipStats.find( "InMcastPkts" );
+        if ( i != ipStats.end() )
+        {
+            InMcastPkts = (*i).second;
+            hasInMcastPkts = true;
+        }
+
+        UInt64 InBcastPkts = 0;
+        bool hasInBcastPkts = false;
+        i = ipStats.find( "InBcastPkts" );
+        if ( i != ipStats.end() )
+        {
+            InBcastPkts = (*i).second;
+            hasInBcastPkts = true;
+        }
+
+        if ( hasInMcastPkts && hasInBcastPkts )
+        {
+            metrics.inboundNonUnicastPackets = InMcastPkts + InBcastPkts;
+            metrics.hasInboundNonUnicastPackets = true;
+        }
+
+        UInt64 OutMcastPkts = 0;
+        bool hasOutMcastPkts = false;
+        i = ipStats.find( "OutMcastPkts" );
+        if ( i != ipStats.end() )
+        {
+            OutMcastPkts = (*i).second;
+            hasOutMcastPkts = true;
+        }
+
+        UInt64 OutBcastPkts = 0;
+        bool hasOutBcastPkts = false;
+        i = ipStats.find( "OutBcastPkts" );
+        if ( i != ipStats.end() )
+        {
+            OutBcastPkts = (*i).second;
+            hasOutBcastPkts = true;
+        }
+
+        if ( hasOutMcastPkts && hasOutBcastPkts )
+        {
+            metrics.outboundNonUnicastPackets = OutMcastPkts + OutBcastPkts;
+            metrics.hasOutboundNonUnicastPackets = true;
+        }
+
+
+        // Lookup all our known tcpStats
+        i = ipStats.find( "RcvRTT" );
+        if ( i != ipStats.end() )
+        {
+            metrics.receiveLinkSpeedBitsPerSec = (*i).second;
+            metrics.hasReceiveLinkSpeedBitsPerSec = true;
+        }
+        i = ipStats.find( "SndRTT" );
+        if ( i != ipStats.end() )
+        {
+            metrics.transmitLinkSpeedBitsPerSec = (*i).second;
+            metrics.hasTransmitLinkSpeedBitsPerSec = true;
+        }
+
+        return true;
+    }
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
 #endif /* GUCEF_PLATFORM_MSWIN ? */
 
 /*-------------------------------------------------------------------------*/
@@ -427,6 +680,30 @@ CCom::GetAllNetworkInterfaceIPInfo( CINetworkInterface::TIPInfoVector& ipInfo )
         ++i;
     }
     return totalSuccess;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CCom::GetGlobalNetworkMetrics( CNetworkInterfaceMetrics& metrics )
+{GUCEF_TRACE;
+
+    #if ( GUCEF_PLATFORM_MSWIN == GUCEF_PLATFORM )
+
+    // @TODO
+    return false;
+
+    #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
+
+    // On Linux these stats are provided pre-aggregated by the system
+    return GetProcNetNetstatInfo( metrics );
+
+    #else
+
+    GUCEF_WARNING_LOG( LOGLEVEL_NORMAL, "Com:GetGlobalNetworkMetrics: Platform has no supported implementation" );
+    return false;
+
+    #endif
 }
 
 /*-------------------------------------------------------------------------*/

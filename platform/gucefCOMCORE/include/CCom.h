@@ -126,6 +126,13 @@ class GUCEF_COMCORE_EXPORT_CPP CCom
      */
     const TSocketStats& GetGlobalStats( void ) const;
 
+    /**
+     * @brief Collects network metrics across all networking interfaces aggregated
+     * @param metrics the object that will hold all resulting metrics information
+     * @return whether obtaining the metrics was successfull
+     */
+    bool GetGlobalNetworkMetrics( CNetworkInterfaceMetrics& metrics );
+
 
     /**
      *  Attempts to set the active state of a proxy server for the given protocol

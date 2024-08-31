@@ -106,6 +106,8 @@ class GUCEF_COMCORE_EXPORT_CPP CNetworkInterfaceMetrics
     bool hasOutboundDiscardedPackets;
     UInt64 outboundErroredPackets;
     bool hasOutboundErroredPackets;
+    UInt64 outboundUnknownProtocolPackets;
+    bool hasOutboundUnknownProtocolPackets;
     UInt64 outboundUnicastOctets;
     bool hasOutboundUnicastOctets;
     UInt64 outboundMulticastOctets;
