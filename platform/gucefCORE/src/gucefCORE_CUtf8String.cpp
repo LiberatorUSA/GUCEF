@@ -217,6 +217,18 @@ CUtf8String::CUtf8String( const Int32 NULLvalueOrUtf32 )
 
     Set( (const char*) &NULLvalueOrUtf32, sizeof( NULLvalueOrUtf32 ) );
 }
+
+/*-------------------------------------------------------------------------*/
+
+CUtf8String::CUtf8String( const UInt32 utf32 )
+    : m_string( GUCEF_NULL )
+    , m_length( 0 )
+    , m_byteSize( 0 )
+{GUCEF_TRACE;
+
+    Set( (const char*) &utf32, sizeof( utf32 ) );
+}
+
 /*-------------------------------------------------------------------------*/
 
 CUtf8String::~CUtf8String()

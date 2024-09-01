@@ -129,6 +129,8 @@ class GUCEF_CORE_PUBLIC_CPP CUtf8String
 
     explicit CUtf8String( const Int32 NULLvalueOrUtf32 );
 
+    explicit CUtf8String( const UInt32 utf32 );
+
     ~CUtf8String();
 
     CUtf8String& operator=( const CUtf8String &src );
