@@ -45,6 +45,11 @@
 #define GUCEF_CORE_CVALUELIST_H
 #endif /* GUCEF_CORE_CVALUELIST_H ? */
 
+#ifndef GUCEF_CORE_CEVENTAGGREGATETRIGGER_H
+#include "gucefCORE_CEventAggregateTrigger.h"
+#define GUCEF_CORE_CEVENTAGGREGATETRIGGER_H
+#endif /* GUCEF_CORE_CEVENTAGGREGATETRIGGER_H ? */
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //
@@ -77,16 +82,13 @@ class GucefArchiver : public CORE::CObservingNotifier
     typedef CORE::CTEventHandlerFunctor< GucefArchiver > TEventCallback;
 
     void RegisterEventHandlers( void );
-
-    void OnAppStarted( CORE::CNotifier* notifier    ,
-                       const CORE::CEvent& eventId  ,
-                       CORE::CICloneable* eventData );
     
-    void OnVfsInitializationCompleted( CORE::CNotifier* notifier    ,
-                                       const CORE::CEvent& eventId  ,
-                                       CORE::CICloneable* eventData );
+    void OnWorkStartTrigger( CORE::CNotifier* notifier    ,
+                             const CORE::CEvent& eventId  ,
+                             CORE::CICloneable* eventData );
 
 
+    CORE::CEventAggregateTrigger m_workStartTrigger;
     CORE::CPlatformNativeConsoleLogger* m_console;
     CORE::CValueList m_params;
 };

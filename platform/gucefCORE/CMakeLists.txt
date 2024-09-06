@@ -157,6 +157,7 @@ set( HEADER_FILES
   include/gucefCORE_CDynamicBufferStringStream.h
   include/gucefCORE_CDynamicBufferSwap.h
   include/gucefCORE_CEnumerator.h
+  include/gucefCORE_CEventAggregateTrigger.h
   include/gucefCORE_CEventBasedTaskConsumer.h
   include/gucefCORE_CFileSystemDirectoryWatcher.h
   include/gucefCORE_CFileSystemUriResourceAccessor.h
@@ -406,6 +407,7 @@ set( SOURCE_FILES
   src/gucefCORE_CDynamicBufferStringStream.cpp
   src/gucefCORE_CDynamicBufferSwap.cpp
   src/gucefCORE_CEnumerator.cpp
+  src/gucefCORE_CEventAggregateTrigger.cpp
   src/gucefCORE_CFileSystemDirectoryWatcher.cpp
   src/gucefCORE_CFileSystemUriResourceAccessor.cpp
   src/gucefCORE_CForwardingNotifier.cpp

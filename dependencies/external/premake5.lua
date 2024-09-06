@@ -9,14 +9,14 @@
 --------------------------------------------------------------------
 --
 
--- Configuration for module: Direct3D11
+-- Configuration for module: Direct3D8
 
 
 configuration( { "WIN32" } )
-  project( "Direct3D11" )
+  project( "Direct3D8" )
 
 configuration( { "WIN64" } )
-  project( "Direct3D11" )
+  project( "Direct3D8" )
 
 configuration( {} )
   location( os.getenv( "PM5OUTPUTDIR" ) )
@@ -32,8 +32,8 @@ language( "C" )
 
 configuration( { "WIN32" } )
 configuration( { "WIN64" } )
-  links( { "d3d11", "d3dcompiler", "d3dx11" } )
-  links( { "d3d11", "d3dcompiler", "d3dx11" } )
+  links( { "d3d8", "d3dx8" } )
+  links( { "d3d8", "d3dx8" } )
 
 configuration( { "WIN32" } )
 includedirs( { "#$#ENVVAR:DXSDK_DIR#$#\Include" } )

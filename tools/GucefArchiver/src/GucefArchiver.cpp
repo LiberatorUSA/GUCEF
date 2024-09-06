@@ -87,6 +87,7 @@ namespace GUCEF {
 
 GucefArchiver::GucefArchiver( void )
     : CORE::CObservingNotifier()
+    , m_workStartTrigger()
     , m_console( GUCEF_NULL )
     , m_params()
 {GUCEF_TRACE;
@@ -104,22 +105,9 @@ GucefArchiver::~GucefArchiver()
 /*-------------------------------------------------------------------------*/
 
 void
-GucefArchiver::OnAppStarted( CORE::CNotifier* notifier    ,
-                             const CORE::CEvent& eventId  ,
-                             CORE::CICloneable* eventData )
-{GUCEF_TRACE;
-
-    VFS::CVFS& vfs = VFS::CVfsGlobal::Instance()->GetVfs();
-    if ( vfs.IsInitialized() )
-        PerformWork();
-}
-
-/*-------------------------------------------------------------------------*/
-
-void
-GucefArchiver::OnVfsInitializationCompleted( CORE::CNotifier* notifier    ,
-                                             const CORE::CEvent& eventId  ,
-                                             CORE::CICloneable* eventData )
+GucefArchiver::OnWorkStartTrigger( CORE::CNotifier* notifier    ,
+                                   const CORE::CEvent& eventId  ,
+                                   CORE::CICloneable* eventData )
 {GUCEF_TRACE;
 
     PerformWork();
@@ -132,18 +120,15 @@ GucefArchiver::RegisterEventHandlers( void )
 {GUCEF_TRACE;
 
     CORE::CGUCEFApplication& app = CORE::CCoreGlobal::Instance()->GetApplication();
-    
-    TEventCallback callback( this, &GucefArchiver::OnAppStarted );
-    SubscribeTo( &app                                     ,
-                 CORE::CGUCEFApplication::FirstCycleEvent ,
-                 callback                                 );
-
     VFS::CVFS& vfs = VFS::CVfsGlobal::Instance()->GetVfs();
-    TEventCallback callback2( this, &GucefArchiver::OnVfsInitializationCompleted );
-    SubscribeTo( &vfs                                       ,
-                 VFS::CVFS::VfsInitializationCompletedEvent ,
-                 callback2                                  );
 
+    m_workStartTrigger.SubscribeAndAddEventToTriggerCriterea( &app, CORE::CGUCEFApplication::FirstCycleEvent );
+    m_workStartTrigger.SubscribeAndAddEventToTriggerCriterea( &vfs, VFS::CVFS::VfsInitializationCompletedEvent );
+    
+    TEventCallback callback( this, &GucefArchiver::OnWorkStartTrigger );
+    SubscribeTo( &m_workStartTrigger                                 ,
+                 CORE::CEventAggregateTrigger::AggregateTriggerEvent ,
+                 callback                                            );
 }
 
 /*-------------------------------------------------------------------------*/

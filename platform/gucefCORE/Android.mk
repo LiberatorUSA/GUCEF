@@ -151,6 +151,7 @@ LOCAL_SRC_FILES := \
   src/gucefCORE_CDynamicBufferStringStream.cpp \
   src/gucefCORE_CDynamicBufferSwap.cpp \
   src/gucefCORE_CEnumerator.cpp \
+  src/gucefCORE_CEventAggregateTrigger.cpp \
   src/gucefCORE_CFileSystemDirectoryWatcher.cpp \
   src/gucefCORE_CFileSystemUriResourceAccessor.cpp \
   src/gucefCORE_CForwardingNotifier.cpp \

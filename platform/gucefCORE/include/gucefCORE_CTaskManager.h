@@ -75,7 +75,7 @@ class CTaskDelegator;
  *  and as such should be tracked globally within your process which is what the task
  *  manager does.
  *  You can group your threading concerns into distinct thread pools for which the task manager
- *  will provide and aggregated view.
+ *  will provide an aggregated view.
  */
 class GUCEF_CORE_PUBLIC_CPP CTaskManager : public CTSGNotifier
 {
