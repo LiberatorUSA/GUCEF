@@ -148,19 +148,21 @@ CRollingFileAccess::GetExistingMatchingFiles( UInt64ToStringMap& files ) const
     CString filter = GenerateCurrentFilename( m_baseFilename, currentFileIndex, true );
     CString dirPath = StripFilename( m_baseFilename );
 
-    struct SDI_Data* did = DI_First_Dir_Entry( filter.C_String() );
-    if ( GUCEF_NULL != did )
+    CFileSystemIterator fsIterator;
+    if ( fsIterator.FindFirst( filter ) )
     {
         do
         {
-            if ( DI_Is_It_A_File( did ) == 1 )
+            if ( fsIterator.IsAFile() )
             {
-                files[ DI_Timestamp( did ) ] = CombinePath( dirPath, DI_Name( did ) );
+                CResourceMetaData metaData;
+                if ( fsIterator.TryReadMetaData( metaData ) && metaData.hasName && metaData.hasCreationDateTime )
+                {
+                    files[ metaData.creationDateTime.ToUnixEpochBasedTicksInMillisecs() ] = CombinePath( dirPath, metaData.name );
+                }
             }
         }
-        while ( DI_Next_Dir_Entry( did ) != 0 );
-
-        DI_Cleanup( did );
+        while ( fsIterator.FindNext() );
     }
 }
 

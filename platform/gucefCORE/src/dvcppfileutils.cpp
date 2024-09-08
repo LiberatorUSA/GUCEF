@@ -1248,6 +1248,7 @@ class CFileSystemIterator::CFileSystemIteratorOsData
     struct stat statinfo;       // Struct needed for determining info about an entry with stat().
     CString linkedPath;         // Stores the resolved symlink linked path if any
     struct stat linkedStatinfo; // Struct needed for determining info about an entry with stat().
+    CString resourceGlobFilter; // For Linux we need to keep track of the glob pattern filter ourselves
 
 	CFileSystemIteratorOsData( void )
         : isActive( false )
@@ -1257,6 +1258,7 @@ class CFileSystemIterator::CFileSystemIteratorOsData
         , statinfo()
         , linkedPath()
         , linkedStatinfo()
+        , resourceGlobFilter()
 	{GUCEF_TRACE;
 
         memset( &statinfo, 0, sizeof statinfo );
@@ -1392,20 +1394,35 @@ CFileSystemIterator::FindFirst( const CString& path )
      *	other Unix based systems.
      */
 
-    /*
-     *	Attempt to open the directory
-     */
-    m_osData->dir = ::opendir( path.C_String() );
+    // On Linux we cannot just pass along the glob pattern filter if there is one
+    // we need to keep track of and implement that piece ourselves
+    // Do keep in mind that * is a valid char in a path so at minimum the * should come after the dir seperator
+    Int32 globIndex = path.HasChar( '*', false );
+    Int32 dirSepCharIndex = path.HasChar( GUCEF_DIRSEPCHAR, false );
+    if ( -1 < globIndex && -1 < dirSepCharIndex && globIndex > dirSepCharIndex )
+    {
+        m_osData->resourceGlobFilter = path.SubstrToIndex( dirSepCharIndex+1, false );
+        m_osData->rootPath = path.SubstrToIndex( dirSepCharIndex, true );
+    }
+    else
+    {
+        m_osData->resourceGlobFilter.Clear();
+        m_osData->rootPath = path;
+    }
+
+    // Attempt to open the directory
+    m_osData->dir = ::opendir( m_osData->rootPath.C_String() );
     if ( GUCEF_NULL == m_osData->dir )
     {
         // Could not open directory
-	    return false;
+	    m_osData->rootPath.Clear();
+        m_osData->resourceGlobFilter.Clear();
+        return false;
     }
-    m_osData->rootPath = path;
     m_osData->ClearSymlinkInfo();
 
     // change working dir to be able to read file information
-    ::chdir( path.C_String() );
+    ::chdir( m_osData->rootPath.C_String() );
 
     // Read first entry
     m_osData->entry = ::readdir( m_osData->dir );
@@ -1413,6 +1430,7 @@ CFileSystemIterator::FindFirst( const CString& path )
     {
         // Normally the first 2 entries are always '.' and '..'
         // We dont want to complicate the caller's lives so skip them here
+        // We also need to take glob patterns into account
         bool isSkipable = false;
         do
         {
@@ -1422,6 +1440,17 @@ CFileSystemIterator::FindFirst( const CString& path )
             {
                 isSkipable = true;
                 m_osData->entry = ::readdir( m_osData->dir );
+            }
+            else
+            if ( !m_osData->resourceGlobFilter.IsNULLOrEmpty() )
+            {
+                CString entryName( m_osData->entry->d_name );
+                if ( !entryName.WildcardEquals( m_osData->resourceGlobFilter, '*', true, false ) )
+                {
+                    // Skip because we have a pattern to match and the current entry is not a match
+                    isSkipable = true;
+                    m_osData->entry = ::readdir( m_osData->dir );
+                }
             }
         }
         while ( isSkipable && ( GUCEF_NULL != m_osData->entry ) );
@@ -1437,36 +1466,6 @@ CFileSystemIterator::FindFirst( const CString& path )
     }
     m_osData->isActive = false;
     return false;
-
-/*  @TODO: Add filter support ?
-
-    while( m_osData->entry )
-    }
-    {
-        // Get info on the entry.
-        // We only want regular files and directory entry's. We ignore the
-        // rest.
-        stat( m_osData->entry->d_name, &m_osData->statinfo );
-        if ( S_ISREG( m_osData->statinfo.st_mode ) || S_ISDIR( m_osData->statinfo.st_mode ) )
-        {
-            // We found either a regular file or a directory
-            // entry which is now our current entry.
-            m_osData->isActive = true;
-            return true;
-        }
-
-        // This entry is not what we want,.. skip to the next entry
-        m_osData->entry = readdir( m_osData->dir );
-    }
-
-    // there was an error reading the entry data or no entry was found
-    // on the path specified that was a regular file or directory.
-    if ( GUCEF_NULL != m_osData->dir )
-    {
-        closedir( m_osData->dir );
-    }
-    return false;
-     */
 
     #else
 
@@ -1498,39 +1497,34 @@ CFileSystemIterator::FindNext( void )
     m_osData->entry = readdir( m_osData->dir );
     if ( GUCEF_NULL != m_osData->entry )
     {
-        // Get info on the entry.
-        ::lstat( m_osData->entry->d_name, &m_osData->statinfo );
-
-        return true;
-    }
-    m_osData->isActive = false;
-    return false;
-
-    /* @TODO: Add filter support ?
-
-    while ( GUCEF_NULL != m_osData->entry )
-    {
-        // Get info on the entry.
-        // We only want regular files and directory entry's. We ignore the
-        // rest.
-        stat( m_osData->entry->d_name, &m_osData->statinfo );
-        if ( S_ISREG( m_osData->statinfo.st_mode ) ||  // regular file
-             S_ISLNK( m_osData->statinfo.st_mode ) ||  // symlink
-             S_ISDIR( m_osData->statinfo.st_mode ) )   // directory
+        // We need to take glob patterns into account
+        if ( !m_osData->resourceGlobFilter.IsNULLOrEmpty() )
         {
-            // We found either a regular file or a directory
-            // entry which is now our current entry.
-            return true;
+            bool isSkipable = false;
+            do
+            {
+                isSkipable = false;
+                CString entryName( m_osData->entry->d_name );
+                if ( !m_osData->resourceGlobFilter.WildcardEquals( entryName, '*', true, true ) )
+                {
+                    // Skip because we have a pattern to match and the current entry is not a match
+                    isSkipable = true;
+                    m_osData->entry = ::readdir( m_osData->dir );
+                }
+            }
+            while ( isSkipable && ( GUCEF_NULL != m_osData->entry ) );
         }
 
-        // This entry is not what we want,.. skip to the next entry
-        m_osData->entry = readdir( m_osData->dir );
+        if ( GUCEF_NULL != m_osData->entry  )
+        {
+            // Get info on the entry.
+            ::lstat( m_osData->entry->d_name, &m_osData->statinfo );
+            return true;
+        }
     }
 
-    // Could not find any other entry's that where either a regular file
-    // or a directory.
-
-    */
+    m_osData->isActive = false;
+    return false;
 
     #else
 
@@ -1558,6 +1552,7 @@ CFileSystemIterator::FindClose( void )
     #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
 
     m_osData->ClearSymlinkInfo();
+    m_osData->resourceGlobFilter.Clear();
     if ( GUCEF_NULL != m_osData->dir )
     {
         ::closedir( m_osData->dir );
@@ -1866,6 +1861,9 @@ CFileSystemIterator::TryReadMetaData( CResourceMetaData& metaData )
         m_osData->find.attrib & FILE_ATTRIBUTE_OFFLINE ? metaData.isOffline = true : metaData.isOffline = false;
         metaData.hasIsOffline = true;
 
+        metaData.name = GetResourceName();
+        metaData.hasName = true;
+
         return true;
 
         #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
@@ -1878,6 +1876,9 @@ CFileSystemIterator::TryReadMetaData( CResourceMetaData& metaData )
         metaData.hasLastAccessedDateTime = true;
         metaData.resourceSizeInBytes = (UInt64) m_osData->statinfo.st_size;
         metaData.hasResourceSizeInBytes = true;
+
+        metaData.name = GetResourceName();
+        metaData.hasName = true;
 
         return true;
 

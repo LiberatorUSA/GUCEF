@@ -2062,32 +2062,35 @@ CUtf8String::ParseElements( const UInt8* bufferPtr ,
         char* lastSepCpPtr = cpPos;
         UInt32 i=0;
         UInt64 bytesRead = 0;
+        UInt32 codePoint = 0;
         do
         {
-            UInt32 codePoint=0;
             char* newCpPos = (char*) utf8codepoint( cpPos, &codePoint );
-            if ( cpPos != newCpPos )
-                ++bufferCps;
-
-            if ( codePoint == seperator )
+            if ( codePoint != '\0' || seperator == '\0' )
             {
-                UInt32 stringLength = i-lastSepCpIndex;
-                if ( ( 0 == stringLength && addEmptyElements ) ||
-                     ( stringLength > 0 ) )
+                if ( cpPos != newCpPos )
+                    ++bufferCps;
+
+                if ( codePoint == seperator )
                 {
-                    entry.Set( lastSepCpPtr, (UInt32)(cpPos-lastSepCpPtr), stringLength );
-                    list.push_back( entry );
+                    UInt32 stringLength = i-lastSepCpIndex;
+                    if ( ( 0 == stringLength && addEmptyElements ) ||
+                         ( stringLength > 0 ) )
+                    {
+                        entry.Set( lastSepCpPtr, (UInt32)(cpPos-lastSepCpPtr), stringLength );
+                        list.push_back( entry );
+                    }
+
+                    lastSepCpIndex = i+1;
+                    lastSepCpPtr = newCpPos;
                 }
 
-                lastSepCpIndex = i+1;
-                lastSepCpPtr = newCpPos;
+                cpPos = newCpPos;
+                bytesRead = (UInt64) ( (const UInt8*)newCpPos - (const UInt8*)bufferPtr );
+                ++i;
             }
-
-            cpPos = newCpPos;
-            bytesRead = (UInt64) ( (const UInt8*)newCpPos - (const UInt8*)bufferPtr );
-            ++i;
         }
-        while ( GUCEF_NULL != cpPos && bytesRead < bufferSize );
+        while ( GUCEF_NULL != cpPos && ( codePoint != '\0' || seperator == '\0' ) && bytesRead < bufferSize );
 
         // add last item
         UInt32 stringLength = bufferCps-lastSepCpIndex;

@@ -241,6 +241,8 @@ GUCEF_OSSERVICEMAIN_BEGIN( "ProcessMetrics" )
     COMCORE::CComCoreGlobal::Instance();
     COM::CComGlobal::Instance();
 
+    ProcessMetrics processMetrics;
+
     // Check for config param first
     CORE::CValueList keyValueList;
     ParseParams( argc, argv, keyValueList );
@@ -291,7 +293,6 @@ GUCEF_OSSERVICEMAIN_BEGIN( "ProcessMetrics" )
 
     GUCEF_OSMAIN_SIGNAL_HANDLER( GucefAppSignalHandler );
 
-    ProcessMetrics processMetrics;
     if ( !processMetrics.LoadConfig( keyValueList, *globalConfig ) )
     {
         delete globalConfig;
