@@ -134,6 +134,24 @@ class GUCEF_CORE_PUBLIC_CPP CIPluginMetaData
      *  Resets all data to default creation state
      */
     virtual void Clear( void ) = 0;
+
+    /**
+     *  Returns the address of the module that houses the plugin if available
+     *  Return shall be GUCEF_NULL if not available
+     */
+    virtual void* GetModulePointer( void ) const = 0;
+
+    /**
+     *  flag whether the plugin should be loaded immediately or if it should be loaded
+     *  only when later requested to be loaded and thus treated as merely a placeholder
+     */
+    virtual bool GetLoadImmediately( void ) const = 0;
+
+    /**
+     *  flag whether the plugin is optional and loading it should be considered 'best effort'
+     *  thus failure to load the plugin would not be considered an error and merely an informational event
+     */
+    virtual bool GetLoadFailAllowed( void ) const = 0;
 };
 
 /*-------------------------------------------------------------------------*/
@@ -153,14 +171,3 @@ typedef CTSharedPtr< const CIPluginMetaData, MT::CMutex > TConstPluginMetaDataPt
 /*-------------------------------------------------------------------------*/
 
 #endif /* GUCEF_CORE_CIPLUGINMETADATA_H ? */
-
-/*-------------------------------------------------------------------------//
-//                                                                         //
-//      Info & Changes                                                     //
-//                                                                         //
-//-------------------------------------------------------------------------//
-
-- 27-11-2004 :
-        - Dinand: Initial implementation
-
----------------------------------------------------------------------------*/

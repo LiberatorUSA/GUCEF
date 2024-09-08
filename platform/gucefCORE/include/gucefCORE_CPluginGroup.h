@@ -28,10 +28,10 @@
 
 #include <set>
 
-#ifndef GUCEF_CORE_CIPLUGINMETADATA_H
-#include "gucefCORE_CIPluginMetaData.h"
-#define GUCEF_CORE_CIPLUGINMETADATA_H
-#endif /* GUCEF_CORE_CIPLUGINMETADATA_H ? */
+#ifndef GUCEF_CORE_CPLUGINMETADATA_H
+#include "gucefCORE_CPluginMetaData.h"
+#define GUCEF_CORE_CPLUGINMETADATA_H
+#endif /* GUCEF_CORE_CPLUGINMETADATA_H ? */
 
 #ifndef GUCEF_CORE_CIPLUGIN_H
 #include "CIPlugin.h"
@@ -54,15 +54,16 @@ namespace CORE {
 //-------------------------------------------------------------------------*/
 
 /**
- *  Logical grouping class for plugins
- *  Allows plugins to be managed as groups
+ *  Logical grouping class for plugins which allows plugins to be managed as groups
+ *  This is just a data container class, PluginControl houses all the logic
  */
-class GUCEF_CORE_PRIVATE_CPP CPluginGroup
+class GUCEF_CORE_PRIVATE_CPP CPluginGroup : public CTSharedObjCreator< CPluginGroup, MT::CMutex >  
 {
     public:
 
     typedef std::set< TPluginPtr > TPluginSet;
-    typedef std::set< TPluginMetaDataPtr > TPluginMetaDataSet;
+    typedef std::set< TPluginMetaDataStoragePtr > TPluginMetaDataSet;
+    typedef typename CTSharedObjCreator< CPluginGroup, MT::CMutex >::TSharedPtrType TPluginGroupPtr;
     
     CPluginGroup( void );
 
@@ -85,16 +86,21 @@ class GUCEF_CORE_PRIVATE_CPP CPluginGroup
     const TPluginMetaDataSet& GetPluginMetaData( void ) const;
 
     bool HasPluginWithFileName( const CString& moduleFileName ) const;
+    
+    void SetGroupPriority( const UInt32 priority );
+
+    UInt32 GetGroupPriority( void ) const;
 
     private:
 
     TPluginSet m_plugins;
     TPluginMetaDataSet m_pluginMetaData;
+    UInt32 m_priority;
 };
 
 /*-------------------------------------------------------------------------*/
 
-typedef CTSharedPtr< CPluginGroup, MT::CMutex > TPluginGroupPtr;
+typedef CPluginGroup::TPluginGroupPtr TPluginGroupPtr;
 
 /*-------------------------------------------------------------------------//
 //                                                                         //

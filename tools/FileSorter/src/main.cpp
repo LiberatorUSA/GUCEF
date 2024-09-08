@@ -260,6 +260,8 @@ GUCEF_OSSERVICEMAIN_BEGIN( "FileSorter" )
     IMAGE::CImageGlobal::Instance();
     WEB::CWebGlobal::Instance();
 
+    FileSorter fileSorter;
+
     // Check for config param first
     CORE::CValueList keyValueList;
     ParseParams( argc, argv, keyValueList );
@@ -308,9 +310,8 @@ GUCEF_OSSERVICEMAIN_BEGIN( "FileSorter" )
     CORE::CCoreGlobal::Instance()->GetLogManager().FlushBootstrapLogEntriesToLogs();
     GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Flushed to log @ " + logFilename );
 
-    GUCEF_OSMAIN_SIGNAL_HANDLER( GucefAppSignalHandler );
+    GUCEF_OSMAIN_SIGNAL_HANDLER( GucefAppSignalHandler );    
     
-    FileSorter fileSorter;
     if ( !fileSorter.LoadConfig( keyValueList, *globalConfig ) )
     {
         delete globalConfig;

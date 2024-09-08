@@ -51,17 +51,21 @@ namespace CORE {
 //-------------------------------------------------------------------------*/
 
 CPluginMetaData::CPluginMetaData( void )
-    : CIPluginMetaData()      ,
-      CIConfigurable()        ,
-      m_description()         ,
-      m_copyright()           ,
-      m_version()             ,
-      m_loaderLogicTypeName() ,
-      m_pluginType()          ,
-      m_moduleFilename()      ,
-      m_altModuleFilename()   ,
-      m_modulePath()          ,
-      m_params()
+    : CIPluginMetaData()      
+    , CIConfigurable()        
+    , CTSharedObjCreator< CPluginMetaData, MT::CMutex >( this )
+    , m_description()         
+    , m_copyright()           
+    , m_version()             
+    , m_loaderLogicTypeName() 
+    , m_pluginType()          
+    , m_moduleFilename()      
+    , m_altModuleFilename()   
+    , m_modulePath()          
+    , m_modulePtr( GUCEF_NULL )
+    , m_loadImmediately( true )
+    , m_loadFailAllowed( false )
+    , m_params()
 {GUCEF_TRACE;
 
     m_version.major = -1;
@@ -75,17 +79,21 @@ CPluginMetaData::CPluginMetaData( void )
 /*-------------------------------------------------------------------------*/
 
 CPluginMetaData::CPluginMetaData( const CPluginMetaData& src )
-    : CIPluginMetaData()                                 ,
-      CIConfigurable()                                   ,
-      m_description( src.m_description )                 ,
-      m_copyright( src.m_copyright )                     ,
-      m_version( src.m_version )                         ,
-      m_loaderLogicTypeName( src.m_loaderLogicTypeName ) ,
-      m_pluginType( src.m_pluginType )                   ,
-      m_moduleFilename( src.m_moduleFilename )           ,
-      m_altModuleFilename( src.m_altModuleFilename )     ,
-      m_modulePath( src.m_modulePath )                   ,
-      m_params( src.m_params )
+    : CIPluginMetaData()                                 
+    , CIConfigurable()      
+    , CTSharedObjCreator< CPluginMetaData, MT::CMutex >( this )
+    , m_description( src.m_description )                 
+    , m_copyright( src.m_copyright )                     
+    , m_version( src.m_version )                         
+    , m_loaderLogicTypeName( src.m_loaderLogicTypeName ) 
+    , m_pluginType( src.m_pluginType )                   
+    , m_moduleFilename( src.m_moduleFilename )           
+    , m_altModuleFilename( src.m_altModuleFilename )     
+    , m_modulePath( src.m_modulePath )                   
+    , m_modulePtr( src.m_modulePtr )
+    , m_loadImmediately( src.m_loadImmediately )
+    , m_loadFailAllowed( src.m_loadFailAllowed )
+    , m_params( src.m_params )
 {GUCEF_TRACE;
 
 }
@@ -93,17 +101,21 @@ CPluginMetaData::CPluginMetaData( const CPluginMetaData& src )
 /*-------------------------------------------------------------------------*/
 
 CPluginMetaData::CPluginMetaData( const CIPluginMetaData& src )
-    : CIPluginMetaData()                                    ,
-      CIConfigurable()                                      ,
-      m_description( src.GetDescription() )                 ,
-      m_copyright( src.GetCopyright() )                     ,
-      m_version( src.GetVersion() )                         ,
-      m_loaderLogicTypeName( src.GetLoaderLogicTypeName() ) ,
-      m_pluginType( src.GetPluginType() )                   ,
-      m_moduleFilename( src.GetModuleFilename() )           ,
-      m_altModuleFilename( src.GetAltModuleFilename() )     ,
-      m_modulePath( src.GetFullModulePath() )               ,
-      m_params()
+    : CIPluginMetaData()                                    
+    , CIConfigurable()                 
+    , CTSharedObjCreator< CPluginMetaData, MT::CMutex >( this )
+    , m_description( src.GetDescription() )                 
+    , m_copyright( src.GetCopyright() )                     
+    , m_version( src.GetVersion() )                         
+    , m_loaderLogicTypeName( src.GetLoaderLogicTypeName() ) 
+    , m_pluginType( src.GetPluginType() )                   
+    , m_moduleFilename( src.GetModuleFilename() )           
+    , m_altModuleFilename( src.GetAltModuleFilename() )     
+    , m_modulePath( src.GetFullModulePath() )               
+    , m_modulePtr( src.GetModulePointer() )
+    , m_loadImmediately( src.GetLoadImmediately() )
+    , m_loadFailAllowed( src.GetLoadFailAllowed() )
+    , m_params()
 {GUCEF_TRACE;
 
     src.GetParams( m_params );
@@ -132,6 +144,9 @@ CPluginMetaData::operator=( const CPluginMetaData& src )
         m_pluginType = src.m_pluginType;
         m_moduleFilename = src.m_moduleFilename;
         m_modulePath = src.m_modulePath;
+        m_modulePtr = src.m_modulePtr;
+        m_loadImmediately = src.m_loadImmediately;
+        m_loadFailAllowed = src.m_loadFailAllowed;
         m_params = src.m_params;
     }
     return *this;
@@ -279,6 +294,60 @@ CPluginMetaData::GetFullModulePath( void ) const
 {GUCEF_TRACE;
 
     return m_modulePath;
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CPluginMetaData::SetModulePointer( void* modulePointer )
+{GUCEF_TRACE;
+
+    m_modulePtr = modulePointer;
+}
+
+/*-------------------------------------------------------------------------*/
+    
+void*
+CPluginMetaData::GetModulePointer( void ) const
+{GUCEF_TRACE;
+
+    return m_modulePtr;
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CPluginMetaData::SetLoadImmediately( bool loadImmediately )
+{GUCEF_TRACE;
+
+    m_loadImmediately = loadImmediately;
+}
+
+/*-------------------------------------------------------------------------*/
+    
+bool
+CPluginMetaData::GetLoadImmediately( void ) const
+{GUCEF_TRACE;
+
+    return m_loadImmediately;
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CPluginMetaData::SetLoadFailAllowed( bool loadFailAllowed )
+{GUCEF_TRACE;
+
+    m_loadFailAllowed = loadFailAllowed;
+}
+
+/*-------------------------------------------------------------------------*/
+    
+bool
+CPluginMetaData::GetLoadFailAllowed( void ) const
+{GUCEF_TRACE;
+
+    return m_loadFailAllowed;
 }
 
 /*-------------------------------------------------------------------------*/

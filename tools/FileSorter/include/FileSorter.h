@@ -64,6 +64,11 @@
 #define GUCEF_CORE_CFILESYSTEMDIRECTORYWATCHER_H
 #endif /* GUCEF_CORE_CFILESYSTEMDIRECTORYWATCHER_H ? */
 
+#ifndef GUCEF_CORE_CEVENTAGGREGATETRIGGER_H
+#include "gucefCORE_CEventAggregateTrigger.h"
+#define GUCEF_CORE_CEVENTAGGREGATETRIGGER_H
+#endif /* GUCEF_CORE_CEVENTAGGREGATETRIGGER_H ? */
+
 #ifndef GUCEF_WEB_CHTTPSERVER_H
 #include "gucefWEB_CHTTPServer.h"
 #define GUCEF_WEB_CHTTPSERVER_H
@@ -303,10 +308,6 @@ class FileSorter : public CORE::CTSGNotifier
     void OnAppStarted( CORE::CNotifier* notifier    ,
                        const CORE::CEvent& eventId  ,
                        CORE::CICloneable* eventData );
-    
-    void OnVfsInitializationCompleted( CORE::CNotifier* notifier    ,
-                                       const CORE::CEvent& eventId  ,
-                                       CORE::CICloneable* eventData );
 
     void OnVfsWatchedInboxDirChange( CORE::CNotifier* notifier    ,
                                      const CORE::CEvent& eventId  ,
@@ -324,6 +325,7 @@ class FileSorter : public CORE::CTSGNotifier
     CORE::CTimer m_inboxWatchTimer;
     CORE::CDataNode m_globalConfig;    
     CORE::CValueList m_appArgs;
+    CORE::CEventAggregateTrigger m_appWorkStartTrigger;
     FileSorterConfig m_appConfig;
 };
 

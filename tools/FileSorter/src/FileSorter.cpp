@@ -782,24 +782,6 @@ FileSorter::OnAppStarted( CORE::CNotifier* notifier    ,
                           CORE::CICloneable* eventData )
 {GUCEF_TRACE;
 
-    VFS::CVFS& vfs = VFS::CVfsGlobal::Instance()->GetVfs();
-    if ( vfs.IsInitialized() )
-    {
-        SortInitialRootPaths();
-
-        m_inboxWatchTimer.SetInterval( m_appConfig.vfsInboxPathScanIntervalInMs );
-        m_inboxWatchTimer.SetEnabled( true );
-    }
-}
-
-/*-------------------------------------------------------------------------*/
-
-void
-FileSorter::OnVfsInitializationCompleted( CORE::CNotifier* notifier    ,
-                                          const CORE::CEvent& eventId  ,
-                                          CORE::CICloneable* eventData )
-{GUCEF_TRACE;
-
     SortInitialRootPaths();
 
     VFS::CVFS& vfs = VFS::CVfsGlobal::Instance()->GetVfs();
@@ -814,7 +796,7 @@ FileSorter::OnVfsInitializationCompleted( CORE::CNotifier* notifier    ,
 	}
 
     m_inboxWatchTimer.SetInterval( m_appConfig.vfsInboxPathScanIntervalInMs );
-    m_inboxWatchTimer.SetEnabled( true );    
+    m_inboxWatchTimer.SetEnabled( true );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -860,17 +842,19 @@ FileSorter::RegisterEventHandlers( void )
 {GUCEF_TRACE;
 
     CORE::CGUCEFApplication& app = CORE::CCoreGlobal::Instance()->GetApplication();
+    CORE::CPluginControl& pluginControl = CORE::CCoreGlobal::Instance()->GetPluginControl();
+    VFS::CVFS& vfs = VFS::CVfsGlobal::Instance()->GetVfs();
+
+    // Set our starting conditions for work since we depend on multiple sub-systems
+    m_appWorkStartTrigger.SubscribeAndAddEventToTriggerCriterea( &app, CORE::CGUCEFApplication::FirstCycleEvent );
+    m_appWorkStartTrigger.SubscribeAndAddEventToTriggerCriterea( &pluginControl, CORE::CPluginControl::RegisteringOfAllPluginsFinishedEvent );
+    m_appWorkStartTrigger.SubscribeAndAddEventToTriggerCriterea( &vfs, VFS::CVFS::VfsInitializationCompletedEvent );
     
     TEventCallback callback( this, &FileSorter::OnAppStarted );
-    SubscribeTo( &app                                     ,
-                 CORE::CGUCEFApplication::FirstCycleEvent ,
-                 callback                                 );
-
-    VFS::CVFS& vfs = VFS::CVfsGlobal::Instance()->GetVfs();
-    TEventCallback callback2( this, &FileSorter::OnVfsInitializationCompleted );
-    SubscribeTo( &vfs                                       ,
-                 VFS::CVFS::VfsInitializationCompletedEvent ,
-                 callback2                                  );
+    SubscribeTo( &m_appWorkStartTrigger                              ,
+                 CORE::CEventAggregateTrigger::AggregateTriggerEvent ,
+                 callback                                            );
+    
     TEventCallback callback3( this, &FileSorter::OnVfsWatchedInboxDirChange );
     SubscribeTo( &vfs                        ,
                  VFS::CVFS::FileCreatedEvent ,

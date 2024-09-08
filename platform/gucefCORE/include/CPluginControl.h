@@ -93,6 +93,10 @@ class GUCEF_CORE_PUBLIC_CPP CPluginControl : public CTSGNotifier          ,
 
     typedef CString::StringSet  TStringSet;
 
+    static const CEvent LoadingOfAllPluginsStartedEvent;         /**< event fired when all plugins are about to be loaded into the process */
+    static const CEvent LoadingOfAllPluginsFinishedEvent;        /**< event fired when all plugins have been loaded into the process */
+    static const CEvent RegisteringOfAllPluginsStartedEvent;     /**< event fired when functionality for all plugins is about to be registered as usable by the process. */
+    static const CEvent RegisteringOfAllPluginsFinishedEvent;    /**< event fired when functionality for all plugins has been registered as usable by the process. */
     static const CEvent PluginLoadedEvent;                       /**< event fired when the module of a given plugin has been loaded into the process */
     static const CEvent PluginUnregisterStartedEvent;            /**< event fired when a given plugin's functionality is about to be unregistered as usable by the process */
     static const CEvent PluginUnregisteredEvent;                 /**< event fired when a given plugin's functionality has been unregistered from being usable by the process */
@@ -113,7 +117,8 @@ class GUCEF_CORE_PUBLIC_CPP CPluginControl : public CTSGNotifier          ,
 
     typedef std::vector< CString > TStringVector;
 
-    bool LoadAll( void );
+    bool LoadAll( bool registerAll = true                   ,
+                  bool loadOnlyIfLoadImmediatelySet = false );
 
     bool LoadAllPluginsOfType( const CString& pluginTypeToLoad );
 
@@ -121,6 +126,8 @@ class GUCEF_CORE_PUBLIC_CPP CPluginControl : public CTSGNotifier          ,
                                       const CString& groupName        );
 
     bool LoadPluginGroup( const CString& groupName );
+
+    bool UnloadAll( void );
 
     bool UnloadAllPluginsOfTypeInGroup( const CString& pluginTypeToLoad ,
                                         const CString& groupName        );
@@ -135,9 +142,9 @@ class GUCEF_CORE_PUBLIC_CPP CPluginControl : public CTSGNotifier          ,
     bool UnloadPlugin( const CString& groupName  ,
                        const CString& moduleName );
 
-    bool UnregisterAll( void );
+    bool RegisterAll( bool registerOnlyIfLoadImmediatelySet = false );
     
-    bool UnloadAll( void );
+    bool UnregisterAll( void );    
 
     void GetAvailablePluginGroups( TStringSet& groupNames ) const;
 
@@ -148,11 +155,12 @@ class GUCEF_CORE_PUBLIC_CPP CPluginControl : public CTSGNotifier          ,
 
     bool AddPluginMetaData( const CIPluginMetaData& pluginMetaData ,
                             const CString& groupName               ,
-                            bool loadImmediatly                    );
+                            bool loadImmediately                   ,
+                            bool registerImmediately = true        );
 
     bool AddAllPluginsFromDir( const CString& pluginDir ,
                                const CString& groupName ,
-                               bool loadImmediatly      );
+                               bool loadImmediately     );
 
     /**
      *  Utility function: defines limited plugin meta data from the limited information
@@ -174,7 +182,7 @@ class GUCEF_CORE_PUBLIC_CPP CPluginControl : public CTSGNotifier          ,
      */
     bool SearchForPluginInPluginDirs( const CString& pluginFileName ,
                                       const CString& groupName      ,
-                                      bool loadImmediatly           );
+                                      bool loadImmediately          );
 
     /**
      *  Adds a plugin root dir to the dirs that will be used to load
@@ -240,6 +248,8 @@ class GUCEF_CORE_PUBLIC_CPP CPluginControl : public CTSGNotifier          ,
      */
     virtual bool LoadConfig( const CDataNode& treeroot ) GUCEF_VIRTUAL_OVERRIDE;
 
+    bool AdjustGroupPriority( const CString& groupName , UInt32 newPriority );
+
     virtual const CString& GetClassTypeName( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
     protected:
@@ -265,20 +275,28 @@ class GUCEF_CORE_PUBLIC_CPP CPluginControl : public CTSGNotifier          ,
     private:
 
     typedef std::map< CString, CIPluginLoadLogic* > TPluginLoadLogicMap;
-    typedef std::map< CString, CPluginGroup > TPluginGroupMap;
+    typedef std::map< CString, TPluginGroupPtr > TStringToPluginGroupMap;
+    typedef std::map< UInt32, TStringToPluginGroupMap > TPluginGroupMap;
     typedef std::set< CPluginManager* > TPluginManagerSet;    
 
     CPluginControl( const CPluginControl& src );
 
     CPluginControl& operator=( const CPluginControl& src );
 
-    bool LoadPlugin( TPluginMetaDataPtr& pluginMetaData ,
-                     CPluginGroup& pluginGroup          ,
-                     const CString& groupName           );
+    TPluginGroupPtr GetOrCreatePluginGroup( const CString& groupName, UInt32 priorityIfNotExist = GUCEF_UINT32MAX );
+
+    bool LoadPlugin( TPluginMetaDataStoragePtr& pluginMetaData ,
+                     CPluginGroup& pluginGroup                 ,
+                     const CString& groupName                  ,
+                     bool registerPlugin                       );
 
     bool UnloadPlugin( TPluginPtr& plugin        ,
                        CPluginGroup& pluginGroup ,
                        const CString& groupName  );
+
+    bool RegisterPlugin( TPluginMetaDataStoragePtr& pluginMetaData ,
+                         CPluginGroup& pluginGroup                 ,
+                         const CString& groupName                  );
 
     bool UnregisterPlugin( TPluginPtr& pluginPtr     ,
                            CPluginGroup& pluginGroup ,
@@ -288,7 +306,8 @@ class GUCEF_CORE_PUBLIC_CPP CPluginControl : public CTSGNotifier          ,
 
     TPluginLoadLogicMap m_pluginLoadLogicProviders;
     CString m_defaultPluginLoadLogicType;
-    TPluginGroupMap m_pluginGroups;
+    TPluginGroupMap m_pluginGroupsByPriority;
+    TStringToPluginGroupMap m_pluginGroupsByName;
     TStringSet m_rootDirs;
     TPluginManagerSet m_pluginManagers;
 };
@@ -305,14 +324,3 @@ class GUCEF_CORE_PUBLIC_CPP CPluginControl : public CTSGNotifier          ,
 /*-------------------------------------------------------------------------*/
 
 #endif /* GUCEF_CORE_CPLUGINCONTROL_H ? */
-
-/*-------------------------------------------------------------------------//
-//                                                                         //
-//      Info & Changes                                                     //
-//                                                                         //
-//-------------------------------------------------------------------------//
-
-- 27-11-2004 :
-        - Initial implementation
-
------------------------------------------------------------------------------*/

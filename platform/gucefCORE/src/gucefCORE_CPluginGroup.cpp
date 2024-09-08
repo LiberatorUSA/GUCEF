@@ -46,8 +46,10 @@ namespace CORE {
 //-------------------------------------------------------------------------*/
     
 CPluginGroup::CPluginGroup( void )
-    : m_plugins()        
+    : CTSharedObjCreator< CPluginGroup, MT::CMutex >( this )
+    , m_plugins()        
     , m_pluginMetaData()
+    , m_priority( 0 )
 {GUCEF_TRACE;
 
 }
@@ -55,8 +57,10 @@ CPluginGroup::CPluginGroup( void )
 /*-------------------------------------------------------------------------*/
 
 CPluginGroup::CPluginGroup( const CPluginGroup& src )
-    : m_plugins( src.m_plugins )                
+    : CTSharedObjCreator< CPluginGroup, MT::CMutex >( this )
+    , m_plugins( src.m_plugins )                
     , m_pluginMetaData( src.m_pluginMetaData )
+    , m_priority( src.m_priority )
 {GUCEF_TRACE;
 
 }
@@ -68,6 +72,7 @@ CPluginGroup::~CPluginGroup()
 
     m_plugins.clear();
     m_pluginMetaData.clear();
+    m_priority = 0;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -80,6 +85,7 @@ CPluginGroup::operator=( const CPluginGroup& src )
     {
         m_plugins = src.m_plugins;
         m_pluginMetaData = src.m_pluginMetaData;
+        m_priority = src.m_priority;
     }
     return *this;
 }
@@ -196,6 +202,25 @@ CPluginGroup::FindPluginMetaDataWithModuleName( const CString& moduleName ) cons
     }
     return TPluginMetaDataPtr();
 }
+
+/*-------------------------------------------------------------------------*/
+
+void 
+CPluginGroup::SetGroupPriority( const UInt32 priority )
+{GUCEF_TRACE;
+
+    m_priority = priority;
+}
+
+/*-------------------------------------------------------------------------*/
+
+UInt32 
+CPluginGroup::GetGroupPriority( void ) const
+{GUCEF_TRACE;
+
+    return m_priority;
+}
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //

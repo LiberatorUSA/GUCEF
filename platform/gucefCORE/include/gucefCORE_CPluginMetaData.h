@@ -61,7 +61,8 @@ namespace CORE {
  *  Relies on external source providing the actual information.
  */
 class GUCEF_CORE_PUBLIC_CPP CPluginMetaData : public CIPluginMetaData ,
-                                              public CIConfigurable
+                                              public CIConfigurable   ,
+                                              public CTSharedObjCreator< CPluginMetaData, MT::CMutex > 
 {
     public:
 
@@ -71,7 +72,7 @@ class GUCEF_CORE_PUBLIC_CPP CPluginMetaData : public CIPluginMetaData ,
 
     explicit CPluginMetaData( const CIPluginMetaData& src );
 
-    virtual ~CPluginMetaData();
+    virtual ~CPluginMetaData() GUCEF_VIRTUAL_OVERRIDE;
 
     CPluginMetaData& operator=( const CPluginMetaData& src );
 
@@ -80,28 +81,28 @@ class GUCEF_CORE_PUBLIC_CPP CPluginMetaData : public CIPluginMetaData ,
     /**
      *  Optional textual description of the plugin functionality
      */    
-    virtual CString GetDescription( void ) const;
+    virtual CString GetDescription( void ) const GUCEF_VIRTUAL_OVERRIDE;
     
     void SetCopyright( const CString& description );
     
     /**
      *  Optional textual copyright information regarding the plugin
      */ 
-    virtual CString GetCopyright( void ) const;
+    virtual CString GetCopyright( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
     void SetVersion( const TVersion& version );
 
     /**
      *  Version info for the plugin
      */
-    virtual TVersion GetVersion( void ) const;
+    virtual TVersion GetVersion( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
     void SetLoaderLogicTypeName( const CString& loaderLogicTypeName );
     
     /**
      *  Optional info on which which loader logic should be used when loading the plugin
      */
-    virtual CString GetLoaderLogicTypeName( void ) const;
+    virtual CString GetLoaderLogicTypeName( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
     void SetPluginType( const CString& pluginType );
     
@@ -111,11 +112,11 @@ class GUCEF_CORE_PUBLIC_CPP CPluginMetaData : public CIPluginMetaData ,
      *  of plugins. Defining the plugin type allows these managers to pick the plugins they 
      *  can manage
      */
-    virtual CString GetPluginType( void ) const;
+    virtual CString GetPluginType( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
     void SetModuleFilename( const CString& moduleFilename );
     
-    virtual CString GetModuleFilename( void ) const;
+    virtual CString GetModuleFilename( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
     void SetAltModuleFilename( const CString& altModuleFilename );
     
@@ -125,7 +126,7 @@ class GUCEF_CORE_PUBLIC_CPP CPluginMetaData : public CIPluginMetaData ,
      *  ModuleFilename will be constructed using the postfix (if any) and another 
      *  attempt made
      */
-    virtual CString GetAltModuleFilename( void ) const;
+    virtual CString GetAltModuleFilename( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
     void SetFullModulePath( const CString& description );
     
@@ -136,12 +137,40 @@ class GUCEF_CORE_PUBLIC_CPP CPluginMetaData : public CIPluginMetaData ,
      */
     virtual CString GetFullModulePath( void ) const;
 
+    void SetModulePointer( void* modulePointer );
+    
+    virtual void* GetModulePointer( void ) const GUCEF_VIRTUAL_OVERRIDE;
+
+    /**
+     *  flag whether the plugin should be loaded immediately or if it should be loaded
+     *  only when later requested to be loaded and thus treated as merely a placeholder
+     */
+    void SetLoadImmediately( bool loadImmediately );
+
+    /**
+     *  flag whether the plugin should be loaded immediately or if it should be loaded
+     *  only when later requested to be loaded and thus treated as merely a placeholder
+     */
+    virtual bool GetLoadImmediately( void ) const GUCEF_VIRTUAL_OVERRIDE;
+
+    /**
+     *  flag whether the plugin is optional and loading it should be considered 'best effort'
+     *  thus failure to load the plugin would not be considered an error and merely an informational event
+     */
+    void SetLoadFailAllowed( bool loadFailAllowed );
+
+    /**
+     *  flag whether the plugin is optional and loading it should be considered 'best effort'
+     *  thus failure to load the plugin would not be considered an error and merely an informational event
+     */
+    virtual bool GetLoadFailAllowed( void ) const GUCEF_VIRTUAL_OVERRIDE;
+
     /**
      *  Optionally parameters can be specified to be available for the plugin.
      *  How, when and if they values are passed to the plugin depends on the implementation
      *  of the plugin and plugin manager. This is merely a placeholder.
      */
-    virtual void GetParams( CValueList& params ) const;
+    virtual void GetParams( CValueList& params ) const GUCEF_VIRTUAL_OVERRIDE;
 
     /**
      *  Optionally parameters can be specified to be available for the plugin.
@@ -157,7 +186,7 @@ class GUCEF_CORE_PUBLIC_CPP CPluginMetaData : public CIPluginMetaData ,
      *  @param tree the data tree you wish to store
      *  @return wheter storing the tree was successfull
      */
-    virtual bool SaveConfig( CDataNode& tree ) const;
+    virtual bool SaveConfig( CDataNode& tree ) const GUCEF_VIRTUAL_OVERRIDE;
 
     /**
      *  Attempts to load data from the given file to the
@@ -167,14 +196,14 @@ class GUCEF_CORE_PUBLIC_CPP CPluginMetaData : public CIPluginMetaData ,
      *  @param treeroot pointer to the node that is to act as root of the data tree
      *  @return whether building the tree from the given file was successfull.
      */
-    virtual bool LoadConfig( const CDataNode& treeroot );
+    virtual bool LoadConfig( const CDataNode& treeroot ) GUCEF_VIRTUAL_OVERRIDE;
 
     /**
      *  Resets all data to default creation state
      */
-    virtual void Clear( void );
+    virtual void Clear( void ) GUCEF_VIRTUAL_OVERRIDE;
 
-    virtual const CString& GetClassTypeName( void ) const;
+    virtual const CString& GetClassTypeName( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
     private:
 
@@ -186,6 +215,9 @@ class GUCEF_CORE_PUBLIC_CPP CPluginMetaData : public CIPluginMetaData ,
     CString m_moduleFilename;
     CString m_altModuleFilename;
     CString m_modulePath;
+    void* m_modulePtr;
+    bool m_loadImmediately;
+    bool m_loadFailAllowed;
     CValueList m_params;
 };
 
@@ -204,15 +236,4 @@ typedef CTSharedPtr< CPluginMetaData, MT::CMutex > TPluginMetaDataStoragePtr;
 
 /*-------------------------------------------------------------------------*/
 
-#endif /* GUCEF_CORE_CIPLUGINMETADATA_H ? */
-
-/*-------------------------------------------------------------------------//
-//                                                                         //
-//      Info & Changes                                                     //
-//                                                                         //
-//-------------------------------------------------------------------------//
-
-- 27-11-2004 :
-        - Dinand: Initial implementation
-
----------------------------------------------------------------------------*/
+#endif /* GUCEF_CORE_CPLUGINMETADATA_H ? */
