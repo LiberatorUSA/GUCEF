@@ -391,8 +391,9 @@ CPluginControl::RegisterAll( bool registerOnlyIfLoadImmediatelySet )
         while ( n != pluginGroups.end() )
         {
             TPluginGroupPtr& pluginGroup = (*n).second;
-            CPluginGroup::TPluginMetaDataSet& pluginMetaDataSet = pluginGroup->GetPluginMetaData();
-
+            
+            // note that we need to pull a copy of the plugin group info, it will get altered as we register invalidating the collection
+            CPluginGroup::TPluginMetaDataSet pluginMetaDataSet = pluginGroup->GetPluginMetaData();
             CPluginGroup::TPluginMetaDataSet::iterator m = pluginMetaDataSet.begin();
             while ( m != pluginMetaDataSet.end() )
             {
@@ -1373,10 +1374,10 @@ CPluginControl::GetOrCreatePluginGroup( const CString& groupName, UInt32 priorit
 /*-------------------------------------------------------------------------*/
 
 bool
-CPluginControl::AddPluginMetaData( const CIPluginMetaData& pluginMetaData ,
-                                   const CString& groupName               ,
-                                   bool loadImmediately                   ,
-                                   bool registerImmediately               )
+CPluginControl::AddPluginMetaDataImpl( TPluginMetaDataStoragePtr pluginMetaData ,
+                                       const CString& groupName                 ,
+                                       bool loadImmediately                     ,
+                                       bool registerImmediately                 )
 {GUCEF_TRACE;
 
     bool success = true;
@@ -1388,22 +1389,44 @@ CPluginControl::AddPluginMetaData( const CIPluginMetaData& pluginMetaData ,
         return false;
 
     // Add the metadata
-    TPluginMetaDataStoragePtr pluginMetaDataCopy( CPluginMetaData::CreateSharedObjWithParam( pluginMetaData ) );    
-    if ( pluginMetaDataCopy.IsNULL() )
-        return false;
-    pluginMetaDataCopy->SetLoadImmediately( loadImmediately );
-    pluginGroup->GetPluginMetaData().insert( pluginMetaDataCopy );
+    pluginGroup->GetPluginMetaData().insert( pluginMetaData );
 
     // If an immediate load is desired we invoke the load function as well
     if ( loadImmediately )
     {
-        success = LoadPlugin( pluginMetaDataCopy  ,
+        success = LoadPlugin( pluginMetaData      ,
                               *pluginGroup        ,
                               groupName           ,
                               registerImmediately );
     }
 
     return success;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CPluginControl::AddPluginMetaData( const CIPluginMetaData& pluginMetaData ,
+                                   const CString& groupName               ,
+                                   bool loadImmediately                   ,
+                                   bool registerImmediately               )
+{GUCEF_TRACE;
+
+    bool success = true;
+
+    // Create a copy which plugin control will own
+    TPluginMetaDataStoragePtr pluginMetaDataCopy( CPluginMetaData::CreateSharedObjWithParam( pluginMetaData ) );    
+    if ( pluginMetaDataCopy.IsNULL() )
+        return false;
+
+    // set the load immediately flag which may differ from what the original meta-data had
+    pluginMetaDataCopy->SetLoadImmediately( loadImmediately );
+
+    // Now call our internal implementation for the rest of the work
+    return AddPluginMetaDataImpl( pluginMetaDataCopy  ,
+                                  groupName           ,
+                                  loadImmediately     ,
+                                  registerImmediately );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -1463,7 +1486,7 @@ CPluginControl::LoadConfig( const CDataNode& treeroot )
 
     // first parse relevant information from the config
     // Note that group loading priority is determined by order of appearance in the config unless otherwise specified in the config
-    
+
     UInt32 groupPriorityPerConfigOrder = 1;
     CDataNode::TConstDataNodeSet pluginGroupNodes( treeroot.FindChildrenOfType( "PluginGroup", true ) );
     CDataNode::TConstDataNodeSet::iterator i = pluginGroupNodes.begin();
@@ -1544,7 +1567,7 @@ CPluginControl::LoadConfig( const CDataNode& treeroot )
                 {
                     TPluginMetaDataStoragePtr& metaData = (*e);
 
-                    if ( AddPluginMetaData( *metaData, groupName, false, false ) )
+                    if ( AddPluginMetaDataImpl( metaData, groupName, false, false ) )
                     {
                         GUCEF_DEBUG_LOG( LOGLEVEL_NORMAL, "PluginControl: Loaded meta-data for plugin in group \"" + groupName + "\" with filename: " + metaData->GetModuleFilename() );
                     }

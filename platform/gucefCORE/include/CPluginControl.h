@@ -285,6 +285,11 @@ class GUCEF_CORE_PUBLIC_CPP CPluginControl : public CTSGNotifier          ,
 
     TPluginGroupPtr GetOrCreatePluginGroup( const CString& groupName, UInt32 priorityIfNotExist = GUCEF_UINT32MAX );
 
+    bool AddPluginMetaDataImpl( TPluginMetaDataStoragePtr pluginMetaData ,
+                                const CString& groupName                 ,
+                                bool loadImmediately                     ,
+                                bool registerImmediately = true          );
+
     bool LoadPlugin( TPluginMetaDataStoragePtr& pluginMetaData ,
                      CPluginGroup& pluginGroup                 ,
                      const CString& groupName                  ,
