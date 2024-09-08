@@ -337,7 +337,7 @@ CPluginControl::LoadAll( bool registerAll                  ,
         while ( n != pluginGroups.end() )
         {
             TPluginGroupPtr& pluginGroup = (*n).second;
-            CPluginGroup::TPluginMetaDataSet& pluginMetaDataSet = pluginGroup->GetPluginMetaData();
+            CPluginGroup::TPluginMetaDataSet pluginMetaDataSet = pluginGroup->GetPluginMetaData();
 
             CPluginGroup::TPluginMetaDataSet::iterator m = pluginMetaDataSet.begin();
             while ( m != pluginMetaDataSet.end() )
@@ -348,10 +348,14 @@ CPluginControl::LoadAll( bool registerAll                  ,
                 {
                     // Try to load this module since it is of the type we are looking for
                     // Note that we are not registering yet, we defer that
-                    success = success && LoadPlugin( pluginMetaData ,
-                                                     *pluginGroup   ,
-                                                     (*n).first     ,
-                                                     false          );
+                    bool loadSuccess = LoadPlugin( pluginMetaData ,
+                                                   *pluginGroup   ,
+                                                   (*n).first     ,
+                                                   false          );
+                    if ( !loadSuccess )
+                        if ( pluginMetaData->GetLoadFailAllowed() )
+                            loadSuccess = true; // ignore
+                    success = success && loadSuccess;
                 }
                 ++m;
             }
@@ -399,12 +403,22 @@ CPluginControl::RegisterAll( bool registerOnlyIfLoadImmediatelySet )
             {
                 TPluginMetaDataStoragePtr pluginMetaData = (*m);
 
-                if ( !registerOnlyIfLoadImmediatelySet || ( pluginMetaData->GetLoadImmediately() && registerOnlyIfLoadImmediatelySet ) )
+                // Registration is a follow-on step to module loading.
+                // As such we do not consider entries here which are not loaded
+                if ( GUCEF_NULL != pluginMetaData->GetModulePointer() )
                 {
-                    // Try to register the functionality in the module
-                    success = success && RegisterPlugin( pluginMetaData ,
-                                                         *pluginGroup   ,
-                                                         (*n).first     );
+                    if ( !registerOnlyIfLoadImmediatelySet || ( pluginMetaData->GetLoadImmediately() && registerOnlyIfLoadImmediatelySet ) )
+                    {
+                        // Try to register the functionality in the module
+                        bool registerSuccess = RegisterPlugin( pluginMetaData ,
+                                                               *pluginGroup   ,
+                                                               (*n).first     );
+                        if ( !registerSuccess )
+                            if ( pluginMetaData->GetLoadFailAllowed() )
+                                registerSuccess = true; // ignore
+
+                        success = success && registerSuccess;
+                    }
                 }
                 ++m;
             }
