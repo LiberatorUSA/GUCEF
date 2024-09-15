@@ -685,7 +685,30 @@ CImage::TryGetOriginalImageCreationDtFromMetaData( CORE::CDateTime& imageCreatio
     if ( m_metaData.TryGetValue( GUCEF_IMAGE_TAG_EXIF_IFD_DATETIME_ORIGINAL, imageCreation ) )
     {
         imageCreationDt = imageCreation.AsDateTime();
-        isTimezoneAware = false; // the EXIF standard sadly has no concept of timezones
+
+        // Timezone information was added to the EXIF standard in version 2.31
+        // Source: CIPA's Exif standard 2.31 from 2016, semantically page 49, digitally page 54.
+        // Some vendors may have included it before then but it is not guaranteed to be present
+
+        CORE::CVariant utcOffset;
+        if ( m_metaData.TryGetValue( GUCEF_IMAGE_TAG_EXIF_IFD_DATETIME_OFFSETTIME_ORIGINAL, utcOffset ) )
+        {
+            CORE::CTime timeSegment;
+            if ( timeSegment.FromIso8601TimeString( utcOffset.AsString() ) )
+            {
+                Int16 minutesOffset = ( timeSegment.GetHours() * 60 * 60 );
+                minutesOffset += timeSegment.GetMinutes();
+                minutesOffset += (Int16)( timeSegment.GetSeconds() / 60 );                
+                imageCreationDt.SetTimeZoneUTCOffsetInMins( minutesOffset );
+
+                isTimezoneAware = true;
+                return true;
+            }           
+        }
+
+        // the image sadly has no timezone relevant information
+        // You could still try to derive it from the GPS data if available
+        isTimezoneAware = false; 
         return true;
     }    
     return false;
@@ -702,8 +725,31 @@ CImage::TryGetImageLastModifiedDtFromMetaData( CORE::CDateTime& imageLastModifie
     CORE::CVariant imageLastModified;
     if ( m_metaData.TryGetValue( GUCEF_IMAGE_TAG_EXIF_IFD_DATETIME, imageLastModified ) )
     {
-        imageLastModifiedDt = imageLastModified.AsDateTime();
-        isTimezoneAware = false; // the EXIF standard sadly has no concept of timezones
+        imageLastModifiedDt = imageLastModified.AsDateTime();        
+
+        // Timezone information was added to the EXIF standard in version 2.31
+        // Source: CIPA's Exif standard 2.31 from 2016, semantically page 49, digitally page 54.
+        // Some vendors may have included it before then but it is not guaranteed to be present
+
+        CORE::CVariant utcOffset;
+        if ( m_metaData.TryGetValue( GUCEF_IMAGE_TAG_EXIF_IFD_TIMEZONEOFFSET, utcOffset ) )
+        {
+            CORE::CTime timeSegment;
+            if ( timeSegment.FromIso8601TimeString( utcOffset.AsString() ) )
+            {
+                Int16 minutesOffset = ( timeSegment.GetHours() * 60 * 60 );
+                minutesOffset += timeSegment.GetMinutes();
+                minutesOffset += (Int16)( timeSegment.GetSeconds() / 60 );                
+                imageLastModifiedDt.SetTimeZoneUTCOffsetInMins( minutesOffset );
+
+                isTimezoneAware = true;
+                return true;
+            }           
+        }
+
+        // the image sadly has no timezone relevant information
+        // You could still try to derive it from the GPS data if available
+        isTimezoneAware = false;
         return true;
     }    
     return false;

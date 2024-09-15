@@ -251,7 +251,9 @@ CFileSystemArchive::MoveFile( const CString& oldFilePath ,
     CString newPath = CORE::CombinePath( m_rootDir, newFilePath.ReplaceChar( GUCEF_DIRSEPCHAROPPOSITE, GUCEF_DIRSEPCHAR ) );
     
     CString newPathDir = CORE::StripFilename( newPath );
-    CORE::CreateDirs( newPathDir );
+    if ( !CORE::DirExists( newPathDir ) )
+        if ( !CORE::CreateDirs( newPathDir ) )
+            return false;
 
     return CORE::MoveFile( oldPath, newPath, overwrite );
 }

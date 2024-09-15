@@ -28,6 +28,11 @@
 
 #include "gucefCORE_CTime.h"
 
+#ifndef GUCEF_CORE_CDATETIME_H
+#include "gucefCORE_CDateTime.h"
+#define GUCEF_CORE_CDATETIME_H
+#endif /* GUCEF_CORE_CDATETIME_H ? */
+
 #ifndef GUCEF_CORE_LOGGING_H
 #include "gucefCORE_Logging.h"
 #define GUCEF_CORE_LOGGING_H
@@ -84,9 +89,9 @@ CTime::CTime( const time_t& src, bool isUtc )
     else
         brokenDownTime = localtime( &src );
 
-    m_hours = (UInt8) brokenDownTime->tm_hour;
-    m_minutes = (UInt8) brokenDownTime->tm_min;
-    m_seconds = (UInt8) brokenDownTime->tm_sec;
+    m_hours = (Int8) brokenDownTime->tm_hour;
+    m_minutes = (Int8) brokenDownTime->tm_min;
+    m_seconds = (Int8) brokenDownTime->tm_sec;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -103,7 +108,7 @@ CTime::CTime( const CTime& src )
 
 /*-------------------------------------------------------------------------*/
 
-CTime::CTime( UInt8 hours, UInt8 minutes, UInt8 seconds, UInt16 milliseconds )
+CTime::CTime( Int8 hours, Int8 minutes, Int8 seconds, Int16 milliseconds )
     : CITime()
     , m_hours( hours )
     , m_minutes( minutes )
@@ -130,7 +135,7 @@ CTime::NowUTCTime( void )
 
     ::SYSTEMTIME systemTime;
     ::GetSystemTime( &systemTime );
-    return CTime( (UInt8) systemTime.wHour, (UInt8) systemTime.wMinute, (UInt8) systemTime.wSecond, (UInt16) systemTime.wMilliseconds );
+    return CTime( (Int8) systemTime.wHour, (Int8) systemTime.wMinute, (Int8) systemTime.wSecond, (Int16) systemTime.wMilliseconds );
 
     #elif ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID )
 
@@ -138,7 +143,7 @@ CTime::NowUTCTime( void )
     ::memset( &time, 0, sizeof(time) );
     ::clock_gettime( CLOCK_REALTIME, &time );
     struct tm* utcTime = ::gmtime( &time.tv_sec );
-    return CTime( (UInt8) utcTime->tm_hour, (UInt8) utcTime->tm_min, (UInt8) utcTime->tm_sec, (UInt16) ( time.tv_nsec / 1000000 ) );
+    return CTime( (Int8) utcTime->tm_hour, (Int8) utcTime->tm_min, (Int8) utcTime->tm_sec, (Int16) ( time.tv_nsec / 1000000 ) );
 
     #else
 
@@ -157,7 +162,7 @@ CTime::NowLocalTime( void )
 
     ::SYSTEMTIME systemTime;
     ::GetLocalTime( &systemTime );
-    return CTime( (UInt8) systemTime.wHour, (UInt8) systemTime.wMinute, (UInt8) systemTime.wSecond, (UInt8) systemTime.wMilliseconds );
+    return CTime( (Int8) systemTime.wHour, (Int8) systemTime.wMinute, (Int8) systemTime.wSecond, (Int8) systemTime.wMilliseconds );
 
     #elif ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID )
 
@@ -165,7 +170,7 @@ CTime::NowLocalTime( void )
     ::memset( &time, 0, sizeof(time) );
     ::clock_gettime( CLOCK_REALTIME, &time );
     struct tm* utcTime = ::localtime( &time.tv_sec );
-    return CTime( (UInt8) utcTime->tm_hour, (UInt8) utcTime->tm_min, (UInt8) utcTime->tm_sec, (UInt16) ( time.tv_nsec / 1000000 ) );
+    return CTime( (Int8) utcTime->tm_hour, (Int8) utcTime->tm_min, (Int8) utcTime->tm_sec, (Int16) ( time.tv_nsec / 1000000 ) );
 
     #else
 
@@ -176,7 +181,7 @@ CTime::NowLocalTime( void )
 
 /*-------------------------------------------------------------------------*/
 
-UInt8
+Int8
 CTime::GetHours( void ) const
 {GUCEF_TRACE;
 
@@ -185,7 +190,7 @@ CTime::GetHours( void ) const
 
 /*-------------------------------------------------------------------------*/
 
-UInt8
+Int8
 CTime::GetMinutes( void ) const
 {GUCEF_TRACE;
 
@@ -194,7 +199,7 @@ CTime::GetMinutes( void ) const
 
 /*-------------------------------------------------------------------------*/
 
-UInt8
+Int8
 CTime::GetSeconds( void ) const
 {GUCEF_TRACE;
 
@@ -204,7 +209,7 @@ CTime::GetSeconds( void ) const
 /*-------------------------------------------------------------------------*/
 
 void 
-CTime::SetMilliseconds( UInt16 milliseconds )
+CTime::SetMilliseconds( Int16 milliseconds )
 {GUCEF_TRACE;
 
     m_milliseconds = milliseconds;
@@ -212,7 +217,7 @@ CTime::SetMilliseconds( UInt16 milliseconds )
 
 /*-------------------------------------------------------------------------*/
 
-UInt16
+Int16
 CTime::GetMilliseconds( void ) const
 {GUCEF_TRACE;
 
@@ -251,6 +256,32 @@ CTime::operator!=( const CTime& src ) const
 {GUCEF_TRACE;
 
     return m_hours != src.m_hours || m_minutes != src.m_minutes || m_seconds != src.m_seconds|| m_milliseconds != src.m_milliseconds;
+}
+
+/*-------------------------------------------------------------------------*/
+
+CString 
+CTime::ToIso8601TimeString( bool includeDelimeters ) const
+{GUCEF_TRACE;
+
+    // Dont reimplement, just call the CDateTime version
+    return CDateTime( *this, true ).ToIso8601TimeString( includeDelimeters );
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool 
+CTime::FromIso8601TimeString( const CString& source )
+{GUCEF_TRACE;
+
+    // Dont reimplement, just call the CDateTime version
+    CDateTime dt;
+    if ( dt.FromIso8601TimeString( source ) )
+    {
+        *this = dt.GetTime();
+        return true;    
+    }
+    return false;
 }
 
 /*-------------------------------------------------------------------------//

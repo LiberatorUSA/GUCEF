@@ -129,12 +129,15 @@ class GUCEF_CORE_PUBLIC_CPP CDateTime : public CDate ,
     CString ToIso8601DateTimeString( bool includeDelimeters, bool includeMilliseconds ) const;
     Int32 ToIso8601DateTimeString( void* targetBuffer, UInt32 targetBufferSize, bool includeDelimeters, bool includeMilliseconds ) const;
     Int32 ToIso8601DateString( void* targetBuffer, UInt32 targetBufferSize, bool includeDelimeters ) const;
+    Int32 ToIso8601TimeString( void* targetBuffer, UInt32 targetBufferSize, bool includeDelimeters ) const;
     Int32 ToIso8601DateTimeString( CDynamicBuffer& target, UInt32 targetBufferOffset, bool includeDelimeters, bool includeMilliseconds ) const;
     virtual CString ToIso8601DateString( bool includeDelimeters ) const GUCEF_VIRTUAL_OVERRIDE;
+    virtual CString ToIso8601TimeString( bool includeDelimeters ) const GUCEF_VIRTUAL_OVERRIDE;
 
     Int32 FromIso8601DateTimeString( const void* sourceBuffer, UInt32 sourceBufferSize );
     Int32 FromIso8601DateTimeString( const CDynamicBuffer& source, UInt32 sourceBufferOffset = 0 );
     bool FromIso8601DateTimeString( const CString& source );
+    virtual bool FromIso8601TimeString( const CString& source ) GUCEF_VIRTUAL_OVERRIDE;
 
     UInt64 ToUnixEpochBasedTicksInMillisecs( void ) const;
     void FromUnixEpochBasedTicksInMillisecs( UInt64 unixDtInMsTicks );
@@ -144,10 +147,10 @@ class GUCEF_CORE_PUBLIC_CPP CDateTime : public CDate ,
     void Set( Int16 year                 = 0 ,
               UInt8 month                = 0 ,
               UInt8 day                  = 0 ,
-              UInt8 hours                = 0 ,
-              UInt8 minutes              = 0 ,
-              UInt8 seconds              = 0 ,
-              UInt16 milliseconds        = 0 ,
+              Int8 hours                 = 0 ,
+              Int8 minutes               = 0 ,
+              Int8 seconds               = 0 ,
+              Int16 milliseconds         = 0 ,
               Int16 timezoneOffsetInMins = 0 );
 
     void Clear( void );
@@ -155,6 +158,7 @@ class GUCEF_CORE_PUBLIC_CPP CDateTime : public CDate ,
     void AddSeconds( Int32 secondsToAdd );
     void AddMinutes( Int32 minutesToAdd );
     void AddHours( Int32 hoursToAdd );
+    void AddTime( const CTime& timeToAdd );
 
     explicit CDateTime( const struct tm* src, bool isUtc );
 
@@ -173,10 +177,10 @@ class GUCEF_CORE_PUBLIC_CPP CDateTime : public CDate ,
     CDateTime( Int16 year                 = 0 ,
                UInt8 month                = 0 ,
                UInt8 day                  = 0 ,
-               UInt8 hours                = 0 ,
-               UInt8 minutes              = 0 ,
-               UInt8 seconds              = 0 ,
-               UInt16 milliseconds        = 0 ,
+               Int8 hours                 = 0 ,
+               Int8 minutes               = 0 ,
+               Int8 seconds               = 0 ,
+               Int16 milliseconds         = 0 ,
                Int16 timezoneOffsetInMins = 0 );
 
     #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )

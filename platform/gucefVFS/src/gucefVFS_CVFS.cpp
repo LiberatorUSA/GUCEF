@@ -621,7 +621,7 @@ CVFS::MoveFile( const CString& oldFilePath ,
     TConstMountLinkVector oldPathMountLinks;
     GetEligableMounts( oldPath, false, oldPathMountLinks );
     TConstMountLinkVector newPathMountLinks;
-    GetEligableMounts( newPath, false, newPathMountLinks );
+    GetEligableMounts( newPath, true, newPathMountLinks );
 
     TConstMountLinkVector::iterator i = oldPathMountLinks.begin();
     while ( i != oldPathMountLinks.end() )
@@ -636,9 +636,21 @@ CVFS::MoveFile( const CString& oldFilePath ,
                 // Found a match where both old and new path are available via the same archive
                 // this takes priority over any cross-archive logical 'moves'
                 TArchivePtr archive = newMountLink->mountEntry->archive;
-                return archive->MoveFile( oldMountLink->remainder ,
-                                          newMountLink->remainder ,
-                                          overwrite               );
+                if ( archive->MoveFile( oldMountLink->remainder ,
+                                        newMountLink->remainder ,
+                                        overwrite               ) )
+                {
+                    GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "VFS:MoveFile: File moved from \"" + 
+                        oldFilePath + "\" to \"" + newFilePath + "\" with overwrite=" + CORE::ToString( overwrite ) +
+                        " using archive \"" + archive->GetArchiveName() + "\" of type " + archive->GetType() );
+                    return true;
+                }
+                else
+                {
+                    GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "VFS:MoveFile: Failed to move file from \"" + 
+                        oldFilePath + "\" to \"" + newFilePath + "\" with overwrite=" + CORE::ToString( overwrite ) +
+                        " using archive \"" + archive->GetArchiveName() + "\" of type " + archive->GetType() );
+                }
             }
             ++n;
         }
@@ -648,11 +660,22 @@ CVFS::MoveFile( const CString& oldFilePath ,
     // Since we could not find an archive that can hold both the old and new location we will have to
     // perform a logical move which is a copy followed by a delete
 
+    GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "VFS:MoveFile: Unable to resolve using same-archive MoveFile operation, falling back to Copy/Delete" );
+
     if ( CopyFile( oldFilePath ,
                    newFilePath ,
                    overwrite   ) )
     {
-        return DeleteFile( oldFilePath, false );
+        GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "VFS:MoveFile: File copied from \"" + oldFilePath + "\" to \"" + newFilePath + "\" with overwrite=" + CORE::ToString( overwrite ) );
+        if ( DeleteFile( oldFilePath, false ) )
+        {
+            GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "VFS:MoveFile: Copied file at old location \"" + oldFilePath + "\" is deleted" );
+            return true;
+        }
+        else
+        {
+            GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "VFS:MoveFile: Failed to delete copied file at old location \"" + oldFilePath + "\". File may now exist in both locations!" );
+        }
     }
 
     return false;

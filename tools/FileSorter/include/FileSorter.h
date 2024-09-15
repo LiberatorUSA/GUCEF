@@ -246,6 +246,7 @@ class FileSorterConfig : public CORE::CGloballyConfigurable
     TFileTypeSet fileTypesToSort;
     bool tryToGetMetaDataInfoFromImages;
     bool useMediaPropertyEarliestDt;
+    bool performReverseGeolocationLookups;
 
     private:
 

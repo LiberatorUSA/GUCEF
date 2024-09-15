@@ -417,6 +417,7 @@ FileSorterConfig::FileSorterConfig( void )
     , fileTypesToSort()
     , tryToGetMetaDataInfoFromImages( false ) 
     , useMediaPropertyEarliestDt( true )
+    , performReverseGeolocationLookups( false )
 {GUCEF_TRACE;
 
 }
@@ -433,6 +434,7 @@ bool
 FileSorterConfig::SaveConfig( CORE::CDataNode& cfg ) const
 {GUCEF_TRACE;
 
+    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "FileSorter:SaveConfig" );
     return false;
 }
 
@@ -442,6 +444,8 @@ bool
 FileSorterConfig::LoadConfig( const CORE::CDataNode& globalConfig )
 {GUCEF_TRACE;
 
+    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "FileSorter:LoadConfig" );
+    
     bool totalSuccess = true;
 
     const CORE::CDataNode* cfg = globalConfig.Find( "FileSorterConfig" );
@@ -469,6 +473,7 @@ FileSorterConfig::LoadConfig( const CORE::CDataNode& globalConfig )
     tryToGetMetaDataInfoFromImages = cfg->GetAttributeValueOrChildValueByName( "tryToGetMetaDataInfoFromImages", tryToGetMetaDataInfoFromImages ).AsBool( tryToGetMetaDataInfoFromImages, true );
     useMediaPropertyEarliestDt = cfg->GetAttributeValueOrChildValueByName( "useMediaPropertyEarliestDt", useMediaPropertyEarliestDt ).AsBool( useMediaPropertyEarliestDt, true );
     fileTypesToSort = FileTypeConfig::GetFileTypesForStringSet( fileTypesToSortStrSet );
+    performReverseGeolocationLookups = cfg->GetAttributeValueOrChildValueByName( "performReverseGeolocationLookups", performReverseGeolocationLookups ).AsBool( performReverseGeolocationLookups, true );
     
     const CORE::CDataNode* fileTypeConfigNode = cfg->FindChild( "FileTypeConfig" );
     if ( GUCEF_NULL != fileTypeConfigNode )
@@ -528,20 +533,23 @@ FileSorter::GetMediaMetaDataFromImage( const CORE::CString& vfsFilePath, MediaMe
                 {
                     mediaMetaData.hasGeoLocation = true;
 
-                    // Attempt to obtain other location information based on the geo location
-                    // This will require service providers to be registered capable of looking up geo location info
-                    COMCORE::CComCoreGlobal* comms = COMCORE::CComCoreGlobal::Instance();
-                    COMCORE::CGeoLocationLookupService& geoLookupService = comms->GetGeoLocationLookupService();
-                    if ( geoLookupService.TryLookupLocation( mediaMetaData.geoLocation, 
-                                                             mediaMetaData.country,
-                                                             mediaMetaData.stateOrProvice,
-                                                             mediaMetaData.city,
-                                                             mediaMetaData.street,
-                                                             mediaMetaData.streetNr,
-                                                             mediaMetaData.zipOrPostalCode,
-                                                             mediaMetaData.timeZoneOffsetInMins,
-                                                             mediaMetaData.hasTimeZoneOffsetInMins ) )
+                    if ( m_appConfig.performReverseGeolocationLookups )
                     {
+                        // Attempt to obtain other location information based on the geo location
+                        // This will require service providers to be registered capable of looking up geo location info
+                        COMCORE::CComCoreGlobal* comms = COMCORE::CComCoreGlobal::Instance();
+                        COMCORE::CGeoLocationLookupService& geoLookupService = comms->GetGeoLocationLookupService();
+                        if ( geoLookupService.TryLookupLocation( mediaMetaData.geoLocation, 
+                                                                 mediaMetaData.country,
+                                                                 mediaMetaData.stateOrProvice,
+                                                                 mediaMetaData.city,
+                                                                 mediaMetaData.street,
+                                                                 mediaMetaData.streetNr,
+                                                                 mediaMetaData.zipOrPostalCode,
+                                                                 mediaMetaData.timeZoneOffsetInMins,
+                                                                 mediaMetaData.hasTimeZoneOffsetInMins ) )
+                        {
+                        }
                     }
                 }   
                     
@@ -771,7 +779,10 @@ bool
 FileSorter::SortInitialRootPaths( void )
 {GUCEF_TRACE;
 
-    return SortFilesInVfsPath( m_appConfig.vfsInboxPath ) && SortFilesInVfsPath( m_appConfig.vfsSortSourceRootPath );
+    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "FileSorter: Commencing sorting of initial startup root paths" );
+    bool result = SortFilesInVfsPath( m_appConfig.vfsInboxPath ) && SortFilesInVfsPath( m_appConfig.vfsSortSourceRootPath );
+    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "FileSorter: Finished sorting of initial startup root paths" );
+    return result;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -782,6 +793,8 @@ FileSorter::OnAppStarted( CORE::CNotifier* notifier    ,
                           CORE::CICloneable* eventData )
 {GUCEF_TRACE;
 
+    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "FileSorter:OnAppStarted" );
+    
     SortInitialRootPaths();
 
     VFS::CVFS& vfs = VFS::CVfsGlobal::Instance()->GetVfs();

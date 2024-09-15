@@ -363,127 +363,6 @@ Max_Filename_Length( void )
 
 /*-------------------------------------------------------------------------*/
 
-#if ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
-
-static int
-recursive_mkdir( const char* dir, int accessPerms )
-{GUCEF_TRACE;
-
-    char tmp[ PATH_MAX ];
-    char *p = NULL;
-    size_t len;
-    int retValue=0;
-
-    snprintf( tmp, sizeof(tmp), "%s", dir );
-    len = strlen( tmp );
-    if( tmp[ len-1 ] == '/' )
-    {
-        tmp[ len-1 ] = 0;
-    }
-    for( p=tmp+1; *p; ++p )
-    {
-        if( *p == '/' )
-        {
-            *p = 0;
-            retValue = mkdir( tmp, accessPerms );
-            if ( 0 != retValue )
-            {
-                if ( EEXIST != errno )
-                {
-                    return retValue;
-                }
-            }
-            *p = '/';
-        }
-    }
-    retValue = mkdir( tmp, accessPerms );
-    if ( 0 != retValue )
-    {
-        if ( EEXIST != errno )
-        {
-            return retValue;
-        }
-        else return 0;
-    }
-    return retValue;
-}
-
-#endif
-
-/*-------------------------------------------------------------------------*/
-
-#if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
-
-/**
- *	Recursive function that creates directories
- */
-static UInt32
-create_directory( const char *new_dir, UInt32 offset )
-{GUCEF_TRACE;
-
-    Int32 idx = _Find_Char( offset, 1, '\\', new_dir, (UInt32)strlen( new_dir ) );
-    if ( idx > 0 )
-    {
-        char* dir = NULL;
-
-        /*
-         *      Check for drive letter.
-         */
-        if ( ( idx > 1 ) && ( !offset ) )
-        {
-            if ( *(new_dir+1) == ':' )
-            {
-                return create_directory( new_dir, 3 );
-            }
-        }
-
-        /*
-         *	Sub-dir found
-         */
-        dir = (char*)calloc( idx+2, 1 );
-        strncpy( dir, new_dir, idx );
-        dir[ idx+1 ] = '\0';
-        if ( !CreateDirectory( dir, NULL ) )
-        {
-            /*
-            *	An error occurred.
-            *	We will ignore the dir already exists error but
-            *	abort on all others
-            */
-            if ( GetLastError() != ERROR_ALREADY_EXISTS )
-            {
-                free( dir );
-                return 0;
-            }
-        }
-        free( dir );
-
-        return create_directory( new_dir, idx+1 );
-    }
-    else
-    {
-             if ( !CreateDirectory( new_dir, NULL ) )
-             {
-             	/*
-                     *	An error occured.
-                     *	We will ignore the dir already exists error but
-                     *	abort on all others
-                     */
-             	if ( GetLastError() != ERROR_ALREADY_EXISTS )
-                    {
-                    	return 0;
-                    }
-                    return 1;
-             }
-             else
-             return 1;
-    }
-}
-
-#endif /* GUCEF_PLATFORM_MSWIN */
-
-/*-------------------------------------------------------------------------*/
-
 UInt32
 Create_Directory( const char* new_dir )
 {GUCEF_TRACE;
@@ -491,25 +370,8 @@ Create_Directory( const char* new_dir )
     if ( GUCEF_NULL == new_dir )
         return 0;
 
-    #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
-
-    return create_directory( new_dir, 0 );
-
-    #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
-
-    /*
-     *	Use posix function. returns -1 on failure and 0 on sucess
-     */
-    return (UInt32) ( recursive_mkdir( new_dir, 0777 )+1 );
-
-    #else
-
-    /*
-     *	Unsupported O/S build
-     */
-    return 0;
-
-    #endif
+    // map to C++ version
+    return CreateDirs( new_dir ) ? 1 : 0;
 }
 
 /*-------------------------------------------------------------------------*/

@@ -23,7 +23,8 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#include <stdlib.h>             /* for memory utils */
+#include <stdio.h>
+#include <stdlib.h>
 
 #include "imgpluginFreeImage.h" /* function prototypes for this plugin */
 
@@ -997,8 +998,12 @@ MapFreeImageMetaDataTagIdForExifMain( WORD fiTagId )
         case TAG_RELATED_SOUND_FILE: return GUCEF_IMAGE_TAG_EXIF_IFD_RELATED_SOUND_FILE;
         case TAG_DATETIME_ORIGINAL: return GUCEF_IMAGE_TAG_EXIF_IFD_DATETIME_ORIGINAL;
         case TAG_DATETIME_DIGITIZED: return GUCEF_IMAGE_TAG_EXIF_IFD_DATETIME_DIGITIZED;
+        case TAG_TIMEZONEOFFSET: return GUCEF_IMAGE_TAG_EXIF_IFD_TIMEZONEOFFSET;
+        case TAG_OFFSETTIME: return GUCEF_IMAGE_TAG_EXIF_IFD_DATETIME_OFFSETTIME;
+        case TAG_OFFSETTIME_ORIGINAL: return GUCEF_IMAGE_TAG_EXIF_IFD_DATETIME_OFFSETTIME_ORIGINAL;
+        case TAG_OFFSETTIME_DIGITIZED: return GUCEF_IMAGE_TAG_EXIF_IFD_DATETIME_OFFSETTIME_DIGITIZED;
         case TAG_SUBSECOND_TIME: return GUCEF_IMAGE_TAG_EXIF_IFD_SUBSECOND_TIME;
-        case TAG_SUBSECOND_TIME_ORIGINAL: return GUCEF_IMAGE_TAG_EXIF_IFD_SUBSECOND_TIME_ORIGINAL;
+        case TAG_SUBSECOND_TIME_ORIGINAL: return GUCEF_IMAGE_TAG_EXIF_IFD_SUBSECOND_TIME_ORIGINAL;                         
         case TAG_SUBSECOND_TIME_DIGITIZED: return GUCEF_IMAGE_TAG_EXIF_IFD_SUBSECOND_TIME_DIGITIZED;
         case TAG_EXPOSURE_TIME: return GUCEF_IMAGE_TAG_EXIF_IFD_EXPOSURE_TIME;
         case TAG_FNUMBER: return GUCEF_IMAGE_TAG_EXIF_IFD_FNUMBER;
@@ -1191,14 +1196,15 @@ MapFreeImageMetaDataTag( FREE_IMAGE_MDMODEL model               ,
             case FIDT_NOTYPE:
             case FIDT_UNDEFINED:
             {
-                for ( DWORD i=0; i<tagCount; ++i )
-                {
-                    valueVariant.union_data.heap_data.union_data.void_heap_data = ( ( (char*) tagValue ) + i*tagLength );
-                    valueVariant.union_data.heap_data.heap_data_size = tagLength;
-                    valueVariant.union_data.heap_data.heap_data_is_linked = 1;
-                    valueVariant.containedType = GUCEF_DATATYPE_BINARY_BLOB;
-                    mapCallbacks->OnKeyValuePair( mapCallbacks->privateData, &keyVariant, &valueVariant );
-                }
+                /* 
+                 *  for this type the tagCount and tagLength mean the same thing: The number of bytes in the block
+                 *  Like the string type, this doesnt support arrays of the same in the field
+                 */
+                valueVariant.union_data.heap_data.union_data.void_heap_data = (char*) tagValue;
+                valueVariant.union_data.heap_data.heap_data_size = tagLength;
+                valueVariant.union_data.heap_data.heap_data_is_linked = 1;
+                valueVariant.containedType = GUCEF_DATATYPE_BINARY_BLOB;
+                mapCallbacks->OnKeyValuePair( mapCallbacks->privateData, &keyVariant, &valueVariant );
                 break;
             }
             case FIDT_SSHORT:

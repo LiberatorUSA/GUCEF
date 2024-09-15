@@ -387,12 +387,129 @@ GetFileMetaData( const CString& filePath     ,
 
 /*-------------------------------------------------------------------------*/
 
+#if ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
+
+static int
+recursive_mkdir(const char* dir, int accessPerms)
+{
+    GUCEF_TRACE;
+
+    char tmp[PATH_MAX];
+    char* p = NULL;
+    size_t len;
+    int retValue = 0;
+
+    snprintf(tmp, sizeof(tmp), "%s", dir);
+    len = strlen(tmp);
+    if (tmp[len - 1] == '/')
+    {
+        tmp[len - 1] = 0;
+    }
+    for (p = tmp + 1; *p; ++p)
+    {
+        if (*p == '/')
+        {
+            *p = 0;
+            retValue = mkdir(tmp, accessPerms);
+            if (0 != retValue)
+            {
+                if (EEXIST != errno)
+                {
+                    return retValue;
+                }
+            }
+            *p = '/';
+        }
+    }
+    retValue = mkdir(tmp, accessPerms);
+    if (0 != retValue)
+    {
+        if (EEXIST != errno)
+        {
+            return retValue;
+        }
+        else return 0;
+    }
+    return retValue;
+}
+
+#endif
+
+/*-------------------------------------------------------------------------*/
+
 bool
 CreateDirs( const CString& path )
 {GUCEF_TRACE;
 
+    if ( path.IsNULLOrEmpty() )
+        return false;
+          
     CString actualPath = RelativePath( path );
-    return 0 != Create_Directory( actualPath.C_String() );
+
+    #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
+
+    // On Windows we have to take drive letter path syntax into account
+    Int32 driveLetterSegIndex = actualPath.HasSubstr( ":\\", true );    
+    Int32 dirSepCharIndex = -1;
+    if ( driveLetterSegIndex > 0 )    
+        dirSepCharIndex = actualPath.HasChar( GUCEF_DIRSEPCHAR, (UInt32) driveLetterSegIndex+3, true );
+    else
+        dirSepCharIndex = actualPath.HasChar( GUCEF_DIRSEPCHAR, true );
+
+    while ( dirSepCharIndex >= 0 )
+    {
+        CString dirSegment = actualPath.SubstrToIndex( (UInt32) dirSepCharIndex, true );
+        std::wstring wDirSegment = ToWString( dirSegment );
+        if ( FALSE == ::CreateDirectoryW( wDirSegment.c_str(), NULL ) && ::GetLastError() != ERROR_ALREADY_EXISTS )
+        {
+            GUCEF_ERROR_LOG( LOGLEVEL_NORMAL, "CreateDirs: Unable to create dir: \"" + dirSegment + "\" ErrorCode=" + ToString( (UInt32) ::GetLastError() ) );
+            return false;
+        }
+
+        dirSepCharIndex = actualPath.HasChar( GUCEF_DIRSEPCHAR, dirSepCharIndex+1, true );
+    }
+
+    std::wstring wActualPath = ToWString( actualPath );
+    if ( FALSE == ::CreateDirectoryW( wActualPath.c_str(), NULL ) && ::GetLastError() != ERROR_ALREADY_EXISTS )
+    {
+        GUCEF_ERROR_LOG( LOGLEVEL_NORMAL, "CreateDirs: Unable to create dir: \"" + actualPath + "\" ErrorCode=" + ToString( (UInt32) ::GetLastError() ) );
+        return false;
+    }
+    return true;
+
+    #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
+
+    int accessPerms = 0777;
+    
+    Int32 dirSepCharIndex = actualPath.HasChar( GUCEF_DIRSEPCHAR, true );
+    while ( dirSepCharIndex >= 0 )
+    {
+        CString dirSegment = actualPath.SubstrToIndex( (UInt32) dirSepCharIndex, true );
+        if ( 0 != ::mkdir( dirSegment.C_String(), accessPerms ) && EEXIST != errno )
+        {
+            GUCEF_ERROR_LOG( LOGLEVEL_NORMAL, "CreateDirs: Unable to create dir: \"" + dirSegment + "\" ErrorCode=" + ToString( (UInt32) errno ) );
+            return false;
+        }
+
+        dirSepCharIndex = actualPath.HasChar( GUCEF_DIRSEPCHAR, dirSepCharIndex, true );
+    }
+
+    if ( 0 != ::mkdir( actualPath.C_String(), accessPerms ) && EEXIST != errno )
+    {
+        GUCEF_ERROR_LOG( LOGLEVEL_NORMAL, "CreateDirs: Unable to create dir: \"" + actualPath + "\" ErrorCode=" + ToString( (UInt32) errno ) );
+        return false;
+    }
+    return true;
+
+    #else
+
+    /*
+     *	Unsupported O/S build
+     */
+    GUCEF_WARNING_LOG( LOGLEVEL_NORMAL, "CreateDirs: Platform has no supported implementation" );
+    return false;
+
+    #endif
 }
 
 /*-------------------------------------------------------------------------*/
@@ -429,6 +546,11 @@ MoveFile( const CString& oldPath ,
         flags = flags | MOVEFILE_REPLACE_EXISTING;
 
     BOOL result = ::MoveFileExW( wActualOldPath.c_str(), wActualNewPath.c_str(), flags );
+    if ( result != TRUE )
+    {
+        GUCEF_WARNING_LOG( LOGLEVEL_BELOW_NORMAL, "MoveFile: MoveFileExW failed with error code: " + 
+            ToString( (UInt32) ::GetLastError() ) );
+    }
     return result == TRUE;
 
     #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
@@ -640,7 +762,7 @@ TryResolveLinuxSymlinkPath( const CString& symlinkPath, CString& resolvedPath )
 
 /*-------------------------------------------------------------------------*/
 
-class CLinuxProcMountsInfo
+class GUCEF_HIDDEN CLinuxProcMountsInfo
 {
     public:
 

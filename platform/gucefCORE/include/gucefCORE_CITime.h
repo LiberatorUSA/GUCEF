@@ -50,13 +50,13 @@ class GUCEF_CORE_PUBLIC_CPP CITime
 {
     public:
 
-    virtual UInt8 GetHours( void ) const = 0;
+    virtual Int8 GetHours( void ) const = 0;
 
-    virtual UInt8 GetMinutes( void ) const = 0;
+    virtual Int8 GetMinutes( void ) const = 0;
 
-    virtual UInt8 GetSeconds( void ) const = 0;
+    virtual Int8 GetSeconds( void ) const = 0;
 
-    virtual UInt16 GetMilliseconds( void ) const = 0;
+    virtual Int16 GetMilliseconds( void ) const = 0;
 };
 
 /*-------------------------------------------------------------------------//

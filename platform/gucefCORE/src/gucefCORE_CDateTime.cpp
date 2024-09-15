@@ -625,10 +625,10 @@ CDateTime::CDateTime( const CDateTime& src )
 CDateTime::CDateTime( Int16 year                 ,
                       UInt8 month                ,
                       UInt8 day                  ,
-                      UInt8 hours                ,
-                      UInt8 minutes              ,
-                      UInt8 seconds              ,
-                      UInt16 milliseconds        ,
+                      Int8 hours                 ,
+                      Int8 minutes               ,
+                      Int8 seconds               , 
+                      Int16 milliseconds         ,
                       Int16 timezoneOffsetInMins )
     : CDate( year, month, day )
     , CTime( hours, minutes, seconds, milliseconds )
@@ -643,10 +643,10 @@ void
 CDateTime::Set( Int16 year                 ,
                 UInt8 month                ,
                 UInt8 day                  ,
-                UInt8 hours                ,
-                UInt8 minutes              ,
-                UInt8 seconds              ,
-                UInt16 milliseconds        ,
+                Int8 hours                 ,  
+                Int8 minutes               ,
+                Int8 seconds               ,
+                Int16 milliseconds         ,
                 Int16 timezoneOffsetInMins )
 {GUCEF_TRACE;
 
@@ -733,12 +733,12 @@ CDateTime::CompileDateTime( const char* __date__Macro ,
     month = ( ( (CORE::Int32)( strstr( month_names, month3Letter ) - month_names ) ) / 3 ) + 1;
     sscanf( __time__Macro, "%d%*c%d%*c%d", &hour, &minutes, &seconds );
 
-    dt.Set( (CORE::Int16) year    ,
-            (CORE::UInt8) month   ,
-            (CORE::UInt8) day     ,
-            (CORE::UInt8) hour    ,
-            (CORE::UInt8) minutes ,
-            (CORE::UInt8) seconds );
+    dt.Set( (CORE::Int16) year   ,
+            (CORE::UInt8) month  ,
+            (CORE::UInt8) day    ,
+            (CORE::Int8) hour    ,
+            (CORE::Int8) minutes ,
+            (CORE::Int8) seconds );
 
     return dt;
 }
@@ -1002,26 +1002,55 @@ CDateTime::FromIso8601DateTimeString( const void* sourceBuffer, UInt32 sourceBuf
     Set();
 
     // initial input sanity check
-    if ( sourceBufferSize < 14 || GUCEF_NULL == sourceBuffer )
+    if ( sourceBufferSize < 8 || GUCEF_NULL == sourceBuffer )
         return -1;
 
-    // check what features we are dealing with
+    // Some non-compliant strings may have a space instead of a T
+    // That is Ok, we treat it as a T regardless below
+    // Similarly some non-compliant strings may have a colon instead of a dash for the date
+    // That is Ok, we treat it as a dash regardless below after correcting the flags
     const char* dtBuffer = static_cast< const char* >( sourceBuffer );
-    bool includesDelimeters = GUCEF_NULL != memchr( dtBuffer, ':', sourceBufferSize );
-    bool includesMilliseconds = GUCEF_NULL != memchr( dtBuffer+13, '.', sourceBufferSize-13 ) || GUCEF_NULL != memchr( dtBuffer+13, ',', sourceBufferSize-13 );
 
+    const void* colonOffset = GUCEF_NULL;
+    const void* dashOffset = memchr( dtBuffer+1, '-', sourceBufferSize-1 );
+    const void* dtSpacerOffset = memchr( dtBuffer+1, 'T', sourceBufferSize-1 );
+    if ( GUCEF_NULL == dtSpacerOffset )
+        dtSpacerOffset = memchr( dtBuffer+1, ' ', sourceBufferSize-1 );
+    if ( GUCEF_NULL == dtSpacerOffset )
+        colonOffset = memchr( dtBuffer+1, ':', sourceBufferSize-1 );
+    else
+        colonOffset = memchr( dtSpacerOffset, ':', sourceBufferSize - (UInt32) ( static_cast< const char* >( dtSpacerOffset ) - dtBuffer ) );
+    
+    // check what features we are dealing with    
+    bool hasDtSpacerDelimeter = GUCEF_NULL != dtSpacerOffset;
+    bool hasDateDelimeters = GUCEF_NULL != dashOffset;
+    bool hasTimeDelimeters = GUCEF_NULL != colonOffset;
+    bool includesDelimeters = hasDateDelimeters || hasTimeDelimeters;
+    bool includesMilliseconds = GUCEF_NULL != memchr( dtBuffer+8, '.', sourceBufferSize-8 ) || GUCEF_NULL != memchr( dtBuffer+8, ',', sourceBufferSize-8 );
+
+    if ( hasDtSpacerDelimeter && !hasDateDelimeters && hasTimeDelimeters )
+    {
+        // This could be a case of all colon delimiters
+        const void* firstColonOffset = memchr( dtBuffer+1, ':', sourceBufferSize-1 );
+        if ( firstColonOffset < dtSpacerOffset )
+        {
+            // This is a non-compliant string using all : delimiters
+            hasDateDelimeters = true;    
+        }
+    }
+    
     Int32 year=0;
-    UInt32 month=0, day=0, hours=0, minutes=0, seconds=0, milliseconds=0;
+    Int32 month=0, day=0, hours=0, minutes=0, seconds=0, milliseconds=0;
     Int16 tzOffset=0;
 
     if ( includesDelimeters )
     {
-        if ( includesMilliseconds )
+        if ( includesMilliseconds && hasDateDelimeters && hasTimeDelimeters )
         {
             // Length = date(4+1+2+1+2)+1+time(2+1+2+1+2+1+3) = 23 chars, 13 total parts of which 7 to parse
             if ( sourceBufferSize >= 23 )
             {
-                int readParts = sscanf_s( dtBuffer, "%04d%*c%02u%*c%02u%*c%02u%*c%02u%*c%02u%*c%03u", &year, &month, &day, &hours, &minutes, &seconds, &milliseconds );
+                int readParts = sscanf_s( dtBuffer, "%04d%*c%02u%*c%02u%*c%02i%*c%02i%*c%02i%*c%03i", &year, &month, &day, &hours, &minutes, &seconds, &milliseconds );
                 if ( readParts == 7 )
                 {
                     Int32 tzBytes = TimezoneOffsetInMinsFromIso8601DateTimeStringRemnant( dtBuffer+23, sourceBufferSize-23, tzOffset );
@@ -1032,14 +1061,14 @@ CDateTime::FromIso8601DateTimeString( const void* sourceBuffer, UInt32 sourceBuf
                     }
                 }
             }
-            return -1;
         }
         else
+        if ( !includesMilliseconds && hasDateDelimeters && hasTimeDelimeters )
         {
             // Length = date(4+1+2+1+2)+1+time(2+1+2+1+2) = 19 chars, 11 total parts of which 6 to parse
             if ( sourceBufferSize >= 19 )
             {
-                int readParts = sscanf_s( dtBuffer, "%04d%*c%02u%*c%02u%*c%02u%*c%02u%*c%02u", &year, &month, &day, &hours, &minutes, &seconds );
+                int readParts = sscanf_s( dtBuffer, "%04d%*c%02u%*c%02u%*c%02i%*c%02i%*c%02i", &year, &month, &day, &hours, &minutes, &seconds );
                 if ( readParts == 6 )
                 {
                     Int32 tzBytes = TimezoneOffsetInMinsFromIso8601DateTimeStringRemnant( dtBuffer+19, sourceBufferSize-19, tzOffset );
@@ -1050,8 +1079,76 @@ CDateTime::FromIso8601DateTimeString( const void* sourceBuffer, UInt32 sourceBuf
                     }
                 }
             }
-            return -1;
         }
+        else
+        if ( includesMilliseconds && !hasDateDelimeters && hasTimeDelimeters )
+        {
+            // Length = 1+time(2+1+2+1+2+1+3) = 13 chars, 8 total parts of which 4 to parse
+            //         +/-      HH:MM:SS.sss
+            // Note: the timezone offset is not supported in this case
+            //      as it is not possible to determine the date
+            // Note: the +- prefix is also optional and may be omitted
+            if ( sourceBufferSize >= 12 )
+            {
+                bool hasPlusSign = GUCEF_NULL != memchr( dtBuffer, '+', sourceBufferSize );
+                bool hasMinusSign = GUCEF_NULL != memchr( dtBuffer, '-', sourceBufferSize );
+                
+                int readParts = 0;
+                if ( hasPlusSign || hasMinusSign )
+                    readParts = sscanf_s( dtBuffer, "%*c%02i%*c%02i%*c%02i%*c%03i", &hours, &minutes, &seconds, &milliseconds  );
+                else
+                    readParts = sscanf_s( dtBuffer, "%02i%*c%02i%*c%02i%*c%03i", &hours, &minutes, &seconds, &milliseconds  );
+                if ( readParts == 4 )
+                {
+                    if ( hasMinusSign )
+                    {
+                        hours = -hours;
+                        minutes = -minutes;
+                        seconds = -seconds;
+                        milliseconds = -milliseconds;
+                        Set( (Int16) year, (UInt8) month, (UInt8) day, (Int8) hours, (Int8) minutes, (Int8) seconds, (Int16) milliseconds, tzOffset );
+                        return 12 + 1;
+                    }   
+                    Set( (Int16) year, (UInt8) month, (UInt8) day, (Int8) hours, (Int8) minutes, (Int8) seconds, (Int16) milliseconds, tzOffset );
+                    return 12 + ( ( hasPlusSign || hasMinusSign ) ? 1 : 0 );                                        
+                }
+            }
+        }
+        else
+        if ( !includesMilliseconds && !hasDateDelimeters && hasTimeDelimeters )
+        {
+            // Length = +1+time(2+1+2+1+2) = 9 chars, 6 total parts of which 3 to parse
+            //          +/-     HH:MM:SS
+            // Note: the timezone offset is not supported in this case
+            //      as it is not possible to determine the date
+            // Note: the +- prefix is also optional and may be omitted
+            if ( sourceBufferSize >= 8 )
+            {
+                bool hasPlusSign = GUCEF_NULL != memchr( dtBuffer, '+', sourceBufferSize );
+                bool hasMinusSign = GUCEF_NULL != memchr( dtBuffer, '-', sourceBufferSize );
+                
+                int readParts = 0;
+                if ( hasPlusSign || hasMinusSign )
+                    readParts = sscanf_s( dtBuffer, "%*c%02u%*c%02u%*c%02u", &hours, &minutes, &seconds );
+                else
+                    readParts = sscanf_s( dtBuffer, "%02u%*c%02u%*c%02u", &hours, &minutes, &seconds );
+                if ( readParts == 3 )
+                {
+                    if ( hasMinusSign )
+                    {
+                        hours = -hours;
+                        minutes = -minutes;
+                        seconds = -seconds;
+                        milliseconds = -milliseconds;
+                        Set( (Int16) year, (UInt8) month, (UInt8) day, (Int8) hours, (Int8) minutes, (Int8) seconds, (Int16) milliseconds, tzOffset );
+                        return 8 + 1;
+                    }  
+                    Set( (Int16) year, (UInt8) month, (UInt8) day, (Int8) hours, (Int8) minutes, (Int8) seconds, (UInt16) milliseconds, tzOffset );
+                    return 8 + ( ( hasPlusSign || hasMinusSign ) ? 1 : 0 );
+                }
+            }            
+        }
+        return -1;
     }
     else
     {
@@ -1060,7 +1157,7 @@ CDateTime::FromIso8601DateTimeString( const void* sourceBuffer, UInt32 sourceBuf
             // Length = date(4+2+2)+time(2+2+2+1+3) = 18 chars, 8 total parts of which 7 to parse
             if ( sourceBufferSize >= 18 )
             {
-                int readParts = sscanf_s( dtBuffer, "%04d%02u%02u%02u%02u%02u%*c%03u", &year, &month, &day, &hours, &minutes, &seconds, &milliseconds );
+                int readParts = sscanf_s( dtBuffer, "%04d%02u%02u%02i%02i%02i%*c%03i", &year, &month, &day, &hours, &minutes, &seconds, &milliseconds );
                 if ( readParts == 7 )
                 {
                     Int32 tzBytes = TimezoneOffsetInMinsFromIso8601DateTimeStringRemnant( dtBuffer+18, sourceBufferSize-18, tzOffset );
@@ -1078,7 +1175,7 @@ CDateTime::FromIso8601DateTimeString( const void* sourceBuffer, UInt32 sourceBuf
             if ( sourceBufferSize >= 14 )
             {
                 // Length = date(4+2+2)+time(2+2+2) = 14 chars, 6 total parts of which 6 to parse
-                int readParts = sscanf_s( dtBuffer, "%04d%02u%02u%02u%02u%02u", &year, &month, &day, &hours, &minutes, &seconds );
+                int readParts = sscanf_s( dtBuffer, "%04d%02u%02u%02i%02i%02i", &year, &month, &day, &hours, &minutes, &seconds );
                 if ( readParts == 6 )
                 {
                     Int32 tzBytes = TimezoneOffsetInMinsFromIso8601DateTimeStringRemnant( dtBuffer+14, sourceBufferSize-14, tzOffset );
@@ -1092,6 +1189,18 @@ CDateTime::FromIso8601DateTimeString( const void* sourceBuffer, UInt32 sourceBuf
             return -1;
         }
     }
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool 
+CDateTime::FromIso8601TimeString( const CString& source )
+{GUCEF_TRACE;
+
+    // Our DT implementation can also handle time only strings
+    // Simply redirect there. Its done that way for robustness in case a string is not what was expected 
+    // yet you can still express via member function names what the expected content was
+    return 0 < FromIso8601DateTimeString( source.C_String(), source.ByteSize() );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -1206,6 +1315,35 @@ CDateTime::ToIso8601DateString( void* targetBuffer, UInt32 targetBufferSize, boo
 /*-------------------------------------------------------------------------*/
 
 Int32
+CDateTime::ToIso8601TimeString( void* targetBuffer, UInt32 targetBufferSize, bool includeDelimeters ) const
+{GUCEF_TRACE;
+
+    char* dtBuffer = static_cast< char* >( targetBuffer );
+
+    bool isNegativeTime = m_hours < 0 || m_minutes < 0 || m_seconds < 0 || m_milliseconds < 0;
+    char sign = isNegativeTime ? '-' : '+';
+    Int32 hours = isNegativeTime && m_hours < 0 ? -m_hours : m_hours;
+    Int32 minutes = isNegativeTime && m_minutes < 0 ? -m_minutes : m_minutes;
+    Int32 seconds = isNegativeTime && m_seconds < 0 ? -m_seconds : m_seconds;
+    Int32 milliseconds = isNegativeTime && m_milliseconds < 0 ? -m_milliseconds : m_milliseconds;
+
+    if ( includeDelimeters )
+    {
+        // +HH:MM:SS.sss
+        // Length = time(1+2+1+2+1+2+1+3) = 13 chars
+        return sprintf_s( dtBuffer, targetBufferSize, "%c%02i:%02i:%02i.%03i", sign, hours, minutes, seconds, milliseconds );
+    }
+    else
+    {
+        // +HHMMSSsss
+        // Length = time(1+2+2+2+1+3) = 11 chars
+        return sprintf_s( dtBuffer, targetBufferSize, "%c%02i%02i%02i.%03i", sign, hours, minutes, seconds, milliseconds );
+    }
+}
+
+/*-------------------------------------------------------------------------*/
+
+Int32
 CDateTime::ToIso8601DateTimeString( CDynamicBuffer& target, UInt32 targetBufferOffset, bool includeDelimeters, bool includeMilliseconds ) const
 {GUCEF_TRACE;
 
@@ -1271,6 +1409,29 @@ CDateTime::ToIso8601DateString( bool includeDelimeters ) const
     return CString::Empty;
 }
 
+/*-------------------------------------------------------------------------*/
+
+CString 
+CDateTime::ToIso8601TimeString( bool includeDelimeters ) const
+{GUCEF_TRACE;
+
+    // We cannot just assume our data structure holds values in a specific range
+    // The data storage in the class specifically is more tolerant
+    //
+    // Int16 hours <- thus "-32768" thus 6 chars
+    // Int8 minutes <- thus "-128" thus 4 chars
+    // Int8 seconds <- thus "-128" thus 4 chars
+    // Int16 milliseconds <- thus "-32768" thus 6 chars
+    // --------------------------------------  +
+    // Thus with assuming garbage input is a possibility we need space for 20 chars for just the digits
+    // Adding in the seperators for the ISO 8601 we get +3 chars
+    // This gives us a total max with garbage input of 23 chars plus null terminator thus 24 chars
+
+    char dtBuffer[ 24 ];
+    if ( 0 < ToIso8601TimeString( dtBuffer, sizeof(dtBuffer), includeDelimeters ) )
+        return dtBuffer;
+    return CString::Empty;
+}
 /*-------------------------------------------------------------------------*/
 
 void
@@ -1364,6 +1525,21 @@ CDateTime::AddHours( Int32 hoursToAdd )
 
     UInt64 baseTimestamp = ToUnixEpochBasedTicksInMillisecs();
     Int64 msDelta = (Int64) hoursToAdd * 60 * 60 * 1000;
+    baseTimestamp += msDelta;
+    FromUnixEpochBasedTicksInMillisecs( baseTimestamp );    
+}
+
+/*-------------------------------------------------------------------------*/
+
+void 
+CDateTime::AddTime( const CTime& timeToAdd )
+{GUCEF_TRACE;
+
+    UInt64 baseTimestamp = ToUnixEpochBasedTicksInMillisecs();
+    Int64 msDelta =  (Int64) timeToAdd.GetHours() * 60 * 60 * 1000;
+          msDelta += (Int64) timeToAdd.GetMinutes() * 60 * 1000;
+          msDelta += (Int64) timeToAdd.GetSeconds() * 1000;
+          msDelta += (Int64) timeToAdd.GetMilliseconds();
     baseTimestamp += msDelta;
     FromUnixEpochBasedTicksInMillisecs( baseTimestamp );    
 }

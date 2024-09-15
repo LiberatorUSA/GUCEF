@@ -64,15 +64,18 @@ class GUCEF_CORE_PUBLIC_CPP CTime : public CITime
 
     static CTime NowLocalTime( void );
     
-    virtual UInt8 GetHours( void ) const GUCEF_VIRTUAL_OVERRIDE;
+    virtual Int8 GetHours( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
-    virtual UInt8 GetMinutes( void ) const GUCEF_VIRTUAL_OVERRIDE;
+    virtual Int8 GetMinutes( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
-    virtual UInt8 GetSeconds( void ) const GUCEF_VIRTUAL_OVERRIDE;
+    virtual Int8 GetSeconds( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
-    virtual void SetMilliseconds( UInt16 milliseconds );
+    virtual void SetMilliseconds( Int16 milliseconds );
     
-    virtual UInt16 GetMilliseconds( void ) const GUCEF_VIRTUAL_OVERRIDE;
+    virtual Int16 GetMilliseconds( void ) const GUCEF_VIRTUAL_OVERRIDE;
+
+    virtual bool FromIso8601TimeString( const CString& source );
+    virtual CString ToIso8601TimeString( bool includeDelimeters ) const;
 
     CTime& operator=( const CTime& src );
 
@@ -82,16 +85,16 @@ class GUCEF_CORE_PUBLIC_CPP CTime : public CITime
 
     CTime( void );
     CTime( const time_t& src, bool isUtc );
-    CTime( UInt8 hours, UInt8 minutes, UInt8 seconds, UInt16 milliseconds );
+    CTime( Int8 hours, Int8 minutes, Int8 seconds, Int16 milliseconds );
     CTime( const CTime& src );
     virtual ~CTime();
     
     protected:
 
-    UInt8 m_hours;
-    UInt8 m_minutes;
-    UInt8 m_seconds;
-    UInt16 m_milliseconds;
+    Int8 m_hours;
+    Int8 m_minutes;
+    Int8 m_seconds;
+    Int16 m_milliseconds;
 };
 
 /*-------------------------------------------------------------------------//
