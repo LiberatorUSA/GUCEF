@@ -977,7 +977,7 @@ TimezoneOffsetInMinsFromIso8601DateTimeStringRemnant( const char* sourceBuffer, 
         {
             Int32 hours = 0;
             Int32 minutes = 0;
-            int readParts = sscanf_s( sourceBuffer+1, "%02i%*c%02i", &hours, &minutes );
+            int readParts = sscanf_s( sourceBuffer+1, "%02d%*c%02d", &hours, &minutes );
             if ( readParts == 2 )
             {
                 minutes += hours * 60;
@@ -994,6 +994,49 @@ TimezoneOffsetInMinsFromIso8601DateTimeStringRemnant( const char* sourceBuffer, 
 
 /*-------------------------------------------------------------------------*/
 
+bool
+TimezoneOffsetInMinsFromIso8601DateTimeStringParts( const std::vector< Int32 >& dtParts , 
+                                                    bool isNegativeTzOffset             ,
+                                                    Int16& tzOffset                     )
+{GUCEF_TRACE;
+
+    tzOffset = 0;
+    if ( dtParts.size() >= 2 )
+    {
+        Int32 minutes = dtParts[ dtParts.size()-1 ];
+        Int32 hours = dtParts[ dtParts.size()-2 ];
+
+        tzOffset = (Int16) ( minutes + ( hours * 60 ) );
+
+        if ( isNegativeTzOffset )
+            tzOffset = -1 * tzOffset;
+    
+        return true;
+    }
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
+inline bool
+IsDigit( char ch ) {GUCEF_TRACE; return ( ch >= '0' && ch <= '9' ); }
+
+/*-------------------------------------------------------------------------*/
+
+inline bool
+HasNonDigitDotT( const char* buffer, UInt32 bufferSize )
+{GUCEF_TRACE;
+
+    for ( UInt32 i=0; i<bufferSize; ++i )
+    {
+        if ( !IsDigit( buffer[ i ] ) && buffer[ i ] != '.' && buffer[ i ] != 'T' && buffer[ i ] != '\0' )
+            return true;
+    }
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
 Int32
 CDateTime::FromIso8601DateTimeString( const void* sourceBuffer, UInt32 sourceBufferSize )
 {GUCEF_TRACE;
@@ -1002,192 +1045,298 @@ CDateTime::FromIso8601DateTimeString( const void* sourceBuffer, UInt32 sourceBuf
     Set();
 
     // initial input sanity check
-    if ( sourceBufferSize < 8 || GUCEF_NULL == sourceBuffer )
+    if ( sourceBufferSize < 4 || GUCEF_NULL == sourceBuffer )
         return -1;
 
-    // Some non-compliant strings may have a space instead of a T
-    // That is Ok, we treat it as a T regardless below
-    // Similarly some non-compliant strings may have a colon instead of a dash for the date
-    // That is Ok, we treat it as a dash regardless below after correcting the flags
     const char* dtBuffer = static_cast< const char* >( sourceBuffer );
-
-    const void* colonOffset = GUCEF_NULL;
-    const void* dashOffset = memchr( dtBuffer+1, '-', sourceBufferSize-1 );
-    const void* dtSpacerOffset = memchr( dtBuffer+1, 'T', sourceBufferSize-1 );
-    if ( GUCEF_NULL == dtSpacerOffset )
-        dtSpacerOffset = memchr( dtBuffer+1, ' ', sourceBufferSize-1 );
-    if ( GUCEF_NULL == dtSpacerOffset )
-        colonOffset = memchr( dtBuffer+1, ':', sourceBufferSize-1 );
-    else
-        colonOffset = memchr( dtSpacerOffset, ':', sourceBufferSize - (UInt32) ( static_cast< const char* >( dtSpacerOffset ) - dtBuffer ) );
-    
-    // check what features we are dealing with    
-    bool hasDtSpacerDelimeter = GUCEF_NULL != dtSpacerOffset;
-    bool hasDateDelimeters = GUCEF_NULL != dashOffset;
-    bool hasTimeDelimeters = GUCEF_NULL != colonOffset;
-    bool includesDelimeters = hasDateDelimeters || hasTimeDelimeters;
-    bool includesMilliseconds = GUCEF_NULL != memchr( dtBuffer+8, '.', sourceBufferSize-8 ) || GUCEF_NULL != memchr( dtBuffer+8, ',', sourceBufferSize-8 );
-
-    if ( hasDtSpacerDelimeter && !hasDateDelimeters && hasTimeDelimeters )
-    {
-        // This could be a case of all colon delimiters
-        const void* firstColonOffset = memchr( dtBuffer+1, ':', sourceBufferSize-1 );
-        if ( firstColonOffset < dtSpacerOffset )
-        {
-            // This is a non-compliant string using all : delimiters
-            hasDateDelimeters = true;    
-        }
-    }
-    
-    Int32 year=0;
-    Int32 month=0, day=0, hours=0, minutes=0, seconds=0, milliseconds=0;
     Int16 tzOffset=0;
 
-    if ( includesDelimeters )
+    if ( HasNonDigitDotT( dtBuffer, sourceBufferSize ) )
     {
-        if ( includesMilliseconds && hasDateDelimeters && hasTimeDelimeters )
+        // If we get here we have seperators in the string
+        // This makes it clearer which digits belong to which part of the date and time
+        // however we still need to deal with the wild variety of delimiters that can be used
+        //                                                                                          
+        // Some strings may have a space instead of a T between date and time for example
+        // Similarly some non-compliant strings may have a colon instead of a dash for the date or a slash
+        // That is Ok, we treat it as a set of numbers separated by delimiters whatever those may be, 
+        // trying to parse as much as possible beyond strict ISO8601 due to pragmatically the need to deal with non-compliant strings
+
+        std::vector< Int32 > dtParts;
+        std::vector< char > dtDelims;
+        dtParts.reserve( 8 );
+        dtDelims.reserve( 8 );
+    
+        char lastDelim = '0';
+        bool inDigitSection = false;
+        UInt32 digitSegmentStart = 0;
+        bool firstDelimIsPlusMinusPrefix = false;
+        bool hasMinusPrefix = false;
+        bool firstNumberHadMoreThanTwoDigits = false;
+
+        UInt32 bytesScanned=0;
+        for ( ; bytesScanned < sourceBufferSize; ++bytesScanned )
         {
-            // Length = date(4+1+2+1+2)+1+time(2+1+2+1+2+1+3) = 23 chars, 13 total parts of which 7 to parse
-            if ( sourceBufferSize >= 23 )
+            char ch = *( dtBuffer + bytesScanned );
+            
+            if ( ch == '\0' )
             {
-                int readParts = sscanf_s( dtBuffer, "%04d%*c%02u%*c%02u%*c%02i%*c%02i%*c%02i%*c%03i", &year, &month, &day, &hours, &minutes, &seconds, &milliseconds );
-                if ( readParts == 7 )
+                if ( inDigitSection )
                 {
-                    Int32 tzBytes = TimezoneOffsetInMinsFromIso8601DateTimeStringRemnant( dtBuffer+23, sourceBufferSize-23, tzOffset );
-                    if ( tzBytes >= 0 )
+                    Int32 number = 0;
+                    int readParts = sscanf_s( dtBuffer+digitSegmentStart, "%d", &number );
+                    if ( 1 == readParts )
+                        dtParts.push_back( number );
+                }
+                break;
+            }
+            else
+            if ( IsDigit( ch ) )
+            {
+                if ( !inDigitSection )
+                {
+                    inDigitSection = true;
+                    digitSegmentStart = bytesScanned;
+                }
+            }
+            else
+            {                
+                if ( lastDelim != ch )
+                {
+                    lastDelim = ch;
+                    if ( 'Z' != ch && 'z' != ch )
+                        dtDelims.push_back( ch );
+
+                    if ( bytesScanned == 0 && ( '-' == ch || '+' == ch ) )
                     {
-                        Set( (Int16) year, (UInt8) month, (UInt8) day, (UInt8) hours, (UInt8) minutes, (UInt8) seconds, (UInt16) milliseconds, tzOffset );
-                        return 23 + tzBytes;
+                        firstDelimIsPlusMinusPrefix = true;
+                        hasMinusPrefix = ( '-' == ch );
                     }
                 }
-            }
-        }
-        else
-        if ( !includesMilliseconds && hasDateDelimeters && hasTimeDelimeters )
-        {
-            // Length = date(4+1+2+1+2)+1+time(2+1+2+1+2) = 19 chars, 11 total parts of which 6 to parse
-            if ( sourceBufferSize >= 19 )
-            {
-                int readParts = sscanf_s( dtBuffer, "%04d%*c%02u%*c%02u%*c%02i%*c%02i%*c%02i", &year, &month, &day, &hours, &minutes, &seconds );
-                if ( readParts == 6 )
+                if ( inDigitSection )
                 {
-                    Int32 tzBytes = TimezoneOffsetInMinsFromIso8601DateTimeStringRemnant( dtBuffer+19, sourceBufferSize-19, tzOffset );
-                    if ( tzBytes >= 0 )
+                    inDigitSection = false;                
+                    Int32 number = 0;
+                    int readParts = sscanf_s( dtBuffer+digitSegmentStart, "%d", &number );
+                    if ( 1 == readParts )
+                        dtParts.push_back( number );
+
+                    if ( digitSegmentStart <= 1 )
                     {
-                        Set( (Int16) year, (UInt8) month, (UInt8) day, (UInt8) hours, (UInt8) minutes, (UInt8) seconds, (UInt16) milliseconds, tzOffset );
-                        return 19 + tzBytes;
+                        firstNumberHadMoreThanTwoDigits = bytesScanned-digitSegmentStart > 2;
                     }
-                }
+                }            
             }
         }
-        else
-        if ( includesMilliseconds && !hasDateDelimeters && hasTimeDelimeters )
+
+        if ( dtDelims.empty() || dtParts.empty() )
+            return -1; // This should never happen if we came into this section
+
+        bool hasExplicitTzOffset = false;
+        bool isNegativeTzOffset = false;
+        if ( dtDelims.size() >= 5 )
         {
-            // Length = 1+time(2+1+2+1+2+1+3) = 13 chars, 8 total parts of which 4 to parse
-            //         +/-      HH:MM:SS.sss
-            // Note: the timezone offset is not supported in this case
-            //      as it is not possible to determine the date
-            // Note: the +- prefix is also optional and may be omitted
-            if ( sourceBufferSize >= 12 )
+            // YYYY-MM-DDTHH:MM:SS.sss+HH:MM
+            // ie - T : . + : 
+            char tzDelim = dtDelims[ dtDelims.size()-2 ];
+            if ( tzDelim == '+' )
             {
-                bool hasPlusSign = GUCEF_NULL != memchr( dtBuffer, '+', sourceBufferSize );
-                bool hasMinusSign = GUCEF_NULL != memchr( dtBuffer, '-', sourceBufferSize );
-                
-                int readParts = 0;
-                if ( hasPlusSign || hasMinusSign )
-                    readParts = sscanf_s( dtBuffer, "%*c%02i%*c%02i%*c%02i%*c%03i", &hours, &minutes, &seconds, &milliseconds  );
-                else
-                    readParts = sscanf_s( dtBuffer, "%02i%*c%02i%*c%02i%*c%03i", &hours, &minutes, &seconds, &milliseconds  );
-                if ( readParts == 4 )
-                {
-                    if ( hasMinusSign )
-                    {
-                        hours = -hours;
-                        minutes = -minutes;
-                        seconds = -seconds;
-                        milliseconds = -milliseconds;
-                        Set( (Int16) year, (UInt8) month, (UInt8) day, (Int8) hours, (Int8) minutes, (Int8) seconds, (Int16) milliseconds, tzOffset );
-                        return 12 + 1;
-                    }   
-                    Set( (Int16) year, (UInt8) month, (UInt8) day, (Int8) hours, (Int8) minutes, (Int8) seconds, (Int16) milliseconds, tzOffset );
-                    return 12 + ( ( hasPlusSign || hasMinusSign ) ? 1 : 0 );                                        
-                }
+                hasExplicitTzOffset = true;
+            }
+            else
+            if ( tzDelim == '-' )
+            {
+                hasExplicitTzOffset = true;
+                isNegativeTzOffset = true;
             }
         }
-        else
-        if ( !includesMilliseconds && !hasDateDelimeters && hasTimeDelimeters )
+        
+        bool hasMilliseconds = false;
+        if ( dtDelims.size() >= 3 )
         {
-            // Length = +1+time(2+1+2+1+2) = 9 chars, 6 total parts of which 3 to parse
-            //          +/-     HH:MM:SS
-            // Note: the timezone offset is not supported in this case
-            //      as it is not possible to determine the date
-            // Note: the +- prefix is also optional and may be omitted
-            if ( sourceBufferSize >= 8 )
+            if ( hasExplicitTzOffset )
             {
-                bool hasPlusSign = GUCEF_NULL != memchr( dtBuffer, '+', sourceBufferSize );
-                bool hasMinusSign = GUCEF_NULL != memchr( dtBuffer, '-', sourceBufferSize );
-                
-                int readParts = 0;
-                if ( hasPlusSign || hasMinusSign )
-                    readParts = sscanf_s( dtBuffer, "%*c%02u%*c%02u%*c%02u", &hours, &minutes, &seconds );
-                else
-                    readParts = sscanf_s( dtBuffer, "%02u%*c%02u%*c%02u", &hours, &minutes, &seconds );
-                if ( readParts == 3 )
-                {
-                    if ( hasMinusSign )
-                    {
-                        hours = -hours;
-                        minutes = -minutes;
-                        seconds = -seconds;
-                        milliseconds = -milliseconds;
-                        Set( (Int16) year, (UInt8) month, (UInt8) day, (Int8) hours, (Int8) minutes, (Int8) seconds, (Int16) milliseconds, tzOffset );
-                        return 8 + 1;
-                    }  
-                    Set( (Int16) year, (UInt8) month, (UInt8) day, (Int8) hours, (Int8) minutes, (Int8) seconds, (UInt16) milliseconds, tzOffset );
-                    return 8 + ( ( hasPlusSign || hasMinusSign ) ? 1 : 0 );
-                }
-            }            
+                // YYYY-MM-DDTHH:MM:SS.sss+HH:MM
+                // ie - T : . + : 
+                char msDelim = dtDelims[ dtDelims.size()-3 ];
+                hasMilliseconds = msDelim == '.';
+            }
+            else
+            {
+                // YYYY-MM-DDTHH:MM:SS.sss
+                // ie - T : .
+                hasMilliseconds = dtDelims.back() == '.';
+            }
         }
-        return -1;
+        
+        bool hasDate = dtParts.size() >= 6 || 
+                      ( dtParts.size() < 6 && dtParts.size() >= 2 && firstNumberHadMoreThanTwoDigits );
+
+        bool hasTime = dtParts.size() >= 6 || 
+                       ( dtParts.size() < 6 && dtParts.size() >= 3 && !firstNumberHadMoreThanTwoDigits );
+
+        if ( hasDate && hasTime && hasMilliseconds && hasExplicitTzOffset && dtParts.size() >= 7 )
+        {
+            // YYYY-MM-DDTHH:MM:SS.sss+HH:MM
+            TimezoneOffsetInMinsFromIso8601DateTimeStringParts( dtParts, isNegativeTzOffset, tzOffset );
+            Set( (Int16) dtParts[0], (UInt8) dtParts[1], (UInt8) dtParts[2], 
+                 (Int8) dtParts[3], (Int8) dtParts[4], (Int8) dtParts[5], (Int16) dtParts[6], tzOffset );
+        }
+        else
+        if ( hasDate && hasTime && hasMilliseconds && !hasExplicitTzOffset && dtParts.size() >= 7 )
+        {
+            // YYYY-MM-DDTHH:MM:SS.sss
+            Set( (Int16) dtParts[0], (UInt8) dtParts[1], (UInt8) dtParts[2], 
+                 (Int8) dtParts[3], (Int8) dtParts[4], (Int8) dtParts[5], (Int16) dtParts[6] );
+        }
+        else
+        if ( hasDate && hasTime && !hasMilliseconds && hasExplicitTzOffset && dtParts.size() >= 6 )
+        {
+            // YYYY-MM-DDTHH:MM:SS+HH:MM
+            TimezoneOffsetInMinsFromIso8601DateTimeStringParts( dtParts, isNegativeTzOffset, tzOffset );
+            Set( (Int16) dtParts[0], (UInt8) dtParts[1], (UInt8) dtParts[2], 
+                 (Int8) dtParts[3], (Int8) dtParts[4], (Int8) dtParts[5], (Int16) 0, tzOffset );
+        }
+        else
+        if ( hasDate && hasTime && !hasMilliseconds && !hasExplicitTzOffset && dtParts.size() >= 6 )
+        {
+            // YYYY-MM-DDTHH:MM:SS
+            Set( (Int16) dtParts[0], (UInt8) dtParts[1], (UInt8) dtParts[2], 
+                 (Int8) dtParts[3], (Int8) dtParts[4], (Int8) dtParts[5] );
+        }
+        else
+        if ( hasDate && !hasTime && !hasExplicitTzOffset && dtParts.size() >= 3 )
+        {
+            // YYYY-MM-DD
+            Set( (Int16) dtParts[0], (UInt8) dtParts[1], (UInt8) dtParts[2] );
+        }
+        else
+        if ( hasDate && !hasTime && !hasExplicitTzOffset && dtParts.size() == 2 )
+        {
+            // YYYY-DOY
+            // This is an Ordinal date format
+            Int32 dayOfYear = dtParts[1]; // note that this is 1 based, not 0 based
+            Set( (Int16) dtParts[0], (UInt8) 1, (UInt8) 1 );
+            AddDays( dayOfYear - 1 );
+        }
+        else
+        if ( !hasDate && hasTime && !hasMilliseconds && !hasExplicitTzOffset && dtParts.size() >= 3 )
+        {
+            // HH:MM:SS            
+            if ( !hasMinusPrefix )
+                Set( (Int16) 0, (UInt8) 0, (UInt8) 0, 
+                     (Int8) dtParts[0], (Int8) dtParts[1], (Int8) dtParts[2] );
+            else
+                Set( (Int16) 0, (UInt8) 0, (UInt8) 0, 
+                     (Int8) -dtParts[0], (Int8) -dtParts[1], (Int8) -dtParts[2] );
+        }
+        else
+        if ( !hasDate && hasTime && hasMilliseconds && !hasExplicitTzOffset && dtParts.size() >= 4 )
+        {
+            // HH:MM:SS.sss
+            if ( !hasMinusPrefix )
+                Set( (Int16) 0, (UInt8) 0, (UInt8) 0, 
+                     (Int8) dtParts[0], (Int8) dtParts[1], (Int8) dtParts[2], (Int16) dtParts[3] );
+            else
+                Set( (Int16) 0, (UInt8) 0, (UInt8) 0, 
+                     (Int8) -dtParts[0], (Int8) -dtParts[1], (Int8) -dtParts[2], (Int16) -dtParts[3] );
+        }
+
+        return bytesScanned;
     }
     else
     {
-        if ( includesMilliseconds )
-        {
-            // Length = date(4+2+2)+time(2+2+2+1+3) = 18 chars, 8 total parts of which 7 to parse
-            if ( sourceBufferSize >= 18 )
-            {
-                int readParts = sscanf_s( dtBuffer, "%04d%02u%02u%02i%02i%02i%*c%03i", &year, &month, &day, &hours, &minutes, &seconds, &milliseconds );
-                if ( readParts == 7 )
-                {
-                    Int32 tzBytes = TimezoneOffsetInMinsFromIso8601DateTimeStringRemnant( dtBuffer+18, sourceBufferSize-18, tzOffset );
-                    if ( tzBytes >= 0 )
-                    {
-                        Set( (Int16) year, (UInt8) month, (UInt8) day, (UInt8) hours, (UInt8) minutes, (UInt8) seconds, (UInt16) milliseconds, tzOffset );
-                        return 18 + tzBytes;
-                    }
-                }
-            }
+        // This is the case where we have a string with no delimiters
+        // In such a case we need to determine the format based on the length of the string
+        // since each component has a fixed length (unless the string is invalid)
+        Int32 year=0, month=0, day=0, hours=0, minutes=0, seconds=0, milliseconds=0;        
+
+        const char* nullTermPtr = (const char*) memchr( dtBuffer, '\0', sourceBufferSize );
+        UInt32 dataLength = GUCEF_NULL != nullTermPtr ? (UInt32)(nullTermPtr-dtBuffer) : sourceBufferSize;
+
+        if ( dataLength < 6 )
             return -1;
+        
+        const char* milliSecDelimPtr = (const char*) memchr( dtBuffer+6, '.', dataLength-6 );
+        if ( GUCEF_NULL == milliSecDelimPtr )
+            milliSecDelimPtr = (const char*) memchr( dtBuffer+6, ',', dataLength-6 );
+        bool hasMilliseconds = GUCEF_NULL != milliSecDelimPtr;
+
+        Int32 primarySectionLength = hasMilliseconds ? (Int32)(milliSecDelimPtr-dtBuffer) : (Int32)dataLength;
+        
+        // first parse the primary section
+        
+        if ( primarySectionLength == 6 ) 
+        {
+            // Non-standard and somehwat ambigious format, best effort parsing
+            // As a general rule regardless:
+            //      "The ISO 8601 standard does not allow the use of two-digit years, 
+            //       as this format was removed in ISO 8601:2004. 
+            //       The standard defines the year format as YYYY, which is a four-digit year"
+            //
+            // HHMMSS
+            // Length = time(2+2+2) = 6 chars, 3 total parts of which 3 to parse
+            int readParts = sscanf_s( dtBuffer, "%02d%02d%02d", &hours, &minutes, &seconds );
+            if ( readParts != 3 )
+                return -1;
         }
         else
+        if ( primarySectionLength == 7 && 'T' == dtBuffer[ 0 ] ) 
         {
-            if ( sourceBufferSize >= 14 )
-            {
-                // Length = date(4+2+2)+time(2+2+2) = 14 chars, 6 total parts of which 6 to parse
-                int readParts = sscanf_s( dtBuffer, "%04d%02u%02u%02i%02i%02i", &year, &month, &day, &hours, &minutes, &seconds );
-                if ( readParts == 6 )
-                {
-                    Int32 tzBytes = TimezoneOffsetInMinsFromIso8601DateTimeStringRemnant( dtBuffer+14, sourceBufferSize-14, tzOffset );
-                    if ( tzBytes >= 0 )
-                    {
-                        Set( (Int16) year, (UInt8) month, (UInt8) day, (UInt8) hours, (UInt8) minutes, (UInt8) seconds, (UInt16) milliseconds, tzOffset );
-                        return 14 + tzBytes;
-                    }
-                }
-            }
-            return -1;
+            // THHMMSS
+            // Length = date(4+2+2)+T+time(2+2+2) = 15 chars, 7 total parts of which 6 to parse
+            int readParts = sscanf_s( dtBuffer+1, "%02d%02d%02d", &hours, &minutes, &seconds );
+            if ( readParts != 3 )
+                return -1;
         }
+        else
+        if ( primarySectionLength == 8 ) 
+        {
+            // YYYYMMDD
+            // Length = date(4+2+2) = 8 chars, 3 total parts of which 3 to parse
+            int readParts = sscanf_s( dtBuffer, "%04d%02d%02d", &year, &month, &day );
+            if ( readParts != 3 )
+                return -1;
+        }
+        else
+        if ( primarySectionLength == 15 && 'T' == dtBuffer[ 8 ] ) 
+        {
+            // YYYYMMDDTHHMMSS
+            // Length = date(4+2+2)+T+time(2+2+2) = 15 chars, 7 total parts of which 6 to parse
+            int readParts = sscanf_s( dtBuffer, "%04d%02u%02u%*c%02d%02d%02d", &year, &month, &day, &hours, &minutes, &seconds );
+            if ( readParts != 6 )
+                return -1;
+        }
+        else
+        if ( primarySectionLength == 14 ) // YYYYMMDDHHMMSS
+        {
+            // YYYYMMDDHHMMSS
+            // Length = date(4+2+2)+time(2+2+2) = 14 chars, 6 total parts of which 6 to parse
+            int readParts = sscanf_s( dtBuffer, "%04d%02u%02u%02d%02d%02d", &year, &month, &day, &hours, &minutes, &seconds );
+            if ( readParts != 6 )
+                return -1;
+        }
+        
+        // Now parse the milliseconds if they exist
+        
+        if ( hasMilliseconds && primarySectionLength+3 < (Int32) dataLength )
+        {
+            int readParts = sscanf_s( milliSecDelimPtr+1, "%03d", &milliseconds );
+            if ( readParts != 1 )
+                return -1;
+            
+            primarySectionLength += 4; // dot plus 3 digits
+        }
+
+        // Followed by the timezone offset if it exists
+        Int32 tzBytes = TimezoneOffsetInMinsFromIso8601DateTimeStringRemnant( dtBuffer+primarySectionLength, dataLength-primarySectionLength, tzOffset );
+
+        // Now actually set the values we parsed
+        Set( (Int16) year, (UInt8) month, (UInt8) day, (Int8) hours, (Int8) minutes, (Int8) seconds, (Int16) milliseconds, tzOffset );
+
+        if ( tzBytes > 0 )
+            return primarySectionLength + tzBytes;
+        return primarySectionLength;
     }
 }
 
@@ -1540,6 +1689,18 @@ CDateTime::AddTime( const CTime& timeToAdd )
           msDelta += (Int64) timeToAdd.GetMinutes() * 60 * 1000;
           msDelta += (Int64) timeToAdd.GetSeconds() * 1000;
           msDelta += (Int64) timeToAdd.GetMilliseconds();
+    baseTimestamp += msDelta;
+    FromUnixEpochBasedTicksInMillisecs( baseTimestamp );    
+}
+
+/*-------------------------------------------------------------------------*/
+
+void 
+CDateTime::AddDays( Int32 daysToAdd )
+{GUCEF_TRACE;
+
+    UInt64 baseTimestamp = ToUnixEpochBasedTicksInMillisecs();
+    Int64 msDelta = (Int64) daysToAdd * 24 * 60 * 60 * 1000;
     baseTimestamp += msDelta;
     FromUnixEpochBasedTicksInMillisecs( baseTimestamp );    
 }

@@ -93,6 +93,11 @@
 #define GUCEF_CORE_TESTAPP_TESTDATANODEBINARYSERIALIZER_H
 #endif /* GUCEF_CORE_TESTAPP_TESTDATANODEBINARYSERIALIZER_H ? */
 
+#ifndef GUCEF_CORE_TESTAPP_TESTDATETIME_H
+#include "TestDateTime.h"
+#define GUCEF_CORE_TESTAPP_TESTDATETIME_H
+#endif /* GUCEF_CORE_TESTAPP_TESTDATETIME_H ? */
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      UTILITIES                                                          //
@@ -122,6 +127,7 @@ GUCEF_OSMAIN_BEGIN
         
         //PerformStringTests();
         //PerformVarsTests();
+        PerformDateTimeTests();
         //PerformUriTests();
         //PerformVariantTests();
         //PerformVariantBinarySerializerTests();
@@ -129,7 +135,7 @@ GUCEF_OSMAIN_BEGIN
         //PerformIniParserTests();        
         //PerformSharedPtrTests();
         //PerformDynamicBufferSwapTests();
-        PerformDynamicBufferStringStreamTests();
+        //PerformDynamicBufferStringStreamTests();
         //PerformCyclicDynamicBufferTests();
         //PerformNotifierObserverTests();
 
