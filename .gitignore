@@ -43,3 +43,5 @@ scripts/symlinks/gucefPUBSUB_create_symlinks.bat
 scripts/symlinks/gucefSMDRN_create_symlinks.bat
 scripts/symlinks/gucefVFS_create_symlinks.bat
 scripts/symlinks/gucefWEB_create_symlinks.bat
+
+projects/k3s/host-node/persistent-volumes.yaml

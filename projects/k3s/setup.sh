@@ -35,6 +35,12 @@ sudo helm repo add jenkins https://charts.jenkins.io --kubeconfig /etc/rancher/k
 sudo helm repo add gitlab https://charts.gitlab.io/ --kubeconfig /etc/rancher/k3s/k3s.yaml
 sudo helm repo update --kubeconfig /etc/rancher/k3s/k3s.yaml
 
+# Make the local drives of the node available to k8s
+# comment this line or edit the yaml for your own node
+cd ./host-node
+./setup.sh
+cd ..
+
 # install the common prereq of cert manager
 cd ./cert-manager
 ./setup.sh
