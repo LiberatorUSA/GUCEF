@@ -46,6 +46,15 @@ for mount_point in /mnt/*; do
         # Append Gi unit to the capacity
         capacity="${capacity}Gi"
         
+        # Determine storage class based on mount name
+        if [[ "$drive_name" == *jbod* ]]; then
+            storage_class="jbod"
+        elif [[ "$drive_name" == *mirror* || "$drive_name" == *raid* ]]; then
+            storage_class="raid"
+        else
+            storage_class="default"  # You can change this to whatever is appropriate
+        fi
+        
         # Generate YAML for PersistentVolume
         cat >> $output_file <<EOF
 apiVersion: v1
@@ -59,6 +68,7 @@ spec:
     - ReadWriteMany
   hostPath:
     path: $mount_point
+  storageClassName: $storage_class
 ---
 EOF
     fi
