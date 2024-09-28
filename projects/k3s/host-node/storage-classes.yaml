@@ -2,7 +2,7 @@ apiVersion: storage.k8s.io/v1
 kind: StorageClass
 metadata:
   name: raid
-provisioner: kubernetes.io/no-provisioner  # No dynamic provisioning
+provisioner: rancher.io/local-path  # k3s dynamic provisioning via local-path-provisioner
 reclaimPolicy: Retain  # Retain the volume after PVC is deleted
 volumeBindingMode: WaitForFirstConsumer  # Wait until a pod uses the PVC
 ---
@@ -10,7 +10,7 @@ apiVersion: storage.k8s.io/v1
 kind: StorageClass
 metadata:
   name: jbod
-provisioner: kubernetes.io/no-provisioner  # No dynamic provisioning
+provisioner: rancher.io/local-path  # k3s dynamic provisioning via local-path-provisioner
 reclaimPolicy: Retain  # Retain the volume after PVC is deleted
 volumeBindingMode: WaitForFirstConsumer  # Wait until a pod uses the PVC
 

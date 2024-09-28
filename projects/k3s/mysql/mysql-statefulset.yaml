@@ -1,0 +1,42 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: mysql
+spec:
+  serviceName: mysql
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mysql
+  template:
+    metadata:
+      labels:
+        app: mysql
+    spec:
+      containers:
+        - name: mysql
+          image: mysql:5.7  # Adjust the MySQL version as needed
+          env:
+            - name: MYSQL_ROOT_PASSWORD
+              value: mysql-root-password  # Set a secure password
+            - name: MYSQL_DATABASE
+              value: your_database_name  # Optionally create a database
+            - name: MYSQL_USER
+              value: mysql-user  # Optionally create a user
+            - name: MYSQL_PASSWORD
+              value: mysql-user-password  # User password
+          ports:
+            - containerPort: 3306
+          volumeMounts:
+            - name: mysql-storage
+              mountPath: /var/lib/mysql
+  volumeClaimTemplates:
+    - metadata:
+        name: mysql-storage
+      spec:
+        accessModes:
+          - ReadWriteOnce
+        resources:
+          requests:
+            storage: 10Gi  # This should match the size in the PVC
+        storageClassName: raid

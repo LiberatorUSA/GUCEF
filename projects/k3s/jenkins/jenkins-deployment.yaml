@@ -19,7 +19,13 @@ spec:
       serviceAccountName: jenkins-admin
       containers:
         - name: jenkins
-          image: jenkins/jenkins:lts
+          # Reference our locally created image
+          image: vanvelzen/jenkins-server-base:latest
+
+          # if you created the image locally you can set the imagePullPolicy not to pull
+          # this is one way of avoiding the 'ErrImagePull' problem since k3s wont check its registries for the image
+          imagePullPolicy: Never
+
           resources:
             limits:
               memory: "2Gi"
@@ -32,6 +38,9 @@ spec:
               containerPort: 8080
             - name: jnlpport
               containerPort: 50000
+          env:
+            - name: CASC_JENKINS_CONFIG
+              value: "/var/jenkins_home/casc_configs/jenkins_config.yaml"
           livenessProbe:
             httpGet:
               path: "/login"
@@ -50,8 +59,14 @@ spec:
             failureThreshold: 3
           volumeMounts:
             - name: jenkins-data
-              mountPath: /var/jenkins_home         
+              mountPath: /var/jenkins_home
+            - name: jenkins-casc-volume
+              mountPath: /var/jenkins_home/casc_configs
       volumes:
         - name: jenkins-data
           persistentVolumeClaim:
               claimName: jenkins-pv-claim
+        - name: jenkins-casc-volume
+          configMap:
+            name: jenkins-casc
+

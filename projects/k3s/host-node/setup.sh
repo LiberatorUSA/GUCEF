@@ -6,17 +6,24 @@ sudo kubectl get storageclass
 # publish our storage classes into the cluster
 # we add the concept of a "raid" and "jbod" storage class
 # these might be used to reference similarly named PVs based on mounts
+echo "Updating the StorageClass definitions in the cluster..."
 sudo kubectl apply -f ./storage-classes.yaml
 
 # print which storage classes the cluster now knows about
 sudo kubectl get storageclass
 
-# Generate a persistent volume yaml for all mounted drives on the host node using the mount names
+# the following step needs to perform some JSON parsing on the command line for which we use the tool jq
+# lets make sure its installed: Ubuntu/Debian:
+sudo apt-get install jq -y
+
+# Map the StorageClass to specific /mnt/ paths based on naming convention for all mounted drives on the host node using the mount names
 # Note that "raid" and "mirror" are reserved strings which will be auto set to StorageClass "raid"
 # Note that "jbod" is a reserved string which will be auto set to StorageClass "raid"
-rm -fv ./persistent-volumes.yaml
-./generate_pv_yaml.sh
+rm -f ./local-path-config-backup.json
+rm -f ./local-path-config-updated.json
+./generate-updated-provisioner-config.sh
 
-# Make the local drives of the node available to k8s
-# comment this line or edit the yaml for your own node if needed
-sudo kubectl apply -f persistent-volumes.yaml
+# Automatically update the ConfigMap in the cluster
+# Comment below if you want to review it first before directly applying the config to the cluster
+echo "Updating the ConfigMap in the cluster..."
+sudo kubectl patch configmap local-path-config -n kube-system --type merge --patch "$(jq -Rs '{data: {"config.json": .}}' < ./local-path-config-updated.json)"

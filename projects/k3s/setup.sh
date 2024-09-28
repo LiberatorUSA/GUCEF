@@ -35,6 +35,14 @@ sudo helm repo add jenkins https://charts.jenkins.io --kubeconfig /etc/rancher/k
 sudo helm repo add gitlab https://charts.gitlab.io/ --kubeconfig /etc/rancher/k3s/k3s.yaml
 sudo helm repo update --kubeconfig /etc/rancher/k3s/k3s.yaml
 
+# install the local path provisioner, which is a plugin for k3s
+# it comes standard with k3s as provisioner "rancher.io/local-path"
+# you can update it independently here (since its a newer feature and you might want latest)
+# stable version:
+sudo kubectl apply -f https://raw.githubusercontent.com/rancher/local-path-provisioner/v0.0.29/deploy/local-path-storage.yaml
+# latest version:
+#sudo kubectl apply -f https://raw.githubusercontent.com/rancher/local-path-provisioner/master/deploy/local-path-storage.yaml
+
 # Make the local drives of the node available to k8s
 # comment this line or edit the yaml for your own node
 cd ./host-node
@@ -51,6 +59,11 @@ cd ./dashboard
 ./setup.sh
 cd ..
 
+# setup MySQL
+cd ./mysql
+./setup.sh
+cd ..
+
 # setup GitHub runner integration
 cd ./github
 ./setup.sh
@@ -58,6 +71,11 @@ cd ..
 
 # setup Nexus for storing build artifacts and deployment, CICD
 cd ./nexus
+./setup.sh
+cd ..
+
+# setup Jenkins for CICD
+cd ./jenkins
 ./setup.sh
 cd ..
 
