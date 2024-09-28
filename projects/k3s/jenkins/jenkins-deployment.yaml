@@ -17,6 +17,16 @@ spec:
             fsGroup: 1000 
             runAsUser: 1000
       serviceAccountName: jenkins-admin
+      initContainers:
+        - name: fix-permissions
+          image: busybox
+          command: ['sh', '-c', 'chown -R 1000:1000 /var/jenkins_home']
+          securityContext:
+            runAsUser: 0  # Ensure root privileges for the initContainer to run chown
+            allowPrivilegeEscalation: true
+          volumeMounts:
+            - name: jenkins-data
+              mountPath: /var/jenkins_home
       containers:
         - name: jenkins
           # Reference our locally created image
@@ -59,7 +69,7 @@ spec:
             failureThreshold: 3
           volumeMounts:
             - name: jenkins-data
-              mountPath: /var/jenkins_home
+              mountPath: /var/jenkins_home/data
             - name: jenkins-casc-volume
               mountPath: /var/jenkins_home/casc_configs
       volumes:

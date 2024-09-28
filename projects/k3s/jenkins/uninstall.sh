@@ -24,3 +24,7 @@ sudo kubectl get configmaps -n devops-tools
 #sudo kubectl get pv
 #sudo kubectl delete pv jenkins-pv
 #sudo kubectl get pv
+
+sudo docker image remove jenkins/jenkins --force
+sudo docker image remove jenkins/jenkins:lts --force
+sudo docker image remove vanvelzen/jenkins-server-base --force

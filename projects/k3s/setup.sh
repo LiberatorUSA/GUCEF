@@ -12,8 +12,12 @@ sudo /usr/local/bin/k3s-uninstall.sh
 # get a new copy of k3s
 sudo curl -sfL https://get.k3s.io | sh -
 
-#set the location of the kubeconfig
+# set the location of the kubeconfig
 export KUBECONFIG=/etc/rancher/k3s/k3s.yaml
+
+# set the access rights such that all users can read the k3s config but root owns it
+sudo chmod 644 /etc/rancher/k3s/k3s.yaml
+sudo chown root:root /etc/rancher/k3s/k3s.yaml
 
 # check to see if we are back online
 sudo kubectl get nodes -o wide
