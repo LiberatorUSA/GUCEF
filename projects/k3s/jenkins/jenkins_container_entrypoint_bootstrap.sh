@@ -16,3 +16,5 @@ mv -f /var/jenkins_home/plugins/* /var/jenkins_home/data/plugins/ || echo "No pl
 echo "Moving pre-installed config to mounted casc volume if no config is present there"
 mv -vn /var/jenkins_home/jenkins_config.yaml /var/jenkins_home/casc_configs/jenkins_config.yaml
 
+jenkins_home_contents=$(find ${JENKINS_HOME}/ | sed -e "s/[^-][^\/]*\//  |/g" -e "s/|\([^ ]\)/|-\1/")
+echo "files structure now in JENKINS_HOME: ${jenkins_home_contents}"

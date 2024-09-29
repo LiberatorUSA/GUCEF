@@ -22,8 +22,8 @@ COPY ["jenkins_config.yaml", "/var/jenkins_home/"]
 
 # Copy our plugin bootstrap helper script into the image and execute it
 COPY ["jenkins-plugin-stuffer.sh", "/var/jenkins_home/"]
-#RUN /var/jenkins_home/jenkins-plugin-stuffer.sh configuration-as-code
-RUN jenkins-plugin-cli --plugins configuration-as-code
+COPY ["jenkins_preinstalled_plugins.txt", "/var/jenkins_home/"]
+RUN jenkins-plugin-cli --plugin-file /var/jenkins_home/jenkins_preinstalled_plugins.txt
 
 # Switch to root to perform file operations
 USER root

@@ -8,7 +8,7 @@ sudo kubectl get pods -n devops-tools
 # create the jenkins server image we wil use for our pod
 # this is imported to the k3s installation and made available as a known image
 ./create_jenkins_server_image.sh
-rm -f ./vanvelzen-jenkins-server-base-latest.tar
+#rm -f ./vanvelzen-jenkins-server-base-latest.tar
 
 # create a namespace to host Jenkins resources.
 sudo kubectl create namespace devops-tools
@@ -21,12 +21,13 @@ sudo kubectl apply -f jenkins-service.yaml -n devops-tools
 sudo kubectl apply -f jenkins-deployment.yaml -n devops-tools
 
 # extract the config from the pod so we can check it
-rm -f ./jenkins_config_from_pod.yaml
-./extract_jenkins_config.sh
+#rm -f ./jenkins_config_from_pod.yaml
+#./extract_jenkins_config.sh
 
 # extract the admin password from the pod so we can check it
-rm -f ./initialAdminPassword
-./extract_initial_admin_password.sh
+# note: when setting a admin password via config as we are this should not be needed and no such file would be generated
+#rm -f ./initialAdminPassword
+#./extract_initial_admin_password.sh
 
 # print the list of resources again after the above
 sudo kubectl get services -n devops-tools

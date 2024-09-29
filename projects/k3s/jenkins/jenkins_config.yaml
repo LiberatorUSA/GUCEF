@@ -10,34 +10,3 @@ jenkins:
     loggedInUsersCanDoAnything:
       allowAnonymousRead: true
   systemMessage: "Welcome to Jenkins!"
-  plugin:
-    required:
-      - configuration-as-code
-      - structs
-      - kubernetes
-      - disk-usage
-      - jquery3-api
-      - git
-      - scm-api
-      - script-security
-      - durable-task
-      - checks-api
-      - github-checks
-      - junit
-      - xunit
-      - autograding
-      - workflow-aggregator
-      - workflow-step-api
-      - workflow-api
-      - workflow-support
-      - docker-commons
-      - docker-plugin
-      - docker-workflow
-      - pipeline-stage-step
-      - pipeline-build-step
-      - pipeline-input-step
-      - pipeline-rest-api
-      - pipeline-stage-view
-      - pipeline-graph-view
-      - pipeline-github
-      - pipeline-config-history
