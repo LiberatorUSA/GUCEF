@@ -20,13 +20,31 @@ spec:
       initContainers:
         - name: fix-permissions
           image: busybox
-          command: ['sh', '-c', 'chown -R 1000:1000 /var/jenkins_home']
+          command: ['sh', '-c']
+          args:
+            - |
+              echo "Before permissions fix: (jenkins_home)";
+              ls -ld /var/jenkins_home;
+              ls -l /var/jenkins_home;
+              echo "Fixing permissions... (jenkins_home)";
+              chown -R 1000:1000 /var/jenkins_home;
+              echo "After permissions fix: (jenkins_home)";
+              ls -ld /var/jenkins_home;
+              ls -l /var/jenkins_home;
+              echo "Before permissions fix: (jenkins_home/data)";
+              ls -ld /var/jenkins_home/data;
+              ls -l /var/jenkins_home/data;
+              echo "Fixing permissions... (jenkins_home/data)";
+              chown -R 1000:1000 /var/jenkins_home/data;
+              echo "After permissions fix: (jenkins_home/data)";
+              ls -ld /var/jenkins_home/data;
+              ls -l /var/jenkins_home/data;
           securityContext:
             runAsUser: 0  # Ensure root privileges for the initContainer to run chown
             allowPrivilegeEscalation: true
           volumeMounts:
             - name: jenkins-data
-              mountPath: /var/jenkins_home
+              mountPath: /var/jenkins_home/data
       containers:
         - name: jenkins
           # Reference our locally created image

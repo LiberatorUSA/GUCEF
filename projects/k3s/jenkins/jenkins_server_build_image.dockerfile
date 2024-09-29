@@ -28,12 +28,17 @@ RUN jenkins-plugin-cli --plugins configuration-as-code
 # Switch to root to perform file operations
 USER root
 
+# we use a 'backup' folder to ensure we have a staging place for files that wont be impacted by mounting of volumes
 RUN mkdir /jenkins_home_backup
-RUN cp -R /var/jenkins_home/* /jenkins_home_backup
+RUN mkdir /jenkins_home_backup/plugins
+RUN cp -r -f -n /usr/share/jenkins/ref/plugins/* /jenkins_home_backup/plugins
+RUN cp -r -f -n /var/jenkins_home/* /jenkins_home_backup
 
 # Copy the custom entrypoint script
-COPY ["jenkins_container_entrypoint.sh", "/usr/local/bin/"]
+COPY ["jenkins_container_entrypoint.sh", "jenkins_container_entrypoint_bootstrap.sh", "jenkins_container_entrypoint_hello.sh", "/usr/local/bin/"]
 RUN chmod +x /usr/local/bin/jenkins_container_entrypoint.sh
+RUN chmod +x /usr/local/bin/jenkins_container_entrypoint_bootstrap.sh
+RUN chmod +x /usr/local/bin/jenkins_container_entrypoint_hello.sh
 
 # Set the entrypoint
 ENTRYPOINT ["/usr/local/bin/jenkins_container_entrypoint.sh"]
