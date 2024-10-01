@@ -43,6 +43,9 @@ for dir in "$BASE_DIR"/*; do
   fi
 done
 
+# get the node name as variabke KS_NODE_NAME for use below
+. ./get_ks_node_name.sh
+
 # Function to update or add storageClass paths in the nodePathMap
 update_paths() {
   local storage_class=$1
@@ -63,7 +66,7 @@ update_paths() {
     else
       # If the storageClass doesn't exist, add a new entry
       new_entry=$(jq -n --arg sc "$storage_class" --argjson paths "[$new_paths]" \
-        '{ "node": "DEFAULT_PATH_FOR_NON_LISTED_NODES", "storageClass": $sc, "paths": $paths }')
+        '{ "node": "'"${KS_NODE_NAME}"'", "storageClass": $sc, "paths": $paths }')
 
       updated_config=$(echo "$node_path_map" | jq --argjson entry "$new_entry" '. += [$entry]')
     fi

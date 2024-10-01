@@ -22,7 +22,14 @@ sudo chown root:root /etc/rancher/k3s/k3s.yaml
 # check to see if we are back online
 sudo kubectl get nodes -o wide
 
+# install the system upgrade controller
+# this will be used for k3s version upgrades instead of a full reinstall
+echo "Installing k3s system-upgrade-controller to manage future k3s upgrades"
+sudo kubectl apply -f https://github.com/rancher/system-upgrade-controller/releases/latest/download/system-upgrade-controller.yaml
+sudo kubectl apply -f https://github.com/rancher/system-upgrade-controller/releases/latest/download/crd.yaml
+
 # download Helm 3
+echo "Installing Helm 3 for helm chart support"
 sudo curl -fsSL -o get_helm.sh https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3
 sudo chmod 700 get_helm.sh
 
@@ -34,6 +41,7 @@ rm -f ./get_helm.sh
 sudo helm version
 
 # set often used repos and update
+echo "Configuring Helm repos"
 sudo helm repo add bitnami https://charts.bitnami.com/bitnami --kubeconfig /etc/rancher/k3s/k3s.yaml
 sudo helm repo add jenkins https://charts.jenkins.io --kubeconfig /etc/rancher/k3s/k3s.yaml
 sudo helm repo add gitlab https://charts.gitlab.io/ --kubeconfig /etc/rancher/k3s/k3s.yaml
