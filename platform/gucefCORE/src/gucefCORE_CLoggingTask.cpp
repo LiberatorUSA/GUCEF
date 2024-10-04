@@ -274,7 +274,7 @@ CLoggingTask::OnTaskCycle( CICloneable* taskdata )
             TMailVector::iterator i = m_mailList.begin();
             while ( i != m_mailList.end() )
             {
-                TLoggingMailBox::TMailElement& mailEntry = (*i);
+                TLoggingMailBox::Mail& mailEntry = (*i);
                 loggingMail = static_cast< CLoggingMail* >( mailEntry.data );
 
                 switch ( mailEntry.eventid )
@@ -338,7 +338,7 @@ CLoggingTask::OnTaskEnded( CICloneable* taskdata ,
                            bool wasForced        )
 {GUCEF_TRACE;
 
-    TLoggingMailBox::TMailElement* entry = GUCEF_NULL;
+    TLoggingMailBox::Mail* entry = GUCEF_NULL;
     TMailVector::iterator i( m_mailList.begin() );
     while ( i != m_mailList.end() )
     {

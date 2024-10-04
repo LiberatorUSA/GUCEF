@@ -1824,6 +1824,7 @@ FilePushDestination::OnFilePushTimerCycle( CORE::CNotifier* notifier    ,
                         return;
                     }
                 }
+                continue;
             }
             if ( 0 == m_settings.filePushDestinationUri.HasSubstr( "vfs://", true ) )
             {
@@ -1835,6 +1836,7 @@ FilePushDestination::OnFilePushTimerCycle( CORE::CNotifier* notifier    ,
                         m_pushTimer.RequestImmediateTrigger();
                         return;
                     }
+                    continue;
                 }
                 else
                 {

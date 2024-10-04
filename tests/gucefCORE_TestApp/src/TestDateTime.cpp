@@ -205,7 +205,7 @@ static const std::vector< StringParseTestCase > stringParseTestCases = {
     { testDateTimeString24, testDateTimeString24Result, testDateTimeString24TzOffsetResult },
     { testDateTimeString25, testDateTimeString25Result, testDateTimeString25TzOffsetResult },
     { testDateTimeString26, testDateTimeString26Result, testDateTimeString26TzOffsetResult },
-    { testDateTimeString27, testDateTimeString26Result, testDateTimeString26TzOffsetResult },
+    { testDateTimeString27, testDateTimeString27Result, testDateTimeString27TzOffsetResult },
     { testDateTimeString28, testDateTimeString28Result, testDateTimeString28TzOffsetResult }
 
 };

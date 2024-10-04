@@ -93,18 +93,24 @@ class CTMailBox : public virtual MT::CILockable
 {
     public:
 
-    struct SMailElement
+    class Mail
     {
+        public:
+
         T eventid;
         CICloneable* data;
-    };
-    typedef struct SMailElement TMailElement;
 
-    typedef T                                                            value_type;
-    typedef std::vector< TMailElement, gucef_allocator< TMailElement > > TMailVector;
-    typedef std::deque< TMailElement, gucef_allocator< TMailElement > >  TMailQueue;
-    typedef typename std::deque< TMailElement >::iterator                iterator;
-    typedef typename std::deque< TMailElement >::const_iterator          const_iterator;
+        Mail( void )
+            : eventid()
+            , data( GUCEF_NULL )
+        {GUCEF_TRACE;}
+    };
+
+    typedef T                                                   value_type;
+    typedef std::vector< Mail, gucef_allocator< Mail > >        TMailVector;
+    typedef std::deque< Mail, gucef_allocator< Mail > >         TMailQueue;
+    typedef typename std::deque< Mail >::iterator               iterator;
+    typedef typename std::deque< Mail >::const_iterator         const_iterator;
 
     CTMailBox( void );
 
@@ -256,7 +262,7 @@ CTMailBox< T >::AddMail( const T& eventid                     ,
 
     if ( m_acceptsNewMail )
     {
-        TMailElement entry;
+        Mail entry;
         entry.eventid = eventid;
         if ( GUCEF_NULL != data )
         {
@@ -296,7 +302,7 @@ CTMailBox< T >::GetMail( T& eventid         ,
 
     if ( !m_mailQueue.empty() )
     {
-        TMailElement& entry = m_mailQueue.front();
+        Mail& entry = m_mailQueue.front();
         eventid = entry.eventid;
 
         if ( GUCEF_NULL != data )
@@ -328,7 +334,7 @@ CTMailBox< T >::PeekMail( CScopeMutex& lock  ,
     
     if ( !m_mailQueue.empty() )
     {
-        TMailElement& entry = m_mailQueue.front();
+        Mail& entry = m_mailQueue.front();
         eventid = entry.eventid;
         if ( GUCEF_NULL != data )
             *data = entry.data;
@@ -353,7 +359,7 @@ CTMailBox< T >::PopMail( CScopeMutex& lock )
 
     if ( !m_mailQueue.empty() )
     {
-        TMailElement& entry = m_mailQueue.front();
+        Mail& entry = m_mailQueue.front();
         GUCEF_DELETE entry.data;
         m_mailQueue.pop_front();
         return true;

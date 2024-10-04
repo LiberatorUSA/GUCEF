@@ -438,7 +438,7 @@ CThreadPool::RemoveConsumer( const UInt32 taskID )
     TTaskMailbox::iterator i = m_taskQueue.begin( writer );
     while ( i != m_taskQueue.end() )
     {
-        TTaskMailbox::TMailElement& mailElement = (*i);
+        TTaskMailbox::Mail& mailElement = (*i);
         CTaskQueueItem* queueItem = static_cast< CTaskQueueItem* >( mailElement.data );
 
         CTaskConsumerPtr& consumer = queueItem->GetTaskConsumer();

@@ -564,7 +564,7 @@ RelativePath( const CString& relpath ,
     if ( upDirIdx > 0 )
     {
         // Split the relative path into segments
-        CString::StringVector relSegments( relpath.ParseElements( GUCEF_DIRSEPCHAR, true ) );
+        CString::StringVector relSegments( resultStr.ParseElements( GUCEF_DIRSEPCHAR, true ) );
         CString::StringVector resolvedSegments;
 
         // Process the relative path segments
