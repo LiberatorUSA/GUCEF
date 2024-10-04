@@ -1240,11 +1240,11 @@ LastSubDir( const CString& path, UInt32 dirSepCp )
         if ( lastSepCpIndex < 0 )
             return path; // assume the entire thing is the last sub-dir
 
-        if ( lastSepCpIndex+1 == path.Length() )
+        if ( lastSepCpIndex+1 == path.Length() && lastSepCpIndex > 0 )
         {
             // We have a trailing seperator
             // for a directory that means we want the section until the next seperator minus the trailing seperator
-            Int32 nextSepCpIndex = path.HasChar( dirSepCp, (UInt32) lastSepCpIndex, false );
+            Int32 nextSepCpIndex = path.HasChar( dirSepCp, (UInt32) lastSepCpIndex-1, false );
             if ( nextSepCpIndex < 0 )
                 return path.SubstrToIndex( lastSepCpIndex+1, false );// assume the entire thing minus seperator is the last sub-dir
             else
