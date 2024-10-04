@@ -561,28 +561,40 @@ RelativePath( const CString& relpath ,
     // that meet our criterea.
     CString upDirSeg = CString( ".." ) + GUCEF_DIRSEPCHAR;
     Int32 upDirIdx = resultStr.HasSubstr( upDirSeg, false );
-    while ( upDirIdx > 0 )
+    if ( upDirIdx > 0 )
     {
-        // Divide the path into 2 segments at the location of the updir segment
-        CString prefix( resultStr.C_String(), upDirIdx );
+        // Split the relative path into segments
+        CString::StringVector relSegments( relpath.ParseElements( GUCEF_DIRSEPCHAR, true ) );
+        CString::StringVector resolvedSegments;
 
-        // get the dir segment before the updir segment and check if it is
-        // another updir segment
-        CString lastSubdir = LastSubDir( prefix );
-        if ( lastSubdir != upDirSeg )
+        // Process the relative path segments
+        for ( CString::StringVector::iterator it = relSegments.begin(); it != relSegments.end(); ++it )
         {
-            // The segment before the updir segment is a regular dir
-            // This means we can strip that dir and thus resolve this updir segment
-            CString newPath = StripLastSubDir( prefix );
-            AppendToPath( newPath, resultStr.C_String()+upDirIdx+3 );
-            resultStr = newPath;
-            upDirIdx = resultStr.HasSubstr( upDirSeg, false );
+            if ( *it == ".." )
+            {
+                if ( !resolvedSegments.empty() )
+                {
+                    resolvedSegments.pop_back();
+                }
+            }
+            else
+            {
+                resolvedSegments.push_back( *it );
+            }
         }
-        else
+
+        // Join the segments back into a single path
+        CString result;
+        for ( CString::StringVector::iterator it = resolvedSegments.begin(); it != resolvedSegments.end(); ++it )
         {
-            // Skip this updir segment and go to the next one
-            upDirIdx = resultStr.HasSubstr( upDirSeg, upDirIdx, false );
+            if ( !result.IsNULLOrEmpty() )
+            {
+                result += GUCEF_DIRSEPCHAR;
+            }
+            result += *it;
         }
+
+        resultStr = result;
     }
 
     return resultStr;
