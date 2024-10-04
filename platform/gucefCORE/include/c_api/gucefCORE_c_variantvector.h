@@ -17,8 +17,8 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
-#ifndef GUCEF_CORE_C_DOCUMENT_PARSER_CALLBACKS_H
-#define GUCEF_CORE_C_DOCUMENT_PARSER_CALLBACKS_H
+#ifndef GUCEF_CORE_C_VARIANTVECTOR_H
+#define GUCEF_CORE_C_VARIANTVECTOR_H
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -31,10 +31,10 @@
 #define GUCEF_CORE_MACROS_H
 #endif /* GUCEF_CORE_MACROS_H ? */
 
-#ifndef GUCEF_CORE_VARIANTDATA_H
-#include "gucefCORE_VariantData.h"
-#define GUCEF_CORE_VARIANTDATA_H
-#endif /* GUCEF_CORE_VARIANTDATA_H ? */
+#ifndef GUCEF_CORE_C_VARIANTDATA_H
+#include "gucefCORE_c_variantdata.h"
+#define GUCEF_CORE_C_VARIANTDATA_H
+#endif /* GUCEF_CORE_C_VARIANTDATA_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -53,15 +53,12 @@ namespace CORE {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-typedef void ( GUCEF_PLUGIN_CALLSPEC_PREFIX *TDocParserCallback_OnDocumentBegin ) ( void* privdata ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
-typedef void ( GUCEF_PLUGIN_CALLSPEC_PREFIX *TDocParserCallback_OnDocumentEnd ) ( void* privdata ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
-typedef void ( GUCEF_PLUGIN_CALLSPEC_PREFIX *TDocParserCallback_OnNodeBegin ) ( void* privdata, const TVariantData* nodeId, int nodeType ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
-typedef void ( GUCEF_PLUGIN_CALLSPEC_PREFIX *TDocParserCallback_OnNodeEnd ) ( void* privdata, const TVariantData* nodeId ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
-typedef void ( GUCEF_PLUGIN_CALLSPEC_PREFIX *TDocParserCallback_OnNodeAttribute ) ( void* privdata, const TVariantData* nodeId, const TVariantData* attId, const TVariantData* attValue ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
-typedef void ( GUCEF_PLUGIN_CALLSPEC_PREFIX *TDocParserCallback_OnNodeValue ) ( void* privdata, const TVariantData* nodeId, const TVariantData* nodeValue ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
-typedef void ( GUCEF_PLUGIN_CALLSPEC_PREFIX *TDocParserCallback_OnNodeChildrenBegin ) ( void* privdata, const TVariantData* nodeId ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
-typedef void ( GUCEF_PLUGIN_CALLSPEC_PREFIX *TDocParserCallback_OnNodeChildrenEnd ) ( void* privdata, const TVariantData* nodeId ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
-typedef void ( GUCEF_PLUGIN_CALLSPEC_PREFIX *TDocParserCallback_OnParserError ) ( void* privdata, Int32 errorcode, const char* description ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
+typedef void ( GUCEF_PLUGIN_CALLSPEC_PREFIX *TVariantVectorFunc_push_back ) ( void* privdata, TVariantData* data, UInt8 linkIfPossible ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
+typedef void ( GUCEF_PLUGIN_CALLSPEC_PREFIX *TVariantVectorFunc_clear ) ( void* privdata ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
+typedef size_t ( GUCEF_PLUGIN_CALLSPEC_PREFIX *TVariantVectorFunc_size ) ( void* privdata ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
+typedef void ( GUCEF_PLUGIN_CALLSPEC_PREFIX *TVariantVectorFunc_back ) ( void* privdata, TVariantData** back ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
+typedef void ( GUCEF_PLUGIN_CALLSPEC_PREFIX *TVariantVectorFunc_front ) ( void* privdata, TVariantData** front ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
+typedef void ( GUCEF_PLUGIN_CALLSPEC_PREFIX *TVariantVectorFunc_pop_back ) ( void* privdata ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
 
 /*-------------------------------------------------------------------------*/
 
@@ -69,21 +66,18 @@ typedef void ( GUCEF_PLUGIN_CALLSPEC_PREFIX *TDocParserCallback_OnParserError ) 
  *  Structure that hold all the function pointers to the event handlers
  *  for read events. Should be called by plugins as needed.
  */
-struct SDocumentParserCallbacks
+struct SVariantVectorApi
 {
-    TDocParserCallback_OnDocumentBegin     OnDocumentBegin;
-    TDocParserCallback_OnDocumentEnd       OnDocumentEnd;
-    TDocParserCallback_OnNodeBegin         OnNodeBegin;
-    TDocParserCallback_OnNodeEnd           OnNodeEnd;
-    TDocParserCallback_OnNodeAttribute     OnNodeAttribute;
-    TDocParserCallback_OnNodeValue         OnNodeValue;
-    TDocParserCallback_OnNodeChildrenBegin OnNodeChildrenBegin;
-    TDocParserCallback_OnNodeChildrenEnd   OnNodeChildrenEnd;
-    TDocParserCallback_OnParserError       OnParserError;    
+    TVariantVectorFunc_push_back    push_back;
+    TVariantVectorFunc_clear        clear;
+    TVariantVectorFunc_size         size;
+    TVariantVectorFunc_back         back;
+    TVariantVectorFunc_front        front;
+    TVariantVectorFunc_pop_back     pop_back; 
     
     void* privateData;
 };
-typedef struct SDocumentParserCallbacks TDocumentParserCallbacks;
+typedef struct SVariantVectorApi TVariantVectorApi;
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -98,4 +92,4 @@ typedef struct SDocumentParserCallbacks TDocumentParserCallbacks;
 
 /*-------------------------------------------------------------------------*/
 
-#endif /* GUCEF_CORE_C_DOCUMENT_PARSER_CALLBACKS_H ? */
+#endif /* GUCEF_CORE_C_VARIANTVECTOR_H ? */

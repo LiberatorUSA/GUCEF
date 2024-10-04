@@ -119,12 +119,16 @@ void
 GucefArchiver::RegisterEventHandlers( void )
 {GUCEF_TRACE;
 
+    // Get access to the systems this application depends on
     CORE::CGUCEFApplication& app = CORE::CCoreGlobal::Instance()->GetApplication();
     VFS::CVFS& vfs = VFS::CVfsGlobal::Instance()->GetVfs();
 
+    // Set our trigger criterea for starting work
+    // depending on the application needs you want different systems to be ready and initialized before starting work
     m_workStartTrigger.SubscribeAndAddEventToTriggerCriterea( &app, CORE::CGUCEFApplication::FirstCycleEvent );
     m_workStartTrigger.SubscribeAndAddEventToTriggerCriterea( &vfs, VFS::CVFS::VfsInitializationCompletedEvent );
     
+    // Now hook up the actual trigger for starting work
     TEventCallback callback( this, &GucefArchiver::OnWorkStartTrigger );
     SubscribeTo( &m_workStartTrigger                                 ,
                  CORE::CEventAggregateTrigger::AggregateTriggerEvent ,
@@ -168,9 +172,9 @@ GucefArchiver::PerformWork( void )
         }
         archiveType = archiveType.Trim( true ).Trim( false );
 
-        bool listArchiveContents = CORE::StringToBool( m_params.GetValueAlways( "list", "true" ) );
-        bool extractArchiveContents = CORE::StringToBool( m_params.GetValueAlways( "extract", "false" ) );
-        bool overwrite = CORE::StringToBool( m_params.GetValueAlways( "overwrite", "false" ) );
+        bool listArchiveContents = m_params.GetValueAlways( "list", true ).AsBool();
+        bool extractArchiveContents = m_params.GetValueAlways( "extract", false ).AsBool();
+        bool overwrite = m_params.GetValueAlways( "overwrite", false ).AsBool();
 
         CORE::CString archiveFilename = CORE::ExtractFilename( archivePath );
         CORE::CString archiveDir = CORE::StripFilename( archivePath );

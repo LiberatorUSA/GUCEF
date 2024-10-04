@@ -205,7 +205,7 @@ class GUCEF_COMCORE_EXPORT_CPP CCom
     /**
      *  Attempts to obtain all network IP info from all network interfaces in aggregate
      */
-    bool GetAllNetworkInterfaceIPInfo( CINetworkInterface::TIPInfoVector& ipInfo );
+    bool GetAllNetworkInterfaceIPInfo( CINetworkInterface::TIPv4InfoVector& ipInfo );
 
     private:
     friend class CComCoreGlobal;

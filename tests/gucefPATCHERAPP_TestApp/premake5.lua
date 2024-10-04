@@ -47,7 +47,7 @@ files( {
 
 
 configuration( {} )
-includedirs( { "../../common/include", "../../platform/gucefCORE", "../../platform/gucefCORE/include", "../../platform/gucefCORE/include/", "../../platform/gucefLOADER/..", "../../platform/gucefLOADER/include", "../../platform/gucefMT", "../../platform/gucefMT/include", "../../platform/gucefMT/include/" } )
+includedirs( { "../../common/include", "../../platform/gucefCORE", "../../platform/gucefCORE/include", "../../platform/gucefCORE/include/", "../../platform/gucefCORE/include/c_api", "../../platform/gucefLOADER/..", "../../platform/gucefLOADER/include", "../../platform/gucefMT", "../../platform/gucefMT/include", "../../platform/gucefMT/include/" } )
 
 configuration( { "ANDROID" } )
 includedirs( { "../../platform/gucefCORE/include/", "../../platform/gucefCORE/include/android", "../../platform/gucefMT/include/" } )

@@ -35,7 +35,7 @@
 #endif /* GUCEF_CORE_ESTRUCTS_H ? */
 
 #ifndef GUCEF_CORE_IOACCESS_H
-#include "ioaccess.h"           /* C API for media abstraction  */
+#include "gucefCORE_c_ioaccess.h"           /* C API for media abstraction  */
 #define GUCEF_CORE_IOACCESS_H
 #endif /* GUCEF_CORE_IOACCESS_H ? */
 

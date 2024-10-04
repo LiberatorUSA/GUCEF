@@ -20,6 +20,7 @@ set( HEADER_FILES
   includes/gucefKAITAI_CKaitaiSchemaEnumDefinition.h
   includes/gucefKAITAI_CKaitaiSchemaFieldDefinition.h
   includes/gucefKAITAI_CKaitaiSchemaRegistry.h
+  includes/gucefKAITAI_CKaitaiSerializer.h
   includes/gucefKAITAI_CModule.h
   includes/gucefKAITAI_ETypes.h
   includes/gucefKAITAI_config.h
@@ -52,7 +53,7 @@ add_dependencies( ${MODULE_NAME} gucefCORE gucefMT gucefVFS )
 target_link_libraries( ${MODULE_NAME} gucefCORE gucefMT gucefVFS )
 set_property( TARGET ${MODULE_NAME} APPEND_STRING PROPERTY COMPILE_DEFINITIONS "GUCEF_KAITAI_BUILD_MODULE" )
 
-include_directories( ../../common/include ../gucefCORE/include ../gucefMT/include ../gucefVFS/include includes )
+include_directories( ../../common/include ../gucefCORE/include ../gucefCORE/include/c_api ../gucefMT/include ../gucefVFS/include includes )
 
 if ( ANDROID )
   include_directories( ../gucefCORE/include/android )

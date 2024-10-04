@@ -50,7 +50,7 @@ GUCEF_config_tool( gucefDRN_TestApp )
 
 
 
-include_directories( ../../common/include ../../platform/gucefCOMCORE/include ../../platform/gucefCORE/include ../../platform/gucefDRN/include ../../platform/gucefMT/include include )
+include_directories( ../../common/include ../../platform/gucefCOMCORE/include ../../platform/gucefCORE/include ../../platform/gucefCORE/include/c_api ../../platform/gucefDRN/include ../../platform/gucefMT/include include )
 
 if ( ANDROID )
   include_directories( ../../platform/gucefCORE/include/android )

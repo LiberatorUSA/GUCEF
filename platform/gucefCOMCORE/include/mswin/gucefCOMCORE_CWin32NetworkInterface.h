@@ -77,7 +77,7 @@ class CWin32NetworkInterface : public virtual CINetworkInterface
 
     virtual UInt32 GetNrOfIPAddresses( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
-    virtual bool GetIPInfo( TIPInfoVector& ipInfo, bool includeUninitialized = false ) const GUCEF_VIRTUAL_OVERRIDE;
+    virtual bool GetIPInfo( TIPv4InfoVector& ipInfo, bool includeUninitialized = false ) const GUCEF_VIRTUAL_OVERRIDE;
 		
     virtual bool IsDhcpUsedForIPv4( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
@@ -124,14 +124,14 @@ class CWin32NetworkInterface : public virtual CINetworkInterface
     CIPv4Address m_secWins;
     CIPv4Address m_defGateway;
     CIPv4Address m_dhcpAddr;
-    CIPInfo m_curIpAddr;    // this is also in the ip address list but this is the address currently active.
-    UInt32 m_nicIndex;      // machine index of the adapter.
+    CIPv4Info m_curIpAddr;    // this is also in the ip address list but this is the address currently active.
+    UInt32 m_nicIndex;        // machine index of the adapter.
     UInt32 m_adapterType;
     bool m_dhcpUsedForIPv4;
     bool m_dhcpUsedForIPv6;
     bool m_winsUsed;
     THostAddressVector m_dnsAddresses;
-    TIPInfoVector m_ipAddresses;
+    TIPv4InfoVector m_ipAddresses;
     TIPv4AddressVector m_gatewayList;
     time_t m_leaseObtained;
     time_t m_leaseExpires;

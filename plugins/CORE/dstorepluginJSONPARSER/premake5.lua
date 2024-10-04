@@ -53,7 +53,7 @@ files( {
 
 
 configuration( {} )
-includedirs( { "../../../common/include", "../../../dependencies/json-builder", "../../../dependencies/json-parser", "../../../platform/gucefCORE/include", "../../../platform/gucefMT/include", "include" } )
+includedirs( { "../../../common/include", "../../../dependencies/json-builder", "../../../dependencies/json-parser", "../../../platform/gucefCORE/include", "../../../platform/gucefCORE/include/c_api", "../../../platform/gucefMT/include", "include" } )
 
 configuration( { "ANDROID" } )
 includedirs( { "../../../dependencies/json-builder", "../../../dependencies/json-parser", "../../../platform/gucefCORE/include/android" } )

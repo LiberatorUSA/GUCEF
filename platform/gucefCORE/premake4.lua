@@ -293,21 +293,23 @@ files( {
   "include/gucefCORE_SFINAE_utils.h",
   "include/gucefCORE_TaskStatus.h",
   "include/gucefCORE_ThreadStatus.h",
-  "include/gucefCORE_VariantData.h",
-  "include/gucefCORE_c_document_parser_callbacks.h",
-  "include/gucefCORE_c_valuemap_parser_callbacks.h",
-  "include/gucefCORE_cinterface.h",
   "include/gucefCORE_config.h",
   "include/gucefCORE_datanode_serializables.h",
   "include/gucefCORE_macros.h",
   "include/gucefCORE_utf8.h",
   "include/gucef_essentials.h",
-  "include/ioaccess.h",
   "include/macros.h",
   "include/md5.h",
   "include/streamables.h",
   "include/streamers.h",
-  "include/tsprinting.h"
+  "include/tsprinting.h",
+  "include/c_api/gucefCORE_CTVariantVectorApi.h",
+  "include/c_api/gucefCORE_c_document_parser_callbacks.h",
+  "include/c_api/gucefCORE_c_ioaccess.h",
+  "include/c_api/gucefCORE_c_valuemap_parser_callbacks.h",
+  "include/c_api/gucefCORE_c_variantdata.h",
+  "include/c_api/gucefCORE_c_variantvector.h",
+  "include/c_api/gucefCORE_cinterface.h"
  } )
 
 
@@ -533,12 +535,12 @@ files( {
   "src/gucefCORE_LogLevels.cpp",
   "src/gucefCORE_TaskStatus.cpp",
   "src/gucefCORE_ThreadStatus.cpp",
-  "src/gucefCORE_VariantData.c",
-  "src/gucefCORE_cinterface.cpp",
   "src/md5.c",
   "src/streamables.cpp",
   "src/streamers.cpp",
-  "src/tsprinting.c"
+  "src/tsprinting.c",
+  "src/c_api/gucefCORE_c_variantdata.c",
+  "src/c_api/gucefCORE_cinterface.cpp"
  } )
 
 
@@ -644,7 +646,7 @@ configuration( { "WIN64" } )
 
 
 configuration( {} )
-includedirs( { "../../common/include", "../gucefMT/include", "include" } )
+includedirs( { "../../common/include", "../gucefMT/include", "include", "include/c_api" } )
 
 configuration( { "ANDROID" } )
 includedirs( { "include/android" } )

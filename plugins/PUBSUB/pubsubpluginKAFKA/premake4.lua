@@ -63,7 +63,7 @@ files( {
 
 
 configuration( {} )
-includedirs( { "../../../common/include", "../../../dependencies/librdkafka", "../../../dependencies/librdkafka/src", "../../../dependencies/librdkafka/src-cpp", "../../../platform/gucefCOM/include", "../../../platform/gucefCOMCORE/include", "../../../platform/gucefCORE/include", "../../../platform/gucefMT/include", "../../../platform/gucefPUBSUB/include", "../../../platform/gucefVFS/include", "../../../platform/gucefWEB/include", "include" } )
+includedirs( { "../../../common/include", "../../../dependencies/librdkafka", "../../../dependencies/librdkafka/src", "../../../dependencies/librdkafka/src-cpp", "../../../platform/gucefCOM/include", "../../../platform/gucefCOMCORE/include", "../../../platform/gucefCORE/include", "../../../platform/gucefCORE/include/c_api", "../../../platform/gucefMT/include", "../../../platform/gucefPUBSUB/include", "../../../platform/gucefVFS/include", "../../../platform/gucefWEB/include", "include" } )
 
 configuration( { "ANDROID" } )
 includedirs( { "../../../platform/gucefCORE/include/android" } )

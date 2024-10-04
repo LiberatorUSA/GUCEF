@@ -66,6 +66,7 @@ LOCAL_C_INCLUDES := \
   $(MY_MODULE_PATH)/../gucefCORE \
   $(MY_MODULE_PATH)/../gucefCORE/include \
   $(MY_MODULE_PATH)/../gucefCORE/include/android \
+  $(MY_MODULE_PATH)/../gucefCORE/include/c_api \
   $(MY_MODULE_PATH)/../gucefMT \
   $(MY_MODULE_PATH)/../gucefMT/include
 

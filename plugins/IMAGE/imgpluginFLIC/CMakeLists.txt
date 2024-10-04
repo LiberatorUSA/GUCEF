@@ -34,7 +34,7 @@ add_dependencies( ${MODULE_NAME} fliclib gucefCORE gucefIMAGE gucefMT )
 target_link_libraries( ${MODULE_NAME} fliclib )
 set_property( TARGET ${MODULE_NAME} APPEND_STRING PROPERTY COMPILE_DEFINITIONS "GUCEF_CODECPLUGIN_BUILD_MODULE" )
 
-include_directories( ../../../common/include ../../../dependencies/flic ../../../platform/gucefCORE/include ../../../platform/gucefIMAGE/include ../../../platform/gucefMT/include include )
+include_directories( ../../../common/include ../../../dependencies/flic ../../../platform/gucefCORE/include ../../../platform/gucefCORE/include/c_api ../../../platform/gucefIMAGE/include ../../../platform/gucefMT/include include )
 
 if ( ANDROID )
   include_directories( ../../../platform/gucefCORE/include/android )

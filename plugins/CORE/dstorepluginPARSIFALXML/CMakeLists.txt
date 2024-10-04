@@ -34,7 +34,7 @@ add_dependencies( ${MODULE_NAME} gucefCORE gucefMT libparsifal )
 target_link_libraries( ${MODULE_NAME} libparsifal )
 set_property( TARGET ${MODULE_NAME} APPEND_STRING PROPERTY COMPILE_DEFINITIONS "DSTOREPLUGINPARSIFALXML_BUILD_MODULE" )
 
-include_directories( ../../../common/include ../../../dependencies/libparsifal/include ../../../dependencies/libparsifal/include/libparsifal ../../../platform/gucefCORE/include ../../../platform/gucefMT/include include )
+include_directories( ../../../common/include ../../../dependencies/libparsifal/include ../../../dependencies/libparsifal/include/libparsifal ../../../platform/gucefCORE/include ../../../platform/gucefCORE/include/c_api ../../../platform/gucefMT/include include )
 
 if ( ANDROID )
   include_directories( ../../../platform/gucefCORE/include/android )

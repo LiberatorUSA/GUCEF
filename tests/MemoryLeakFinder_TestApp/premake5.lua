@@ -77,7 +77,7 @@ configuration( { "WIN64" } )
 
 
 configuration( {} )
-includedirs( { "../../common/include", "../../platform/gucefCORE/include", "../../platform/gucefMT/include" } )
+includedirs( { "../../common/include", "../../platform/gucefCORE/include", "../../platform/gucefCORE/include/c_api", "../../platform/gucefMT/include" } )
 
 configuration( { "WIN32" } )
 includedirs( { "../../platform/gucefCORE/include/mswin", "../../platform/gucefMT/include/", "../../platform/gucefMT/include/mswin", "../../platform/gucefMT/include/mswin/", "../../tools/MemoryLeakFinder/include" } )

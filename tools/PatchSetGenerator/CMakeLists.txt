@@ -61,7 +61,7 @@ if ( WIN64 )
   set_property( TARGET ${MODULE_NAME} APPEND_STRING PROPERTY COMPILE_DEFINITIONS "PATCHSETGENERATOR_BUILD_MODULE" )
 endif( WIN64 )
 
-include_directories( ../../common/include ../../platform/gucefCOM/include ../../platform/gucefCOMCORE/include ../../platform/gucefCORE/include ../../platform/gucefMT/include ../../platform/gucefPATCHER/include )
+include_directories( ../../common/include ../../platform/gucefCOM/include ../../platform/gucefCOMCORE/include ../../platform/gucefCORE/include ../../platform/gucefCORE/include/c_api ../../platform/gucefMT/include ../../platform/gucefPATCHER/include )
 
 if ( WIN32 )
   include_directories( ../../platform/gucefCORE/include/mswin ../../platform/gucefMT/include/mswin )

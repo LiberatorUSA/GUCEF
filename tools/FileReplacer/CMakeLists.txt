@@ -47,7 +47,7 @@ GUCEF_config_tool( FileReplacer )
 
 
 
-include_directories( ../../common/include ../../platform/gucefCORE/include ../../platform/gucefMT/include )
+include_directories( ../../common/include ../../platform/gucefCORE/include ../../platform/gucefCORE/include/c_api ../../platform/gucefMT/include )
 
 if ( ANDROID )
   include_directories( ../../platform/gucefCORE/include/android )

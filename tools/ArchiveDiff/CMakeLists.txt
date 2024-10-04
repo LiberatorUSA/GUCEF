@@ -97,7 +97,7 @@ if ( WIN64 )
   set_property( TARGET ${MODULE_NAME} APPEND_STRING PROPERTY COMPILE_DEFINITIONS "ARCHIVEDIFF_BUILD_MODULE" )
 endif( WIN64 )
 
-include_directories( ../../common/include ../../platform/gucefCOM/include ../../platform/gucefCOMCORE/include ../../platform/gucefCORE/include ../../platform/gucefMT/include ../../platform/gucefPATCHER/include ../ArchiveDiffLib/include )
+include_directories( ../../common/include ../../platform/gucefCOM/include ../../platform/gucefCOMCORE/include ../../platform/gucefCORE/include ../../platform/gucefCORE/include/c_api ../../platform/gucefMT/include ../../platform/gucefPATCHER/include ../ArchiveDiffLib/include )
 
 if ( LINUX32 )
   include_directories( ../../platform/gucefCORE/include/linux )

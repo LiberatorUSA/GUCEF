@@ -57,7 +57,7 @@ files( {
 
 
 configuration( {} )
-includedirs( { "../../../common/include", "../../../dependencies/curl/include", "../../../dependencies/curl/include/curl", "../../../dependencies/curl/lib", "../../../dependencies/curl/lib/vauth", "../../../dependencies/curl/lib/vquic", "../../../dependencies/curl/lib/vssh", "../../../dependencies/curl/lib/vtls", "../../../platform/gucefCOMCORE/include", "../../../platform/gucefCORE/include", "../../../platform/gucefMT/include", "include" } )
+includedirs( { "../../../common/include", "../../../dependencies/curl/include", "../../../dependencies/curl/include/curl", "../../../dependencies/curl/lib", "../../../dependencies/curl/lib/vauth", "../../../dependencies/curl/lib/vquic", "../../../dependencies/curl/lib/vssh", "../../../dependencies/curl/lib/vtls", "../../../platform/gucefCOMCORE/include", "../../../platform/gucefCORE/include", "../../../platform/gucefCORE/include/c_api", "../../../platform/gucefMT/include", "include" } )
 
 configuration( { "ANDROID" } )
 includedirs( { "../../../platform/gucefCORE/include/android" } )

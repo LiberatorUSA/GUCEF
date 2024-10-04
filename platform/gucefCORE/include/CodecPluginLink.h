@@ -26,10 +26,10 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#ifndef GUCEF_CORE_IOACCESS_H
-#include "ioaccess.h"
-#define GUCEF_CORE_IOACCESS_H
-#endif /* GUCEF_CORE_IOACCESS_H ? */
+#ifndef GUCEF_CORE_C_IOACCESS_H
+#include "gucefCORE_c_ioaccess.h"
+#define GUCEF_CORE_C_IOACCESS_H
+#endif /* GUCEF_CORE_C_IOACCESS_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //

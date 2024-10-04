@@ -48,6 +48,7 @@ files( {
   "includes/gucefKAITAI_CKaitaiSchemaEnumDefinition.h",
   "includes/gucefKAITAI_CKaitaiSchemaFieldDefinition.h",
   "includes/gucefKAITAI_CKaitaiSchemaRegistry.h",
+  "includes/gucefKAITAI_CKaitaiSerializer.h",
   "includes/gucefKAITAI_CModule.h",
   "includes/gucefKAITAI_ETypes.h",
   "includes/gucefKAITAI_config.h",
@@ -71,7 +72,7 @@ files( {
 
 
 configuration( {} )
-includedirs( { "../../common/include", "../gucefCORE/include", "../gucefMT/include", "../gucefVFS/include", "includes" } )
+includedirs( { "../../common/include", "../gucefCORE/include", "../gucefCORE/include/c_api", "../gucefMT/include", "../gucefVFS/include", "includes" } )
 
 configuration( { "ANDROID" } )
 includedirs( { "../gucefCORE/include/android" } )

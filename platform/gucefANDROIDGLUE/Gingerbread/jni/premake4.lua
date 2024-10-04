@@ -43,7 +43,7 @@ configuration( { "ANDROID" } )
 
 
 configuration( {} )
-includedirs( { "../../../../common/include", "../../../gucefCORE", "../../../gucefCORE/include", "../../../gucefCORE/include/", "../../../gucefLOADER/..", "../../../gucefLOADER/include", "../../../gucefMT", "../../../gucefMT/include", "../../../gucefMT/include/" } )
+includedirs( { "../../../../common/include", "../../../gucefCORE", "../../../gucefCORE/include", "../../../gucefCORE/include/", "../../../gucefCORE/include/c_api", "../../../gucefLOADER/..", "../../../gucefLOADER/include", "../../../gucefMT", "../../../gucefMT/include", "../../../gucefMT/include/" } )
 
 configuration( { "ANDROID" } )
 includedirs( { "../../../gucefCORE/include/", "../../../gucefCORE/include/android", "../../../gucefMT/include/" } )

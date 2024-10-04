@@ -1383,7 +1383,7 @@ configuration( { "WIN64" } )
 
 
 configuration( {} )
-includedirs( { "..", "../../common/include", "../gucefCORE", "../gucefCORE/include", "../gucefMT", "../gucefMT/include", "../gucefCORE/include/", "../gucefMT/include/", "include" } )
+includedirs( { "..", "../../common/include", "../gucefCORE", "../gucefCORE/include", "../gucefCORE/include/c_api", "../gucefMT", "../gucefMT/include", "../gucefCORE/include/", "../gucefMT/include/", "include" } )
 
 configuration( { "ANDROID" } )
 includedirs( { "../gucefCORE/include/android", "../gucefCORE/include/", "../gucefMT/include/" } )

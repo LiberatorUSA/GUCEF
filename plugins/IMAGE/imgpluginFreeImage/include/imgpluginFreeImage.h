@@ -35,10 +35,10 @@
 #define GUCEF_CORE_ESTRUCTS_H
 #endif /* GUCEF_CORE_ESTRUCTS_H ? */
 
-#ifndef GUCEF_CORE_IOACCESS_H
-#include "ioaccess.h"           /* C API for media abstraction  */
-#define GUCEF_CORE_IOACCESS_H
-#endif /* GUCEF_CORE_IOACCESS_H ? */
+#ifndef GUCEF_CORE_C_IOACCESS_H
+#include "gucefCORE_c_ioaccess.h"           /* C API for media abstraction  */
+#define GUCEF_CORE_C_IOACCESS_H
+#endif /* GUCEF_CORE_C_IOACCESS_H ? */
 
 #ifndef GUCEF_CORE_C_VALUEMAP_PARSER_CALLBACKS_H
 #include "gucefCORE_c_valuemap_parser_callbacks.h"

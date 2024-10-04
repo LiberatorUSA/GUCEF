@@ -87,7 +87,7 @@ configuration( { "WIN64" } )
 
 
 configuration( {} )
-includedirs( { "../../../common/include", "../../../platform/gucefCORE/include", "../../../platform/gucefINPUT/include", "../../../platform/gucefMT/include" } )
+includedirs( { "../../../common/include", "../../../platform/gucefCORE/include", "../../../platform/gucefCORE/include/c_api", "../../../platform/gucefINPUT/include", "../../../platform/gucefMT/include" } )
 
 configuration( { "WIN32" } )
 includedirs( { "#$#ENVVAR:DXSDK_DIR#$#/Include", "../../../dependencies/external", "../../../platform/gucefCORE/include/mswin", "../../../platform/gucefMT/include/mswin", "include" } )

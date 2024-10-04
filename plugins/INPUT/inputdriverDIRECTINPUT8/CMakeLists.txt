@@ -80,7 +80,7 @@ if ( WIN64 )
   set_property( TARGET ${MODULE_NAME} APPEND_STRING PROPERTY COMPILE_DEFINITIONS "BUILD_GUCEF_INPUT_PLUGIN_DLL;INPUTDRIVERDIRECTINPUT8_BUILD_MODULE" )
 endif( WIN64 )
 
-include_directories( ../../../common/include ../../../platform/gucefCORE/include ../../../platform/gucefINPUT/include ../../../platform/gucefMT/include )
+include_directories( ../../../common/include ../../../platform/gucefCORE/include ../../../platform/gucefCORE/include/c_api ../../../platform/gucefINPUT/include ../../../platform/gucefMT/include )
 
 if ( WIN32 )
   include_directories( $ENV{DXSDK_DIR}/Include ../../../dependencies/external ../../../platform/gucefCORE/include/mswin ../../../platform/gucefMT/include/mswin include )

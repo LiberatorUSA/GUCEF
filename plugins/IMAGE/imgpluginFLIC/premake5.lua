@@ -53,7 +53,7 @@ files( {
 
 
 configuration( {} )
-includedirs( { "../../../common/include", "../../../dependencies/flic", "../../../platform/gucefCORE/include", "../../../platform/gucefIMAGE/include", "../../../platform/gucefMT/include", "include" } )
+includedirs( { "../../../common/include", "../../../dependencies/flic", "../../../platform/gucefCORE/include", "../../../platform/gucefCORE/include/c_api", "../../../platform/gucefIMAGE/include", "../../../platform/gucefMT/include", "include" } )
 
 configuration( { "ANDROID" } )
 includedirs( { "../../../platform/gucefCORE/include/android" } )

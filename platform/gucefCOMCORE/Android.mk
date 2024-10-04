@@ -25,7 +25,6 @@ LOCAL_SRC_FILES := \
   src/CCom.cpp \
   src/CGUCEFCOMCOREModule.cpp \
   src/CHostAddress.cpp \
-  src/CIPInfo.cpp \
   src/CPing.cpp \
   src/CSocket.cpp \
   src/CTCPClientSocket.cpp \
@@ -51,9 +50,12 @@ LOCAL_SRC_FILES := \
   src/gucefCOMCORE_CIDiscoveryEntry.cpp \
   src/gucefCOMCORE_CIGeoLocationLookupServiceProvider.cpp \
   src/gucefCOMCORE_CIMessage.cpp \
+  src/gucefCOMCORE_CIMessageTransformer.cpp \
   src/gucefCOMCORE_CINetworkInterface.cpp \
   src/gucefCOMCORE_CIPv4Address.cpp \
+  src/gucefCOMCORE_CIPv4Info.cpp \
   src/gucefCOMCORE_CIPv6Address.cpp \
+  src/gucefCOMCORE_CIPv6Info.cpp \
   src/gucefCOMCORE_CMessageSerializer.cpp \
   src/gucefCOMCORE_CPingTaskConsumer.cpp \
   src/gucefCOMCORE_CSerialPort.cpp \
@@ -64,6 +66,7 @@ LOCAL_C_INCLUDES := \
   $(MY_MODULE_PATH)/../../common/include \
   $(MY_MODULE_PATH)/../gucefCORE/include \
   $(MY_MODULE_PATH)/../gucefCORE/include/android \
+  $(MY_MODULE_PATH)/../gucefCORE/include/c_api \
   $(MY_MODULE_PATH)/../gucefMT/include
 
 LOCAL_CFLAGS := -DGUCEF_COMCORE_BUILD_MODULE

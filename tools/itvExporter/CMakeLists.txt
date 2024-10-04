@@ -34,7 +34,7 @@ add_dependencies( ${MODULE_NAME} gucefCORE gucefIMAGE gucefMT gucefVFS )
 target_link_libraries( ${MODULE_NAME} gucefCORE gucefIMAGE gucefMT gucefVFS )
 set_property( TARGET ${MODULE_NAME} APPEND_STRING PROPERTY COMPILE_DEFINITIONS "ITVEXPORTER_BUILD_MODULE" )
 
-include_directories( ../../common/include ../../platform/gucefCORE/include ../../platform/gucefIMAGE/include ../../platform/gucefMT/include ../../platform/gucefVFS/include )
+include_directories( ../../common/include ../../platform/gucefCORE/include ../../platform/gucefCORE/include/c_api ../../platform/gucefIMAGE/include ../../platform/gucefMT/include ../../platform/gucefVFS/include )
 
 if ( ANDROID )
   include_directories( ../../platform/gucefCORE/include/android )

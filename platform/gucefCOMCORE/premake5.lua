@@ -53,7 +53,6 @@ files( {
   "include/CCom.h",
   "include/CGUCEFCOMCOREModule.h",
   "include/CHostAddress.h",
-  "include/CIPInfo.h",
   "include/CPing.h",
   "include/CSocket.h",
   "include/CTCPClientSocket.h",
@@ -79,9 +78,12 @@ files( {
   "include/gucefCOMCORE_CIDiscoveryEntry.h",
   "include/gucefCOMCORE_CIGeoLocationLookupServiceProvider.h",
   "include/gucefCOMCORE_CIMessage.h",
+  "include/gucefCOMCORE_CIMessageTransformer.h",
   "include/gucefCOMCORE_CINetworkInterface.h",
   "include/gucefCOMCORE_CIPv4Address.h",
+  "include/gucefCOMCORE_CIPv4Info.h",
   "include/gucefCOMCORE_CIPv6Address.h",
+  "include/gucefCOMCORE_CIPv6Info.h",
   "include/gucefCOMCORE_CMessageSerializer.h",
   "include/gucefCOMCORE_CPingTaskConsumer.h",
   "include/gucefCOMCORE_CSerialPort.h",
@@ -100,7 +102,6 @@ files( {
   "src/CCom.cpp",
   "src/CGUCEFCOMCOREModule.cpp",
   "src/CHostAddress.cpp",
-  "src/CIPInfo.cpp",
   "src/CPing.cpp",
   "src/CSocket.cpp",
   "src/CTCPClientSocket.cpp",
@@ -126,9 +127,12 @@ files( {
   "src/gucefCOMCORE_CIDiscoveryEntry.cpp",
   "src/gucefCOMCORE_CIGeoLocationLookupServiceProvider.cpp",
   "src/gucefCOMCORE_CIMessage.cpp",
+  "src/gucefCOMCORE_CIMessageTransformer.cpp",
   "src/gucefCOMCORE_CINetworkInterface.cpp",
   "src/gucefCOMCORE_CIPv4Address.cpp",
+  "src/gucefCOMCORE_CIPv4Info.cpp",
   "src/gucefCOMCORE_CIPv6Address.cpp",
+  "src/gucefCOMCORE_CIPv6Info.cpp",
   "src/gucefCOMCORE_CMessageSerializer.cpp",
   "src/gucefCOMCORE_CPingTaskConsumer.cpp",
   "src/gucefCOMCORE_CSerialPort.cpp",
@@ -201,7 +205,7 @@ configuration( { "WIN64" } )
 
 
 configuration( {} )
-includedirs( { "../../common/include", "../gucefCORE/include", "../gucefMT/include", "include" } )
+includedirs( { "../../common/include", "../gucefCORE/include", "../gucefCORE/include/c_api", "../gucefMT/include", "include" } )
 
 configuration( { "ANDROID" } )
 includedirs( { "../gucefCORE/include/android" } )

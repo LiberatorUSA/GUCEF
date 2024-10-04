@@ -55,7 +55,7 @@ files( {
 
 
 configuration( {} )
-includedirs( { "../../../common/include", "../../../dependencies/stbrumme-hash-library", "../../../platform/gucefCORE/include", "../../../platform/gucefMT/include", "include" } )
+includedirs( { "../../../common/include", "../../../dependencies/stbrumme-hash-library", "../../../platform/gucefCORE/include", "../../../platform/gucefCORE/include/c_api", "../../../platform/gucefMT/include", "include" } )
 
 configuration( { "ANDROID" } )
 includedirs( { "../../../platform/gucefCORE/include/android" } )

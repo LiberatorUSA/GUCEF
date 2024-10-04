@@ -43,10 +43,10 @@
 #define GUCEF_CORE_CSTRING_H
 #endif /* GUCEF_CORE_CSTRING_H ? */
 
-#ifndef GUCEF_CORE_IOACCESS_H
-#include "ioaccess.h"           /* C implementation wrapped by this class */
-#define GUCEF_CORE_IOACCESS_H
-#endif /* GUCEF_CORE_IOACCESS_H ? */
+#ifndef GUCEF_CORE_C_IOACCESS_H
+#include "gucefCORE_c_ioaccess.h"           /* C implementation wrapped by this class */
+#define GUCEF_CORE_C_IOACCESS_H
+#endif /* GUCEF_CORE_C_IOACCESS_H ? */
 
 #ifndef GUCEF_CORE_CICLONEABLE_H
 #include "CICloneable.h"

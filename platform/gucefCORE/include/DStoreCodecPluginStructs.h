@@ -35,10 +35,10 @@
 #define GUCEF_CORE_MACROS_H
 #endif /* GUCEF_CORE_MACROS_H ? */
 
-#ifndef GUCEF_CORE_VARIANTDATA_H
-#include "gucefCORE_VariantData.h"
-#define GUCEF_CORE_VARIANTDATA_H
-#endif /* GUCEF_CORE_VARIANTDATA_H ? */
+#ifndef GUCEF_CORE_C_VARIANTDATA_H
+#include "gucefCORE_c_variantdata.h"
+#define GUCEF_CORE_C_VARIANTDATA_H
+#endif /* GUCEF_CORE_C_VARIANTDATA_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //

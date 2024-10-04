@@ -52,7 +52,7 @@ configuration( { "ANDROID" } )
 
 
 configuration( {} )
-includedirs( { "../../../common/include", "../../../platform/gucefCORE/include", "../../../platform/gucefINPUT/include", "../../../platform/gucefMT/include" } )
+includedirs( { "../../../common/include", "../../../platform/gucefCORE/include", "../../../platform/gucefCORE/include/c_api", "../../../platform/gucefINPUT/include", "../../../platform/gucefMT/include" } )
 
 configuration( { "ANDROID" } )
 includedirs( { "../../../platform/gucefCORE/include/android", "include" } )

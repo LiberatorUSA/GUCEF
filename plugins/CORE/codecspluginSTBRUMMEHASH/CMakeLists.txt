@@ -36,7 +36,7 @@ add_dependencies( ${MODULE_NAME} gucefCORE gucefMT stbrumme-hash )
 target_link_libraries( ${MODULE_NAME} stbrumme-hash )
 set_property( TARGET ${MODULE_NAME} APPEND_STRING PROPERTY COMPILE_DEFINITIONS "GUCEF_CODECPLUGIN_BUILD_MODULE" )
 
-include_directories( ../../../common/include ../../../dependencies/stbrumme-hash-library ../../../platform/gucefCORE/include ../../../platform/gucefMT/include include )
+include_directories( ../../../common/include ../../../dependencies/stbrumme-hash-library ../../../platform/gucefCORE/include ../../../platform/gucefCORE/include/c_api ../../../platform/gucefMT/include include )
 
 if ( ANDROID )
   include_directories( ../../../platform/gucefCORE/include/android )

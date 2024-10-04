@@ -175,7 +175,7 @@ CDBLNetworkInterface::GetNrOfIPAddresses( void ) const
 /*-------------------------------------------------------------------------*/
 
 bool
-CDBLNetworkInterface::GetIPInfo( TIPInfoVector& ipInfo, bool includeUninitialized ) const
+CDBLNetworkInterface::GetIPInfo( TIPv4InfoVector& ipInfo, bool includeUninitialized ) const
 {GUCEF_TRACE;
 
 	MT::CObjectScopeLock lock( this );

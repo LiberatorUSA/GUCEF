@@ -58,7 +58,7 @@ add_dependencies( ${MODULE_NAME} gucefCOMCORE gucefCORE gucefMT gucefPUBSUB guce
 target_link_libraries( ${MODULE_NAME} gucefCOMCORE gucefCORE gucefMT gucefPUBSUB gucefVFS gucefWEB )
 set_property( TARGET ${MODULE_NAME} APPEND_STRING PROPERTY COMPILE_DEFINITIONS "PUBSUBPLUGIN_STORAGE_EMBED_CODE;PUBSUBPLUGIN_TEST_BUILD_PLUGIN_DLL" )
 
-include_directories( ../../../common/include ../../../platform/gucefCOM/include ../../../platform/gucefCOMCORE/include ../../../platform/gucefCORE/include ../../../platform/gucefMT/include ../../../platform/gucefPUBSUB/include ../../../platform/gucefVFS/include ../../../platform/gucefWEB/include ../pubsubpluginSTORAGE/include include )
+include_directories( ../../../common/include ../../../platform/gucefCOM/include ../../../platform/gucefCOMCORE/include ../../../platform/gucefCORE/include ../../../platform/gucefCORE/include/c_api ../../../platform/gucefMT/include ../../../platform/gucefPUBSUB/include ../../../platform/gucefVFS/include ../../../platform/gucefWEB/include ../pubsubpluginSTORAGE/include include )
 
 if ( ANDROID )
   include_directories( ../../../platform/gucefCORE/include/android )

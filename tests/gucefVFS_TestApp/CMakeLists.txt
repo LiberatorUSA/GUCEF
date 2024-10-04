@@ -39,7 +39,7 @@ add_dependencies( ${MODULE_NAME} gucefCORE gucefMT gucefVFS )
 target_link_libraries( ${MODULE_NAME} gucefCORE gucefMT gucefVFS )
 set_property( TARGET ${MODULE_NAME} APPEND_STRING PROPERTY COMPILE_DEFINITIONS "GUCEF_VFS_TESTAPP_BUILD_MODULE" )
 
-include_directories( ../../common/include ../../platform/gucefCORE/include ../../platform/gucefMT/include ../../platform/gucefVFS/include include )
+include_directories( ../../common/include ../../platform/gucefCORE/include ../../platform/gucefCORE/include/c_api ../../platform/gucefMT/include ../../platform/gucefVFS/include include )
 
 if ( ANDROID )
   include_directories( ../../platform/gucefCORE/include/android )

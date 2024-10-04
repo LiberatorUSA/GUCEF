@@ -54,7 +54,7 @@
 #endif /* GUCEF_MACROS_H ? */
 
 #ifndef GUCEF_CORE_IOACCESS_H
-#include "ioaccess.h"         /* media independant I/O */
+#include "gucefCORE_c_ioaccess.h"         /* media independant I/O */
 #define GUCEF_CORE_IOACCESS_H
 #endif /* GUCEF_CORE_IOACCESS_H ? */
 

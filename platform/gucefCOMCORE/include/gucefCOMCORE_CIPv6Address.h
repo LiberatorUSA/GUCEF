@@ -76,6 +76,8 @@ class GUCEF_COMCORE_EXPORT_CPP CIPv6Address
 
     CIPv6Address( const CIPv4Address& ip );
 
+    ~CIPv6Address();
+
     // Static function to create from an IPv4 address in string form
     static bool TryConvertIPv4StringToIPv6Address( const CString& ipv4Addr, CIPv6Address& ipv6 );
 
@@ -87,6 +89,10 @@ class GUCEF_COMCORE_EXPORT_CPP CIPv6Address
 
     // Get the address as a string
     CString ToString( void ) const;
+
+    bool FromIPv6String( const CString& ipv6Str );
+
+    void Clear( void );
 
     bool operator==( const CIPv6Address& other ) const;
 

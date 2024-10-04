@@ -97,7 +97,7 @@ if ( WIN64 )
   set_property( TARGET ${MODULE_NAME} APPEND_STRING PROPERTY COMPILE_DEFINITIONS "CMAKELISTGENERATOR_BUILD_MODULE" )
 endif( WIN64 )
 
-include_directories( ../../common/include ../../platform/gucefCORE/include ../../platform/gucefMT/include )
+include_directories( ../../common/include ../../platform/gucefCORE/include ../../platform/gucefCORE/include/c_api ../../platform/gucefMT/include )
 
 if ( LINUX32 )
   include_directories( ../../platform/gucefCORE/include/linux )

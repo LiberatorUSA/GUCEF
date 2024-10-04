@@ -134,7 +134,7 @@ files( {
 
 
 configuration( {} )
-includedirs( { "../../common/include", "../gucefCORE/include", "../gucefIMAGE/include", "../gucefMT/include", "../gucefVFS/include", "include" } )
+includedirs( { "../../common/include", "../gucefCORE/include", "../gucefCORE/include/c_api", "../gucefIMAGE/include", "../gucefMT/include", "../gucefVFS/include", "include" } )
 
 configuration( { "ANDROID" } )
 includedirs( { "../gucefCORE/include/android" } )

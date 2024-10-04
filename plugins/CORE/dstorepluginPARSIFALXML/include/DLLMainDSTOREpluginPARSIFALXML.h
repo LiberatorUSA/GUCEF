@@ -30,7 +30,7 @@
 //-------------------------------------------------------------------------*/ 
  
 #ifndef IOACCESS_H
-#include "ioaccess.h"                   /* media independant recource I/O */
+#include "gucefCORE_c_ioaccess.h"                   /* media independant recource I/O */
 #define IOACCESS_H
 #endif /* IOACCESS_H ? */
 
@@ -49,10 +49,10 @@
 #define GUCEF_CORE_MACROS_H
 #endif /* GUCEF_CORE_MACROS_H ? */ 
 
-#ifndef GUCEF_CORE_VARIANTDATA_H
-#include "gucefCORE_VariantData.h"
-#define GUCEF_CORE_VARIANTDATA_H
-#endif /* GUCEF_CORE_VARIANTDATA_H ? */
+#ifndef GUCEF_CORE_C_VARIANTDATA_H
+#include "gucefCORE_c_variantdata.h"
+#define GUCEF_CORE_C_VARIANTDATA_H
+#endif /* GUCEF_CORE_C_VARIANTDATA_H ? */
  
 /*-------------------------------------------------------------------------//
 //                                                                         //

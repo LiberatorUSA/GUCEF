@@ -111,7 +111,7 @@ configuration( { "WIN64" } )
 
 
 configuration( {} )
-includedirs( { "../../../common/include", "../../../platform/gucefCOM/include", "../../../platform/gucefCOMCORE/include", "../../../platform/gucefCORE/include", "../../../platform/gucefMT/include", "../../../platform/gucefPATCHER/include", "../../../platform/gucefVFS/include" } )
+includedirs( { "../../../common/include", "../../../platform/gucefCOM/include", "../../../platform/gucefCOMCORE/include", "../../../platform/gucefCORE/include", "../../../platform/gucefCORE/include/c_api", "../../../platform/gucefMT/include", "../../../platform/gucefPATCHER/include", "../../../platform/gucefVFS/include" } )
 
 configuration( { "WIN32" } )
 includedirs( { "../../../platform/gucefCOMCORE/include/mswin", "../../../platform/gucefCORE/include/mswin", "../../../platform/gucefMT/include/mswin", "include", "projects/MVC8/res", "projects/MVC9/res" } )

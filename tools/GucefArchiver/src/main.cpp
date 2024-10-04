@@ -229,6 +229,12 @@ GUCEF_OSMAIN_BEGIN
 
     GucefArchiver archiver;
 
+
+
+    CORE::RelativePath( "C:\\test\\foo\\bar\\..\\..\\hello" );
+
+
+
     // Check for config param first
     CORE::CValueList keyValueList;
     ParseParams( argc, argv, keyValueList );

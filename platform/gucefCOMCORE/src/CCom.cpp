@@ -666,7 +666,7 @@ CCom::GetAllNetworkInterfaces( CINetworkInterface::TINetworkInterfacePtrVector& 
 /*-------------------------------------------------------------------------*/
 
 bool
-CCom::GetAllNetworkInterfaceIPInfo( CINetworkInterface::TIPInfoVector& ipInfo )
+CCom::GetAllNetworkInterfaceIPInfo( CINetworkInterface::TIPv4InfoVector& ipInfo )
 {GUCEF_TRACE;
 
     LazyInitNetworkInterfaces();

@@ -50,10 +50,10 @@
 #define GUCEF_COMCORE_CHOSTADDRESS_H
 #endif /* GUCEF_COMCORE_CHOSTADDRESS_H ? */
 
-#ifndef GUCEF_COMCORE_CIPINFO_H
-#include "CIPInfo.h"
-#define GUCEF_COMCORE_CIPINFO_H
-#endif /* GUCEF_COMCORE_CIPINFO_H ? */
+#ifndef GUCEF_COMCORE_CIPV4INFO_H
+#include "gucefCOMCORE_CIPv4Info.h"
+#define GUCEF_COMCORE_CIPV4INFO_H
+#endif /* GUCEF_COMCORE_CIPV4INFO_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -127,7 +127,7 @@ class GUCEF_COMCORE_EXPORT_CPP CINetworkInterface : public virtual CICommunicati
 
     typedef CHostAddress::THostAddressVector    THostAddressVector;
     typedef CIPv4Address::TIPv4AddressVector    TIPv4AddressVector;
-    typedef CIPInfo::TIPInfoVector              TIPInfoVector;
+    typedef CIPv4Info::TIPInfoVector            TIPv4InfoVector;
     typedef CORE::CTSharedPtr< CINetworkInterface, MT::CMutex >                            CINetworkInterfacePtr;
     typedef std::vector< CINetworkInterfacePtr, gucef_allocator< CINetworkInterface > >    TINetworkInterfacePtrVector;
     
@@ -143,7 +143,7 @@ class GUCEF_COMCORE_EXPORT_CPP CINetworkInterface : public virtual CICommunicati
 
     virtual UInt32 GetNrOfIPAddresses( void ) const = 0;
 
-    virtual bool GetIPInfo( TIPInfoVector& ipInfo, bool includeUninitialized = false ) const = 0;
+    virtual bool GetIPInfo( TIPv4InfoVector& ipInfo, bool includeUninitialized = false ) const = 0;
 		
     virtual bool IsDhcpUsedForIPv4( void ) const = 0;
 

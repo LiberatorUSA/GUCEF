@@ -26,7 +26,7 @@
 #include <stdio.h>         /* needed for the fseek() enums */ 
 #include <malloc.h>     /* memory management */
 
-#include "ioaccess.h"   /* function prototypes and types we need */
+#include "gucefCORE_c_ioaccess.h"   /* function prototypes and types we need */
 
 #ifdef IOACCESS_MFILE_SUPPORT
 #ifndef GUCEF_CORE_MFILE_H

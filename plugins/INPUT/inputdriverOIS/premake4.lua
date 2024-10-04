@@ -175,7 +175,7 @@ configuration( { "WIN64" } )
 
 
 configuration( {} )
-includedirs( { "../../../common/include", "../../../platform/gucefCORE/include", "../../../platform/gucefINPUT/include", "../../../platform/gucefMT/include" } )
+includedirs( { "../../../common/include", "../../../platform/gucefCORE/include", "../../../platform/gucefCORE/include/c_api", "../../../platform/gucefINPUT/include", "../../../platform/gucefMT/include" } )
 
 configuration( { "LINUX32" } )
 includedirs( { "../../../dependencies/OIS/includes", "../../../dependencies/OIS/includes/linux", "../../../dependencies/OIS/src/extras/LIRC", "../../../platform/gucefCORE/include/linux", "include" } )

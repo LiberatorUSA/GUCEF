@@ -90,7 +90,7 @@ files( {
 
 
 configuration( {} )
-includedirs( { "../../common/include", "../gucefCOM/include", "../gucefCOMCORE/include", "../gucefCORE/include", "../gucefMT/include", "include" } )
+includedirs( { "../../common/include", "../gucefCOM/include", "../gucefCOMCORE/include", "../gucefCORE/include", "../gucefCORE/include/c_api", "../gucefMT/include", "include" } )
 
 configuration( { "ANDROID" } )
 includedirs( { "../gucefCORE/include/android" } )

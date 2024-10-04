@@ -34,7 +34,7 @@ add_dependencies( ${MODULE_NAME} ProjectGen gucefCORE gucefMT )
 target_link_libraries( ${MODULE_NAME} ProjectGen gucefCORE gucefMT )
 set_property( TARGET ${MODULE_NAME} APPEND_STRING PROPERTY COMPILE_DEFINITIONS "GUCEF_PROJECTGENERATOR_BUILD_MODULE" )
 
-include_directories( ../../common/include ../../platform/gucefCORE/include ../../platform/gucefMT/include ../ProjectGen/include )
+include_directories( ../../common/include ../../platform/gucefCORE/include ../../platform/gucefCORE/include/c_api ../../platform/gucefMT/include ../ProjectGen/include )
 
 if ( ANDROID )
   include_directories( ../../platform/gucefCORE/include/android )

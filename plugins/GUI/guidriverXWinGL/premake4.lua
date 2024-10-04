@@ -101,7 +101,7 @@ configuration( { "LINUX64" } )
 
 
 configuration( {} )
-includedirs( { "../../../common/include", "../../../platform/gucefCORE/include", "../../../platform/gucefGUI/include", "../../../platform/gucefIMAGE/include", "../../../platform/gucefMT/include", "../../../platform/gucefVFS/include" } )
+includedirs( { "../../../common/include", "../../../platform/gucefCORE/include", "../../../platform/gucefCORE/include/c_api", "../../../platform/gucefGUI/include", "../../../platform/gucefIMAGE/include", "../../../platform/gucefMT/include", "../../../platform/gucefVFS/include" } )
 
 configuration( { "LINUX32" } )
 includedirs( { "../../../platform/gucefCORE/include/linux", "include" } )

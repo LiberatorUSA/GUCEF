@@ -43,7 +43,7 @@ add_dependencies( ${MODULE_NAME} gucefCOM gucefCOMCORE gucefCORE gucefGUI gucefI
 target_link_libraries( ${MODULE_NAME} gucefCOM gucefCOMCORE gucefCORE gucefGUI gucefIMAGE gucefINPUT gucefMT gucefPATCHER )
 set_property( TARGET ${MODULE_NAME} APPEND_STRING PROPERTY COMPILE_DEFINITIONS "GUCEF_PATCHERAPP_BUILD_MODULE" )
 
-include_directories( ../../common/include ../../platform/gucefCOM/include ../../platform/gucefCOMCORE/include ../../platform/gucefCORE/include ../../platform/gucefGUI/include ../../platform/gucefIMAGE/include ../../platform/gucefINPUT/include ../../platform/gucefMT/include ../../platform/gucefPATCHER/include ../../platform/gucefVFS/include include )
+include_directories( ../../common/include ../../platform/gucefCOM/include ../../platform/gucefCOMCORE/include ../../platform/gucefCORE/include ../../platform/gucefCORE/include/c_api ../../platform/gucefGUI/include ../../platform/gucefIMAGE/include ../../platform/gucefINPUT/include ../../platform/gucefMT/include ../../platform/gucefPATCHER/include ../../platform/gucefVFS/include include )
 
 if ( ANDROID )
   include_directories( ../../platform/gucefCORE/include/android )

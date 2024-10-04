@@ -51,7 +51,7 @@ files( {
 
 
 configuration( {} )
-includedirs( { "../../common/include", "../../platform/gucefCORE/include", "../../platform/gucefMT/include", "../ProjectGen/include" } )
+includedirs( { "../../common/include", "../../platform/gucefCORE/include", "../../platform/gucefCORE/include/c_api", "../../platform/gucefMT/include", "../ProjectGen/include" } )
 
 configuration( { "ANDROID" } )
 includedirs( { "../../platform/gucefCORE/include/android" } )

@@ -1411,7 +1411,7 @@ if ( WIN64 )
   target_link_libraries( ${MODULE_NAME} PowrProf.lib Ws2_32.lib winmm.lib )
 endif( WIN64 )
 
-include_directories( .. ../../common/include ../gucefCORE ../gucefCORE/include ../gucefMT ../gucefMT/include ../gucefCORE/include/ ../gucefMT/include/ include )
+include_directories( .. ../../common/include ../gucefCORE ../gucefCORE/include ../gucefCORE/include/c_api ../gucefMT ../gucefMT/include ../gucefCORE/include/ ../gucefMT/include/ include )
 
 if ( ANDROID )
   include_directories( ../gucefCORE/include/android ../gucefCORE/include/ ../gucefMT/include/ )

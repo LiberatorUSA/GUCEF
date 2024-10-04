@@ -144,6 +144,14 @@ CIPv6Address::CIPv6Address( const CIPv4Address& ip )
 
 /*-------------------------------------------------------------------------*/
 
+CIPv6Address::~CIPv6Address() 
+{GUCEF_TRACE;
+
+    Clear();
+}
+
+/*-------------------------------------------------------------------------*/
+
 // Static function to create from an IPv4 m_address in string form
 bool
 CIPv6Address::TryConvertIPv4StringToIPv6Address( const CString& ipv4Addr, CIPv6Address& ipv6 ) 
@@ -287,6 +295,27 @@ CIPv6Address::IsIPv4Mapped( void ) const
 {GUCEF_TRACE;
 
     return ( ::memcmp( m_address, "\0\0\0\0\0\0\0\0\0\0\xff\xff", 12 ) == 0 );
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool 
+CIPv6Address::FromIPv6String( const CString& ipv6Str ) 
+{GUCEF_TRACE;
+
+    memset( m_address, 0, sizeof( m_address ) );
+    if ( ::inet_pton( AF_INET6, ipv6Str.C_String(), m_address ) == 1 ) 
+        return true;
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
+void 
+CIPv6Address::Clear( void ) 
+{GUCEF_TRACE;
+
+    memset( m_address, 0, sizeof( m_address ) );
 }
 
 /*-------------------------------------------------------------------------*/

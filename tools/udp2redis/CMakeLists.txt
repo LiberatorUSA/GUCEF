@@ -38,7 +38,7 @@ endif()
 add_dependencies( ${MODULE_NAME} gucefCOM gucefCOMCORE gucefCORE gucefMT gucefWEB hiredis )
 target_link_libraries( ${MODULE_NAME} gucefCOM gucefCOMCORE gucefCORE gucefMT gucefWEB hiredis )
 
-include_directories( ../../common/include ../../dependencies/hiredis ../../platform/gucefCOM/include ../../platform/gucefCOMCORE/include ../../platform/gucefCORE/include ../../platform/gucefMT/include ../../platform/gucefVFS/include ../../platform/gucefWEB/include include )
+include_directories( ../../common/include ../../dependencies/hiredis ../../platform/gucefCOM/include ../../platform/gucefCOMCORE/include ../../platform/gucefCORE/include ../../platform/gucefCORE/include/c_api ../../platform/gucefMT/include ../../platform/gucefVFS/include ../../platform/gucefWEB/include include )
 
 if ( ANDROID )
   include_directories( ../../dependencies/hiredis ../../platform/gucefCORE/include/android )

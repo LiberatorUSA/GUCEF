@@ -60,7 +60,7 @@ files( {
 
 
 configuration( {} )
-includedirs( { "../../common/include", "../../platform/gucefCORE/include", "../../platform/gucefKAITAI/includes", "../../platform/gucefMT/include", "../../platform/gucefVFS/include", "include" } )
+includedirs( { "../../common/include", "../../platform/gucefCORE/include", "../../platform/gucefCORE/include/c_api", "../../platform/gucefKAITAI/includes", "../../platform/gucefMT/include", "../../platform/gucefVFS/include", "include" } )
 
 configuration( { "ANDROID" } )
 includedirs( { "../../platform/gucefCORE/include/android" } )

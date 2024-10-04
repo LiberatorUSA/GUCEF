@@ -47,7 +47,7 @@ if ( ANDROID )
   set_property( TARGET ${MODULE_NAME} APPEND_STRING PROPERTY COMPILE_DEFINITIONS "BUILD_GUCEF_INPUT_PLUGIN_DLL;INPUTDRIVERANDROID_BUILD_MODULE" )
 endif( ANDROID )
 
-include_directories( ../../../common/include ../../../platform/gucefCORE/include ../../../platform/gucefINPUT/include ../../../platform/gucefMT/include )
+include_directories( ../../../common/include ../../../platform/gucefCORE/include ../../../platform/gucefCORE/include/c_api ../../../platform/gucefINPUT/include ../../../platform/gucefMT/include )
 
 if ( ANDROID )
   include_directories( ../../../platform/gucefCORE/include/android include )

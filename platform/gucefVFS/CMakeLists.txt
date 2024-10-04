@@ -61,7 +61,7 @@ set_property( TARGET ${MODULE_NAME} APPEND_STRING PROPERTY COMPILE_DEFINITIONS "
 set_property( TARGET ${MODULE_NAME} APPEND_STRING PROPERTY VERSION 0.1.0.0 )
 set_property( TARGET ${MODULE_NAME} APPEND_STRING PROPERTY SOVERSION 0.1.0.0 )
 
-include_directories( ../../common/include ../gucefCORE/include ../gucefMT/include include )
+include_directories( ../../common/include ../gucefCORE/include ../gucefCORE/include/c_api ../gucefMT/include include )
 
 if ( ANDROID )
   include_directories( ../gucefCORE/include/android )

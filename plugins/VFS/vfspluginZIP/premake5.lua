@@ -76,7 +76,7 @@ files( {
 
 
 configuration( {} )
-includedirs( { "../../../common/include", "../../../dependencies/zziplib", "../../../dependencies/zziplib/zzip", "../../../platform/gucefCORE/include", "../../../platform/gucefMT/include", "../../../platform/gucefVFS/include", "include" } )
+includedirs( { "../../../common/include", "../../../dependencies/zziplib", "../../../dependencies/zziplib/zzip", "../../../platform/gucefCORE/include", "../../../platform/gucefCORE/include/c_api", "../../../platform/gucefMT/include", "../../../platform/gucefVFS/include", "include" } )
 
 configuration( { "ANDROID" } )
 includedirs( { "../../../platform/gucefCORE/include/android" } )

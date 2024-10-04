@@ -116,7 +116,7 @@ CWin32NetworkInterface::SetupAdapterInfo( void* pAdaptInfoVoid )
 	pNext = &( pAdaptInfo->IpAddressList );
 	while( pNext ) 
 	{
-		m_ipAddresses.push_back( CIPInfo( pNext->IpAddress.String, pNext->IpMask.String, false ) );
+		m_ipAddresses.push_back( CIPv4Info( pNext->IpAddress.String, pNext->IpMask.String, false ) );
 		pNext = pNext->Next;
 	}
 
@@ -344,11 +344,11 @@ CWin32NetworkInterface::GetNrOfIPAddresses( void ) const
 /*-------------------------------------------------------------------------*/
 
 bool 
-CWin32NetworkInterface::GetIPInfo( TIPInfoVector& ipInfo, bool includeUninitialized ) const
+CWin32NetworkInterface::GetIPInfo( TIPv4InfoVector& ipInfo, bool includeUninitialized ) const
 {GUCEF_TRACE;
 
 	MT::CObjectScopeLock lock( this );
-	TIPInfoVector::const_iterator i = m_ipAddresses.begin();
+	TIPv4InfoVector::const_iterator i = m_ipAddresses.begin();
 	while ( i != m_ipAddresses.end() )
 	{
 		if ( includeUninitialized || 0 != (*i).ip.GetAddress() )

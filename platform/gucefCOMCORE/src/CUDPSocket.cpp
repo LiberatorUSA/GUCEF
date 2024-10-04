@@ -1242,11 +1242,11 @@ CUDPSocket::Join( const CIPv4Address& multicastGroup        ,
 
         CCom& allCom = CComCoreGlobal::Instance()->GetCom();
 
-        CINetworkInterface::TIPInfoVector allIpInfo;
+        CINetworkInterface::TIPv4InfoVector allIpInfo;
         if ( allCom.GetAllNetworkInterfaceIPInfo( allIpInfo ) )
         {
             bool totalSuccess = true;
-            CINetworkInterface::TIPInfoVector::iterator i = allIpInfo.begin();
+            CINetworkInterface::TIPv4InfoVector::iterator i = allIpInfo.begin();
             while ( i != allIpInfo.end() )
             {
                 totalSuccess = totalSuccess && JoinOnInterface( multicastGroup, (*i).ip );

@@ -115,7 +115,7 @@ if ( WIN64 )
   set_property( TARGET ${MODULE_NAME} APPEND_STRING PROPERTY COMPILE_DEFINITIONS "GUCEF_GUI_TESTAPP_BUILD_MODULE" )
 endif( WIN64 )
 
-include_directories( ../../common/include ../../platform/gucefCORE/include ../../platform/gucefGUI/include ../../platform/gucefIMAGE/include ../../platform/gucefINPUT/include ../../platform/gucefMT/include ../../platform/gucefVFS/include )
+include_directories( ../../common/include ../../platform/gucefCORE/include ../../platform/gucefCORE/include/c_api ../../platform/gucefGUI/include ../../platform/gucefIMAGE/include ../../platform/gucefINPUT/include ../../platform/gucefMT/include ../../platform/gucefVFS/include )
 
 if ( ANDROID )
   include_directories( ../../platform/gucefCORE/include/android )
