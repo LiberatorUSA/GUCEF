@@ -351,7 +351,7 @@ class NetplanConfig
     CString interfaceName;
     CString setInterfaceName;
     CIPv4Address::TIPv4AddressSet ipv4DnsServers;
-    CIPInfo::TIPv4InfoSet ipv4Infos;
+    CIPv4Info::TIPv4InfoSet ipv4Infos;
 
     NetplanConfig( void )
         : usesDhcp4( false )
@@ -438,7 +438,7 @@ ParseNetplanFile( const CString& filePath                               ,
                             while ( v != addressesVars.end() )
                             {
                                 const CORE::CVariant& var = (*v);
-                                CIPInfo ipInfoForInterface;
+                                CIPv4Info ipInfoForInterface;
 
                                 if ( ipInfoForInterface.TrySetFromCIDRNotationString( var.AsString() ) )
                                 {
@@ -531,7 +531,7 @@ class NetworkManagerConfig
     CString interfaceName;
     CString setInterfaceName;
     CIPv4Address::TIPv4AddressSet ipv4DnsServers;
-    CIPInfo::TIPv4InfoSet ipv4Infos;
+    CIPv4Info::TIPv4InfoSet ipv4Infos;
 
     NetworkManagerConfig( void )
         : usesDhcp4( false )
@@ -1051,11 +1051,11 @@ CLinuxNetworkInterface::GetNrOfIPAddresses( void ) const
 /*-------------------------------------------------------------------------*/
 
 bool
-CLinuxNetworkInterface::GetIPInfo( TIPInfoVector& ipInfo, bool includeUninitialized ) const
+CLinuxNetworkInterface::GetIPInfo( TIPv4InfoVector& ipInfo, bool includeUninitialized ) const
 {GUCEF_TRACE;
 
 	MT::CObjectScopeLock lock( this );
-	CIPInfo::TIPv4InfoSet::const_iterator i = m_ipv4Addresses.begin();
+	CIPv4Info::TIPv4InfoSet::const_iterator i = m_ipv4Addresses.begin();
 	while ( i != m_ipv4Addresses.end() )
 	{
 		if ( includeUninitialized || 0 != (*i).ip.GetAddress() )
