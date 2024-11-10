@@ -72,7 +72,12 @@ class GUCEF_CORE_PUBLIC_CPP CEventAggregateTrigger : public CTSGNotifier
 
     void CheckForTriggerCriterea( void );
 
+    void SetOnlyTriggerOnce( bool onlyTriggerOnce );
+
+    bool GetOnlyTriggerOnce( void ) const;
+
     CEventAggregateTrigger( void );
+    CEventAggregateTrigger( PulseGeneratorPtr pulseGenerator );
     CEventAggregateTrigger( const CEventAggregateTrigger& src );
     virtual ~CEventAggregateTrigger();
 
@@ -89,6 +94,8 @@ class GUCEF_CORE_PUBLIC_CPP CEventAggregateTrigger : public CTSGNotifier
     typedef CTEventHandlerFunctor< CEventAggregateTrigger >     TEventCallback;
 
     TEventCritereaMap m_eventCritereaMap;
+    bool m_isTriggered;
+    bool m_onlyTriggerOnce;
 };
 
 /*-------------------------------------------------------------------------//

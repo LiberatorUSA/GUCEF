@@ -23,6 +23,7 @@ LOCAL_MODULE := gucefCORE_TestApp
 LOCAL_SRC_FILES := \
   src/TestCyclicDynamicBuffer.cpp \
   src/TestDataNodeBinarySerializer.cpp \
+  src/TestDateTime.cpp \
   src/TestDynamicBufferStringStream.cpp \
   src/TestDynamicBufferSwap.cpp \
   src/TestIniParser.cpp \

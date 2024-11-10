@@ -1,0 +1,35 @@
+<ModuleInfoEntry>
+    <Module Name="PubSubStorageTool" Type="Executable" Platform="All" Tags="tools">
+        <Dependencies>
+            <Dependency Name="gucefHeaders" />
+            <Dependency Name="gucefMT" />
+            <Dependency Name="gucefCORE" />
+            <Dependency Name="gucefVFS" />
+			<Dependency Name="gucefKAITAI" />
+			<Dependency Name="gucefPUBSUB" />
+        </Dependencies>
+        <Linker>
+            <Dependency Name="gucefMT" />
+            <Dependency Name="gucefCORE" />
+            <Dependency Name="gucefVFS" />
+			<Dependency Name="gucefKAITAI" />
+			<Dependency Name="gucefPUBSUB" />
+        </Linker>
+		<RuntimeDependencies>
+			<RuntimeDependency Name="dstorepluginPARSIFALXML" />
+			<RuntimeDependency Name="dstorepluginJSONPARSER" />
+			<RuntimeDependency Name="dstorepluginYAML" />
+			<RuntimeDependency Name="codecspluginZLIB" />
+			<RuntimeDependency Name="codecspluginSTBRUMMEHASH" />
+			<RuntimeDependency Name="vfspluginAWSS3" />
+			<RuntimeDependency Name="vfspluginVP" />
+			<RuntimeDependency Name="vfspluginDVP" />
+			<RuntimeDependency Name="vfspluginZIP" />
+			<RuntimeDependency Name="vfspluginITV" />
+			<RuntimeDependency Name="pubsubpluginSTORAGE" />
+		</RuntimeDependencies>		
+        <Preprocessor>
+            <Define String="PUBSUBSTORAGETOOL_BUILD_MODULE" />
+        </Preprocessor>
+    </Module>
+</ModuleInfoEntry>

@@ -60,7 +60,8 @@ namespace PUBSUB {
 //-------------------------------------------------------------------------*/
 
 CPubSubMsgBinarySerializerOptions::CPubSubMsgBinarySerializerOptions( void )
-    : msgIdIncluded( true )
+    : CORE::CIConfigurable()
+    , msgIdIncluded( true )
     , msgIndexIncluded( true )
     , msgDateTimeIncluded( true )
     , msgDateTimeAsMsSinceUnixEpochInUtc( true )
@@ -77,6 +78,23 @@ CPubSubMsgBinarySerializerOptions::CPubSubMsgBinarySerializerOptions( void )
 CPubSubMsgBinarySerializerOptions::~CPubSubMsgBinarySerializerOptions()
 {GUCEF_TRACE;
 
+    Clear();
+}
+
+/*-------------------------------------------------------------------------*/
+
+void 
+CPubSubMsgBinarySerializerOptions::Clear( void )
+{GUCEF_TRACE;
+
+    msgIdIncluded = false;
+    msgIndexIncluded = false; 
+    msgDateTimeIncluded = false; 
+    msgDateTimeAsMsSinceUnixEpochInUtc = false; 
+    msgPrimaryPayloadIncluded = false;
+    msgKeyValuePairsIncluded = false;
+    msgMetaDataKeyValuePairsIncluded = false; 
+    topicNameIncluded = false;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -216,6 +234,39 @@ CPubSubMsgBinarySerializer::SerializeKvPairs( const CIPubSubMsg::TKeyValuePairs&
 /*-------------------------------------------------------------------------*/
 
 bool
+CPubSubMsgBinarySerializer::SerializeKvPairs( const CIPubSubMsg::TKeyValuePairs& kvPairs ,
+                                              CORE::CIOAccess& access                    , 
+                                              UInt32& bytesWritten                       )
+{GUCEF_TRACE;
+
+    UInt32 nrOfKvPairs = (UInt32) kvPairs.size();
+    if ( !access.WriteValue( nrOfKvPairs ) )
+        return false;
+
+    CIPubSubMsg::TKeyValuePairs::const_iterator i = kvPairs.begin();
+    while ( i != kvPairs.end() )
+    {                
+        const CORE::CVariant& key = (*i).first;               
+        const CORE::CVariant& value = (*i).second;
+
+        UInt32 varBinSize = 0;
+        if ( !CORE::CVariantBinarySerializer::Serialize( key, access, varBinSize ) )
+            return false;
+        bytesWritten += varBinSize;
+                
+        varBinSize = 0;
+        if ( !CORE::CVariantBinarySerializer::Serialize( value, access, varBinSize ) )
+            return false;
+        bytesWritten += varBinSize;
+
+        ++i;
+    }
+    return true;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
 CPubSubMsgBinarySerializer::Serialize( const CPubSubMsgBinarySerializerOptions& options ,
                                        const CIPubSubMsg& msg                           , 
                                        UInt32 currentTargetOffset                       , 
@@ -314,6 +365,114 @@ CPubSubMsgBinarySerializer::Serialize( const CPubSubMsgBinarySerializerOptions& 
             if ( !CORE::CVariantBinarySerializer::Serialize( topicNameVariant, currentTargetOffset, target, varBinSize ) )
                 return false;
             currentTargetOffset += varBinSize;
+            bytesWritten += varBinSize;
+        }
+
+        return true;
+    }   
+    catch ( const std::exception& e )    
+    {
+        GUCEF_EXCEPTION_LOG( CORE::LOGLEVEL_NORMAL, CString( "PubSubMsgBinarySerializer:Serialize: caught exception: " ) + e.what()  );
+        return false;
+    } 
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool 
+CPubSubMsgBinarySerializer::Serialize( const CPubSubMsgBinarySerializerOptions& options ,
+                                       const CIPubSubMsg& msg                           , 
+                                       CORE::CIOAccess& target                          ,
+                                       UInt32& bytesWritten                             )
+{GUCEF_TRACE;
+    
+    try
+    {
+        if ( options.msgDateTimeIncluded )
+        {
+            if ( options.msgDateTimeAsMsSinceUnixEpochInUtc )
+            {
+                // Write the DateTime of the msg as milliseconds since Unix Epoch in UTC
+                // In most applications Unix Epoch is not UTC and leap seconds are not taken into account
+                // However since the source if of higher fidelity we can retain accuracy as long as the same method is
+                // used to deserialize as well. There is a problem with any DateTime which predates Unix epoch
+                // If you have to deal with those use string formatting instead
+                UInt64 msSinceUnixEpochInUtc = msg.GetMsgDateTime().ToUnixEpochBasedTicksInMillisecs();
+                if ( !target.WriteValue( msSinceUnixEpochInUtc ) )
+                    return false;
+                bytesWritten += sizeof( msSinceUnixEpochInUtc );
+            }
+            else
+            {
+                // Write the DateTime of the msg which as a ISO 8601 spec string
+                // Writing it in string form actually takes up less space vs writing all the binary components at full fidelity
+                // Using Unix epoch uses less space but we are limited in the time range since historical dates would be a problem 
+                char targetBuffer[ 64 ];
+                Int32 dtStrSize = msg.GetMsgDateTime().ToIso8601DateTimeString( targetBuffer, sizeof(targetBuffer), false, true );
+                if ( 0 >= dtStrSize )
+                    return false;
+                if ( 1 != target.Write( targetBuffer, (UInt32) dtStrSize, 1 ) )
+                    return false;
+                bytesWritten += (UInt32) dtStrSize;
+            }
+        }
+
+        if ( options.msgIdIncluded )
+        {
+            // Write the ID using the variable length variant serializer
+            UInt32 varBinSize = 0;
+            if ( !CORE::CVariantBinarySerializer::Serialize( msg.GetMsgId(), target, varBinSize ) )
+                return false;
+            bytesWritten += varBinSize;
+        }
+
+        if ( options.msgIndexIncluded )
+        {
+            // Write the index using the variable length variant serializer
+            UInt32 varBinSize = 0;
+            if ( !CORE::CVariantBinarySerializer::Serialize( msg.GetMsgIndex(), target, varBinSize ) )
+                return false;
+            bytesWritten += varBinSize;
+        }
+
+        if ( options.msgPrimaryPayloadIncluded )
+        {
+            // Now write the primary payload if any exists
+            const CORE::CVariant& primaryPayload = msg.GetPrimaryPayload();
+            UInt32 varBinSize = 0;
+            if ( !CORE::CVariantBinarySerializer::Serialize( primaryPayload, target, varBinSize ) )
+                return false;
+            bytesWritten += varBinSize;
+        }
+
+        if ( options.msgKeyValuePairsIncluded )
+        {
+            UInt32 kvPairsSize = 0;
+            const CIPubSubMsg::TKeyValuePairs& kvPairs = msg.GetKeyValuePairs();            
+            if ( !SerializeKvPairs( kvPairs, target, kvPairsSize ) )
+                return false;
+            bytesWritten += kvPairsSize;
+        }
+
+        if ( options.msgMetaDataKeyValuePairsIncluded )
+        {
+            UInt32 kvPairsSize = 0;
+            const CIPubSubMsg::TKeyValuePairs& kvPairs = msg.GetMetaDataKeyValuePairs();            
+            if ( !SerializeKvPairs( kvPairs, target, kvPairsSize ) )
+                return false;
+            bytesWritten += kvPairsSize;
+        }
+
+        if ( options.topicNameIncluded )
+        {
+            // We store the topic name as a variant to avoid having to deal with string encoding issues
+            CORE::CVariant topicNameVariant;
+            topicNameVariant.LinkTo( msg.GetOriginClientTopicName() );
+
+            // Write the topic name using the variable length variant serializer
+            UInt32 varBinSize = 0;
+            if ( !CORE::CVariantBinarySerializer::Serialize( topicNameVariant, target, varBinSize ) )
+                return false;
             bytesWritten += varBinSize;
         }
 

@@ -51,6 +51,20 @@ const CEvent CEventAggregateTrigger::AggregateTriggerEvent = "GUCEF::CORE::CEven
 CEventAggregateTrigger::CEventAggregateTrigger( void )
     : CTSGNotifier()
     , m_eventCritereaMap()
+    , m_isTriggered( false )
+    , m_onlyTriggerOnce( true )
+{GUCEF_TRACE
+
+    RegisterEvents();
+}
+
+/*-------------------------------------------------------------------------*/
+
+CEventAggregateTrigger::CEventAggregateTrigger( PulseGeneratorPtr pulseGenerator )
+    : CTSGNotifier( pulseGenerator )
+    , m_eventCritereaMap()
+    , m_isTriggered( false )
+    , m_onlyTriggerOnce( true )
 {GUCEF_TRACE
 
     RegisterEvents();
@@ -61,6 +75,8 @@ CEventAggregateTrigger::CEventAggregateTrigger( void )
 CEventAggregateTrigger::CEventAggregateTrigger( const CEventAggregateTrigger& src )
     : CTSGNotifier( src )
     , m_eventCritereaMap( src.m_eventCritereaMap )
+    , m_isTriggered( src.m_isTriggered )
+    , m_onlyTriggerOnce( src.m_onlyTriggerOnce )
 {GUCEF_TRACE;
 
 }
@@ -120,8 +136,15 @@ CEventAggregateTrigger::CheckForTriggerCriterea( void )
             ++critereaIter;
         } 
 
-        lock.EarlyUnlock();
-        NotifyObservers( AggregateTriggerEvent );
+        bool performTrigger = true;
+        if ( m_onlyTriggerOnce && m_isTriggered )
+            performTrigger = false;
+        
+        m_isTriggered = true;
+
+        lock.EarlyUnlock();        
+        if ( performTrigger )
+            NotifyObservers( AggregateTriggerEvent );
     }
 }
 
@@ -177,6 +200,26 @@ CEventAggregateTrigger::RemoveEventFromTriggerCriterea( const CEvent& eventId )
         return true;    
     }
     return false;  
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CEventAggregateTrigger::SetOnlyTriggerOnce( bool onlyTriggerOnce )
+{GUCEF_TRACE; 
+
+    MT::CObjectScopeLock lock( this );
+    m_onlyTriggerOnce = onlyTriggerOnce;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CEventAggregateTrigger::GetOnlyTriggerOnce( void ) const
+{GUCEF_TRACE; 
+
+    MT::CObjectScopeLock lock( this );
+    return m_onlyTriggerOnce;
 }
 
 /*-------------------------------------------------------------------------//

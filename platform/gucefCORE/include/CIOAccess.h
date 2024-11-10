@@ -206,7 +206,8 @@ class GUCEF_CORE_PUBLIC_CPP CIOAccess : public CICloneable
     virtual UInt64 Write( CIOAccess& sourceData   ,
                           Int64 bytesToWrite = -1 );
 
-    virtual UInt32 Write( const CString& string );
+    virtual UInt32 Write( const CString& string ,
+                          bool addEol = true    );
 
     template < typename T >
     bool WriteValue( const T value ) { return 1 == Write( &value, sizeof( T ), 1 ); }

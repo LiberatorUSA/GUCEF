@@ -69,9 +69,17 @@ class GUCEF_PUBSUB_EXPORT_CPP CPubSubMsgContainerBinarySerializer
     static const CORE::UInt8    CurrentFormatVersion;
 
     static bool SerializeHeader( const CPubSubMsgBinarySerializerOptions& options ,
+                                 CORE::CIOAccess& dest                            ,
+                                 UInt32& bytesWritten                             );
+
+    static bool SerializeHeader( const CPubSubMsgBinarySerializerOptions& options ,
                                  UInt32 currentTargetOffset                       , 
                                  CORE::CDynamicBuffer& target                     , 
                                  UInt32& bytesWritten                             );
+
+    static bool DeserializeHeader( CPubSubMsgBinarySerializerOptions& options ,
+                                   CORE::CIOAccess& source                    ,
+                                   UInt32& bytesRead                          );
 
     static bool DeserializeHeader( CPubSubMsgBinarySerializerOptions& options ,
                                    UInt32 currentSourceOffset                 , 
@@ -81,6 +89,10 @@ class GUCEF_PUBSUB_EXPORT_CPP CPubSubMsgContainerBinarySerializer
     static bool DeserializeHeader( CPubSubMsgBinarySerializerOptions& options ,
                                    const CORE::CDynamicBuffer& source         , 
                                    UInt32& bytesRead                          );
+
+    static bool SerializeFooter( const TMsgOffsetIndex& index ,
+                                 CORE::CIOAccess& dest        ,
+                                 UInt32& bytesWritten         );
 
     static bool SerializeFooter( const TMsgOffsetIndex& index ,
                                  UInt32 currentTargetOffset   , 

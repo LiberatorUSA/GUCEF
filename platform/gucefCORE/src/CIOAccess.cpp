@@ -534,13 +534,26 @@ CIOAccess::Write( CIOAccess& sourceData ,
 /*-------------------------------------------------------------------------*/
 
 UInt32
-CIOAccess::Write( const CString& string )
+CIOAccess::Write( const CString& string ,
+                  bool addEol           )
 {GUCEF_TRACE;
 
-    UInt32 bytesWritten = Write( string.C_String(), 1, string.Length() );
-    if ( bytesWritten == string.Length() ) 
+    UInt32 bytesWritten = 0;
+    
+    if ( !string.IsNULLOrEmpty() )
     {
-        bytesWritten += Write( GUCEF_EOL, 1, GUCEF_EOL_LENGTH );
+        bytesWritten = Write( string.C_String(), 1, string.ByteSize()-1 );
+        if ( bytesWritten == string.ByteSize()-1 && addEol ) 
+        {
+            bytesWritten += Write( GUCEF_EOL, 1, GUCEF_EOL_LENGTH );
+        }
+    }
+    else
+    {
+        if ( addEol ) 
+        {
+            bytesWritten += Write( GUCEF_EOL, 1, GUCEF_EOL_LENGTH );
+        }
     }
     return bytesWritten;
 }

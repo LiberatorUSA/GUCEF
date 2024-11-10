@@ -85,6 +85,8 @@ class GUCEF_PUBSUB_EXPORT_CPP CPubSubMsgBinarySerializerOptions : public CORE::C
 
     void FromPubSubClientFeatures( const CPubSubClientFeatures& features );
 
+    void Clear( void );
+
     bool msgIdIncluded;
     bool msgIndexIncluded;
     bool msgDateTimeIncluded;
@@ -111,11 +113,20 @@ class GUCEF_PUBSUB_EXPORT_CPP CPubSubMsgBinarySerializer
                                   UInt32 currentTargetOffset                 ,
                                   CORE::CDynamicBuffer& target               , 
                                   UInt32& bytesWritten                       );
+
+    static bool SerializeKvPairs( const CIPubSubMsg::TKeyValuePairs& kvPairs ,
+                                  CORE::CIOAccess& target                    ,
+                                  UInt32& bytesWritten                       );
     
     static bool Serialize( const CPubSubMsgBinarySerializerOptions& options ,
                            const CIPubSubMsg& msg                           , 
                            UInt32 currentTargetOffset                       , 
                            CORE::CDynamicBuffer& target                     , 
+                           UInt32& bytesWritten                             );
+
+    static bool Serialize( const CPubSubMsgBinarySerializerOptions& options ,
+                           const CIPubSubMsg& msg                           , 
+                           CORE::CIOAccess& target                          ,
                            UInt32& bytesWritten                             );
 
     static bool DeserializeKvPairs( bool linkWherePossible               ,

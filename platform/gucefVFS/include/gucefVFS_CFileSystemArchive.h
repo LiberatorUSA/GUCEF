@@ -158,6 +158,13 @@ class GUCEF_VFS_PUBLIC_CPP CFileSystemArchive : public CArchive
     virtual bool IsHealthy( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
     virtual bool IsConnected( void ) const GUCEF_VIRTUAL_OVERRIDE; 
+
+    /**
+     *  member function to allow the archive to resolve special directories
+     *  like the user's home directory, the current working directory, etc.
+     *  Redirects to O/S filesystem implementation.
+     */
+    virtual bool TryResolveSpecialDir( CORE::TSpecialDirs dir, CString& resolvedPath ) const GUCEF_VIRTUAL_OVERRIDE;
     
     const CString& GetRootDir( void ) const;
 
@@ -176,7 +183,7 @@ class GUCEF_VFS_PUBLIC_CPP CFileSystemArchive : public CArchive
     
     private:
 
-    CORE::CString GetVfsPathForFileSystemPath( const CORE::CString& fsPath );
+    CORE::CString GetVfsPathForFileSystemPath( const CORE::CString& fsPath ) const;
 
     void OnDirectoryWatcherEvent( CORE::CNotifier* notifier    ,
                                   const CORE::CEvent& eventid  ,
@@ -225,14 +232,3 @@ typedef CORE::CTFactory< VFS::CArchive, CFileSystemArchive, MT::CMutex > TFileSy
 /*-------------------------------------------------------------------------*/
           
 #endif /* GUCEF_VFS_CFILESYSTEMARCHIVE_H ? */
-
-/*-------------------------------------------------------------------------//
-//                                                                         //
-//      Info & Changes                                                     //
-//                                                                         //
-//-------------------------------------------------------------------------//
-
-- 24-08-2005 :
-        - Dinand: implemented
-
----------------------------------------------------------------------------*/

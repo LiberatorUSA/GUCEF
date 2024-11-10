@@ -38,10 +38,15 @@
 #define GUCEF_MT_CSCOPERWLOCK_H
 #endif /* GUCEF_MT_CSCOPERWLOCK_H ? */
 
-#ifndef DVFILEUTILS_H
+#ifndef GUCEF_CORE_DVFILEUTILS_H
 #include "dvfileutils.h"                /* Needed for dir itteration */
-#define DVFILEUTILS_H
-#endif /* DVFILEUTILS_H ? */
+#define GUCEF_CORE_DVFILEUTILS_H
+#endif /* GUCEF_CORE_DVFILEUTILS_H ? */
+
+#ifndef GUCEF_CORE_DVCPPFILEUTILS_H
+#include "dvcppfileutils.h"            
+#define GUCEF_CORE_DVCPPFILEUTILS_H
+#endif /* GUCEF_CORE_DVCPPFILEUTILS_H ? */
 
 #ifndef DVCPPSTRINGUTILS_H
 #include "dvcppstringutils.h"
@@ -108,11 +113,6 @@
 #define GUCEF_CORE_CGUCEFAPPLICATION_H
 #endif /* GUCEF_CORE_CGUCEFAPPLICATION_H ? */
 
-#ifndef DVCPPSTRINGUTILS_H
-#include "dvcppstringutils.h"           /* C++ string utils */
-#define DVCPPSTRINGUTILS_H
-#endif /* DVCPPSTRINGUTILS_H ? */
-
 #ifndef GUCEF_CORE_DVMD5UTILS_H
 #include "dvmd5utils.h"
 #define GUCEF_CORE_DVMD5UTILS_H
@@ -156,6 +156,10 @@ const CORE::CEvent CVFS::VfsInitializationCompletedEvent = "GUCEF::VFS::CVFS::Vf
 const CORE::CString CVFS::FileSystemArchiveTypeName = "FileSystem";
 const CORE::CString CVFS::DefaultASyncOpsThreadPoolName = "VFS";
 
+#define GUCEF_VFS_RESERVED_STRING_DEFAULT_VOLUME_MOUNT_ROOT     "/system/"
+#define GUCEF_VFS_RESERVED_STRING_VOLUMES_BY_ID                 "volumes_by_id/"
+#define GUCEF_VFS_RESERVED_STRING_VOLUMES_BY_PATH               "volumes_by_path/"
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      IMPLEMENTATION                                                     //
@@ -187,6 +191,8 @@ CVFS::CVFS( void )
     , m_fileSystemArchiveFactory()
     , m_delayMountedArchiveSettings()
     , m_delayedArchiveMountingIsComplete( false )
+    , m_vfsRootForVolumes( GUCEF_VFS_RESERVED_STRING_DEFAULT_VOLUME_MOUNT_ROOT )
+    , m_autoMountFsRoots( true )
     , m_rwdataLock( true )
 {GUCEF_TRACE;
 
@@ -1638,20 +1644,7 @@ CVFS::MountArchive( const CArchiveSettings& settings )
                 // We will add it to our mount list
                 TMountEntryPtr archiveEntry = MountEntry::CreateSharedObj();
                 archiveEntry->abspath = actualArchivePath;
-
-                //// Get the path where the archive is located relative to the root mount
-                //archiveEntry.path = archiveEntry.abspath.CutChars( mountEntry.abspath.Length(), true );
-
-                //// Git rid of any directory seperator prefix
-                //if ( archiveEntry.path.Length() > 0 )
-                //{
-                //    if ( ( archiveEntry.path[ 0 ] == '\\' ) ||
-                //            ( archiveEntry.path[ 0 ] == '/' )   )
-                //    {
-                //        archiveEntry.path = archiveEntry.path.CutChars( 1, true );
-                //    }
-                //}
-
+                archiveEntry->archiveType = settings.GetArchiveType();
                 archiveEntry->path = actualArchivePath;
                 archiveEntry->writeable = updatedSettings.GetWriteableRequested();
                 archiveEntry->archive = archive;
@@ -1661,6 +1654,9 @@ CVFS::MountArchive( const CArchiveSettings& settings )
                 m_archivePtrToMountEntryLookup[ archive.GetPointerAlways() ] = archiveEntry;
 
                 SubscribeTo( archive.GetPointerAlways() );
+
+                GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "VFS:MountArchive: Mounted archive of type \"" +
+                    settings.GetArchiveType() + "\" at path: " + updatedSettings.GetMountPath() );
 
                 TArchiveMountedEventData eData( archiveEntry->mountPath );
                 NotifyObservers( ArchiveMountedEvent, &eData );
@@ -2017,7 +2013,7 @@ CVFS::UnmountArchiveByName( const CString& archiveName )
 
 /*-------------------------------------------------------------------------*/
 
-void
+bool
 CVFS::AddRoot( const CORE::CString& rootpath                                ,
                const CString& archiveName                                   ,
                const bool writeable                                         ,
@@ -2034,7 +2030,7 @@ CVFS::AddRoot( const CORE::CString& rootpath                                ,
     settings.SetMountPath( mountPoint );
     settings.SetArchiveType( archiveType );
 
-    MountArchive( settings );
+    return MountArchive( settings );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -2115,9 +2111,14 @@ CVFS::LoadVfsSystemConfig( const CORE::CDataNode& cfg )
     m_maxmemloadsize = cfg.GetAttributeValueOrChildValueByName( "maxmemload" ).AsUInt32( m_maxmemloadsize, true );
     m_asyncOpsThreadpool = cfg.GetAttributeValueOrChildValueByName( "asyncOpsThreadpool" ).AsString( m_asyncOpsThreadpool, true );
     m_asyncOpsMinWorkerThreads = cfg.GetAttributeValueOrChildValueByName( "asyncOpsMinWorkerThreads" ).AsUInt32( m_asyncOpsMinWorkerThreads, true );
+    m_vfsRootForVolumes = cfg.GetAttributeValueOrChildValueByName( "vfsRootForVolumes" ).AsString( m_vfsRootForVolumes, true );
+    m_autoMountFsRoots = cfg.GetAttributeValueOrChildValueByName( "autoMountFsRoots" ).AsBool( m_autoMountFsRoots, true );
 
     CORE::ThreadPoolPtr threadPool = CORE::CCoreGlobal::Instance()->GetTaskManager().GetOrCreateThreadPool( m_asyncOpsThreadpool );
     threadPool->SetDesiredMinNrOfWorkerThreads( m_asyncOpsMinWorkerThreads );
+
+    if ( m_autoMountFsRoots )
+        MountFileSystemRoots( m_vfsRootForVolumes );
 
     return true;
 }
@@ -2135,9 +2136,11 @@ CVFS::LoadConfig( const CORE::CDataNode& tree )
                                             '%'              ,
                                             false            );
 
+    bool triedLoadingSystemConfig = false;
     if ( GUCEF_NULL != n )
     {
         LoadVfsSystemConfig( *n );
+        triedLoadingSystemConfig = true;
 
         CORE::CDataNode::TConstDataNodeSet rootNodeList = n->FindChildrenOfType( "VfsRoot" );
         CORE::CDataNode::TConstDataNodeSet::iterator i = rootNodeList.begin();
@@ -2160,6 +2163,7 @@ CVFS::LoadConfig( const CORE::CDataNode& tree )
     if ( GUCEF_NULL != n )
     {
         LoadVfsSystemConfig( *n );
+        triedLoadingSystemConfig = true;
 
         CORE::CDataNode::TConstDataNodeSet rootNodeList = n->FindChildrenOfType( "ArchiveSettings", false, false );
         CORE::CDataNode::TConstDataNodeSet::iterator i = rootNodeList.begin();
@@ -2205,7 +2209,157 @@ CVFS::LoadConfig( const CORE::CDataNode& tree )
         }
         GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "VFS archive configuration load sequence completed" );
     }
+
+    if ( !triedLoadingSystemConfig )
+    {
+        // Even if we have no system config we still want to trigger relative init functions using defaults
+        CORE::CDataNode emptyDummy;
+        LoadVfsSystemConfig( emptyDummy );
+    }
+
     return true;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CVFS::AddMountAliases( const CString& mountPath                   ,
+                       const CString::StringSet& mountPathAliases )
+{GUCEF_TRACE;
+    
+    bool addedAliases = false;
+    CString path = ConformVfsDirPath( mountPath );
+
+    MT::CScopeReaderLock readerLock( m_rwdataLock );
+
+    TMountVector::const_iterator i = m_mountList.begin();
+    while ( i != m_mountList.end() )
+    {
+        TMountEntryPtr mountEntry = (*i);
+        if ( mountEntry->mountPath == path )
+        {
+            MT::CScopeWriterLock writerLock( readerLock );    
+
+            CString::StringSet& aliases = mountEntry->mountPathAliases;
+            CString::StringSet::const_iterator n = mountPathAliases.begin();
+            while ( n != mountPathAliases.end() )
+            {
+                const CString& alias = (*n);
+                aliases.insert( alias );
+                ++n;
+            }
+            addedAliases = true;
+        }
+        ++i;
+    }
+
+    return addedAliases;    
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool 
+CVFS::AddMountAlias( const CString& mountPath      ,
+                     const CString& mountPathAlias )
+{GUCEF_TRACE;
+
+    CString::StringSet mountPathAliases;
+    mountPathAliases.insert( mountPathAlias );
+    return AddMountAliases( mountPath, mountPathAliases );
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CVFS::MountFileSystemRoots( const CORE::CString& overrideMountRoot )
+{GUCEF_TRACE;
+
+    MT::CScopeReaderLock readerLock( m_rwdataLock );
+    
+    GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "VFS:MountFileSystemRoots: Mounting filesystem roots into VFS" );
+
+    CORE::CString mountRoot = ConformVfsDirPath( overrideMountRoot.IsNULLOrEmpty() ? m_vfsRootForVolumes : overrideMountRoot );
+    if ( m_vfsRootForVolumes != mountRoot )
+    {
+        MT::CScopeWriterLock writerLock( readerLock );
+        m_vfsRootForVolumes = mountRoot;        
+    }
+    GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "VFS:MountFileSystemRoots: Volume mount root set to: " + mountRoot );
+    
+    // First get the list of volume IDs
+    CString::StringSet volumeIds;
+    if ( !CORE::GetAllFileSystemStorageVolumes( volumeIds ) )
+    {
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "VFS:MountFileSystemRoots: Failed to get storage volume ids" );
+        return false;
+    }
+
+    // Mount all volumes via their volume id
+    bool totalSuccess = true;
+    CORE::CString volumeIdMountRoot = mountRoot + GUCEF_VFS_RESERVED_STRING_VOLUMES_BY_ID;
+    CORE::CString::StringSet::iterator n = volumeIds.begin();
+    while ( n != volumeIds.end() )
+    {
+        const CORE::CString& volumeId = (*n);
+        CORE::CString volumeIdMount = volumeIdMountRoot + volumeId + "/";
+        
+        CORE::CString fsVolumePath;
+        CORE::GetVolumePathForVolumeId( volumeId, fsVolumePath );
+
+        bool addRootSuccess = AddRoot( fsVolumePath, volumeId, false, false, volumeIdMount, FileSystemArchiveTypeName );
+        if ( addRootSuccess )
+        {
+            // Now attempt to obtain all filesystem path names for the given volume id
+            // These are the more human friendly path names that are normally used for accessing files
+            // Path names returned represent root paths which are garantueed to be backed by the given volume
+            // Note that this is optional and may not be supported on all platforms
+            CString::StringSet fsPathNames;
+            if ( CORE::GetAllFileSystemPathNamesForVolume( volumeId, fsPathNames ) && !fsPathNames.empty() )
+            {
+                CORE::CString volumePathMountRoot = mountRoot + GUCEF_VFS_RESERVED_STRING_VOLUMES_BY_PATH;
+                
+                CString::StringSet aliasPaths;
+                CString::StringSet::iterator m = fsPathNames.begin();
+                while ( m != fsPathNames.end() )
+                {
+                    const CString& fsPathName = (*m);
+                    if ( !fsPathName.IsNULLOrEmpty() )
+                    {
+                        #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
+                        
+                        // On MS Windows we want to perform special processing for drive letter paths
+                        // we want to unify the syntax with Linux style paths
+                        //   Example C:\ -> /C/
+                        if ( 3 == fsPathName.Length() && ( fsPathName[ 1 ] == ':' && fsPathName[ 2 ] == '\\' ) )
+                        {
+                            CORE::CString volumePath = ConformVfsDirPath( volumePathMountRoot + ConformVfsDirPath( CString( fsPathName[ 0 ] ) ) );
+                            aliasPaths.insert( volumePath );
+                        }
+                        else
+                        {
+                            CORE::CString volumePath = ConformVfsDirPath( volumePathMountRoot + ConformVfsDirPath( fsPathName ) );
+                            aliasPaths.insert( volumePath );
+                        }
+
+                        #else
+
+                        CORE::CString volumePath = ConformVfsDirPath( volumePathMountRoot + ConformVfsDirPath( fsPathName ) );
+                        aliasPaths.insert( volumePath );
+
+                        #endif
+                    }
+                    ++m;
+                }
+                
+                if ( !aliasPaths.empty() )
+                    totalSuccess = AddMountAliases( volumeIdMount, aliasPaths ) && totalSuccess;
+            }
+        }
+        totalSuccess = addRootSuccess && totalSuccess;
+        ++n;
+    }
+
+    return totalSuccess;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -2292,7 +2446,9 @@ CVFS::GetEligableMounts( const CString& location                ,
                 // Check to see if the mount path is the starting sub string of the location
                 if ( location.HasSubstr( mountEntry->mountPath, true ) == 0 )
                 {
-                    // We need to make sure we dont accidentally match a partial directory name with a similarly names path
+                    // We need to make sure we dont accidentally match a partial directory name with a similarly named path
+                    // for example matching on "/example/foo" when the location is "/example/foo2/"
+                    // It needs to be the full directory name to count as a match
                     if ( location.Length() == mountEntry->mountPath.Length() ||
                        ( location[ mountEntry->mountPath.Length()-1 ] == '/' ) )
                     {
@@ -2314,6 +2470,46 @@ CVFS::GetEligableMounts( const CString& location                ,
 
                         GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "VFS: Found eligable mount link using archive of type \"" +
                             mountEntry->archive->GetType() + "\" with remainder \"" + mountLink->remainder + "\". mustBeWritable=" + CORE::BoolToString( mustBeWritable ) );
+                    }
+                }
+                else
+                if ( !mountEntry->mountPathAliases.empty() )
+                {
+                    CORE::CString::StringSet::iterator m = mountEntry->mountPathAliases.begin();
+                    while ( m != mountEntry->mountPathAliases.end() )
+                    {
+                        const CORE::CString mountPathAlias = (*m);
+                        
+                        // Check to see if the mount path is the starting sub string of the location
+                        if ( location.HasSubstr( mountPathAlias, true ) == 0 )
+                        {
+                            // We need to make sure we dont accidentally match a partial directory name with a similarly named path
+                            // for example matching on "/example/foo" when the location is "/example/foo2/"
+                            // It needs to be the full directory name to count as a match
+                            if ( location.Length() == mountPathAlias.Length() ||
+                               ( location[ mountPathAlias.Length()-1 ] == '/' ) )
+                            {
+                                TConstMountLinkPtr mountLink = ConstMountLink::CreateSharedObjWithParam( mountEntry );
+                                mountLink->remainder = location.CutChars( mountPathAlias.Length(), true );
+
+                                // make sure the remainder does not have a path seperator prefix
+                                if ( mountLink->remainder.Length() > 0 )
+                                {
+                                    if ( ( mountLink->remainder[ 0 ] == '/' ) ||
+                                         ( mountLink->remainder[ 0 ] == '\\' ) )
+                                    {
+                                        // remove the dir seperator prefix
+                                        mountLink->remainder = mountLink->remainder.CutChars( 1, true );
+                                    }
+                                }
+
+                                mountLinkVector.push_back( mountLink );
+
+                                GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "VFS: Found eligable mount link using archive of type \"" +
+                                    mountEntry->archive->GetType() + "\" with remainder \"" + mountLink->remainder + "\". mustBeWritable=" + CORE::BoolToString( mustBeWritable ) );
+                            }
+                        }
+                        ++m;
                     }
                 }
             }
@@ -2659,6 +2855,230 @@ CVFS::GetFileSize( const CORE::CString& file ) const
     }
 
     return 0;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool 
+CVFS::TryResolveSpecialDir( CORE::TSpecialDirs dir                 , 
+                            CString& resolvedPath                  ,
+                            const CORE::CString& hintNamespacePath ) const
+{GUCEF_TRACE;
+
+    MT::CScopeReaderLock lock( m_rwdataLock );
+
+    if ( hintNamespacePath.IsNULLOrEmpty() )
+    {
+        // try to resolve through the archives which can represent different filesystems
+        // first successful resolution will be returned
+        TMountVector::const_iterator i = m_mountList.begin();
+        while ( i != m_mountList.end() )
+        {
+            const TMountEntryPtr mountEntry = (*i);
+            if ( !mountEntry->archive.IsNULL() )
+                if ( mountEntry->archive->TryResolveSpecialDir( dir, resolvedPath ) )
+                    return true;
+            ++i;
+        }
+    }
+    else
+    {
+        CString path = ConformVfsDirPath( hintNamespacePath );
+        
+        // Get a list of all eligable mounts based on the namespace hint
+        TConstMountLinkVector mountLinks;
+        GetEligableMounts( path, false, mountLinks );
+
+        // Search for a file and then get its size
+        TConstMountLinkVector::iterator i = mountLinks.begin();
+        while ( i != mountLinks.end() )
+        {
+            TConstMountLinkPtr& mountLink = (*i);
+            if ( mountLink->mountEntry->archive->TryResolveSpecialDir( dir, resolvedPath ) )
+                return true;
+            ++i;
+        }
+    }
+
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CVFS::TryGetVfsPathForFileSystemPath( const CORE::CString& fsPath ,
+                                      CString& resolvedPath       )
+{GUCEF_TRACE;
+
+    // Use the global VFS default for root auto mounting
+    return TryGetVfsPathForFileSystemPath( fsPath, resolvedPath, m_autoMountFsRoots );
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CVFS::TryGetVfsPathForFileSystemPath( const CORE::CString& fsPath ,
+                                      CString& resolvedPath       ,
+                                      bool autoMountRoots         )
+{GUCEF_TRACE;
+
+    if ( fsPath.IsNULLOrEmpty() )
+        return false;
+
+    MT::CScopeReaderLock lock( m_rwdataLock );
+
+    // First try regular mount matching
+    // This should be able to match against all explicitly mounted archives
+    // We will try first against native filesystem style archives as those are the best fit for this operation
+    TMountVector::const_iterator i = m_mountList.begin();
+    while ( i != m_mountList.end() )
+    {
+        const TMountEntryPtr& mountEntry = (*i);            
+            
+        if ( mountEntry->archiveType == CVFS::FileSystemArchiveTypeName )
+        {
+            const CString& absPath = mountEntry->abspath;
+                
+            // Check to see if the archive absolute path is the starting sub string of the location
+            if ( fsPath.HasSubstr( absPath, true ) == 0 )
+            {
+                // We need to make sure we dont accidentally match a partial directory name with a similarly named path
+                // for example matching on "/example/foo" when the location is "/example/foo2/"
+                // It needs to be the full directory name to count as a match
+                if ( absPath.Length() == fsPath.Length() ||
+                    ( fsPath[ absPath.Length()-1 ] == '/' ) )
+                {
+                    resolvedPath = ConformVfsDirPath( mountEntry->mountPath + fsPath.CutChars( absPath.Length(), true ) );
+                    return true;
+                }
+            }
+        }
+        ++i;
+    }
+
+    // Second try again but against non-native filesystem style archives
+    i = m_mountList.begin();
+    while ( i != m_mountList.end() )
+    {
+        const TMountEntryPtr& mountEntry = (*i);            
+            
+        if ( mountEntry->archiveType != CVFS::FileSystemArchiveTypeName )
+        {
+            const CString& absPath = mountEntry->abspath;
+                
+            // Check to see if the archive absolute path is the starting sub string of the location
+            if ( fsPath.HasSubstr( absPath, true ) == 0 )
+            {
+                // We need to make sure we dont accidentally match a partial directory name with a similarly named path
+                // for example matching on "/example/foo" when the location is "/example/foo2/"
+                // It needs to be the full directory name to count as a match
+                if ( absPath.Length() == fsPath.Length() ||
+                    ( fsPath[ absPath.Length()-1 ] == '/' ) )
+                {
+                    resolvedPath = ConformVfsDirPath( mountEntry->mountPath + fsPath.CutChars( absPath.Length(), true ) );
+                    return true;
+                }
+            }
+        }
+        ++i;
+    }
+
+    // If we get here we will perform special handling for filesystem paths
+    // While we may not have a direct mount for the filesystem path we can still try to resolve it
+    // by using the filesystem (volume) root paths for which we have mounting facilities as well (if enabled) with a known naming convention
+
+    CORE::CString volumePath;
+
+    #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
+                        
+    // On MS Windows we want to perform special processing for drive letter paths
+    // we want to map based on drive letter if we can since that will be the most natural way to access files 
+    // on this operating system
+    //   Example C:\ -> /C/
+    if ( 3 < fsPath.Length() && ( fsPath[ 1 ] == ':' && fsPath[ 2 ] == '\\' ) )
+    {
+        // this is an absolute path so we just need to map the drive letter to the VFS volume path
+        volumePath = ConformVfsDirPath( m_vfsRootForVolumes + GUCEF_VFS_RESERVED_STRING_VOLUMES_BY_PATH + CString( fsPath[ 0 ] ) );
+        volumePath = ConformVfsDirPath( volumePath + fsPath.CutChars( 3 ) ); 
+    }
+    else
+    {
+        // The given path is not an absolute path so we need to make it one before we can map the drive letter to the VFS volume path
+        CORE::CString absPath = CORE::CombinePath( CORE::CurrentWorkingDir(), fsPath );
+        volumePath = ConformVfsDirPath( m_vfsRootForVolumes + GUCEF_VFS_RESERVED_STRING_VOLUMES_BY_PATH + CString( absPath[ 0 ] ) );
+        volumePath = ConformVfsDirPath( volumePath + absPath.CutChars( 3 ) ); 
+    }
+
+    #else
+
+    // Assume Linux convention of / prefix for absolute paths rooted at the root of the native filesystem
+    if ( 1 < fsPath.Length() && ( fsPath[ 0 ] == '/' )
+    {
+        volumePath = ConformVfsDirPath( m_vfsRootForVolumes + GUCEF_VFS_RESERVED_STRING_VOLUMES_BY_PATH + fsPath );
+    }
+    else
+    {
+        // The given path is not an absolute path so we need to make it one
+        volumePath = CORE::CombinePath( CORE::CurrentWorkingDir(), fsPath );
+        volumePath = ConformVfsDirPath( m_vfsRootForVolumes + GUCEF_VFS_RESERVED_STRING_VOLUMES_BY_PATH + volumePath );
+    }
+
+    #endif
+
+    // Now try again for the third time but with our adjusted volume routed path 
+    // This more more of a confirmation step since we already constructed what the VFS path 'would' be
+    // We now want to verify that a mount exists for this VFS actually path, otherwise it doesnt count as a valid resolution
+    i = m_mountList.begin();
+    while ( i != m_mountList.end() )
+    {
+        const TMountEntryPtr& mountEntry = (*i);            
+            
+        if ( mountEntry->archiveType == CVFS::FileSystemArchiveTypeName )
+        {
+            CString shapedAbsPath = ConformVfsDirPath( mountEntry->abspath );
+                
+            // Check to see if the archive absolute path is the starting sub string of the location
+            if ( volumePath.HasSubstr( shapedAbsPath, true ) == 0 )
+            {
+                // We need to make sure we dont accidentally match a partial directory name with a similarly named path
+                // for example matching on "/example/foo" when the location is "/example/foo2/"
+                // It needs to be the full directory name to count as a match
+                if ( shapedAbsPath.Length() == volumePath.Length() ||
+                    ( volumePath[ shapedAbsPath.Length()-1 ] == '/' ) )
+                {
+                    resolvedPath = volumePath;
+                    return true;
+                }
+            }
+
+            const CString::StringSet& aliases = mountEntry->mountPathAliases;
+            CString::StringSet::iterator n = aliases.begin();
+            while ( n != aliases.end() )
+            {
+                const CString& alias = (*n);
+                if ( volumePath.HasSubstr( alias, true ) == 0 )
+                {
+                    if ( alias.Length() == volumePath.Length() ||
+                        ( volumePath[ alias.Length()-1 ] == '/' ) )
+                    {
+                        resolvedPath = volumePath;
+                        return true;
+                    }
+                }
+                ++n;
+            }
+        }
+        ++i;
+    }
+
+    if ( autoMountRoots )
+    {
+        // Its possible we did not have a mount YET for the given filesystem path because we are taking an on-demand approach vs everything at bootstrap
+        // We can try to mount the filesystem path now as a lazy-load and then try again
+        // @TODO
+    }
+    
+    return false;
 }
 
 /*-------------------------------------------------------------------------*/

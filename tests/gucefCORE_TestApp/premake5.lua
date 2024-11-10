@@ -48,6 +48,7 @@ vpaths { ["Headers"] = { "**.h", "**.hpp", "**.hxx" } }
 files( {
   "include/TestCyclicDynamicBuffer.h",
   "include/TestDataNodeBinarySerializer.h",
+  "include/TestDateTime.h",
   "include/TestDynamicBufferStringStream.h",
   "include/TestDynamicBufferSwap.h",
   "include/TestIniParser.h",
@@ -67,6 +68,7 @@ vpaths { ["Source"] = { "**.c", "**.cpp", "**.cs", "**.asm" } }
 files( {
   "src/TestCyclicDynamicBuffer.cpp",
   "src/TestDataNodeBinarySerializer.cpp",
+  "src/TestDateTime.cpp",
   "src/TestDynamicBufferStringStream.cpp",
   "src/TestDynamicBufferSwap.cpp",
   "src/TestIniParser.cpp",

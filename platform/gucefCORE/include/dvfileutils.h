@@ -89,6 +89,17 @@ extern "C" {
 /*-------------------------------------------------------------------------*/
 
 /**
+ *  Function which resolves an Operating System 'special' directory to a path
+ *  The path is written into dest. The dest_size parameter should be the size the destination buffer can hold
+ *  The function returns the number of bytes written to dest. If an error occurs 0 is returned.
+ *  if dest is NULL then the function will return the number of bytes needed to store the path.
+ */
+GUCEF_CORE_PUBLIC_C UInt32
+Try_Resolve_Special_Dir( TSpecialDirs dir, char* dest, UInt32 dest_size );
+
+/*-------------------------------------------------------------------------*/
+
+/**
  *  Function that checks if the given path points to a valid item
  *  the item can be either a directory or a file
  */

@@ -65,6 +65,54 @@ const CORE::UInt8   CPubSubMsgContainerBinarySerializer::CurrentFormatVersion = 
 
 bool
 CPubSubMsgContainerBinarySerializer::SerializeHeader( const CPubSubMsgBinarySerializerOptions& options ,
+                                                      CORE::CIOAccess& dest                            ,
+                                                      UInt32& bytesWritten                             )
+{GUCEF_TRACE;
+
+    if ( !dest.IsWriteable() || !dest.IsValid() )
+    {
+        // We consider this an error because the source is not in a state to be read from which means upstream some assumption failed
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "PubSubMsgContainerBinarySerializer:SerializeHeader: Source is not writeable or invalid" );
+        return false;
+    }
+    if ( !dest.Opened() ) 
+    {
+        dest.Open();
+    }
+    UInt64 pos = dest.Tell();
+    if ( 0 != pos )
+    {
+        if ( 0 != dest.Setpos( 0 ) )
+        {
+            GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "PubSubMsgContainerBinarySerializer:SerializeHeader: Failed to seek to start of resource" );
+            return false;
+        }
+    }
+
+    // magic text bytes to help identify the blob as being a container of pub sub messages
+    if ( 1 != dest.Write( MagicText.C_String(), MagicText.ByteSize()-1, 1 ) )
+        return false;
+    bytesWritten += MagicText.ByteSize()-1;
+
+    // Reserved for the future version field
+    if ( 1 != dest.Write( &CurrentFormatVersion, sizeof( CurrentFormatVersion ), 1 ) )
+        return false;
+    bytesWritten += sizeof( CurrentFormatVersion );
+
+    // Since the serializer settings used have to match to ensure compatibility we will
+    // store those in the header so that we know the format of each message
+    UInt32 msgSerializerOptions = options.ToOptionsBitMask();
+    if ( 1 != dest.Write( &msgSerializerOptions, sizeof( msgSerializerOptions ), 1 ) )
+        return false;
+    bytesWritten += sizeof( msgSerializerOptions );
+
+    return true;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CPubSubMsgContainerBinarySerializer::SerializeHeader( const CPubSubMsgBinarySerializerOptions& options ,
                                                       UInt32 currentTargetOffset                       ,
                                                       CORE::CDynamicBuffer& target                     ,
                                                       UInt32& bytesWritten                             )
@@ -101,6 +149,82 @@ CPubSubMsgContainerBinarySerializer::SerializeHeader( const CPubSubMsgBinarySeri
 
 bool
 CPubSubMsgContainerBinarySerializer::DeserializeHeader( CPubSubMsgBinarySerializerOptions& options ,
+                                                        CORE::CIOAccess& source                    ,
+                                                        UInt32& bytesRead                          )
+{GUCEF_TRACE;
+
+    try
+    {
+        options.Clear();
+        bytesRead = 0;
+
+        if ( !source.IsReadable() || !source.IsValid() )
+        {
+            // We consider this an error because the source is not in a state to be read from which means upstream some assumption failed
+            GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "PubSubMsgContainerBinarySerializer:DeserializeHeader: Source is not readable or invalid" );
+            return false;
+        }
+
+        if ( !source.Opened() ) 
+        {
+            source.Open();
+        }
+        else
+        {
+            if ( source.Setpos( 0 ) != 0 )
+            {
+                GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "PubSubMsgContainerBinarySerializer:DeserializeHeader: Failed to seek to start of resource" );
+                return false;
+            }
+        }
+        
+        // magic text bytes to help identify the blob as being a container of pub sub messages
+        CORE::CString testStr;
+        if ( GUCEF_NULL == testStr.Reserve( MagicText.ByteSize(), (Int32) MagicText.Length() ) )
+            return false;
+        if ( 1 != source.Read( testStr.C_String(), MagicText.ByteSize()-1, 1 ) || testStr != MagicText )
+        {
+            // We dont want to log errors or warnings for this because header reading magic is a typical way to brute force
+            // check if the resource is of a certain type
+            GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "PubSubMsgContainerBinarySerializer:DeserializeHeader: Magic text test failed" );
+            bytesRead = (UInt32) source.Tell();
+            return false;
+        }
+
+        // Next read the format version
+        UInt8 formatVersion = 0;
+        if ( !source.ReadValue< UInt8 >( formatVersion ) || ( CurrentFormatVersion != formatVersion ) )
+        {
+            GUCEF_WARNING_LOG( CORE::LOGLEVEL_NORMAL, "PubSubMsgContainerBinarySerializer:DeserializeHeader: Incompatible format version" );
+            bytesRead = (UInt32) source.Tell();
+            return false;
+        }
+
+        // Next read the option flags
+        UInt32 optionsBitMask = 0;
+        if ( !source.ReadValue< UInt32 >( optionsBitMask ) )
+        {
+            GUCEF_WARNING_LOG( CORE::LOGLEVEL_NORMAL, "PubSubMsgContainerBinarySerializer:DeserializeHeader: Incompatible format" );
+            bytesRead = (UInt32) source.Tell();
+            return false;
+        }
+
+        options.FromOptionsBitMask( optionsBitMask );
+        bytesRead = (UInt32) source.Tell();
+
+        GUCEF_DEBUG_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "PubSubMsgContainerBinarySerializer:DeserializeHeader: Successfully read header" );
+        return true;
+    }
+    catch ( const std::exception& )
+    {
+        return false;
+    }
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CPubSubMsgContainerBinarySerializer::DeserializeHeader( CPubSubMsgBinarySerializerOptions& options ,
                                                         UInt32 currentSourceOffset                 ,
                                                         const CORE::CDynamicBuffer& source         ,
                                                         UInt32& bytesRead                          )
@@ -117,7 +241,7 @@ CPubSubMsgContainerBinarySerializer::DeserializeHeader( CPubSubMsgBinarySerializ
         {
             // We dont want to log errors or warnings for this because header reading magic is a typical way to brute force
             // check if the resource is of a certain type
-            GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "PubSubMsgContainerBinarySerializer:DeserializeHeader: Magic text test failed" );
+            GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "PubSubMsgContainerBinarySerializer:DeserializeHeader: Magic text test failed" );
             return false;
         }
 
@@ -152,6 +276,55 @@ CPubSubMsgContainerBinarySerializer::DeserializeHeader( CPubSubMsgBinarySerializ
 {GUCEF_TRACE;
 
     return DeserializeHeader( options, 0, source, bytesRead );
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CPubSubMsgContainerBinarySerializer::SerializeFooter( const TMsgOffsetIndex& index ,
+                                                      CORE::CIOAccess& target      ,
+                                                      UInt32& bytesWritten         )
+{GUCEF_TRACE;
+
+    UInt32 footerSize = ((UInt32)index.size()*4)+4+(MagicText.ByteSize()-1);
+
+    // Write the msg offset index
+    // The purpose of the index is quick access to messages by index even though the
+    // messages have variable length
+    // Use the fact that vector is stored as a single block of memory underneath
+    if ( !index.empty() )
+    {
+        UInt32 bytesToWrite = (UInt32) index.size() * sizeof(UInt32);
+        if ( 1 != target.Write( &index[0], bytesToWrite, 1 ) )
+        {
+            GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "PubSubMsgContainerBinarySerializer:SerializeFooter: Failed to write footer index entry field" );
+            return false;
+        }
+        bytesWritten += bytesToWrite;
+    }
+
+    // Write the msg offset index size
+    // The point of this is fast loading of the footer when reading from the end of the container backwards
+    UInt32 indexSize = (UInt32) index.size();
+    if ( !target.WriteValue( indexSize ) )
+    {
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "PubSubMsgContainerBinarySerializer:SerializeFooter: Failed to write footer index size field" );
+        return false;
+    }
+    bytesWritten += sizeof(indexSize);
+
+    // Now write magic text bytes to help identify the blob as being a complete container of pub sub messages
+    // If the magic text was at the start of the container but not at the end you know that the container is potentially
+    // only a partial file. At that point the footer/index could potentially be rebuild by scanning the entire container from the start
+    UInt32 newBytesWritten = target.Write( MagicText );
+    bytesWritten += newBytesWritten;
+    if ( newBytesWritten != MagicText.ByteSize()-1 )
+    {
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "PubSubMsgContainerBinarySerializer:SerializeFooter: Failed to write write magic text" );
+        return false;
+    }
+
+    return true;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -248,7 +421,7 @@ CPubSubMsgContainerBinarySerializer::DeserializeFooter( TMsgOffsetIndex& index  
     {
         // Note that footer reading occurs backwards from the end of the container towards the front
 
-        if ( source.GetDataSize() < ( MagicText.ByteSize() + 4 ) )
+        if ( source.GetDataSize() < ( MagicText.ByteSize() + 4 ) || currentSourceOffset < ( MagicText.ByteSize() + 4 ) )
         {
             GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "PubSubMsgContainerBinarySerializer:DeserializeFooter: Not enough data for minimal footer" );
             return false;

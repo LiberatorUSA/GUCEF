@@ -1705,6 +1705,156 @@ CDateTime::AddDays( Int32 daysToAdd )
     FromUnixEpochBasedTicksInMillisecs( baseTimestamp );    
 }
 
+/*-------------------------------------------------------------------------*/
+
+void 
+CDateTime::AddWeeks( Int32 weeksToAdd )
+{GUCEF_TRACE;
+
+    UInt64 baseTimestamp = ToUnixEpochBasedTicksInMillisecs();
+    Int64 msDelta = (Int64) weeksToAdd * 7 * 24 * 60 * 60 * 1000;
+    baseTimestamp += msDelta;
+    FromUnixEpochBasedTicksInMillisecs( baseTimestamp );    
+}
+
+/*-------------------------------------------------------------------------*/
+
+CDateTime::TDateTimeComponent 
+CDateTime::ToDateTimeComponentType( const CORE::CString& dateTimeComponentType )
+{GUCEF_TRACE;
+
+    CORE::CString dateTimeComponentTypeLc = dateTimeComponentType.Lowercase();
+    
+    if ( "year" == dateTimeComponentTypeLc )
+        return TDateTimeComponent::DATETIMECOMPONENT_YEAR;
+    if ( "month" == dateTimeComponentTypeLc )
+        return TDateTimeComponent::DATETIMECOMPONENT_MONTH;
+    if ( "day" == dateTimeComponentTypeLc )
+        return TDateTimeComponent::DATETIMECOMPONENT_DAY;
+    if ( "hour" == dateTimeComponentTypeLc )
+        return TDateTimeComponent::DATETIMECOMPONENT_HOURS;
+    if ( "minute" == dateTimeComponentTypeLc )
+        return TDateTimeComponent::DATETIMECOMPONENT_MINUTES;
+    if ( "second" == dateTimeComponentTypeLc )
+        return TDateTimeComponent::DATETIMECOMPONENT_SECONDS;
+    if ( "millisecond" == dateTimeComponentTypeLc )
+        return TDateTimeComponent::DATETIMECOMPONENT_MILLISECONDS;
+
+    return TDateTimeComponent::DATETIMECOMPONENT_UNKNOWN;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CDateTime::ClampToBoundary( TDateTimeComponent boundary , 
+                            TBoundaryType boundaryType  , 
+                            CORE::CDateTime& clampedDt  ) const
+{GUCEF_TRACE;
+
+    clampedDt = *this;
+
+    switch ( boundary )
+    {
+        case TDateTimeComponent::DATETIMECOMPONENT_YEAR:
+        {
+            if ( TBoundaryType::BOUNDARYTYPE_MINIMUM == boundaryType )
+            {
+                clampedDt.SetMonth( 1 );
+                clampedDt.SetDay( 1 );
+                clampedDt.SetHours( 0 );
+                clampedDt.SetMinutes( 0 );
+                clampedDt.SetSeconds( 0 );
+                clampedDt.SetMilliseconds( 0 );
+            }
+            else
+            if ( TBoundaryType::BOUNDARYTYPE_MAXIMUM == boundaryType )
+            {
+                clampedDt.SetMonth( 12 );
+                clampedDt.SetDay( GetDaysInMonth() );
+                clampedDt.SetHours( 23 );
+                clampedDt.SetMinutes( 59 );
+                clampedDt.SetSeconds( 59 );
+                clampedDt.SetMilliseconds( 999 );
+            }
+            return true;
+        }
+        case TDateTimeComponent::DATETIMECOMPONENT_MONTH:
+        {
+            if ( TBoundaryType::BOUNDARYTYPE_MINIMUM == boundaryType )
+            {
+                clampedDt.SetDay( 1 );
+                clampedDt.SetHours( 0 );
+                clampedDt.SetMinutes( 0 );
+                clampedDt.SetSeconds( 0 );
+                clampedDt.SetMilliseconds( 0 );
+            }
+            else
+            if ( TBoundaryType::BOUNDARYTYPE_MAXIMUM == boundaryType )
+            {
+                clampedDt.SetDay( GetDaysInMonth() );
+                clampedDt.SetHours( 23 );
+                clampedDt.SetMinutes( 59 );
+                clampedDt.SetSeconds( 59 );
+                clampedDt.SetMilliseconds( 999 );
+            }
+            return true;
+        }
+        case TDateTimeComponent::DATETIMECOMPONENT_DAY:
+        {
+            if ( TBoundaryType::BOUNDARYTYPE_MINIMUM == boundaryType )
+            {
+                clampedDt.SetHours( 0 );
+                clampedDt.SetMinutes( 0 );
+                clampedDt.SetSeconds( 0 );
+                clampedDt.SetMilliseconds( 0 );
+            }
+            else
+            if ( TBoundaryType::BOUNDARYTYPE_MAXIMUM == boundaryType )
+            {
+                clampedDt.SetHours( 23 );
+                clampedDt.SetMinutes( 59 );
+                clampedDt.SetSeconds( 59 );
+                clampedDt.SetMilliseconds( 999 );
+            }
+            return true;
+        }
+        case TDateTimeComponent::DATETIMECOMPONENT_HOURS:
+        {
+            if ( TBoundaryType::BOUNDARYTYPE_MINIMUM == boundaryType )
+            {
+                clampedDt.SetMinutes( 0 );
+                clampedDt.SetSeconds( 0 );
+                clampedDt.SetMilliseconds( 0 );
+            }
+            else
+            if ( TBoundaryType::BOUNDARYTYPE_MAXIMUM == boundaryType )
+            {
+                clampedDt.SetMinutes( 59 );
+                clampedDt.SetSeconds( 59 );
+                clampedDt.SetMilliseconds( 999 );
+            }
+            return true;
+        }
+        case TDateTimeComponent::DATETIMECOMPONENT_MINUTES:
+        {
+            if ( TBoundaryType::BOUNDARYTYPE_MINIMUM == boundaryType )
+            {
+                clampedDt.SetSeconds( 0 );
+                clampedDt.SetMilliseconds( 0 );
+            }
+            else
+            if ( TBoundaryType::BOUNDARYTYPE_MAXIMUM == boundaryType )
+            {
+                clampedDt.SetSeconds( 59 );
+                clampedDt.SetMilliseconds( 999 );
+            }
+            return true;
+        }
+    }
+
+    return false;
+}
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //

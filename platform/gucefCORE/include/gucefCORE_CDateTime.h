@@ -74,6 +74,21 @@ class GUCEF_CORE_PUBLIC_CPP CDateTime : public CDate ,
 {
     public:
 
+    enum EDateTimeComponent
+    {
+        DATETIMECOMPONENT_UNKNOWN = 0,
+
+        DATETIMECOMPONENT_YEAR,
+        DATETIMECOMPONENT_MONTH,
+        DATETIMECOMPONENT_DAY,
+        DATETIMECOMPONENT_HOURS,
+        DATETIMECOMPONENT_MINUTES,
+        DATETIMECOMPONENT_SECONDS,
+        DATETIMECOMPONENT_MILLISECONDS,
+        DATETIMECOMPONENT_TIMEZONEOFFSETINMINS
+    };
+    typedef enum EDateTimeComponent TDateTimeComponent;
+
     static const CDateTime Empty;
     static const CDateTime PastMax;
     static const CDateTime FutureMax;
@@ -160,7 +175,14 @@ class GUCEF_CORE_PUBLIC_CPP CDateTime : public CDate ,
     void AddHours( Int32 hoursToAdd );
     void AddTime( const CTime& timeToAdd );
     void AddDays( Int32 daysToAdd );
+    void AddWeeks( Int32 weeksToAdd );
 
+    bool ClampToBoundary( TDateTimeComponent boundary , 
+                          TBoundaryType boundaryType  ,
+                          CORE::CDateTime& clampedDt  ) const;
+
+    static TDateTimeComponent ToDateTimeComponentType( const CORE::CString& dateTimeComponentType );
+    
     explicit CDateTime( const struct tm* src, bool isUtc );
 
     explicit CDateTime( const time_t src, bool isUtc );

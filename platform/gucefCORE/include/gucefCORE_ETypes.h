@@ -56,6 +56,79 @@
 #define GUCEFCORE_FLOAT32MAX  GUCEFMT_FLOAT32MAX
 #define GUCEFCORE_FLOAT32MIN  GUCEFMT_FLOAT32MIN
 
+/*-------------------------------------------------------------------------//
+//                                                                         //
+//      NAMESPACE                                                          //
+//                                                                         //
+//-------------------------------------------------------------------------*/
+
+#ifdef __cplusplus
+namespace GUCEF {
+namespace CORE {
+#endif /* __cplusplus ? */
+
+/*-------------------------------------------------------------------------//
+//                                                                         //
+//      TYPES                                                              //
+//                                                                         //
+//-------------------------------------------------------------------------*/
+
+/**
+ *  Enumerated type for special directories
+ */
+enum ESpecialDirs
+{
+    SPECIALDIR_UNSPECIFIED = 0,
+
+    SPECIALDIR_CURRENT_WORK_DIR ,
+    SPECIALDIR_UP_DIR           ,
+    SPECIALDIR_MODULE_DIR       ,
+    SPECIALDIR_TEMP_DIR         ,
+    SPECIALDIR_HOME_DIR         ,
+    SPECIALDIR_SYSTEM_DIR       ,
+    SPECIALDIR_USER_DIR         ,
+    SPECIALDIR_APPDATA_DIR      ,
+    SPECIALDIR_COMMON_APPDATA_DIR,
+    SPECIALDIR_DESKTOP_DIR      ,
+    SPECIALDIR_FAVORITES_DIR    ,
+    SPECIALDIR_STARTMENU_DIR    ,
+    SPECIALDIR_PROGRAMS_DIR     ,
+    SPECIALDIR_X86_PROGRAMS_DIR ,
+    SPECIALDIR_X64_PROGRAMS_DIR ,
+    SPECIALDIR_RECENT_DIR       ,
+    SPECIALDIR_TEMPLATES_DIR    ,
+    SPECIALDIR_LOCAL_APPDATA_DIR,
+    SPECIALDIR_INTERNET_CACHE_DIR,
+    SPECIALDIR_COOKIES_DIR      ,
+    SPECIALDIR_HISTORY_DIR      ,
+    SPECIALDIR_PROFILE_DIR      ,
+    SPECIALDIR_WINDOWS_DIR      ,
+    SPECIALDIR_SYSTEM32_DIR     ,
+    SPECIALDIR_PROGRAM_FILES_DIR ,
+    SPECIALDIR_COMMON_FILES_DIR  ,
+    SPECIALDIR_MY_DOCUMENTS_DIR  ,
+    SPECIALDIR_MY_PICTURES_DIR   ,
+    SPECIALDIR_MY_MUSIC_DIR      ,
+    SPECIALDIR_MY_VIDEO_DIR      ,
+    SPECIALDIR_MY_GAMES_DIR      ,
+    SPECIALDIR_MY_RECENT_DIR     ,
+    SPECIALDIR_MY_SEARCHES_DIR   ,
+    SPECIALDIR_MY_FAVORITES_DIR  ,
+    SPECIALDIR_MY_DOWNLOADS_DIR 
+};
+typedef enum ESpecialDirs TSpecialDirs;
+
+/*-------------------------------------------------------------------------//
+//                                                                         //
+//      NAMESPACE                                                          //
+//                                                                         //
+//-------------------------------------------------------------------------*/
+
+#ifdef __cplusplus
+}; /* namespace CORE */
+}; /* namespace GUCEF */
+#endif /* __cplusplus ? */
+
 /*--------------------------------------------------------------------------*/
 
 /*
@@ -77,6 +150,8 @@ namespace CORE {
 //      TYPES                                                              //
 //                                                                         //
 //-------------------------------------------------------------------------*/
+
+// the below is legacy and deprecated. these are in the root GUCEF namespace now
 
 typedef MT::UInt8 UInt8;    /* 1 byte, unsigned */
 typedef MT::Int8 Int8;      /* 1 byte, signed */
@@ -110,14 +185,3 @@ typedef MT::TBasicDataType TBasicDataType;
 #endif /* __cplusplus ? */
 
 #endif /* GUCEF_CORE_ETYPES_H ? */
-
-/*-------------------------------------------------------------------------//
-//                                                                         //
-//      Info & Changes                                                     //
-//                                                                         //
-//-------------------------------------------------------------------------//
-
-- 30-09-2006 :
-       - Dinand: Added this section
-
------------------------------------------------------------------------------*/

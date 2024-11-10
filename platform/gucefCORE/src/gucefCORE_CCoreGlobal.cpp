@@ -399,7 +399,7 @@ CCoreGlobal::~CCoreGlobal()
     GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "Shutting down gucefCORE global systems" );
 
     m_application->Stop( true );
-    m_taskManager->RequestAllThreadsToStop( true, false );
+    m_taskManager->RequestAllThreadsToStop( true, false, GUCEF_MT_INFINITE_LOCK_TIMEOUT );
    
     m_uriResourceAccessorFactory->UnregisterAllConcreteFactories();
     m_urlHandlerRegistry->UnregisterAll();

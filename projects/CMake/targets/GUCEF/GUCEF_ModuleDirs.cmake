@@ -191,6 +191,7 @@ add_subdirectory( ${CMAKE_CURRENT_SOURCE_DIR}/../../../../tools/ProjectGen ${CMA
 add_subdirectory( ${CMAKE_CURRENT_SOURCE_DIR}/../../../../tools/ProjectGen/plugins/ProjectGenDependsFilter ${CMAKE_BINARY_DIR}/ProjectGenDependsFilter )
 add_subdirectory( ${CMAKE_CURRENT_SOURCE_DIR}/../../../../tools/ProjectGen/plugins/ProjectGenVSImporter ${CMAKE_BINARY_DIR}/ProjectGenVSImporter )
 add_subdirectory( ${CMAKE_CURRENT_SOURCE_DIR}/../../../../tools/ProjectGenerator ${CMAKE_BINARY_DIR}/ProjectGenerator )
+add_subdirectory( ${CMAKE_CURRENT_SOURCE_DIR}/../../../../tools/PubSubStorageTool ${CMAKE_BINARY_DIR}/PubSubStorageTool )
 add_subdirectory( ${CMAKE_CURRENT_SOURCE_DIR}/../../../../tools/ReferenceUpdater ${CMAKE_BINARY_DIR}/ReferenceUpdater )
 add_subdirectory( ${CMAKE_CURRENT_SOURCE_DIR}/../../../../tools/SVNMagicMerge ${CMAKE_BINARY_DIR}/SVNMagicMerge )
 add_subdirectory( ${CMAKE_CURRENT_SOURCE_DIR}/../../../../tools/ServerPortExtender ${CMAKE_BINARY_DIR}/ServerPortExtender )

@@ -147,12 +147,26 @@ class GUCEF_VFS_PUBLIC_CPP CVFS : public CORE::CTSGNotifier          ,
     /**
      *  Adds a filesystem root to the VFS 
      */
-    void AddRoot( const CString& rootdir                                 ,
+    bool AddRoot( const CString& rootdir                                 ,
                   const CString& archiveName                             ,
                   const bool writeable = false                           ,
                   const bool autoMountArchives = false                   ,
                   const CString& mountPoint = CString::Empty             ,
                   const CString& archiveType = FileSystemArchiveTypeName );
+
+    /**
+     *  Adds an alias for an exisiting mount point
+     *  An alias provides a secondary path to the same mount point
+     */
+    bool AddMountAlias( const CString& mountPath      ,
+                        const CString& mountPathAlias );
+
+    /**
+     *  Adds an alias for an exisiting mount point
+     *  An alias provides a secondary path to the same mount point
+     */
+    bool AddMountAliases( const CString& mountPath                   ,
+                          const CString::StringSet& mountPathAliases );
 
     bool MountArchive( const CString& archiveName  ,
                        const CString& archivePath  ,
@@ -598,6 +612,27 @@ class GUCEF_VFS_PUBLIC_CPP CVFS : public CORE::CTSGNotifier          ,
     bool GetVfsPathForAbsolutePath( const CString& absolutePath ,
                                     CString& relativePath       ) const;
 
+    bool GetVfsPathForSpecialPath( const CString& absolutePath ,
+                                    CString& relativePath       ) const;
+
+    /**
+     *  Attempts to resolve a special dir for the filesystem underlying the various archives.
+     *  This is useful for example when you want to get the path to the temp dir for the filesystem
+     *  that the VFS is using.
+     *  You can pass a hintNamespacePath to give the VFS a hint as to where to start looking for the special dir wrt eligible archives
+     *  If the hintNamespacePath is empty the VFS will consider all archives for the special dir
+     */
+    bool TryResolveSpecialDir( CORE::TSpecialDirs dir                                        , 
+                               CString& resolvedPath                                         ,
+                               const CORE::CString& hintNamespacePath = CORE::CString::Empty ) const;
+
+    bool TryGetVfsPathForFileSystemPath( const CORE::CString& fsPath ,
+                                         CString& resolvedPath       );
+
+    bool TryGetVfsPathForFileSystemPath( const CORE::CString& fsPath ,
+                                         CString& resolvedPath       ,
+                                         bool autoMountRoots         );
+
     void SetMemloadSize( UInt32 bytesize );
     
     UInt32 GetMemloadSize( void ) const;
@@ -630,6 +665,16 @@ class GUCEF_VFS_PUBLIC_CPP CVFS : public CORE::CTSGNotifier          ,
      *      @return whether building the tree from the given file was successfull.
      */                                    
     virtual bool LoadConfig( const CORE::CDataNode& treeroot ) GUCEF_VIRTUAL_OVERRIDE;                                             
+
+    /**
+     *  Utility function to mount all file system roots available to the application into the VFS
+     *  This is useful for example when you want to make sure that all file system roots are available
+     *  to the VFS for use in the application
+     *  Note that the VFS setting "autoMountFsRoots" if true will already utilize this functionality
+     *  when the settings are loaded. If false you can still trigger this functionality manually via this function
+     *  If no "overrideMountRoot" is provided the VFS will use the setting "autoMountVfsRoot" as the root to mount
+     */
+    bool MountFileSystemRoots( const CORE::CString& overrideMountRoot = CORE::CString::Empty );
 
     virtual const CString& GetClassTypeName( void ) const GUCEF_VIRTUAL_OVERRIDE;
     
@@ -678,12 +723,13 @@ class GUCEF_VFS_PUBLIC_CPP CVFS : public CORE::CTSGNotifier          ,
 
         MountEntry( void );
 
-        CORE::CString abspath;
-        CORE::CString path;
-        bool writeable;
-        TArchivePtr archive;
-        CORE::CString archiveType;
-        CORE::CString mountPath;
+        CORE::CString abspath;       /**< the absolute path to the archive, variables and relative paths are resolved */
+        CORE::CString path;          /**< the original path as configured, variables are left unresolved */
+        bool writeable;              /**< whether everything under this mount entry is writeable or read-only regardless of what the archive itself supports */
+        TArchivePtr archive;         /**< the archive that is mounted */
+        CORE::CString archiveType;   /**< the type of the archive that is mounted. must match one of the supported registered archive factories */
+        CORE::CString mountPath;     /**< the path in the VFS where the archive is mounted */
+        CORE::CString::StringSet mountPathAliases; /**< aliases for the mount path */
     };
     typedef MountEntry::TSharedPtrType TMountEntryPtr;
 
@@ -749,6 +795,8 @@ class GUCEF_VFS_PUBLIC_CPP CVFS : public CORE::CTSGNotifier          ,
     TArchiveSettingsVector m_delayMountedArchiveSettings;
     TArchivePtrToMountEntryMap m_archivePtrToMountEntryLookup;
     bool m_delayedArchiveMountingIsComplete;
+    CString m_vfsRootForVolumes;
+    bool m_autoMountFsRoots;
     MT::CReadWriteLock m_rwdataLock;
 };
 

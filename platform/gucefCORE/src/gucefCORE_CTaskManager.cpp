@@ -196,7 +196,7 @@ void
 CTaskManager::Shutdown( void )
 {GUCEF_TRACE;
 
-    RequestAllThreadsToStop( true, false );
+    RequestAllThreadsToStop( true, false, GUCEF_MT_SUPER_LONG_LOCK_TIMEOUT );
     UnregisterAllTaskDataFactories();
     UnregisterAllTaskConsumerFactories();
     UnregisterAllThreadPools();
@@ -636,17 +636,36 @@ CTaskManager::GetGlobalNrOfQueuedTasks( void ) const
 /*-------------------------------------------------------------------------*/
 
 void 
-CTaskManager::RequestAllThreadsToStop( bool waitOnStop, bool acceptNewWork )
+CTaskManager::GetAllThreadPools( ThreadPoolVector& threadPools ) const
 {GUCEF_TRACE;
 
-    MT::CObjectScopeLock lock( this, GUCEF_MT_LONG_LOCK_TIMEOUT );
+    MT::CObjectScopeReadOnlyLock lock( this, GUCEF_MT_LONG_LOCK_TIMEOUT );
 
-    ThreadPoolMap::iterator i = m_threadPools.begin();
+    ThreadPoolMap::const_iterator i = m_threadPools.begin();
     while ( i != m_threadPools.end() )
     {
-        (*i).second->RequestAllThreadsToStop( waitOnStop, acceptNewWork );
+        threadPools.push_back( (*i).second );
         ++i;
     }
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool 
+CTaskManager::RequestAllThreadsToStop( bool waitOnStop, bool acceptNewWork, Int32 timeoutInMsPerThread )
+{GUCEF_TRACE;
+
+    ThreadPoolVector threadPools;
+    GetAllThreadPools( threadPools );
+
+    bool totalSuccess = true;
+    ThreadPoolVector::iterator i = threadPools.begin();
+    while ( i != threadPools.end() )
+    {
+        totalSuccess = (*i)->RequestAllThreadsToStop( waitOnStop, acceptNewWork, timeoutInMsPerThread ) && totalSuccess;
+        ++i;
+    }
+    return totalSuccess;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -655,14 +674,15 @@ void
 CTaskManager::RemoveConsumer( UInt32 taskID )
 {GUCEF_TRACE;
 
-    MT::CObjectScopeLock lock( this, GUCEF_MT_LONG_LOCK_TIMEOUT );
+    ThreadPoolVector threadPools;
+    GetAllThreadPools( threadPools );
 
-    ThreadPoolMap::iterator i = m_threadPools.begin();
-    while ( i != m_threadPools.end() )
+    ThreadPoolVector::iterator i = threadPools.begin();
+    while ( i != threadPools.end() )
     {
-        (*i).second->RemoveConsumer( taskID );
+        (*i)->RemoveConsumer( taskID );
         ++i;
-    }
+    }    
 }
 
 /*-------------------------------------------------------------------------*/

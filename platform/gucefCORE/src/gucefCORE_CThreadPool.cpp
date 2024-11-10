@@ -484,7 +484,7 @@ CThreadPool::EnforceDesiredNrOfThreads( Int32 desiredMaxTotalNrOfThreads   ,
     Int32 missingWorkerThreads = 0;
     if ( m_desiredMaxTotalNrOfThreads >= 0 )
     {
-        Int32 threadHeadroom = (Int32) m_desiredMaxTotalNrOfThreads - (Int32) totalActiveNrOfThreads;        
+        threadHeadroom = (Int32) m_desiredMaxTotalNrOfThreads - (Int32) totalActiveNrOfThreads;        
         if ( threadHeadroom > 0 )
         {
             missingWorkerThreads = (Int32) m_desiredMinNrOfWorkerThreads - (Int32) m_taskGenericDelegators.size();
@@ -564,15 +564,21 @@ CThreadPool::EnforceDesiredNrOfThreads( Int32 desiredMaxTotalNrOfThreads   ,
             TTaskDelegatorSet::iterator i = taskDelegators.begin();
             while ( leftToBeDeactivated > 0 && i != taskDelegators.end() )
             {
-                if ( (*i)->IsActive() )
+                const TTaskDelegatorBasicPtr& delegator = (*i);
+
+                if ( delegator->IsActive() )
                 {
                     // If the thread is not yet asked to deactivate we will do so now up
                     // to the number of thread we wish to deactivate
-                    if ( !(*i)->IsDeactivationRequested() )
+                    if ( !delegator->IsDeactivationRequested() )
                     {
                         // Ask thread to deactivate
-                        TTaskDelegatorBasicPtr delegator = (*i);
-                        delegator->Deactivate( !gracefullEnforcement, false );
+                        UInt32 threadId = delegator->GetThreadID();
+                        TTaskDelegatorBasicPtr delegatorRefCopy = (*i);
+                        delegatorRefCopy->Deactivate( !gracefullEnforcement, false );
+
+                        GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "ThreadPool(" + m_poolName + "): Asked thread " + ToString( threadId ) + " to deactivate" );
+
                         --leftToBeDeactivated;
                         ++workersAskedToShutDown;
                     }
@@ -1379,9 +1385,76 @@ CThreadPool::RequestTaskToStop( CTaskConsumerPtr taskConsumer ,
 
 /*-------------------------------------------------------------------------*/
 
+CThreadPool::TTaskDelegatorBasicPtr
+CThreadPool::GetDelegatorForThreadId( const UInt32 threadId ) const
+{GUCEF_TRACE;
+
+    MT::CObjectScopeReadOnlyLock lock( this );
+
+    TTaskDelegatorSet::const_iterator i = m_taskDedicatedDelegators.begin();
+    while ( i != m_taskDedicatedDelegators.end() )
+    {
+        const TTaskDelegatorBasicPtr& delegator = (*i);
+        if ( !delegator.IsNULL() && delegator->GetThreadID() == threadId )
+        {
+            return delegator;
+        }
+        ++i;
+    }
+    i = m_taskGenericDelegators.begin();
+    while ( i != m_taskGenericDelegators.end() )
+    {
+        const TTaskDelegatorBasicPtr& delegator = (*i);
+        if ( !delegator.IsNULL() && delegator->GetThreadID() == threadId )
+        {
+            return delegator;
+        }
+        ++i;
+    }
+    
+    return TTaskDelegatorBasicPtr();
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CThreadPool::WaitForThreadToFinish( const UInt32 threadId ,
+                                    Int32 timeoutInMs     )
+{GUCEF_TRACE;
+
+    TTaskDelegatorBasicPtr delegator = GetDelegatorForThreadId( threadId );
+    if ( !delegator.IsNULL() )
+    {
+        GUCEF_DEBUG_LOG( LOGLEVEL_NORMAL, "ThreadPool(" + m_poolName + "):WaitForThreadToFinish: Waiting for thread with ID " + ToString( threadId ) + " to finish" );
+        UInt32 waitResult = delegator->WaitForThreadToFinish( timeoutInMs );
+
+        if ( GUCEF_THREAD_WAIT_OK == waitResult         || 
+             GUCEF_THREAD_WAIT_ABANDONEND == waitResult )
+        {
+            GUCEF_DEBUG_LOG( LOGLEVEL_NORMAL, "ThreadPool(" + m_poolName + "):WaitForThreadToFinish: Successfully waited for thread with ID " + ToString( threadId ) + " to finish" );
+            return true;
+        }
+        else if ( GUCEF_THREAD_WAIT_TIMEOUT == waitResult )
+        {
+            GUCEF_DEBUG_LOG( LOGLEVEL_NORMAL, "ThreadPool(" + m_poolName + "):WaitForThreadToFinish: Timeout occured while waiting for thread with ID " + ToString( threadId ) + " to finish" );
+            return false;
+        }
+        else
+        {
+            GUCEF_DEBUG_LOG( LOGLEVEL_NORMAL, "ThreadPool(" + m_poolName + "):WaitForThreadToFinish: Error occured while waiting for thread with ID " + ToString( threadId ) + " to finish" );
+            return false;
+        }
+    }
+
+    // No such thread as such we consider it already finished
+    return true;
+}
+
+/*-------------------------------------------------------------------------*/
+
 bool
 CThreadPool::WaitForTaskToFinish( const UInt32 taskId ,
-                                   Int32 timeoutInMs   )
+                                  Int32 timeoutInMs   )
 {GUCEF_TRACE;
 
     MT::CObjectScopeLock lock( this );
@@ -1432,7 +1505,7 @@ CThreadPool::WaitForTaskToFinish( const UInt32 taskId ,
 
 bool
 CThreadPool::WaitForTaskToFinish( CTaskConsumerPtr taskConsumer ,
-                                   Int32 timeoutInMs             )
+                                  Int32 timeoutInMs             )
 {GUCEF_TRACE;
 
     if ( !taskConsumer.IsNULL() )
@@ -1442,11 +1515,98 @@ CThreadPool::WaitForTaskToFinish( CTaskConsumerPtr taskConsumer ,
 
 /*-------------------------------------------------------------------------*/
 
+bool 
+CThreadPool::WaitForAllTasksToFinish( Int32 timeoutInMs )
+{GUCEF_TRACE;
+
+    TTaskIdVector taskIds;
+    GetAllCurrentTaskIds( taskIds );
+
+    bool totalSuccess = true;
+    TTaskIdVector::iterator i = taskIds.begin();
+    while ( i != taskIds.end() )
+    {
+        totalSuccess = WaitForTaskToFinish( (*i), timeoutInMs ) && totalSuccess;
+        ++i;
+    }
+    return totalSuccess;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool 
+CThreadPool::WaitForAllThreadsToFinish( Int32 timeoutInMs )
+{GUCEF_TRACE;
+
+    TThreadIdVector threadIds;
+    GetAllCurrentThreadIds( threadIds );
+
+    bool totalSuccess = true;
+    TThreadIdVector::iterator i = threadIds.begin();
+    while ( i != threadIds.end() )
+    {
+        totalSuccess = WaitForThreadToFinish( (*i), timeoutInMs ) && totalSuccess;
+        ++i;
+    }
+    return totalSuccess;
+}
+
+/*-------------------------------------------------------------------------*/
+
 void
-CThreadPool::RequestAllTasksToStop( bool waitOnStop, bool acceptNewWork )
+CThreadPool::GetAllCurrentTaskIds( TTaskIdVector& taskIds )
+{GUCEF_TRACE;
+
+    MT::CObjectScopeReadOnlyLock lock( this );
+
+    TTaskConsumerMap::iterator i = m_taskConsumerMap.begin();
+    while ( i != m_taskConsumerMap.end() )
+    {
+        taskIds.push_back( (*i).first );
+        ++i;
+    }
+}
+
+/*-------------------------------------------------------------------------*/
+
+void 
+CThreadPool::GetAllCurrentThreadIds( TThreadIdVector& threadIds )
+{GUCEF_TRACE;
+
+    MT::CObjectScopeReadOnlyLock lock( this );
+
+    TTaskDelegatorSet::iterator i = m_taskDedicatedDelegators.begin();
+    while ( i != m_taskDedicatedDelegators.end() )
+    {
+        const TTaskDelegatorBasicPtr& delegator = (*i);
+        if ( !delegator.IsNULL() )
+        {
+            threadIds.push_back( delegator->GetThreadID() );
+        }
+        ++i;
+    }
+    i = m_taskGenericDelegators.begin();
+    while ( i != m_taskGenericDelegators.end() )
+    {
+        const TTaskDelegatorBasicPtr& delegator = (*i);
+        if ( !delegator.IsNULL() )
+        {
+            threadIds.push_back( delegator->GetThreadID() );
+        }
+        ++i;
+    }
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CThreadPool::RequestAllTasksToStop( bool waitOnStop, bool acceptNewWork, Int32 timeoutInMs  )
 {GUCEF_TRACE;
 
     GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "ThreadPool(" + m_poolName + "): Requesting all tasks to stop" );
+
+    // First signal to all tasks that we want them to stop doing work.
+    // We dont wait yet for them to finish, we do that after signaling all of them and releasing the lock
 
     MT::CObjectScopeLock lock( this );
 
@@ -1462,19 +1622,33 @@ CThreadPool::RequestAllTasksToStop( bool waitOnStop, bool acceptNewWork )
             if ( !delegator.IsNULL() )
             {
                 UInt32 taskId = taskConsumer->GetTaskId();
-                delegator->Deactivate( false, waitOnStop );
+                delegator->Deactivate( false, false );
 
                 GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "ThreadPool(" + m_poolName + "): Requested task with ID " + UInt32ToString( taskId ) + " to stop" );
             }
         }
         ++i;
     }
+
+    lock.EarlyUnlock();
+
+    if ( waitOnStop )
+    {
+        if ( !WaitForAllTasksToFinish( timeoutInMs ) )
+        {
+            GUCEF_ERROR_LOG( LOGLEVEL_NORMAL, "ThreadPool(" + m_poolName + "):RequestAllTasksToStop: Failed to wait for all tasks to finish" );
+            return false;
+        }
+        GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "ThreadPool(" + m_poolName + "):RequestAllTasksToStop: Completed wait on all tasks to stop" );
+    }
+
+    return true;
 }
 
 /*-------------------------------------------------------------------------*/
 
-void
-CThreadPool::RequestAllThreadsToStop( bool waitOnStop, bool acceptNewWork )
+bool
+CThreadPool::RequestAllThreadsToStop( bool waitOnStop, bool acceptNewWork, Int32 timeoutInMs )
 {GUCEF_TRACE;
 
     GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "ThreadPool(" + m_poolName + "): Requesting all tasks to stop" );
@@ -1482,7 +1656,26 @@ CThreadPool::RequestAllThreadsToStop( bool waitOnStop, bool acceptNewWork )
     MT::CObjectScopeLock lock( this );
     m_acceptNewWork = acceptNewWork;
     EnforceDesiredNrOfThreads( 0, 0, true );
+    lock.EarlyUnlock();
 
+    if ( waitOnStop )
+    {
+        if ( !WaitForAllTasksToFinish( timeoutInMs ) )
+        {
+            GUCEF_ERROR_LOG( LOGLEVEL_NORMAL, "ThreadPool(" + m_poolName + "):RequestAllThreadsToStop: Failed to wait for all tasks to finish" );
+            return false;
+        }
+        GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "ThreadPool(" + m_poolName + "):RequestAllThreadsToStop: Completed wait on all tasks to stop" );
+
+        if ( !WaitForAllThreadsToFinish( timeoutInMs ) )
+        {
+            GUCEF_ERROR_LOG( LOGLEVEL_NORMAL, "ThreadPool(" + m_poolName + "):RequestAllThreadsToStop: Failed to wait for all threads to finish" );
+            return false;
+        }
+        GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "ThreadPool(" + m_poolName + "):RequestAllThreadsToStop: Completed wait on all threads to stop" );
+    }
+
+    return true;
 }
 
 /*-------------------------------------------------------------------------*/

@@ -141,6 +141,7 @@ If you get into trouble for whatever reason with stale/bad output files (disk is
 - itvExporter: Reverse engineered export tool for assets contained in a classic game
 - GucefArchiver: Basic archiver tool that leverages the VFS and its plugins
 - HDFiller: As the name suggests, it fills your hard drive. Intended for test scenarios.
+- PubSubStorageTool: Tool to manipulate storage files produced by the pubsub storage plugin
 
 ## Contained Misc Libraries
 - MemoryLeakFinder: Dynamically loaded platform helper library to track down memory leaks aided by GUCEF platform functionality

@@ -32,12 +32,14 @@ dependencies/stbrumme-hash-library/*
 dependencies/tiff/libtiff/*
 dependencies/zlib/*
 dependencies/zziplib/*
-platform/gucefCOMCORE/*
+platform/gucefCOM/*
 platform/gucefCORE/*
 platform/gucefIMAGE/*
 platform/gucefKAITAI/*
 platform/gucefMT/*
+platform/gucefPUBSUB/*
 platform/gucefVFS/*
+platform/gucefWEB/*
 plugins/CORE/codecspluginSTBRUMMEHASH/*
 plugins/CORE/codecspluginZLIB/*
 plugins/CORE/dstorepluginJSONPARSER/*
@@ -47,6 +49,7 @@ plugins/IMAGE/imgpluginDEVIL/*
 plugins/IMAGE/imgpluginFLIC/*
 plugins/IMAGE/imgpluginFreeImage/*
 plugins/IMAGE/imgpluginITV/*
+plugins/PUBSUB/pubsubpluginSTORAGE/*
 plugins/SHARED/pluginglueAWSSDK/*
 plugins/VFS/vfspluginAWSS3/*
 plugins/VFS/vfspluginDVP/*
@@ -57,4 +60,5 @@ tools/DCSBruteInstaller/*
 tools/GucefArchiver/*
 tools/HDFiller/*
 tools/ProjectGen/*
+tools/PubSubStorageTool/*
 tools/itvExporter/*

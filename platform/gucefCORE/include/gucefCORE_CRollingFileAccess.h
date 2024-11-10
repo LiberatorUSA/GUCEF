@@ -116,7 +116,8 @@ class GUCEF_CORE_PUBLIC_CPP CRollingFileAccess : public CIOAccess
     virtual UInt64 Write( CIOAccess& sourceData   ,
                           Int64 bytesToWrite = -1 ) GUCEF_VIRTUAL_OVERRIDE;
         
-    virtual UInt32 Write( const CString& string ) GUCEF_VIRTUAL_OVERRIDE;
+    virtual UInt32 Write( const CString& string ,
+                          bool addEol = true    ) GUCEF_VIRTUAL_OVERRIDE;
 
     /**
         *      Get the current offset in bytes

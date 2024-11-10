@@ -76,6 +76,17 @@ namespace CORE {
 //-------------------------------------------------------------------------*/
 
 /**
+ *  Function which resolves an Operating System 'special' directory to a path
+ *  The path is written into dest. The dest_size parameter should be the size the destination buffer can hold
+ *  The function returns the number of bytes written to dest. If an error occurs 0 is returned.
+ *  if dest is NULL then the function will return the number of bytes needed to store the path.
+ */
+GUCEF_CORE_PUBLIC_CPP bool
+TryResolveSpecialDir( TSpecialDirs dir, CString& resolvedPath );
+
+/*-------------------------------------------------------------------------*/
+
+/**
  *  Returns the modification time of the indicated resource
  */
 GUCEF_CORE_PUBLIC_CPP CDateTime
@@ -170,6 +181,17 @@ GetFileSystemStorageVolumeIdByDirPath( CString& volumeId, const CString& path );
 
 GUCEF_CORE_PUBLIC_CPP bool
 GetAllFileSystemStorageVolumes( CString::StringSet& volumeIds );
+
+/*-------------------------------------------------------------------------*/
+
+/**
+ *  Attempts to obtain a path specifically pointing directly to the volume with the id given
+ *  This is the more low level path name which is used to access the volume directly
+ *  Not to be confused with the more human friendly path names which are normally used for accessing files
+ */
+GUCEF_CORE_PUBLIC_CPP bool
+GetVolumePathForVolumeId( const CString& volumeId ,
+                          CString& volumePath     );
 
 /*-------------------------------------------------------------------------*/
 

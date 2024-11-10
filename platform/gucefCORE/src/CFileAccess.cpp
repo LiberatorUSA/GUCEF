@@ -181,19 +181,22 @@ CFileAccess::Open( const CString& file ,
 
     Close();
     
-    m_filename = file;
+    m_filename = RelativePath( file );
     m_mode = mode;
     
-    _readable = ( strchr( mode, 'r' ) != NULL ) || ( strchr( mode, 'a' ) != NULL );
-    _writeable = ( strchr( mode, 'w' ) != NULL ) || ( strchr( mode, 'a' ) != NULL );
+    _readable = ( strchr( mode, 'r' ) != GUCEF_NULL ) || ( strchr( mode, 'a' ) != GUCEF_NULL );
+    _writeable = ( strchr( mode, 'w' ) != GUCEF_NULL ) || ( strchr( mode, 'a' ) != GUCEF_NULL );
 
     if ( _writeable )
     {
-        CString path = StripFilename( file );
-        if ( !CreateDirs( path ) )
+        CString path = StripFilename( m_filename );
+        if ( !DirExists( path ) )
         {
-            GUCEF_DEBUG_LOG( LOGLEVEL_NORMAL, "FileAccess:Open: Failed to recursively create directories" );
-            return false;
+            if ( !CreateDirs( path ) )
+            {
+                GUCEF_DEBUG_LOG( LOGLEVEL_NORMAL, "FileAccess:Open: Failed to recursively create directories" );
+                return false;
+            }
         }
     }
     if ( _readable )
@@ -202,15 +205,13 @@ CFileAccess::Open( const CString& file ,
     }
     
     errno = 0;
-    m_file = fopen( file.C_String() ,
-                    mode            );
-
-    if ( m_file == NULL && 0 != errno )
+    m_file = fopen( m_filename.C_String(), mode );
+    if ( m_file == GUCEF_NULL && 0 != errno )
     {
         GUCEF_DEBUG_LOG( LOGLEVEL_NORMAL, "FileAccess:Open: Failed to open file \"" + file + "\". mode=" + CString(mode) + " error=" + GetErrorString( errno ) );
     }
     
-    return m_file != NULL;
+    return m_file != GUCEF_NULL;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -223,7 +224,7 @@ CFileAccess::Open( const CString& file               ,
 
     Close();
     
-    m_filename = file;
+    m_filename = RelativePath( file );
     m_mode = mode;
     
     _readable = ( strchr( mode, 'r' ) != NULL ) || ( strchr( mode, 'a' ) != NULL );
@@ -509,10 +510,11 @@ CFileAccess::Write( CIOAccess& sourceData ,
 /*-------------------------------------------------------------------------*/
 
 UInt32
-CFileAccess::Write( const CString& string )
+CFileAccess::Write( const CString& string ,
+                    bool addEol           )
 {GUCEF_TRACE;
 
-    return CIOAccess::Write( string );
+    return CIOAccess::Write( string, addEol );
 }
 
 /*-------------------------------------------------------------------------*/

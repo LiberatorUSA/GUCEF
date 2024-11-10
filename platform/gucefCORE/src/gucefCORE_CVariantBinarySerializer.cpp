@@ -111,6 +111,50 @@ CVariantBinarySerializer::Serialize( const CVariant& var, UInt32 currentTargetOf
 /*-------------------------------------------------------------------------*/
 
 bool 
+CVariantBinarySerializer::Serialize( const CVariant& var, CIOAccess& access, UInt32& bytesWritten )
+{GUCEF_TRACE;
+    
+    try
+    {
+        UInt8 typeId = var.GetTypeId();
+        if ( !access.WriteValue( typeId ) )
+            return false;
+        bytesWritten += sizeof( typeId );
+
+        // early exit for unknown type, think of this as a placeholder for a nil value
+        if ( GUCEF_DATATYPE_UNKNOWN == typeId )
+            return true;
+
+        // if a variable length is possible we need to prefix the size
+        UInt32 payloadSize = var.ByteSize();
+        if ( var.UsesDynamicMemory() )
+        {        
+            if ( !access.WriteValue( payloadSize ) )
+            {
+                GUCEF_WARNING_LOG( LOGLEVEL_NORMAL, "VariantBinarySerializer:Serialize: payloadSize (" + ToString( payloadSize ) + ") was not written correctly" );
+                return false;
+            }
+            bytesWritten += sizeof( payloadSize );
+        }
+
+        if ( 1 != access.Write( var.AsVoidPtr(), payloadSize, 1 ) )
+        {
+            GUCEF_WARNING_LOG( LOGLEVEL_NORMAL, "VariantBinarySerializer:Serialize: payload of payloadSize " + ToString( payloadSize ) + " bytes was not written correctly" );
+            return false;
+        }
+        bytesWritten += payloadSize;
+        return true;
+    }   
+    catch ( const std::exception& e )    
+    {
+        GUCEF_EXCEPTION_LOG( LOGLEVEL_NORMAL, CString( "VariantBinarySerializer:Serialize: caught exception: " ) + e.what() );
+        return false;
+    } 
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool 
 CVariantBinarySerializer::Deserialize( CVariant& var, UInt32 currentSourceOffset, const CDynamicBuffer& source, bool linkWherePossible, UInt32& bytesRead )
 {GUCEF_TRACE;
 

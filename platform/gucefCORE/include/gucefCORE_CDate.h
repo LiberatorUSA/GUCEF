@@ -60,6 +60,25 @@ class GUCEF_CORE_PUBLIC_CPP CDate : public CIDate
 {
     public:
 
+    enum EDateMonths
+    {
+        DATEMONTHS_UNKNOWN = 0,
+
+        DATEMONTHS_JANUARY,
+        DATEMONTHS_FEBRUARY,
+        DATEMONTHS_MARCH,
+        DATEMONTHS_APRIL,
+        DATEMONTHS_MAY,
+        DATEMONTHS_JUNE,
+        DATEMONTHS_JULY,
+        DATEMONTHS_AUGUST,
+        DATEMONTHS_SEPTEMBER,
+        DATEMONTHS_OCTOBER,
+        DATEMONTHS_NOVEMBER,
+        DATEMONTHS_DECEMBER
+    };
+    typedef enum EDateMonths TDateMonths;
+
     static CDate TodaysLocalDate( void );
 
     static CDate TodaysUTCDate( void );
@@ -79,6 +98,10 @@ class GUCEF_CORE_PUBLIC_CPP CDate : public CIDate
     bool SetDay( UInt8 day );
     
     virtual UInt8 GetDay( void ) const GUCEF_VIRTUAL_OVERRIDE;
+
+    bool IsLeapYear( void ) const;
+
+    UInt8 GetDaysInMonth( void ) const;
 
     CDate& operator=( const CDate& src );
 

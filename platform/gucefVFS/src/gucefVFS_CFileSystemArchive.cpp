@@ -776,10 +776,21 @@ CFileSystemArchive::IsDirectoryWatchingSupported( void ) const
 /*-------------------------------------------------------------------------*/
 
 CORE::CString 
-CFileSystemArchive::GetVfsPathForFileSystemPath( const CORE::CString& fsPath )
+CFileSystemArchive::GetVfsPathForFileSystemPath( const CORE::CString& fsPath ) const
 {GUCEF_TRACE;
 
-    return fsPath.CutChars( m_rootDir.Length(), true, 0 );
+    // Check to see if the given path is a sub-path of the root dir
+    // Localize the path to the archive if so and return it
+    if ( 0 == fsPath.HasSubstr( m_rootDir, true ) ) 
+        return fsPath.CutChars( m_rootDir.Length(), true, 0 );
+    
+    // No match, the archive is not responsible for this path
+    // As such we kick this problem to the overall VFS for resolution
+    CORE::CString vfsPath;
+    if ( CVfsGlobal::Instance()->GetVfs().TryGetVfsPathForFileSystemPath( fsPath, vfsPath ) )
+        return vfsPath;
+
+    return CORE::CString::Empty;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -882,6 +893,21 @@ CFileSystemArchive::IsConnected( void ) const
 
     // try to interact with the file system and verify the root path exists
     return CORE::DirExists( m_rootDir );
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool 
+CFileSystemArchive::TryResolveSpecialDir( CORE::TSpecialDirs dir, CString& resolvedPath ) const
+{GUCEF_TRACE;
+
+    CString fsPath;
+    if ( CORE::TryResolveSpecialDir( dir, fsPath ) )
+    {
+        resolvedPath = GetVfsPathForFileSystemPath( fsPath );
+        return true;
+    }
+    return false;
 }
 
 /*-------------------------------------------------------------------------//

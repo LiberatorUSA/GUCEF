@@ -96,6 +96,22 @@ TempDir( void );
 /*-------------------------------------------------------------------------*/
 
 /**
+ *  Get the directory the module is located in
+ */
+GUCEF_CORE_PUBLIC_CPP CString
+ModuleDir( void );
+
+/*-------------------------------------------------------------------------*/
+
+/**
+ *  Get the current application working directory
+ */
+GUCEF_CORE_PUBLIC_CPP CString
+CurrentWorkingDir( void );
+
+/*-------------------------------------------------------------------------*/
+
+/**
  *  Determines the most compact relative path between the two paths given.
  *  the given paths can have variables in them, these will be resolved via
  *  RelativePath(). If 'resolveVars' is false only dir segments are processed
@@ -560,6 +576,20 @@ inline CString::StringSet ToStringSet( const CAsciiString::StringSet& orgSet ) {
 #elif ( GUCEF_DEFAULT_STRING_FORMAT == GUCEF_DATATYPE_UTF8_STRING )
 inline CString::StringSet ToStringSet( const CUtf8String::StringSet& orgSet ) { return orgSet; }
 inline CString::StringSet ToStringSet( const CAsciiString::StringSet& orgSet ) { CString::StringSet set; CAsciiString::StringSet::const_iterator i=orgSet.begin(); while ( i != orgSet.end() ) { set.insert( (*i) ); ++i; } return set; }
+#endif
+
+/*-------------------------------------------------------------------------*/
+
+inline CString::StringVector ToStringVector( const CUtf8String& str ) { return StringToStringVector( str ); }
+inline CString::StringVector ToStringVector( const CAsciiString& str ) { return StringToStringVector( str ); }
+inline CString::StringVector ToStringVector( const CUtf8String::StringSet& set ) { CString::StringVector vec; CUtf8String::StringSet::const_iterator i=set.begin(); while ( i != set.end() ) { vec.push_back( (*i) ); ++i; } return vec; }
+inline CString::StringVector ToStringVector( const CAsciiString::StringSet& set ) { CString::StringVector vec; CAsciiString::StringSet::const_iterator i=set.begin(); while ( i != set.end() ) { vec.push_back( (*i) ); ++i; } return vec; }
+#if ( GUCEF_DEFAULT_STRING_FORMAT == GUCEF_DATATYPE_ASCII_STRING )
+inline CString::StringVector ToStringVector( const CUtf8String::StringVector& orgVec ) { CString::StringVector vec; CUtf8String::StringVector::const_iterator i=orgVec.begin(); while ( i != orgVec.end() ) { vec.push_back( (*i) ); ++i; } return vec; }
+inline CString::StringVector ToStringVector( const CAsciiString::StringVector& orgVec ) { return orgVec; }
+#elif ( GUCEF_DEFAULT_STRING_FORMAT == GUCEF_DATATYPE_UTF8_STRING )
+inline CString::StringVector ToStringVector( const CUtf8String::StringVector& orgVec ) { return orgVec; }
+inline CString::StringVector ToStringVector( const CAsciiString::StringVector& orgVec ) { CString::StringVector vec; CAsciiString::StringVector::const_iterator i=orgVec.begin(); while ( i != orgVec.end() ) { vec.push_back( (*i) ); ++i; } return vec; }
 #endif
 
 /*-------------------------------------------------------------------------//

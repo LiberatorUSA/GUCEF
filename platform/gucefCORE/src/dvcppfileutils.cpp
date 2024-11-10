@@ -57,6 +57,7 @@
 #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
   #include <windows.h>		/* WIN32 API */
   #include <winioctl.h>
+  #include <Shlobj.h>
   #undef min
   #undef max
   /* #include <dir.h>: obsolete *//* needed for MAXFILE define */
@@ -103,9 +104,182 @@ namespace CORE {
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
-//      UTILITIES                                                          //
+//      IMPLEMENTATION                                                     //
 //                                                                         //
 //-------------------------------------------------------------------------*/
+
+bool
+TryResolveSpecialDir( TSpecialDirs dir, CString& resolvedPath )
+{GUCEF_TRACE;
+
+    resolvedPath.Clear();
+
+    // Some we can resolve by redirecting to dedicated functions we have
+    switch ( dir )
+    {
+        case SPECIALDIR_CURRENT_WORK_DIR:
+            resolvedPath = CORE::CurrentWorkingDir();
+            return true;
+        case SPECIALDIR_UP_DIR:
+            resolvedPath = "..";
+            return true;
+        case SPECIALDIR_MODULE_DIR:
+            resolvedPath = CORE::ModuleDir();
+            return true;
+        case SPECIALDIR_TEMP_DIR:
+            resolvedPath = CORE::TempDir();
+            return true;
+    }
+    
+    #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
+    
+    KNOWNFOLDERID folderId;
+    switch ( dir )
+    {
+        case SPECIALDIR_HOME_DIR:
+            folderId = ::FOLDERID_Profile;
+            break;
+        case SPECIALDIR_LOCAL_APPDATA_DIR:
+            folderId = ::FOLDERID_LocalAppData;
+            break;
+        case SPECIALDIR_APPDATA_DIR:
+            folderId = FOLDERID_RoamingAppData;
+            break;
+        case SPECIALDIR_INTERNET_CACHE_DIR:
+            folderId = FOLDERID_InternetCache;
+            break;
+        case SPECIALDIR_DESKTOP_DIR:
+            folderId = FOLDERID_Desktop;
+            break;
+        case SPECIALDIR_MY_DOCUMENTS_DIR:
+            folderId = FOLDERID_Documents;
+            break;
+        case SPECIALDIR_MY_DOWNLOADS_DIR:
+            folderId = FOLDERID_Downloads;
+            break;
+        case SPECIALDIR_MY_MUSIC_DIR:
+            folderId = FOLDERID_Music;
+            break;
+        case SPECIALDIR_MY_PICTURES_DIR:
+            folderId = FOLDERID_Pictures;
+            break;
+        case SPECIALDIR_MY_VIDEO_DIR:
+            folderId = FOLDERID_Videos;
+            break;
+        case SPECIALDIR_MY_GAMES_DIR:
+            folderId = FOLDERID_Games;
+            break;
+        case SPECIALDIR_PROGRAMS_DIR:
+            folderId = FOLDERID_Programs;
+            break;
+        case SPECIALDIR_X86_PROGRAMS_DIR:
+            folderId = FOLDERID_ProgramFilesX86;
+            break;
+        case SPECIALDIR_X64_PROGRAMS_DIR:
+            folderId = FOLDERID_ProgramFilesX64;
+            break;
+        case SPECIALDIR_RECENT_DIR:
+            folderId = FOLDERID_Recent;
+            break;
+        case SPECIALDIR_SYSTEM_DIR:
+            folderId = FOLDERID_System;
+            break;
+        case SPECIALDIR_USER_DIR:
+            folderId = FOLDERID_UserProfiles;
+            break;
+            
+        default:
+            GUCEF_DEBUG_LOG( LOGLEVEL_NORMAL, "TryResolveSpecialDir: Unsupported special directory" );
+            return false;
+    }
+
+    WCHAR* path = GUCEF_NULL;
+    if ( S_OK != ::SHGetKnownFolderPath( folderId, 0, NULL, &path ) )
+    {
+        GUCEF_DEBUG_LOG( LOGLEVEL_NORMAL, "TryResolveSpecialDir: SHGetKnownFolderPath failed" );
+        return false;
+    }
+
+    resolvedPath = ToString( path );
+    ::CoTaskMemFree( path );
+    return true;
+
+    #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
+
+    const char* path = GUCEF_NULL;
+    switch ( dir )
+    {
+        case GUCEF_SPECIALDIR_HOME:
+            path = getenv( "HOME" );
+            break;
+        case GUCEF_SPECIALDIR_TEMP:
+            path = getenv( "TMPDIR" );
+            if ( GUCEF_NULL == path )
+                path = getenv( "TMP" );
+            if ( GUCEF_NULL == path )
+                path = getenv( "TEMP" );
+            break;
+        case GUCEF_SPECIALDIR_APPDATA:
+            path = getenv( "XDG_DATA_HOME" );
+            if ( GUCEF_NULL == path )
+                path = getenv( "HOME" );
+            break;
+        case GUCEF_SPECIALDIR_CONFIG:
+            path = getenv( "XDG_CONFIG_HOME" );
+            if ( GUCEF_NULL == path )
+                path = getenv( "HOME" );
+            break;
+        case GUCEF_SPECIALDIR_CACHE:
+            path = getenv( "XDG_CACHE_HOME" );
+            if ( GUCEF_NULL == path )
+                path = getenv( "HOME" );
+            break;
+        case GUCEF_SPECIALDIR_DESKTOP:
+            path = getenv( "XDG_DESKTOP_DIR" );
+            if ( GUCEF_NULL == path )
+                path = getenv( "HOME" );
+            break;
+        case GUCEF_SPECIALDIR_DOCUMENTS:
+            path = getenv( "XDG_DOCUMENTS_DIR" );
+            if ( GUCEF_NULL == path )
+                path = getenv( "HOME" );
+            break;
+        case GUCEF_SPECIALDIR_DOWNLOADS:
+            path = getenv( "XDG_DOWNLOAD_DIR" );
+            if ( GUCEF_NULL == path )
+                path = getenv( "HOME" );
+            break;
+        case GUCEF_SPECIALDIR_MUSIC:
+            path = getenv( "XDG_MUSIC_DIR" );
+            if ( GUCEF_NULL == path )
+                path = getenv( "HOME" );
+            break;
+        case GUCEF_SPECIALDIR_PICTURES:
+            path = getenv( "XDG_PICTURES_DIR" );
+            if ( GUCEF_NULL == path )
+                path = getenv( "HOME" );
+            break;
+        default:
+            GUCEF_DEBUG_LOG( LOGLEVEL_NORMAL, "TryResolveSpecialDir: Unsupported special directory" );
+            return false;
+    }
+
+    if ( GUCEF_NULL != path )
+    {
+        resolvedPath = path;
+        return true;
+    }
+    return false;
+
+    #else
+
+    GUCEF_DEBUG_LOG( LOGLEVEL_NORMAL, "TryResolveSpecialDir: Unsupported platform" );
+    return false;
+
+    #endif
+}
+
+/*-------------------------------------------------------------------------*/
 
 CDateTime
 GetFileModificationTime( const CString& path )
@@ -591,7 +765,7 @@ FileExists( const CString& filename )
     {
         #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
 
-        std::wstring wFilename = ToWString( filename );
+        std::wstring wFilename = ToWString( RelativePath( filename ) );
 
         WIN32_FIND_DATAW FileInfo;
         HANDLE hFind = GUCEF_NULL;
@@ -608,11 +782,11 @@ FileExists( const CString& filename )
         #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
 
         struct stat buf;
-        return stat( filename.C_String(), &buf ) == 0;
+        return stat( RelativePath( filename ).C_String(), &buf ) == 0;
 
         #else
 
-        FILE *fptr = fopen( filename.C_String(), "rb" );
+        FILE *fptr = fopen( RelativePath( filename ).C_String(), "rb" );
         fclose( fptr );
         return fptr > 0;
 
@@ -859,7 +1033,7 @@ FileSize( const CString& filename )
     {
         #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
 
-        std::wstring wFilename = ToWString( filename );
+        std::wstring wFilename = ToWString( RelativePath( filename ) );
 
         UInt64 lfilesize = 0;
         WIN32_FIND_DATAW FileInfo;
@@ -880,7 +1054,7 @@ FileSize( const CString& filename )
 
         struct stat statInfo;
         int result;
-        result = stat( filename.C_String(), &statInfo );
+        result = stat( RelativePath( filename.C_String() ), &statInfo );
         if ( result == 0 )
         {
             if ( 0 == statInfo.st_size )
@@ -923,7 +1097,7 @@ FileSize( const CString& filename )
         #else
 
         UInt64 filesize = 0;
-        FILE *fptr = fopen( filename.C_String(), "rb" );
+        FILE *fptr = fopen( RelativePath( filename ).C_String(), "rb" );
         fseek( fptr, 0, SEEK_END );
         filesize = ftell( fptr );
         fclose( fptr );
@@ -997,6 +1171,97 @@ GetFileSystemStorageVolumeInformationByDirPath( TStorageVolumeInformation& info,
 }
 
 /*-------------------------------------------------------------------------*/
+#if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
+
+CString GUCEF_CORE_PRIVATE_CPP
+ExtractGuidSectionFromPath( const CString& path )
+{GUCEF_TRACE;
+
+    if ( path.IsNULLOrEmpty() )
+        return CString();
+
+    Int32 guidStartIndex = path.HasChar( '{', true );
+    if ( guidStartIndex >= 0 )
+    {
+        Int32 guidEndIndex = path.HasChar( '}', (UInt32) guidStartIndex+1, true );
+        if ( guidEndIndex >= 0 )
+        {
+            return path.SubstrFromRange( (UInt32) guidStartIndex, (UInt32) guidEndIndex+1 );
+        }
+    }
+
+    return CString();
+}
+
+#endif
+
+/*-------------------------------------------------------------------------*/
+
+#if ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )     
+
+CString 
+ConvertGuidToVolumePath( const CString& volumeGuid )
+{GUCEF_TRACE;
+
+    if ( volumeGuid.IsNULLOrEmpty() )
+        return CString::Empty;
+
+    #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN ) 
+    
+    if ( volumeGuid.HasSubstr( "\\\\?\\Volume{", true ) == 0 )
+    {
+        // The volume GUID is actually already in path format
+        return volumeGuid;
+    }
+
+    CString volumePath = "\\\\?\\Volume" + volumeGuid + "\\";
+    return volumePath;
+
+    #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
+
+    if ( '/' == volumeGuid[ 0 ] )
+    {
+        // The volume GUID is actually already in path format
+        return volumeGuid;
+    }
+
+    CString volumePath = "/dev/disk/by-uuid/" + volumeGuid;
+    return volumePath;
+
+    #else
+
+    return CString::Empty;
+    
+    #endif
+}
+
+#endif
+
+/*-------------------------------------------------------------------------*/
+
+bool
+GetVolumePathForVolumeId( const CString& volumeId ,
+                          CString& volumePath     )
+{GUCEF_TRACE;
+
+    volumePath.Clear();
+    if ( volumeId.IsNULLOrEmpty() )
+        return false;
+    
+    #if ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )     
+
+    // The volume id is a GUID for which the O/S has a device path concept/convention
+    volumePath = ConvertGuidToVolumePath( volumeId );
+    return true;
+    
+    #else
+
+    return false;
+    
+    #endif
+}
+
+/*-------------------------------------------------------------------------*/
 
 bool
 GetFileSystemStorageVolumeInformationByVolumeId( TStorageVolumeInformation& info, const CString& volumeId )
@@ -1008,7 +1273,7 @@ GetFileSystemStorageVolumeInformationByVolumeId( TStorageVolumeInformation& info
 
     #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
 
-    std::wstring wVolumeId = ToWString( volumeId );
+    std::wstring wVolumeId = ToWString( ConvertGuidToVolumePath( volumeId ) );
 
     DWORD listSizeInWChars = 0;
     BOOL result = ::GetVolumePathNamesForVolumeNameW( wVolumeId.c_str() ,
@@ -1141,7 +1406,12 @@ GetAllFileSystemStorageVolumes( CString::StringSet& volumeIds )
     bool findMoreVolumes = true;
     do
     {
-        volumeIds.insert( ToString( volNameBuffer ) );
+        // These Windows API functions actually return the volume GUID path
+        // not the volume ID by itself. As such we will strip the path part to get the volume ID
+        CString volumePath = ToString( volNameBuffer );
+        CString volumeGuid = ExtractGuidSectionFromPath( volumePath );
+        
+        volumeIds.insert( volumeGuid );
 
         if ( 0 == ::FindNextVolumeW( volumeFindHandle, volNameBuffer, MAX_PATH ) )
         {
@@ -1192,7 +1462,7 @@ GetAllFileSystemPathNamesForVolume( const CString& volumeId       ,
 
     #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
 
-    std::wstring volumeIdWide = ToWString( volumeId );
+    std::wstring volumeIdWide = ToWString( ConvertGuidToVolumePath( volumeId ) );
 
     // first get the size of the buffer we need
     DWORD requiredBufferLength = 0;
@@ -1292,7 +1562,7 @@ GetAllFileSystemMountPointsForVolume( const CString& volumeId         ,
 
     #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
 
-    std::wstring volumeIdWide = ToWString( volumeId );
+    std::wstring volumeIdWide = ToWString( ConvertGuidToVolumePath( volumeId ) );
 
     const DWORD MOUNT_POINT_BUFFER_SIZE = 1024;
     WCHAR volMountBuffer[ MOUNT_POINT_BUFFER_SIZE ];

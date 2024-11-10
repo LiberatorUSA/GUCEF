@@ -204,6 +204,7 @@ filter "ALL"
   include( "tools/ProjectGen/plugins/ProjectGenDependsFilter" )
   include( "tools/ProjectGen/plugins/ProjectGenVSImporter" )
   include( "tools/ProjectGenerator" )
+  include( "tools/PubSubStorageTool" )
   include( "tools/ReferenceUpdater" )
   include( "tools/SVNMagicMerge" )
   include( "tools/ServerPortExtender" )

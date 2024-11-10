@@ -80,6 +80,11 @@
 #define GUCEF_CORE_DVFILEUTILS_H
 #endif /* GUCEF_CORE_DVFILEUTILS_H ? */
 
+#ifndef GUCEF_CORE_DVCPPFILEUTILS_H
+#include "dvcppfileutils.h"        /* all kinds of file utils */
+#define GUCEF_CORE_DVCPPFILEUTILS_H
+#endif /* GUCEF_CORE_DVCPPFILEUTILS_H ? */
+
 #ifndef GUCEF_CORE_GUCEF_ESSENTIALS_H
 #include "gucef_essentials.h"
 #define GUCEF_CORE_GUCEF_ESSENTIALS_H
@@ -547,6 +552,45 @@ RelativePath( const CString& relpath ,
     {
         resultStr = relpath;
     }
+
+    #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
+
+    // For Ms Windows we will also support resolving volume paths to their
+    // 'regular' path which will work with the rest of the filesystem related functions
+    if ( resultStr.HasSubstr( "\\\\?\\Volume{" ) == 0 )
+    {
+        // This is a volume path, resolve it to a regular path
+        Int32 closingCurly = resultStr.HasChar( '}', 11, true );
+        if ( closingCurly > 0 )
+        {
+            CString volumeGuid = resultStr.SubstrToIndex( (UInt32) closingCurly + 2, true );
+            
+            CString::StringSet volumePaths;
+            if ( GetAllFileSystemPathNamesForVolume( volumeGuid, volumePaths ) )
+            {
+                if ( !volumePaths.empty() )
+                {
+                    CString pathOnVolume = *volumePaths.begin();
+                    CString remnant = resultStr.SubstrToIndex( (UInt32) closingCurly+2, false );
+                    resultStr = CombinePath( pathOnVolume, remnant );
+                }
+            }
+            else
+            {                
+                if ( GetAllFileSystemMountPointsForVolume( volumeGuid, volumePaths ) )
+                {
+                    if ( !volumePaths.empty() )
+                    {
+                        CString pathOnVolume = *volumePaths.begin();
+                        CString remnant = resultStr.SubstrToIndex( (UInt32) closingCurly+2, false );
+                        resultStr = CombinePath( pathOnVolume, remnant );
+                    }
+                }
+            }
+        }
+    }
+
+    #endif
 
     // Now the up dir segments,...
     // First make sure we use the same seperator char in both string across

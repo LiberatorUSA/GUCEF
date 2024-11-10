@@ -377,10 +377,11 @@ CRollingFileAccess::Write( CIOAccess& sourceData, Int64 bytesToWrite )
 /*-------------------------------------------------------------------------*/
         
 UInt32 
-CRollingFileAccess::Write( const CString& string )
+CRollingFileAccess::Write( const CString& string ,
+                           bool addEol           )
 {GUCEF_TRACE;
 
-    UInt32 bytesWritten = m_currentFile.Write( string );
+    UInt32 bytesWritten = m_currentFile.Write( string, addEol );
     m_offset += bytesWritten;
     EnforceFileSizeThreshold();
     return bytesWritten;

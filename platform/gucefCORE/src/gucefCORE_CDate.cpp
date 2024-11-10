@@ -299,6 +299,49 @@ CDate::ToIso8601DateString( bool includeDelimeters ) const
     return CDateTime( *this, true ).ToIso8601DateString( includeDelimeters );
 }
 
+/*-------------------------------------------------------------------------*/
+
+bool 
+CDate::IsLeapYear( void ) const
+{GUCEF_TRACE;
+
+    // leap year if perfectly divisible by 400
+    if ( m_year % 400 == 0 ) 
+        return true;
+
+    // not a leap year if divisible by 100
+    // but not divisible by 400
+    if ( m_year % 100 == 0 ) 
+        return false;
+
+    // leap year if not divisible by 100
+    // but divisible by 4
+    if ( m_year % 4 == 0 ) 
+        return true;
+
+    // all other years are not leap years
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
+UInt8 
+CDate::GetDaysInMonth( void ) const
+{GUCEF_TRACE;
+
+    static const UInt8 daysInMonth[] = { 31, 28, 31, 30, 31, 30,
+                                         31, 31, 30, 31, 30, 31 };
+    if ( m_month >= 1 && m_month <= 12 )
+    {
+        if ( m_month == 2 && IsLeapYear() )
+            return 29;
+        else
+            return daysInMonth[ m_month-1 ];
+    }
+    else
+        return 0;
+}
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //

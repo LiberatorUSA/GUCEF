@@ -47,46 +47,46 @@ namespace CORE {
 
 CCPPWrapFileAccess::CCPPWrapFileAccess( TIOAccess *access )
         : _access( access )
-{
-        GUCEF_BEGIN;
-        GUCEF_END;
+{GUCEF_TRACE;
+
 }
 
 /*-------------------------------------------------------------------------*/
 
 CCPPWrapFileAccess::~CCPPWrapFileAccess()
-{
-        GUCEF_BEGIN;
-        GUCEF_END;
+{GUCEF_TRACE;
+
 }
 
 /*-------------------------------------------------------------------------*/
 
 void
 CCPPWrapFileAccess::Open( void )
-{
-        GUCEF_BEGIN;
+{GUCEF_TRACE;
+
+    if ( GUCEF_NULL != _access )
         _access->open( _access );
-        GUCEF_END;
 }
 
 /*-------------------------------------------------------------------------*/
 
 void
 CCPPWrapFileAccess::Close( void )
-{
-        GUCEF_BEGIN;
+{GUCEF_TRACE;
+
+    if ( GUCEF_NULL != _access )
         _access->close( _access );
-        GUCEF_END;
 }
 
 /*-------------------------------------------------------------------------*/
 
 bool
 CCPPWrapFileAccess::Opened( void ) const
-{
-        GUCEF_BEGIN;
-        GUCEF_END_RET( _access->opened( _access ) == 1 );
+{GUCEF_TRACE;
+
+    if ( GUCEF_NULL != _access )
+        return _access->opened( _access ) == 1;
+    return false;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -102,44 +102,44 @@ CCPPWrapFileAccess::GetSize( void ) const
 
 CString
 CCPPWrapFileAccess::ReadLine( void )
-{
-        GUCEF_BEGIN;
-        char* str;
-        UInt32 length = _access->readl( _access ,
-                                        &str    );
-        if ( length && str )
-        {
-                CString fstr( str );
-                _access->memfree( str );
-                GUCEF_END;
-                return fstr;
-        }
+{GUCEF_TRACE;
 
-        CString emptystr;
-        GUCEF_END;
-        return emptystr;
+    if ( GUCEF_NULL != _access )
+    {
+        char* str = GUCEF_NULL;
+        UInt32 length = _access->readl( _access, &str );
+        if ( length > 0 && str )
+        {
+            CString fstr( str, length );
+            _access->memfree( str );
+            str = GUCEF_NULL;
+
+            return fstr;
+        }
+    }
+    return CString::Empty;
 }
 
 /*-------------------------------------------------------------------------*/
 
 CString
 CCPPWrapFileAccess::ReadString( void )
-{
-        GUCEF_BEGIN;
-        char* str;
-        UInt32 length = _access->reads( _access ,
-                                        &str    );
-        if ( length && str )
-        {
-                CString fstr( str );
-                _access->memfree( str );
-                GUCEF_END;
-                return fstr;
-        }
+{GUCEF_TRACE;
 
-        CString emptystr;
-        GUCEF_END;
-        return emptystr;
+    if ( GUCEF_NULL != _access )
+    {
+        char* str = GUCEF_NULL;
+        UInt32 length = _access->reads( _access, &str );
+        if ( length > 0 && str )
+        {
+            CString fstr( str, length );
+            _access->memfree( str );
+            str = GUCEF_NULL;
+
+            return fstr;
+        }
+    }
+    return CString::Empty;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -148,12 +148,14 @@ UInt32
 CCPPWrapFileAccess::Read( void *dest      ,
                           UInt32 esize    ,
                           UInt32 elements )
-{
-        GUCEF_BEGIN;
-        GUCEF_END_RET( _access->read( _access  ,
-                                      dest     ,
-                                      esize    ,
-                                      elements ) );
+{GUCEF_TRACE;
+
+    if ( GUCEF_NULL != _access )
+        return _access->read( _access  ,
+                              dest     ,
+                              esize    ,
+                              elements );
+    return 0;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -162,7 +164,9 @@ UInt64
 CCPPWrapFileAccess::Tell( void ) const
 {GUCEF_TRACE;
 
-    return _access->tell( _access );
+    if ( GUCEF_NULL != _access )
+        return _access->tell( _access );
+    return 0;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -172,9 +176,11 @@ CCPPWrapFileAccess::Seek( Int64 offset ,
                           Int32 origin )
 {GUCEF_TRACE;
 
-    return _access->seek( _access ,
-                          offset  ,
-                          origin  );
+    if ( GUCEF_NULL != _access )
+        return _access->seek( _access ,
+                              offset  ,
+                              origin  );
+    return 1;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -183,8 +189,9 @@ UInt32
 CCPPWrapFileAccess::Setpos( UInt64 position )
 {GUCEF_TRACE;
 
-    return _access->setpos( _access  ,
-                            position );
+    if ( GUCEF_NULL != _access )
+        return _access->setpos( _access, position );
+    return 1;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -193,23 +200,28 @@ char
 CCPPWrapFileAccess::GetChar( void )
 {GUCEF_TRACE;
 
-    return ((TIOAccessfunction_getc)_access->getc)( _access );
+    if ( GUCEF_NULL != _access )
+        return ((TIOAccessfunction_getc)_access->getc)( _access );
+    return 0;
 }
 
 /*-------------------------------------------------------------------------*/
 
 bool
 CCPPWrapFileAccess::Eof( void ) const
-{
-        GUCEF_BEGIN;
-        GUCEF_END_RET( _access->eof( _access ) == 1 );
+{GUCEF_TRACE;
+
+    if ( GUCEF_NULL != _access )
+        return _access->eof( _access ) == 1;
+    return true;
 }
 
 /*-------------------------------------------------------------------------*/
 
 bool
 CCPPWrapFileAccess::IsReadable( void ) const
-{
+{GUCEF_TRACE;
+
     return true;
 }
 
@@ -228,32 +240,27 @@ UInt32
 CCPPWrapFileAccess::Write( const void* srcdata ,
                            UInt32 esize        ,
                            UInt32 elements     )
-{
-        return 0;
+{GUCEF_TRACE;
+
+    return 0;
 }
 
 /*-------------------------------------------------------------------------*/
 
 TIOAccess*
 CCPPWrapFileAccess::CStyleAccess( void )
-{
-        GUCEF_BEGIN;
-        GUCEF_END;
-        return _access;
+{GUCEF_TRACE;
+
+    return _access;
 }
 
 /*-------------------------------------------------------------------------*/
 
-/**
- *      Is the access to the resource a valid one or
- *      has something gone wrong ?
- */
 bool
 CCPPWrapFileAccess::IsValid( void )
-{
-        GUCEF_BEGIN;
-        GUCEF_END;
-        return _access != NULL;
+{GUCEF_TRACE;
+
+    return _access != GUCEF_NULL;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -261,7 +268,8 @@ CCPPWrapFileAccess::IsValid( void )
 CICloneable*
 CCPPWrapFileAccess::Clone( void ) const
 {GUCEF_TRACE;
-        return GUCEF_NEW CCPPWrapFileAccess( _access );
+
+    return GUCEF_NEW CCPPWrapFileAccess( _access );
 }
 
 /*-------------------------------------------------------------------------*/

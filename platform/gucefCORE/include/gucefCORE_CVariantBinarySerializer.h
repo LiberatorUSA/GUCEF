@@ -31,6 +31,11 @@
 #define GUCEF_CORE_MACROS_H
 #endif /* GUCEF_CORE_MACROS_H ? */
 
+#ifndef GUCEF_CORE_CIOACCESS_H
+#include "CIOAccess.h"
+#define GUCEF_CORE_CIOACCESS_H
+#endif /* GUCEF_CORE_CIOACCESS_H ? */
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //
@@ -54,6 +59,8 @@ class GUCEF_CORE_PUBLIC_CPP CVariantBinarySerializer
     public:
     
     static bool Serialize( const CVariant& var, UInt32 currentTargetOffset, CDynamicBuffer& target, UInt32& bytesWritten );
+
+    static bool Serialize( const CVariant& var, CIOAccess& access, UInt32& bytesWritten );
 
     static bool Deserialize( CVariant& var, UInt32 currentSourceOffset, const CDynamicBuffer& source, bool linkWherePossible, UInt32& bytesRead ); 
 };

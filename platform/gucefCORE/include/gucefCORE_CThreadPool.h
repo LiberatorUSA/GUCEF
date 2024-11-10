@@ -139,6 +139,8 @@ class GUCEF_CORE_PUBLIC_CPP CThreadPool : public CTSGNotifier ,
     typedef CTFactoryBase< CIDataNodeSerializableTaskData, MT::CMutex >     TTaskDataFactory;
     typedef std::map< UInt32, CTaskInfo >                                   TTaskInfoMap;
     typedef std::map< UInt32, CThreadInfo >                                 TThreadInfoMap;
+    typedef std::vector< UInt32, gucef_allocator< UInt32 > >                TTaskIdVector;
+    typedef std::vector< UInt32, gucef_allocator< UInt32 > >                TThreadIdVector;
 
     typedef TCloneableUInt32                                    TThreadKilledEventData;
     typedef TCloneableUInt32                                    TThreadStartedEventData;
@@ -251,6 +253,12 @@ class GUCEF_CORE_PUBLIC_CPP CThreadPool : public CTSGNotifier ,
 
     bool WaitForTaskToFinish( CTaskConsumerPtr taskConsumer, Int32 timeoutInMs );
 
+    bool WaitForAllTasksToFinish( Int32 timeoutInMs );
+
+    bool WaitForThreadToFinish( const UInt32 threadId, Int32 timeoutInMs );
+
+    bool WaitForAllThreadsToFinish( Int32 timeoutInMs );
+
     bool KillTask( const UInt32 taskID );
 
     void SetNrOfWorkerThreadsToLogicalCPUs( const UInt32 coreFactor );
@@ -271,9 +279,35 @@ class GUCEF_CORE_PUBLIC_CPP CThreadPool : public CTSGNotifier ,
 
     UInt32 GetNrOfQueuedTasks( void ) const;
 
-    void RequestAllTasksToStop( bool waitOnStop, bool acceptNewWork );
+    /**
+     *  Obtains a list of all task ids for all tasks that are currently activly associated with the threadpool
+     *  Note that this is a snapshot in time and the task ids can change at any time
+     */
+    void GetAllCurrentTaskIds( TTaskIdVector& taskIds );
 
-    void RequestAllThreadsToStop( bool waitOnStop, bool acceptNewWork );
+    /**
+     *  Obtains a list of all thread ids that are currently activly associated with the threadpool
+     *  Note that this is a snapshot in time and the thread ids can change at any time
+     */
+    void GetAllCurrentThreadIds( TThreadIdVector& threadIds );
+
+    /**
+     *  Requests all tasks to stop and optionally waits for them to finish up to the specified timeout
+     *  Note that if you do not specify to no longer accept new work the threadpool will continue to accept new work potentially
+     *  and as such the 'stop' would only apply to the tasks known at the time of the beginning of the call
+     *  Note that you cannot perform a waitOnStop if the calling thread is one of the threads being stopped, that is disalllowed to prevent deadlocks
+     *  Returns false if a timeout occured
+     */
+    bool RequestAllTasksToStop( bool waitOnStop, bool acceptNewWork, Int32 timeoutInMsPerTask );
+
+    /**
+     *  Requests all threads to stop and optionally waits for them to finish up to the specified timeout
+     *  Note that if you do not specify to no longer accept new work the threadpool will continue to accept new work potentially
+     *  and as such the 'stop' would only apply to the threads known at the time of the beginning of the call
+     *  Note that you cannot perform a waitOnStop if the calling thread is one of the threads being stopped, that is disalllowed to prevent deadlocks
+     *  Returns false if a timeout occured
+     */
+    bool RequestAllThreadsToStop( bool waitOnStop, bool acceptNewWork, Int32 timeoutInMsPerThread );
 
     void SetAllowMainApplicationThreadToPickUpQueuedTasks( bool allowAppThreadToWork );
 
@@ -434,6 +468,13 @@ class GUCEF_CORE_PUBLIC_CPP CThreadPool : public CTSGNotifier ,
 
     private:
 
+    typedef CTAbstractFactory< CString, CTaskConsumer, MT::CMutex > TAbstractTaskConsumerFactory;
+    typedef CTAbstractFactory< CString, CIDataNodeSerializableTaskData, MT::CMutex > TAbstractTaskDataFactory;
+    typedef MT::CTMailBox< CString > TTaskMailbox;
+    typedef std::map< UInt32, CTaskConsumerPtr > TTaskConsumerMap;
+    typedef CTBasicSharedPtr< CTaskDelegator, MT::CMutex >  TTaskDelegatorBasicPtr; 
+    typedef std::set< TTaskDelegatorBasicPtr > TTaskDelegatorSet;
+
     void EnforceDesiredNrOfThreads( Int32 desiredMaxTotalNrOfThreads   ,
                                     UInt32 desiredMinNrOfWorkerThreads ,
                                     bool gracefullEnforcement          );
@@ -442,19 +483,14 @@ class GUCEF_CORE_PUBLIC_CPP CThreadPool : public CTSGNotifier ,
 
     void RemoveDelegator( CNotifier* notifier );
 
+    TTaskDelegatorBasicPtr GetDelegatorForThreadId( const UInt32 threadId ) const;
+
     void SubscribeToTaskConsumerEvents( CTaskConsumerPtr& taskConsumer );
 
     CThreadPool( const CThreadPool& src );                   /**< not supported */
     CThreadPool& operator=( const CThreadPool& src );        /**< not supported */
 
     private:
-
-    typedef CTAbstractFactory< CString, CTaskConsumer, MT::CMutex > TAbstractTaskConsumerFactory;
-    typedef CTAbstractFactory< CString, CIDataNodeSerializableTaskData, MT::CMutex > TAbstractTaskDataFactory;
-    typedef MT::CTMailBox< CString > TTaskMailbox;
-    typedef std::map< UInt32, CTaskConsumerPtr > TTaskConsumerMap;
-    typedef CTBasicSharedPtr< CTaskDelegator, MT::CMutex >  TTaskDelegatorBasicPtr; 
-    typedef std::set< TTaskDelegatorBasicPtr > TTaskDelegatorSet;
 
     CString m_poolName;
     TAbstractTaskConsumerFactory m_consumerFactory;

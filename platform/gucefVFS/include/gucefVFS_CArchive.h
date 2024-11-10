@@ -34,6 +34,11 @@
 #define GUCEF_MT_CMUTEX_H
 #endif /* GUCEF_MT_CMUTEX_H ? */
 
+#ifndef GUCEF_CORE_DVFILEUTILS_H
+#include "dvfileutils.h"
+#define GUCEF_CORE_DVFILEUTILS_H
+#endif /* GUCEF_CORE_DVFILEUTILS_H ? */
+
 #ifndef GUCEF_CORE_CTBASICSHAREDPTR_H
 #include "CTBasicSharedPtr.h"
 #define GUCEF_CORE_CTBASICSHAREDPTR_H
@@ -218,6 +223,13 @@ class GUCEF_VFS_PUBLIC_CPP CArchive : public CORE::CObservingNotifier           
     virtual bool IsHealthy( void ) const;
 
     virtual bool IsConnected( void ) const;
+
+    /**
+     *  Optional member function to allow the archive to resolve special directories
+     *  like the user's home directory, the current working directory, etc.
+     *  The default implementation always fails.
+     */
+    virtual bool TryResolveSpecialDir( CORE::TSpecialDirs dir, CString& resolvedPath ) const;
 };
 
 /*-------------------------------------------------------------------------//

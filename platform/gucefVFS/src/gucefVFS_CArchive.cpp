@@ -159,6 +159,15 @@ CArchive::SetFileMetaData( const CString& filePath                 ,
     return false;
 }
 
+/*-------------------------------------------------------------------------*/
+
+bool 
+CArchive::TryResolveSpecialDir( CORE::TSpecialDirs dir, CString& resolvedPath ) const
+{GUCEF_TRACE;
+
+    return false;
+}
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //

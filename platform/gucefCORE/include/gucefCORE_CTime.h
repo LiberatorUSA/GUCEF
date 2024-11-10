@@ -64,9 +64,15 @@ class GUCEF_CORE_PUBLIC_CPP CTime : public CITime
 
     static CTime NowLocalTime( void );
     
+    virtual void SetHours( Int8 hours );
+    
     virtual Int8 GetHours( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
+    virtual void SetMinutes( Int8 minutes );
+    
     virtual Int8 GetMinutes( void ) const GUCEF_VIRTUAL_OVERRIDE;
+
+    virtual void SetSeconds( Int8 seconds );
 
     virtual Int8 GetSeconds( void ) const GUCEF_VIRTUAL_OVERRIDE;
 

@@ -105,6 +105,7 @@ class GUCEF_CORE_PUBLIC_CPP CGUCEFApplication : public CTSGNotifier             
 
     static const CEvent AppInitEvent;
     static const CEvent AppShutdownEvent;
+    static const CEvent AppShutdownAbortedEvent;
     static const CEvent AppShutdownCompleteEvent;
     static const CEvent FirstCycleEvent;
 
@@ -139,7 +140,7 @@ class GUCEF_CORE_PUBLIC_CPP CGUCEFApplication : public CTSGNotifier             
 
     void Update( void );
 
-    void Stop( bool wait = false );
+    bool Stop( bool wait = false );
 
     CString GetApplicationDir( void ) const;
 

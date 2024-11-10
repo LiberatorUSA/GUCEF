@@ -104,6 +104,7 @@ namespace CORE {
 
 const CEvent CGUCEFApplication::AppInitEvent = "GUCEF::CORE::CGUCEFApplication::AppInitEvent";
 const CEvent CGUCEFApplication::AppShutdownEvent = "GUCEF::CORE::CGUCEFApplication::AppShutdownEvent";
+const CEvent CGUCEFApplication::AppShutdownAbortedEvent = "GUCEF::CORE::CGUCEFApplication::AppShutdownAbortedEvent";
 const CEvent CGUCEFApplication::AppShutdownCompleteEvent = "GUCEF::CORE::CGUCEFApplication::AppShutdownCompleteEvent";
 const CEvent CGUCEFApplication::FirstCycleEvent = "GUCEF::CORE::CGUCEFApplication::FirstCycleEvent";
 
@@ -413,6 +414,7 @@ CGUCEFApplication::RegisterEvents( void )
 
     AppInitEvent.Initialize();
     AppShutdownEvent.Initialize();
+    AppShutdownAbortedEvent.Initialize();
     AppShutdownCompleteEvent.Initialize();
     FirstCycleEvent.Initialize();
 }
@@ -431,7 +433,7 @@ CGUCEFApplication::Update( void )
 
 /*-------------------------------------------------------------------------*/
 
-void
+bool
 CGUCEFApplication::Stop( bool wait )
 {GUCEF_TRACE;
 
@@ -440,7 +442,7 @@ CGUCEFApplication::Stop( bool wait )
 
         if ( !m_shutdownRequested )
         {
-            if ( !NotifyObservers( AppShutdownEvent ) ) return;
+            if ( !NotifyObservers( AppShutdownEvent ) ) return false;
 
             PulseGeneratorPtr pulseGenerator = GetPulseGenerator();
             if ( !pulseGenerator.IsNULL() )
@@ -453,22 +455,30 @@ CGUCEFApplication::Stop( bool wait )
         }
     }
 
-    CCoreGlobal::Instance()->GetTaskManager().RequestAllThreadsToStop( wait, false );
-
-    if ( !m_shutdownRequested )
+    if ( CCoreGlobal::Instance()->GetTaskManager().RequestAllThreadsToStop( wait, false, GUCEF_MT_SUPER_LONG_LOCK_TIMEOUT ) )
     {
-        m_shutdownRequested = true;
-        if ( !NotifyObservers( AppShutdownCompleteEvent ) ) return;
-
-        PulseGeneratorPtr pulseGenerator = GetPulseGenerator();
-        if ( !pulseGenerator.IsNULL() )
+        if ( !m_shutdownRequested )
         {
-            // Once last round for pumped observers
-            pulseGenerator->ForceDirectPulse();
-        }
-    }
+            m_shutdownRequested = true;
+            if ( !NotifyObservers( AppShutdownCompleteEvent ) ) return false;
 
-    CCoreGlobal::Instance()->GetLogManager().FlushLogs();
+            PulseGeneratorPtr pulseGenerator = GetPulseGenerator();
+            if ( !pulseGenerator.IsNULL() )
+            {
+                // Once last round for pumped observers
+                pulseGenerator->ForceDirectPulse();
+            }
+        }
+
+        CCoreGlobal::Instance()->GetLogManager().FlushLogs();
+        
+        return true;
+    }
+    else
+    {
+        NotifyObservers( AppShutdownAbortedEvent );
+        return false;
+    }    
 }
 
 /*-------------------------------------------------------------------------*/

@@ -1099,6 +1099,36 @@ Get_Creation_Time( const char* path )
     #endif
 }
 
+/*-------------------------------------------------------------------------*/
+
+UInt32
+Try_Resolve_Special_Dir( TSpecialDirs dir, char* dest, UInt32 dest_size )
+{GUCEF_TRACE;
+
+    try
+    {
+        // map to C++ version
+        CString resolvedPath;
+        if ( CORE::TryResolveSpecialDir( dir, resolvedPath ) )
+        {
+            if ( GUCEF_NULL != dest && dest_size > 0 )
+            {
+                UInt32 neededBufferSize = resolvedPath.ByteSize();
+                if ( neededBufferSize <= dest_size )
+                {
+                    memcpy( dest, resolvedPath.C_String(), resolvedPath.ByteSize() );
+                }
+            }
+            return resolvedPath.ByteSize();
+        }
+        return 0;
+    }
+    catch ( const std::exception& )
+    {
+        return 0;
+    }
+}
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //

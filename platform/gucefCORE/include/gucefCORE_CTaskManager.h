@@ -101,11 +101,12 @@ class GUCEF_CORE_PUBLIC_CPP CTaskManager : public CTSGNotifier
 
     public:
 
-    typedef CThreadPool::TTaskConsumerFactory    TTaskConsumerFactory;
-    typedef CThreadPool::TTaskDataFactory        TTaskDataFactory;
-    typedef CThreadPool::TTaskInfoMap            TTaskInfoMap;
-    typedef CThreadPool::TThreadInfoMap          TThreadInfoMap;
-    typedef std::map< CString, CThreadPoolInfo > TThreadPoolInfoMap;
+    typedef CThreadPool::TTaskConsumerFactory                               TTaskConsumerFactory;
+    typedef CThreadPool::TTaskDataFactory                                   TTaskDataFactory;
+    typedef CThreadPool::TTaskInfoMap                                       TTaskInfoMap;
+    typedef CThreadPool::TThreadInfoMap                                     TThreadInfoMap;
+    typedef std::map< CString, CThreadPoolInfo >                            TThreadPoolInfoMap;
+    typedef std::vector< ThreadPoolPtr, gucef_allocator< ThreadPoolPtr > >  ThreadPoolVector;
 
     static const CString ClassTypeName;
     static const CString DefaultThreadPoolName; 
@@ -118,6 +119,8 @@ class GUCEF_CORE_PUBLIC_CPP CTaskManager : public CTSGNotifier
 
     ThreadPoolPtr GetOrCreateThreadPool( const CString& threadPoolName , 
                                          bool createIfNotExists = true );
+
+    void GetAllThreadPools( ThreadPoolVector& threadPools ) const;
 
     bool UnregisterThreadPool( const CString& threadPoolName );
 
@@ -218,7 +221,14 @@ class GUCEF_CORE_PUBLIC_CPP CTaskManager : public CTSGNotifier
 
     UInt32 GetGlobalNrOfQueuedTasks( void ) const;
 
-    void RequestAllThreadsToStop( bool waitOnStop, bool acceptNewWork );
+    /**
+     *  Requests all threads to stop in all thread pools and optionally waits for them to finish up to the specified timeout
+     *  Note that if you do not specify to no longer accept new work the threadpool will continue to accept new work potentially
+     *  and as such the 'stop' would only apply to the threads known at the time of the beginning of the call
+     *  Note that you cannot perform a waitOnStop if the calling thread is one of the threads being stopped, that is disalllowed to prevent deadlocks
+     *  Returns false if a timeout occured
+     */
+    bool RequestAllThreadsToStop( bool waitOnStop, bool acceptNewWork, Int32 timeoutInMsPerThread );
 
     void GetAllThreadPoolNames( CORE::CString::StringSet& poolNames ) const;
 

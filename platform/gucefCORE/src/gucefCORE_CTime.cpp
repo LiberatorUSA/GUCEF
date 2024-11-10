@@ -181,6 +181,15 @@ CTime::NowLocalTime( void )
 
 /*-------------------------------------------------------------------------*/
 
+void 
+CTime::SetHours( Int8 hours )
+{GUCEF_TRACE;
+
+    m_hours = hours;
+}
+
+/*-------------------------------------------------------------------------*/
+
 Int8
 CTime::GetHours( void ) const
 {GUCEF_TRACE;
@@ -190,11 +199,29 @@ CTime::GetHours( void ) const
 
 /*-------------------------------------------------------------------------*/
 
+void 
+CTime::SetMinutes( Int8 minutes )
+{GUCEF_TRACE;
+
+    m_minutes = minutes;
+}
+
+/*-------------------------------------------------------------------------*/
+
 Int8
 CTime::GetMinutes( void ) const
 {GUCEF_TRACE;
 
     return m_minutes;
+}
+
+/*-------------------------------------------------------------------------*/
+
+void 
+CTime::SetSeconds( Int8 seconds )
+{GUCEF_TRACE;
+
+    m_seconds = seconds;
 }
 
 /*-------------------------------------------------------------------------*/
