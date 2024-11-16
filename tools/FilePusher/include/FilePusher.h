@@ -385,7 +385,7 @@ class FilePushDestination : public CORE::CObservingNotifier
     bool PruneMovedFilesIfLowOnVolumeSpace( void );
 
     bool DoesStorageVolumeHaveSufficientSpace( const CORE::CString& volumeId                                   ,
-                                               const CORE::TStorageVolumeInformation& storageVolumeInformation ) const;
+                                               const CORE::CStorageVolumeInformation& storageVolumeInformation ) const;
     
     bool DiscoverCurrentFileSourceDirs( CORE::CString::StringSet& dirs );
     

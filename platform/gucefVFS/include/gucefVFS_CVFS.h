@@ -674,7 +674,8 @@ class GUCEF_VFS_PUBLIC_CPP CVFS : public CORE::CTSGNotifier          ,
      *  when the settings are loaded. If false you can still trigger this functionality manually via this function
      *  If no "overrideMountRoot" is provided the VFS will use the setting "autoMountVfsRoot" as the root to mount
      */
-    bool MountFileSystemRoots( const CORE::CString& overrideMountRoot = CORE::CString::Empty );
+    bool MountFileSystemRoots( const CORE::CString& overrideMountRoot = CORE::CString::Empty ,
+                               bool vfsVolumesAreWriteableIfPossible = true                  );
 
     virtual const CString& GetClassTypeName( void ) const GUCEF_VIRTUAL_OVERRIDE;
     
@@ -796,7 +797,8 @@ class GUCEF_VFS_PUBLIC_CPP CVFS : public CORE::CTSGNotifier          ,
     TArchivePtrToMountEntryMap m_archivePtrToMountEntryLookup;
     bool m_delayedArchiveMountingIsComplete;
     CString m_vfsRootForVolumes;
-    bool m_autoMountFsRoots;
+    bool m_vfsVolumesAreWriteableIfPossible;
+    bool m_autoMountFsVolumes;
     MT::CReadWriteLock m_rwdataLock;
 };
 

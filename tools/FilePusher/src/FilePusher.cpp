@@ -1548,18 +1548,21 @@ FilePushDestination::PruneAgedMovedFiles( void )
 
 bool
 FilePushDestination::DoesStorageVolumeHaveSufficientSpace( const CORE::CString& volumeId                                   ,
-                                                           const CORE::TStorageVolumeInformation& storageVolumeInformation ) const
+                                                           const CORE::CStorageVolumeInformation& storageVolumeInformation ) const
 {GUCEF_TRACE;
 
     if ( m_settings.minDiskSpacePercToTriggerPrune >= 0 )
     {
-        CORE::Float64 oneSpacePerc = ( 0.01 * storageVolumeInformation.totalNumberOfBytes );
-        CORE::Float64 freeSpacePerc = storageVolumeInformation.freeBytesAvailableToCaller / oneSpacePerc;
+        if ( storageVolumeInformation.hasTotalNumberOfBytes && storageVolumeInformation.hasFreeBytesAvailableToCaller )
+        {
+            CORE::Float64 oneSpacePerc = ( 0.01 * storageVolumeInformation.totalNumberOfBytes );
+            CORE::Float64 freeSpacePerc = storageVolumeInformation.freeBytesAvailableToCaller / oneSpacePerc;
 
-        GUCEF_DEBUG_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "FilePushDestination:OnFilePrunerTimerCycle: Found that filesystem volume \"" + volumeId +
-            "\" has " + CORE::ToString( freeSpacePerc ) + "% free space left to use by this account" );
+            GUCEF_DEBUG_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "FilePushDestination:OnFilePrunerTimerCycle: Found that filesystem volume \"" + volumeId +
+                "\" has " + CORE::ToString( freeSpacePerc ) + "% free space left to use by this account" );
 
-        return freeSpacePerc > m_settings.minDiskSpacePercToTriggerPrune;
+            return freeSpacePerc > m_settings.minDiskSpacePercToTriggerPrune;
+        }
     }
     return true;
 }
@@ -1586,7 +1589,7 @@ FilePushDestination::PruneMovedFilesIfLowOnVolumeSpace( void )
     while ( n != m_fsVolumes.end() )
     {
         const CORE::CString& volumeId = (*n);
-        CORE::TStorageVolumeInformation storageVolumeInformation;
+        CORE::CStorageVolumeInformation storageVolumeInformation;
         if ( CORE::GetFileSystemStorageVolumeInformationByVolumeId( storageVolumeInformation, volumeId ) )
         {
             if ( !DoesStorageVolumeHaveSufficientSpace( volumeId, storageVolumeInformation ) )
@@ -1628,7 +1631,7 @@ FilePushDestination::PruneMovedFilesIfLowOnVolumeSpace( void )
                 {
                     const CORE::CString& filePath = (*n);
 
-                    CORE::TStorageVolumeInformation storageVolumeInformation;
+                    CORE::CStorageVolumeInformation storageVolumeInformation;
                     if ( CORE::GetFileSystemStorageVolumeInformationByVolumeId( storageVolumeInformation, volumeId ) )
                     {
                         // recheck space requirement

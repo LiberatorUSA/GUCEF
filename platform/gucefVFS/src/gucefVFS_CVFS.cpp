@@ -192,7 +192,8 @@ CVFS::CVFS( void )
     , m_delayMountedArchiveSettings()
     , m_delayedArchiveMountingIsComplete( false )
     , m_vfsRootForVolumes( GUCEF_VFS_RESERVED_STRING_DEFAULT_VOLUME_MOUNT_ROOT )
-    , m_autoMountFsRoots( true )
+    , m_vfsVolumesAreWriteableIfPossible( true )
+    , m_autoMountFsVolumes( true )
     , m_rwdataLock( true )
 {GUCEF_TRACE;
 
@@ -2112,12 +2113,13 @@ CVFS::LoadVfsSystemConfig( const CORE::CDataNode& cfg )
     m_asyncOpsThreadpool = cfg.GetAttributeValueOrChildValueByName( "asyncOpsThreadpool" ).AsString( m_asyncOpsThreadpool, true );
     m_asyncOpsMinWorkerThreads = cfg.GetAttributeValueOrChildValueByName( "asyncOpsMinWorkerThreads" ).AsUInt32( m_asyncOpsMinWorkerThreads, true );
     m_vfsRootForVolumes = cfg.GetAttributeValueOrChildValueByName( "vfsRootForVolumes" ).AsString( m_vfsRootForVolumes, true );
-    m_autoMountFsRoots = cfg.GetAttributeValueOrChildValueByName( "autoMountFsRoots" ).AsBool( m_autoMountFsRoots, true );
+    m_vfsVolumesAreWriteableIfPossible = cfg.GetAttributeValueOrChildValueByName( "vfsVolumesAreWriteableIfPossible" ).AsBool( m_vfsVolumesAreWriteableIfPossible, true );
+    m_autoMountFsVolumes = cfg.GetAttributeValueOrChildValueByName( "m_autoMountFsVolumes" ).AsBool( m_autoMountFsVolumes, true );
 
     CORE::ThreadPoolPtr threadPool = CORE::CCoreGlobal::Instance()->GetTaskManager().GetOrCreateThreadPool( m_asyncOpsThreadpool );
     threadPool->SetDesiredMinNrOfWorkerThreads( m_asyncOpsMinWorkerThreads );
 
-    if ( m_autoMountFsRoots )
+    if ( m_autoMountFsVolumes )
         MountFileSystemRoots( m_vfsRootForVolumes );
 
     return true;
@@ -2271,7 +2273,8 @@ CVFS::AddMountAlias( const CString& mountPath      ,
 /*-------------------------------------------------------------------------*/
 
 bool
-CVFS::MountFileSystemRoots( const CORE::CString& overrideMountRoot )
+CVFS::MountFileSystemRoots( const CORE::CString& overrideMountRoot ,
+                            bool vfsVolumesAreWriteableIfPossible  )
 {GUCEF_TRACE;
 
     MT::CScopeReaderLock readerLock( m_rwdataLock );
@@ -2306,7 +2309,14 @@ CVFS::MountFileSystemRoots( const CORE::CString& overrideMountRoot )
         CORE::CString fsVolumePath;
         CORE::GetVolumePathForVolumeId( volumeId, fsVolumePath );
 
-        bool addRootSuccess = AddRoot( fsVolumePath, volumeId, false, false, volumeIdMount, FileSystemArchiveTypeName );
+        CORE::CStorageVolumeInformation fsVolumeInfo;
+        CORE::GetFileSystemStorageVolumeInformationByVolumeId( fsVolumeInfo, volumeId );
+
+        bool volumeIsWriteable = m_vfsVolumesAreWriteableIfPossible;
+        if ( fsVolumeInfo.hasIsReadOnly && m_vfsVolumesAreWriteableIfPossible )
+            volumeIsWriteable = !fsVolumeInfo.isReadOnly;
+
+        bool addRootSuccess = AddRoot( fsVolumePath, volumeId, volumeIsWriteable, false, volumeIdMount, FileSystemArchiveTypeName );
         if ( addRootSuccess )
         {
             // Now attempt to obtain all filesystem path names for the given volume id
@@ -2911,7 +2921,7 @@ CVFS::TryGetVfsPathForFileSystemPath( const CORE::CString& fsPath ,
 {GUCEF_TRACE;
 
     // Use the global VFS default for root auto mounting
-    return TryGetVfsPathForFileSystemPath( fsPath, resolvedPath, m_autoMountFsRoots );
+    return TryGetVfsPathForFileSystemPath( fsPath, resolvedPath, m_autoMountFsVolumes );
 }
 
 /*-------------------------------------------------------------------------*/

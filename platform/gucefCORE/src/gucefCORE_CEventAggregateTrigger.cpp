@@ -144,7 +144,13 @@ CEventAggregateTrigger::CheckForTriggerCriterea( void )
 
         lock.EarlyUnlock();        
         if ( performTrigger )
-            NotifyObservers( AggregateTriggerEvent );
+        {
+            // Note that we do not use NotifyObserver() here because we dont want to be chained in with the trigger criterea events.
+            // Logically there might be other consumers and if the aggregate trigger is some kind of a trigger for a larger system
+            // which has a long run duration you want to shorten the call stack chain plus allow other oberservers to be notified of the same
+            // combo of events before we trigger the aggregate event.
+            NotifyObserversFromThread( AggregateTriggerEvent );
+        }
     }
 }
 

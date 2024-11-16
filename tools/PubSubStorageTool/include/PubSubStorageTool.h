@@ -90,6 +90,7 @@ class CTimeBoundContainer : public CORE::CTSharedObjCreator< CTimeBoundContainer
     CORE::CDateTime newestMsgDt;
 
     CTimeBoundContainer( void );
+    virtual ~CTimeBoundContainer();
 };
 
 typedef CTimeBoundContainer::TSharedPtrType CTimeBoundContainerPtr;

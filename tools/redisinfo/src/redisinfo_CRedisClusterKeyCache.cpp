@@ -155,7 +155,7 @@ CRedisClusterKeyCache::CRedisClusterKeyCache( void )
     MT::CScopeWriterLock lock( g_dataLock );
 
     if ( !m_threadPool.IsNULL() )
-        m_threadPool->RequestAllThreadsToStop( true, false );
+        m_threadPool->RequestAllThreadsToStop( true, false, GUCEF_MT_DEFAULT_LOCK_TIMEOUT_IN_MS );
     m_threadPool.Unlink();
 
     m_cacheUpdateTask.Unlink();

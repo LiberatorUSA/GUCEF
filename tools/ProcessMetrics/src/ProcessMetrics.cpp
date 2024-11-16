@@ -1499,7 +1499,7 @@ ProcessMetrics::OnMetricsTimerCycle( CORE::CNotifier* notifier    ,
             const CORE::CString& storageVolumeId = (*i);
             const CORE::CString& storagePath = m_storageVolumeIdsToPaths[ storageVolumeId ];
 
-            CORE::TStorageVolumeInformation volumeInfo;
+            CORE::CStorageVolumeInformation volumeInfo;
             if ( CORE::GetFileSystemStorageVolumeInformationByVolumeId( volumeInfo, storageVolumeId ) && 0 < volumeInfo.totalNumberOfBytes )
             {
                 const CORE::CString* metricStrToUse = &storageVolumeId;
@@ -1508,32 +1508,32 @@ ProcessMetrics::OnMetricsTimerCycle( CORE::CNotifier* notifier    ,
 
                 CORE::CString metricsStorageVolumeId = GenerateMetricsFriendlyString( *metricStrToUse );
 
-                if ( m_gatherGlobalStorageVolumeBytesAvailableToCaller )
+                if ( m_gatherGlobalStorageVolumeBytesAvailableToCaller && volumeInfo.hasFreeBytesAvailableToCaller )
                 {
                     CORE::CString storageMetricName = storageMetricNamePrefix + metricsStorageVolumeId + ".FreeBytesAvailableToCaller";
                     GUCEF_METRIC_GAUGE( storageMetricName, volumeInfo.freeBytesAvailableToCaller, 1.0f );
                     ValidateMetricThresholds( CORE::CVariant( volumeInfo.freeBytesAvailableToCaller ), storageMetricName, CORE::CString::Empty );
                 }
-                if ( m_gatherGlobalStorageVolumeBytesAvailable )
+                if ( m_gatherGlobalStorageVolumeBytesAvailable && volumeInfo.hasTotalNumberOfFreeBytes )
                 {
                     CORE::CString storageMetricName = storageMetricNamePrefix + metricsStorageVolumeId + ".TotalNumberOfFreeBytes";
                     GUCEF_METRIC_GAUGE( storageMetricName, volumeInfo.totalNumberOfFreeBytes, 1.0f );
                     ValidateMetricThresholds( CORE::CVariant( volumeInfo.totalNumberOfFreeBytes ), storageMetricName, CORE::CString::Empty );
                 }
-                if ( m_gatherGlobalStorageVolumeBytes )
+                if ( m_gatherGlobalStorageVolumeBytes && volumeInfo.hasTotalNumberOfBytes )
                 {
                     CORE::CString storageMetricName = storageMetricNamePrefix + metricsStorageVolumeId + ".TotalNumberOfBytes";
                     GUCEF_METRIC_GAUGE( storageMetricName, volumeInfo.totalNumberOfBytes, 1.0f );
                     ValidateMetricThresholds( CORE::CVariant( volumeInfo.totalNumberOfBytes ), storageMetricName, CORE::CString::Empty );
                 }
-                if ( m_gatherGlobalStorageVolumeAvailableToCallerPercentage )
+                if ( m_gatherGlobalStorageVolumeAvailableToCallerPercentage && volumeInfo.hasFreeBytesAvailableToCaller )
                 {
                     CORE::Float64 storageVolumeAvailableToCallerPercentage = volumeInfo.freeBytesAvailableToCaller / ( 0.01 * volumeInfo.totalNumberOfBytes );
                     CORE::CString storageMetricName = storageMetricNamePrefix + metricsStorageVolumeId + ".StorageVolumeAvailableToCallerPercentage";
                     GUCEF_METRIC_GAUGE( storageMetricName, storageVolumeAvailableToCallerPercentage, 1.0f );
                     ValidateMetricThresholds( CORE::CVariant( storageVolumeAvailableToCallerPercentage ), storageMetricName, CORE::CString::Empty );
                 }
-                if ( m_gatherGlobalStorageVolumeAvailablePercentage )
+                if ( m_gatherGlobalStorageVolumeAvailablePercentage && volumeInfo.hasTotalNumberOfFreeBytes && volumeInfo.hasTotalNumberOfBytes )
                 {
                     CORE::Float64 storageVolumeAvailablePercentage = volumeInfo.totalNumberOfFreeBytes / ( 0.01 * volumeInfo.totalNumberOfBytes );
                     CORE::CString storageMetricName = storageMetricNamePrefix + metricsStorageVolumeId + ".StorageVolumeAvailablePercentage";

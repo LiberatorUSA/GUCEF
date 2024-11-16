@@ -154,23 +154,34 @@ FileSize( const CString& filename );
 
 /*-------------------------------------------------------------------------*/
 
-struct SStorageVolumeInformation
+class GUCEF_CORE_PUBLIC_CPP CStorageVolumeInformation
 {
+    public:
+
+    bool hasFreeBytesAvailableToCaller;
     UInt64 freeBytesAvailableToCaller;
+    bool hasTotalNumberOfBytes;
     UInt64 totalNumberOfBytes;
+    bool hasTotalNumberOfFreeBytes;
     UInt64 totalNumberOfFreeBytes;
+    bool hasIsReadOnly;
+    bool isReadOnly;
+    bool hasVolumeName;
+    CString volumeName;
+
+    CStorageVolumeInformation( void );
+    void Clear( void );
 };
-typedef struct SStorageVolumeInformation TStorageVolumeInformation;
 
 /*-------------------------------------------------------------------------*/
 
 GUCEF_CORE_PUBLIC_CPP bool
-GetFileSystemStorageVolumeInformationByDirPath( TStorageVolumeInformation& info, const CString& path );
+GetFileSystemStorageVolumeInformationByDirPath( CStorageVolumeInformation& info, const CString& path );
 
 /*-------------------------------------------------------------------------*/
 
 GUCEF_CORE_PUBLIC_CPP bool
-GetFileSystemStorageVolumeInformationByVolumeId( TStorageVolumeInformation& info, const CString& volumeId );
+GetFileSystemStorageVolumeInformationByVolumeId( CStorageVolumeInformation& info, const CString& volumeId );
 
 /*-------------------------------------------------------------------------*/
 

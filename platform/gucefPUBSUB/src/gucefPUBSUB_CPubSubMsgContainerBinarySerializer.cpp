@@ -316,7 +316,7 @@ CPubSubMsgContainerBinarySerializer::SerializeFooter( const TMsgOffsetIndex& ind
     // Now write magic text bytes to help identify the blob as being a complete container of pub sub messages
     // If the magic text was at the start of the container but not at the end you know that the container is potentially
     // only a partial file. At that point the footer/index could potentially be rebuild by scanning the entire container from the start
-    UInt32 newBytesWritten = target.Write( MagicText );
+    UInt32 newBytesWritten = target.Write( MagicText, false );
     bytesWritten += newBytesWritten;
     if ( newBytesWritten != MagicText.ByteSize()-1 )
     {

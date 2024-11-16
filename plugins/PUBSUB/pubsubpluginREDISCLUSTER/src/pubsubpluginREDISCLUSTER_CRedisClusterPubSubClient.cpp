@@ -145,7 +145,7 @@ CRedisClusterPubSubClient::~CRedisClusterPubSubClient()
 
     if ( !m_threadPool.IsNULL() )
     {
-        m_threadPool->RequestAllThreadsToStop( true, false );
+        m_threadPool->RequestAllThreadsToStop( true, false, GUCEF_MT_DEFAULT_LOCK_TIMEOUT_IN_MS );
         CORE::CCoreGlobal::Instance()->GetTaskManager().UnregisterThreadPool( m_threadPool );
     }
 

@@ -101,6 +101,13 @@ CTimeBoundContainer::CTimeBoundContainer( void )
 
 /*-------------------------------------------------------------------------*/
 
+CTimeBoundContainer::~CTimeBoundContainer()
+{GUCEF_TRACE;
+
+}
+
+/*-------------------------------------------------------------------------*/
+
 PubSubStorageTool::PubSubStorageTool( void )
     : CORE::CObservingNotifier()
     , m_workStartTrigger()
@@ -122,8 +129,8 @@ PubSubStorageTool::~PubSubStorageTool()
 
 void
 PubSubStorageTool::OnWorkStartTrigger( CORE::CNotifier* notifier    ,
-                                   const CORE::CEvent& eventId  ,
-                                   CORE::CICloneable* eventData )
+                                       const CORE::CEvent& eventId  ,
+                                       CORE::CICloneable* eventData )
 {GUCEF_TRACE;
 
     PerformWork();
@@ -354,6 +361,9 @@ PubSubStorageTool::CreateTargetContainerAtTimeBoundary( const CORE::CString& tar
                                                         CTimeBoundContainerPtr& container                                  )
 {GUCEF_TRACE;
 
+    GUCEF_LOG( CORE::LOGLEVEL_IMPORTANT, "PubSubStorageTool:CreateTargetContainerAtTimeBoundary: Will attempt to create container at root \"" + targetRootPath + "\" with time boundary datetime " + 
+        CORE::ToString( datetime ) );
+
     if ( timeBoundary == CORE::CDateTime::TDateTimeComponent::DATETIMECOMPONENT_UNKNOWN )
     {
         GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "PubSubStorageTool:CreateTargetContainerAtTimeBoundary: Unknown time boundary: " + timeBoundary );
@@ -378,15 +388,24 @@ PubSubStorageTool::CreateTargetContainerAtTimeBoundary( const CORE::CString& tar
         return false;
     }
 
+    GUCEF_LOG( CORE::LOGLEVEL_IMPORTANT, "PubSubStorageTool:CreateTargetContainerAtTimeBoundary: Clamped time boundary datetime to " + CORE::ToString( datetime ) );
+
     VFS::CVFS& vfs = VFS::CVfsGlobal::Instance()->GetVfs();
 
     CORE::CString tempDir;
-    if ( !vfs.TryResolveSpecialDir( CORE::TSpecialDirs::SPECIALDIR_TEMP_DIR, tempDir ) )
+    if ( vfs.TryResolveSpecialDir( CORE::TSpecialDirs::SPECIALDIR_TEMP_DIR, tempDir ) )
+    {
+        GUCEF_LOG( CORE::LOGLEVEL_IMPORTANT, "PubSubStorageTool:CreateTargetContainerAtTimeBoundary: VFS resolved temp dir to: " + tempDir );
+    }
+    else
+    {
         tempDir = targetRootPath;
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "PubSubStorageTool:CreateTargetContainerAtTimeBoundary: VFS failed to resolve temp dir. Will use target dir as the temp dir: " + tempDir );
+    }
     
     container->tempContainerPath = tempDir + "/" + container->minClampedDt.ToIso8601DateTimeString( false, true ) + "_" + container->maxClampedDt.ToIso8601DateTimeString( false, true ) + ".tmp";
 
-    container->resource = vfs.GetFile( container->tempContainerPath, "wb", false );
+    container->resource = vfs.GetFile( container->tempContainerPath, "wb", true );
     if ( container->resource.IsNULL() )
     {
         GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "PubSubStorageTool:CreateTargetContainerAtTimeBoundary: Failed to create temp container file at " + container->tempContainerPath );
@@ -407,6 +426,9 @@ PubSubStorageTool::CreateTargetContainerAtTimeBoundary( const CORE::CString& tar
         return false;
     }
 
+    container->creationDt = CORE::CDateTime::NowUTCDateTime();
+    GUCEF_LOG( CORE::LOGLEVEL_IMPORTANT, "PubSubStorageTool:CreateTargetContainerAtTimeBoundary: Successfully prepared target temporary container at: " + container->tempContainerPath );
+    
     return true;
 }
 
@@ -572,6 +594,9 @@ PubSubStorageTool::PerformReSplit( void )
                 return false;                
             }
 
+            GUCEF_LOG( CORE::LOGLEVEL_IMPORTANT, "PubSubStorageTool:PerformReSplit: Source file \"" + filePath + "\" has " + 
+                CORE::ToString( srcMsgIndex.size() ) + " entries. Will attempt to sort them now" );
+
             // First sort all the messages based on the time boundary to reduce lookup time for target containers
             for ( PUBSUB::CPubSubMsgContainerBinarySerializer::TBasicPubSubMsgVector::iterator msgIt = msgs.begin(); msgIt != msgs.end(); ++msgIt )
             {
@@ -632,7 +657,13 @@ PubSubStorageTool::PerformReSplit( void )
                     }
                 }
             }
+
+            GUCEF_LOG( CORE::LOGLEVEL_IMPORTANT, "PubSubStorageTool:PerformReSplit: Finished writing content from source file \"" + filePath + "\" with " + 
+                CORE::ToString( srcMsgIndex.size() ) + " entries into the temporary resplit target files" );
          }
+
+        GUCEF_LOG( CORE::LOGLEVEL_IMPORTANT, "PubSubStorageTool:PerformReSplit: Finished writing data from all " + CORE::ToString( files.size() ) +
+            " source files to the temporary resplit target files" );
 
          // Now that we have all the messages written to new containers, combining data from all the files, we can write the footers
          // Also note that the current output files are still just temporary files with temporary names
@@ -640,60 +671,76 @@ PubSubStorageTool::PerformReSplit( void )
          TDateTimeToTimeBoundContainerMap::iterator m = allTargetContainers.begin();
          while ( m != allTargetContainers.end() )
          {
-                CTimeBoundContainerPtr targetContainer = m->second;
-                if ( targetContainer.IsNULL() )
-                {
-                    GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "PubSubStorageTool:PerformReSplit: Target container is NULL" );
-                    return false;
-                }
-                CORE::IOAccessPtr targetAccess = targetContainer->resource->GetAccess();
-                if ( targetAccess.IsNULL() )
-                {
-                    GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "PubSubStorageTool:PerformReSplit: Failed to get IO access to target container for message with DateTime " + targetContainer->minClampedDt.ToIso8601DateTimeString( true, true ) );
-                    return false;
-                }
-                PUBSUB::CPubSubMsgContainerBinarySerializer::TMsgOffsetIndex& targetIndex = targetContainer->index;
+            CTimeBoundContainerPtr targetContainer = m->second;
+            if ( targetContainer.IsNULL() )
+            {
+                GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "PubSubStorageTool:PerformReSplit: Target container is NULL" );
+                return false;
+            }
+            CORE::IOAccessPtr targetAccess = targetContainer->resource->GetAccess();
+            if ( targetAccess.IsNULL() )
+            {
+                GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "PubSubStorageTool:PerformReSplit: Failed to get IO access to target container for message with DateTime " + targetContainer->minClampedDt.ToIso8601DateTimeString( true, true ) );
+                return false;
+            }
+            PUBSUB::CPubSubMsgContainerBinarySerializer::TMsgOffsetIndex& targetIndex = targetContainer->index;
     
-                UInt32 bytesWritten = 0;
-                if ( !PUBSUB::CPubSubMsgContainerBinarySerializer::SerializeFooter( targetIndex, *targetAccess, bytesWritten ) )
-                {
-                    GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "PubSubStorageTool:PerformReSplit: Failed to write footer to target container for message with DateTime " + targetContainer->minClampedDt.ToIso8601DateTimeString( true, true ) );
-                    return false;
-                }
+            UInt32 bytesWritten = 0;
+            if ( !PUBSUB::CPubSubMsgContainerBinarySerializer::SerializeFooter( targetIndex, *targetAccess, bytesWritten ) )
+            {
+                GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "PubSubStorageTool:PerformReSplit: Failed to write footer to target container for message with DateTime " + targetContainer->minClampedDt.ToIso8601DateTimeString( true, true ) );
+                return false;
+            }
+            GUCEF_LOG( CORE::LOGLEVEL_IMPORTANT, "PubSubStorageTool:PerformReSplit: Finished writing footer with " + CORE::ToString( targetIndex.size() ) +
+                " entries into the temporary resplit target files" );
 
-                // Now that we have added the footer the container has been completed
-                // We can now rename the file to its final name. To do so we need to close the file first to ensure everything is written
-                targetContainer->resource->GetAccess()->Close();
-                targetContainer->resource.Unlink();
+            // Now that we have added the footer the container has been completed
+            // We can now rename the file to its final name. To do so we need to close the file first to ensure everything is written
+            targetContainer->resource->GetAccess()->Close();
+            targetContainer->resource.Unlink();
                 
-                CORE::CString finalPath = targetRootPath + "/" + 
-                    targetContainer->earliestMsgDt.ToIso8601DateTimeString( true, true ) + "_" + 
-                    targetContainer->newestMsgDt.ToIso8601DateTimeString( true, true ) + "_" + 
-                    targetContainer->creationDt.ToIso8601DateTimeString( true, true ) + 
-                    "." + fileExtension;
+            CORE::CString finalPath = targetRootPath + "/" + 
+                targetContainer->earliestMsgDt.ToIso8601DateTimeString( false, true ) + "_" + 
+                targetContainer->newestMsgDt.ToIso8601DateTimeString( false, true ) + "_" + 
+                targetContainer->creationDt.ToIso8601DateTimeString( false, true ) + 
+                ".v" + CORE::ToString( PUBSUB::CPubSubMsgContainerBinarySerializer::CurrentFormatVersion ) +
+                "." + fileExtension;
     
-                if ( !vfs.MoveFile( targetContainer->tempContainerPath, finalPath, false ) )
-                {
-                    allSuccess = false;
-                    GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "PubSubStorageTool:PerformReSplit: Failed to move temp container file + \"" + targetContainer->tempContainerPath + 
-                        "\" to final path \"" + finalPath + "\"");
-                }                
-                ++m;
+            if ( vfs.MoveFile( targetContainer->tempContainerPath, finalPath, false ) )
+            {
+                GUCEF_LOG( CORE::LOGLEVEL_IMPORTANT, "PubSubStorageTool:PerformReSplit: Successfully moved temp container file + \"" + targetContainer->tempContainerPath + 
+                    "\" to final path \"" + finalPath + "\"" );
+            }
+            else
+            {
+                allSuccess = false;
+                GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "PubSubStorageTool:PerformReSplit: Failed to move temp container file + \"" + targetContainer->tempContainerPath + 
+                    "\" to final path \"" + finalPath + "\"");
+            }     
+                
             ++m;
          }
 
         if ( allSuccess && deleteSourceAfterSuccess )
         {
+            GUCEF_LOG( CORE::LOGLEVEL_IMPORTANT, "PubSubStorageTool:PerformReSplit: Per config we will now delete the source files since we successfully performed the resplit operation" );            
+            
             for ( CORE::CString::StringVector::iterator it = files.begin(); it != files.end(); ++it )
             {
                 const CORE::CString& filePath = (*it);
-                if ( !vfs.DeleteFile( filePath, false ) )
+                if ( vfs.DeleteFile( filePath, false ) )
+                {
+                    GUCEF_LOG( CORE::LOGLEVEL_IMPORTANT, "PubSubStorageTool:PerformReSplit: Deleted source file: " + filePath );
+                }
+                else
                 {
                     GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "PubSubStorageTool:PerformReSplit: Failed to delete source file: " + filePath );
                 }
             }
         }
 
+        GUCEF_LOG( CORE::LOGLEVEL_IMPORTANT, "PubSubStorageTool:PerformReSplit: Completed the the resplit operation for " + CORE::ToString( files.size() ) + 
+            " source files. Full success = " + CORE::ToString( allSuccess ) );
         return allSuccess;
     }
 

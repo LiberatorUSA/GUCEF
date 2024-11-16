@@ -1111,11 +1111,47 @@ FileSize( const CString& filename )
 
 /*-------------------------------------------------------------------------*/
 
-bool
-GetFileSystemStorageVolumeInformationByDirPath( TStorageVolumeInformation& info, const CString& path )
+CStorageVolumeInformation::CStorageVolumeInformation( void )
+    : hasFreeBytesAvailableToCaller( false )
+    , freeBytesAvailableToCaller( 0 )
+    , hasTotalNumberOfBytes( false )
+    , totalNumberOfBytes( 0 )
+    , hasTotalNumberOfFreeBytes( false )
+    , totalNumberOfFreeBytes( 0 )
+    , hasIsReadOnly( false )
+    , isReadOnly( false )
+    , hasVolumeName( false )
+    , volumeName()
+
 {GUCEF_TRACE;
 
-    memset( &info, 0, sizeof( info ) );
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CStorageVolumeInformation::Clear( void )
+{GUCEF_TRACE;
+
+    hasFreeBytesAvailableToCaller = false;
+    freeBytesAvailableToCaller = 0;
+    hasTotalNumberOfBytes = false;
+    totalNumberOfBytes = 0;
+    hasTotalNumberOfFreeBytes = false;
+    totalNumberOfFreeBytes = 0;
+    hasIsReadOnly = false;
+    isReadOnly = false;
+    hasVolumeName = false;
+    volumeName.Clear();
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+GetFileSystemStorageVolumeInformationByDirPath( CStorageVolumeInformation& info, const CString& path )
+{GUCEF_TRACE;
+
+    info.Clear();
     if ( path.IsNULLOrEmpty() )
         return false;
 
@@ -1128,6 +1164,7 @@ GetFileSystemStorageVolumeInformationByDirPath( TStorageVolumeInformation& info,
         dirPath += '\\';
     }
 
+    bool totalSuccess = true;
     std::wstring wActualPath = ToWString( dirPath );
 
     ULARGE_INTEGER freeBytesAvailableToCaller;
@@ -1140,11 +1177,46 @@ GetFileSystemStorageVolumeInformationByDirPath( TStorageVolumeInformation& info,
     if ( TRUE == result )
     {
         info.freeBytesAvailableToCaller = freeBytesAvailableToCaller.QuadPart;
+        info.hasFreeBytesAvailableToCaller = true;
         info.totalNumberOfBytes = totalNumberOfBytes.QuadPart;
+        info.hasTotalNumberOfBytes = true;
         info.totalNumberOfFreeBytes = totalNumberOfFreeBytes.QuadPart;
-        return true;
+        info.hasTotalNumberOfFreeBytes = true;
     }
-    return false;
+    else
+    {
+        totalSuccess = false;
+    }
+
+    wchar_t volumeNameBuffer[MAX_PATH + 1] = {0};
+    wchar_t fileSystemNameBuffer[MAX_PATH + 1] = {0};
+    DWORD serialNumber = 0;
+    DWORD maxComponentLen = 0;
+    DWORD fileSystemFlags = 0;
+
+    result = ::GetVolumeInformationW( wActualPath.c_str()          ,
+                                      volumeNameBuffer             ,
+                                      sizeof(volumeNameBuffer)     ,
+                                      &serialNumber                ,
+                                      &maxComponentLen             ,
+                                      &fileSystemFlags             ,
+                                      fileSystemNameBuffer         ,
+                                      sizeof(fileSystemNameBuffer) );
+
+    if ( TRUE == result )
+    {
+        info.volumeName = ToString( volumeNameBuffer );
+        info.hasVolumeName = true;
+        info.isReadOnly = (fileSystemFlags & FILE_READ_ONLY_VOLUME) == FILE_READ_ONLY_VOLUME;
+        info.hasIsReadOnly = true;
+    }
+    else
+    {
+        totalSuccess = false;
+    }
+
+    return totalSuccess;
+
 
     #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
 
@@ -1157,8 +1229,11 @@ GetFileSystemStorageVolumeInformationByDirPath( TStorageVolumeInformation& info,
     }
 
     info.freeBytesAvailableToCaller = fsStats.f_bavail * fsStats.f_bsize;
+    info.hasFreeBytesAvailableToCaller = true;
     info.totalNumberOfBytes = fsStats.f_blocks * fsStats.f_bsize;
+    info.hasTotalNumberOfBytes = true;
     info.totalNumberOfFreeBytes = fsStats.f_bfree * fsStats.f_bsize;
+    info.hasTotalNumberOfFreeBytes = true;
     return true;
 
     #else
@@ -1264,10 +1339,9 @@ GetVolumePathForVolumeId( const CString& volumeId ,
 /*-------------------------------------------------------------------------*/
 
 bool
-GetFileSystemStorageVolumeInformationByVolumeId( TStorageVolumeInformation& info, const CString& volumeId )
+GetFileSystemStorageVolumeInformationByVolumeId( CStorageVolumeInformation& info, const CString& volumeId )
 {GUCEF_TRACE;
 
-    memset( &info, 0, sizeof( info ) );
     if ( volumeId.IsNULLOrEmpty() )
         return false;
 
