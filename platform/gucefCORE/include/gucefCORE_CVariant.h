@@ -130,6 +130,9 @@ class GUCEF_CORE_PUBLIC_CPP CVariant
     CVariant( UInt64  data );
     CVariant( Float32 data );
     CVariant( Float64 data );
+    
+    CVariant( void* data_memory_address );
+    CVariant( TDefaultFuncPtr function_memory_address );
 
     CVariant( TInt32Fraction data );
     CVariant( TUInt32Fraction data );
@@ -184,6 +187,7 @@ class GUCEF_CORE_PUBLIC_CPP CVariant
     bool IsBinary( void ) const;
     bool IsBlob( void ) const;
     bool IsBsob( void ) const;
+    bool IsMemoryAddress( void ) const;
     
     static bool UsesDynamicMemory( UInt8 typeId );
     bool UsesDynamicMemory( void ) const;
@@ -205,7 +209,15 @@ class GUCEF_CORE_PUBLIC_CPP CVariant
 
     bool IsInitialized( void ) const;
     bool IsNULLOrEmpty( void ) const; 
-    
+
+    bool IsLittleEndian( void ) const;
+    bool IsBigEndian( void ) const;
+    bool IsEndianAgnostic( void ) const;
+
+    CVariant& ToLittleEndian( void );
+    CVariant& ToBigEndian( void );
+    CVariant& ToNativeEndian( void );
+
     /**
      *  This member function allows you to set the type ID
      *  In most cases you should not need this as setting/assigning/linking automatically sets the correct type id
@@ -243,6 +255,7 @@ class GUCEF_CORE_PUBLIC_CPP CVariant
     CDynamicBuffer  AsBuffer( void ) const;
     CDateTime       AsDateTime( const CDateTime& defaultIfNeeded = CDateTime::Empty, bool resolveVarsIfApplicable = false ) const;
     size_t          AsSizeT( size_t defaultIfNeeded = 0, bool resolveVarsIfApplicable = false ) const;
+    TDefaultFuncPtr AsDefaultFuncPtr( TDefaultFuncPtr defaultIfNeeded = GUCEF_NULL ) const;
 
     TInt8Fraction         AsInt8Fraction( const TInt8Fraction& defaultIfNeeded = TInt8Fraction(), bool resolveVarsIfApplicable = false ) const;
     TUInt8Fraction        AsUInt8Fraction( const TUInt8Fraction& defaultIfNeeded = TUInt8Fraction(), bool resolveVarsIfApplicable = false ) const;
@@ -440,6 +453,8 @@ template <> inline CUtf8String CVariant::AsTValue( const CUtf8String defaultIfNe
 template <> inline CDateTime CVariant::AsTValue( const CDateTime defaultIfNeeded, bool resolveVarsIfApplicable ) const {GUCEF_TRACE; return AsDateTime( defaultIfNeeded, resolveVarsIfApplicable ); }
 template <> inline std::string CVariant::AsTValue( const std::string defaultIfNeeded, bool resolveVarsIfApplicable ) const {GUCEF_TRACE; return AsString( defaultIfNeeded, resolveVarsIfApplicable ).STL_String(); }
 template <> inline std::wstring CVariant::AsTValue( const std::wstring defaultIfNeeded, bool resolveVarsIfApplicable ) const {GUCEF_TRACE; return ToWString( AsString( ToString( defaultIfNeeded ), resolveVarsIfApplicable ) ); }
+//template <> inline void* CVariant::AsTValue( const void* defaultIfNeeded, bool resolveVarsIfApplicable ) const {GUCEF_TRACE; return AsVoidPtr( defaultIfNeeded ), resolveVarsIfApplicable ) ); }
+template <> inline TDefaultFuncPtr CVariant::AsTValue( const TDefaultFuncPtr defaultIfNeeded, bool resolveVarsIfApplicable ) const {GUCEF_TRACE; return AsDefaultFuncPtr( defaultIfNeeded ); }
 
 /*-------------------------------------------------------------------------*/
 

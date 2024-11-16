@@ -26,6 +26,11 @@
 #include <assert.h>
 #include <cmath>
 
+#ifndef GUCEF_ENDIAN_H
+#include "gucef_endian.h"
+#define GUCEF_ENDIAN_H
+#endif /* GUCEF_ENDIAN_H ? */
+
 #ifndef GUCEF_CORE_CDYNAMICBUFFER_H
 #include "CDynamicBuffer.h"
 #define GUCEF_CORE_CDYNAMICBUFFER_H
@@ -315,6 +320,28 @@ CVariant::CVariant( const CVariant& data ,
 
 /*-------------------------------------------------------------------------*/
 
+CVariant::CVariant( void* data_memory_address )
+    : m_variantData()
+{GUCEF_TRACE;
+
+    memset( &m_variantData, 0, sizeof( m_variantData ) );
+    m_variantData.containedType = GUCEF_DATATYPE_DATA_MEMORY_ADDRESS;
+    m_variantData.union_data.memory_address_data.objPtr = data_memory_address;
+}
+
+/*-------------------------------------------------------------------------*/
+
+CVariant::CVariant( TDefaultFuncPtr function_memory_address )
+    : m_variantData()
+{GUCEF_TRACE;
+
+    memset( &m_variantData, 0, sizeof( m_variantData ) );
+    m_variantData.containedType = GUCEF_DATATYPE_FUNCTION_MEMORY_ADDRESS;
+    m_variantData.union_data.memory_address_data.funcPtr = function_memory_address;
+}
+
+/*-------------------------------------------------------------------------*/
+
 CVariant::CVariant( TInt32Fraction data )
     : m_variantData()
 {GUCEF_TRACE;
@@ -443,6 +470,360 @@ CVariant::CVariant( CVariant&& src ) GUCEF_NOEXCEPT
     memset( &src.m_variantData, 0, sizeof( src.m_variantData ) );
 }
 #endif
+
+/*-------------------------------------------------------------------------*/
+
+bool 
+CVariant::IsLittleEndian( void ) const
+{GUCEF_TRACE;
+
+    switch ( m_variantData.containedType )
+    {
+        case GUCEF_DATATYPE_LE_INT16:
+        case GUCEF_DATATYPE_LE_UINT16:
+        case GUCEF_DATATYPE_LE_INT32:
+        case GUCEF_DATATYPE_LE_UINT32:
+        case GUCEF_DATATYPE_LE_INT64:
+        case GUCEF_DATATYPE_LE_UINT64:
+        case GUCEF_DATATYPE_LE_TIMESTAMP_IN_SECS_SINCE_UNIX_EPOCH:
+        case GUCEF_DATATYPE_LE_TIMESTAMP_IN_MS_SINCE_UNIX_EPOCH:
+        case GUCEF_DATATYPE_UTF16_LE_STRING:
+        case GUCEF_DATATYPE_UTF32_LE_STRING:
+        case GUCEF_DATATYPE_BOOLEAN_UTF16_LE_STRING:
+        case GUCEF_DATATYPE_BOOLEAN_UTF32_LE_STRING:
+        case GUCEF_DATATYPE_INT32T2_LE_FRACTION:
+        case GUCEF_DATATYPE_UINT32T2_LE_FRACTION:
+        case GUCEF_DATATYPE_INT64T2_LE_FRACTION:
+        case GUCEF_DATATYPE_UINT64T2_LE_FRACTION:
+        case GUCEF_DATATYPE_INT64_INT32_LE_FRACTION:
+        case GUCEF_DATATYPE_UINT64_UINT32_LE_FRACTION:
+        case GUCEF_DATATYPE_LE_FLOAT32:
+        case GUCEF_DATATYPE_LE_FLOAT64:
+        {
+            return true;
+        }
+        default:
+        {
+            return false;
+        }
+    }
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool 
+CVariant::IsBigEndian( void ) const
+{GUCEF_TRACE;
+
+    switch ( m_variantData.containedType )
+    {
+        case GUCEF_DATATYPE_BE_INT16:
+        case GUCEF_DATATYPE_BE_UINT16:
+        case GUCEF_DATATYPE_BE_INT32:
+        case GUCEF_DATATYPE_BE_UINT32:
+        case GUCEF_DATATYPE_BE_INT64:
+        case GUCEF_DATATYPE_BE_UINT64:
+        case GUCEF_DATATYPE_BE_TIMESTAMP_IN_SECS_SINCE_UNIX_EPOCH:
+        case GUCEF_DATATYPE_BE_TIMESTAMP_IN_MS_SINCE_UNIX_EPOCH:
+        case GUCEF_DATATYPE_UTF16_BE_STRING:
+        case GUCEF_DATATYPE_UTF32_BE_STRING:
+        case GUCEF_DATATYPE_BOOLEAN_UTF16_BE_STRING:
+        case GUCEF_DATATYPE_BOOLEAN_UTF32_BE_STRING:
+        case GUCEF_DATATYPE_INT32T2_BE_FRACTION:
+        case GUCEF_DATATYPE_UINT32T2_BE_FRACTION:
+        case GUCEF_DATATYPE_INT64T2_BE_FRACTION:
+        case GUCEF_DATATYPE_UINT64T2_BE_FRACTION:
+        case GUCEF_DATATYPE_INT64_INT32_BE_FRACTION:
+        case GUCEF_DATATYPE_UINT64_UINT32_BE_FRACTION:
+        case GUCEF_DATATYPE_BE_FLOAT32:
+        case GUCEF_DATATYPE_BE_FLOAT64:
+        {
+            return true;
+        }
+        default:
+        {
+            return false;
+        }
+    }
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool 
+CVariant::IsEndianAgnostic( void ) const
+{GUCEF_TRACE;
+
+    switch ( m_variantData.containedType )
+    {
+        case GUCEF_DATATYPE_INT8:
+        case GUCEF_DATATYPE_UINT8:
+        case GUCEF_DATATYPE_NUMERIC:
+        case GUCEF_DATATYPE_ARRAY:
+        case GUCEF_DATATYPE_OBJECT:
+        case GUCEF_DATATYPE_NIL:
+        case GUCEF_DATATYPE_NULL:
+        case GUCEF_DATATYPE_SET:
+        case GUCEF_DATATYPE_ASCII_STRING:
+        case GUCEF_DATATYPE_UTF8_STRING:
+        case GUCEF_DATATYPE_DATETIME_ISO8601_ASCII_STRING:
+        case GUCEF_DATATYPE_DATETIME_ISO8601_UTF8_STRING:
+        case GUCEF_DATATYPE_BOOLEAN_ASCII_STRING:
+        case GUCEF_DATATYPE_BOOLEAN_UTF8_STRING:
+        case GUCEF_DATATYPE_BINARY_BLOB:
+        case GUCEF_DATATYPE_BINARY_BSOB:        
+        {
+            return true;
+        }
+        default:
+        {
+            return false;
+        }
+    }
+}
+
+/*-------------------------------------------------------------------------*/
+
+CVariant& 
+CVariant::ToLittleEndian( void )
+{GUCEF_TRACE;
+
+    switch ( m_variantData.containedType )
+    {
+        case GUCEF_DATATYPE_BE_INT16:
+            { m_variantData.union_data.int16_data = SwapEndianInt16( m_variantData.union_data.int16_data ); m_variantData.containedType = GUCEF_DATATYPE_LE_INT16; return *this; }
+        case GUCEF_DATATYPE_BE_UINT16:
+            { m_variantData.union_data.uint16_data = SwapEndianUInt16( m_variantData.union_data.uint16_data ); m_variantData.containedType = GUCEF_DATATYPE_LE_UINT16; return *this; }
+        case GUCEF_DATATYPE_BE_INT32:
+            { m_variantData.union_data.int32_data = SwapEndianInt32( m_variantData.union_data.int32_data ); m_variantData.containedType = GUCEF_DATATYPE_LE_INT32; return *this; }
+        case GUCEF_DATATYPE_BE_UINT32:
+            { m_variantData.union_data.uint32_data = SwapEndianUInt32( m_variantData.union_data.uint32_data ); m_variantData.containedType = GUCEF_DATATYPE_LE_UINT32; return *this; }
+        case GUCEF_DATATYPE_BE_INT64:
+            { m_variantData.union_data.int64_data = SwapEndianInt64( m_variantData.union_data.int64_data ); m_variantData.containedType = GUCEF_DATATYPE_LE_INT64; return *this; }
+        case GUCEF_DATATYPE_BE_UINT64:
+            { m_variantData.union_data.uint64_data = SwapEndianUInt64( m_variantData.union_data.uint64_data ); m_variantData.containedType = GUCEF_DATATYPE_LE_UINT64; return *this; }
+        case GUCEF_DATATYPE_BE_FLOAT32: 
+            { m_variantData.union_data.float32_data = SwapEndianFloat32( m_variantData.union_data.float32_data ); m_variantData.containedType = GUCEF_DATATYPE_LE_FLOAT32; return *this; }
+        case GUCEF_DATATYPE_BE_FLOAT64:
+            { m_variantData.union_data.float64_data = SwapEndianFloat64( m_variantData.union_data.float64_data ); m_variantData.containedType = GUCEF_DATATYPE_LE_FLOAT64; return *this; }
+
+
+        case GUCEF_DATATYPE_BE_TIMESTAMP_IN_SECS_SINCE_UNIX_EPOCH:
+            { m_variantData.union_data.uint64_data = SwapEndianUInt64( m_variantData.union_data.uint64_data ); m_variantData.containedType = GUCEF_DATATYPE_LE_TIMESTAMP_IN_SECS_SINCE_UNIX_EPOCH; return *this; }
+        case GUCEF_DATATYPE_BE_TIMESTAMP_IN_MS_SINCE_UNIX_EPOCH:
+            { m_variantData.union_data.uint64_data = SwapEndianUInt64( m_variantData.union_data.uint64_data ); m_variantData.containedType = GUCEF_DATATYPE_LE_TIMESTAMP_IN_MS_SINCE_UNIX_EPOCH; return *this; }
+        
+
+        case GUCEF_DATATYPE_BOOLEAN_UTF16_BE_STRING:
+        case GUCEF_DATATYPE_UTF16_BE_STRING:
+            { 
+                UInt16* dataArray = static_cast< UInt16* >( m_variantData.union_data.heap_data.union_data.void_heap_data ); 
+                UInt32 dataSize = m_variantData.union_data.heap_data.heap_data_size / sizeof( UInt16 );
+                for ( UInt32 i=0; i<dataSize; ++i )
+                {
+                    dataArray[ i ] = SwapEndianUInt16( dataArray[ i ] );
+                }
+                m_variantData.containedType = m_variantData.containedType == GUCEF_DATATYPE_UTF16_BE_STRING ? GUCEF_DATATYPE_UTF16_LE_STRING : GUCEF_DATATYPE_BOOLEAN_UTF16_LE_STRING;
+                return *this;
+            }
+        case GUCEF_DATATYPE_BOOLEAN_UTF32_BE_STRING:
+        case GUCEF_DATATYPE_UTF32_BE_STRING:
+            { 
+                UInt32* dataArray = static_cast< UInt32* >( m_variantData.union_data.heap_data.union_data.void_heap_data ); 
+                UInt32 dataSize = m_variantData.union_data.heap_data.heap_data_size / sizeof( UInt32 );
+                for ( UInt32 i=0; i<dataSize; ++i )
+                {
+                    dataArray[ i ] = SwapEndianUInt32( dataArray[ i ] );
+                }
+                m_variantData.containedType = m_variantData.containedType == GUCEF_DATATYPE_UTF32_BE_STRING ? GUCEF_DATATYPE_UTF32_LE_STRING : GUCEF_DATATYPE_BOOLEAN_UTF32_LE_STRING;
+                return *this;
+            }
+        
+
+        case GUCEF_DATATYPE_INT32T2_BE_FRACTION:
+            { 
+                m_variantData.union_data.fraction_data.union_data.int32t2_data.numerator = SwapEndianInt32( m_variantData.union_data.fraction_data.union_data.int32t2_data.numerator ); 
+                m_variantData.union_data.fraction_data.union_data.int32t2_data.denominator = SwapEndianInt32( m_variantData.union_data.fraction_data.union_data.int32t2_data.denominator ); 
+                m_variantData.containedType = GUCEF_DATATYPE_INT32T2_LE_FRACTION; 
+                return *this; 
+            }
+        case GUCEF_DATATYPE_UINT32T2_BE_FRACTION:
+            { 
+                m_variantData.union_data.fraction_data.union_data.uint32t2_data.numerator = SwapEndianUInt32( m_variantData.union_data.fraction_data.union_data.uint32t2_data.numerator ); 
+                m_variantData.union_data.fraction_data.union_data.uint32t2_data.denominator = SwapEndianUInt32( m_variantData.union_data.fraction_data.union_data.uint32t2_data.denominator ); 
+                m_variantData.containedType = GUCEF_DATATYPE_UINT32T2_LE_FRACTION; 
+                return *this; 
+            }
+        case GUCEF_DATATYPE_INT64_INT32_BE_FRACTION:
+            { 
+                m_variantData.union_data.fraction_data.union_data.int64_int32_data.numerator = SwapEndianInt64( m_variantData.union_data.fraction_data.union_data.int64_int32_data.numerator ); 
+                m_variantData.union_data.fraction_data.union_data.int64_int32_data.denominator = SwapEndianInt32( m_variantData.union_data.fraction_data.union_data.int64_int32_data.denominator ); 
+                m_variantData.containedType = GUCEF_DATATYPE_INT64_INT32_LE_FRACTION; 
+                return *this; 
+            }
+        case GUCEF_DATATYPE_UINT64_UINT32_BE_FRACTION:
+        { 
+                m_variantData.union_data.fraction_data.union_data.uint64_uint32_data.numerator = SwapEndianUInt64( m_variantData.union_data.fraction_data.union_data.uint64_uint32_data.numerator ); 
+                m_variantData.union_data.fraction_data.union_data.uint64_uint32_data.denominator = SwapEndianUInt32( m_variantData.union_data.fraction_data.union_data.uint64_uint32_data.denominator ); 
+                m_variantData.containedType = GUCEF_DATATYPE_UINT64_UINT32_LE_FRACTION; 
+                return *this; 
+        }
+
+        case GUCEF_DATATYPE_INT64T2_BE_FRACTION:
+            { 
+                m_variantData.union_data.heap_data.union_data.fraction_int64t2_data->numerator = SwapEndianInt64( m_variantData.union_data.heap_data.union_data.fraction_int64t2_data->numerator ); 
+                m_variantData.union_data.heap_data.union_data.fraction_int64t2_data->denominator = SwapEndianInt64( m_variantData.union_data.heap_data.union_data.fraction_int64t2_data->denominator ); 
+                m_variantData.containedType = GUCEF_DATATYPE_INT64T2_LE_FRACTION; 
+                return *this; 
+            }
+        case GUCEF_DATATYPE_UINT64T2_BE_FRACTION:
+            { 
+                m_variantData.union_data.heap_data.union_data.fraction_uint64t2_data->numerator = SwapEndianInt64( m_variantData.union_data.heap_data.union_data.fraction_uint64t2_data->numerator ); 
+                m_variantData.union_data.heap_data.union_data.fraction_uint64t2_data->denominator = SwapEndianInt64( m_variantData.union_data.heap_data.union_data.fraction_uint64t2_data->denominator ); 
+                m_variantData.containedType = GUCEF_DATATYPE_UINT64T2_LE_FRACTION; 
+                return *this; 
+            }
+
+        default:
+        {
+            // No changes needed
+            return *this;
+        }
+    }
+}
+
+/*-------------------------------------------------------------------------*/
+
+CVariant& 
+CVariant::ToBigEndian( void )
+{GUCEF_TRACE;
+
+    switch ( m_variantData.containedType )
+    {
+        case GUCEF_DATATYPE_LE_INT16:
+            { m_variantData.union_data.int16_data = SwapEndianInt16( m_variantData.union_data.int16_data ); m_variantData.containedType = GUCEF_DATATYPE_BE_INT16; return *this; }
+        case GUCEF_DATATYPE_LE_UINT16:
+            { m_variantData.union_data.uint16_data = SwapEndianUInt16( m_variantData.union_data.uint16_data ); m_variantData.containedType = GUCEF_DATATYPE_BE_UINT16; return *this; }
+        case GUCEF_DATATYPE_LE_INT32:
+            { m_variantData.union_data.int32_data = SwapEndianInt32( m_variantData.union_data.int32_data ); m_variantData.containedType = GUCEF_DATATYPE_BE_INT32; return *this; }
+        case GUCEF_DATATYPE_LE_UINT32:
+            { m_variantData.union_data.uint32_data = SwapEndianUInt32( m_variantData.union_data.uint32_data ); m_variantData.containedType = GUCEF_DATATYPE_BE_UINT32; return *this; }
+        case GUCEF_DATATYPE_LE_INT64:
+            { m_variantData.union_data.int64_data = SwapEndianInt64( m_variantData.union_data.int64_data ); m_variantData.containedType = GUCEF_DATATYPE_BE_INT64; return *this; }
+        case GUCEF_DATATYPE_LE_UINT64:
+            { m_variantData.union_data.uint64_data = SwapEndianUInt64( m_variantData.union_data.uint64_data ); m_variantData.containedType = GUCEF_DATATYPE_BE_UINT64; return *this; }
+        case GUCEF_DATATYPE_LE_FLOAT32: 
+            { m_variantData.union_data.float32_data = SwapEndianFloat32( m_variantData.union_data.float32_data ); m_variantData.containedType = GUCEF_DATATYPE_BE_FLOAT32; return *this; }
+        case GUCEF_DATATYPE_LE_FLOAT64:
+            { m_variantData.union_data.float64_data = SwapEndianFloat64( m_variantData.union_data.float64_data ); m_variantData.containedType = GUCEF_DATATYPE_BE_FLOAT64; return *this; }
+
+
+        case GUCEF_DATATYPE_LE_TIMESTAMP_IN_SECS_SINCE_UNIX_EPOCH:
+            { m_variantData.union_data.uint64_data = SwapEndianUInt64( m_variantData.union_data.uint64_data ); m_variantData.containedType = GUCEF_DATATYPE_BE_TIMESTAMP_IN_SECS_SINCE_UNIX_EPOCH; return *this; }
+        case GUCEF_DATATYPE_LE_TIMESTAMP_IN_MS_SINCE_UNIX_EPOCH:
+            { m_variantData.union_data.uint64_data = SwapEndianUInt64( m_variantData.union_data.uint64_data ); m_variantData.containedType = GUCEF_DATATYPE_BE_TIMESTAMP_IN_MS_SINCE_UNIX_EPOCH; return *this; }
+        
+
+        case GUCEF_DATATYPE_BOOLEAN_UTF16_LE_STRING:
+        case GUCEF_DATATYPE_UTF16_LE_STRING:
+            { 
+                UInt16* dataArray = static_cast< UInt16* >( m_variantData.union_data.heap_data.union_data.void_heap_data ); 
+                UInt32 dataSize = m_variantData.union_data.heap_data.heap_data_size / sizeof( UInt16 );
+                for ( UInt32 i=0; i<dataSize; ++i )
+                {
+                    dataArray[ i ] = SwapEndianUInt16( dataArray[ i ] );
+                }
+                m_variantData.containedType = m_variantData.containedType == GUCEF_DATATYPE_UTF16_LE_STRING ? GUCEF_DATATYPE_UTF16_BE_STRING : GUCEF_DATATYPE_BOOLEAN_UTF16_BE_STRING;
+                return *this;
+            }
+        case GUCEF_DATATYPE_BOOLEAN_UTF32_LE_STRING:
+        case GUCEF_DATATYPE_UTF32_LE_STRING:
+            { 
+                UInt32* dataArray = static_cast< UInt32* >( m_variantData.union_data.heap_data.union_data.void_heap_data ); 
+                UInt32 dataSize = m_variantData.union_data.heap_data.heap_data_size / sizeof( UInt32 );
+                for ( UInt32 i=0; i<dataSize; ++i )
+                {
+                    dataArray[ i ] = SwapEndianUInt32( dataArray[ i ] );
+                }
+                m_variantData.containedType = m_variantData.containedType == GUCEF_DATATYPE_UTF32_LE_STRING ? GUCEF_DATATYPE_UTF32_BE_STRING : GUCEF_DATATYPE_BOOLEAN_UTF32_BE_STRING;
+                return *this;
+            }
+        
+
+        case GUCEF_DATATYPE_INT32T2_LE_FRACTION:
+            { 
+                m_variantData.union_data.fraction_data.union_data.int32t2_data.numerator = SwapEndianInt32( m_variantData.union_data.fraction_data.union_data.int32t2_data.numerator ); 
+                m_variantData.union_data.fraction_data.union_data.int32t2_data.denominator = SwapEndianInt32( m_variantData.union_data.fraction_data.union_data.int32t2_data.denominator ); 
+                m_variantData.containedType = GUCEF_DATATYPE_INT32T2_BE_FRACTION; 
+                return *this; 
+            }
+        case GUCEF_DATATYPE_UINT32T2_LE_FRACTION:
+            { 
+                m_variantData.union_data.fraction_data.union_data.uint32t2_data.numerator = SwapEndianUInt32( m_variantData.union_data.fraction_data.union_data.uint32t2_data.numerator ); 
+                m_variantData.union_data.fraction_data.union_data.uint32t2_data.denominator = SwapEndianUInt32( m_variantData.union_data.fraction_data.union_data.uint32t2_data.denominator ); 
+                m_variantData.containedType = GUCEF_DATATYPE_UINT32T2_BE_FRACTION; 
+                return *this; 
+            }
+        case GUCEF_DATATYPE_INT64_INT32_LE_FRACTION:
+            { 
+                m_variantData.union_data.fraction_data.union_data.int64_int32_data.numerator = SwapEndianInt64( m_variantData.union_data.fraction_data.union_data.int64_int32_data.numerator ); 
+                m_variantData.union_data.fraction_data.union_data.int64_int32_data.denominator = SwapEndianInt32( m_variantData.union_data.fraction_data.union_data.int64_int32_data.denominator ); 
+                m_variantData.containedType = GUCEF_DATATYPE_INT64_INT32_BE_FRACTION; 
+                return *this; 
+            }
+        case GUCEF_DATATYPE_UINT64_UINT32_LE_FRACTION:
+        { 
+                m_variantData.union_data.fraction_data.union_data.uint64_uint32_data.numerator = SwapEndianUInt64( m_variantData.union_data.fraction_data.union_data.uint64_uint32_data.numerator ); 
+                m_variantData.union_data.fraction_data.union_data.uint64_uint32_data.denominator = SwapEndianUInt32( m_variantData.union_data.fraction_data.union_data.uint64_uint32_data.denominator ); 
+                m_variantData.containedType = GUCEF_DATATYPE_UINT64_UINT32_BE_FRACTION; 
+                return *this; 
+        }
+
+        case GUCEF_DATATYPE_INT64T2_LE_FRACTION:
+            { 
+                m_variantData.union_data.heap_data.union_data.fraction_int64t2_data->numerator = SwapEndianInt64( m_variantData.union_data.heap_data.union_data.fraction_int64t2_data->numerator ); 
+                m_variantData.union_data.heap_data.union_data.fraction_int64t2_data->denominator = SwapEndianInt64( m_variantData.union_data.heap_data.union_data.fraction_int64t2_data->denominator ); 
+                m_variantData.containedType = GUCEF_DATATYPE_INT64T2_BE_FRACTION; 
+                return *this; 
+            }
+        case GUCEF_DATATYPE_UINT64T2_LE_FRACTION:
+            { 
+                m_variantData.union_data.heap_data.union_data.fraction_uint64t2_data->numerator = SwapEndianInt64( m_variantData.union_data.heap_data.union_data.fraction_uint64t2_data->numerator ); 
+                m_variantData.union_data.heap_data.union_data.fraction_uint64t2_data->denominator = SwapEndianInt64( m_variantData.union_data.heap_data.union_data.fraction_uint64t2_data->denominator ); 
+                m_variantData.containedType = GUCEF_DATATYPE_UINT64T2_BE_FRACTION; 
+                return *this; 
+            }
+
+        default:
+        {
+            // No changes needed
+            return *this;
+        }
+    }
+}
+
+/*-------------------------------------------------------------------------*/
+
+CVariant& 
+CVariant::ToNativeEndian( void )
+{GUCEF_TRACE;
+
+    // Most platforms are little endian so if we dont know we will guess little endian
+    #if ( ( GUCEF_BYTEORDER_ENDIAN_COMPILE_TIME == GUCEF_BYTEORDER_LITTLE_ENDIAN ) || ( GUCEF_BYTEORDER_ENDIAN_COMPILE_TIME == GUCEF_BYTEORDER_UNKNOWN_ENDIAN ) )
+    return ToLittleEndian();
+    #else
+    return ToBigEndian();
+    #endif
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool 
+CVariant::IsMemoryAddress( void ) const
+{GUCEF_TRACE;
+
+    return m_variantData.containedType == GUCEF_DATATYPE_DATA_MEMORY_ADDRESS || 
+           m_variantData.containedType == GUCEF_DATATYPE_FUNCTION_MEMORY_ADDRESS;
+}
 
 /*-------------------------------------------------------------------------*/
 
@@ -853,6 +1234,15 @@ CVariant::IsNULLOrEmpty( void ) const
         {
             return 0 == m_variantData.union_data.heap_data.heap_data_size;
         }
+        case GUCEF_DATATYPE_CONST_DATA_MEMORY_ADDRESS:
+        case GUCEF_DATATYPE_DATA_MEMORY_ADDRESS:
+        {
+            return GUCEF_NULL == m_variantData.union_data.memory_address_data.const_objPtr;
+        }
+        case GUCEF_DATATYPE_FUNCTION_MEMORY_ADDRESS:
+        {
+            return GUCEF_NULL == m_variantData.union_data.memory_address_data.funcPtr;
+        }
         case GUCEF_DATATYPE_NULL:
         case GUCEF_DATATYPE_NIL:
         {
@@ -954,6 +1344,16 @@ CVariant::AsBool( bool defaultIfNeeded, bool resolveVarsIfApplicable ) const
                 return StringToBool( AsString( CString::Empty, resolveVarsIfApplicable ), defaultIfNeeded );
             else
                 return StringToBool( AsString(), defaultIfNeeded );
+        }
+
+        case GUCEF_DATATYPE_CONST_DATA_MEMORY_ADDRESS:
+        case GUCEF_DATATYPE_DATA_MEMORY_ADDRESS:
+        {
+            return GUCEF_NULL != m_variantData.union_data.memory_address_data.const_objPtr;
+        }
+        case GUCEF_DATATYPE_FUNCTION_MEMORY_ADDRESS:
+        {
+            return GUCEF_NULL != m_variantData.union_data.memory_address_data.funcPtr;
         }
 
         default:
@@ -1162,6 +1562,12 @@ CVariant::AsUInt32( UInt32 defaultIfNeeded, bool resolveVarsIfApplicable ) const
         case GUCEF_DATATYPE_UINT64T2_FRACTION: return (UInt32) AsFloat64();
         case GUCEF_DATATYPE_INT64_INT32_FRACTION: return (UInt32) AsFloat64();
         case GUCEF_DATATYPE_UINT64_UINT32_FRACTION: return (UInt32) AsFloat64();
+
+        #if ( GUCEF_BITNESS == GUCEF_BITNESS_32 )
+        case GUCEF_DATATYPE_DATA_MEMORY_ADDRESS: return (UInt32) m_variantData.union_data.memory_address_data.objPtr;
+        case GUCEF_DATATYPE_FUNCTION_MEMORY_ADDRESS: return (UInt32) m_variantData.union_data.memory_address_data.funcPtr;
+        #endif
+
         default: return defaultIfNeeded;
     }
 }
@@ -1236,6 +1642,12 @@ CVariant::AsUInt64( UInt64 defaultIfNeeded, bool resolveVarsIfApplicable ) const
         case GUCEF_DATATYPE_UINT64T2_FRACTION: return (UInt64) AsFloat64();
         case GUCEF_DATATYPE_INT64_INT32_FRACTION: return (UInt64) AsFloat64();
         case GUCEF_DATATYPE_UINT64_UINT32_FRACTION: return (UInt64) AsFloat64();
+
+        #if ( GUCEF_BITNESS == GUCEF_BITNESS_64 )
+        case GUCEF_DATATYPE_DATA_MEMORY_ADDRESS: return (UInt64) m_variantData.union_data.memory_address_data.objPtr;
+        case GUCEF_DATATYPE_FUNCTION_MEMORY_ADDRESS: return (UInt64) m_variantData.union_data.memory_address_data.funcPtr;
+        #endif
+
         default: return defaultIfNeeded;
     }
 }
@@ -1411,6 +1823,17 @@ CVariant::AsChar( char defaultIfNeeded ) const
 
 /*-------------------------------------------------------------------------*/
 
+TDefaultFuncPtr 
+CVariant::AsDefaultFuncPtr( TDefaultFuncPtr defaultIfNeeded ) const
+{GUCEF_TRACE;
+
+    if ( m_variantData.containedType == GUCEF_DATATYPE_FUNCTION_MEMORY_ADDRESS )
+        return m_variantData.union_data.memory_address_data.funcPtr;
+    return defaultIfNeeded;
+}
+
+/*-------------------------------------------------------------------------*/
+
 const void*
 CVariant::AsVoidPtr( const void* defaultIfNeeded ) const
 {GUCEF_TRACE;
@@ -1437,6 +1860,9 @@ CVariant::AsVoidPtr( const void* defaultIfNeeded ) const
         case GUCEF_DATATYPE_UINT32T2_FRACTION: return &m_variantData.union_data.fraction_data.union_data.uint32t2_data;
         case GUCEF_DATATYPE_INT64_INT32_FRACTION: return &m_variantData.union_data.fraction_data.union_data.int64_int32_data;
         case GUCEF_DATATYPE_UINT64_UINT32_FRACTION: return &m_variantData.union_data.fraction_data.union_data.uint64_uint32_data;
+        case GUCEF_DATATYPE_CONST_DATA_MEMORY_ADDRESS: return m_variantData.union_data.memory_address_data.objPtr;
+        case GUCEF_DATATYPE_DATA_MEMORY_ADDRESS: return m_variantData.union_data.memory_address_data.objPtr;
+        case GUCEF_DATATYPE_FUNCTION_MEMORY_ADDRESS: return sizeof( TDefaultFuncPtr ) == sizeof( void* ) ? m_variantData.union_data.memory_address_data.funcPtr : defaultIfNeeded;
 
         case GUCEF_DATATYPE_BOOLEAN_ASCII_STRING: return m_variantData.union_data.heap_data.union_data.char_heap_data;
         case GUCEF_DATATYPE_BOOLEAN_UTF8_STRING: return m_variantData.union_data.heap_data.union_data.char_heap_data;
@@ -1533,6 +1959,10 @@ CVariant::ByteSize( bool includeNullTerm ) const
         case GUCEF_DATATYPE_UINT64_UINT32_FRACTION: return sizeof m_variantData.union_data.fraction_data.union_data.uint64_uint32_data;
         case GUCEF_DATATYPE_INT64T2_FRACTION: return m_variantData.union_data.heap_data.heap_data_size;
         case GUCEF_DATATYPE_UINT64T2_FRACTION: return m_variantData.union_data.heap_data.heap_data_size;
+
+        case GUCEF_DATATYPE_CONST_DATA_MEMORY_ADDRESS: return sizeof m_variantData.union_data.memory_address_data.objPtr;
+        case GUCEF_DATATYPE_DATA_MEMORY_ADDRESS: return sizeof m_variantData.union_data.memory_address_data.objPtr;
+        case GUCEF_DATATYPE_FUNCTION_MEMORY_ADDRESS: return sizeof m_variantData.union_data.memory_address_data.funcPtr;
 
         case GUCEF_DATATYPE_NULL:
         case GUCEF_DATATYPE_NIL:

@@ -39,6 +39,11 @@
 #define GUCEF_CORE_DVFILEUTILS_H
 #endif /* GUCEF_CORE_DVFILEUTILS_H ? */
 
+#ifndef GUCEF_CORE_C_POINTERDATA_H
+#include "gucefCORE_c_pointerdata.h"
+#define GUCEF_CORE_C_POINTERDATA_H
+#endif /* GUCEF_CORE_C_POINTERDATA_H ? */
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //
@@ -74,27 +79,6 @@ namespace CORE {
 //      TYPES                                                              //
 //                                                                         //
 //-------------------------------------------------------------------------*/
-
-typedef void (*TDefaultFuncPtr) ();
-
-/*--------------------------------------------------------------------------*/
-
-/**
- *  Union meant to provide storage that can be used to store either a
- *  pointer-to-data or pointer-to-function. Conversion between the two types
- *  is not allowed according to ISO C++ and is in fact undefined.
- *  In some implementations a pointer-to-function will require more space then
- *  a pointer-to-data. O/S functions however will often return a void*, which is
- *  a pointer-to-data. The union below allows us to work around this problem.
- */
-union anyPointer
-{
-    void* objPtr;
-    TDefaultFuncPtr funcPtr;
-};
-typedef union anyPointer TAnyPointer;
-
-/*-------------------------------------------------------------------------*/
 
 #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
 typedef UInt32  TProcessId;

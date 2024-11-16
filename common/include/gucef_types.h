@@ -284,6 +284,10 @@ typedef double          Float64;  /* 8 bytes, signed, decimal */
 #define GUCEF_DATATYPE_UINT64_UINT32_LE_FRACTION    70       /**< sequentially stored 64bit unsigned integers followed by a 32 bit unsigned integer in little endian representing a fraction value */
 #define GUCEF_DATATYPE_UINT64_UINT32_BE_FRACTION    71       /**< sequentially stored 64bit unsigned integers followed by a 32 bit unsigned integer in big endian representing a fraction value */
 
+#define GUCEF_DATATYPE_CONST_DATA_MEMORY_ADDRESS      247      /**< address in memory of 'some static data'. context of the data, its type, needs to be garantueed by the user. Only intended for transient use */
+#define GUCEF_DATATYPE_DATA_MEMORY_ADDRESS            248      /**< address in memory of 'some data'. context of the data, its type, needs to be garantueed by the user. Only intended for transient use */
+#define GUCEF_DATATYPE_FUNCTION_MEMORY_ADDRESS        249      /**< address in memory of 'some function'. context of the function, its prototype, needs to be handled by the user. Only intended for transient use */
+
 #define GUCEF_DATATYPE_ARRAY                    250      /**< data type representing an array container concept */
 #define GUCEF_DATATYPE_OBJECT                   251      /**< data type representing an object container concept */
 #define GUCEF_DATATYPE_NIL                      252      /**< representing data that is zero or nought. The word nil started to be used in the mid 19th century as a contraction of nihil, a Latin word that means nothing */
@@ -331,6 +335,10 @@ typedef double          Float64;  /* 8 bytes, signed, decimal */
 #define GUCEF_DATATYPE_NAME_INT64_INT32_BE_FRACTION  "INT64_INT32_BE_FRACTION"
 #define GUCEF_DATATYPE_NAME_UINT64_UINT32_LE_FRACTION "UINT64_UINT32_LE_FRACTION"
 #define GUCEF_DATATYPE_NAME_UINT64_UINT32_BE_FRACTION "UINT64_UINT32_BE_FRACTION"
+
+#define GUCEF_DATATYPE_NAME_CONST_DATA_MEMORY_ADDRESS          "CONST_DATA_MEMORY_ADDRESS"
+#define GUCEF_DATATYPE_NAME_DATA_MEMORY_ADDRESS                "DATA_MEMORY_ADDRESS"
+#define GUCEF_DATATYPE_NAME_FUNCTION_MEMORY_ADDRESS            "FUNCTION_MEMORY_ADDRESS"
 
 #define GUCEF_DATATYPE_NAME_ARRAY                    "ARRAY"
 #define GUCEF_DATATYPE_NAME_OBJECT                   "OBJECT"

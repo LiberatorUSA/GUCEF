@@ -44,6 +44,11 @@
 #define GUCEF_TYPES_H
 #endif /* GUCEF_TYPES_H ? */
 
+#ifndef GUCEF_ENDIAN_H
+#include "gucef_endian.h"         /* GUCEF platform endian utils */
+#define GUCEF_ENDIAN_H
+#endif /* GUCEF_ENDIAN_H ? */
+
 #ifndef GUCEF_BASICHELPERS_H
 #include "gucef_basichelpers.h"  /* GUCEF platform convenience basic helper macros */
 #define GUCEF_BASICHELPERS_H
