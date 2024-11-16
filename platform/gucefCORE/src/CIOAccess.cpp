@@ -30,6 +30,11 @@
 #define GUCEF_CORE_CDYNAMICBUFFER_H
 #endif /* GUCEF_CORE_CDYNAMICBUFFER_H ? */
 
+#ifndef GUCEF_CORE_CVARIANT_H
+#include "gucefCORE_CVariant.h"
+#define GUCEF_CORE_CVARIANT_H
+#endif /* GUCEF_CORE_CVARIANT_H ? */
+
 #include "CIOAccess.h"
 
 #ifndef GUCEF_CORE_GUCEF_ESSENTIALS_H
@@ -556,6 +561,19 @@ CIOAccess::Write( const CString& string ,
         }
     }
     return bytesWritten;
+}
+
+/*-------------------------------------------------------------------------*/
+
+UInt32 
+CIOAccess::Write( const CVariant& var, bool includeNullTermIfAny )
+{GUCEF_TRACE;
+
+    if ( !var.IsNULLOrEmpty() )
+    {
+        return Write( var.AsVoidPtr(), var.ByteSize( includeNullTermIfAny ), 1 );
+    }
+    return 0;
 }
 
 /*-------------------------------------------------------------------------*/

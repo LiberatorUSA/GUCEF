@@ -155,7 +155,69 @@ CVariantBinarySerializer::Serialize( const CVariant& var, CIOAccess& access, UIn
 /*-------------------------------------------------------------------------*/
 
 bool 
-CVariantBinarySerializer::Deserialize( CVariant& var, UInt32 currentSourceOffset, const CDynamicBuffer& source, bool linkWherePossible, UInt32& bytesRead )
+CVariantBinarySerializer::SerializeRaw( const CVariant& var, UInt32 currentTargetOffset, CDynamicBuffer& target, UInt32& bytesWritten )
+{GUCEF_TRACE;
+
+    try
+    {
+        UInt32 payloadSize = var.ByteSize();
+        UInt32 nrOfBytesWritten = target.CopyFrom( var, currentTargetOffset );
+
+        bytesWritten += nrOfBytesWritten;
+
+        if ( nrOfBytesWritten != payloadSize )
+        {
+            GUCEF_WARNING_LOG(LOGLEVEL_NORMAL, "VariantBinarySerializer:SerializeRaw: payload of payloadSize " + ToString( payloadSize ) + " bytes was not written correctly. " +
+                ToString( nrOfBytesWritten ) + " bytes were written" );
+            return false;
+        }
+
+        return true;
+    }
+    catch ( const std::exception& e )
+    {
+        GUCEF_EXCEPTION_LOG( LOGLEVEL_NORMAL, CString( "VariantBinarySerializer:SerializeRaw: caught exception: " ) + e.what() );
+        return false;
+    }
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool 
+CVariantBinarySerializer::SerializeRaw( const CVariant& var, CIOAccess& access, UInt32& bytesWritten )
+{GUCEF_TRACE;
+
+    try
+    {
+        UInt32 payloadSize = var.ByteSize();
+        UInt32 nrOfBytesWritten = access.Write( var, false );
+
+        bytesWritten += nrOfBytesWritten;
+
+        if ( nrOfBytesWritten != payloadSize )
+        {
+            GUCEF_WARNING_LOG(LOGLEVEL_NORMAL, "VariantBinarySerializer:SerializeRaw: payload of payloadSize " + ToString( payloadSize ) + " bytes was not written correctly. " +
+                ToString( nrOfBytesWritten ) + " bytes were written" );
+            return false;
+        }
+
+        return true;
+    }
+    catch ( const std::exception& e )
+    {
+        GUCEF_EXCEPTION_LOG( LOGLEVEL_NORMAL, CString( "VariantBinarySerializer:SerializeRaw: caught exception: " ) + e.what() );
+        return false;
+    }
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool 
+CVariantBinarySerializer::Deserialize( CVariant& var                , 
+                                       UInt32 currentSourceOffset   , 
+                                       const CDynamicBuffer& source , 
+                                       bool linkWherePossible       , 
+                                       UInt32& bytesRead            )
 {GUCEF_TRACE;
 
     try
@@ -190,7 +252,7 @@ CVariantBinarySerializer::Deserialize( CVariant& var, UInt32 currentSourceOffset
                 GUCEF_WARNING_LOG( LOGLEVEL_NORMAL, "VariantBinarySerializer:Deserialize: Invalid payloadSize of " + 
                     ToString( payloadSize ) + " bytes. Available data= " + ToString( availableBytesLeft ) );
                 return false;
-            }            
+            }
 
             if ( var.Set( source.GetConstBufferPtr( currentSourceOffset ), payloadSize, typeId, linkWherePossible ) )
             {
@@ -217,6 +279,124 @@ CVariantBinarySerializer::Deserialize( CVariant& var, UInt32 currentSourceOffset
         GUCEF_EXCEPTION_LOG( LOGLEVEL_NORMAL, CString( "VariantBinarySerializer:Deserialize: caught exception: " ) + e.what()  );
         return false;
     } 
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool 
+CVariantBinarySerializer::DeserializeRaw( CVariant& var                , 
+                                          UInt8 varType                , 
+                                          UInt32 currentSourceOffset   , 
+                                          const CDynamicBuffer& source , 
+                                          bool linkWherePossible       , 
+                                          UInt32& bytesRead            ,
+                                          UInt32 dataSizeIfDynamic     )
+{GUCEF_TRACE;
+
+    try
+    {
+        var.Clear();
+
+        // early exit for unknown type, think of this as a placeholder for a nil value
+        if ( GUCEF_DATATYPE_UNKNOWN == varType )
+            return true;
+
+        UInt32 dataSize = dataSizeIfDynamic;
+        if ( !CVariant::UsesDynamicMemory( varType ) )
+            dataSize = GucefByteSizeOfFixedSizeType( varType );
+        
+        if ( var.Set( source.GetConstBufferPtr( currentSourceOffset ), dataSize, varType, linkWherePossible ) )
+        {
+            bytesRead += dataSize;
+            return true;
+        }
+        else
+        {
+            GUCEF_WARNING_LOG( LOGLEVEL_NORMAL, "VariantBinarySerializer:DeserializeRaw: Failed to set payloadSize " + 
+                ToString( dataSize ) + " bytes on variant as " + CVariant::TypeNameForTypeId( varType ) );
+            bytesRead += var.ByteSize();
+            return false;
+        }
+    }   
+    catch ( const std::exception& e )    
+    {
+        GUCEF_EXCEPTION_LOG( LOGLEVEL_NORMAL, CString( "VariantBinarySerializer:DeserializeRaw: caught exception: " ) + e.what()  );
+        return false;
+    } 
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool 
+CVariantBinarySerializer::DeserializeRaw( CVariant& var            , 
+                                          UInt8 varType            , 
+                                          CIOAccess& source        ,  
+                                          UInt32& bytesRead        ,
+                                          UInt32 dataSizeIfDynamic )
+{GUCEF_TRACE;
+
+    try
+    {
+        var.Clear();
+
+        // early exit for unknown type, think of this as a placeholder for a nil value
+        if ( GUCEF_DATATYPE_UNKNOWN == varType )
+            return true;
+
+        UInt32 dataSize = dataSizeIfDynamic;
+        if ( CVariant::UsesDynamicMemory( varType ) )
+        {
+            void* varBuffer = var.PreAllocateDynamicMemory( dataSize, varType );
+            if ( GUCEF_NULL != varBuffer )
+            {
+                UInt32 srcBytesRead = source.Read( varBuffer, 1, dataSize );
+                bytesRead += srcBytesRead; 
+                if ( srcBytesRead == dataSize )
+                {
+                    return true;
+                }
+                else
+                {
+                    GUCEF_WARNING_LOG(LOGLEVEL_NORMAL, "VariantBinarySerializer:DeserializeRaw: Failed to read " +
+                        ToString( dataSize ) + " bytes for dynamic data type " + CVariant::TypeNameForTypeId( varType ) +
+                        ". Only " + ToString( srcBytesRead ) + " bytes were read" );
+                    return false;
+                }
+            }
+            else
+            {
+                GUCEF_WARNING_LOG( LOGLEVEL_NORMAL, "VariantBinarySerializer:DeserializeRaw: Failed to pre-allocate " +
+                    ToString( dataSize ) + " bytes for dynamic data type " + CVariant::TypeNameForTypeId( varType ) );
+                return false;
+            }
+        }
+        else
+        {
+            // only use the type info for the data size
+            dataSize = GucefByteSizeOfFixedSizeType( varType );
+            TVariantData varData;
+            varData.containedType = varType;
+            UInt32 srcBytesRead = ( source.Read( varData.union_data.bsob_data, dataSize, 1 ) * dataSize );
+            bytesRead += srcBytesRead; 
+            if ( srcBytesRead == dataSize )
+            {
+                var = varData;
+                return true;
+            }
+            else
+            {
+                GUCEF_WARNING_LOG(LOGLEVEL_NORMAL, "VariantBinarySerializer:DeserializeRaw: Failed to read " +
+                    ToString( dataSize ) + " bytes for dynamic data type " + CVariant::TypeNameForTypeId( varType ) +
+                    ". Only " + ToString( srcBytesRead ) + " bytes were read" );
+                return false;
+            }   
+        }
+    }   
+    catch ( const std::exception& e )    
+    {
+        GUCEF_EXCEPTION_LOG( LOGLEVEL_NORMAL, CString( "VariantBinarySerializer:DeserializeRaw: caught exception: " ) + e.what()  );
+        return false;
+    }
 }
 
 /*-------------------------------------------------------------------------//

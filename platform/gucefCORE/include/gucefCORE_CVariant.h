@@ -189,6 +189,20 @@ class GUCEF_CORE_PUBLIC_CPP CVariant
     bool UsesDynamicMemory( void ) const;
     bool IsDynamicMemoryLinked( void ) const;
     bool OwnsDynamicMemory( void ) const;
+
+    /**
+     *  If the variant object is the future recipient of a value which is based on dynamic memory
+     *  this member function can be used to pre-allocate the memory needed to store the value.
+     *  This allows one to forgo the potential overhead of an intermediate transfer buffer.
+     * 
+     *  The memory allocated will be owned by the variant object and will be freed when the object is destroyed.
+     *  (provided the memory is not explicitly transferred to another object)
+     * 
+     *  Note that this function will refuse to allocate memory if the type specified is not a dynamic memory type.
+     *  Using this functionality within the context of a non-dynamic memory type is considered an error.
+     */
+    void* PreAllocateDynamicMemory( UInt32 byteSize, UInt8 varType = GUCEF_DATATYPE_BINARY_BLOB );
+
     bool IsInitialized( void ) const;
     bool IsNULLOrEmpty( void ) const; 
     
@@ -408,6 +422,7 @@ CVariant::AsTValue( const T defaultIfNeeded, bool resolveVarsIfApplicable ) cons
 
 /*-------------------------------------------------------------------------*/
 
+template <> inline CVariant CVariant::AsTValue( const CVariant defaultIfNeeded, bool resolveVarsIfApplicable ) const {GUCEF_TRACE; return *this; }
 template <> inline bool CVariant::AsTValue( const bool defaultIfNeeded, bool resolveVarsIfApplicable ) const {GUCEF_TRACE; return AsBool( defaultIfNeeded, resolveVarsIfApplicable ); }
 template <> inline Int8 CVariant::AsTValue( const Int8 defaultIfNeeded, bool resolveVarsIfApplicable ) const {GUCEF_TRACE; return AsInt8( defaultIfNeeded, resolveVarsIfApplicable ); }
 template <> inline UInt8 CVariant::AsTValue( const UInt8 defaultIfNeeded, bool resolveVarsIfApplicable ) const {GUCEF_TRACE; return AsUInt8( defaultIfNeeded, resolveVarsIfApplicable ); }

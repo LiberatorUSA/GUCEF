@@ -74,6 +74,7 @@ namespace CORE {
 //-------------------------------------------------------------------------*/
 
 class CDynamicBuffer;
+class CVariant;
 
 /*-------------------------------------------------------------------------*/
 
@@ -206,8 +207,20 @@ class GUCEF_CORE_PUBLIC_CPP CIOAccess : public CICloneable
     virtual UInt64 Write( CIOAccess& sourceData   ,
                           Int64 bytesToWrite = -1 );
 
+    /**
+     *  Attempts to write all the bytes of the string without the null terminator
+     *  Optionally adds an EOL character to the end of the string if addEol is true
+     *  returns the number of bytes written
+     */
     virtual UInt32 Write( const CString& string ,
                           bool addEol = true    );
+
+    /**
+     *  Attempts to write all the raw bytes of the variant value
+     *  returns the number of bytes written
+     */
+    virtual UInt32 Write( const CVariant& var               , 
+                          bool includeNullTermIfAny = false );
 
     template < typename T >
     bool WriteValue( const T value ) { return 1 == Write( &value, sizeof( T ), 1 ); }

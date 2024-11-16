@@ -785,6 +785,29 @@ CVariant::OwnsDynamicMemory( void ) const
 
 /*-------------------------------------------------------------------------*/
 
+void* 
+CVariant::PreAllocateDynamicMemory( UInt32 byteSize, UInt8 varType )
+{GUCEF_TRACE;
+
+    Clear();
+    
+    if ( UsesDynamicMemory( varType ) )
+    {
+        if ( GUCEF_NULL != HeapReserve( byteSize, true ) )
+        {
+            m_variantData.containedType = varType;
+            memset( m_variantData.union_data.heap_data.union_data.void_heap_data, 0, byteSize );
+            return m_variantData.union_data.heap_data.union_data.void_heap_data;
+        }
+    }
+
+    // This should not be used in a context where the type is not one that requires dynamic memory
+    // adjust your code flow accordingly
+    return GUCEF_NULL;
+}
+
+/*-------------------------------------------------------------------------*/
+
 bool
 CVariant::IsInitialized( void ) const
 {GUCEF_TRACE;

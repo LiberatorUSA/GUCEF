@@ -666,19 +666,28 @@ CDynamicBuffer::CopyFrom( UInt32 size     ,
 /*-------------------------------------------------------------------------*/
 
 UInt32 
-CDynamicBuffer::CopyFrom( const CDynamicBuffer& source, UInt32 offset, UInt32 nrOfBytes )
+CDynamicBuffer::CopyFrom( const CDynamicBuffer& source, UInt32 destinationOffset, UInt32 nrOfBytes, UInt32 sourceOffset )
 {GUCEF_TRACE;
 
-    return CopyFrom( offset, nrOfBytes, source.GetConstBufferPtr( offset ) );
+    return CopyFrom( destinationOffset, nrOfBytes, source.GetConstBufferPtr( sourceOffset ) );
 }
 
 /*-------------------------------------------------------------------------*/
 
 UInt32 
-CDynamicBuffer::CopyFrom( const CDynamicBuffer& source, UInt32 offset )
+CDynamicBuffer::CopyFrom( const CDynamicBuffer& source, UInt32 destinationOffset )
 {GUCEF_TRACE;
 
-    return CopyFrom( offset, source.GetDataSize()-offset, source.GetConstBufferPtr( offset ) );
+    return CopyFrom( destinationOffset, source.GetDataSize(), source.GetConstBufferPtr() );
+}
+
+/*-------------------------------------------------------------------------*/
+
+UInt32 
+CDynamicBuffer::CopyFrom( const CVariant& source, UInt32 destinationOffset )
+{GUCEF_TRACE;
+
+    return CopyFrom( destinationOffset, source.ByteSize(), source.AsVoidPtr() );
 }
 
 /*-------------------------------------------------------------------------*/

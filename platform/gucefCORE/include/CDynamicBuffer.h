@@ -262,7 +262,8 @@ class GUCEF_CORE_PUBLIC_CPP CDynamicBuffer : public CICloneable
 
     UInt32 CopyFrom( const CString& source, UInt32 destinationOffset, bool includeNullTerminator );
     UInt32 CopyFrom( const CDynamicBuffer& source, UInt32 destinationOffset );
-    UInt32 CopyFrom( const CDynamicBuffer& source, UInt32 destinationOffset, UInt32 nrOfBytes );
+    UInt32 CopyFrom( const CDynamicBuffer& source, UInt32 destinationOffset, UInt32 nrOfBytes, UInt32 sourceOffset );
+    UInt32 CopyFrom( const CVariant& source, UInt32 destinationOffset );
     UInt32 CopyAndDecodeBase64From( const CString& source, UInt32 destinationOffset );
 
     /**
