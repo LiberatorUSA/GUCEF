@@ -236,6 +236,7 @@ set( HEADER_FILES
   include/gucefCORE_CThreadPoollnfo.h
   include/gucefCORE_CThreadlnfo.h
   include/gucefCORE_CTime.h
+  include/gucefCORE_CTokenizer.h
   include/gucefCORE_CUri.h
   include/gucefCORE_CUriResourceAccessor.h
   include/gucefCORE_CUriResourceAccessorFactory.h
@@ -272,7 +273,9 @@ set( HEADER_FILES
   include/tsprinting.h
   include/c_api/gucefCORE_CTVariantVectorApi.h
   include/c_api/gucefCORE_c_document_parser_callbacks.h
+  include/c_api/gucefCORE_c_fractiondata.h
   include/c_api/gucefCORE_c_ioaccess.h
+  include/c_api/gucefCORE_c_pointerdata.h
   include/c_api/gucefCORE_c_valuemap_parser_callbacks.h
   include/c_api/gucefCORE_c_variantdata.h
   include/c_api/gucefCORE_c_variantvector.h
@@ -481,6 +484,7 @@ set( SOURCE_FILES
   src/gucefCORE_CThreadPoollnfo.cpp
   src/gucefCORE_CThreadlnfo.cpp
   src/gucefCORE_CTime.cpp
+  src/gucefCORE_CTokenizer.cpp
   src/gucefCORE_CUri.cpp
   src/gucefCORE_CUriResourceAccessor.cpp
   src/gucefCORE_CUriResourceAccessorFactory.cpp

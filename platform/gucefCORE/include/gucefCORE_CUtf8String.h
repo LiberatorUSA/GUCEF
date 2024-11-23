@@ -445,12 +445,26 @@ class GUCEF_CORE_PUBLIC_CPP CUtf8String
                    const UInt32 startIndex ,
                    bool frontToBack        ) const;
 
-    Int32 HasSubstr( const CUtf8String& substr   ,
-                     Int32 startIndex        ,
-                     bool frontToBack = true ) const;
+    Int32 HasSubstr( const CUtf8String& substr ,
+                     Int32 startIndex          ,
+                     bool frontToBack = true   ,
+                     bool shiftSearch = true   ) const;
 
-    Int32 HasSubstr( const CUtf8String& substr   ,
-                     bool frontToBack = true ) const;
+    Int32 HasSubstr( const CUtf8String& substr ,
+                     bool frontToBack = true   ,
+                     bool shiftSearch = true   ) const;
+
+    /**
+     *  Convenience function to check if the string starts with the given substring
+     *  Uses HasSubstr() with frontToBack = true, shiftSearch = false and a startIndex of 0
+     */
+    bool StartsWith( const CUtf8String& substr ) const;
+
+    /**
+     *  Convenience function to check if the string ends with the given substring
+     *  Uses HasSubstr() with frontToBack = false, shiftSearch = false and a startIndex of the last element
+     */
+    bool EndsWith( const CUtf8String& substr ) const;
 
     /**
      *  Counts how many times the given UTF32 denoted search character
@@ -462,8 +476,29 @@ class GUCEF_CORE_PUBLIC_CPP CUtf8String
      *  Counts how many times any of the given UTF32 denoted search characters
      *  occurs within the UTF8 encoded string
      */
-    UInt32 GetCharactersCount( Int32* searchChars     ,
-                               UInt32 nrOfSearchChars ) const;
+    UInt32 GetCharactersCount( const Int32* searchChars ,
+                               UInt32 nrOfSearchChars   ) const;
+
+    /**
+     *  Counts how many times any of the given ASCII denoted search characters
+     *  occurs within the UTF8 encoded string
+     */
+    UInt32 GetCharactersCount( const char* searchChars ,
+                               UInt32 nrOfSearchChars  ) const;
+
+    /**
+     *  Counts how many times characters differing from the given UTF32 denoted search characters
+     *  occur within the UTF8 encoded string
+     */
+    UInt32 GetNonMatchCharactersCount( const Int32* searchChars ,
+                                       UInt32 nrOfSearchChars   ) const;
+
+    /**
+     *  Counts how many times characters differing from the given ASCII denoted search characters
+     *  occur within the UTF8 encoded string
+     */
+    UInt32 GetNonMatchCharactersCount( const char* searchChars ,
+                                       UInt32 nrOfSearchChars  ) const;
 
     /**
      *  Counts how many times the given UTF32 denoted search character

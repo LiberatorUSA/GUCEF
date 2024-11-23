@@ -289,6 +289,20 @@ class GUCEF_CORE_PUBLIC_CPP CAsciiString
 
     UInt32 GetCharacterCount( const char searchChar ) const;
 
+    /**
+     *  Counts how many times any of the given ASCII denoted search characters
+     *  occurs within the ASCII encoded string
+     */
+    UInt32 GetCharactersCount( const char* searchChars ,
+                               UInt32 nrOfSearchChars  ) const;
+
+    /**
+     *  Counts how many times characters differing from the given ASCII denoted search characters
+     *  occur within the ASCII encoded string
+     */
+    UInt32 GetNonMatchCharactersCount( const char* searchChars ,
+                                       UInt32 nrOfSearchChars  ) const;
+
     UInt32 GetCharacterRepeatCount( const char searchChar ) const;
 
     UInt32 FindMaxSubstrEquality( const CAsciiString& searchStr ,

@@ -128,6 +128,7 @@ PerformTypedStringTests( void )
         testStr2 = testStr1.SubstrToSubstr( "rst", 22, false );
         ASSERT_TRUE( "uvw" == testStr2 );
 
+        // test Set
         testStr3.Set( digits );
         ASSERT_TRUE( digits == testStr3 );
         ASSERT_TRUE( 10 == testStr3.Length() );
@@ -140,6 +141,7 @@ PerformTypedStringTests( void )
         ASSERT_TRUE( 2 == testStr3.HasChar( '3' ) );
         ASSERT_TRUE( 5 == testStr3.HasChar( '6' ) );
 
+        // test ReplaceChar
         testStr3 = testStr3.ReplaceChar( '3', '6' );
         ASSERT_TRUE( digits != testStr3 );
         ASSERT_TRUE( 10 == testStr3.Length() );
@@ -152,6 +154,7 @@ PerformTypedStringTests( void )
         ASSERT_TRUE( !testStr3.IsNULLOrEmpty() );
         ASSERT_TRUE( -1 == testStr3.HasChar( '3' ) );
 
+        // test ReplaceChar
         testStr3 = testStr3.ReplaceChar( '4', '6' );
         ASSERT_TRUE( 0 == testStr3.GetCharacterCount( '3' ) );
         ASSERT_TRUE( 0 == testStr3.GetCharacterCount( '4' ) );
@@ -161,18 +164,21 @@ PerformTypedStringTests( void )
         ASSERT_TRUE( 5 == testStr3.HasChar( '6', false ) );
         ASSERT_TRUE( 10 == testStr3.Length() );
                         
+        // test CompactRepeatingChar
         testStr3 = testStr3.CompactRepeatingChar( '6' );
         ASSERT_TRUE( 9 == testStr3.Length() );
         ASSERT_TRUE( 0 == testStr3.GetCharacterRepeatCount( '6' ) );
         ASSERT_TRUE( 2 == testStr3.GetCharacterCount( '6' ) );
         ASSERT_TRUE( 9 == testStr3.DetermineLength() );
         
+        // test ParseElements
         testStr3 = digitsRepeat3;
         StringType::StringVector vlist = testStr3.ParseElements( '\n', true );
         ASSERT_TRUE( 4 == vlist.size() );
         vlist = testStr3.ParseElements( '\n', false );
         ASSERT_TRUE( 3 == vlist.size() );
 
+        // test Combine
         testStr3.Clear();
         testStr1 = testStr3.Combine( vlist, '\n' );
         testStr2 = digitsRepeat3;
@@ -183,6 +189,7 @@ PerformTypedStringTests( void )
         ASSERT_TRUE( 3 == vlist.size() );
         ASSERT_TRUE( testStr1 == testStr2 );
 
+        // test ParseUniqueElements
         testStr3 = digitsRepeat3;
         StringType::StringSet slist = testStr3.ParseUniqueElements( '\n', true );
         ASSERT_TRUE( 2 == slist.size() );

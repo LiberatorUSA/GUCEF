@@ -250,6 +250,7 @@ class CTSharedObjCreator : public CTSharedPtrCreator< T, LockType >
     typedef T                                                           TSharedObjTypeAtCreation;
     typedef CTSharedPtrCreator< T, LockType >                           TSharedPtrCreatorBase;
     typedef CTDynamicDestructor< T >                                    TConcreteTypedDestructor;
+    typedef typename CTSharedPtrCreator< T, LockType >::TSharedPtrType  TSharedPtrType;
 
     static CTSharedPtr< T, LockType > CreateSharedObj( const T* dummyForCppNameMangling = GUCEF_NULL );
 

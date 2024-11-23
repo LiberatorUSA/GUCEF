@@ -548,6 +548,54 @@ CAsciiString::GetCharacterCount( const char searchChar ) const
 /*-------------------------------------------------------------------------*/
 
 UInt32
+CAsciiString::GetCharactersCount( const char* searchChars ,
+                                  UInt32 nrOfSearchChars  ) const
+{GUCEF_TRACE;
+
+    if ( GUCEF_NULL == searchChars )
+        return 0;
+
+    UInt32 charCount = 0;
+    for ( UInt32 i=0; i<m_length; ++i )
+    {
+        for ( UInt32 n=0; n<nrOfSearchChars; ++n )
+        {
+            if ( m_string[ i ] == searchChars[ n ] )
+            {
+                ++charCount;
+            }
+        }
+    }
+    return charCount;
+}
+
+/*-------------------------------------------------------------------------*/
+
+UInt32
+CAsciiString::GetNonMatchCharactersCount( const char* searchChars ,
+                                          UInt32 nrOfSearchChars  ) const
+{GUCEF_TRACE;
+
+    if ( GUCEF_NULL == searchChars )
+        return 0;
+
+    UInt32 charCount = 0;
+    for ( UInt32 i=0; i<m_length; ++i )
+    {
+        for ( UInt32 n=0; n<nrOfSearchChars; ++n )
+        {
+            if ( m_string[ i ] != searchChars[ n ] )
+            {
+                ++charCount;
+            }
+        }
+    }
+    return charCount;
+}
+
+/*-------------------------------------------------------------------------*/
+
+UInt32
 CAsciiString::GetCharacterRepeatCount( const char searchChar ) const
 {GUCEF_TRACE;
 

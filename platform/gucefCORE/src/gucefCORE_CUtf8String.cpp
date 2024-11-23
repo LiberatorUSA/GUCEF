@@ -839,8 +839,8 @@ CUtf8String::GetCharacterCount( const Int32 searchChar ) const
 /*-------------------------------------------------------------------------*/
 
 UInt32
-CUtf8String::GetCharactersCount( Int32* searchChars     ,
-                                 UInt32 nrOfSearchChars ) const
+CUtf8String::GetCharactersCount( const Int32* searchChars ,
+                                 UInt32 nrOfSearchChars   ) const
 {GUCEF_TRACE;
 
     if ( GUCEF_NULL == searchChars )
@@ -855,6 +855,87 @@ CUtf8String::GetCharactersCount( Int32* searchChars     ,
         for ( UInt32 n=0; n<nrOfSearchChars; ++n )
         {
             if ( cp == searchChars[ n ] )
+            {
+                ++charCount;
+            }
+        }
+    }
+    return charCount;
+}
+
+/*-------------------------------------------------------------------------*/
+
+UInt32
+CUtf8String::GetCharactersCount( const char* searchChars ,
+                                 UInt32 nrOfSearchChars  ) const
+{GUCEF_TRACE;
+
+    if ( GUCEF_NULL == searchChars )
+        return 0;
+
+    UInt32 charCount = 0;
+    void* cpPos = m_string;
+    UInt32 cp = 0;
+    for ( UInt32 i=0; i<m_length; ++i )
+    {
+        cpPos = utf8codepoint( cpPos, &cp );
+        for ( UInt32 n=0; n<nrOfSearchChars; ++n )
+        {
+            if ( cp == searchChars[ n ] )
+            {
+                ++charCount;
+            }
+        }
+    }
+    return charCount;
+}
+
+/*-------------------------------------------------------------------------*/
+
+UInt32
+CUtf8String::GetNonMatchCharactersCount( const char* searchChars ,
+                                         UInt32 nrOfSearchChars  ) const
+{GUCEF_TRACE;
+
+    if ( GUCEF_NULL == searchChars )
+        return 0;
+
+    UInt32 charCount = 0;
+    void* cpPos = m_string;
+    UInt32 cp = 0;
+    for ( UInt32 i=0; i<m_length; ++i )
+    {
+        cpPos = utf8codepoint( cpPos, &cp );
+        for ( UInt32 n=0; n<nrOfSearchChars; ++n )
+        {
+            if ( cp != searchChars[ n ] )
+            {
+                ++charCount;
+            }
+        }
+    }
+    return charCount;
+}
+
+/*-------------------------------------------------------------------------*/
+
+UInt32
+CUtf8String::GetNonMatchCharactersCount( const Int32* searchChars ,
+                                         UInt32 nrOfSearchChars   ) const
+{GUCEF_TRACE;
+
+    if ( GUCEF_NULL == searchChars )
+        return 0;
+
+    UInt32 charCount = 0;
+    void* cpPos = m_string;
+    UInt32 cp = 0;
+    for ( UInt32 i=0; i<m_length; ++i )
+    {
+        cpPos = utf8codepoint( cpPos, &cp );
+        for ( UInt32 n=0; n<nrOfSearchChars; ++n )
+        {
+            if ( cp != searchChars[ n ] )
             {
                 ++charCount;
             }
@@ -1668,7 +1749,7 @@ CUtf8String::SubstrToSubstr( const CUtf8String& searchstr ,
                              bool startfront              ) const
 {GUCEF_TRACE;
 
-    Int32 subStrIndex = HasSubstr( searchstr, startIndex, startfront );
+    Int32 subStrIndex = HasSubstr( searchstr, startIndex, startfront, true );
     if ( subStrIndex >= 0 )
     {
         if ( startfront )
@@ -2341,7 +2422,8 @@ CUtf8String::CodepointIndexAtPtr( const char* subStrPtr, UInt32& codePoint ) con
 Int32
 CUtf8String::HasSubstr( const CUtf8String& substr ,
                         Int32 startIndex          ,
-                        bool startfront           ) const
+                        bool startfront           ,
+                        bool shiftSearch          ) const
 {GUCEF_TRACE;
 
     // Sanity check on the startindex range
@@ -2371,6 +2453,8 @@ CUtf8String::HasSubstr( const CUtf8String& substr ,
                 UInt32 codePoint = 0;
                 return CodepointIndexAtPtr( m_string+i, codePoint );
             }
+            if ( !shiftSearch )
+                break;
         }
         return -1;
     }
@@ -2389,6 +2473,8 @@ CUtf8String::HasSubstr( const CUtf8String& substr ,
                 UInt32 codePoint = 0;
                 return CodepointIndexAtPtr( m_string+i, codePoint );
             }
+            if ( !shiftSearch )
+                break;
         }
         return -1;
     }
@@ -2398,18 +2484,35 @@ CUtf8String::HasSubstr( const CUtf8String& substr ,
 
 Int32
 CUtf8String::HasSubstr( const CUtf8String& substr ,
-                        bool startfront           ) const
+                        bool startfront           ,
+                        bool shiftSearch          ) const
 {GUCEF_TRACE;
 
     if ( startfront )
     {
-        return HasSubstr( substr, 0, startfront );
+        return HasSubstr( substr, 0, startfront, shiftSearch );
     }
+    return HasSubstr( substr, m_length, startfront, shiftSearch );
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool 
+CUtf8String::StartsWith( const CUtf8String& substr ) const
+{GUCEF_TRACE;
+
+    return 0 == HasSubstr( substr, 0, true, false );
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool 
+CUtf8String::EndsWith( const CUtf8String& substr ) const
+{GUCEF_TRACE;
+
     if ( m_length > 0 )
-    {
-        return HasSubstr( substr, m_length-1, startfront );
-    }
-    return -1;
+        return ((Int32)m_length)-substr.m_length == HasSubstr( substr, m_length, false, false );
+    return substr.IsNULLOrEmpty();
 }
 
 /*-------------------------------------------------------------------------*/

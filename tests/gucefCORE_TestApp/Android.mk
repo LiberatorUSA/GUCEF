@@ -30,6 +30,7 @@ LOCAL_SRC_FILES := \
   src/TestNotifierObserver.cpp \
   src/TestSharedPtr.cpp \
   src/TestString.cpp \
+  src/TestTokenizer.cpp \
   src/TestUri.cpp \
   src/TestVariant.cpp \
   src/TestVariantBinarySerializer.cpp \

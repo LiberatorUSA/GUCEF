@@ -98,6 +98,11 @@
 #define GUCEF_CORE_TESTAPP_TESTDATETIME_H
 #endif /* GUCEF_CORE_TESTAPP_TESTDATETIME_H ? */
 
+#ifndef GUCEF_CORE_TESTAPP_TESTTOKENIZER_H
+#include "TestTokenizer.h"
+#define GUCEF_CORE_TESTAPP_TESTTOKENIZER_H
+#endif /* GUCEF_CORE_TESTAPP_TESTTOKENIZER_H ? */
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      UTILITIES                                                          //
@@ -127,13 +132,14 @@ GUCEF_OSMAIN_BEGIN
         
         //PerformStringTests();
         //PerformVarsTests();
-        PerformDateTimeTests();
+        //PerformDateTimeTests();        
         //PerformUriTests();
         //PerformVariantTests();
         //PerformVariantBinarySerializerTests();
         //PerformDataNodeBinarySerializerTests();
         //PerformIniParserTests();        
         //PerformSharedPtrTests();
+        PerformTokenizerTests();
         //PerformDynamicBufferSwapTests();
         //PerformDynamicBufferStringStreamTests();
         //PerformCyclicDynamicBufferTests();

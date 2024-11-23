@@ -223,6 +223,7 @@ LOCAL_SRC_FILES := \
   src/gucefCORE_CThreadPoollnfo.cpp \
   src/gucefCORE_CThreadlnfo.cpp \
   src/gucefCORE_CTime.cpp \
+  src/gucefCORE_CTokenizer.cpp \
   src/gucefCORE_CUri.cpp \
   src/gucefCORE_CUriResourceAccessor.cpp \
   src/gucefCORE_CUriResourceAccessorFactory.cpp \
