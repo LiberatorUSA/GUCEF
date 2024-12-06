@@ -70,7 +70,7 @@ namespace GUCEF {
 #ifdef __cplusplus
   #define GUCEF_ENDIAN_FUNCTION_PREFIX inline
 #else
-    #define GUCEF_ENDIAN_FUNCTION_PREFIX inline extern
+    #define GUCEF_ENDIAN_FUNCTION_PREFIX static inline
 #endif
 
 /*-------------------------------------------------------------------------//
@@ -82,12 +82,12 @@ namespace GUCEF {
 /**
  *  Endianess swap function for 16-bit unsigned integer
  */
-GUCEF_ENDIAN_FUNCTION_PREFIX 
-UInt16 
-SwapEndianUInt16( UInt16 value ) 
+GUCEF_ENDIAN_FUNCTION_PREFIX
+UInt16
+SwapEndianUInt16( UInt16 value )
 {GUCEF_TRACE;
 
-    return (value >> 8) | 
+    return (value >> 8) |
            (value << 8);
 }
 
@@ -96,9 +96,9 @@ SwapEndianUInt16( UInt16 value )
 /**
  *  Endianess swap function for 16-bit signed integer
  */
-GUCEF_ENDIAN_FUNCTION_PREFIX 
-Int16 
-SwapEndianInt16( Int16 value ) 
+GUCEF_ENDIAN_FUNCTION_PREFIX
+Int16
+SwapEndianInt16( Int16 value )
 {GUCEF_TRACE;
 
     #ifdef __cplusplus
@@ -116,8 +116,8 @@ SwapEndianInt16( Int16 value )
  *  Endianess swap function for 32-bit unsigned integer
  */
 GUCEF_ENDIAN_FUNCTION_PREFIX
-UInt32 
-SwapEndianUInt32( UInt32 value ) 
+UInt32
+SwapEndianUInt32( UInt32 value )
 {GUCEF_TRACE;
 
     return ((value >> 24) & 0x000000FF) |
@@ -131,9 +131,9 @@ SwapEndianUInt32( UInt32 value )
 /**
  *  Endianess swap function for 32-bit signed integer
  */
-GUCEF_ENDIAN_FUNCTION_PREFIX 
-Int32 
-SwapEndianInt32( Int32 value ) 
+GUCEF_ENDIAN_FUNCTION_PREFIX
+Int32
+SwapEndianInt32( Int32 value )
 {GUCEF_TRACE;
 
     #ifdef __cplusplus
@@ -152,7 +152,7 @@ SwapEndianInt32( Int32 value )
  */
 GUCEF_ENDIAN_FUNCTION_PREFIX
 UInt64
-SwapEndianUInt64( UInt64 value ) 
+SwapEndianUInt64( UInt64 value )
 {GUCEF_TRACE;
 
     return ((value >> 56) & 0x00000000000000FFULL) |
@@ -170,9 +170,9 @@ SwapEndianUInt64( UInt64 value )
 /**
  *  Endianess swap function for 64-bit signed integer
  */
-GUCEF_ENDIAN_FUNCTION_PREFIX 
-Int64 
-SwapEndianInt64( Int64 value ) 
+GUCEF_ENDIAN_FUNCTION_PREFIX
+Int64
+SwapEndianInt64( Int64 value )
 {GUCEF_TRACE;
 
     #ifdef __cplusplus
@@ -190,8 +190,8 @@ SwapEndianInt64( Int64 value )
  *  Endianess swap function for 32-bit floating point
  */
 GUCEF_ENDIAN_FUNCTION_PREFIX
-Float32 
-SwapEndianFloat32( Float32 value ) 
+Float32
+SwapEndianFloat32( Float32 value )
 {GUCEF_TRACE;
 
     #ifdef __cplusplus
@@ -209,8 +209,8 @@ SwapEndianFloat32( Float32 value )
  *  Endianess swap function for 64-bit floating point
  */
 GUCEF_ENDIAN_FUNCTION_PREFIX
-Float64 
-SwapEndianFloat64( Float64 value ) 
+Float64
+SwapEndianFloat64( Float64 value )
 {GUCEF_TRACE;
 
     #ifdef __cplusplus

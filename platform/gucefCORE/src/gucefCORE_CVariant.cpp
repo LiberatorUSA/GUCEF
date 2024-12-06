@@ -90,7 +90,7 @@ CVariant::CVariant( void )
 CVariant::CVariant( const TVariantData* variantData, bool linkIfPossible )
     : m_variantData()
 {GUCEF_TRACE;
-    
+
     memset( &m_variantData, 0, sizeof( m_variantData ) );
     Set( variantData, linkIfPossible );
 }
@@ -100,7 +100,7 @@ CVariant::CVariant( const TVariantData* variantData, bool linkIfPossible )
 CVariant::CVariant( const TVariantData& variantData, bool linkIfPossible )
     : m_variantData()
 {GUCEF_TRACE;
-    
+
     memset( &m_variantData, 0, sizeof( m_variantData ) );
     assert( GUCEF_NULL != &variantData );
     Set( &variantData, linkIfPossible );
@@ -309,7 +309,7 @@ CVariant::CVariant( const CVariant& data )
 
 /*-------------------------------------------------------------------------*/
 
-CVariant::CVariant( const CVariant& data , 
+CVariant::CVariant( const CVariant& data ,
                     bool linkIfPossible  )
     : m_variantData()
 {GUCEF_TRACE;
@@ -349,7 +349,7 @@ CVariant::CVariant( TInt32Fraction data )
     memset( &m_variantData, 0, sizeof( m_variantData ) );
     m_variantData.containedType = GUCEF_DATATYPE_INT32T2_FRACTION;
     m_variantData.union_data.fraction_data.union_data.int32t2_data.numerator = data.GetNumerator();
-    m_variantData.union_data.fraction_data.union_data.int32t2_data.denominator = data.GetDenominator();    
+    m_variantData.union_data.fraction_data.union_data.int32t2_data.denominator = data.GetDenominator();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -361,7 +361,7 @@ CVariant::CVariant( TUInt32Fraction data )
     memset( &m_variantData, 0, sizeof( m_variantData ) );
     m_variantData.containedType = GUCEF_DATATYPE_UINT32T2_FRACTION;
     m_variantData.union_data.fraction_data.union_data.uint32t2_data.numerator = data.GetNumerator();
-    m_variantData.union_data.fraction_data.union_data.uint32t2_data.denominator = data.GetDenominator();  
+    m_variantData.union_data.fraction_data.union_data.uint32t2_data.denominator = data.GetDenominator();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -373,7 +373,7 @@ CVariant::CVariant( const TInt64Int32Fraction& data )
     memset( &m_variantData, 0, sizeof( m_variantData ) );
     m_variantData.containedType = GUCEF_DATATYPE_INT64_INT32_FRACTION;
     m_variantData.union_data.fraction_data.union_data.int64_int32_data.numerator = data.GetNumerator();
-    m_variantData.union_data.fraction_data.union_data.int64_int32_data.denominator = data.GetDenominator();  
+    m_variantData.union_data.fraction_data.union_data.int64_int32_data.denominator = data.GetDenominator();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -385,7 +385,7 @@ CVariant::CVariant( const TUInt64UInt32Fraction& data )
     memset( &m_variantData, 0, sizeof( m_variantData ) );
     m_variantData.containedType = GUCEF_DATATYPE_UINT64_UINT32_FRACTION;
     m_variantData.union_data.fraction_data.union_data.uint64_uint32_data.numerator = data.GetNumerator();
-    m_variantData.union_data.fraction_data.union_data.uint64_uint32_data.denominator = data.GetDenominator();  
+    m_variantData.union_data.fraction_data.union_data.uint64_uint32_data.denominator = data.GetDenominator();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -394,7 +394,7 @@ CVariant::CVariant( const TInt64Fraction& data )
     : m_variantData()
 {GUCEF_TRACE;
 
-    TInt64T2Fraction cData = { data.GetNumerator(), data.GetDenominator() };    
+    TInt64T2Fraction cData = { data.GetNumerator(), data.GetDenominator() };
     memset( &m_variantData, 0, sizeof( m_variantData ) );
     Set( &cData, sizeof( cData ), GUCEF_DATATYPE_INT64T2_FRACTION );
 }
@@ -405,23 +405,23 @@ CVariant::CVariant( const TUInt64Fraction& data )
     : m_variantData()
 {GUCEF_TRACE;
 
-    TUInt64T2Fraction cData = { data.GetNumerator(), data.GetDenominator() };    
+    TUInt64T2Fraction cData = { data.GetNumerator(), data.GetDenominator() };
     memset( &m_variantData, 0, sizeof( m_variantData ) );
     Set( &cData, sizeof( cData ), GUCEF_DATATYPE_UINT64T2_FRACTION );
 }
 
 /*-------------------------------------------------------------------------*/
 
-bool 
+bool
 CVariant::Set( const TVariantData* src, bool linkOnlyForDynMem )
 {GUCEF_TRACE;
 
     Clear();
-    
+
     if ( GUCEF_NULL != src )
     {
         // If dynamic memory is used we need to actually copy said memory
-        // into a private copy        
+        // into a private copy
         if ( UsesDynamicMemory( src->containedType ) )
         {
             if ( !linkOnlyForDynMem )
@@ -473,7 +473,7 @@ CVariant::CVariant( CVariant&& src ) GUCEF_NOEXCEPT
 
 /*-------------------------------------------------------------------------*/
 
-bool 
+bool
 CVariant::IsLittleEndian( void ) const
 {GUCEF_TRACE;
 
@@ -511,7 +511,7 @@ CVariant::IsLittleEndian( void ) const
 
 /*-------------------------------------------------------------------------*/
 
-bool 
+bool
 CVariant::IsBigEndian( void ) const
 {GUCEF_TRACE;
 
@@ -549,7 +549,7 @@ CVariant::IsBigEndian( void ) const
 
 /*-------------------------------------------------------------------------*/
 
-bool 
+bool
 CVariant::IsEndianAgnostic( void ) const
 {GUCEF_TRACE;
 
@@ -570,7 +570,7 @@ CVariant::IsEndianAgnostic( void ) const
         case GUCEF_DATATYPE_BOOLEAN_ASCII_STRING:
         case GUCEF_DATATYPE_BOOLEAN_UTF8_STRING:
         case GUCEF_DATATYPE_BINARY_BLOB:
-        case GUCEF_DATATYPE_BINARY_BSOB:        
+        case GUCEF_DATATYPE_BINARY_BSOB:
         {
             return true;
         }
@@ -583,7 +583,7 @@ CVariant::IsEndianAgnostic( void ) const
 
 /*-------------------------------------------------------------------------*/
 
-CVariant& 
+CVariant&
 CVariant::ToLittleEndian( void )
 {GUCEF_TRACE;
 
@@ -601,7 +601,7 @@ CVariant::ToLittleEndian( void )
             { m_variantData.union_data.int64_data = SwapEndianInt64( m_variantData.union_data.int64_data ); m_variantData.containedType = GUCEF_DATATYPE_LE_INT64; return *this; }
         case GUCEF_DATATYPE_BE_UINT64:
             { m_variantData.union_data.uint64_data = SwapEndianUInt64( m_variantData.union_data.uint64_data ); m_variantData.containedType = GUCEF_DATATYPE_LE_UINT64; return *this; }
-        case GUCEF_DATATYPE_BE_FLOAT32: 
+        case GUCEF_DATATYPE_BE_FLOAT32:
             { m_variantData.union_data.float32_data = SwapEndianFloat32( m_variantData.union_data.float32_data ); m_variantData.containedType = GUCEF_DATATYPE_LE_FLOAT32; return *this; }
         case GUCEF_DATATYPE_BE_FLOAT64:
             { m_variantData.union_data.float64_data = SwapEndianFloat64( m_variantData.union_data.float64_data ); m_variantData.containedType = GUCEF_DATATYPE_LE_FLOAT64; return *this; }
@@ -611,12 +611,12 @@ CVariant::ToLittleEndian( void )
             { m_variantData.union_data.uint64_data = SwapEndianUInt64( m_variantData.union_data.uint64_data ); m_variantData.containedType = GUCEF_DATATYPE_LE_TIMESTAMP_IN_SECS_SINCE_UNIX_EPOCH; return *this; }
         case GUCEF_DATATYPE_BE_TIMESTAMP_IN_MS_SINCE_UNIX_EPOCH:
             { m_variantData.union_data.uint64_data = SwapEndianUInt64( m_variantData.union_data.uint64_data ); m_variantData.containedType = GUCEF_DATATYPE_LE_TIMESTAMP_IN_MS_SINCE_UNIX_EPOCH; return *this; }
-        
+
 
         case GUCEF_DATATYPE_BOOLEAN_UTF16_BE_STRING:
         case GUCEF_DATATYPE_UTF16_BE_STRING:
-            { 
-                UInt16* dataArray = static_cast< UInt16* >( m_variantData.union_data.heap_data.union_data.void_heap_data ); 
+            {
+                UInt16* dataArray = static_cast< UInt16* >( m_variantData.union_data.heap_data.union_data.void_heap_data );
                 UInt32 dataSize = m_variantData.union_data.heap_data.heap_data_size / sizeof( UInt16 );
                 for ( UInt32 i=0; i<dataSize; ++i )
                 {
@@ -627,8 +627,8 @@ CVariant::ToLittleEndian( void )
             }
         case GUCEF_DATATYPE_BOOLEAN_UTF32_BE_STRING:
         case GUCEF_DATATYPE_UTF32_BE_STRING:
-            { 
-                UInt32* dataArray = static_cast< UInt32* >( m_variantData.union_data.heap_data.union_data.void_heap_data ); 
+            {
+                UInt32* dataArray = static_cast< UInt32* >( m_variantData.union_data.heap_data.union_data.void_heap_data );
                 UInt32 dataSize = m_variantData.union_data.heap_data.heap_data_size / sizeof( UInt32 );
                 for ( UInt32 i=0; i<dataSize; ++i )
                 {
@@ -637,50 +637,50 @@ CVariant::ToLittleEndian( void )
                 m_variantData.containedType = m_variantData.containedType == GUCEF_DATATYPE_UTF32_BE_STRING ? GUCEF_DATATYPE_UTF32_LE_STRING : GUCEF_DATATYPE_BOOLEAN_UTF32_LE_STRING;
                 return *this;
             }
-        
+
 
         case GUCEF_DATATYPE_INT32T2_BE_FRACTION:
-            { 
-                m_variantData.union_data.fraction_data.union_data.int32t2_data.numerator = SwapEndianInt32( m_variantData.union_data.fraction_data.union_data.int32t2_data.numerator ); 
-                m_variantData.union_data.fraction_data.union_data.int32t2_data.denominator = SwapEndianInt32( m_variantData.union_data.fraction_data.union_data.int32t2_data.denominator ); 
-                m_variantData.containedType = GUCEF_DATATYPE_INT32T2_LE_FRACTION; 
-                return *this; 
+            {
+                m_variantData.union_data.fraction_data.union_data.int32t2_data.numerator = SwapEndianInt32( m_variantData.union_data.fraction_data.union_data.int32t2_data.numerator );
+                m_variantData.union_data.fraction_data.union_data.int32t2_data.denominator = SwapEndianInt32( m_variantData.union_data.fraction_data.union_data.int32t2_data.denominator );
+                m_variantData.containedType = GUCEF_DATATYPE_INT32T2_LE_FRACTION;
+                return *this;
             }
         case GUCEF_DATATYPE_UINT32T2_BE_FRACTION:
-            { 
-                m_variantData.union_data.fraction_data.union_data.uint32t2_data.numerator = SwapEndianUInt32( m_variantData.union_data.fraction_data.union_data.uint32t2_data.numerator ); 
-                m_variantData.union_data.fraction_data.union_data.uint32t2_data.denominator = SwapEndianUInt32( m_variantData.union_data.fraction_data.union_data.uint32t2_data.denominator ); 
-                m_variantData.containedType = GUCEF_DATATYPE_UINT32T2_LE_FRACTION; 
-                return *this; 
+            {
+                m_variantData.union_data.fraction_data.union_data.uint32t2_data.numerator = SwapEndianUInt32( m_variantData.union_data.fraction_data.union_data.uint32t2_data.numerator );
+                m_variantData.union_data.fraction_data.union_data.uint32t2_data.denominator = SwapEndianUInt32( m_variantData.union_data.fraction_data.union_data.uint32t2_data.denominator );
+                m_variantData.containedType = GUCEF_DATATYPE_UINT32T2_LE_FRACTION;
+                return *this;
             }
         case GUCEF_DATATYPE_INT64_INT32_BE_FRACTION:
-            { 
-                m_variantData.union_data.fraction_data.union_data.int64_int32_data.numerator = SwapEndianInt64( m_variantData.union_data.fraction_data.union_data.int64_int32_data.numerator ); 
-                m_variantData.union_data.fraction_data.union_data.int64_int32_data.denominator = SwapEndianInt32( m_variantData.union_data.fraction_data.union_data.int64_int32_data.denominator ); 
-                m_variantData.containedType = GUCEF_DATATYPE_INT64_INT32_LE_FRACTION; 
-                return *this; 
+            {
+                m_variantData.union_data.fraction_data.union_data.int64_int32_data.numerator = SwapEndianInt64( m_variantData.union_data.fraction_data.union_data.int64_int32_data.numerator );
+                m_variantData.union_data.fraction_data.union_data.int64_int32_data.denominator = SwapEndianInt32( m_variantData.union_data.fraction_data.union_data.int64_int32_data.denominator );
+                m_variantData.containedType = GUCEF_DATATYPE_INT64_INT32_LE_FRACTION;
+                return *this;
             }
         case GUCEF_DATATYPE_UINT64_UINT32_BE_FRACTION:
-        { 
-                m_variantData.union_data.fraction_data.union_data.uint64_uint32_data.numerator = SwapEndianUInt64( m_variantData.union_data.fraction_data.union_data.uint64_uint32_data.numerator ); 
-                m_variantData.union_data.fraction_data.union_data.uint64_uint32_data.denominator = SwapEndianUInt32( m_variantData.union_data.fraction_data.union_data.uint64_uint32_data.denominator ); 
-                m_variantData.containedType = GUCEF_DATATYPE_UINT64_UINT32_LE_FRACTION; 
-                return *this; 
+        {
+                m_variantData.union_data.fraction_data.union_data.uint64_uint32_data.numerator = SwapEndianUInt64( m_variantData.union_data.fraction_data.union_data.uint64_uint32_data.numerator );
+                m_variantData.union_data.fraction_data.union_data.uint64_uint32_data.denominator = SwapEndianUInt32( m_variantData.union_data.fraction_data.union_data.uint64_uint32_data.denominator );
+                m_variantData.containedType = GUCEF_DATATYPE_UINT64_UINT32_LE_FRACTION;
+                return *this;
         }
 
         case GUCEF_DATATYPE_INT64T2_BE_FRACTION:
-            { 
-                m_variantData.union_data.heap_data.union_data.fraction_int64t2_data->numerator = SwapEndianInt64( m_variantData.union_data.heap_data.union_data.fraction_int64t2_data->numerator ); 
-                m_variantData.union_data.heap_data.union_data.fraction_int64t2_data->denominator = SwapEndianInt64( m_variantData.union_data.heap_data.union_data.fraction_int64t2_data->denominator ); 
-                m_variantData.containedType = GUCEF_DATATYPE_INT64T2_LE_FRACTION; 
-                return *this; 
+            {
+                m_variantData.union_data.heap_data.union_data.fraction_int64t2_data->numerator = SwapEndianInt64( m_variantData.union_data.heap_data.union_data.fraction_int64t2_data->numerator );
+                m_variantData.union_data.heap_data.union_data.fraction_int64t2_data->denominator = SwapEndianInt64( m_variantData.union_data.heap_data.union_data.fraction_int64t2_data->denominator );
+                m_variantData.containedType = GUCEF_DATATYPE_INT64T2_LE_FRACTION;
+                return *this;
             }
         case GUCEF_DATATYPE_UINT64T2_BE_FRACTION:
-            { 
-                m_variantData.union_data.heap_data.union_data.fraction_uint64t2_data->numerator = SwapEndianInt64( m_variantData.union_data.heap_data.union_data.fraction_uint64t2_data->numerator ); 
-                m_variantData.union_data.heap_data.union_data.fraction_uint64t2_data->denominator = SwapEndianInt64( m_variantData.union_data.heap_data.union_data.fraction_uint64t2_data->denominator ); 
-                m_variantData.containedType = GUCEF_DATATYPE_UINT64T2_LE_FRACTION; 
-                return *this; 
+            {
+                m_variantData.union_data.heap_data.union_data.fraction_uint64t2_data->numerator = SwapEndianInt64( m_variantData.union_data.heap_data.union_data.fraction_uint64t2_data->numerator );
+                m_variantData.union_data.heap_data.union_data.fraction_uint64t2_data->denominator = SwapEndianInt64( m_variantData.union_data.heap_data.union_data.fraction_uint64t2_data->denominator );
+                m_variantData.containedType = GUCEF_DATATYPE_UINT64T2_LE_FRACTION;
+                return *this;
             }
 
         default:
@@ -693,7 +693,7 @@ CVariant::ToLittleEndian( void )
 
 /*-------------------------------------------------------------------------*/
 
-CVariant& 
+CVariant&
 CVariant::ToBigEndian( void )
 {GUCEF_TRACE;
 
@@ -711,7 +711,7 @@ CVariant::ToBigEndian( void )
             { m_variantData.union_data.int64_data = SwapEndianInt64( m_variantData.union_data.int64_data ); m_variantData.containedType = GUCEF_DATATYPE_BE_INT64; return *this; }
         case GUCEF_DATATYPE_LE_UINT64:
             { m_variantData.union_data.uint64_data = SwapEndianUInt64( m_variantData.union_data.uint64_data ); m_variantData.containedType = GUCEF_DATATYPE_BE_UINT64; return *this; }
-        case GUCEF_DATATYPE_LE_FLOAT32: 
+        case GUCEF_DATATYPE_LE_FLOAT32:
             { m_variantData.union_data.float32_data = SwapEndianFloat32( m_variantData.union_data.float32_data ); m_variantData.containedType = GUCEF_DATATYPE_BE_FLOAT32; return *this; }
         case GUCEF_DATATYPE_LE_FLOAT64:
             { m_variantData.union_data.float64_data = SwapEndianFloat64( m_variantData.union_data.float64_data ); m_variantData.containedType = GUCEF_DATATYPE_BE_FLOAT64; return *this; }
@@ -721,12 +721,12 @@ CVariant::ToBigEndian( void )
             { m_variantData.union_data.uint64_data = SwapEndianUInt64( m_variantData.union_data.uint64_data ); m_variantData.containedType = GUCEF_DATATYPE_BE_TIMESTAMP_IN_SECS_SINCE_UNIX_EPOCH; return *this; }
         case GUCEF_DATATYPE_LE_TIMESTAMP_IN_MS_SINCE_UNIX_EPOCH:
             { m_variantData.union_data.uint64_data = SwapEndianUInt64( m_variantData.union_data.uint64_data ); m_variantData.containedType = GUCEF_DATATYPE_BE_TIMESTAMP_IN_MS_SINCE_UNIX_EPOCH; return *this; }
-        
+
 
         case GUCEF_DATATYPE_BOOLEAN_UTF16_LE_STRING:
         case GUCEF_DATATYPE_UTF16_LE_STRING:
-            { 
-                UInt16* dataArray = static_cast< UInt16* >( m_variantData.union_data.heap_data.union_data.void_heap_data ); 
+            {
+                UInt16* dataArray = static_cast< UInt16* >( m_variantData.union_data.heap_data.union_data.void_heap_data );
                 UInt32 dataSize = m_variantData.union_data.heap_data.heap_data_size / sizeof( UInt16 );
                 for ( UInt32 i=0; i<dataSize; ++i )
                 {
@@ -737,8 +737,8 @@ CVariant::ToBigEndian( void )
             }
         case GUCEF_DATATYPE_BOOLEAN_UTF32_LE_STRING:
         case GUCEF_DATATYPE_UTF32_LE_STRING:
-            { 
-                UInt32* dataArray = static_cast< UInt32* >( m_variantData.union_data.heap_data.union_data.void_heap_data ); 
+            {
+                UInt32* dataArray = static_cast< UInt32* >( m_variantData.union_data.heap_data.union_data.void_heap_data );
                 UInt32 dataSize = m_variantData.union_data.heap_data.heap_data_size / sizeof( UInt32 );
                 for ( UInt32 i=0; i<dataSize; ++i )
                 {
@@ -747,50 +747,50 @@ CVariant::ToBigEndian( void )
                 m_variantData.containedType = m_variantData.containedType == GUCEF_DATATYPE_UTF32_LE_STRING ? GUCEF_DATATYPE_UTF32_BE_STRING : GUCEF_DATATYPE_BOOLEAN_UTF32_BE_STRING;
                 return *this;
             }
-        
+
 
         case GUCEF_DATATYPE_INT32T2_LE_FRACTION:
-            { 
-                m_variantData.union_data.fraction_data.union_data.int32t2_data.numerator = SwapEndianInt32( m_variantData.union_data.fraction_data.union_data.int32t2_data.numerator ); 
-                m_variantData.union_data.fraction_data.union_data.int32t2_data.denominator = SwapEndianInt32( m_variantData.union_data.fraction_data.union_data.int32t2_data.denominator ); 
-                m_variantData.containedType = GUCEF_DATATYPE_INT32T2_BE_FRACTION; 
-                return *this; 
+            {
+                m_variantData.union_data.fraction_data.union_data.int32t2_data.numerator = SwapEndianInt32( m_variantData.union_data.fraction_data.union_data.int32t2_data.numerator );
+                m_variantData.union_data.fraction_data.union_data.int32t2_data.denominator = SwapEndianInt32( m_variantData.union_data.fraction_data.union_data.int32t2_data.denominator );
+                m_variantData.containedType = GUCEF_DATATYPE_INT32T2_BE_FRACTION;
+                return *this;
             }
         case GUCEF_DATATYPE_UINT32T2_LE_FRACTION:
-            { 
-                m_variantData.union_data.fraction_data.union_data.uint32t2_data.numerator = SwapEndianUInt32( m_variantData.union_data.fraction_data.union_data.uint32t2_data.numerator ); 
-                m_variantData.union_data.fraction_data.union_data.uint32t2_data.denominator = SwapEndianUInt32( m_variantData.union_data.fraction_data.union_data.uint32t2_data.denominator ); 
-                m_variantData.containedType = GUCEF_DATATYPE_UINT32T2_BE_FRACTION; 
-                return *this; 
+            {
+                m_variantData.union_data.fraction_data.union_data.uint32t2_data.numerator = SwapEndianUInt32( m_variantData.union_data.fraction_data.union_data.uint32t2_data.numerator );
+                m_variantData.union_data.fraction_data.union_data.uint32t2_data.denominator = SwapEndianUInt32( m_variantData.union_data.fraction_data.union_data.uint32t2_data.denominator );
+                m_variantData.containedType = GUCEF_DATATYPE_UINT32T2_BE_FRACTION;
+                return *this;
             }
         case GUCEF_DATATYPE_INT64_INT32_LE_FRACTION:
-            { 
-                m_variantData.union_data.fraction_data.union_data.int64_int32_data.numerator = SwapEndianInt64( m_variantData.union_data.fraction_data.union_data.int64_int32_data.numerator ); 
-                m_variantData.union_data.fraction_data.union_data.int64_int32_data.denominator = SwapEndianInt32( m_variantData.union_data.fraction_data.union_data.int64_int32_data.denominator ); 
-                m_variantData.containedType = GUCEF_DATATYPE_INT64_INT32_BE_FRACTION; 
-                return *this; 
+            {
+                m_variantData.union_data.fraction_data.union_data.int64_int32_data.numerator = SwapEndianInt64( m_variantData.union_data.fraction_data.union_data.int64_int32_data.numerator );
+                m_variantData.union_data.fraction_data.union_data.int64_int32_data.denominator = SwapEndianInt32( m_variantData.union_data.fraction_data.union_data.int64_int32_data.denominator );
+                m_variantData.containedType = GUCEF_DATATYPE_INT64_INT32_BE_FRACTION;
+                return *this;
             }
         case GUCEF_DATATYPE_UINT64_UINT32_LE_FRACTION:
-        { 
-                m_variantData.union_data.fraction_data.union_data.uint64_uint32_data.numerator = SwapEndianUInt64( m_variantData.union_data.fraction_data.union_data.uint64_uint32_data.numerator ); 
-                m_variantData.union_data.fraction_data.union_data.uint64_uint32_data.denominator = SwapEndianUInt32( m_variantData.union_data.fraction_data.union_data.uint64_uint32_data.denominator ); 
-                m_variantData.containedType = GUCEF_DATATYPE_UINT64_UINT32_BE_FRACTION; 
-                return *this; 
+        {
+                m_variantData.union_data.fraction_data.union_data.uint64_uint32_data.numerator = SwapEndianUInt64( m_variantData.union_data.fraction_data.union_data.uint64_uint32_data.numerator );
+                m_variantData.union_data.fraction_data.union_data.uint64_uint32_data.denominator = SwapEndianUInt32( m_variantData.union_data.fraction_data.union_data.uint64_uint32_data.denominator );
+                m_variantData.containedType = GUCEF_DATATYPE_UINT64_UINT32_BE_FRACTION;
+                return *this;
         }
 
         case GUCEF_DATATYPE_INT64T2_LE_FRACTION:
-            { 
-                m_variantData.union_data.heap_data.union_data.fraction_int64t2_data->numerator = SwapEndianInt64( m_variantData.union_data.heap_data.union_data.fraction_int64t2_data->numerator ); 
-                m_variantData.union_data.heap_data.union_data.fraction_int64t2_data->denominator = SwapEndianInt64( m_variantData.union_data.heap_data.union_data.fraction_int64t2_data->denominator ); 
-                m_variantData.containedType = GUCEF_DATATYPE_INT64T2_BE_FRACTION; 
-                return *this; 
+            {
+                m_variantData.union_data.heap_data.union_data.fraction_int64t2_data->numerator = SwapEndianInt64( m_variantData.union_data.heap_data.union_data.fraction_int64t2_data->numerator );
+                m_variantData.union_data.heap_data.union_data.fraction_int64t2_data->denominator = SwapEndianInt64( m_variantData.union_data.heap_data.union_data.fraction_int64t2_data->denominator );
+                m_variantData.containedType = GUCEF_DATATYPE_INT64T2_BE_FRACTION;
+                return *this;
             }
         case GUCEF_DATATYPE_UINT64T2_LE_FRACTION:
-            { 
-                m_variantData.union_data.heap_data.union_data.fraction_uint64t2_data->numerator = SwapEndianInt64( m_variantData.union_data.heap_data.union_data.fraction_uint64t2_data->numerator ); 
-                m_variantData.union_data.heap_data.union_data.fraction_uint64t2_data->denominator = SwapEndianInt64( m_variantData.union_data.heap_data.union_data.fraction_uint64t2_data->denominator ); 
-                m_variantData.containedType = GUCEF_DATATYPE_UINT64T2_BE_FRACTION; 
-                return *this; 
+            {
+                m_variantData.union_data.heap_data.union_data.fraction_uint64t2_data->numerator = SwapEndianInt64( m_variantData.union_data.heap_data.union_data.fraction_uint64t2_data->numerator );
+                m_variantData.union_data.heap_data.union_data.fraction_uint64t2_data->denominator = SwapEndianInt64( m_variantData.union_data.heap_data.union_data.fraction_uint64t2_data->denominator );
+                m_variantData.containedType = GUCEF_DATATYPE_UINT64T2_BE_FRACTION;
+                return *this;
             }
 
         default:
@@ -803,7 +803,7 @@ CVariant::ToBigEndian( void )
 
 /*-------------------------------------------------------------------------*/
 
-CVariant& 
+CVariant&
 CVariant::ToNativeEndian( void )
 {GUCEF_TRACE;
 
@@ -817,11 +817,11 @@ CVariant::ToNativeEndian( void )
 
 /*-------------------------------------------------------------------------*/
 
-bool 
+bool
 CVariant::IsMemoryAddress( void ) const
 {GUCEF_TRACE;
 
-    return m_variantData.containedType == GUCEF_DATATYPE_DATA_MEMORY_ADDRESS || 
+    return m_variantData.containedType == GUCEF_DATATYPE_DATA_MEMORY_ADDRESS ||
            m_variantData.containedType == GUCEF_DATATYPE_FUNCTION_MEMORY_ADDRESS;
 }
 
@@ -1166,12 +1166,12 @@ CVariant::OwnsDynamicMemory( void ) const
 
 /*-------------------------------------------------------------------------*/
 
-void* 
+void*
 CVariant::PreAllocateDynamicMemory( UInt32 byteSize, UInt8 varType )
 {GUCEF_TRACE;
 
     Clear();
-    
+
     if ( UsesDynamicMemory( varType ) )
     {
         if ( GUCEF_NULL != HeapReserve( byteSize, true ) )
@@ -1273,7 +1273,7 @@ CVariant::GetTypeId( void ) const
 
 /*-------------------------------------------------------------------------*/
 
-const char* 
+const char*
 CVariant::GetTypeNameC( void ) const
 {GUCEF_TRACE;
 
@@ -1282,7 +1282,7 @@ CVariant::GetTypeNameC( void ) const
 
 /*-------------------------------------------------------------------------*/
 
-CString 
+CString
 CVariant::GetTypeName( void ) const
 {GUCEF_TRACE;
 
@@ -1716,7 +1716,7 @@ CVariant::AsFloat32( Float32 defaultIfNeeded, bool resolveVarsIfApplicable ) con
         case GUCEF_DATATYPE_UINT32T2_FRACTION: return ( (Float32) TUInt32Fraction( m_variantData.union_data.fraction_data.union_data.uint32t2_data ).ToFloat32() );
         case GUCEF_DATATYPE_INT64_INT32_FRACTION: return ( (Float32) TInt64Int32Fraction( m_variantData.union_data.fraction_data.union_data.int64_int32_data ).ToFloat32() );
         case GUCEF_DATATYPE_UINT64_UINT32_FRACTION: return ( (Float32) TUInt64UInt32Fraction( m_variantData.union_data.fraction_data.union_data.uint64_uint32_data ).ToFloat32() );
-        case GUCEF_DATATYPE_INT64T2_FRACTION: 
+        case GUCEF_DATATYPE_INT64T2_FRACTION:
         {
             if ( GUCEF_NULL != m_variantData.union_data.heap_data.union_data.void_heap_data    &&
                  sizeof(TInt64T2Fraction) <= m_variantData.union_data.heap_data.heap_data_size )
@@ -1726,7 +1726,7 @@ CVariant::AsFloat32( Float32 defaultIfNeeded, bool resolveVarsIfApplicable ) con
             else
             {
                 return defaultIfNeeded;
-            }            
+            }
         }
         case GUCEF_DATATYPE_UINT64T2_FRACTION:
         {
@@ -1738,9 +1738,9 @@ CVariant::AsFloat32( Float32 defaultIfNeeded, bool resolveVarsIfApplicable ) con
             else
             {
                 return defaultIfNeeded;
-            }            
+            }
         }
-        default: 
+        default:
         {
             return defaultIfNeeded;
         }
@@ -1772,7 +1772,7 @@ CVariant::AsFloat64( Float64 defaultIfNeeded, bool resolveVarsIfApplicable ) con
         case GUCEF_DATATYPE_UTF8_STRING: return (Float64) ( resolveVarsIfApplicable ? StringToDouble( AsString(), defaultIfNeeded ) : StringToDouble( AsString(), defaultIfNeeded ) );
         case GUCEF_DATATYPE_INT32T2_FRACTION: return ( (Float64) m_variantData.union_data.fraction_data.union_data.int32t2_data.numerator ) / ( (Float64) m_variantData.union_data.fraction_data.union_data.int32t2_data.denominator );
         case GUCEF_DATATYPE_UINT32T2_FRACTION: return ( (Float64) m_variantData.union_data.fraction_data.union_data.uint32t2_data.numerator ) / ( (Float64) m_variantData.union_data.fraction_data.union_data.uint32t2_data.denominator );
-        case GUCEF_DATATYPE_INT64T2_FRACTION: 
+        case GUCEF_DATATYPE_INT64T2_FRACTION:
         {
             if ( GUCEF_NULL != m_variantData.union_data.heap_data.union_data.void_heap_data    &&
                  sizeof(TInt64T2Fraction) <= m_variantData.union_data.heap_data.heap_data_size )
@@ -1782,7 +1782,7 @@ CVariant::AsFloat64( Float64 defaultIfNeeded, bool resolveVarsIfApplicable ) con
             else
             {
                 return defaultIfNeeded;
-            }            
+            }
         }
         case GUCEF_DATATYPE_UINT64T2_FRACTION:
         {
@@ -1794,7 +1794,7 @@ CVariant::AsFloat64( Float64 defaultIfNeeded, bool resolveVarsIfApplicable ) con
             else
             {
                 return defaultIfNeeded;
-            }            
+            }
         }
         default: return defaultIfNeeded;
     }
@@ -1811,7 +1811,7 @@ CVariant::AsCharPtr( const char* defaultIfNeeded ) const
 
 /*-------------------------------------------------------------------------*/
 
-char            
+char
 CVariant::AsChar( char defaultIfNeeded ) const
 {GUCEF_TRACE;
 
@@ -1823,7 +1823,7 @@ CVariant::AsChar( char defaultIfNeeded ) const
 
 /*-------------------------------------------------------------------------*/
 
-TDefaultFuncPtr 
+TDefaultFuncPtr
 CVariant::AsDefaultFuncPtr( TDefaultFuncPtr defaultIfNeeded ) const
 {GUCEF_TRACE;
 
@@ -1854,7 +1854,7 @@ CVariant::AsVoidPtr( const void* defaultIfNeeded ) const
         case GUCEF_DATATYPE_BE_TIMESTAMP_IN_SECS_SINCE_UNIX_EPOCH: return &m_variantData.union_data.uint64_data;
         case GUCEF_DATATYPE_LE_TIMESTAMP_IN_MS_SINCE_UNIX_EPOCH: return &m_variantData.union_data.uint64_data;
         case GUCEF_DATATYPE_BE_TIMESTAMP_IN_MS_SINCE_UNIX_EPOCH: return &m_variantData.union_data.uint64_data;
-        case GUCEF_DATATYPE_BOOLEAN_INT32: return &m_variantData.union_data.int32_data;        
+        case GUCEF_DATATYPE_BOOLEAN_INT32: return &m_variantData.union_data.int32_data;
         case GUCEF_DATATYPE_BINARY_BSOB: return m_variantData.union_data.bsob_data;
         case GUCEF_DATATYPE_INT32T2_FRACTION: return &m_variantData.union_data.fraction_data.union_data.int32t2_data;
         case GUCEF_DATATYPE_UINT32T2_FRACTION: return &m_variantData.union_data.fraction_data.union_data.uint32t2_data;
@@ -1862,7 +1862,7 @@ CVariant::AsVoidPtr( const void* defaultIfNeeded ) const
         case GUCEF_DATATYPE_UINT64_UINT32_FRACTION: return &m_variantData.union_data.fraction_data.union_data.uint64_uint32_data;
         case GUCEF_DATATYPE_CONST_DATA_MEMORY_ADDRESS: return m_variantData.union_data.memory_address_data.objPtr;
         case GUCEF_DATATYPE_DATA_MEMORY_ADDRESS: return m_variantData.union_data.memory_address_data.objPtr;
-        case GUCEF_DATATYPE_FUNCTION_MEMORY_ADDRESS: return sizeof( TDefaultFuncPtr ) == sizeof( void* ) ? m_variantData.union_data.memory_address_data.funcPtr : defaultIfNeeded;
+        case GUCEF_DATATYPE_FUNCTION_MEMORY_ADDRESS: return sizeof( TDefaultFuncPtr ) == sizeof( void* ) ? reinterpret_cast< const void* >( m_variantData.union_data.memory_address_data.funcPtr ) : defaultIfNeeded;
 
         case GUCEF_DATATYPE_BOOLEAN_ASCII_STRING: return m_variantData.union_data.heap_data.union_data.char_heap_data;
         case GUCEF_DATATYPE_BOOLEAN_UTF8_STRING: return m_variantData.union_data.heap_data.union_data.char_heap_data;
@@ -1874,7 +1874,7 @@ CVariant::AsVoidPtr( const void* defaultIfNeeded ) const
         case GUCEF_DATATYPE_INT64T2_FRACTION: return m_variantData.union_data.heap_data.union_data.fraction_int64t2_data;
         case GUCEF_DATATYPE_UINT64T2_FRACTION: return m_variantData.union_data.heap_data.union_data.fraction_uint64t2_data;
 
-        default: 
+        default:
         {
             return defaultIfNeeded;
         }
@@ -1883,7 +1883,7 @@ CVariant::AsVoidPtr( const void* defaultIfNeeded ) const
 
 /*-------------------------------------------------------------------------*/
 
-UInt32 
+UInt32
 CVariant::ByteSizeOfFixedSizeType( UInt8 varType )
 {GUCEF_TRACE;
 
@@ -2112,7 +2112,7 @@ CVariant::operator=( Float64 data )
 
 /*-------------------------------------------------------------------------*/
 
-CVariant& 
+CVariant&
 CVariant::operator=( TInt32T2Fraction data )
 {GUCEF_TRACE;
 
@@ -2124,7 +2124,7 @@ CVariant::operator=( TInt32T2Fraction data )
 
 /*-------------------------------------------------------------------------*/
 
-CVariant& 
+CVariant&
 CVariant::operator=( TUInt32T2Fraction data )
 {GUCEF_TRACE;
 
@@ -2136,7 +2136,7 @@ CVariant::operator=( TUInt32T2Fraction data )
 
 /*-------------------------------------------------------------------------*/
 
-CVariant& 
+CVariant&
 CVariant::operator=( const TInt64T2Fraction& data )
 {GUCEF_TRACE;
 
@@ -2147,7 +2147,7 @@ CVariant::operator=( const TInt64T2Fraction& data )
 
 /*-------------------------------------------------------------------------*/
 
-CVariant& 
+CVariant&
 CVariant::operator=( const TUInt64T2Fraction& data )
 {GUCEF_TRACE;
 
@@ -2158,7 +2158,7 @@ CVariant::operator=( const TUInt64T2Fraction& data )
 
 /*-------------------------------------------------------------------------*/
 
-CVariant& 
+CVariant&
 CVariant::operator=( const TInt64WInt32Fraction& data )
 {GUCEF_TRACE;
 
@@ -2170,7 +2170,7 @@ CVariant::operator=( const TInt64WInt32Fraction& data )
 
 /*-------------------------------------------------------------------------*/
 
-CVariant& 
+CVariant&
 CVariant::operator=( const TUInt64WUInt32Fraction& data )
 {GUCEF_TRACE;
 
@@ -2182,7 +2182,7 @@ CVariant::operator=( const TUInt64WUInt32Fraction& data )
 
 /*-------------------------------------------------------------------------*/
 
-CVariant& 
+CVariant&
 CVariant::operator=( const CDynamicBuffer& data )
 {GUCEF_TRACE;
 
@@ -2192,7 +2192,7 @@ CVariant::operator=( const CDynamicBuffer& data )
 
 /*-------------------------------------------------------------------------*/
 
-CVariant& 
+CVariant&
 CVariant::operator=( const CDateTime& data )
 {GUCEF_TRACE;
 
@@ -2256,7 +2256,7 @@ CVariant::operator=( const CVariant& src )
 
 /*-------------------------------------------------------------------------*/
 
-CVariant& 
+CVariant&
 CVariant::operator=( const TVariantData& src )
 {GUCEF_TRACE;
 
@@ -2416,7 +2416,7 @@ CVariant::Set( const void* data, UInt32 dataSize, UInt8 varType, bool linkOnlyFo
         {
             if ( linkOnlyForDynMem )
             {
-                m_variantData.union_data.heap_data.heap_data_is_linked = 1;                
+                m_variantData.union_data.heap_data.heap_data_is_linked = 1;
                 if ( dataSize > 0 && GUCEF_NULL != data )
                 {
                     m_variantData.union_data.heap_data.union_data.void_heap_data = const_cast< void* >( data );
@@ -2432,7 +2432,7 @@ CVariant::Set( const void* data, UInt32 dataSize, UInt8 varType, bool linkOnlyFo
             }
             else
             {
-                m_variantData.union_data.heap_data.heap_data_is_linked = 0;                
+                m_variantData.union_data.heap_data.heap_data_is_linked = 0;
                 if ( dataSize > 0 && GUCEF_NULL != data )
                 {
                     if ( GUCEF_NULL != HeapReserve( dataSize ) )
@@ -2452,41 +2452,41 @@ CVariant::Set( const void* data, UInt32 dataSize, UInt8 varType, bool linkOnlyFo
                 }
             }
         }
-        case GUCEF_DATATYPE_INT32T2_FRACTION: 
+        case GUCEF_DATATYPE_INT32T2_FRACTION:
         {
             if ( GUCEF_NULL == data || dataSize < (2*sizeof( Int32 )) )
                 return false;
-            
+
             m_variantData.union_data.fraction_data.union_data.int32t2_data.numerator = ((Int32*)data)[ 0 ];
-            m_variantData.union_data.fraction_data.union_data.int32t2_data.denominator = ((Int32*)data)[ 1 ];            
+            m_variantData.union_data.fraction_data.union_data.int32t2_data.denominator = ((Int32*)data)[ 1 ];
             m_variantData.containedType = GUCEF_DATATYPE_INT32T2_FRACTION;
             return true;
         }
-        case GUCEF_DATATYPE_UINT32T2_FRACTION: 
+        case GUCEF_DATATYPE_UINT32T2_FRACTION:
         {
             if ( GUCEF_NULL == data || dataSize < (2*sizeof( UInt32 )) )
                 return false;
-            
+
             m_variantData.union_data.fraction_data.union_data.uint32t2_data.numerator = ((UInt32*)data)[ 0 ];
-            m_variantData.union_data.fraction_data.union_data.uint32t2_data.denominator = ((UInt32*)data)[ 1 ];            
+            m_variantData.union_data.fraction_data.union_data.uint32t2_data.denominator = ((UInt32*)data)[ 1 ];
             m_variantData.containedType = GUCEF_DATATYPE_UINT32T2_FRACTION;
             return true;
         }
-        case GUCEF_DATATYPE_INT64_INT32_FRACTION: 
+        case GUCEF_DATATYPE_INT64_INT32_FRACTION:
         {
             if ( GUCEF_NULL == data || dataSize < ( sizeof( Int64 ) + sizeof( Int32 ) ) )
                 return false;
-            
+
             m_variantData.union_data.fraction_data.union_data.int64_int32_data.numerator = *(Int64*) data;
             m_variantData.union_data.fraction_data.union_data.int64_int32_data.denominator = *(Int32*) ( ((char*)data)+sizeof(Int64) );
             m_variantData.containedType = GUCEF_DATATYPE_INT64_INT32_FRACTION;
             return true;
         }
-        case GUCEF_DATATYPE_UINT64_UINT32_FRACTION: 
+        case GUCEF_DATATYPE_UINT64_UINT32_FRACTION:
         {
             if ( GUCEF_NULL == data || dataSize < ( sizeof( UInt64 ) + sizeof( UInt32 ) ) )
                 return false;
-            
+
             m_variantData.union_data.fraction_data.union_data.uint64_uint32_data.numerator = *(UInt64*) data;
             m_variantData.union_data.fraction_data.union_data.uint64_uint32_data.denominator = *(UInt32*) ( ((char*)data)+sizeof(UInt64) );
             m_variantData.containedType = GUCEF_DATATYPE_UINT64_UINT32_FRACTION;
@@ -2560,7 +2560,7 @@ CVariant::LinkTo( const char* externalBuffer, UInt8 varType )
         Set( GUCEF_NULL, 0, varType, true );
         return *this;
     }
-    
+
     switch ( varType )
     {
         case GUCEF_DATATYPE_ASCII_STRING:
@@ -2581,7 +2581,7 @@ CVariant::LinkTo( const char* externalBuffer, UInt8 varType )
             Set( externalBuffer, 0, varType, true );
             return *this;
         }
-    }  
+    }
 }
 
 /*-------------------------------------------------------------------------*/
@@ -2596,7 +2596,7 @@ CVariant::LinkTo( const TVariantData& src )
 
 /*-------------------------------------------------------------------------*/
 
-CVariant& 
+CVariant&
 CVariant::LinkTo( const TVariantData* src )
 {GUCEF_TRACE;
 
@@ -2751,15 +2751,15 @@ CVariant::SetFromString( UInt8 varType, const CString& data, const CVariant& def
 
     switch ( varType )
     {
-        case GUCEF_DATATYPE_UINT8:                 
+        case GUCEF_DATATYPE_UINT8:
             { *this = StringToUInt8( data, defaultValue.AsUInt8() ); return true; }
 
-        case GUCEF_DATATYPE_LE_UINT16:                
-        case GUCEF_DATATYPE_BE_UINT16:                
+        case GUCEF_DATATYPE_LE_UINT16:
+        case GUCEF_DATATYPE_BE_UINT16:
             { *this = StringToUInt16( data, defaultValue.AsUInt16() ); return true; }
-        
-        case GUCEF_DATATYPE_LE_UINT32:                
-        case GUCEF_DATATYPE_BE_UINT32:                
+
+        case GUCEF_DATATYPE_LE_UINT32:
+        case GUCEF_DATATYPE_BE_UINT32:
             { *this = StringToUInt32( data, defaultValue.AsUInt32() ); return true; }
 
         case GUCEF_DATATYPE_LE_TIMESTAMP_IN_SECS_SINCE_UNIX_EPOCH:
@@ -2770,19 +2770,19 @@ CVariant::SetFromString( UInt8 varType, const CString& data, const CVariant& def
         case GUCEF_DATATYPE_BE_UINT64:
             { *this = StringToUInt64( data, defaultValue.AsUInt64() ); return true; }
 
-        case GUCEF_DATATYPE_INT8:                  
+        case GUCEF_DATATYPE_INT8:
             { *this = StringToInt8( data, defaultValue.AsInt8() ); return true; }
-        
-        case GUCEF_DATATYPE_LE_INT16:                 
-        case GUCEF_DATATYPE_BE_INT16:                 
+
+        case GUCEF_DATATYPE_LE_INT16:
+        case GUCEF_DATATYPE_BE_INT16:
             { *this = StringToInt16( data, defaultValue.AsInt16() ); return true; }
 
-        case GUCEF_DATATYPE_LE_INT32:                 
-        case GUCEF_DATATYPE_BE_INT32:                 
+        case GUCEF_DATATYPE_LE_INT32:
+        case GUCEF_DATATYPE_BE_INT32:
             { *this = StringToInt32( data, defaultValue.AsInt32() ); return true; }
 
-        case GUCEF_DATATYPE_LE_INT64:                 
-        case GUCEF_DATATYPE_BE_INT64:                 
+        case GUCEF_DATATYPE_LE_INT64:
+        case GUCEF_DATATYPE_BE_INT64:
             { *this = StringToInt64( data, defaultValue.AsInt64() ); return true; }
 
         case GUCEF_DATATYPE_FLOAT32:               { *this = StringToFloat( data, defaultValue.AsFloat32() ); return true; }
@@ -2794,7 +2794,7 @@ CVariant::SetFromString( UInt8 varType, const CString& data, const CVariant& def
         case GUCEF_DATATYPE_UTF8_STRING:           { return SetString( varType, data, defaultValue ); }
         case GUCEF_DATATYPE_BINARY_BLOB:           { return Base64Decode( data, HeapReserve( data.ByteSize()-1 ), data.ByteSize()-1, m_variantData.union_data.heap_data.heap_data_size ); }
 
-        case GUCEF_DATATYPE_INT32T2_FRACTION: 
+        case GUCEF_DATATYPE_INT32T2_FRACTION:
         {
             TInt32Fraction fraction;
             if ( fraction.FromString( data ) )
@@ -2804,7 +2804,7 @@ CVariant::SetFromString( UInt8 varType, const CString& data, const CVariant& def
             }
             return false;
         }
-        case GUCEF_DATATYPE_UINT32T2_FRACTION: 
+        case GUCEF_DATATYPE_UINT32T2_FRACTION:
         {
             TUInt32Fraction fraction;
             if ( fraction.FromString( data ) )
@@ -2814,7 +2814,7 @@ CVariant::SetFromString( UInt8 varType, const CString& data, const CVariant& def
             }
             return false;
         }
-        case GUCEF_DATATYPE_INT64_INT32_FRACTION: 
+        case GUCEF_DATATYPE_INT64_INT32_FRACTION:
         {
             TInt64Int32Fraction fraction;
             if ( fraction.FromString( data ) )
@@ -2824,7 +2824,7 @@ CVariant::SetFromString( UInt8 varType, const CString& data, const CVariant& def
             }
             return false;
         }
-        case GUCEF_DATATYPE_UINT64_UINT32_FRACTION: 
+        case GUCEF_DATATYPE_UINT64_UINT32_FRACTION:
         {
             TUInt64UInt32Fraction fraction;
             if ( fraction.FromString( data ) )
@@ -2834,7 +2834,7 @@ CVariant::SetFromString( UInt8 varType, const CString& data, const CVariant& def
             }
             return false;
         }
-        case GUCEF_DATATYPE_INT64T2_FRACTION: 
+        case GUCEF_DATATYPE_INT64T2_FRACTION:
         {
             TInt64Fraction fraction;
             if ( fraction.FromString( data ) )
@@ -2844,7 +2844,7 @@ CVariant::SetFromString( UInt8 varType, const CString& data, const CVariant& def
             }
             return false;
         }
-        case GUCEF_DATATYPE_UINT64T2_FRACTION: 
+        case GUCEF_DATATYPE_UINT64T2_FRACTION:
         {
             TUInt64Fraction fraction;
             if ( fraction.FromString( data ) )
@@ -2883,27 +2883,27 @@ CVariant::operator==( const CVariant& other ) const
         {
             // Comparing signed and unsigned integers
             return AsInt64() < other.AsInt64();
-        }    
+        }
     }
     else
     if ( IsFloat() && other.IsFloat() )
     {
         return std::fabs( AsFloat64() - other.AsFloat64() ) < GUCEF_FLOAT64_COMPARISON_EPSILON;
-    }   
+    }
     else
     if ( IsBoolean() || other.IsBoolean() )
     {
         return AsBool() == other.AsBool();
-    } 
+    }
     else
     if ( IsFraction() || other.IsFraction() )
     {
         return std::fabs( AsFloat64() - other.AsFloat64() ) < GUCEF_FLOAT64_COMPARISON_EPSILON;
-    } 
+    }
     else
     {
         // strings and blobs
-        
+
         UInt32 byteSize = ByteSize();
         UInt32 otherByteSize = other.ByteSize();
 
@@ -2913,7 +2913,7 @@ CVariant::operator==( const CVariant& other ) const
             UInt32 smallestByteSize = GUCEF_SMALLEST( byteSize, otherByteSize );
             return 0 == memcmp( AsVoidPtr(), other.AsVoidPtr(), smallestByteSize );
         }
-        
+
         // Essentially allowing nill == nill for a variant etc
         return ( byteSize == otherByteSize && m_variantData.containedType == other.m_variantData.containedType );
     }
@@ -2952,22 +2952,22 @@ CVariant::operator<( const CVariant& other ) const
         {
             // Comparing signed and unsigned integers
             return AsInt64() < other.AsInt64();
-        }    
+        }
     }
     else
     if ( IsFloat() && other.IsFloat() )
     {
         return AsFloat64() < other.AsFloat64();
-    }   
+    }
     else
     if ( IsBoolean() || other.IsBoolean() )
     {
         return AsBool() < other.AsBool();
-    } 
+    }
     else
     {
         // strings and blobs
-        
+
         UInt32 byteSize = ByteSize();
         UInt32 otherByteSize = other.ByteSize();
 
@@ -3014,18 +3014,18 @@ CVariant::operator<=( const CVariant& other ) const
         {
             // Comparing signed and unsigned integers
             return AsInt64() <= other.AsInt64();
-        }    
+        }
     }
     else
     if ( IsFloat() && other.IsFloat() )
     {
         return AsFloat64() <= other.AsFloat64();
-    }   
+    }
     else
     if ( IsBoolean() || other.IsBoolean() )
     {
         return AsBool() <= other.AsBool();
-    } 
+    }
     else
     {
         // strings and blobs
@@ -3136,46 +3136,46 @@ CVariant::AsString( const CString& defaultIfNeeded, bool resolveVarsIfApplicable
     {
         switch ( m_variantData.containedType )
         {
-            case GUCEF_DATATYPE_UINT8:                 
+            case GUCEF_DATATYPE_UINT8:
                 { return ToString( AsUInt8() ); }
-            
-            case GUCEF_DATATYPE_LE_UINT16:                
-            case GUCEF_DATATYPE_BE_UINT16:                
+
+            case GUCEF_DATATYPE_LE_UINT16:
+            case GUCEF_DATATYPE_BE_UINT16:
                 { return ToString( AsUInt16() ); }
 
-            case GUCEF_DATATYPE_LE_UINT32:                
-            case GUCEF_DATATYPE_BE_UINT32:                
+            case GUCEF_DATATYPE_LE_UINT32:
+            case GUCEF_DATATYPE_BE_UINT32:
                 { return ToString( AsUInt32() ); }
 
             case GUCEF_DATATYPE_LE_TIMESTAMP_IN_SECS_SINCE_UNIX_EPOCH:
             case GUCEF_DATATYPE_BE_TIMESTAMP_IN_SECS_SINCE_UNIX_EPOCH:
             case GUCEF_DATATYPE_LE_TIMESTAMP_IN_MS_SINCE_UNIX_EPOCH:
             case GUCEF_DATATYPE_BE_TIMESTAMP_IN_MS_SINCE_UNIX_EPOCH:
-            case GUCEF_DATATYPE_LE_UINT64:     
-            case GUCEF_DATATYPE_BE_UINT64:     
+            case GUCEF_DATATYPE_LE_UINT64:
+            case GUCEF_DATATYPE_BE_UINT64:
                 { return ToString( AsUInt64() ); }
 
-            case GUCEF_DATATYPE_INT8:                  
+            case GUCEF_DATATYPE_INT8:
                 { return ToString( AsInt8() ); }
-            
-            case GUCEF_DATATYPE_LE_INT16:                 
-            case GUCEF_DATATYPE_BE_INT16:                 
+
+            case GUCEF_DATATYPE_LE_INT16:
+            case GUCEF_DATATYPE_BE_INT16:
                 { return ToString( AsInt16() ); }
 
-            case GUCEF_DATATYPE_LE_INT32:                 
-            case GUCEF_DATATYPE_BE_INT32:                 
+            case GUCEF_DATATYPE_LE_INT32:
+            case GUCEF_DATATYPE_BE_INT32:
                 { return ToString( AsInt32() ); }
 
-            case GUCEF_DATATYPE_LE_INT64:                 
-            case GUCEF_DATATYPE_BE_INT64:                 
+            case GUCEF_DATATYPE_LE_INT64:
+            case GUCEF_DATATYPE_BE_INT64:
                 { return ToString( AsInt64() ); }
 
-            case GUCEF_DATATYPE_FLOAT32:               
+            case GUCEF_DATATYPE_FLOAT32:
                 { return ToString( AsFloat32() ); }
-            case GUCEF_DATATYPE_FLOAT64:               
+            case GUCEF_DATATYPE_FLOAT64:
                 { return ToString( AsFloat64() ); }
 
-            case GUCEF_DATATYPE_BOOLEAN_INT32:         
+            case GUCEF_DATATYPE_BOOLEAN_INT32:
                 { return ToString( AsBool() ); }
 
             case GUCEF_DATATYPE_BOOLEAN_ASCII_STRING:  { return ResolveVars( ToString( AsAsciiString( ToAsciiString( ResolveVars( defaultIfNeeded ) ) ) ) ); }
@@ -3189,9 +3189,9 @@ CVariant::AsString( const CString& defaultIfNeeded, bool resolveVarsIfApplicable
             case GUCEF_DATATYPE_UINT32T2_FRACTION:     { return ToString( m_variantData.union_data.fraction_data.union_data.uint32t2_data.denominator ) + '/' + ToString( m_variantData.union_data.fraction_data.union_data.uint32t2_data.numerator ); }
 
             // @TODO: we dont have native UTF16 support yet, so convert to UTF8
-            case GUCEF_DATATYPE_UTF16_LE_STRING:           
-            case GUCEF_DATATYPE_UTF16_BE_STRING:           
-            { 
+            case GUCEF_DATATYPE_UTF16_LE_STRING:
+            case GUCEF_DATATYPE_UTF16_BE_STRING:
+            {
                 if ( m_variantData.union_data.heap_data.heap_data_size > 0 )
                 {
                     std::wstring wideStr;   // <- not exactly UTF16 but best we have right now
@@ -3199,7 +3199,7 @@ CVariant::AsString( const CString& defaultIfNeeded, bool resolveVarsIfApplicable
                     memcpy( const_cast< wchar_t* >( wideStr.c_str() ), m_variantData.union_data.heap_data.union_data.void_heap_data, m_variantData.union_data.heap_data.heap_data_size );
                     wideStr.shrink_to_fit();
 
-                    return ResolveVars( ToUtf8String( wideStr ) ); 
+                    return ResolveVars( ToUtf8String( wideStr ) );
                 }
                 return CString::Empty;
             }
@@ -3217,15 +3217,15 @@ CVariant::AsString( const CString& defaultIfNeeded, bool resolveVarsIfApplicable
             case GUCEF_DATATYPE_UINT8:                 { return ToString( AsUInt8( StringToUInt8( defaultIfNeeded, 0 ) ) ); }
             case GUCEF_DATATYPE_UINT16:                { return ToString( AsUInt16( StringToUInt16( defaultIfNeeded, 0 ) ) ); }
             case GUCEF_DATATYPE_UINT32:                { return ToString( AsUInt32( StringToUInt32( defaultIfNeeded, 0 ) ) ); }
-            
+
             case GUCEF_DATATYPE_LE_TIMESTAMP_IN_SECS_SINCE_UNIX_EPOCH:
             case GUCEF_DATATYPE_BE_TIMESTAMP_IN_SECS_SINCE_UNIX_EPOCH:
             case GUCEF_DATATYPE_LE_TIMESTAMP_IN_MS_SINCE_UNIX_EPOCH:
             case GUCEF_DATATYPE_BE_TIMESTAMP_IN_MS_SINCE_UNIX_EPOCH:
-            case GUCEF_DATATYPE_LE_UINT64:     
-            case GUCEF_DATATYPE_BE_UINT64:                
+            case GUCEF_DATATYPE_LE_UINT64:
+            case GUCEF_DATATYPE_BE_UINT64:
                 { return ToString( AsUInt64( StringToUInt64( defaultIfNeeded, 0 ) ) ); }
-            
+
             case GUCEF_DATATYPE_INT8:                  { return ToString( AsInt8( StringToInt8( defaultIfNeeded, 0 ) ) ); }
             case GUCEF_DATATYPE_INT16:                 { return ToString( AsInt16( StringToInt16( defaultIfNeeded, 0 ) ) ); }
             case GUCEF_DATATYPE_INT32:                 { return ToString( AsInt32( StringToInt32( defaultIfNeeded, 0 ) ) ); }
@@ -3240,11 +3240,11 @@ CVariant::AsString( const CString& defaultIfNeeded, bool resolveVarsIfApplicable
 
             case GUCEF_DATATYPE_INT32T2_FRACTION:      { return ToString( m_variantData.union_data.fraction_data.union_data.int32t2_data.denominator ) + '/' + ToString( m_variantData.union_data.fraction_data.union_data.int32t2_data.numerator ); }
             case GUCEF_DATATYPE_UINT32T2_FRACTION:     { return ToString( m_variantData.union_data.fraction_data.union_data.uint32t2_data.denominator ) + '/' + ToString( m_variantData.union_data.fraction_data.union_data.uint32t2_data.numerator ); }
-            
+
             // @TODO: we dont have native UTF16 support yet, so convert to UTF8
-            case GUCEF_DATATYPE_UTF16_LE_STRING:           
-            case GUCEF_DATATYPE_UTF16_BE_STRING:           
-            { 
+            case GUCEF_DATATYPE_UTF16_LE_STRING:
+            case GUCEF_DATATYPE_UTF16_BE_STRING:
+            {
                 if ( m_variantData.union_data.heap_data.heap_data_size > 0 )
                 {
                     std::wstring wideStr;   // <- not exactly UTF16 but best we have right now
@@ -3252,11 +3252,11 @@ CVariant::AsString( const CString& defaultIfNeeded, bool resolveVarsIfApplicable
                     memcpy( const_cast< wchar_t* >( wideStr.c_str() ), m_variantData.union_data.heap_data.union_data.void_heap_data, m_variantData.union_data.heap_data.heap_data_size );
                     wideStr.shrink_to_fit();
 
-                    return ToUtf8String( wideStr ); 
+                    return ToUtf8String( wideStr );
                 }
                 return CString::Empty;
             }
-            
+
             case GUCEF_DATATYPE_BINARY_BSOB:           { CString result = Base64Encode( m_variantData.union_data.bsob_data, sizeof( m_variantData.union_data.bsob_data ) ); return result.IsNULLOrEmpty() ? defaultIfNeeded : result; }
             case GUCEF_DATATYPE_BINARY_BLOB:           { CString result = Base64Encode( m_variantData.union_data.heap_data.union_data.void_heap_data, m_variantData.union_data.heap_data.heap_data_size ); return result.IsNULLOrEmpty() ? defaultIfNeeded : result; }
             case GUCEF_DATATYPE_UNKNOWN:               { return defaultIfNeeded; }
@@ -3285,21 +3285,21 @@ CVariant::AsBuffer( void ) const
 
 /*-------------------------------------------------------------------------*/
 
-CDateTime       
+CDateTime
 CVariant::AsDateTime( const CDateTime& defaultIfNeeded, bool resolveVarsIfApplicable ) const
 {GUCEF_TRACE;
 
     switch ( m_variantData.containedType )
     {
         case GUCEF_DATATYPE_UTF8_STRING:
-        case GUCEF_DATATYPE_ASCII_STRING:          
+        case GUCEF_DATATYPE_ASCII_STRING:
         case GUCEF_DATATYPE_DATETIME_ISO8601_ASCII_STRING:
         case GUCEF_DATATYPE_DATETIME_ISO8601_UTF8_STRING:
-        {  
-            CString str = AsString( CString::Empty, resolveVarsIfApplicable ); 
+        {
+            CString str = AsString( CString::Empty, resolveVarsIfApplicable );
             if ( str.IsNULLOrEmpty() )
                 return defaultIfNeeded;
-            
+
             CDateTime dt;
             if ( dt.FromIso8601DateTimeString( str ) )
                 return dt;
@@ -3322,7 +3322,7 @@ CVariant::AsDateTime( const CDateTime& defaultIfNeeded, bool resolveVarsIfApplic
             dt.FromUnixEpochBasedTicksInMillisecs( m_variantData.union_data.uint64_data );
             return dt;
         }
-        
+
         default:
             return defaultIfNeeded;
     }
@@ -3330,7 +3330,7 @@ CVariant::AsDateTime( const CDateTime& defaultIfNeeded, bool resolveVarsIfApplic
 
 /*-------------------------------------------------------------------------*/
 
-TInt8Fraction         
+TInt8Fraction
 CVariant::AsInt8Fraction( const TInt8Fraction& defaultIfNeeded, bool resolveVarsIfApplicable ) const
 {GUCEF_TRACE;
 
@@ -3338,12 +3338,12 @@ CVariant::AsInt8Fraction( const TInt8Fraction& defaultIfNeeded, bool resolveVars
     {
         case GUCEF_DATATYPE_INT32T2_FRACTION:
         {
-            return TInt8Fraction( static_cast< Int8 >( m_variantData.union_data.fraction_data.union_data.int32t2_data.numerator ), 
+            return TInt8Fraction( static_cast< Int8 >( m_variantData.union_data.fraction_data.union_data.int32t2_data.numerator ),
                                   static_cast< Int8 >( m_variantData.union_data.fraction_data.union_data.int32t2_data.denominator ) );
         }
         case GUCEF_DATATYPE_UINT32T2_FRACTION:
         {
-            return TInt8Fraction( static_cast< Int8 >( m_variantData.union_data.fraction_data.union_data.uint32t2_data.numerator ), 
+            return TInt8Fraction( static_cast< Int8 >( m_variantData.union_data.fraction_data.union_data.uint32t2_data.numerator ),
                                   static_cast< Int8 >( m_variantData.union_data.fraction_data.union_data.uint32t2_data.denominator ) );
         }
         case GUCEF_DATATYPE_INT64T2_FRACTION:
@@ -3351,7 +3351,7 @@ CVariant::AsInt8Fraction( const TInt8Fraction& defaultIfNeeded, bool resolveVars
             if ( m_variantData.union_data.heap_data.union_data.void_heap_data != GUCEF_NULL   &&
                  m_variantData.union_data.heap_data.heap_data_size >= sizeof( TInt64T2Fraction ) )
             {
-                return TInt8Fraction( static_cast< Int8 >( m_variantData.union_data.heap_data.union_data.fraction_int64t2_data->numerator ), 
+                return TInt8Fraction( static_cast< Int8 >( m_variantData.union_data.heap_data.union_data.fraction_int64t2_data->numerator ),
                                       static_cast< Int8 >( m_variantData.union_data.heap_data.union_data.fraction_int64t2_data->denominator ) );
             }
             return defaultIfNeeded;
@@ -3361,19 +3361,19 @@ CVariant::AsInt8Fraction( const TInt8Fraction& defaultIfNeeded, bool resolveVars
             if ( m_variantData.union_data.heap_data.union_data.void_heap_data != GUCEF_NULL   &&
                  m_variantData.union_data.heap_data.heap_data_size >= sizeof( TUInt64T2Fraction ) )
             {
-                return TInt8Fraction( static_cast< Int8 >( m_variantData.union_data.heap_data.union_data.fraction_uint64t2_data->numerator ), 
+                return TInt8Fraction( static_cast< Int8 >( m_variantData.union_data.heap_data.union_data.fraction_uint64t2_data->numerator ),
                                       static_cast< Int8 >( m_variantData.union_data.heap_data.union_data.fraction_uint64t2_data->denominator ) );
             }
             return defaultIfNeeded;
         }
         case GUCEF_DATATYPE_INT64_INT32_FRACTION:
         {
-            return TInt8Fraction( static_cast< Int8 >( m_variantData.union_data.fraction_data.union_data.int64_int32_data.numerator ), 
+            return TInt8Fraction( static_cast< Int8 >( m_variantData.union_data.fraction_data.union_data.int64_int32_data.numerator ),
                                   static_cast< Int8 >( m_variantData.union_data.fraction_data.union_data.int64_int32_data.denominator ) );
         }
         case GUCEF_DATATYPE_UINT64_UINT32_FRACTION:
         {
-            return TInt8Fraction( static_cast< Int8 >( m_variantData.union_data.fraction_data.union_data.uint64_uint32_data.numerator ), 
+            return TInt8Fraction( static_cast< Int8 >( m_variantData.union_data.fraction_data.union_data.uint64_uint32_data.numerator ),
                                   static_cast< Int8 >( m_variantData.union_data.fraction_data.union_data.uint64_uint32_data.denominator ) );
         }
         case GUCEF_DATATYPE_FLOAT32:
@@ -3403,12 +3403,12 @@ CVariant::AsUInt8Fraction( const TUInt8Fraction& defaultIfNeeded, bool resolveVa
     {
         case GUCEF_DATATYPE_INT32T2_FRACTION:
         {
-            return TUInt8Fraction( static_cast< UInt8 >( m_variantData.union_data.fraction_data.union_data.int32t2_data.numerator ), 
+            return TUInt8Fraction( static_cast< UInt8 >( m_variantData.union_data.fraction_data.union_data.int32t2_data.numerator ),
                                    static_cast< UInt8 >( m_variantData.union_data.fraction_data.union_data.int32t2_data.denominator ) );
         }
         case GUCEF_DATATYPE_UINT32T2_FRACTION:
         {
-            return TUInt8Fraction( static_cast< UInt8 >( m_variantData.union_data.fraction_data.union_data.uint32t2_data.numerator ), 
+            return TUInt8Fraction( static_cast< UInt8 >( m_variantData.union_data.fraction_data.union_data.uint32t2_data.numerator ),
                                    static_cast< UInt8 >( m_variantData.union_data.fraction_data.union_data.uint32t2_data.denominator ) );
         }
         case GUCEF_DATATYPE_INT64T2_FRACTION:
@@ -3416,7 +3416,7 @@ CVariant::AsUInt8Fraction( const TUInt8Fraction& defaultIfNeeded, bool resolveVa
             if ( m_variantData.union_data.heap_data.union_data.void_heap_data != GUCEF_NULL   &&
                  m_variantData.union_data.heap_data.heap_data_size >= sizeof( TInt64T2Fraction ) )
             {
-                return TUInt8Fraction( static_cast< UInt8 >( m_variantData.union_data.heap_data.union_data.fraction_int64t2_data->numerator ), 
+                return TUInt8Fraction( static_cast< UInt8 >( m_variantData.union_data.heap_data.union_data.fraction_int64t2_data->numerator ),
                                        static_cast< UInt8 >( m_variantData.union_data.heap_data.union_data.fraction_int64t2_data->denominator ) );
             }
             return defaultIfNeeded;
@@ -3426,19 +3426,19 @@ CVariant::AsUInt8Fraction( const TUInt8Fraction& defaultIfNeeded, bool resolveVa
             if ( m_variantData.union_data.heap_data.union_data.void_heap_data != GUCEF_NULL   &&
                  m_variantData.union_data.heap_data.heap_data_size >= sizeof( TUInt64T2Fraction ) )
             {
-                return TUInt8Fraction( static_cast< UInt8 >( m_variantData.union_data.heap_data.union_data.fraction_uint64t2_data->numerator ), 
+                return TUInt8Fraction( static_cast< UInt8 >( m_variantData.union_data.heap_data.union_data.fraction_uint64t2_data->numerator ),
                                        static_cast< UInt8 >( m_variantData.union_data.heap_data.union_data.fraction_uint64t2_data->denominator ) );
             }
             return defaultIfNeeded;
         }
         case GUCEF_DATATYPE_INT64_INT32_FRACTION:
         {
-            return TUInt8Fraction( static_cast< UInt8 >( m_variantData.union_data.fraction_data.union_data.int64_int32_data.numerator ), 
+            return TUInt8Fraction( static_cast< UInt8 >( m_variantData.union_data.fraction_data.union_data.int64_int32_data.numerator ),
                                    static_cast< UInt8 >( m_variantData.union_data.fraction_data.union_data.int64_int32_data.denominator ) );
         }
         case GUCEF_DATATYPE_UINT64_UINT32_FRACTION:
         {
-            return TUInt8Fraction( static_cast< UInt8 >( m_variantData.union_data.fraction_data.union_data.uint64_uint32_data.numerator ), 
+            return TUInt8Fraction( static_cast< UInt8 >( m_variantData.union_data.fraction_data.union_data.uint64_uint32_data.numerator ),
                                    static_cast< UInt8 >( m_variantData.union_data.fraction_data.union_data.uint64_uint32_data.denominator ) );
         }
         case GUCEF_DATATYPE_FLOAT32:
@@ -3460,7 +3460,7 @@ CVariant::AsUInt8Fraction( const TUInt8Fraction& defaultIfNeeded, bool resolveVa
 
 /*-------------------------------------------------------------------------*/
 
-TInt16Fraction         
+TInt16Fraction
 CVariant::AsInt16Fraction( const TInt16Fraction& defaultIfNeeded, bool resolveVarsIfApplicable ) const
 {GUCEF_TRACE;
 
@@ -3468,12 +3468,12 @@ CVariant::AsInt16Fraction( const TInt16Fraction& defaultIfNeeded, bool resolveVa
     {
         case GUCEF_DATATYPE_INT32T2_FRACTION:
         {
-            return TInt16Fraction( static_cast< Int16 >( m_variantData.union_data.fraction_data.union_data.int32t2_data.numerator ), 
+            return TInt16Fraction( static_cast< Int16 >( m_variantData.union_data.fraction_data.union_data.int32t2_data.numerator ),
                                   static_cast< Int16 >( m_variantData.union_data.fraction_data.union_data.int32t2_data.denominator ) );
         }
         case GUCEF_DATATYPE_UINT32T2_FRACTION:
         {
-            return TInt16Fraction( static_cast< Int16 >( m_variantData.union_data.fraction_data.union_data.uint32t2_data.numerator ), 
+            return TInt16Fraction( static_cast< Int16 >( m_variantData.union_data.fraction_data.union_data.uint32t2_data.numerator ),
                                   static_cast< Int16 >( m_variantData.union_data.fraction_data.union_data.uint32t2_data.denominator ) );
         }
         case GUCEF_DATATYPE_INT64T2_FRACTION:
@@ -3481,7 +3481,7 @@ CVariant::AsInt16Fraction( const TInt16Fraction& defaultIfNeeded, bool resolveVa
             if ( m_variantData.union_data.heap_data.union_data.void_heap_data != GUCEF_NULL   &&
                  m_variantData.union_data.heap_data.heap_data_size >= sizeof( TInt64T2Fraction ) )
             {
-                return TInt16Fraction( static_cast< Int16 >( m_variantData.union_data.heap_data.union_data.fraction_int64t2_data->numerator ), 
+                return TInt16Fraction( static_cast< Int16 >( m_variantData.union_data.heap_data.union_data.fraction_int64t2_data->numerator ),
                                       static_cast< Int16 >( m_variantData.union_data.heap_data.union_data.fraction_int64t2_data->denominator ) );
             }
             return defaultIfNeeded;
@@ -3491,19 +3491,19 @@ CVariant::AsInt16Fraction( const TInt16Fraction& defaultIfNeeded, bool resolveVa
             if ( m_variantData.union_data.heap_data.union_data.void_heap_data != GUCEF_NULL   &&
                  m_variantData.union_data.heap_data.heap_data_size >= sizeof( TUInt64T2Fraction ) )
             {
-                return TInt16Fraction( static_cast< Int16 >( m_variantData.union_data.heap_data.union_data.fraction_uint64t2_data->numerator ), 
+                return TInt16Fraction( static_cast< Int16 >( m_variantData.union_data.heap_data.union_data.fraction_uint64t2_data->numerator ),
                                       static_cast< Int16 >( m_variantData.union_data.heap_data.union_data.fraction_uint64t2_data->denominator ) );
             }
             return defaultIfNeeded;
         }
         case GUCEF_DATATYPE_INT64_INT32_FRACTION:
         {
-            return TInt16Fraction( static_cast< Int16 >( m_variantData.union_data.fraction_data.union_data.int64_int32_data.numerator ), 
+            return TInt16Fraction( static_cast< Int16 >( m_variantData.union_data.fraction_data.union_data.int64_int32_data.numerator ),
                                   static_cast< Int16 >( m_variantData.union_data.fraction_data.union_data.int64_int32_data.denominator ) );
         }
         case GUCEF_DATATYPE_UINT64_UINT32_FRACTION:
         {
-            return TInt16Fraction( static_cast< Int16 >( m_variantData.union_data.fraction_data.union_data.uint64_uint32_data.numerator ), 
+            return TInt16Fraction( static_cast< Int16 >( m_variantData.union_data.fraction_data.union_data.uint64_uint32_data.numerator ),
                                   static_cast< Int16 >( m_variantData.union_data.fraction_data.union_data.uint64_uint32_data.denominator ) );
         }
         case GUCEF_DATATYPE_FLOAT32:
@@ -3533,12 +3533,12 @@ CVariant::AsUInt16Fraction( const TUInt16Fraction& defaultIfNeeded, bool resolve
     {
         case GUCEF_DATATYPE_INT32T2_FRACTION:
         {
-            return TUInt16Fraction( static_cast< UInt16 >( m_variantData.union_data.fraction_data.union_data.int32t2_data.numerator ), 
+            return TUInt16Fraction( static_cast< UInt16 >( m_variantData.union_data.fraction_data.union_data.int32t2_data.numerator ),
                                    static_cast< UInt16 >( m_variantData.union_data.fraction_data.union_data.int32t2_data.denominator ) );
         }
         case GUCEF_DATATYPE_UINT32T2_FRACTION:
         {
-            return TUInt16Fraction( static_cast< UInt16 >( m_variantData.union_data.fraction_data.union_data.uint32t2_data.numerator ), 
+            return TUInt16Fraction( static_cast< UInt16 >( m_variantData.union_data.fraction_data.union_data.uint32t2_data.numerator ),
                                    static_cast< UInt16 >( m_variantData.union_data.fraction_data.union_data.uint32t2_data.denominator ) );
         }
         case GUCEF_DATATYPE_INT64T2_FRACTION:
@@ -3546,7 +3546,7 @@ CVariant::AsUInt16Fraction( const TUInt16Fraction& defaultIfNeeded, bool resolve
             if ( m_variantData.union_data.heap_data.union_data.void_heap_data != GUCEF_NULL   &&
                  m_variantData.union_data.heap_data.heap_data_size >= sizeof( TInt64T2Fraction ) )
             {
-                return TUInt16Fraction( static_cast< UInt16 >( m_variantData.union_data.heap_data.union_data.fraction_int64t2_data->numerator ), 
+                return TUInt16Fraction( static_cast< UInt16 >( m_variantData.union_data.heap_data.union_data.fraction_int64t2_data->numerator ),
                                        static_cast< UInt16 >( m_variantData.union_data.heap_data.union_data.fraction_int64t2_data->denominator ) );
             }
             return defaultIfNeeded;
@@ -3556,19 +3556,19 @@ CVariant::AsUInt16Fraction( const TUInt16Fraction& defaultIfNeeded, bool resolve
             if ( m_variantData.union_data.heap_data.union_data.void_heap_data != GUCEF_NULL   &&
                  m_variantData.union_data.heap_data.heap_data_size >= sizeof( TUInt64T2Fraction ) )
             {
-                return TUInt16Fraction( static_cast< UInt16 >( m_variantData.union_data.heap_data.union_data.fraction_uint64t2_data->numerator ), 
+                return TUInt16Fraction( static_cast< UInt16 >( m_variantData.union_data.heap_data.union_data.fraction_uint64t2_data->numerator ),
                                        static_cast< UInt16 >( m_variantData.union_data.heap_data.union_data.fraction_uint64t2_data->denominator ) );
             }
             return defaultIfNeeded;
         }
         case GUCEF_DATATYPE_INT64_INT32_FRACTION:
         {
-            return TUInt16Fraction( static_cast< UInt16 >( m_variantData.union_data.fraction_data.union_data.int64_int32_data.numerator ), 
+            return TUInt16Fraction( static_cast< UInt16 >( m_variantData.union_data.fraction_data.union_data.int64_int32_data.numerator ),
                                    static_cast< UInt16 >( m_variantData.union_data.fraction_data.union_data.int64_int32_data.denominator ) );
         }
         case GUCEF_DATATYPE_UINT64_UINT32_FRACTION:
         {
-            return TUInt16Fraction( static_cast< UInt16 >( m_variantData.union_data.fraction_data.union_data.uint64_uint32_data.numerator ), 
+            return TUInt16Fraction( static_cast< UInt16 >( m_variantData.union_data.fraction_data.union_data.uint64_uint32_data.numerator ),
                                    static_cast< UInt16 >( m_variantData.union_data.fraction_data.union_data.uint64_uint32_data.denominator ) );
         }
         case GUCEF_DATATYPE_FLOAT32:
@@ -3590,7 +3590,7 @@ CVariant::AsUInt16Fraction( const TUInt16Fraction& defaultIfNeeded, bool resolve
 
 /*-------------------------------------------------------------------------*/
 
-TInt32Fraction         
+TInt32Fraction
 CVariant::AsInt32Fraction( const TInt32Fraction& defaultIfNeeded, bool resolveVarsIfApplicable ) const
 {GUCEF_TRACE;
 
@@ -3598,12 +3598,12 @@ CVariant::AsInt32Fraction( const TInt32Fraction& defaultIfNeeded, bool resolveVa
     {
         case GUCEF_DATATYPE_INT32T2_FRACTION:
         {
-            return TInt32Fraction( static_cast< Int32 >( m_variantData.union_data.fraction_data.union_data.int32t2_data.numerator ), 
+            return TInt32Fraction( static_cast< Int32 >( m_variantData.union_data.fraction_data.union_data.int32t2_data.numerator ),
                                    static_cast< Int32 >( m_variantData.union_data.fraction_data.union_data.int32t2_data.denominator ) );
         }
         case GUCEF_DATATYPE_UINT32T2_FRACTION:
         {
-            return TInt32Fraction( static_cast< Int32 >( m_variantData.union_data.fraction_data.union_data.uint32t2_data.numerator ), 
+            return TInt32Fraction( static_cast< Int32 >( m_variantData.union_data.fraction_data.union_data.uint32t2_data.numerator ),
                                    static_cast< Int32 >( m_variantData.union_data.fraction_data.union_data.uint32t2_data.denominator ) );
         }
         case GUCEF_DATATYPE_INT64T2_FRACTION:
@@ -3611,7 +3611,7 @@ CVariant::AsInt32Fraction( const TInt32Fraction& defaultIfNeeded, bool resolveVa
             if ( m_variantData.union_data.heap_data.union_data.void_heap_data != GUCEF_NULL   &&
                  m_variantData.union_data.heap_data.heap_data_size >= sizeof( TInt64T2Fraction ) )
             {
-                return TInt32Fraction( static_cast< Int32 >( m_variantData.union_data.heap_data.union_data.fraction_int64t2_data->numerator ), 
+                return TInt32Fraction( static_cast< Int32 >( m_variantData.union_data.heap_data.union_data.fraction_int64t2_data->numerator ),
                                        static_cast< Int32 >( m_variantData.union_data.heap_data.union_data.fraction_int64t2_data->denominator ) );
             }
             return defaultIfNeeded;
@@ -3621,19 +3621,19 @@ CVariant::AsInt32Fraction( const TInt32Fraction& defaultIfNeeded, bool resolveVa
             if ( m_variantData.union_data.heap_data.union_data.void_heap_data != GUCEF_NULL   &&
                  m_variantData.union_data.heap_data.heap_data_size >= sizeof( TUInt64T2Fraction ) )
             {
-                return TInt32Fraction( static_cast< Int32 >( m_variantData.union_data.heap_data.union_data.fraction_uint64t2_data->numerator ), 
+                return TInt32Fraction( static_cast< Int32 >( m_variantData.union_data.heap_data.union_data.fraction_uint64t2_data->numerator ),
                                        static_cast< Int32 >( m_variantData.union_data.heap_data.union_data.fraction_uint64t2_data->denominator ) );
             }
             return defaultIfNeeded;
         }
         case GUCEF_DATATYPE_INT64_INT32_FRACTION:
         {
-            return TInt32Fraction( static_cast< Int32 >( m_variantData.union_data.fraction_data.union_data.int64_int32_data.numerator ), 
+            return TInt32Fraction( static_cast< Int32 >( m_variantData.union_data.fraction_data.union_data.int64_int32_data.numerator ),
                                    static_cast< Int32 >( m_variantData.union_data.fraction_data.union_data.int64_int32_data.denominator ) );
         }
         case GUCEF_DATATYPE_UINT64_UINT32_FRACTION:
         {
-            return TInt32Fraction( static_cast< Int32 >( m_variantData.union_data.fraction_data.union_data.uint64_uint32_data.numerator ), 
+            return TInt32Fraction( static_cast< Int32 >( m_variantData.union_data.fraction_data.union_data.uint64_uint32_data.numerator ),
                                    static_cast< Int32 >( m_variantData.union_data.fraction_data.union_data.uint64_uint32_data.denominator ) );
         }
         case GUCEF_DATATYPE_FLOAT32:
@@ -3663,12 +3663,12 @@ CVariant::AsUInt32Fraction( const TUInt32Fraction& defaultIfNeeded, bool resolve
     {
         case GUCEF_DATATYPE_INT32T2_FRACTION:
         {
-            return TUInt32Fraction( static_cast< UInt32 >( m_variantData.union_data.fraction_data.union_data.int32t2_data.numerator ), 
+            return TUInt32Fraction( static_cast< UInt32 >( m_variantData.union_data.fraction_data.union_data.int32t2_data.numerator ),
                                     static_cast< UInt32 >( m_variantData.union_data.fraction_data.union_data.int32t2_data.denominator ) );
         }
         case GUCEF_DATATYPE_UINT32T2_FRACTION:
         {
-            return TUInt32Fraction( static_cast< UInt32 >( m_variantData.union_data.fraction_data.union_data.uint32t2_data.numerator ), 
+            return TUInt32Fraction( static_cast< UInt32 >( m_variantData.union_data.fraction_data.union_data.uint32t2_data.numerator ),
                                     static_cast< UInt32 >( m_variantData.union_data.fraction_data.union_data.uint32t2_data.denominator ) );
         }
         case GUCEF_DATATYPE_INT64T2_FRACTION:
@@ -3676,7 +3676,7 @@ CVariant::AsUInt32Fraction( const TUInt32Fraction& defaultIfNeeded, bool resolve
             if ( m_variantData.union_data.heap_data.union_data.void_heap_data != GUCEF_NULL   &&
                  m_variantData.union_data.heap_data.heap_data_size >= sizeof( TInt64T2Fraction ) )
             {
-                return TUInt32Fraction( static_cast< UInt32 >( m_variantData.union_data.heap_data.union_data.fraction_int64t2_data->numerator ), 
+                return TUInt32Fraction( static_cast< UInt32 >( m_variantData.union_data.heap_data.union_data.fraction_int64t2_data->numerator ),
                                         static_cast< UInt32 >( m_variantData.union_data.heap_data.union_data.fraction_int64t2_data->denominator ) );
             }
             return defaultIfNeeded;
@@ -3686,19 +3686,19 @@ CVariant::AsUInt32Fraction( const TUInt32Fraction& defaultIfNeeded, bool resolve
             if ( m_variantData.union_data.heap_data.union_data.void_heap_data != GUCEF_NULL   &&
                  m_variantData.union_data.heap_data.heap_data_size >= sizeof( TUInt64T2Fraction ) )
             {
-                return TUInt32Fraction( static_cast< UInt32 >( m_variantData.union_data.heap_data.union_data.fraction_uint64t2_data->numerator ), 
+                return TUInt32Fraction( static_cast< UInt32 >( m_variantData.union_data.heap_data.union_data.fraction_uint64t2_data->numerator ),
                                         static_cast< UInt32 >( m_variantData.union_data.heap_data.union_data.fraction_uint64t2_data->denominator ) );
             }
             return defaultIfNeeded;
         }
         case GUCEF_DATATYPE_INT64_INT32_FRACTION:
         {
-            return TUInt32Fraction( static_cast< UInt32 >( m_variantData.union_data.fraction_data.union_data.int64_int32_data.numerator ), 
+            return TUInt32Fraction( static_cast< UInt32 >( m_variantData.union_data.fraction_data.union_data.int64_int32_data.numerator ),
                                     static_cast< UInt32 >( m_variantData.union_data.fraction_data.union_data.int64_int32_data.denominator ) );
         }
         case GUCEF_DATATYPE_UINT64_UINT32_FRACTION:
         {
-            return TUInt32Fraction( static_cast< UInt32 >( m_variantData.union_data.fraction_data.union_data.uint64_uint32_data.numerator ), 
+            return TUInt32Fraction( static_cast< UInt32 >( m_variantData.union_data.fraction_data.union_data.uint64_uint32_data.numerator ),
                                     static_cast< UInt32 >( m_variantData.union_data.fraction_data.union_data.uint64_uint32_data.denominator ) );
         }
         case GUCEF_DATATYPE_FLOAT32:
@@ -3720,7 +3720,7 @@ CVariant::AsUInt32Fraction( const TUInt32Fraction& defaultIfNeeded, bool resolve
 
 /*-------------------------------------------------------------------------*/
 
-TInt64Fraction         
+TInt64Fraction
 CVariant::AsInt64Fraction( const TInt64Fraction& defaultIfNeeded, bool resolveVarsIfApplicable ) const
 {GUCEF_TRACE;
 
@@ -3728,12 +3728,12 @@ CVariant::AsInt64Fraction( const TInt64Fraction& defaultIfNeeded, bool resolveVa
     {
         case GUCEF_DATATYPE_INT32T2_FRACTION:
         {
-            return TInt64Fraction( static_cast< Int32 >( m_variantData.union_data.fraction_data.union_data.int32t2_data.numerator ), 
+            return TInt64Fraction( static_cast< Int32 >( m_variantData.union_data.fraction_data.union_data.int32t2_data.numerator ),
                                    static_cast< Int32 >( m_variantData.union_data.fraction_data.union_data.int32t2_data.denominator ) );
         }
         case GUCEF_DATATYPE_UINT32T2_FRACTION:
         {
-            return TInt64Fraction( static_cast< Int32 >( m_variantData.union_data.fraction_data.union_data.uint32t2_data.numerator ), 
+            return TInt64Fraction( static_cast< Int32 >( m_variantData.union_data.fraction_data.union_data.uint32t2_data.numerator ),
                                    static_cast< Int32 >( m_variantData.union_data.fraction_data.union_data.uint32t2_data.denominator ) );
         }
         case GUCEF_DATATYPE_INT64T2_FRACTION:
@@ -3741,7 +3741,7 @@ CVariant::AsInt64Fraction( const TInt64Fraction& defaultIfNeeded, bool resolveVa
             if ( m_variantData.union_data.heap_data.union_data.void_heap_data != GUCEF_NULL   &&
                  m_variantData.union_data.heap_data.heap_data_size >= sizeof( TInt64T2Fraction ) )
             {
-                return TInt64Fraction( static_cast< Int32 >( m_variantData.union_data.heap_data.union_data.fraction_int64t2_data->numerator ), 
+                return TInt64Fraction( static_cast< Int32 >( m_variantData.union_data.heap_data.union_data.fraction_int64t2_data->numerator ),
                                        static_cast< Int32 >( m_variantData.union_data.heap_data.union_data.fraction_int64t2_data->denominator ) );
             }
             return defaultIfNeeded;
@@ -3751,19 +3751,19 @@ CVariant::AsInt64Fraction( const TInt64Fraction& defaultIfNeeded, bool resolveVa
             if ( m_variantData.union_data.heap_data.union_data.void_heap_data != GUCEF_NULL   &&
                  m_variantData.union_data.heap_data.heap_data_size >= sizeof( TUInt64T2Fraction ) )
             {
-                return TInt64Fraction( static_cast< Int32 >( m_variantData.union_data.heap_data.union_data.fraction_uint64t2_data->numerator ), 
+                return TInt64Fraction( static_cast< Int32 >( m_variantData.union_data.heap_data.union_data.fraction_uint64t2_data->numerator ),
                                        static_cast< Int32 >( m_variantData.union_data.heap_data.union_data.fraction_uint64t2_data->denominator ) );
             }
             return defaultIfNeeded;
         }
         case GUCEF_DATATYPE_INT64_INT32_FRACTION:
         {
-            return TInt64Fraction( static_cast< Int32 >( m_variantData.union_data.fraction_data.union_data.int64_int32_data.numerator ), 
+            return TInt64Fraction( static_cast< Int32 >( m_variantData.union_data.fraction_data.union_data.int64_int32_data.numerator ),
                                    static_cast< Int32 >( m_variantData.union_data.fraction_data.union_data.int64_int32_data.denominator ) );
         }
         case GUCEF_DATATYPE_UINT64_UINT32_FRACTION:
         {
-            return TInt64Fraction( static_cast< Int32 >( m_variantData.union_data.fraction_data.union_data.uint64_uint32_data.numerator ), 
+            return TInt64Fraction( static_cast< Int32 >( m_variantData.union_data.fraction_data.union_data.uint64_uint32_data.numerator ),
                                    static_cast< Int32 >( m_variantData.union_data.fraction_data.union_data.uint64_uint32_data.denominator ) );
         }
         case GUCEF_DATATYPE_FLOAT32:
@@ -3793,12 +3793,12 @@ CVariant::AsUInt64Fraction( const TUInt64Fraction& defaultIfNeeded, bool resolve
     {
         case GUCEF_DATATYPE_INT32T2_FRACTION:
         {
-            return TUInt64Fraction( static_cast< UInt32 >( m_variantData.union_data.fraction_data.union_data.int32t2_data.numerator ), 
+            return TUInt64Fraction( static_cast< UInt32 >( m_variantData.union_data.fraction_data.union_data.int32t2_data.numerator ),
                                    static_cast< UInt32 >( m_variantData.union_data.fraction_data.union_data.int32t2_data.denominator ) );
         }
         case GUCEF_DATATYPE_UINT32T2_FRACTION:
         {
-            return TUInt64Fraction( static_cast< UInt32 >( m_variantData.union_data.fraction_data.union_data.uint32t2_data.numerator ), 
+            return TUInt64Fraction( static_cast< UInt32 >( m_variantData.union_data.fraction_data.union_data.uint32t2_data.numerator ),
                                    static_cast< UInt32 >( m_variantData.union_data.fraction_data.union_data.uint32t2_data.denominator ) );
         }
         case GUCEF_DATATYPE_INT64T2_FRACTION:
@@ -3806,7 +3806,7 @@ CVariant::AsUInt64Fraction( const TUInt64Fraction& defaultIfNeeded, bool resolve
             if ( m_variantData.union_data.heap_data.union_data.void_heap_data != GUCEF_NULL   &&
                  m_variantData.union_data.heap_data.heap_data_size >= sizeof( TInt64T2Fraction ) )
             {
-                return TUInt64Fraction( static_cast< UInt32 >( m_variantData.union_data.heap_data.union_data.fraction_int64t2_data->numerator ), 
+                return TUInt64Fraction( static_cast< UInt32 >( m_variantData.union_data.heap_data.union_data.fraction_int64t2_data->numerator ),
                                        static_cast< UInt32 >( m_variantData.union_data.heap_data.union_data.fraction_int64t2_data->denominator ) );
             }
             return defaultIfNeeded;
@@ -3816,19 +3816,19 @@ CVariant::AsUInt64Fraction( const TUInt64Fraction& defaultIfNeeded, bool resolve
             if ( m_variantData.union_data.heap_data.union_data.void_heap_data != GUCEF_NULL   &&
                  m_variantData.union_data.heap_data.heap_data_size >= sizeof( TUInt64T2Fraction ) )
             {
-                return TUInt64Fraction( static_cast< UInt32 >( m_variantData.union_data.heap_data.union_data.fraction_uint64t2_data->numerator ), 
+                return TUInt64Fraction( static_cast< UInt32 >( m_variantData.union_data.heap_data.union_data.fraction_uint64t2_data->numerator ),
                                        static_cast< UInt32 >( m_variantData.union_data.heap_data.union_data.fraction_uint64t2_data->denominator ) );
             }
             return defaultIfNeeded;
         }
         case GUCEF_DATATYPE_INT64_INT32_FRACTION:
         {
-            return TUInt64Fraction( static_cast< UInt32 >( m_variantData.union_data.fraction_data.union_data.int64_int32_data.numerator ), 
+            return TUInt64Fraction( static_cast< UInt32 >( m_variantData.union_data.fraction_data.union_data.int64_int32_data.numerator ),
                                    static_cast< UInt32 >( m_variantData.union_data.fraction_data.union_data.int64_int32_data.denominator ) );
         }
         case GUCEF_DATATYPE_UINT64_UINT32_FRACTION:
         {
-            return TUInt64Fraction( static_cast< UInt32 >( m_variantData.union_data.fraction_data.union_data.uint64_uint32_data.numerator ), 
+            return TUInt64Fraction( static_cast< UInt32 >( m_variantData.union_data.fraction_data.union_data.uint64_uint32_data.numerator ),
                                    static_cast< UInt32 >( m_variantData.union_data.fraction_data.union_data.uint64_uint32_data.denominator ) );
         }
         case GUCEF_DATATYPE_FLOAT32:
@@ -3850,7 +3850,7 @@ CVariant::AsUInt64Fraction( const TUInt64Fraction& defaultIfNeeded, bool resolve
 
 /*-------------------------------------------------------------------------*/
 
-TInt64Int32Fraction         
+TInt64Int32Fraction
 CVariant::AsInt64Int32Fraction( const TInt64Int32Fraction& defaultIfNeeded, bool resolveVarsIfApplicable ) const
 {GUCEF_TRACE;
 
@@ -3858,12 +3858,12 @@ CVariant::AsInt64Int32Fraction( const TInt64Int32Fraction& defaultIfNeeded, bool
     {
         case GUCEF_DATATYPE_INT32T2_FRACTION:
         {
-            return TInt64Int32Fraction( static_cast< Int64 >( m_variantData.union_data.fraction_data.union_data.int32t2_data.numerator ), 
+            return TInt64Int32Fraction( static_cast< Int64 >( m_variantData.union_data.fraction_data.union_data.int32t2_data.numerator ),
                                         static_cast< Int32 >( m_variantData.union_data.fraction_data.union_data.int32t2_data.denominator ) );
         }
         case GUCEF_DATATYPE_UINT32T2_FRACTION:
         {
-            return TInt64Int32Fraction( static_cast< Int64 >( m_variantData.union_data.fraction_data.union_data.uint32t2_data.numerator ), 
+            return TInt64Int32Fraction( static_cast< Int64 >( m_variantData.union_data.fraction_data.union_data.uint32t2_data.numerator ),
                                         static_cast< Int32 >( m_variantData.union_data.fraction_data.union_data.uint32t2_data.denominator ) );
         }
         case GUCEF_DATATYPE_INT64T2_FRACTION:
@@ -3871,7 +3871,7 @@ CVariant::AsInt64Int32Fraction( const TInt64Int32Fraction& defaultIfNeeded, bool
             if ( m_variantData.union_data.heap_data.union_data.void_heap_data != GUCEF_NULL   &&
                  m_variantData.union_data.heap_data.heap_data_size >= sizeof( TInt64T2Fraction ) )
             {
-                return TInt64Int32Fraction( static_cast< Int64 >( m_variantData.union_data.heap_data.union_data.fraction_int64t2_data->numerator ), 
+                return TInt64Int32Fraction( static_cast< Int64 >( m_variantData.union_data.heap_data.union_data.fraction_int64t2_data->numerator ),
                                             static_cast< Int32 >( m_variantData.union_data.heap_data.union_data.fraction_int64t2_data->denominator ) );
             }
             return defaultIfNeeded;
@@ -3881,19 +3881,19 @@ CVariant::AsInt64Int32Fraction( const TInt64Int32Fraction& defaultIfNeeded, bool
             if ( m_variantData.union_data.heap_data.union_data.void_heap_data != GUCEF_NULL   &&
                  m_variantData.union_data.heap_data.heap_data_size >= sizeof( TUInt64T2Fraction ) )
             {
-                return TInt64Int32Fraction( static_cast< Int64 >( m_variantData.union_data.heap_data.union_data.fraction_uint64t2_data->numerator ), 
+                return TInt64Int32Fraction( static_cast< Int64 >( m_variantData.union_data.heap_data.union_data.fraction_uint64t2_data->numerator ),
                                             static_cast< Int32 >( m_variantData.union_data.heap_data.union_data.fraction_uint64t2_data->denominator ) );
             }
             return defaultIfNeeded;
         }
         case GUCEF_DATATYPE_INT64_INT32_FRACTION:
         {
-            return TInt64Int32Fraction( static_cast< Int64 >( m_variantData.union_data.fraction_data.union_data.int64_int32_data.numerator ), 
+            return TInt64Int32Fraction( static_cast< Int64 >( m_variantData.union_data.fraction_data.union_data.int64_int32_data.numerator ),
                                         static_cast< Int32 >( m_variantData.union_data.fraction_data.union_data.int64_int32_data.denominator ) );
         }
         case GUCEF_DATATYPE_UINT64_UINT32_FRACTION:
         {
-            return TInt64Int32Fraction( static_cast< Int64 >( m_variantData.union_data.fraction_data.union_data.uint64_uint32_data.numerator ), 
+            return TInt64Int32Fraction( static_cast< Int64 >( m_variantData.union_data.fraction_data.union_data.uint64_uint32_data.numerator ),
                                         static_cast< Int32 >( m_variantData.union_data.fraction_data.union_data.uint64_uint32_data.denominator ) );
         }
         case GUCEF_DATATYPE_FLOAT32:
@@ -3915,7 +3915,7 @@ CVariant::AsInt64Int32Fraction( const TInt64Int32Fraction& defaultIfNeeded, bool
 
 /*-------------------------------------------------------------------------*/
 
-TUInt64UInt32Fraction         
+TUInt64UInt32Fraction
 CVariant::AsUInt64UInt32Fraction( const TUInt64UInt32Fraction& defaultIfNeeded, bool resolveVarsIfApplicable ) const
 {GUCEF_TRACE;
 
@@ -3923,12 +3923,12 @@ CVariant::AsUInt64UInt32Fraction( const TUInt64UInt32Fraction& defaultIfNeeded, 
     {
         case GUCEF_DATATYPE_INT32T2_FRACTION:
         {
-            return TUInt64UInt32Fraction( static_cast< UInt64 >( m_variantData.union_data.fraction_data.union_data.int32t2_data.numerator ), 
+            return TUInt64UInt32Fraction( static_cast< UInt64 >( m_variantData.union_data.fraction_data.union_data.int32t2_data.numerator ),
                                           static_cast< UInt32 >( m_variantData.union_data.fraction_data.union_data.int32t2_data.denominator ) );
         }
         case GUCEF_DATATYPE_UINT32T2_FRACTION:
         {
-            return TUInt64UInt32Fraction( static_cast< UInt64 >( m_variantData.union_data.fraction_data.union_data.uint32t2_data.numerator ), 
+            return TUInt64UInt32Fraction( static_cast< UInt64 >( m_variantData.union_data.fraction_data.union_data.uint32t2_data.numerator ),
                                           static_cast< UInt32 >( m_variantData.union_data.fraction_data.union_data.uint32t2_data.denominator ) );
         }
         case GUCEF_DATATYPE_INT64T2_FRACTION:
@@ -3936,7 +3936,7 @@ CVariant::AsUInt64UInt32Fraction( const TUInt64UInt32Fraction& defaultIfNeeded, 
             if ( m_variantData.union_data.heap_data.union_data.void_heap_data != GUCEF_NULL   &&
                  m_variantData.union_data.heap_data.heap_data_size >= sizeof( TInt64T2Fraction ) )
             {
-                return TUInt64UInt32Fraction( static_cast< UInt64 >( m_variantData.union_data.heap_data.union_data.fraction_int64t2_data->numerator ), 
+                return TUInt64UInt32Fraction( static_cast< UInt64 >( m_variantData.union_data.heap_data.union_data.fraction_int64t2_data->numerator ),
                                               static_cast< UInt32 >( m_variantData.union_data.heap_data.union_data.fraction_int64t2_data->denominator ) );
             }
             return defaultIfNeeded;
@@ -3946,19 +3946,19 @@ CVariant::AsUInt64UInt32Fraction( const TUInt64UInt32Fraction& defaultIfNeeded, 
             if ( m_variantData.union_data.heap_data.union_data.void_heap_data != GUCEF_NULL   &&
                  m_variantData.union_data.heap_data.heap_data_size >= sizeof( TUInt64T2Fraction ) )
             {
-                return TUInt64UInt32Fraction( static_cast< UInt64 >( m_variantData.union_data.heap_data.union_data.fraction_uint64t2_data->numerator ), 
+                return TUInt64UInt32Fraction( static_cast< UInt64 >( m_variantData.union_data.heap_data.union_data.fraction_uint64t2_data->numerator ),
                                               static_cast< UInt32 >( m_variantData.union_data.heap_data.union_data.fraction_uint64t2_data->denominator ) );
             }
             return defaultIfNeeded;
         }
         case GUCEF_DATATYPE_INT64_INT32_FRACTION:
         {
-            return TUInt64UInt32Fraction( static_cast< UInt64 >( m_variantData.union_data.fraction_data.union_data.int64_int32_data.numerator ), 
+            return TUInt64UInt32Fraction( static_cast< UInt64 >( m_variantData.union_data.fraction_data.union_data.int64_int32_data.numerator ),
                                           static_cast< UInt32 >( m_variantData.union_data.fraction_data.union_data.int64_int32_data.denominator ) );
         }
         case GUCEF_DATATYPE_UINT64_UINT32_FRACTION:
         {
-            return TUInt64UInt32Fraction( static_cast< UInt64 >( m_variantData.union_data.fraction_data.union_data.uint64_uint32_data.numerator ), 
+            return TUInt64UInt32Fraction( static_cast< UInt64 >( m_variantData.union_data.fraction_data.union_data.uint64_uint32_data.numerator ),
                                           static_cast< UInt32 >( m_variantData.union_data.fraction_data.union_data.uint64_uint32_data.denominator ) );
         }
         case GUCEF_DATATYPE_FLOAT32:
@@ -3996,7 +3996,7 @@ CVariant::operator CUtf8String() const
 
 /*-------------------------------------------------------------------------*/
 
-CString::StringVector 
+CString::StringVector
 ToStringVector( const CVariant::VariantVector& var )
 {GUCEF_TRACE;
 
@@ -4013,7 +4013,7 @@ ToStringVector( const CVariant::VariantVector& var )
 
 /*-------------------------------------------------------------------------*/
 
-CString::StringVector 
+CString::StringVector
 ToStringVector( const CVariant::VariantSet& var )
 {GUCEF_TRACE;
 
@@ -4030,7 +4030,7 @@ ToStringVector( const CVariant::VariantSet& var )
 
 /*-------------------------------------------------------------------------*/
 
-CString::StringSet 
+CString::StringSet
 ToStringSet( const CVariant::VariantVector& var )
 {GUCEF_TRACE;
 
@@ -4046,7 +4046,7 @@ ToStringSet( const CVariant::VariantVector& var )
 
 /*-------------------------------------------------------------------------*/
 
-CString::StringSet 
+CString::StringSet
 ToStringSet( const CVariant::VariantSet& var )
 {GUCEF_TRACE;
 
