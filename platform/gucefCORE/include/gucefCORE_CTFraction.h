@@ -502,15 +502,15 @@ CTFraction< NumeratorType, DenominatorType >::Normalize( void )
     #if __cplusplus >= 201703L // numeric header was added in C++17
     NumeratorType gcdValue = static_cast< NumeratorType >( std::gcd( m_numerator, m_denominator ) );
     #else
-      #if ( GUCEF_COMPILER == GUCEF_COMPILER_GNUC )
-        #if ( __GNUC__ >= 5 ) // use GCC compiler build-in
-        NumeratorType gcdValue = static_cast< NumeratorType >( std::__gcd( m_numerator, m_denominator ) );
-        #else // use our own template's version
-        NumeratorType gcdValue = gcd< NumeratorType >( m_numerator, static_cast< NumeratorType >( m_denominator ) );
-        #endif
-      #else // use our own template's version
+      //#if ( GUCEF_COMPILER == GUCEF_COMPILER_GNUC )
+      //  #if ( __GNUC__ >= 5 ) // use GCC compiler build-in
+      //  NumeratorType gcdValue = static_cast< NumeratorType >( std::__gcd( m_numerator, m_denominator ) );
+      //  #else // use our own template's version
+      //  NumeratorType gcdValue = gcd< NumeratorType >( m_numerator, static_cast< NumeratorType >( m_denominator ) );
+      //  #endif
+      //#else // use our own template's version
       NumeratorType gcdValue = gcd< NumeratorType >( m_numerator, static_cast< NumeratorType >( m_denominator ) );
-      #endif
+      //#endif
     #endif
 
     m_numerator /= gcdValue;
