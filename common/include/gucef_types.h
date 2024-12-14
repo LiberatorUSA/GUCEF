@@ -244,7 +244,8 @@ typedef double          Float64;  /* 8 bytes, signed, decimal */
  *  The following are higher level data types non-build-in or non-primative
  *  Enumerated here for dynamic type referencing at runtime
  */
-#define GUCEF_DATATYPE_NUMERIC                  20      /**< number of undefined range. Suggested to always interpret using the largest range signed storage available */
+#define GUCEF_DATATYPE_BOOLEAN                  19      /**< boolean value. built-in version. Not to be used directly in serialization due to undefined size */
+#define GUCEF_DATATYPE_NUMERIC                  20      /**< number of undefined range. Suggested to always interpret using the largest range signed storage available. Not to be used directly in serialization due to undefined size */
 #define GUCEF_DATATYPE_ASCII_STRING             21      /**< string utilizing the ASCII character set exclusively */
 #define GUCEF_DATATYPE_UTF8_STRING              22      /**< string utilizing the UTF8 character set exclusively */
 #define GUCEF_DATATYPE_UTF16_LE_STRING          23      /**< string utilizing the UTF16 character set exclusively. Little Endian variant of UTF16 */
@@ -262,6 +263,9 @@ typedef double          Float64;  /* 8 bytes, signed, decimal */
 
 #define GUCEF_DATATYPE_BINARY_BLOB              40      /**< binary large object of dynamically determined size */
 #define GUCEF_DATATYPE_BINARY_BSOB              41      /**< binary small object of size not exceeding multi-purpose fixed storage */
+#define GUCEF_DATATYPE_VARIANT_DATA             42      /**< data type representing our variant data concept */
+#define GUCEF_DATATYPE_VARIANT_ARRAY            43      /**< data type representing our variant data concept contained within an array */
+#define GUCEF_DATATYPE_VARIANT_SET              44      /**< data type representing our variant data concept contained within a set */
 
 #define GUCEF_DATATYPE_DATETIME_ISO8601_ASCII_STRING    50  /**< ASCII character set string value actually representing a date time value per the ISO 8601 convention */
 #define GUCEF_DATATYPE_DATETIME_ISO8601_UTF8_STRING     51  /**< UTF8 character set string value actually representing a date time value per the ISO 8601 convention */
@@ -296,6 +300,7 @@ typedef double          Float64;  /* 8 bytes, signed, decimal */
 
 #define GUCEF_DATATYPE_LAST_TYPE_ID         GUCEF_DATATYPE_SET
 
+#define GUCEF_DATATYPE_NAME_BOOLEAN                  "BOOLEAN"
 #define GUCEF_DATATYPE_NAME_NUMERIC                  "NUMERIC"
 #define GUCEF_DATATYPE_NAME_ASCII_STRING             "ASCII_STRING"
 #define GUCEF_DATATYPE_NAME_UTF8_STRING              "UTF8_STRING"
@@ -314,6 +319,9 @@ typedef double          Float64;  /* 8 bytes, signed, decimal */
 
 #define GUCEF_DATATYPE_NAME_BINARY_BLOB              "BLOB"
 #define GUCEF_DATATYPE_NAME_BINARY_BSOB              "BSOB"
+#define GUCEF_DATATYPE_NAME_VARIANT_DATA             "VARIANT_DATA"
+#define GUCEF_DATATYPE_NAME_VARIANT_ARRAY            "VARIANT_ARRAY"
+#define GUCEF_DATATYPE_NAME_VARIANT_SET              "VARIANT_SET"
 
 #define GUCEF_DATATYPE_NAME_DATETIME_ISO8601_ASCII_STRING   "DATETIME_ISO8601_ASCII_STRING"
 #define GUCEF_DATATYPE_NAME_DATETIME_ISO8601_UTF8_STRING    "DATETIME_ISO8601_UTF8_STRING"
@@ -495,6 +503,33 @@ typedef enum EBoundaryType TBoundaryType;
 #define GUCEF_FLOAT64_COMPARISON_EPSILON   ( (Float64) 0.00001 )
 
 #define GUCEF_FLOAT64_PI    3.1415926535897931
+
+/*--------------------------------------------------------------------------*/
+
+#ifdef __cplusplus
+
+template < typename T >
+inline
+UInt8 
+TryToGetGucefTypeIdForTType( const T* dummyValue = NULL ) 
+{
+    return GUCEF_DATATYPE_UNKNOWN;
+}
+
+template <> inline UInt8 TryToGetGucefTypeIdForTType( const bool* dummyValue ) { return GUCEF_DATATYPE_BOOLEAN; }
+template <> inline UInt8 TryToGetGucefTypeIdForTType( const Int8* dummyValue ) { return GUCEF_DATATYPE_INT8; }
+template <> inline UInt8 TryToGetGucefTypeIdForTType( const UInt8* dummyValue ) { return GUCEF_DATATYPE_UINT8; }
+template <> inline UInt8 TryToGetGucefTypeIdForTType( const Int16* dummyValue ) { return GUCEF_DATATYPE_INT16; }
+template <> inline UInt8 TryToGetGucefTypeIdForTType( const UInt16* dummyValue ) { return GUCEF_DATATYPE_UINT16; }
+template <> inline UInt8 TryToGetGucefTypeIdForTType( const Int32* dummyValue ) { return GUCEF_DATATYPE_INT32; }
+template <> inline UInt8 TryToGetGucefTypeIdForTType( const UInt32* dummyValue ) { return GUCEF_DATATYPE_UINT32; }
+template <> inline UInt8 TryToGetGucefTypeIdForTType( const Int64* dummyValue ) { return GUCEF_DATATYPE_INT64; }
+template <> inline UInt8 TryToGetGucefTypeIdForTType( const UInt64* dummyValue ) { return GUCEF_DATATYPE_UINT64; }
+template <> inline UInt8 TryToGetGucefTypeIdForTType( const Float32* dummyValue ) { return GUCEF_DATATYPE_FLOAT32; }
+template <> inline UInt8 TryToGetGucefTypeIdForTType( const Float64* dummyValue ) { return GUCEF_DATATYPE_FLOAT64; }
+template <> inline UInt8 TryToGetGucefTypeIdForTType( const void* dummyValue ) { return GUCEF_DATATYPE_CONST_DATA_MEMORY_ADDRESS; }
+
+#endif /* __cplusplus ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //

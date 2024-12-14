@@ -305,7 +305,7 @@ CTokenizer::ParseTokens( const CString& inputString                    ,
         tokenSequence->tokens = strElements;
         for ( size_t i=0; i<strElements.size(); ++i )
         {
-            CTokenSequence::TTokenSequencePair tokenOrderPair = { CTokenSequence::TOKENTYPE_TOKEN, i };
+            CTokenSequence::TTokenSequencePair tokenOrderPair = { CTokenSequence::TOKENSEQELEMENTTYPE_TOKEN, i };
             tokenSequence->ordering.push_back( tokenOrderPair );
         }
         return true;
@@ -336,13 +336,13 @@ CTokenizer::ParseTokens( const CString& inputString                    ,
                     // We have a dynamically discovered token in front of this token
                     // We need to add this to the sequence first
                     tokenSequence->tokens.push_back( remainder );
-                    CTokenSequence::TTokenSequencePair tokenOrderPair = { CTokenSequence::TOKENTYPE_TOKEN, tokenSequence->tokens.size()-1 };
+                    CTokenSequence::TTokenSequencePair tokenOrderPair = { CTokenSequence::TOKENSEQELEMENTTYPE_TOKEN, tokenSequence->tokens.size()-1 };
                     tokenSequence->ordering.push_back( tokenOrderPair );
                     remainder.Clear();
                 }
 
                 tokenSequence->tokens.push_back( matchedToken );
-                CTokenSequence::TTokenSequencePair tokenOrderPair = { CTokenSequence::TOKENTYPE_TOKEN, tokenSequence->tokens.size()-1 };
+                CTokenSequence::TTokenSequencePair tokenOrderPair = { CTokenSequence::TOKENSEQELEMENTTYPE_TOKEN, tokenSequence->tokens.size()-1 };
                 tokenSequence->ordering.push_back( tokenOrderPair );
             }
             else
@@ -357,13 +357,13 @@ CTokenizer::ParseTokens( const CString& inputString                    ,
                     // We have a dynamically discovered token in front of this token
                     // We need to add this to the sequence first
                     tokenSequence->tokens.push_back( remainder );
-                    CTokenSequence::TTokenSequencePair tokenOrderPair = { CTokenSequence::TOKENTYPE_TOKEN, tokenSequence->tokens.size()-1 };
+                    CTokenSequence::TTokenSequencePair tokenOrderPair = { CTokenSequence::TOKENSEQELEMENTTYPE_TOKEN, tokenSequence->tokens.size()-1 };
                     tokenSequence->ordering.push_back( tokenOrderPair );
                     remainder.Clear();
                 }
 
                 tokenSequence->tokens.push_back( matchedToken );
-                CTokenSequence::TTokenSequencePair tokenOrderPair = { CTokenSequence::TOKENTYPE_TOKEN, tokenSequence->tokens.size()-1 };
+                CTokenSequence::TTokenSequencePair tokenOrderPair = { CTokenSequence::TOKENSEQELEMENTTYPE_TOKEN, tokenSequence->tokens.size()-1 };
                 tokenSequence->ordering.push_back( tokenOrderPair );
             }
             else
@@ -379,7 +379,7 @@ CTokenizer::ParseTokens( const CString& inputString                    ,
             // We have a dynamically discovered token in front of this token
             // We need to add this to the sequence first
             tokenSequence->tokens.push_back( remainder );
-            CTokenSequence::TTokenSequencePair tokenOrderPair = { CTokenSequence::TOKENTYPE_TOKEN, tokenSequence->tokens.size()-1 };
+            CTokenSequence::TTokenSequencePair tokenOrderPair = { CTokenSequence::TOKENSEQELEMENTTYPE_TOKEN, tokenSequence->tokens.size()-1 };
             tokenSequence->ordering.push_back( tokenOrderPair );
             remainder.Clear();
         }
@@ -509,7 +509,7 @@ CTokenizer::ProcessGroupContent( const CString& inputString                    ,
             }
 
             currentSequence->sequences.push_back( nestedGroupSequence );
-            CTokenSequence::TTokenSequencePair tokenOrderPair = { CTokenSequence::TOKENTYPE_SEQUENCE, currentSequence->sequences.size()-1 };
+            CTokenSequence::TTokenSequencePair tokenOrderPair = { CTokenSequence::TOKENSEQELEMENTTYPE_SEQUENCE, currentSequence->sequences.size()-1 };
             currentSequence->ordering.push_back( tokenOrderPair );
 
             lastGroupEnd = nestedGroup.second + groupCloseToken.Length();
@@ -617,7 +617,7 @@ CTokenizer::ParseTokensAndGroups( const CString& inputString                    
             else
             {
                 tokenSequence->sequences.push_back( node );
-                CTokenSequence::TTokenSequencePair tokenOrderPair = { CTokenSequence::TOKENTYPE_SEQUENCE, tokenSequence->sequences.size()-1 };
+                CTokenSequence::TTokenSequencePair tokenOrderPair = { CTokenSequence::TOKENSEQELEMENTTYPE_SEQUENCE, tokenSequence->sequences.size()-1 };
                 tokenSequence->ordering.push_back( tokenOrderPair );
             }
             return true;
@@ -706,7 +706,7 @@ CTokenizer::ParseTokensAndGroups( const CString& inputString                    
     else
     {
         tokenSequence->sequences.push_back( currentSequence );
-        CTokenSequence::TTokenSequencePair tokenOrderPair = { CTokenSequence::TOKENTYPE_SEQUENCE, tokenSequence->sequences.size()-1 };
+        CTokenSequence::TTokenSequencePair tokenOrderPair = { CTokenSequence::TOKENSEQELEMENTTYPE_SEQUENCE, tokenSequence->sequences.size()-1 };
         tokenSequence->ordering.push_back( tokenOrderPair );
     }
     

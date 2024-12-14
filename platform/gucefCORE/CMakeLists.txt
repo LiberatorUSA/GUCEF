@@ -127,8 +127,6 @@ set( HEADER_FILES
   include/ExceptionClassMacros.h
   include/ExceptionThrowMacros.h
   include/MFILE.h
-  include/MemoryPool.h
-  include/MemorySegment.h
   include/NumericIDs.h
   include/PAFILE.h
   include/cloneables.h
@@ -162,6 +160,8 @@ set( HEADER_FILES
   include/gucefCORE_CFileSystemDirectoryWatcher.h
   include/gucefCORE_CFileSystemUriResourceAccessor.h
   include/gucefCORE_CForwardingNotifier.h
+  include/gucefCORE_CFunctionMeta.h
+  include/gucefCORE_CFunctionParamMeta.h
   include/gucefCORE_CFunctionRegistry.h
   include/gucefCORE_CGenericValueToDataNodeSerializer.h
   include/gucefCORE_CGeoLocation.h
@@ -252,6 +252,7 @@ set( HEADER_FILES
   include/gucefCORE_CVersionRange.h
   include/gucefCORE_CoreCodecTypes.h
   include/gucefCORE_ETypes.h
+  include/gucefCORE_ExecutionOperation.h
   include/gucefCORE_GenericPluginAPI.h
   include/gucefCORE_LogLevels.h
   include/gucefCORE_LogTypes.h
@@ -261,6 +262,8 @@ set( HEADER_FILES
   include/gucefCORE_SFINAE_utils.h
   include/gucefCORE_TaskStatus.h
   include/gucefCORE_ThreadStatus.h
+  include/gucefCORE_TokenTypes.h
+  include/gucefCORE_TypeInfoTemplateExt.h
   include/gucefCORE_config.h
   include/gucefCORE_datanode_serializables.h
   include/gucefCORE_macros.h
@@ -274,6 +277,8 @@ set( HEADER_FILES
   include/c_api/gucefCORE_CTVariantVectorApi.h
   include/c_api/gucefCORE_c_document_parser_callbacks.h
   include/c_api/gucefCORE_c_fractiondata.h
+  include/c_api/gucefCORE_c_function_definition.h
+  include/c_api/gucefCORE_c_function_param_types.h
   include/c_api/gucefCORE_c_ioaccess.h
   include/c_api/gucefCORE_c_pointerdata.h
   include/c_api/gucefCORE_c_valuemap_parser_callbacks.h
@@ -384,8 +389,6 @@ set( SOURCE_FILES
   src/DVOSWRAP.cpp
   src/IOACCESS.c
   src/MFILE.c
-  src/MemoryPool.cpp
-  src/MemorySegment.cpp
   src/PAFILE.c
   src/cloneables.cpp
   src/dvcppfileutils.cpp
@@ -416,6 +419,8 @@ set( SOURCE_FILES
   src/gucefCORE_CFileSystemDirectoryWatcher.cpp
   src/gucefCORE_CFileSystemUriResourceAccessor.cpp
   src/gucefCORE_CForwardingNotifier.cpp
+  src/gucefCORE_CFunctionMeta.cpp
+  src/gucefCORE_CFunctionParamMeta.cpp
   src/gucefCORE_CFunctionRegistry.cpp
   src/gucefCORE_CGenericValueToDataNodeSerializer.cpp
   src/gucefCORE_CGeoLocation.cpp

@@ -128,19 +128,19 @@ TestCase_NoGroupsBasicParsingWithWhitespace( void )
         ASSERT_TRUE( rootSequence->tokens == testString1Seq0Tokens );
         ASSERT_TRUE( !rootSequence->ordering.empty() );
         ASSERT_TRUE( rootSequence->ordering.size() == 7 );
-        ASSERT_TRUE( rootSequence->ordering[ 0 ].first == CORE::CTokenizer::CTokenSequence::TOKENTYPE_TOKEN );
+        ASSERT_TRUE( rootSequence->ordering[ 0 ].first == CORE::CTokenizer::CTokenSequence::TOKENSEQELEMENTTYPE_TOKEN );
         ASSERT_TRUE( rootSequence->ordering[ 0 ].second == 0 );
-        ASSERT_TRUE( rootSequence->ordering[ 1 ].first == CORE::CTokenizer::CTokenSequence::TOKENTYPE_TOKEN );
+        ASSERT_TRUE( rootSequence->ordering[ 1 ].first == CORE::CTokenizer::CTokenSequence::TOKENSEQELEMENTTYPE_TOKEN );
         ASSERT_TRUE( rootSequence->ordering[ 1 ].second == 1 );
-        ASSERT_TRUE( rootSequence->ordering[ 2 ].first == CORE::CTokenizer::CTokenSequence::TOKENTYPE_TOKEN );
+        ASSERT_TRUE( rootSequence->ordering[ 2 ].first == CORE::CTokenizer::CTokenSequence::TOKENSEQELEMENTTYPE_TOKEN );
         ASSERT_TRUE( rootSequence->ordering[ 2 ].second == 2 );
-        ASSERT_TRUE( rootSequence->ordering[ 3 ].first == CORE::CTokenizer::CTokenSequence::TOKENTYPE_TOKEN );
+        ASSERT_TRUE( rootSequence->ordering[ 3 ].first == CORE::CTokenizer::CTokenSequence::TOKENSEQELEMENTTYPE_TOKEN );
         ASSERT_TRUE( rootSequence->ordering[ 3 ].second == 3 );
-        ASSERT_TRUE( rootSequence->ordering[ 4 ].first == CORE::CTokenizer::CTokenSequence::TOKENTYPE_TOKEN );
+        ASSERT_TRUE( rootSequence->ordering[ 4 ].first == CORE::CTokenizer::CTokenSequence::TOKENSEQELEMENTTYPE_TOKEN );
         ASSERT_TRUE( rootSequence->ordering[ 4 ].second == 4 );
-        ASSERT_TRUE( rootSequence->ordering[ 5 ].first == CORE::CTokenizer::CTokenSequence::TOKENTYPE_TOKEN );
+        ASSERT_TRUE( rootSequence->ordering[ 5 ].first == CORE::CTokenizer::CTokenSequence::TOKENSEQELEMENTTYPE_TOKEN );
         ASSERT_TRUE( rootSequence->ordering[ 5 ].second == 5 );
-        ASSERT_TRUE( rootSequence->ordering[ 6 ].first == CORE::CTokenizer::CTokenSequence::TOKENTYPE_TOKEN );
+        ASSERT_TRUE( rootSequence->ordering[ 6 ].first == CORE::CTokenizer::CTokenSequence::TOKENSEQELEMENTTYPE_TOKEN );
         ASSERT_TRUE( rootSequence->ordering[ 6 ].second == 6 );
     }
     catch( ... )
@@ -176,19 +176,19 @@ TestCase_NoGroupsBasicParsingNoWhitespaceWithDefinedVars( void )
         ASSERT_TRUE( rootSequence->tokens == testString2Seq0Tokens );
         ASSERT_TRUE( !rootSequence->ordering.empty() );
         ASSERT_TRUE( rootSequence->ordering.size() == 7 );
-        ASSERT_TRUE( rootSequence->ordering[ 0 ].first == CORE::CTokenizer::CTokenSequence::TOKENTYPE_TOKEN );
+        ASSERT_TRUE( rootSequence->ordering[ 0 ].first == CORE::CTokenizer::CTokenSequence::TOKENSEQELEMENTTYPE_TOKEN );
         ASSERT_TRUE( rootSequence->ordering[ 0 ].second == 0 );
-        ASSERT_TRUE( rootSequence->ordering[ 1 ].first == CORE::CTokenizer::CTokenSequence::TOKENTYPE_TOKEN );
+        ASSERT_TRUE( rootSequence->ordering[ 1 ].first == CORE::CTokenizer::CTokenSequence::TOKENSEQELEMENTTYPE_TOKEN );
         ASSERT_TRUE( rootSequence->ordering[ 1 ].second == 1 );
-        ASSERT_TRUE( rootSequence->ordering[ 2 ].first == CORE::CTokenizer::CTokenSequence::TOKENTYPE_TOKEN );
+        ASSERT_TRUE( rootSequence->ordering[ 2 ].first == CORE::CTokenizer::CTokenSequence::TOKENSEQELEMENTTYPE_TOKEN );
         ASSERT_TRUE( rootSequence->ordering[ 2 ].second == 2 );
-        ASSERT_TRUE( rootSequence->ordering[ 3 ].first == CORE::CTokenizer::CTokenSequence::TOKENTYPE_TOKEN );
+        ASSERT_TRUE( rootSequence->ordering[ 3 ].first == CORE::CTokenizer::CTokenSequence::TOKENSEQELEMENTTYPE_TOKEN );
         ASSERT_TRUE( rootSequence->ordering[ 3 ].second == 3 );
-        ASSERT_TRUE( rootSequence->ordering[ 4 ].first == CORE::CTokenizer::CTokenSequence::TOKENTYPE_TOKEN );
+        ASSERT_TRUE( rootSequence->ordering[ 4 ].first == CORE::CTokenizer::CTokenSequence::TOKENSEQELEMENTTYPE_TOKEN );
         ASSERT_TRUE( rootSequence->ordering[ 4 ].second == 4 );
-        ASSERT_TRUE( rootSequence->ordering[ 5 ].first == CORE::CTokenizer::CTokenSequence::TOKENTYPE_TOKEN );
+        ASSERT_TRUE( rootSequence->ordering[ 5 ].first == CORE::CTokenizer::CTokenSequence::TOKENSEQELEMENTTYPE_TOKEN );
         ASSERT_TRUE( rootSequence->ordering[ 5 ].second == 5 );
-        ASSERT_TRUE( rootSequence->ordering[ 6 ].first == CORE::CTokenizer::CTokenSequence::TOKENTYPE_TOKEN );
+        ASSERT_TRUE( rootSequence->ordering[ 6 ].first == CORE::CTokenizer::CTokenSequence::TOKENSEQELEMENTTYPE_TOKEN );
         ASSERT_TRUE( rootSequence->ordering[ 6 ].second == 6 );
     }
     catch( ... )
@@ -224,17 +224,17 @@ TestCase_NoGroupsBasicParsingNoWhitespaceWithDefinedVars2( void )
         ASSERT_TRUE( rootSequence->tokens == testString3Seq0Tokens );
         ASSERT_TRUE( !rootSequence->ordering.empty() );
         ASSERT_TRUE( rootSequence->ordering.size() == 6 );
-        ASSERT_TRUE( rootSequence->ordering[ 0 ].first == CORE::CTokenizer::CTokenSequence::TOKENTYPE_TOKEN );
+        ASSERT_TRUE( rootSequence->ordering[ 0 ].first == CORE::CTokenizer::CTokenSequence::TOKENSEQELEMENTTYPE_TOKEN );
         ASSERT_TRUE( rootSequence->ordering[ 0 ].second == 0 );
-        ASSERT_TRUE( rootSequence->ordering[ 1 ].first == CORE::CTokenizer::CTokenSequence::TOKENTYPE_TOKEN );
+        ASSERT_TRUE( rootSequence->ordering[ 1 ].first == CORE::CTokenizer::CTokenSequence::TOKENSEQELEMENTTYPE_TOKEN );
         ASSERT_TRUE( rootSequence->ordering[ 1 ].second == 1 );
-        ASSERT_TRUE( rootSequence->ordering[ 2 ].first == CORE::CTokenizer::CTokenSequence::TOKENTYPE_TOKEN );
+        ASSERT_TRUE( rootSequence->ordering[ 2 ].first == CORE::CTokenizer::CTokenSequence::TOKENSEQELEMENTTYPE_TOKEN );
         ASSERT_TRUE( rootSequence->ordering[ 2 ].second == 2 );
-        ASSERT_TRUE( rootSequence->ordering[ 3 ].first == CORE::CTokenizer::CTokenSequence::TOKENTYPE_TOKEN );
+        ASSERT_TRUE( rootSequence->ordering[ 3 ].first == CORE::CTokenizer::CTokenSequence::TOKENSEQELEMENTTYPE_TOKEN );
         ASSERT_TRUE( rootSequence->ordering[ 3 ].second == 3 );
-        ASSERT_TRUE( rootSequence->ordering[ 4 ].first == CORE::CTokenizer::CTokenSequence::TOKENTYPE_TOKEN );
+        ASSERT_TRUE( rootSequence->ordering[ 4 ].first == CORE::CTokenizer::CTokenSequence::TOKENSEQELEMENTTYPE_TOKEN );
         ASSERT_TRUE( rootSequence->ordering[ 4 ].second == 4 );
-        ASSERT_TRUE( rootSequence->ordering[ 5 ].first == CORE::CTokenizer::CTokenSequence::TOKENTYPE_TOKEN );
+        ASSERT_TRUE( rootSequence->ordering[ 5 ].first == CORE::CTokenizer::CTokenSequence::TOKENSEQELEMENTTYPE_TOKEN );
         ASSERT_TRUE( rootSequence->ordering[ 5 ].second == 5 );
     }
     catch( ... )
@@ -270,15 +270,15 @@ TestCase_NoGroupsBasicParsingNoWhitespaceNoDefinedVars( void )
         ASSERT_TRUE( rootSequence->tokens == testString4Seq0Tokens );
         ASSERT_TRUE( !rootSequence->ordering.empty() );
         ASSERT_TRUE( rootSequence->ordering.size() == 5 );
-        ASSERT_TRUE( rootSequence->ordering[ 0 ].first == CORE::CTokenizer::CTokenSequence::TOKENTYPE_TOKEN );
+        ASSERT_TRUE( rootSequence->ordering[ 0 ].first == CORE::CTokenizer::CTokenSequence::TOKENSEQELEMENTTYPE_TOKEN );
         ASSERT_TRUE( rootSequence->ordering[ 0 ].second == 0 );
-        ASSERT_TRUE( rootSequence->ordering[ 1 ].first == CORE::CTokenizer::CTokenSequence::TOKENTYPE_TOKEN );
+        ASSERT_TRUE( rootSequence->ordering[ 1 ].first == CORE::CTokenizer::CTokenSequence::TOKENSEQELEMENTTYPE_TOKEN );
         ASSERT_TRUE( rootSequence->ordering[ 1 ].second == 1 );
-        ASSERT_TRUE( rootSequence->ordering[ 2 ].first == CORE::CTokenizer::CTokenSequence::TOKENTYPE_TOKEN );
+        ASSERT_TRUE( rootSequence->ordering[ 2 ].first == CORE::CTokenizer::CTokenSequence::TOKENSEQELEMENTTYPE_TOKEN );
         ASSERT_TRUE( rootSequence->ordering[ 2 ].second == 2 );
-        ASSERT_TRUE( rootSequence->ordering[ 3 ].first == CORE::CTokenizer::CTokenSequence::TOKENTYPE_TOKEN );
+        ASSERT_TRUE( rootSequence->ordering[ 3 ].first == CORE::CTokenizer::CTokenSequence::TOKENSEQELEMENTTYPE_TOKEN );
         ASSERT_TRUE( rootSequence->ordering[ 3 ].second == 3 );
-        ASSERT_TRUE( rootSequence->ordering[ 4 ].first == CORE::CTokenizer::CTokenSequence::TOKENTYPE_TOKEN );
+        ASSERT_TRUE( rootSequence->ordering[ 4 ].first == CORE::CTokenizer::CTokenSequence::TOKENSEQELEMENTTYPE_TOKEN );
         ASSERT_TRUE( rootSequence->ordering[ 4 ].second == 4 );
     }
     catch( ... )
@@ -314,11 +314,11 @@ TestCase_SingleGroupParsingWithWhitespaceNoDefinedVars( void )
         ASSERT_TRUE( rootSequence->tokens == testStringSeq0Tokens );
         ASSERT_TRUE( !rootSequence->ordering.empty() );
         ASSERT_TRUE( rootSequence->ordering.size() == 3 );
-        ASSERT_TRUE( rootSequence->ordering[ 0 ].first == CORE::CTokenizer::CTokenSequence::TOKENTYPE_TOKEN );
+        ASSERT_TRUE( rootSequence->ordering[ 0 ].first == CORE::CTokenizer::CTokenSequence::TOKENSEQELEMENTTYPE_TOKEN );
         ASSERT_TRUE( rootSequence->ordering[ 0 ].second == 0 );
-        ASSERT_TRUE( rootSequence->ordering[ 1 ].first == CORE::CTokenizer::CTokenSequence::TOKENTYPE_TOKEN );
+        ASSERT_TRUE( rootSequence->ordering[ 1 ].first == CORE::CTokenizer::CTokenSequence::TOKENSEQELEMENTTYPE_TOKEN );
         ASSERT_TRUE( rootSequence->ordering[ 1 ].second == 1 );
-        ASSERT_TRUE( rootSequence->ordering[ 2 ].first == CORE::CTokenizer::CTokenSequence::TOKENTYPE_TOKEN );
+        ASSERT_TRUE( rootSequence->ordering[ 2 ].first == CORE::CTokenizer::CTokenSequence::TOKENSEQELEMENTTYPE_TOKEN );
         ASSERT_TRUE( rootSequence->ordering[ 2 ].second == 2 );
     }
     catch( ... )
@@ -353,11 +353,11 @@ TestCase_SameLevelGroupsParsingWithWhitespaceNoDefinedVars( void )
         ASSERT_TRUE( rootSequence->tokens == testStringSeq0Tokens );
         ASSERT_TRUE( !rootSequence->ordering.empty() );
         ASSERT_TRUE( rootSequence->ordering.size() == 3 );
-        ASSERT_TRUE( rootSequence->ordering[ 0 ].first == CORE::CTokenizer::CTokenSequence::TOKENTYPE_SEQUENCE );
+        ASSERT_TRUE( rootSequence->ordering[ 0 ].first == CORE::CTokenizer::CTokenSequence::TOKENSEQELEMENTTYPE_SEQUENCE );
         ASSERT_TRUE( rootSequence->ordering[ 0 ].second == 0 );
-        ASSERT_TRUE( rootSequence->ordering[ 1 ].first == CORE::CTokenizer::CTokenSequence::TOKENTYPE_TOKEN );
+        ASSERT_TRUE( rootSequence->ordering[ 1 ].first == CORE::CTokenizer::CTokenSequence::TOKENSEQELEMENTTYPE_TOKEN );
         ASSERT_TRUE( rootSequence->ordering[ 1 ].second == 0 );
-        ASSERT_TRUE( rootSequence->ordering[ 2 ].first == CORE::CTokenizer::CTokenSequence::TOKENTYPE_SEQUENCE );
+        ASSERT_TRUE( rootSequence->ordering[ 2 ].first == CORE::CTokenizer::CTokenSequence::TOKENSEQELEMENTTYPE_SEQUENCE );
         ASSERT_TRUE( rootSequence->ordering[ 2 ].second == 1 );  
         ASSERT_TRUE( rootSequence->sequences.size() == 2 );
         ASSERT_TRUE( rootSequence->sequenceOpenToken.IsNULLOrEmpty() );
@@ -368,11 +368,11 @@ TestCase_SameLevelGroupsParsingWithWhitespaceNoDefinedVars( void )
         ASSERT_TRUE( rootSequence->sequences[ 0 ]->tokens == testStringSeq1Tokens );
         ASSERT_TRUE( !rootSequence->sequences[ 0 ]->ordering.empty() );
         ASSERT_TRUE( rootSequence->sequences[ 0 ]->ordering.size() == 3 );
-        ASSERT_TRUE( rootSequence->sequences[ 0 ]->ordering[ 0 ].first == CORE::CTokenizer::CTokenSequence::TOKENTYPE_TOKEN );
+        ASSERT_TRUE( rootSequence->sequences[ 0 ]->ordering[ 0 ].first == CORE::CTokenizer::CTokenSequence::TOKENSEQELEMENTTYPE_TOKEN );
         ASSERT_TRUE( rootSequence->sequences[ 0 ]->ordering[ 0 ].second == 0 );
-        ASSERT_TRUE( rootSequence->sequences[ 0 ]->ordering[ 1 ].first == CORE::CTokenizer::CTokenSequence::TOKENTYPE_TOKEN );
+        ASSERT_TRUE( rootSequence->sequences[ 0 ]->ordering[ 1 ].first == CORE::CTokenizer::CTokenSequence::TOKENSEQELEMENTTYPE_TOKEN );
         ASSERT_TRUE( rootSequence->sequences[ 0 ]->ordering[ 1 ].second == 1 );
-        ASSERT_TRUE( rootSequence->sequences[ 0 ]->ordering[ 2 ].first == CORE::CTokenizer::CTokenSequence::TOKENTYPE_TOKEN );
+        ASSERT_TRUE( rootSequence->sequences[ 0 ]->ordering[ 2 ].first == CORE::CTokenizer::CTokenSequence::TOKENSEQELEMENTTYPE_TOKEN );
         ASSERT_TRUE( rootSequence->sequences[ 0 ]->ordering[ 2 ].second == 2 );
         ASSERT_TRUE( !rootSequence->sequences[ 1 ].IsNULL() );
         ASSERT_TRUE( rootSequence->sequences[ 1 ]->sequenceOpenToken == cppGroupOpenToken );
@@ -380,11 +380,11 @@ TestCase_SameLevelGroupsParsingWithWhitespaceNoDefinedVars( void )
         ASSERT_TRUE( rootSequence->sequences[ 1 ]->tokens == testStringSeq2Tokens ); 
         ASSERT_TRUE( !rootSequence->sequences[ 1 ]->ordering.empty() );
         ASSERT_TRUE( rootSequence->sequences[ 1 ]->ordering.size() == 3 );
-        ASSERT_TRUE( rootSequence->sequences[ 1 ]->ordering[ 0 ].first == CORE::CTokenizer::CTokenSequence::TOKENTYPE_TOKEN );
+        ASSERT_TRUE( rootSequence->sequences[ 1 ]->ordering[ 0 ].first == CORE::CTokenizer::CTokenSequence::TOKENSEQELEMENTTYPE_TOKEN );
         ASSERT_TRUE( rootSequence->sequences[ 1 ]->ordering[ 0 ].second == 0 );
-        ASSERT_TRUE( rootSequence->sequences[ 1 ]->ordering[ 1 ].first == CORE::CTokenizer::CTokenSequence::TOKENTYPE_TOKEN );
+        ASSERT_TRUE( rootSequence->sequences[ 1 ]->ordering[ 1 ].first == CORE::CTokenizer::CTokenSequence::TOKENSEQELEMENTTYPE_TOKEN );
         ASSERT_TRUE( rootSequence->sequences[ 1 ]->ordering[ 1 ].second == 1 );
-        ASSERT_TRUE( rootSequence->sequences[ 1 ]->ordering[ 2 ].first == CORE::CTokenizer::CTokenSequence::TOKENTYPE_TOKEN );
+        ASSERT_TRUE( rootSequence->sequences[ 1 ]->ordering[ 2 ].first == CORE::CTokenizer::CTokenSequence::TOKENSEQELEMENTTYPE_TOKEN );
         ASSERT_TRUE( rootSequence->sequences[ 1 ]->ordering[ 2 ].second == 2 );
         
     }
@@ -419,15 +419,15 @@ TestCase_NestedGroupsParsingWithWhitespaceNoDefinedVars( void )
         ASSERT_TRUE( rootSequence->tokens == testStringSeq0Tokens );
         ASSERT_TRUE( !rootSequence->ordering.empty() );
         ASSERT_TRUE( rootSequence->ordering.size() == 5 );
-        ASSERT_TRUE( rootSequence->ordering[ 0 ].first == CORE::CTokenizer::CTokenSequence::TOKENTYPE_TOKEN );
+        ASSERT_TRUE( rootSequence->ordering[ 0 ].first == CORE::CTokenizer::CTokenSequence::TOKENSEQELEMENTTYPE_TOKEN );
         ASSERT_TRUE( rootSequence->ordering[ 0 ].second == 0 );
-        ASSERT_TRUE( rootSequence->ordering[ 1 ].first == CORE::CTokenizer::CTokenSequence::TOKENTYPE_TOKEN );
+        ASSERT_TRUE( rootSequence->ordering[ 1 ].first == CORE::CTokenizer::CTokenSequence::TOKENSEQELEMENTTYPE_TOKEN );
         ASSERT_TRUE( rootSequence->ordering[ 1 ].second == 1 );
-        ASSERT_TRUE( rootSequence->ordering[ 2 ].first == CORE::CTokenizer::CTokenSequence::TOKENTYPE_TOKEN );
+        ASSERT_TRUE( rootSequence->ordering[ 2 ].first == CORE::CTokenizer::CTokenSequence::TOKENSEQELEMENTTYPE_TOKEN );
         ASSERT_TRUE( rootSequence->ordering[ 2 ].second == 2 );  
-        ASSERT_TRUE( rootSequence->ordering[ 3 ].first == CORE::CTokenizer::CTokenSequence::TOKENTYPE_TOKEN );
+        ASSERT_TRUE( rootSequence->ordering[ 3 ].first == CORE::CTokenizer::CTokenSequence::TOKENSEQELEMENTTYPE_TOKEN );
         ASSERT_TRUE( rootSequence->ordering[ 3 ].second == 3 ); 
-        ASSERT_TRUE( rootSequence->ordering[ 4 ].first == CORE::CTokenizer::CTokenSequence::TOKENTYPE_SEQUENCE );
+        ASSERT_TRUE( rootSequence->ordering[ 4 ].first == CORE::CTokenizer::CTokenSequence::TOKENSEQELEMENTTYPE_SEQUENCE );
         ASSERT_TRUE( rootSequence->ordering[ 4 ].second == 0 );        
         ASSERT_TRUE( rootSequence->sequences.size() == 1 );
         ASSERT_TRUE( rootSequence->sequenceOpenToken == cppGroupOpenToken );
@@ -438,11 +438,11 @@ TestCase_NestedGroupsParsingWithWhitespaceNoDefinedVars( void )
         ASSERT_TRUE( rootSequence->sequences[ 0 ]->tokens == testStringSeq1Tokens );
         ASSERT_TRUE( !rootSequence->sequences[ 0 ]->ordering.empty() );
         ASSERT_TRUE( rootSequence->sequences[ 0 ]->ordering.size() == 3 );
-        ASSERT_TRUE( rootSequence->sequences[ 0 ]->ordering[ 0 ].first == CORE::CTokenizer::CTokenSequence::TOKENTYPE_TOKEN );
+        ASSERT_TRUE( rootSequence->sequences[ 0 ]->ordering[ 0 ].first == CORE::CTokenizer::CTokenSequence::TOKENSEQELEMENTTYPE_TOKEN );
         ASSERT_TRUE( rootSequence->sequences[ 0 ]->ordering[ 0 ].second == 0 );
-        ASSERT_TRUE( rootSequence->sequences[ 0 ]->ordering[ 1 ].first == CORE::CTokenizer::CTokenSequence::TOKENTYPE_TOKEN );
+        ASSERT_TRUE( rootSequence->sequences[ 0 ]->ordering[ 1 ].first == CORE::CTokenizer::CTokenSequence::TOKENSEQELEMENTTYPE_TOKEN );
         ASSERT_TRUE( rootSequence->sequences[ 0 ]->ordering[ 1 ].second == 1 );
-        ASSERT_TRUE( rootSequence->sequences[ 0 ]->ordering[ 2 ].first == CORE::CTokenizer::CTokenSequence::TOKENTYPE_TOKEN );
+        ASSERT_TRUE( rootSequence->sequences[ 0 ]->ordering[ 2 ].first == CORE::CTokenizer::CTokenSequence::TOKENSEQELEMENTTYPE_TOKEN );
         ASSERT_TRUE( rootSequence->sequences[ 0 ]->ordering[ 2 ].second == 2 );
         
     }

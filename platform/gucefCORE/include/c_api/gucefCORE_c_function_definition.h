@@ -17,8 +17,8 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
-#ifndef GUCEF_CORE_C_VARIANTVECTOR_H
-#define GUCEF_CORE_C_VARIANTVECTOR_H
+#ifndef GUCEF_CORE_C_FUNCTION_DEFINITION_H
+#define GUCEF_CORE_C_FUNCTION_DEFINITION_H
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -27,7 +27,7 @@
 //-------------------------------------------------------------------------*/
 
 #ifndef GUCEF_CORE_MACROS_H
-#include "gucefCORE_macros.h"  /* often used gucef macros */
+#include "gucefCORE_macros.h"   
 #define GUCEF_CORE_MACROS_H
 #endif /* GUCEF_CORE_MACROS_H ? */
 
@@ -35,6 +35,11 @@
 #include "gucefCORE_c_variantdata.h"
 #define GUCEF_CORE_C_VARIANTDATA_H
 #endif /* GUCEF_CORE_C_VARIANTDATA_H ? */
+
+#ifndef GUCEF_CORE_C_FUNCTION_PARAM_TYPES_H
+#include "gucefCORE_c_function_param_types.h"
+#define GUCEF_CORE_C_FUNCTION_PARAM_TYPES_H
+#endif /* GUCEF_CORE_C_FUNCTION_PARAM_TYPES_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -53,48 +58,26 @@ namespace CORE {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-typedef void ( GUCEF_PLUGIN_CALLSPEC_PREFIX *TVariantVectorFunc_push_back ) ( void* privdata, TVariantData* data, UInt8 linkIfPossible ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
-typedef void ( GUCEF_PLUGIN_CALLSPEC_PREFIX *TVariantVectorFunc_clear ) ( void* privdata ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
-typedef size_t ( GUCEF_PLUGIN_CALLSPEC_PREFIX *TVariantVectorFunc_size ) ( void* privdata ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
-typedef void ( GUCEF_PLUGIN_CALLSPEC_PREFIX *TVariantVectorFunc_back ) ( void* privdata, TVariantData* back, UInt8 linkIfPossible ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
-typedef void ( GUCEF_PLUGIN_CALLSPEC_PREFIX *TVariantVectorFunc_front ) ( void* privdata, TVariantData* front, UInt8 linkIfPossible ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
-typedef void ( GUCEF_PLUGIN_CALLSPEC_PREFIX *TVariantVectorFunc_pop_back ) ( void* privdata ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
-typedef void ( GUCEF_PLUGIN_CALLSPEC_PREFIX *TVariantVectorFunc_at ) ( void* privdata, UInt32 index, TVariantData* entryData ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
+struct SFunctionParamMeta
+{
+    TFunctionParamType   paramType;
+    UInt8                paramDataType;
+    UInt8                isParamConst;
+    const TVariantData*  defaultValue;      /**< optional pointer to default value if any, if present means the param is optional since the default value can be used */
+    const char*          paramName;
+};
+typedef struct SFunctionParamMeta TFunctionParamMeta;
 
-typedef Int8 ( GUCEF_PLUGIN_CALLSPEC_PREFIX *TVariantVectorFunc_is_const ) ( void* privdata ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
-typedef UInt8 ( GUCEF_PLUGIN_CALLSPEC_PREFIX *TVariantVectorFunc_type_id_of_elements ) ( void* privdata ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
-typedef UInt32 ( GUCEF_PLUGIN_CALLSPEC_PREFIX *TVariantVectorFunc_byte_size_of_element_type ) ( void* privdata ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
-    
 /*-------------------------------------------------------------------------*/
 
-/**
- *  Structure that hold all the function pointers to the event handlers
- *  for read events. Should be called by plugins as needed.
- */
-struct SVariantVectorApi
+struct SFunctionDefinition
 {
-    /**
-     *  The following are function pointers for functions which mimic the std::vector
-     */
-    TVariantVectorFunc_push_back    push_back;
-    TVariantVectorFunc_clear        clear;
-    TVariantVectorFunc_size         size;
-    TVariantVectorFunc_back         back;
-    TVariantVectorFunc_front        front;
-    TVariantVectorFunc_pop_back     pop_back; 
-    TVariantVectorFunc_at           at;
-
-    /**
-     *  The following are function pointers for functions which are custom helpers
-     *  keeping in mind that not information is as easily available across the C API boundary
-     */
-    TVariantVectorFunc_is_const                     is_const;
-    TVariantVectorFunc_type_id_of_elements          type_id_of_elements;
-    TVariantVectorFunc_byte_size_of_element_type    byte_size_of_element_type;
-    
-    void* privateData;
+    UInt32               numParams;    
+    SFunctionParamMeta*  params;
+    UInt8                isFunctionConst;
+    const char*          functionName;
 };
-typedef struct SVariantVectorApi TVariantVectorApi;
+typedef struct SFunctionDefinition TFunctionDefinition;
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -109,4 +92,4 @@ typedef struct SVariantVectorApi TVariantVectorApi;
 
 /*-------------------------------------------------------------------------*/
 
-#endif /* GUCEF_CORE_C_VARIANTVECTOR_H ? */
+#endif /* GUCEF_CORE_C_FUNCTION_DEFINITION_H ? */

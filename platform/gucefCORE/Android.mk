@@ -123,8 +123,6 @@ LOCAL_SRC_FILES := \
   src/DVOSWRAP.cpp \
   src/IOACCESS.c \
   src/MFILE.c \
-  src/MemoryPool.cpp \
-  src/MemorySegment.cpp \
   src/PAFILE.c \
   src/cloneables.cpp \
   src/dvcppfileutils.cpp \
@@ -155,6 +153,8 @@ LOCAL_SRC_FILES := \
   src/gucefCORE_CFileSystemDirectoryWatcher.cpp \
   src/gucefCORE_CFileSystemUriResourceAccessor.cpp \
   src/gucefCORE_CForwardingNotifier.cpp \
+  src/gucefCORE_CFunctionMeta.cpp \
+  src/gucefCORE_CFunctionParamMeta.cpp \
   src/gucefCORE_CFunctionRegistry.cpp \
   src/gucefCORE_CGenericValueToDataNodeSerializer.cpp \
   src/gucefCORE_CGeoLocation.cpp \

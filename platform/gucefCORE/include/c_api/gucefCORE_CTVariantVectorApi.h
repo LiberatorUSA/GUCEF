@@ -44,6 +44,11 @@
 #define GUCEF_CORE_CVARIANT_H
 #endif /* GUCEF_CORE_CVARIANT_H ? */
 
+#ifndef GUCEF_CORE_TYPEINFOTEMPLATEEXT_H
+#include "gucefCORE_TypeInfoTemplateExt.h"
+#define GUCEF_CORE_TYPEINFOTEMPLATEEXT_H
+#endif /* GUCEF_CORE_TYPEINFOTEMPLATEEXT_H ? */
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //
@@ -62,7 +67,10 @@ namespace CORE {
 /**
  *  template which adds a C API adapter to the std::vector class
  *  Since we cannot use templates in C, we need to create a C API adapter 
- *  which is build around the variant concept
+ *  which is build around the variant concept in order to have a generic interface
+ *  to the std::vector class.
+ *  Note that this template is not intended to work with any and all types.
+ *  The class is intended to work with vectors holding types that are supported by the CVariant class.
  */
 template < typename T, class AllocType >
 class CTVariantVectorApi
@@ -75,17 +83,41 @@ class CTVariantVectorApi
     ~CTVariantVectorApi();
 
     void SetVectorAccessPtr( TLinkedVectorType* vector );
+    void SetVectorAccessPtr( const TLinkedVectorType* vector );
+
+    /*
+     *  The below are the C API functions which mimic the std::vector functions
+     *  The following set works with const and non-const vectors
+     */
+
+    static size_t size( void* privdata );
+    static void back( void* privdata, TVariantData* backData, UInt8 linkIfPossible );
+    static void front( void* privdata, TVariantData* frontData, UInt8 linkIfPossible );    
+    static void at( void* privdata, UInt32 index, TVariantData* entryData );
+
+    /*
+     *  The below are the C API functions which mimic the std::vector functions
+     *  The following set works with and non-const vectors only
+     */
 
     static void push_back( void* privdata, TVariantData* data, UInt8 linkIfPossible );
-    static void clear( void* privdata );
-    static size_t size( void* privdata );
-    static void back( void* privdata, TVariantData** backData );
-    static void front( void* privdata, TVariantData** frontData );
     static void pop_back( void* privdata );
+    static void clear( void* privdata );
+
+    /*
+     *  The below are the C API functions which are helper since not all information can be carried across
+     *  the C boundary when mimicing the std::vector functions
+     *  The following works with const and non-const vectors
+     */
+
+    static Int8 is_const( void* privdata );
+    static UInt8 type_id_of_elements( void* privdata );
+    static UInt32 byte_size_of_element_type( void* privdata );
     
     private:
     
     TLinkedVectorType* m_vector;
+    const TLinkedVectorType* m_constVector;
     TVariantVectorApi m_cApi;
 };
 
@@ -101,6 +133,10 @@ CTVariantVectorApi< T, AllocType >::CTVariantVectorApi( void )
     m_cApi.back = &CTVariantVectorApi< T >::back;
     m_cApi.front = &CTVariantVectorApi< T >::front;
     m_cApi.pop_back = &CTVariantVectorApi< T >::pop_back;
+    m_cApi.at = &CTVariantVectorApi< T >::at;
+    m_cApi.is_const = &CTVariantVectorApi< T >::is_const;
+    m_cApi.type_id_of_elements = &CTVariantVectorApi< T >::type_id_of_elements;
+    m_cApi.byte_size_of_element_type = &CTVariantVectorApi< T >::byte_size_of_element_type;
     m_cApi.privateData = static_cast<void*>( this );
 }
 
@@ -120,6 +156,18 @@ CTVariantVectorApi< T, AllocType >::SetVectorAccessPtr( TLinkedVectorType* vecto
 {GUCEF_TRACE;
 
     m_vector = vector;
+    m_constVector = vector;
+}
+
+/*-------------------------------------------------------------------------*/
+
+template < typename T, class AllocType >
+void 
+CTVariantVectorApi< T, AllocType >::SetVectorAccessPtr( const TLinkedVectorType* vector )
+{GUCEF_TRACE;
+
+    m_vector = GUCEF_NULL;
+    m_constVector = vector;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -159,10 +207,32 @@ size_t
 CTVariantVectorApi< T, AllocType >::size( void* privdata )
 {GUCEF_TRACE;
 
-    if ( GUCEF_NULL != privdata && GUCEF_NULL != m_vector )
+    if ( GUCEF_NULL != privdata && GUCEF_NULL != m_constVector )
     {
         CTVariantVectorApi< T, AllocType >* api = static_cast< CTVariantVectorApi< T, AllocType >* >( privdata );
-        return api->m_vector->size();
+        return api->m_constVector->size();
+    }
+    return 0;
+}
+
+/*-------------------------------------------------------------------------*/
+
+template < typename T, class AllocType >
+void 
+CTVariantVectorApi< T, AllocType >::back( void* privdata, TVariantData* backData, UInt8 linkIfPossible )
+{GUCEF_TRACE;
+
+    if ( GUCEF_NULL != privdata && GUCEF_NULL != m_constVector && GUCEF_NULL != backData )
+    {
+        CTVariantVectorApi< T, AllocType >* api = static_cast< CTVariantVectorApi< T, AllocType >* >( privdata );
+        const T& backValue = api->m_constVector->back();
+        
+        // This helper template is NOT intended to work with any and all types.
+        // If you get a compiler error here, the type T is not supported by the CVariant class.
+        CVariant cppVariant( backValue ); // <- if you get a compiler error here the type T is not supported by the CVariant class
+
+        *backData = *cppVariant.CStyleAccess();        
+        return;
     }
 }
 
@@ -170,22 +240,102 @@ CTVariantVectorApi< T, AllocType >::size( void* privdata )
 
 template < typename T, class AllocType >
 void 
-CTVariantVectorApi< T, AllocType >::back( void* privdata, TVariantData** backData )
+CTVariantVectorApi< T, AllocType >::front( void* privdata, TVariantData* frontData, UInt8 linkIfPossible )
 {GUCEF_TRACE;
 
-    if ( GUCEF_NULL != privdata && GUCEF_NULL != m_vector && GUCEF_NULL != backData )
+    if ( GUCEF_NULL != privdata && GUCEF_NULL != m_constVector && GUCEF_NULL != frontData )
     {
         CTVariantVectorApi< T, AllocType >* api = static_cast< CTVariantVectorApi< T, AllocType >* >( privdata );
-        CVariant cppVariant( api->m_vector->back() );
-        return ;
+        const T& frontValue = api->m_constVector->front();
+        
+        // This helper template is NOT intended to work with any and all types.
+        // If you get a compiler error here, the type T is not supported by the CVariant class.
+        CVariant cppVariant( frontValue ); // <- if you get a compiler error here the type T is not supported by the CVariant class
+
+        *frontData = *cppVariant.CStyleAccess();        
+        return;
     }
 }
 
 /*-------------------------------------------------------------------------*/
 
+template < typename T, class AllocType >
+void 
+CTVariantVectorApi< T, AllocType >::pop_back( void* privdata )
+{GUCEF_TRACE;
 
-    static void front( void* privdata, TVariantData** front );
-    static void pop_back( void* privdata );
+    if ( GUCEF_NULL != privdata && GUCEF_NULL != m_vector )
+    {
+        CTVariantVectorApi< T, AllocType >* api = static_cast< CTVariantVectorApi< T, AllocType >* >( privdata );
+        api->m_vector->pop_back();
+    }
+}
+
+/*-------------------------------------------------------------------------*/
+
+template < typename T, class AllocType >
+void 
+CTVariantVectorApi< T, AllocType >::at( void* privdata, UInt32 index, TVariantData* entryData )
+{GUCEF_TRACE;
+
+    if ( GUCEF_NULL != privdata && GUCEF_NULL != m_constVector && GUCEF_NULL != entryData )
+    {
+        CTVariantVectorApi< T, AllocType >* api = static_cast< CTVariantVectorApi< T, AllocType >* >( privdata );
+        if ( index < static_cast< UInt32 >( api->m_constVector->size() ) )
+        {
+            const T& element = api->m_constVector->at( index );
+
+            // This helper template is NOT intended to work with any and all types.
+            // If you get a compiler error here, the type T is not supported by the CVariant class.
+            CVariant cppVariant( element ); // <- if you get a compiler error here the type T is not supported by the CVariant class
+
+            *entryData = *cppVariant.CStyleAccess();    
+        }
+        else
+        {
+            // index out of bounds
+            entryData->containedType = GUCEF_DATATYPE_UNKNOWN;
+        }
+    }
+}
+
+/*-------------------------------------------------------------------------*/
+
+template < typename T, class AllocType >
+Int8 
+CTVariantVectorApi< T, AllocType >::is_const( void* privdata )
+{GUCEF_TRACE;
+
+    return GUCEF_NULL == m_vector ? 1 : 0;
+}
+
+/*-------------------------------------------------------------------------*/
+
+template < typename T, class AllocType >
+UInt8 
+CTVariantVectorApi< T, AllocType >::type_id_of_elements( void* privdata )
+{GUCEF_TRACE;
+
+    if ( GUCEF_NULL != privdata && GUCEF_NULL != m_vector )
+    {
+        return TryToGetGucefTypeIdForTType< T >();
+    }
+    return GUCEF_DATATYPE_UNKNOWN;
+}
+
+/*-------------------------------------------------------------------------*/
+
+template < typename T, class AllocType >
+UInt32 
+CTVariantVectorApi< T, AllocType >::byte_size_of_element_type( void* privdata )
+{GUCEF_TRACE;
+
+    if ( GUCEF_NULL != privdata && GUCEF_NULL != m_vector )
+    {
+        return static_cast< UInt32 >( sizeof( T ) );
+    }
+    return 0;
+}
 
 /*-------------------------------------------------------------------------//
 //                                                                         //

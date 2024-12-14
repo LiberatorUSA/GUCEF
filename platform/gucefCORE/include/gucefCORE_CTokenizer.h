@@ -76,18 +76,18 @@ class GUCEF_CORE_PUBLIC_CPP CTokenizer
     {
         public:
 
-        enum ETokenType
+        enum ETokenSeqElementType
         {
-            TOKENTYPE_UNDEFINED = 0,
+            TOKENSEQELEMENTTYPE_UNDEFINED = 0,
 
-            TOKENTYPE_TOKEN,
-            TOKENTYPE_SEQUENCE
+            TOKENSEQELEMENTTYPE_TOKEN,
+            TOKENSEQELEMENTTYPE_SEQUENCE
         };
-        typedef enum ETokenType TTokenType;
+        typedef enum ETokenSeqElementType TTokenSeqElementType;
 
         typedef typename CTSharedObjCreator< CTokenSequence, MT::CNoLock >::TSharedPtrType     CTokenSequencePtr;
         typedef std::vector< CTokenSequencePtr, gucef_allocator< CTokenSequencePtr > >         TTokenSequencePtrVector;
-        typedef std::pair< TTokenType, size_t >                                                TTokenSequencePair;
+        typedef std::pair< TTokenSeqElementType, size_t >                                      TTokenSequencePair;
         typedef std::vector< TTokenSequencePair, gucef_allocator< TTokenSequencePair > >       TTokenSequencePairVector;
         
         CTokenSequence( void );
