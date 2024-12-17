@@ -27,6 +27,8 @@
 #include <stdio.h>
 #include <math.h>
 #include <string.h>
+#include <fstream>
+#include <sstream>
 
 #ifndef GUCEF_CORE_MACROS_H
 #include "gucefCORE_macros.h"       /* build configuration */
@@ -123,6 +125,119 @@ struct SProcessId
 /*--------------------------------------------------------------------------*/
 
 #if ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
+
+class GUCEF_HIDDEN LinuxCpuFreqInfo
+{
+    private:
+
+    float ReadFreqFromFile( const std::string& filePath )
+    {GUCEF_TRACE;
+
+        std::ifstream file(filePath);
+        if (file.is_open()) {
+            int freqKHz = 0;
+            file >> freqKHz;
+            return freqKHz / 1000.0; // Convert kHz to MHz
+        }
+        return 0;
+    }
+
+    public:
+
+    int coreId;
+    float scalingMinFreq; // in MHz
+    float scalingMaxFreq; // in MHz
+    float scalingCurFreq; // in MHz
+    float cpuinfoMinFreq; // in MHz
+    float cpuinfoMaxFreq; // in MHz
+
+    void ReadAllCpuFreqInfo( void )
+    {GUCEF_TRACE;
+
+        std::ostringstream basePath;
+        basePath << "/sys/devices/system/cpu/cpu" << coreId << "/cpufreq/";
+
+        scalingMinFreq = ReadFreqFromFile(basePath.str() + "scaling_min_freq");
+        scalingMaxFreq = ReadFreqFromFile(basePath.str() + "scaling_max_freq");
+        scalingCurFreq = ReadFreqFromFile(basePath.str() + "scaling_cur_freq");
+        cpuinfoMinFreq = ReadFreqFromFile(basePath.str() + "cpuinfo_min_freq");
+        cpuinfoMaxFreq = ReadFreqFromFile(basePath.str() + "cpuinfo_max_freq");
+    }
+
+    void ReadCurrentCpuFreq( void )
+    {GUCEF_TRACE;
+
+        std::ostringstream basePath;
+        basePath << "/sys/devices/system/cpu/cpu" << coreId << "/cpufreq/";
+        scalingMinFreq = ReadFreqFromFile(basePath.str() + "scaling_min_freq");
+        scalingMaxFreq = ReadFreqFromFile(basePath.str() + "scaling_max_freq");
+        scalingCurFreq = ReadFreqFromFile(basePath.str() + "scaling_cur_freq");
+    }
+
+    LinuxCpuFreqInfo( int idOfCore )
+        : coreId( idOfCore )
+        , scalingMinFreq(0)
+        , scalingMaxFreq(0)
+        , scalingCurFreq(0)
+        , cpuinfoMinFreq(0)
+        , cpuinfoMaxFreq(0)
+    {GUCEF_TRACE;
+
+        ReadAllCpuFreqInfo();
+    }
+};
+
+/*--------------------------------------------------------------------------*/
+
+class GUCEF_HIDDEN LinuxSysDevicesCpuFreqReader
+{
+    public:
+
+    typedef std::vector< LinuxCpuFreqInfo, gucef_allocator< LinuxCpuFreqInfo > >   TLinuxCpuFreqInfoVector;
+
+    TLinuxCpuFreqInfoVector cpuFreqInfos;
+
+    void InitAllCpuFreqInfo( void )
+    {GUCEF_TRACE;
+
+        cpuFreqInfos.clear();
+
+        int coreId = 0;
+        while (true)
+        {
+            std::ostringstream path;
+            path << "/sys/devices/system/cpu/cpu" << coreId;
+            std::ifstream dir( path.str() );
+            if ( !dir.good() )
+                break; // No more CPUs
+
+            LinuxCpuFreqInfo cpuFreqInfo( coreId );
+            cpuFreqInfos.push_back( cpuFreqInfo );
+
+            ++coreId;
+        }
+    }
+
+    void RefreshCpuFreq( void )
+    {
+        TLinuxCpuFreqInfoVector::iterator i = cpuFreqInfos.begin();
+        while ( i != cpuFreqInfos.end() )
+        {
+            LinuxCpuFreqInfo& coreInfo = (*i);
+            coreInfo.ReadCurrentCpuFreq();
+            ++i;
+        }
+    }
+
+    LinuxSysDevicesCpuFreqReader( void )
+        : cpuFreqInfos()
+    {GUCEF_TRACE;
+
+        InitAllCpuFreqInfo();
+    }
+};
+
+/*--------------------------------------------------------------------------*/
 
 class GUCEF_HIDDEN LinuxLogicalCpuInfo
 {
@@ -379,6 +494,122 @@ class GUCEF_HIDDEN AllLinuxProcCpuInfo
     }
 };
 
+/*--------------------------------------------------------------------------*/
+
+class GUCEF_HIDDEN LinuxCpuUsageBreakdown
+{
+    public:
+
+    std::string cpu;
+    unsigned long long user;
+    unsigned long long nice;
+    unsigned long long system;
+    unsigned long long idle;
+    unsigned long long iowait;
+    unsigned long long irq;
+    unsigned long long softirq;
+    unsigned long long steal;
+    unsigned long long guest;
+    unsigned long long guest_nice;
+
+    LinuxCpuUsageBreakdown()
+        : user(0)
+        , nice(0)
+        , system(0)
+        , idle(0)
+        , iowait(0)
+        , irq(0)
+        , softirq(0)
+        , steal(0)
+        , guest(0)
+        , guest_nice(0)
+    {GUCEF_TRACE;
+    }
+};
+
+/*--------------------------------------------------------------------------*/
+
+class GUCEF_HIDDEN LinuxCpuUtilization
+{
+    public:
+
+    typedef std::vector< LinuxCpuUsageBreakdown, gucef_allocator< LinuxCpuUsageBreakdown > >  TLinuxCpuUsageBreakdownVector;
+
+    LinuxCpuUsageBreakdown globalCpuUsage;
+    TLinuxCpuUsageBreakdownVector perCoreCpuUsage;
+
+    static void ReadCpuUsage( LinuxCpuUsageBreakdown& globalUsage        ,
+                              TLinuxCpuUsageBreakdownVector& cpuUsageVec )
+    {GUCEF_TRACE;
+
+        cpuUsageVec.clear();
+
+        std::ifstream file("/proc/stat");
+        std::string line;
+        bool firstCpuLine = true;
+
+        while ( std::getline( file, line ) )
+        {
+            if ( line.substr(0, 3) == "cpu" )
+            {
+                // Note that the first entry should be the overall CPU usage
+                // All additional entries would be for the individual cores
+                // As such we split those out explicitly to make it easier to consume
+
+                std::istringstream ss(line);
+                LinuxCpuUsageBreakdown usage;
+                ss >> usage.cpu >> usage.user >> usage.nice >> usage.system >> usage.idle
+                   >> usage.iowait >> usage.irq >> usage.softirq >> usage.steal
+                   >> usage.guest >> usage.guest_nice;
+
+                if ( firstCpuLine )
+                {
+                    globalUsage = usage;
+                    firstCpuLine = false;
+                }
+                else
+                {
+                    cpuUsageVec.push_back( usage );
+                }
+            }
+        }
+    }
+
+    static double CalculateCpuUtilization( const LinuxCpuUsageBreakdown& prev, const LinuxCpuUsageBreakdown& curr )
+    {GUCEF_TRACE;
+
+        unsigned long long prevIdle = prev.idle + prev.iowait;
+        unsigned long long currIdle = curr.idle + curr.iowait;
+
+        unsigned long long prevNonIdle = prev.user + prev.nice + prev.system + prev.irq + prev.softirq + prev.steal;
+        unsigned long long currNonIdle = curr.user + curr.nice + curr.system + curr.irq + curr.softirq + curr.steal;
+
+        unsigned long long prevTotal = prevIdle + prevNonIdle;
+        unsigned long long currTotal = currIdle + currNonIdle;
+
+        unsigned long long totalDiff = currTotal - prevTotal;
+        unsigned long long idleDiff = currIdle - prevIdle;
+
+        return (totalDiff - idleDiff) * 100.0 / totalDiff;
+    }
+
+    void Refresh( void )
+    {GUCEF_TRACE;
+
+        ReadCpuUsage( globalCpuUsage, perCoreCpuUsage );
+    }
+
+    LinuxCpuUtilization( void )
+    {GUCEF_TRACE;
+
+        Refresh();
+    }
+};
+
+
+/*--------------------------------------------------------------------------*/
+
+
 #endif
 
 
@@ -415,6 +646,8 @@ struct SCpuDataPoint
     FILETIME globalIdleTime;
     #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
     AllLinuxProcCpuInfo* infoFromProcCpu;
+    LinuxSysDevicesCpuFreqReader* infoFromSysDevCpuFreq;
+    LinuxCpuUtilization* infoFromProcStat;
     #else
 
     #endif
@@ -1525,7 +1758,7 @@ GetGlobalJiffies( UInt64* totalJiffies )
 
     if ( GUCEF_NULL == totalJiffies )
         return false;
-    
+
     FILE* fp = NULL;
     if ( ( fp = ::fopen( "/proc/stat", "r" ) ) == NULL )
         return false;
@@ -1844,7 +2077,9 @@ CreateCpuDataPoint( void )
 
     #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
 
-    dataPoint->infoFromProcCpu = GUCEF_NEW AllLinuxProcCpuInfo();
+    dataPoint->infoFromProcCpu = new AllLinuxProcCpuInfo();
+    dataPoint->infoFromSysDevCpuFreq = new LinuxSysDevicesCpuFreqReader();
+    dataPoint->infoFromProcStat = new LinuxCpuUtilization();
 
     #endif
 
@@ -1873,8 +2108,12 @@ FreeCpuDataPoint( TCpuDataPoint* cpuDataPoint )
 
         #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
 
-        GUCEF_DELETE cpuDataPoint->infoFromProcCpu;
+        delete cpuDataPoint->infoFromProcCpu;
         cpuDataPoint->infoFromProcCpu = GUCEF_NULL;
+        delete cpuDataPoint->infoFromSysDevCpuFreq;
+        cpuDataPoint->infoFromSysDevCpuFreq = GUCEF_NULL;
+        delete cpuDataPoint->infoFromProcStat;
+        cpuDataPoint->infoFromProcStat = GUCEF_NULL;
 
         #endif
 
@@ -1898,7 +2137,7 @@ GetCpuStats( TCpuDataPoint* previousCpuDataDataPoint ,
     // For getting the overall CPU usage the recommended way is to "Use GetSystemTimes instead to retrieve this information."
     // Do note that while the below follows said recommendation from Microsoft, it is not the most accurate way to get the CPU usage relative to
     // the per core CPU usage which is also obtained and thus there may be some discrepancies between the two values.
-    // Then again the NtQuerySystemInformation call is not garantueed to work as its an undocumented API call.
+    // Then again the NtQuerySystemInformation call is not guaranteed to work as its an undocumented API call.
     FILETIME globalIdleTime;
     FILETIME globalKernelTime;
     FILETIME globalUserTime;
@@ -1987,23 +2226,39 @@ GetCpuStats( TCpuDataPoint* previousCpuDataDataPoint ,
 
     #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
 
-    //if ( previousCpuDataDataPoint->infoFromProcCpu->RefreshFromOS() )
-    if ( GUCEF_NULL != previousCpuDataDataPoint->infoFromProcCpu )
+    previousCpuDataDataPoint->infoFromSysDevCpuFreq->RefreshCpuFreq();
+    UInt32 coreMax = GUCEF_SMALLEST( previousCpuDataDataPoint->cpuStats.logicalCpuCount, (UInt32) previousCpuDataDataPoint->infoFromSysDevCpuFreq->cpuFreqInfos.size() );
+    for ( UInt32 i=0; i<coreMax; ++i )
     {
-        for ( UInt32 i=0; i<previousCpuDataDataPoint->cpuStats.logicalCpuCount; ++i )
-        {
-            LinuxLogicalCpuInfo* linuxLCpuInfo = &previousCpuDataDataPoint->infoFromProcCpu->allCpuInfo[ i ];
-            if ( GUCEF_NULL != linuxLCpuInfo )
-            {
-                TLogicalCpuStats* lCpuStats = &previousCpuDataDataPoint->cpuStats.logicalCpuStats[ i ];
-                memset( lCpuStats, 0, sizeof(TLogicalCpuStats) );
+        LinuxCpuFreqInfo& coreFreqInfo = previousCpuDataDataPoint->infoFromSysDevCpuFreq->cpuFreqInfos[ i ];
+        TLogicalCpuStats* lCpuStats = &previousCpuDataDataPoint->cpuStats.logicalCpuStats[ i ];
 
-                lCpuStats->cpuCurrentFrequencyInMhz = linuxLCpuInfo->cpuMhz;
-                lCpuStats->cpuMaxFrequencyInMhz = 0.0;
-                lCpuStats->cpuSpecMaxFrequencyInMhz = 0.0;
-            }
-        }
+        lCpuStats->cpuCurrentFrequencyInMhz = coreFreqInfo.scalingCurFreq;
+        lCpuStats->cpuMaxFrequencyInMhz = coreFreqInfo.scalingMaxFreq;
+        lCpuStats->cpuSpecMaxFrequencyInMhz = coreFreqInfo.cpuinfoMaxFreq;
     }
+
+    // Get the current CPU jiffies
+    // we need to contrast the new jiffies against the old tallies to glean utilization from the delta
+    LinuxCpuUtilization currentCpuUsageStats;
+
+    // First calculate the overall global usage %
+    previousCpuDataDataPoint->cpuStats.cpuUsePercentage =
+        LinuxCpuUtilization::CalculateCpuUtilization( previousCpuDataDataPoint->infoFromProcStat->globalCpuUsage, currentCpuUsageStats.globalCpuUsage );
+
+    // Now do the same per core
+    coreMax = GUCEF_SMALLEST( previousCpuDataDataPoint->cpuStats.logicalCpuCount, (UInt32) previousCpuDataDataPoint->infoFromProcStat->perCoreCpuUsage.size() );
+    for ( UInt32 i=0; i<coreMax; ++i )
+    {
+        LinuxCpuUsageBreakdown& currentCoreCpuUsage = currentCpuUsageStats.perCoreCpuUsage[ i ];
+        LinuxCpuUsageBreakdown& prevCoreCpuUsage = previousCpuDataDataPoint->infoFromProcStat->perCoreCpuUsage[ i ];
+
+        previousCpuDataDataPoint->cpuStats.logicalCpuStats[ i ].cpuUsePercentage =
+            LinuxCpuUtilization::CalculateCpuUtilization( prevCoreCpuUsage, currentCoreCpuUsage );
+    }
+
+    // make the current info the 'previous' info to prepare for the next call to this function
+    (*previousCpuDataDataPoint->infoFromProcStat) = currentCpuUsageStats;
 
     #endif
 
