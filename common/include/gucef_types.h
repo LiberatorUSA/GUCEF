@@ -39,8 +39,11 @@
 #define GUCEF_PLATFORM_H
 #endif /* GUCEF_PLATFORM_H ? */
 
+#include <stdio.h>
+
 #ifdef __cplusplus
   #include <limits>
+  #include <cstddef>
   #if __cplusplus >= 201103L
     #include <cstdint>
   #endif
@@ -420,7 +423,7 @@ typedef double          Float64;  /* 8 bytes, signed, decimal */
 enum EBuildinDataType
 {
     DATATYPE_UNKNOWN  = GUCEF_DATATYPE_UNKNOWN ,
-    
+
     DATATYPE_UINT8   = GUCEF_DATATYPE_UINT8   ,
     DATATYPE_INT8    = GUCEF_DATATYPE_INT8    ,
 
@@ -440,7 +443,7 @@ enum EBuildinDataType
     DATATYPE_BE_UINT64  = GUCEF_DATATYPE_BE_UINT64  ,
     DATATYPE_BE_INT64   = GUCEF_DATATYPE_BE_INT64   ,
     DATATYPE_BE_FLOAT32 = GUCEF_DATATYPE_BE_FLOAT32 ,
-    DATATYPE_BE_FLOAT64 = GUCEF_DATATYPE_BE_FLOAT64 
+    DATATYPE_BE_FLOAT64 = GUCEF_DATATYPE_BE_FLOAT64
 };
 typedef enum EBuildinDataType TBuildinDataType;
 
@@ -489,11 +492,11 @@ typedef enum EBasicDataType TBasicDataType;
 enum EBoundaryType
 {
     BOUNDARYTYPE_UNDEFINED = 0,
-    
+
     BOUNDARYTYPE_MINIMUM          ,
     BOUNDARYTYPE_MAXIMUM          ,
     BOUNDARYTYPE_NEAREST_MINMAX   ,
-    BOUNDARYTYPE_NEAREST_MIDPOINT     
+    BOUNDARYTYPE_NEAREST_MIDPOINT
 };
 typedef enum EBoundaryType TBoundaryType;
 
@@ -510,8 +513,8 @@ typedef enum EBoundaryType TBoundaryType;
 
 template < typename T >
 inline
-UInt8 
-TryToGetGucefTypeIdForTType( const T* dummyValue = NULL ) 
+UInt8
+TryToGetGucefTypeIdForTType( const T* dummyValue = NULL )
 {
     return GUCEF_DATATYPE_UNKNOWN;
 }
