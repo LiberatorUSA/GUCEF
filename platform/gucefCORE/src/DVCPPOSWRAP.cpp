@@ -578,7 +578,34 @@ CheckOnProcessAliveStatus( TProcessId pid, bool& status )
                                     FALSE,
                                     pid );
     if ( GUCEF_NULL == hProcess )
+    {
+        DWORD errorCode = ::GetLastError();
+        if ( ERROR_ACCESS_DENIED == errorCode )
+        {
+            // We are not allowed to open the process
+            // this is expected for some OS level and zombie procs
+            // We can use a more expensive way to check if the process is alive by going trough the process list and checking if a process with the given pid exists
+            TProcessIdVector processList;
+            if ( GetProcessList( processList ) )
+            {
+                TProcessIdVector::iterator i = processList.begin();
+                while ( i != processList.end() )
+                {
+                    if ( (*i) == pid )
+                    {
+                        status = true;
+                        return true;
+                    }
+                    ++i;
+                }                
+            }
+        }
+        else
+        {
+            GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "CheckOnProcessAliveStatus: Failed to open handle to process with PID " + ToString( pid ) + " ErrorCode=" + ToString( (UInt32) errorCode ) );
+        }
         return false;
+    }
 
     status = true;
     DWORD exitCode = 0;

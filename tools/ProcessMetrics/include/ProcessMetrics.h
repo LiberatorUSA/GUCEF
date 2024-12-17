@@ -243,6 +243,7 @@ class ProcessMetrics : public CORE::CObservingNotifier
         CORE::CProcessInformation processInformation;
         UInt64 lastUptimeInMs;
         CORE::CString exeName;
+        bool pidWasPredefined;
         bool gatherMetrics;
         bool startIfNotRunning;
         bool restartIfStopsRunning;
