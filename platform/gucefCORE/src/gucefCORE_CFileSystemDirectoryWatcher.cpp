@@ -658,6 +658,7 @@ class GUCEF_HIDDEN OSSpecificDirectoryWatcher : public CObserver
             dirs.insert( ToString( watchedDir ) );
             ++i;
         }
+        return true;
     }
 
     void OnDirWatchPollingCycle( CORE::CNotifier* notifier    ,

@@ -24,7 +24,7 @@
 
 /*
  *      The utilities are meant to be cross-platform replacements for
- *      O/S dependant file utilities. Compile time build switches are used
+ *      O/S dependent file utilities. Compile time build switches are used
  *      to direct these functions to the O/S native versions of the function.
  */
 

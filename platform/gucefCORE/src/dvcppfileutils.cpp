@@ -28,6 +28,8 @@
 #include <string.h>             /* standard string utils */
 #include <assert.h>
 #include <limits.h>
+#include <fstream>
+#include <sstream>
 
 #ifndef GUCEF_CORE_CONFIG_H
 #include "gucefCORE_config.h"
@@ -936,6 +938,94 @@ TryResolveLinuxSymlinkPath( const CString& symlinkPath, CString& resolvedPath )
 
 /*-------------------------------------------------------------------------*/
 
+bool
+GetDeviceUUIDFromUdev( int major, int minor, CString& uuid )
+{GUCEF_TRACE;
+
+    uuid.Clear();
+
+    CString udevPath = "/run/udev/data/b" + ToString( major ) + ":" + ToString( minor );
+    std::ifstream udevFile( udevPath.STL_String() );
+    if ( udevFile.is_open() )
+    {
+        std::string line;
+        while ( std::getline( udevFile, line ) )
+        {
+            // P = path (or devpath)
+            // N = name
+            // L = link_priority - The default is 0
+            // S = link (or symlink)
+            // E = property. The E is probably because properties are accessed with ENV{key}
+            if ( line.find( "E:ID_FS_UUID=" ) != std::string::npos )
+            {
+                uuid = line.substr(line.find("=") + 1);
+                return true;
+            }
+        }
+    }
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
+// Function to get the major and minor numbers of a device
+bool
+GetDeviceVersionNumbers( const CString& device, int& major, int& minor )
+{GUCEF_TRACE;
+
+    major = 0;
+    minor = 0;
+
+    std::string devPath = "/sys/class/block/" + device + "/dev";
+    std::ifstream devFile( devPath );
+    std::string devNumbers;
+    if ( devFile.is_open() )
+    {
+        std::getline( devFile, devNumbers );
+
+        std::istringstream iss(devNumbers);
+        char colon;
+        iss >> major >> colon >> minor;
+
+        return true;
+    }
+
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+GetDeviceUUIDForDeviceName( const CString& deviceName, CString& uuid )
+{GUCEF_TRACE;
+
+    // Try method 1:
+    if ( LoadTextFileAsString( "/sys/class/block/" + deviceName + "/uuid", uuid, false ) )
+    {
+        GUCEF_DEBUG_LOG( LOGLEVEL_NORMAL, "GetDeviceUUIDForDeviceName: used /sys/class/block/<device>/uuid to resolve " +
+            deviceName + " to " + uuid );
+        return true;
+    }
+
+    // Try method 2:
+    int devMajorVersion = 0;
+    int devMinorVersion = 0;
+    if ( GetDeviceVersionNumbers( deviceName, devMajorVersion, devMinorVersion ) )
+    {
+        if ( GetDeviceUUIDFromUdev( devMajorVersion, devMinorVersion, uuid ) )
+        {
+            GUCEF_DEBUG_LOG( LOGLEVEL_NORMAL, "GetDeviceUUIDForDeviceName: used /run/udev/data/ to resolve " +
+                deviceName + " with version " +
+                ToString( devMajorVersion ) + "." + ToString( devMinorVersion ) + " to " + uuid );
+            return true;
+        }
+    }
+
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
 class GUCEF_HIDDEN CLinuxProcMountsInfo
 {
     public:
@@ -1514,9 +1604,35 @@ GetAllFileSystemStorageVolumes( CString::StringSet& volumeIds )
 
         return true;
     }
+    else
+    {
+        GUCEF_DEBUG_LOG( LOGLEVEL_NORMAL, "GetAllFileSystemStorageVolumes: Failed to open directory: /dev/disk/by-uuid/ switching to fallback" );
 
-    GUCEF_DEBUG_LOG( LOGLEVEL_NORMAL, "GetAllFileSystemStorageVolumes: Failed to open directory: /dev/disk/by-uuid/" );
-    return false;
+        TLinuxProcMountsInfoVector mounts;
+        if ( ParseLinuxProcMounts( mounts ) )
+        {
+            bool foundAnyViaMounts = false;
+            for ( size_t i=0; i<mounts.size(); ++i )
+            {
+                CLinuxProcMountsInfo& mountInfo = mounts[ i ];
+
+                // This functionality is intended to work with storage volumes the way a user interprets them
+                // as such we only consider a subset, the actual 'disk' devices
+                if ( mountInfo.device.StartsWith( "/dev/" ) )
+                {
+                    CString uuid;
+                    if ( GetDeviceUUIDForDeviceName( mountInfo.device, uuid ) )
+                    {
+                        volumeIds.insert( uuid );
+                        foundAnyViaMounts = true;
+                    }
+                }
+            }
+            return foundAnyViaMounts;
+        }
+
+        return false;
+    }
 
     #else
 

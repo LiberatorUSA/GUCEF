@@ -10,19 +10,16 @@
 
 set -e
 
-# Find script directory (no support for symlinks)
-DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
+# Find script directory
+SCRIPTPATH="$(cd "${0%/*}" 2>/dev/null; echo "$PWD"/"${0##*/}")"
+SCRIPTDIR=${SCRIPTPATH%/*}
 
 # Source extra helper functions
-. $DIR/targetfuncs.sh
-
-# Find script directory (no support for symlinks)
-DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
-
+. $SCRIPTDIR/targetfuncs.sh
 
 # Configuration with default values
 : "${CI_TOOL:=circleci}"
-: "${CI_PLUGIN:=$DIR/../plugins/${CI_TOOL}.sh}"
+: "${CI_PLUGIN:=$SCRIPTDIR/../plugins/${CI_TOOL}.sh}"
 
 # Resolve commit range for current build 
 LAST_SUCCESSFUL_COMMIT=$(${CI_PLUGIN} hash last)
@@ -68,5 +65,5 @@ echo -e "\n---------------------------------------\n"
 
 # Build all modified projects
 echo -e "$PROJECTS_TO_BUILD" | while read PROJECT; do
-	CI_PLUGIN=${CI_PLUGIN} $DIR/build-projects.sh ${PROJECT}
+	CI_PLUGIN=${CI_PLUGIN} $SCRIPTDIR/build-projects.sh ${PROJECT}
 done;

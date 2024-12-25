@@ -3,6 +3,7 @@ structs
 kubernetes
 disk-usage
 jquery3-api
+saferestart
 git
 scm-api
 script-security

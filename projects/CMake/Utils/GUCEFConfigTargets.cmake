@@ -30,6 +30,7 @@ elseif (UNIX)
   set(GUCEF_LIB_DEBUG_PATH "")
   set(GUCEF_PLUGIN_PATH "/GUCEF")
   set(LINUX "1")
+  option(GUCEF_USE_CLANG "build with clang" OFF) # OFF is the default
 endif ()
 
 # create vcproj.user file for Visual Studio to set debug working directory

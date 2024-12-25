@@ -47,3 +47,7 @@ projects/k3s/host-node/local-path-config-updated.json
 projects/k3s/host-node/local-path-config-backup.json
 projects/k3s/jenkins/initialAdminPassword
 projects/k3s/jenkins/vanvelzen-jenkins-server-base-latest.tar
+projects/k3s/jenkins/jenkins-cli.jar
+projects/k3s/jenkins/CICD_USER_NAME.txt
+projects/k3s/jenkins/CICD_USER_PASS.txt
+projects/k3s/jenkins/CICD_USER_TOKEN.txt

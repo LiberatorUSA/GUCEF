@@ -33,3 +33,11 @@ sudo kubectl apply -f jenkins-deployment.yaml -n devops-tools
 sudo kubectl get services -n devops-tools
 sudo kubectl get pvc -n devops-tools
 sudo kubectl get pods -n devops-tools
+
+# First make the Jenkins CLI client available to our scripts
+# This works with out custom image generated above which has the client jar staged inside the image
+./copy_jenkins_client_cli_from_pod.sh
+
+# Now generate the auto CI/CD user account
+# We dont want to use the admin account for everything
+./generate_cicd_user.sh
