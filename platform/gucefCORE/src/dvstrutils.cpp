@@ -23,11 +23,11 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#define __STDC_WANT_LIB_EXT1__
+#define __STDC_WANT_LIB_EXT1__ 1
 #include <string.h>      /* string handling */
 #include <malloc.h>      /* memory allocation */
 #include "gucefCORE_ETypes.h"      /* simple types used */
-#include "dvstrutils.h"  /* ths file's header */
+#include "dvstrutils.h"  /* this file's header */
 #include <stdio.h>       /* standard I/O handling */
 
 #ifndef GUCEF_CORE_GUCEF_ESSENTIALS_H

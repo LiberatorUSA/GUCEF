@@ -64,7 +64,7 @@ class GUCEF_CORE_PUBLIC_CPP CXTermConsoleLogger : public CIConsoleLogger
 
     CXTermConsoleLogger( bool initialize = true );
 
-    virtual ~CXTermConsoleLogger();
+    virtual ~CXTermConsoleLogger() GUCEF_VIRTUAL_OVERRIDE;
 
     virtual void Log( const TLogMsgType logMsgType ,
                       const Int32 logLevel         ,
@@ -78,15 +78,15 @@ class GUCEF_CORE_PUBLIC_CPP CXTermConsoleLogger : public CIConsoleLogger
                                        const UInt32 threadId        ,
                                        const CDateTime& datetime    ) GUCEF_VIRTUAL_OVERRIDE;
 
-    virtual void FlushLog( void );
+    virtual void FlushLog( void ) GUCEF_VIRTUAL_OVERRIDE;
 
     virtual void SetMinimalLogLevel( const Int32 minimalLogLevel ) GUCEF_VIRTUAL_OVERRIDE;
 
     virtual Int32 GetMinimalLogLevel( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
-    virtual void SetFormatAsConsoleUI( bool formatForUiPurpose );
+    virtual void SetFormatAsConsoleUI( bool formatForUiPurpose ) GUCEF_VIRTUAL_OVERRIDE;
 
-    virtual bool GetFormatAsConsoleUI( void ) const;
+    virtual bool GetFormatAsConsoleUI( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
     bool Initialize( void );
 

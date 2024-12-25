@@ -77,9 +77,10 @@ class CTConfigurableMapHttpServerResource : public CCodecBasedHTTPServerResource
 
     virtual ~CTConfigurableMapHttpServerResource();
 
-    virtual bool Serialize( CORE::CDataNode& output             ,
+    virtual bool Serialize( const CString& resourcePath         ,
+                            CORE::CDataNode& output             ,
                             const CORE::CString& representation ,
-                            const CORE::CString& query          ) GUCEF_VIRTUAL_OVERRIDE;
+                            const CString& params               ) GUCEF_VIRTUAL_OVERRIDE;
 
     /**
      *  Create a new (contained) resource
@@ -91,10 +92,11 @@ class CTConfigurableMapHttpServerResource : public CCodecBasedHTTPServerResource
      *  @param supportedRepresentationsOutput In case the representation is not supported for creation, this returns the list of supported representations.
      *  @return The status of the operation. See TCreateState.
      */
-    virtual TCreateState CreateResource( const CORE::CString& transactionID            ,
+    virtual TCreateState CreateResource( const CString& resourcePath                   ,
+                                         const CString& transactionID                  ,
                                          const CORE::CDataNode& input                  ,
-                                         const CORE::CString& representation           ,
-                                         const CORE::CString& query                    ,
+                                         const CString& representation                 ,
+                                         const CString& params                         ,
                                          THTTPServerResourcePtr& resourceOutput        ,
                                          TStringVector& supportedRepresentationsOutput ) GUCEF_VIRTUAL_OVERRIDE;
 
@@ -102,7 +104,7 @@ class CTConfigurableMapHttpServerResource : public CCodecBasedHTTPServerResource
      *  Signals whether the resource is a collection of other resources
      *  Since this implements a collection it is hardcoded to 'true'
      */
-    virtual bool IsCollection( void ) const GUCEF_VIRTUAL_OVERRIDE;
+    virtual bool IsCollection( const CORE::CString& resourcePath ) const GUCEF_VIRTUAL_OVERRIDE;
 
     void SetResourceKeyPropertyName( const CString& keyPropertyName );
 
@@ -157,7 +159,7 @@ CTConfigurableMapHttpServerResource< CollectionKeyType, ConfigurableDerivedClass
 
 template< typename CollectionKeyType, class ConfigurableDerivedClass >
 bool
-CTConfigurableMapHttpServerResource< CollectionKeyType, ConfigurableDerivedClass >::IsCollection( void ) const
+CTConfigurableMapHttpServerResource< CollectionKeyType, ConfigurableDerivedClass >::IsCollection( const CORE::CString& resourcePath ) const
 {GUCEF_TRACE;
 
     return true;
@@ -187,7 +189,8 @@ CTConfigurableMapHttpServerResource< CollectionKeyType, ConfigurableDerivedClass
 
 template< typename CollectionKeyType, class ConfigurableDerivedClass >
 bool
-CTConfigurableMapHttpServerResource< CollectionKeyType, ConfigurableDerivedClass >::Serialize( CORE::CDataNode& output             ,
+CTConfigurableMapHttpServerResource< CollectionKeyType, ConfigurableDerivedClass >::Serialize( const CString& resourcePath         ,
+                                                                                               CORE::CDataNode& output             ,
                                                                                                const CORE::CString& representation ,
                                                                                                const CString& params               )
 {GUCEF_TRACE;
@@ -212,7 +215,8 @@ CTConfigurableMapHttpServerResource< CollectionKeyType, ConfigurableDerivedClass
 
 template< typename CollectionKeyType, class ConfigurableDerivedClass >
 CCodecBasedHTTPServerResource::TCreateState
-CTConfigurableMapHttpServerResource< CollectionKeyType, ConfigurableDerivedClass >::CreateResource( const CString& transactionID                  ,
+CTConfigurableMapHttpServerResource< CollectionKeyType, ConfigurableDerivedClass >::CreateResource( const CString& resourcePath                   ,
+                                                                                                    const CString& transactionID                  ,
                                                                                                     const CORE::CDataNode& input                  ,
                                                                                                     const CString& representation                 ,
                                                                                                     const CString& params                         ,

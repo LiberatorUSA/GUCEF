@@ -63,6 +63,8 @@ class CTMultiRegistry : public MT::CILockable
     typedef CTSharedPtr< CTRegistry< T, LockType >, LockType >      TSubRegistryPtr;
     typedef typename CTRegistry< T, LockType >::TRegisteredObjPtr   TRegisteredObjPtr;
     typedef typename CTRegistry< T, LockType >::TStringList         TStringList;
+    typedef typename TSubRegistry::EAlreadyRegistered               EAlreadyRegistered;
+    typedef typename TSubRegistry::EUnregisteredName                EUnregisteredName;
 
     CTMultiRegistry( void );
 
@@ -117,9 +119,9 @@ class CTMultiRegistry : public MT::CILockable
 
     protected:
 
-    virtual bool Lock( UInt32 lockWaitTimeoutInMs = GUCEF_MT_DEFAULT_LOCK_TIMEOUT_IN_MS ) const GUCEF_VIRTUAL_OVERRIDE;
+    virtual MT::TLockStatus Lock( UInt32 lockWaitTimeoutInMs = GUCEF_MT_DEFAULT_LOCK_TIMEOUT_IN_MS ) const GUCEF_VIRTUAL_OVERRIDE;
 
-    virtual bool Unlock( void ) const GUCEF_VIRTUAL_OVERRIDE;
+    virtual MT::TLockStatus Unlock( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
     private:
 
@@ -242,7 +244,7 @@ CTMultiRegistry< T, LockType >::Lookup( const CString& registryName  ,
         return registry->Lookup( registryEntry );
     }
 
-    throw std::exception( "gucefCORE::CTMultiRegistry::Lookup(): unregistered name given" );
+    GUCEF_EMSGTHROW( EUnregisteredName, "gucefCORE::CTMultiRegistry::Lookup(): unregistered name given" );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -451,7 +453,7 @@ CTMultiRegistry< T, LockType >::GetList( TStringList& destList ) const
 /*-------------------------------------------------------------------------*/
 
 template< class T, class LockType >
-bool
+MT::TLockStatus
 CTMultiRegistry< T, LockType >::Lock( UInt32 lockWaitTimeoutInMs ) const
 {GUCEF_TRACE;
 
@@ -461,7 +463,7 @@ CTMultiRegistry< T, LockType >::Lock( UInt32 lockWaitTimeoutInMs ) const
 /*-------------------------------------------------------------------------*/
 
 template< class T, class LockType >
-bool
+MT::TLockStatus
 CTMultiRegistry< T, LockType >::Unlock( void ) const
 {GUCEF_TRACE;
 

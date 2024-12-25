@@ -129,7 +129,7 @@ class TBasicSharedPtrSharedData : public MT::CILockable
         return m_lock.Unlock();
     }
 
-    virtual const CILockable* AsLockable( void ) const
+    virtual const CILockable* AsLockable( void ) const GUCEF_VIRTUAL_OVERRIDE
     {GUCEF_TRACE;
 
         return this;

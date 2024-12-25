@@ -114,8 +114,8 @@ class GUCEF_CORE_PUBLIC_CPP CFileAccess : public CIOAccess
                           UInt32 elements     ) GUCEF_VIRTUAL_OVERRIDE;
 
     virtual UInt64 Write( CIOAccess& sourceData   ,
-                          Int64 bytesToWrite = -1 );
-        
+                          Int64 bytesToWrite = -1 ) GUCEF_VIRTUAL_OVERRIDE;
+
     virtual UInt32 Write( const CString& string ,
                           bool addEol = true    ) GUCEF_VIRTUAL_OVERRIDE;
 
@@ -167,7 +167,7 @@ class GUCEF_CORE_PUBLIC_CPP CFileAccess : public CIOAccess
     bool SetFileToUse( const CString& filename          ,
                        const char* mode = "rb"          ,
                        bool moveIfCurrentlyOpen = false );
-    
+
     const CString& GetFilename( void ) const;
 
     static CString GetErrorString( int errorCode );

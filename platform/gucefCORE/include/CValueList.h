@@ -30,7 +30,7 @@
 #include <vector>
 
 #ifndef GUCEF_CORE_EXCEPTIONCLASSMACROS_H
-#include "ExceptionClassMacros.h"   
+#include "ExceptionClassMacros.h"
 #define GUCEF_CORE_EXCEPTIONCLASSMACROS_H
 #endif /* GUCEF_CORE_EXCEPTIONCLASSMACROS_H ? */
 
@@ -113,7 +113,7 @@ class GUCEF_CORE_PUBLIC_CPP CValueList : public CIConfigurable          ,
     /**
      *  Sets key/value pairs based on the source valuelist
      *  Like assignment in that new keys will be added and existing key will be overwritten if matched
-     *  However contrary to assignment keys that have no match will remain 
+     *  However contrary to assignment keys that have no match will remain
      */
     void SetMultiple( const CValueList& src                     ,
                       const CString& keyPrefix = CString::Empty );
@@ -126,7 +126,7 @@ class GUCEF_CORE_PUBLIC_CPP CValueList : public CIConfigurable          ,
                       const char kvSeperator = '='                  ,
                       const CString* optionalKeyPrefix = GUCEF_NULL );
 
-    void SetUsingKvCombo( const CString& keyAndValue                    , 
+    void SetUsingKvCombo( const CString& keyAndValue                    ,
                           const char kvSeperator = '='                  ,
                           const CString* optionalKeyPrefix = GUCEF_NULL ,
                           UInt8 valueType = GUCEF_DATATYPE_STRING       );
@@ -304,7 +304,7 @@ class GUCEF_CORE_PUBLIC_CPP CValueList : public CIConfigurable          ,
      *  given key if any. Otherwise returns an empty list and will not throw an exception
      *  Aside from returning the multiple entries for the same key (if permitted) it will also
      *  perform sub string parsing for values per value entry
-     */    
+     */
     TVariantVector GetValueVectorAlways( const CVariant& key, char valueSepChar ) const;
     TVariantVector GetValueVectorAlways( const CString& key, char valueSepChar ) const;
 
@@ -334,7 +334,7 @@ class GUCEF_CORE_PUBLIC_CPP CValueList : public CIConfigurable          ,
      *  @exception EUnknownKey thrown if the given key is unknown
      */
     const TVariantVector& GetValueVector( const CString& key ) const;
-    
+
     /**
      *  Returns a string converted copy of the value vector associated with the
      *  given key.
@@ -403,7 +403,7 @@ class GUCEF_CORE_PUBLIC_CPP CValueList : public CIConfigurable          ,
     const CVariant& GetKey( const UInt32 index ) const;
 
     bool HasKey( const char* key ) const;
-    
+
     bool HasKey( const CString& key ) const;
 
     bool HasKey( const CVariant& key ) const;
@@ -413,7 +413,7 @@ class GUCEF_CORE_PUBLIC_CPP CValueList : public CIConfigurable          ,
     bool HasKeyAndValue( const CVariant& key, const CVariant& value ) const;
 
     void Delete( const char* key );
-    
+
     void Delete( const CString& key );
 
     void Delete( const CVariant& key );
@@ -461,9 +461,9 @@ class GUCEF_CORE_PUBLIC_CPP CValueList : public CIConfigurable          ,
      */
     virtual bool Deserialize( const CDataNode& domRootNode                  ,
                               const CDataNodeSerializableSettings& settings ) GUCEF_VIRTUAL_OVERRIDE;
-    
+
     virtual CICloneable* Clone( void ) const GUCEF_VIRTUAL_OVERRIDE;
-    
+
     /**
      *  When loading from config data this will limit the scope
      *  of the information loaded to just the namespace given
@@ -487,7 +487,7 @@ class GUCEF_CORE_PUBLIC_CPP CValueList : public CIConfigurable          ,
 
     void CopySettingsFrom( const CValueList& other );
 
-    virtual const CString& GetClassTypeName( void ) const;
+    virtual const CString& GetClassTypeName( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
     GUCEF_DEFINE_MSGEXCEPTION( GUCEF_CORE_PUBLIC_CPP, EUnknownKey );
     GUCEF_DEFINE_MSGEXCEPTION( GUCEF_CORE_PUBLIC_CPP, EIndexOutOfRange );

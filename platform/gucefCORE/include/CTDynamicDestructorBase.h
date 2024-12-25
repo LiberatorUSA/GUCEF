@@ -14,12 +14,12 @@
  *
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
- 
+
 #ifndef GUCEF_CORE_CTDYNAMICDESTRUCTORBASE_H
 #define GUCEF_CORE_CTDYNAMICDESTRUCTORBASE_H
- 
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      INCLUDES                                                           //
@@ -42,7 +42,7 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-namespace GUCEF { 
+namespace GUCEF {
 namespace CORE {
 
 /*-------------------------------------------------------------------------//
@@ -56,7 +56,7 @@ class GUCEF_CORE_PUBLIC_CPP CIDynamicVoidDestructor
     public:
 
     virtual ~CIDynamicVoidDestructor() {}
-    
+
     virtual void DestroyKnownVoidedObject( void* objectToBeDestroyed ) const = 0;
 };
 
@@ -71,11 +71,11 @@ class CTDynamicDestructorBase : public CIDynamicVoidDestructor
     public:
 
     typedef T TDestructorType;
-        
+
     CTDynamicDestructorBase( void );
-  
-    virtual ~CTDynamicDestructorBase();    
-    
+
+    virtual ~CTDynamicDestructorBase();
+
     virtual void DestroyObject( T* objectToBeDestroyed ) const = 0;
 
     virtual void DestroyKnownVoidedObject( void* objectToBeDestroyed ) const GUCEF_VIRTUAL_OVERRIDE
@@ -91,7 +91,7 @@ class CTDynamicDestructorBase : public CIDynamicVoidDestructor
 /*-------------------------------------------------------------------------*/
 
 /**
- *  Base class for destructor delegator specializations that take a string form hint for the 
+ *  Base class for destructor delegator specializations that take a string form hint for the
  *  derived concrete instantiation's type
  */
 template< typename T >
@@ -100,12 +100,12 @@ class CTTypeNamedDynamicDestructorBase
     public:
 
     typedef T TDestructorType;
-        
+
     CTTypeNamedDynamicDestructorBase( void );
-  
-    virtual ~CTTypeNamedDynamicDestructorBase();    
-    
-    virtual void DestroyObject( T* objectToBeDestroyed, const CString& classTypeName ) const = 0;  
+
+    virtual ~CTTypeNamedDynamicDestructorBase();
+
+    virtual void DestroyObject( T* objectToBeDestroyed, const CString& classTypeName ) const = 0;
 
     private:
 
@@ -127,7 +127,7 @@ CTDynamicDestructorBase< T >::CTDynamicDestructorBase( void )
 }
 
 /*-------------------------------------------------------------------------*/
-   
+
 template< typename T >
 CTDynamicDestructorBase< T >::~CTDynamicDestructorBase()
 {
@@ -143,7 +143,7 @@ CTTypeNamedDynamicDestructorBase< T >::CTTypeNamedDynamicDestructorBase( void )
 }
 
 /*-------------------------------------------------------------------------*/
-   
+
 template< typename T >
 CTTypeNamedDynamicDestructorBase< T >::~CTTypeNamedDynamicDestructorBase()
 {
@@ -157,7 +157,7 @@ CTTypeNamedDynamicDestructorBase< T >::~CTTypeNamedDynamicDestructorBase()
 //-------------------------------------------------------------------------*/
 
 }; /* namespace CORE */
-}; /* namespace GUCEF *
+}; /* namespace GUCEF */
 
 /*-------------------------------------------------------------------------*/
 

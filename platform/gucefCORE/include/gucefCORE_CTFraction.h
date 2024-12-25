@@ -590,7 +590,7 @@ CString
 CTFraction< NumeratorType, DenominatorType >::ToString( void ) const
 {GUCEF_TRACE;
 
-    return m_numerator + "/" + m_denominator;
+    return CORE::ToString( m_numerator ) + "/" + CORE::ToString( m_denominator );
 }
 
 /*-------------------------------------------------------------------------*/

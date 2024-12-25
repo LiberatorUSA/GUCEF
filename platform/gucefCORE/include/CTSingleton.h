@@ -83,9 +83,9 @@ class CTSingleton : public BaseClass ,
 
     protected:
 
-    virtual bool Lock( void ) const GUCEF_VIRTUAL_OVERRIDE;
+    virtual MT::TLockStatus Lock( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
-    virtual bool Unlock( void ) const GUCEF_VIRTUAL_OVERRIDE;
+    virtual MT::TLockStatus Unlock( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
     private:
 
@@ -156,7 +156,7 @@ CTSingleton< BaseClass >::Deinstance( void )
 /*-------------------------------------------------------------------------*/
 
 template< class BaseClass >
-bool
+MT::TLockStatus
 CTSingleton< BaseClass >::Lock( void ) const
 {GUCEF_TRACE;
 
@@ -166,7 +166,7 @@ CTSingleton< BaseClass >::Lock( void ) const
 /*-------------------------------------------------------------------------*/
 
 template< class BaseClass >
-bool
+MT::TLockStatus
 CTSingleton< BaseClass >::Unlock( void ) const
 {GUCEF_TRACE;
 

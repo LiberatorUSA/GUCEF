@@ -131,6 +131,10 @@ TryResolveSpecialDir( TSpecialDirs dir, CString& resolvedPath )
         case SPECIALDIR_TEMP_DIR:
             resolvedPath = CORE::TempDir();
             return true;
+        default:
+        {
+            // handled below, no action here on purpose
+        }
     }
 
     #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
