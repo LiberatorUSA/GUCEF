@@ -5,5 +5,5 @@ FROM summerwind/actions-runner:latest as github-runner-base
 
 # install build tooling in derived base image
 FROM github-runner-base
-RUN sudo apt-get update && sudo apt-get -y install apt-utils build-essential git-all libssl-dev rpm libx11-dev graphviz doxygen cmake premake4 ssh gdb gdbserver
+RUN sudo apt-get update && sudo apt-get -y install apt-utils build-essential git-all clang clang-tidy llvm libssl-dev rpm libx11-dev graphviz doxygen cmake premake4 ssh gdb gdbserver
 
