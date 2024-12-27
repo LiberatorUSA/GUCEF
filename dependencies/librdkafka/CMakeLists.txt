@@ -232,13 +232,11 @@ target_link_libraries( ${MODULE_NAME} zlib )
 set_property( TARGET ${MODULE_NAME} APPEND_STRING PROPERTY COMPILE_DEFINITIONS "LIBRDKAFKACPP_EXPORTS;LIBRDKAFKA_EXPORTS" )
 
 if ( LINUX32 )
-  add_dependencies( ${MODULE_NAME} dl )
   target_link_libraries( ${MODULE_NAME} dl )
   set_property( TARGET ${MODULE_NAME} APPEND_STRING PROPERTY COMPILE_DEFINITIONS "WITH_LIBDL" )
 endif( LINUX32 )
 
 if ( LINUX64 )
-  add_dependencies( ${MODULE_NAME} dl )
   target_link_libraries( ${MODULE_NAME} dl )
   set_property( TARGET ${MODULE_NAME} APPEND_STRING PROPERTY COMPILE_DEFINITIONS "WITH_LIBDL" )
 endif( LINUX64 )
