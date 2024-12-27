@@ -564,7 +564,7 @@ RelativePath( const CString& relpath ,
         if ( closingCurly > 0 )
         {
             CString volumeGuid = resultStr.SubstrToIndex( (UInt32) closingCurly + 2, true );
-            
+
             CString::StringSet volumePaths;
             if ( GetAllFileSystemPathNamesForVolume( volumeGuid, volumePaths ) )
             {
@@ -576,7 +576,7 @@ RelativePath( const CString& relpath ,
                 }
             }
             else
-            {                
+            {
                 if ( GetAllFileSystemMountPointsForVolume( volumeGuid, volumePaths ) )
                 {
                     if ( !volumePaths.empty() )
@@ -1286,8 +1286,8 @@ LastSubDir( const CString& path, UInt32 dirSepCp )
 
         if ( lastSepCpIndex+1 == path.Length() && lastSepCpIndex > 0 )
         {
-            // We have a trailing seperator
-            // for a directory that means we want the section until the next seperator minus the trailing seperator
+            // We have a trailing separator
+            // for a directory that means we want the section until the next separator minus the trailing separator
             Int32 nextSepCpIndex = path.HasChar( dirSepCp, (UInt32) lastSepCpIndex-1, false );
             if ( nextSepCpIndex < 0 )
                 return path.SubstrToIndex( lastSepCpIndex+1, false );// assume the entire thing minus seperator is the last sub-dir
@@ -1296,8 +1296,8 @@ LastSubDir( const CString& path, UInt32 dirSepCp )
         }
         else
         {
-            // We dont have a trailing seperator
-            // for a directory that means we want the section until the next seperator
+            // We dont have a trailing separator
+            // for a directory that means we want the section until the next separator
             return path.SubstrToIndex( lastSepCpIndex+1, false );
         }
     }
@@ -1669,23 +1669,23 @@ Utf8toUtf16( const std::string& str ,
 
     std::vector<wchar_t> utf16_str;
     size_t i = 0;
-    while ( i < str.size() ) 
+    while ( i < str.size() )
     {
         uint32_t codepoint = 0;
         unsigned char ch = str[ i ];
-        if ( ch <= 0x7F ) 
+        if ( ch <= 0x7F )
         {
             codepoint = ch;
             i += 1;
-        } 
-        else if ( ch <= 0xBF ) 
+        }
+        else if ( ch <= 0xBF )
         {
             GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "Utf8toUtf16: Invalid UTF-8 sequence" );
             return false;
-        } 
-        else if ( ch <= 0xDF ) 
+        }
+        else if ( ch <= 0xDF )
         {
-            if ( i + 1 >= str.size() ) 
+            if ( i + 1 >= str.size() )
             {
                 GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "Utf8toUtf16: Invalid UTF-8 sequence" );
                 return false;
@@ -1693,10 +1693,10 @@ Utf8toUtf16( const std::string& str ,
 
             codepoint = ((ch & 0x1F) << 6) | (str[i + 1] & 0x3F);
             i += 2;
-        } 
-        else if ( ch <= 0xEF ) 
+        }
+        else if ( ch <= 0xEF )
         {
-            if ( i + 2 >= str.size() ) 
+            if ( i + 2 >= str.size() )
             {
                 GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "Utf8toUtf16: Invalid UTF-8 sequence" );
                 return false;
@@ -1704,8 +1704,8 @@ Utf8toUtf16( const std::string& str ,
 
             codepoint = ((ch & 0x0F) << 12) | ((str[i + 1] & 0x3F) << 6) | (str[i + 2] & 0x3F);
             i += 3;
-        } 
-        else if ( ch <= 0xF7 ) 
+        }
+        else if ( ch <= 0xF7 )
         {
             if ( i + 3 >= str.size() )
             {
@@ -1715,17 +1715,17 @@ Utf8toUtf16( const std::string& str ,
 
             codepoint = ((ch & 0x07) << 18) | ((str[i + 1] & 0x3F) << 12) | ((str[i + 2] & 0x3F) << 6) | (str[i + 3] & 0x3F);
             i += 4;
-        } 
-        else 
+        }
+        else
         {
             GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "Utf8toUtf16: Invalid UTF-8 sequence" );
             return false;
         }
 
-        if ( codepoint <= 0xFFFF ) 
+        if ( codepoint <= 0xFFFF )
         {
             utf16_str.push_back( static_cast< UInt16 >( codepoint ) );
-        } else 
+        } else
         {
             codepoint -= 0x10000;
             utf16_str.push_back( static_cast< UInt16 >( (codepoint >> 10) + 0xD800) );

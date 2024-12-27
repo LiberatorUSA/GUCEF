@@ -110,6 +110,78 @@ namespace CORE {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+#if ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX )
+
+bool GUCEF_HIDDEN
+TryToDetermineIfRunningInContainer( void )
+{GUCEF_TRACE;
+
+    // in a containerized environment we'd expect to see certain things
+    // we leverage this to try and make the determination
+    // do note that this code may need to evolve as the container landscape evolves
+    // for now we aim for the code to support Docker and containerd
+
+    CString cgroupInfo;
+    if ( LoadTextFileAsString( "/proc/1/cgroup", cgroupInfo, true, "\n" ) )
+    {
+        bool hasContainerdKeyword =
+                -1 < cgroupInfo.HasSubstr( "/pod", true, true ) ||
+                -1 < cgroupInfo.HasSubstr( "/kube", true, true );
+
+        if ( hasContainerdKeyword )
+            return true;
+
+        bool hasDockerKeyword =
+            -1 < cgroupInfo.HasSubstr( "/docker", true, true );
+
+        if ( hasDockerKeyword )
+            return true;
+    }
+
+    return false;
+}
+
+/*--------------------------------------------------------------------------*/
+
+bool GUCEF_HIDDEN
+ParseFakeUUID( const CString& fakeUuid ,
+               CString& deviceName     ,
+               bool& hasVersionInfo    ,
+               int& majorVersion       ,
+               int& minorVersion       )
+{GUCEF_TRACE;
+
+    deviceName.Clear();
+    hasVersionInfo = false;
+    majorVersion = 0;
+    minorVersion = 0;
+
+    if ( fakeUuid.StartsWith( "fakeuuid:" ) )
+    {
+        CString remnant = fakeUuid.CutChars( 9, true, 0 );
+        Int32 underscoreOffset = remnant.HasChar( '_', 0, true );
+        if ( underscoreOffset < 0 )
+        {
+            deviceName = remnant;
+            return true;
+        }
+
+        Int32 colonOffset = remnant.HasChar( ':', (UInt32) underscoreOffset, true );
+        if ( colonOffset > 0 )
+        {
+            majorVersion = StringToInt32( remnant.SubstrFromRange( underscoreOffset+1, colonOffset ), 0 );
+            minorVersion = StringToInt32( remnant.SubstrToIndex( colonOffset+1, false ), 0 );
+            hasVersionInfo = true;
+            return true;
+        }
+    }
+    return false;
+}
+
+#endif
+
+/*--------------------------------------------------------------------------*/
+
 bool
 TryResolveSpecialDir( TSpecialDirs dir, CString& resolvedPath )
 {GUCEF_TRACE;
@@ -1025,6 +1097,28 @@ GetDeviceUUIDForDeviceName( const CString& deviceName, CString& uuid )
         }
     }
 
+    // Fallback method 3:
+    if ( TryToDetermineIfRunningInContainer() )
+    {
+        // We think we are in a container, as such we have no hope of getting the UUID unless the container is
+        // running as privileged. As such we will generate a fake unique id as a substitution for our API calls
+        if ( 0 != devMajorVersion && 0 != devMinorVersion )
+        {
+            uuid = "fakeuuid:" + deviceName + "_" + ToString( devMajorVersion ) + ":" + ToString( devMinorVersion );
+
+            GUCEF_DEBUG_LOG( LOGLEVEL_NORMAL, "GetDeviceUUIDForDeviceName: Suspected containerized environment. Will generate fake substitute uuid since hardware specifics are not accessible from " +
+                deviceName + " with version " +
+                ToString( devMajorVersion ) + ":" + ToString( devMinorVersion ) + " to " + uuid );
+            return true;
+        }
+
+        uuid = "fakeuuid:" + deviceName;
+
+        GUCEF_DEBUG_LOG( LOGLEVEL_NORMAL, "GetDeviceUUIDForDeviceName: Suspected containerized environment. Will generate fake substitute uuid since hardware specifics are not accessible from " +
+            deviceName + " without a version to " + uuid );
+        return true;
+    }
+
     return false;
 }
 
@@ -1114,6 +1208,32 @@ ParseLinuxProcMounts( TLinuxProcMountsInfoVector& mounts )
     return false;
 }
 
+/*-------------------------------------------------------------------------*/
+
+bool GUCEF_HIDDEN
+GetMountPathForDeviceName( const CString& deviceName ,
+                           CString& mountPath        )
+{GUCEF_TRACE;
+
+    mountPath.Clear();
+
+    TLinuxProcMountsInfoVector mounts;
+    if ( ParseLinuxProcMounts( mounts ) )
+    {
+        TLinuxProcMountsInfoVector::iterator i = mounts.begin();
+        while ( i != mounts.end() )
+        {
+            CLinuxProcMountsInfo& info = (*i);
+            if ( deviceName == info.device )
+            {
+                mountPath = info.mountPoint;
+                return true;
+            }
+            ++i;
+        }
+    }
+    return false;
+}
 
 #endif /* Linux or Android ? */
 
@@ -1359,7 +1479,7 @@ ExtractGuidSectionFromPath( const CString& path )
         }
     }
 
-    return CString();
+    return CString::Empty;
 }
 
 #endif
@@ -1388,14 +1508,35 @@ ConvertGuidToVolumePath( const CString& volumeGuid )
 
     #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
 
-    if ( '/' == volumeGuid[ 0 ] )
+    if ( !volumeGuid.StartsWith( "fakeuuid:" ) )
     {
-        // The volume GUID is actually already in path format
-        return volumeGuid;
+        if ( '/' == volumeGuid[ 0 ] )
+        {
+            // The volume GUID is actually already in path format
+            return volumeGuid;
+        }
+
+        CString volumePath = "/dev/disk/by-uuid/" + volumeGuid;
+        return volumePath;
+    }
+    else
+    {
+        // since we have a fake uuid we need to go based on device name
+        CString deviceName;
+        bool hasVersionInfo = false;
+        int majorVersion = 0;
+        int minorVersion = 0;
+        if ( ParseFakeUUID( volumeGuid, deviceName, hasVersionInfo, majorVersion, minorVersion ) )
+        {
+            CString mountPath;
+            if ( GetMountPathForDeviceName( deviceName, mountPath ) )
+            {
+                return mountPath;
+            }
+        }
     }
 
-    CString volumePath = "/dev/disk/by-uuid/" + volumeGuid;
-    return volumePath;
+    return CString::Empty;
 
     #else
 
@@ -1712,30 +1853,61 @@ GetAllFileSystemPathNamesForVolume( const CString& volumeId       ,
 
     #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
 
-    CString fsPathByUuid = CombinePath( "/dev/disk/by-uuid/", volumeId );
-    CString fsDevPath;
-    if ( TryResolveLinuxSymlinkPath( fsPathByUuid, fsDevPath ) )
+    if ( !volumeId.StartsWith( "fakeuuid:" ) )
     {
-        CString deviceId = LastSubDir( fsDevPath );
-
-        TLinuxProcMountsInfoVector mounts;
-        if ( ParseLinuxProcMounts( mounts ) )
+        CString fsPathByUuid = CombinePath( "/dev/disk/by-uuid/", volumeId );
+        CString fsDevPath;
+        if ( TryResolveLinuxSymlinkPath( fsPathByUuid, fsDevPath ) )
         {
-            TLinuxProcMountsInfoVector::iterator i = mounts.begin();
-            while ( i != mounts.end() )
+            CString deviceId = LastSubDir( fsDevPath );
+
+            TLinuxProcMountsInfoVector mounts;
+            if ( ParseLinuxProcMounts( mounts ) )
             {
-                const CLinuxProcMountsInfo& info = (*i);
-                CString mountDeviceId = LastSubDir( info.device );
-                if ( mountDeviceId == deviceId )
+                TLinuxProcMountsInfoVector::iterator i = mounts.begin();
+                while ( i != mounts.end() )
                 {
-                    pathNames.insert( info.mountPoint );
+                    const CLinuxProcMountsInfo& info = (*i);
+                    CString mountDeviceId = LastSubDir( info.device );
+                    if ( mountDeviceId == deviceId )
+                    {
+                        pathNames.insert( info.mountPoint );
+                    }
+                    ++i;
                 }
-                ++i;
+                return true;
             }
-            return true;
         }
     }
-
+    else
+    {
+        // since we have a fake uuid we need to go based on device name
+        CString deviceName;
+        bool hasVersionInfo = false;
+        int majorVersion = 0;
+        int minorVersion = 0;
+        if ( ParseFakeUUID( volumeId, deviceName, hasVersionInfo, majorVersion, minorVersion ) )
+        {
+            TLinuxProcMountsInfoVector mounts;
+            if ( ParseLinuxProcMounts( mounts ) )
+            {
+                bool itemsAdded = false;
+                TLinuxProcMountsInfoVector::const_iterator i = mounts.begin();
+                while ( i != mounts.end() )
+                {
+                    const CLinuxProcMountsInfo& info = (*i);
+                    CString mountDeviceId = LastSubDir( info.device );
+                    if ( mountDeviceId == deviceName )
+                    {
+                        pathNames.insert( info.mountPoint );
+                        itemsAdded = true;
+                    }
+                    ++i;
+                }
+                return itemsAdded;
+            }
+        }
+    }
     return false;
 
     #else
@@ -1762,7 +1934,7 @@ GetAllFileSystemMountPointsForVolume( const CString& volumeId         ,
     WCHAR volMountBuffer[ MOUNT_POINT_BUFFER_SIZE ];
     memset( volMountBuffer, 0, sizeof( volMountBuffer ) );
 
-    // Get the Volume mount points as the windows equivelant of symlink based mounts
+    // Get the Volume mount points as the windows equivalent of symlink based mounts
     // Volume mount points are alternative locations in the file system where volumes are mounted,
     // providing a way to access volumes indirectly or integrate them into the directory structure of another volume.
 
