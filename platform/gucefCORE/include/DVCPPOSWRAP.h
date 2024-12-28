@@ -100,6 +100,26 @@ GetHostname( void );
 
 /*--------------------------------------------------------------------------*/
 
+/**
+ *  Attempts to determine if the specified process is running as a service
+ *  For Windows this means that the software is running as a registered windows service
+ *  For Linux this means that the software is running as a daemon
+ */
+GUCEF_CORE_PUBLIC_CPP bool 
+IsProcessRunningAsService( TProcessId pid );
+
+/*--------------------------------------------------------------------------*/
+
+/**
+ *  Attempts to determine if the software is running as a service
+ *  For Windows this means that the software is running as a registered windows service
+ *  For Linux this means that the software is running as a daemon
+ */
+GUCEF_CORE_PUBLIC_CPP bool 
+IsRunningAsService( void );
+
+/*--------------------------------------------------------------------------*/
+
 GUCEF_CORE_PUBLIC_CPP bool
 CommandLineExecute( const CString& command, CString& result, bool waitForExit );
 

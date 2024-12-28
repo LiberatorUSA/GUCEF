@@ -1463,7 +1463,8 @@ WriteStringAsTextFile( const CString& filePath    ,
                        const char* eolString      )
 {GUCEF_TRACE;
 
-    if ( filePath.IsNULLOrEmpty() ) return false;
+    if ( filePath.IsNULLOrEmpty() ) 
+        return false;
 
     FILE* fptr = fopen( filePath.C_String(), "wb" );
     if ( NULL != fptr )
@@ -1472,11 +1473,13 @@ WriteStringAsTextFile( const CString& filePath    ,
         {
             CString unifiedContent = fileContent;
             UnifyStringEol( eolString, unifiedContent );
-            fwrite( unifiedContent.C_String(), unifiedContent.Length(), 1, fptr );
+            if ( !unifiedContent.IsNULLOrEmpty() )
+                fwrite( unifiedContent.C_String(), unifiedContent.ByteSize()-1, 1, fptr );
         }
         else
         {
-            fwrite( fileContent.C_String(), fileContent.Length(), 1, fptr );
+            if ( !fileContent.IsNULLOrEmpty() )
+                fwrite( fileContent.C_String(), fileContent.ByteSize()-1, 1, fptr );
         }
         fclose( fptr );
         return true;

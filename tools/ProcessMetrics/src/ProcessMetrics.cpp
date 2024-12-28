@@ -58,6 +58,11 @@
 #define GUCEF_CORE_METRICSMACROS_H
 #endif /* GUCEF_CORE_METRICSMACROS_H ? */
 
+#ifndef GUCEF_CORE_DVCPPOSWRAP_H
+#include "DVCPPOSWRAP.h"
+#define GUCEF_CORE_DVCPPOSWRAP_H
+#endif /* GUCEF_CORE_DVCPPOSWRAP_H ? */
+
 #ifndef GUCEF_COMCORE_CCOMCOREGLOBAL_H
 #include "gucefCOMCORE_CComCoreGlobal.h"
 #define GUCEF_COMCORE_CCOMCOREGLOBAL_H
@@ -680,14 +685,67 @@ ProcessMetrics::LaunchProcs( const CORE::CString::StringSet& procsToLaunch )
                 const CORE::CString& cmdLine = procInfo.processInformation.GetCommandLineArgs();
                 if ( !exePath.IsNULLOrEmpty() )
                 {
-                    if ( CORE::Execute_Program( exePath.C_String(), cmdLine.C_String() ) > 0 )
+                    #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
+
+                    if ( CORE::IsRunningAsService() )
                     {
-                        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "ProcessMetrics: Launched process \"" + procInfo.exeName + "\" using image \"" + exePath + "\" and command line \"" + cmdLine + "\"" );
+                        // On Windows due to security restrictions if you try to launch a process from a service
+                        // and the process you are trying to launch is a GUI app it will fail. This is because the
+                        // service is running in a different session than the user's session. To get around this
+                        // we have tp indirectly launch the process via a helper process that is running in the user's
+                        // session. This helper process is a simple console app that takes the exe path and command line
+                        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "ProcessMetrics: Attempting to launch process \"" + procInfo.exeName + 
+                            "\" using image \"" + exePath + "\" and command line \"" + cmdLine + "\"");
+
+                        CORE::CString tempDir = CORE::TempDir();
+                        UInt32 i=0; 
+                        CORE::CString fileName;
+                        CORE::CString helperScriptPath;
+                        do
+                        {
+                            fileName = procInfo.exeName + "_launch_helper_" + CORE::ToString( i ) + ".bat";
+                            helperScriptPath = CORE::CombinePath( tempDir, fileName );
+                            ++i;
+                        }
+                        while ( CORE::FileExists( helperScriptPath ) );
+
+                        CORE::CString helperScript = "cmd.exe /c \"" + exePath + "\" " + cmdLine;
+                        if ( CORE::WriteStringAsTextFile( helperScriptPath, helperScript ) )
+                        {
+                            CORE::CString exeResult;
+                            if ( CORE::CommandLineExecute( helperScriptPath, exeResult, false ) )
+                            {
+                                GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "ProcessMetrics: Successfully requested to launch process \"" + procInfo.exeName + 
+                                    "\" using image \"" + exePath + "\" and command line \"" + cmdLine + "\"");
+                            }
+                            else
+                            {
+                                GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "ProcessMetrics: Failed to launch process \"" + procInfo.exeName + 
+                                    "\" using image \"" + exePath + "\" and command line \"" + cmdLine + "\"");
+                                totalSuccess = false;
+                            }
+                        }
+                        else
+                        {
+                            GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "ProcessMetrics: Failed to write launch helper script to \"" + helperScriptPath + "\"" );
+                            totalSuccess = false;
+                        }
+
+                        CORE::DeleteFile( helperScriptPath );
                     }
                     else
+                    #endif
+
                     {
-                        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "ProcessMetrics: Failed to launch process \"" + procInfo.exeName + "\" using image \"" + exePath + "\" and command line \"" + cmdLine + "\"" );
-                        totalSuccess = false;
+                        if ( CORE::Execute_Program( exePath.C_String(), cmdLine.C_String() ) > 0 )
+                        {
+                            GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "ProcessMetrics: Launched process \"" + procInfo.exeName + "\" using image \"" + exePath + "\" and command line \"" + cmdLine + "\"" );
+                        }
+                        else
+                        {
+                            GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "ProcessMetrics: Failed to launch process \"" + procInfo.exeName + "\" using image \"" + exePath + "\" and command line \"" + cmdLine + "\"" );
+                            totalSuccess = false;
+                        }
                     }
                 }
                 else

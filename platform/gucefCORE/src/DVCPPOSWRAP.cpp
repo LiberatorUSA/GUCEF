@@ -25,6 +25,7 @@
 
 #include <map>
 #include <iostream>
+#include <fstream>
 #include <stdexcept>
 #include <string>
 #include <stdio.h>
@@ -39,6 +40,11 @@
 #include "dvcppstringutils.h"
 #define GUCEF_CORE_DVCPPSTRINGUTILS_H
 #endif /* GUCEF_CORE_DVCPPSTRINGUTILS_H ? */
+
+#ifndef GUCEF_CORE_DVCPPFILEUTILS_H
+#include "dvcppfileutils.h"
+#define GUCEF_CORE_DVCPPFILEUTILS_H
+#endif /* GUCEF_CORE_DVCPPFILEUTILS_H ? */
 
 #ifndef GUCEF_CORE_LOGGING_H
 #include "gucefCORE_Logging.h"
@@ -225,6 +231,299 @@ GetHostname( void )
 }
 
 /*-------------------------------------------------------------------------*/
+#if ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
+
+// Helper function to get the parent process ID (PPID) of a given process ID (PID)
+pid_t GUCEF_HIDDEN
+GetParentPID( pid_t pid ) 
+{GUCEF_TRACE;
+
+    CString statFile = "/proc/" + ToString( pid ) + "/stat";
+    CString statContent;
+    if ( !LoadTextFileAsString( statFile, statContent ) )
+        return -1;
+
+    CString::StringVector statParts = statContent.ParseElements( ' ', false );
+    if ( statParts.size() < 4 ) 
+    {
+        return -1;
+    }
+    return StringToInt32( statParts[3], -1 );
+}
+
+#endif
+/*-------------------------------------------------------------------------*/
+#if ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
+
+// Check if the process is running as a service under SysVinit
+bool GUCEF_HIDDEN
+IsRunningAsSysVinitService( pid_t pid ) 
+{GUCEF_TRACE;
+
+    CFileSystemIterator fsIterator;   
+    if ( fsIterator.FindFirst( "/etc/rc.d" ) )
+    {
+        do
+        {
+            CString path = "/etc/rc.d/" + fsIterator.GetResourceName();
+            if ( FileExists( path ) )
+            {
+                std::ifstream file( path );
+                if ( file.is_open() )
+                {
+                    std::string line;
+                    while ( std::getline( file, line ) )
+                    {
+                        if ( line.find( "pidfile" ) != std::string::npos && line.find( ToString( pid ) ) != std::string::npos )
+                        {
+                            file.close();
+                            return true;
+                        }
+                    }
+                    file.close();
+                }
+            }
+        } 
+        while ( fsIterator.FindNext() );
+    }
+
+    return false;
+}
+
+#endif
+/*-------------------------------------------------------------------------*/
+#if ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
+
+// Check if the process is running as a service under Upstart
+bool GUCEF_HIDDEN
+IsRunningAsUpstartService( pid_t pid ) 
+{GUCEF_TRACE;
+
+    CFileSystemIterator fsIterator;   
+    if ( fsIterator.FindFirst( "/etc/init" ) )
+    {
+        do
+        {
+            CString path = "/etc/init/" + fsIterator.GetResourceName();
+            if ( FileExists( path ) )
+            {
+                std::ifstream file( path );
+                if ( file.is_open() )
+                {
+                    std::string line;
+                    while ( std::getline( file, line ) )
+                    {
+                        if ( line.find( "exec" ) != std::string::npos && line.find( ToString( pid ) ) != std::string::npos )
+                        {
+                            file.close();
+                            return true;
+                        }
+                    }
+                    file.close();
+                }
+            }
+        } 
+        while ( fsIterator.FindNext() );
+    }
+
+    return false;
+}
+
+#endif
+/*-------------------------------------------------------------------------*/
+#if ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
+
+// Check if the process is running as a service under OpenRC
+bool GUCEF_HIDDEN
+IsRunningAsOpenRCService( pid_t pid ) 
+{GUCEF_TRACE;
+
+    CFileSystemIterator fsIterator;   
+    if ( fsIterator.FindFirst( "/etc/init.d" ) )
+    {
+        do
+        {
+            CString path = "/etc/init.d/" + fsIterator.GetResourceName();
+            if ( FileExists( path ) )
+            {
+                std::ifstream file( path );
+                if ( file.is_open() )
+                {
+                    std::string line;
+                    while ( std::getline( file, line ) )
+                    {
+                        if ( line.find( "pidfile" ) != std::string::npos && line.find( ToString( pid ) ) != std::string::npos )
+                        {
+                            file.close();
+                            return true;
+                        }
+                    }
+                    file.close();
+                }
+            }
+        } 
+        while ( fsIterator.FindNext() );
+    }
+
+    return false;
+}
+
+#endif
+/*-------------------------------------------------------------------------*/
+#if ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
+
+// Check if the process is running as a service under systemd
+bool GUCEF_HIDDEN
+IsRunningAsSystemdService( pid_t pid ) 
+{GUCEF_TRACE;
+
+    pid_t ppid = GetParentPID( pid );
+    while ( ppid > 1 ) 
+    {
+        CString cgroupFile = "/proc/" + ToString( ppid ) + "/cgroup";
+        CString cgroupContent;
+        if ( LoadTextFileAsString( cgroupFile, cgroupContent ) )
+        {
+            if ( cgroupContent.HasSubstr( "name=systemd" ) >  -1 ) 
+            {
+                return true;
+            }
+        }
+
+        pid = ppid;
+        ppid = GetParentPID( pid );
+    }
+    return false;
+}
+
+#endif
+
+/*-------------------------------------------------------------------------*/
+
+bool
+IsProcessRunningAsService( TProcessId pid )
+{GUCEF_TRACE;
+
+    #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
+    
+    ::SERVICE_STATUS_PROCESS serviceStatus;
+    DWORD bytesNeeded = 0;
+
+    ::SC_HANDLE scm = ::OpenSCManagerW( NULL, NULL, SC_MANAGER_ENUMERATE_SERVICE );
+    if ( NULL == scm ) 
+    {
+        GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "IsRunningAsService: Failed to open Service Control Manager" );
+        return false;
+    }
+
+    ::SC_HANDLE service;
+    ::ENUM_SERVICE_STATUS_PROCESS enumStatus;
+    DWORD bytesNeeded2 = 0;
+    DWORD servicesReturned = 0;
+    DWORD resumeHandle = 0;
+
+    BOOL success = ::EnumServicesStatusExW(
+        scm,
+        SC_ENUM_PROCESS_INFO,
+        SERVICE_WIN32,
+        SERVICE_STATE_ALL,
+        (LPBYTE)&enumStatus,
+        sizeof(enumStatus),
+        &bytesNeeded2,
+        &servicesReturned,
+        &resumeHandle,
+        NULL
+    );
+
+    if ( FALSE == success && ::GetLastError() != ERROR_MORE_DATA ) 
+    {
+        ::CloseServiceHandle( scm );
+        GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "IsRunningAsService: Failed to enumerate services" );
+        return false;
+    }
+
+    BYTE* buffer = new BYTE[bytesNeeded2];
+    success = ::EnumServicesStatusExW(
+        scm,
+        SC_ENUM_PROCESS_INFO,
+        SERVICE_WIN32,
+        SERVICE_STATE_ALL,
+        buffer,
+        bytesNeeded2,
+        &bytesNeeded2,
+        &servicesReturned,
+        &resumeHandle,
+        NULL
+    );
+
+    if ( FALSE == success ) 
+    {
+        delete[] buffer;
+        ::CloseServiceHandle( scm );
+        GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "IsRunningAsService: Failed to enumerate services  (2nd call)" );
+        return false;
+    }
+
+    ::ENUM_SERVICE_STATUS_PROCESSW* services = (ENUM_SERVICE_STATUS_PROCESSW*) buffer;
+    for ( DWORD i=0; i<servicesReturned; ++i ) 
+    {
+        if ( services[ i ].ServiceStatusProcess.dwProcessId == (DWORD) pid ) 
+        {
+            service = ::OpenServiceW( scm, services[ i ].lpServiceName, SERVICE_QUERY_STATUS );
+            if ( NULL != service) 
+            {
+                success = ::QueryServiceStatusEx( service, SC_STATUS_PROCESS_INFO, (LPBYTE)&serviceStatus, sizeof(SERVICE_STATUS_PROCESS), &bytesNeeded );
+                ::CloseServiceHandle( service );
+                if ( FALSE != success ) 
+                {
+                    bool result = (serviceStatus.dwCurrentState == SERVICE_RUNNING);
+                    delete[] buffer;
+                    ::CloseServiceHandle( scm );
+                    return result;
+                }
+            }
+        }
+    }
+
+    delete[] buffer;
+    ::CloseServiceHandle( scm );
+    return false;
+
+    #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
+
+    // On Linux there are multiple service managers, so we need to check for each one
+    // or at least some popular ones. This code would need updating as new service managers are introduced
+    return IsRunningAsSystemdService( pid ) || 
+           IsRunningAsSysVinitService( pid ) || 
+           IsRunningAsUpstartService( pid ) || 
+           IsRunningAsOpenRCService( pid );
+    
+    #else
+
+    // platform not supported
+    GUCEF_WARNING_LOG( LOGLEVEL_NORMAL, "IsRunningAsService: Platform has no supported implementation" );
+    return false;
+
+    #endif
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool 
+IsRunningAsService( void ) 
+{GUCEF_TRACE;
+
+    #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
+    return IsProcessRunningAsService( ::GetCurrentProcessId() );
+    #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
+    return IsProcessRunningAsService( ::getpid() );
+    #else
+    GUCEF_WARNING_LOG(LOGLEVEL_NORMAL, "IsRunningAsService: Platform has no supported implementation");
+    return false;
+    #endif
+}
+
+/*-------------------------------------------------------------------------*/
 
 bool
 GetExeImagePathForProcessId( TProcessId pid     ,
@@ -394,14 +693,18 @@ CommandLineExecute( const CString& command ,
         return false;
     }
 
-    STARTUPINFOA si = {sizeof(STARTUPINFOW)};
+    STARTUPINFOW si;
+    ZeroMemory(&si, sizeof(si));
+    si.cb = sizeof(si);
     si.dwFlags     = STARTF_USESHOWWINDOW | STARTF_USESTDHANDLES;
     si.hStdOutput  = hPipeWrite;
     si.hStdError   = hPipeWrite;
     si.wShowWindow = SW_HIDE; // <- Prevents cmd window from flashing, this requires STARTF_USESHOWWINDOW in dwFlags.
 
-    PROCESS_INFORMATION pi = { 0 };
-    BOOL fSuccess = ::CreateProcessA( NULL, (LPSTR) command.C_String(), NULL, NULL, TRUE, CREATE_NEW_CONSOLE, NULL, NULL, &si, &pi );
+    std::wstring wCommand = ToWString( command );
+    PROCESS_INFORMATION pi;
+    ZeroMemory(&pi, sizeof(pi));
+    BOOL fSuccess = ::CreateProcessW( NULL, (LPWSTR) wCommand.c_str(), NULL, NULL, TRUE, CREATE_NEW_CONSOLE, NULL, NULL, &si, &pi );
     if ( FALSE == fSuccess )
     {
         ::CloseHandle( hPipeWrite );
