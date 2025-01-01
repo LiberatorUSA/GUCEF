@@ -27,7 +27,7 @@
 //-------------------------------------------------------------------------*/
 
 #ifndef GUCEF_CORE_CIFUNCTION_H
-#include "gucefCORE_CIFunction.h"   
+#include "gucefCORE_CIFunction.h"
 #define GUCEF_CORE_CIFUNCTION_H
 #endif /* GUCEF_CORE_CIFUNCTION_H ? */
 
@@ -50,23 +50,23 @@ class GUCEF_CORE_PRIVATE_CPP CGreaterFunction : public CIFunction
 {
     public:
 
-    virtual bool ExecuteFunction( const CVariant::VariantVector& params       , 
+    virtual bool ExecuteFunction( const CVariant::VariantVector& params       ,
                                   const CVariant::VariantVector& functionData ,
                                   CVariant::VariantVector& functionResults    ) const GUCEF_VIRTUAL_OVERRIDE
     {GUCEF_TRACE;
-        
+
         if ( params.size() >= 2 )
         {
             functionResults.push_back( params[ 0 ] > params[ 1 ] );
             return true;
         }
-        
+
         // insufficient nr of params given
         return false;
     }
 
-    virtual const CString& GetName( void ) const 
-    {  
+    virtual const CString& GetName( void ) const GUCEF_VIRTUAL_OVERRIDE
+    {
         static CString functionName = ">";
         return functionName;
     }
@@ -80,23 +80,23 @@ class GUCEF_CORE_PRIVATE_CPP CGreaterEqualsFunction : public CIFunction
 {
     public:
 
-    virtual bool ExecuteFunction( const CVariant::VariantVector& params       , 
+    virtual bool ExecuteFunction( const CVariant::VariantVector& params       ,
                                   const CVariant::VariantVector& functionData ,
                                   CVariant::VariantVector& functionResults    ) const GUCEF_VIRTUAL_OVERRIDE
     {GUCEF_TRACE;
-        
+
         if ( params.size() >= 2 )
         {
             functionResults.push_back( params[ 0 ] >= params[ 1 ] );
             return true;
         }
-        
+
         // insufficient nr of params given
         return false;
     }
 
-    virtual const CString& GetName( void ) const 
-    {  
+    virtual const CString& GetName( void ) const GUCEF_VIRTUAL_OVERRIDE
+    {
         static CString functionName = ">=";
         return functionName;
     }
@@ -110,23 +110,23 @@ class GUCEF_CORE_PRIVATE_CPP CSmallerFunction : public CIFunction
 {
     public:
 
-    virtual bool ExecuteFunction( const CVariant::VariantVector& params       , 
+    virtual bool ExecuteFunction( const CVariant::VariantVector& params       ,
                                   const CVariant::VariantVector& functionData ,
                                   CVariant::VariantVector& functionResults    ) const GUCEF_VIRTUAL_OVERRIDE
     {GUCEF_TRACE;
-        
+
         if ( params.size() >= 2 )
         {
             functionResults.push_back( params[ 0 ] < params[ 1 ] );
             return true;
         }
-        
+
         // insufficient nr of params given
         return false;
     }
 
-    virtual const CString& GetName( void ) const 
-    {  
+    virtual const CString& GetName( void ) const GUCEF_VIRTUAL_OVERRIDE
+    {
         static CString functionName = "<";
         return functionName;
     }
@@ -140,23 +140,23 @@ class GUCEF_CORE_PRIVATE_CPP CSmallerEqualsFunction : public CIFunction
 {
     public:
 
-    virtual bool ExecuteFunction( const CVariant::VariantVector& params       , 
+    virtual bool ExecuteFunction( const CVariant::VariantVector& params       ,
                                   const CVariant::VariantVector& functionData ,
                                   CVariant::VariantVector& functionResults    ) const GUCEF_VIRTUAL_OVERRIDE
     {GUCEF_TRACE;
-        
+
         if ( params.size() >= 2 )
         {
             functionResults.push_back( params[ 0 ] <= params[ 1 ] );
             return true;
         }
-        
+
         // insufficient nr of params given
         return false;
     }
 
-    virtual const CString& GetName( void ) const 
-    {  
+    virtual const CString& GetName( void ) const GUCEF_VIRTUAL_OVERRIDE
+    {
         static CString functionName = "<=";
         return functionName;
     }
@@ -170,23 +170,23 @@ class GUCEF_CORE_PRIVATE_CPP CEqualsValueFunction : public CIFunction
 {
     public:
 
-    virtual bool ExecuteFunction( const CVariant::VariantVector& params       , 
+    virtual bool ExecuteFunction( const CVariant::VariantVector& params       ,
                                   const CVariant::VariantVector& functionData ,
                                   CVariant::VariantVector& functionResults    ) const GUCEF_VIRTUAL_OVERRIDE
     {GUCEF_TRACE;
-        
+
         if ( params.size() >= 2 )
         {
             functionResults.push_back( params[ 0 ] == params[ 1 ] );
             return true;
         }
-        
+
         // insufficient nr of params given
         return false;
     }
 
-    virtual const CString& GetName( void ) const 
-    {  
+    virtual const CString& GetName( void ) const GUCEF_VIRTUAL_OVERRIDE
+    {
         static CString functionName = "==";
         return functionName;
     }
@@ -200,23 +200,23 @@ class GUCEF_CORE_PRIVATE_CPP CEqualsValueFunction : public CIFunction
 //{
 //    public:
 //
-//    virtual bool ExecuteFunction( const CVariant::VariantVector& params       , 
+//    virtual bool ExecuteFunction( const CVariant::VariantVector& params       ,
 //                                  const CVariant::VariantVector& functionData ,
 //                                  CVariant::VariantVector& functionResults    ) const GUCEF_VIRTUAL_OVERRIDE
 //    {GUCEF_TRACE;
-//        
+//
 //        if ( params.size() >= 2 )
 //        {
 //            functionResults.push_back( params[ 0 ] + params[ 1 ] );
 //            return true;
 //        }
-//        
+//
 //        // insufficient nr of params given
 //        return false;
 //    }
 //
-//    virtual const CString& GetName( void ) const 
-//    {  
+//    virtual const CString& GetName( void ) const
+//    {
 //        static CString functionName = "+";
 //        return functionName;
 //    }
@@ -230,23 +230,23 @@ class GUCEF_CORE_PRIVATE_CPP CIsNullOrEmptyFunction : public CIFunction
 {
     public:
 
-    virtual bool ExecuteFunction( const CVariant::VariantVector& params       , 
+    virtual bool ExecuteFunction( const CVariant::VariantVector& params       ,
                                   const CVariant::VariantVector& functionData ,
                                   CVariant::VariantVector& functionResults    ) const GUCEF_VIRTUAL_OVERRIDE
     {GUCEF_TRACE;
-        
+
         if ( params.size() >= 1 )
         {
             functionResults.push_back( params[ 0 ].IsNULLOrEmpty() );
             return true;
         }
-        
+
         // insufficient nr of params given
-        return false;                          
+        return false;
     }
 
-    virtual const CString& GetName( void ) const 
-    {  
+    virtual const CString& GetName( void ) const GUCEF_VIRTUAL_OVERRIDE
+    {
         static CString functionName = "IsNullOrEmpty";
         return functionName;
     }
@@ -260,23 +260,23 @@ class GUCEF_CORE_PRIVATE_CPP CIsOfTypeFunction : public CIFunction
 {
     public:
 
-    virtual bool ExecuteFunction( const CVariant::VariantVector& params       , 
+    virtual bool ExecuteFunction( const CVariant::VariantVector& params       ,
                                   const CVariant::VariantVector& functionData ,
                                   CVariant::VariantVector& functionResults    ) const GUCEF_VIRTUAL_OVERRIDE
     {GUCEF_TRACE;
-        
+
         if ( params.size() >= 2 )
         {
             functionResults.push_back( params[ 0 ].GetTypeId() == params[ 1 ].AsUInt8() );
             return true;
         }
-        
+
         // insufficient nr of params given
-        return false;                          
+        return false;
     }
 
-    virtual const CString& GetName( void ) const 
-    {  
+    virtual const CString& GetName( void ) const GUCEF_VIRTUAL_OVERRIDE
+    {
         static CString functionName = "IsOfType";
         return functionName;
     }
@@ -290,102 +290,102 @@ class GUCEF_CORE_PRIVATE_CPP CAsTypeFunction : public CIFunction
 {
     public:
 
-    virtual bool ExecuteFunction( const CVariant::VariantVector& params       , 
+    virtual bool ExecuteFunction( const CVariant::VariantVector& params       ,
                                   const CVariant::VariantVector& functionData ,
                                   CVariant::VariantVector& functionResults    ) const GUCEF_VIRTUAL_OVERRIDE
     {GUCEF_TRACE;
-        
+
         if ( params.size() >= 2 )
         {
             switch ( params[ 1 ].AsUInt8() )
             {
                 case GUCEF_DATATYPE_INT8:
                 {
-                    Int8 defaultValue = params.size() > 2 ? params[ 2 ].AsInt8() : 0; 
+                    Int8 defaultValue = params.size() > 2 ? params[ 2 ].AsInt8() : 0;
                     functionResults.push_back( params[ 0 ].AsInt8( defaultValue ) );
                     return true;
                 }
                 case GUCEF_DATATYPE_UINT8:
                 {
-                    UInt8 defaultValue = params.size() > 2 ? params[ 2 ].AsUInt8() : 0; 
+                    UInt8 defaultValue = params.size() > 2 ? params[ 2 ].AsUInt8() : 0;
                     functionResults.push_back( params[ 0 ].AsUInt8( defaultValue ) );
                     return true;
                 }
                 case GUCEF_DATATYPE_LE_INT16:
                 case GUCEF_DATATYPE_BE_INT16:
                 {
-                    Int16 defaultValue = params.size() > 2 ? params[ 2 ].AsInt16() : 0; 
+                    Int16 defaultValue = params.size() > 2 ? params[ 2 ].AsInt16() : 0;
                     functionResults.push_back( params[ 0 ].AsInt16( defaultValue ) );
                     return true;
                 }
                 case GUCEF_DATATYPE_LE_UINT16:
                 case GUCEF_DATATYPE_BE_UINT16:
                 {
-                    UInt16 defaultValue = params.size() > 2 ? params[ 2 ].AsUInt16() : 0; 
+                    UInt16 defaultValue = params.size() > 2 ? params[ 2 ].AsUInt16() : 0;
                     functionResults.push_back( params[ 0 ].AsUInt16( defaultValue ) );
                     return true;
                 }
                 case GUCEF_DATATYPE_LE_INT32:
                 case GUCEF_DATATYPE_BE_INT32:
                 {
-                    Int32 defaultValue = params.size() > 2 ? params[ 2 ].AsInt32() : 0; 
+                    Int32 defaultValue = params.size() > 2 ? params[ 2 ].AsInt32() : 0;
                     functionResults.push_back( params[ 0 ].AsInt32( defaultValue ) );
                     return true;
                 }
                 case GUCEF_DATATYPE_LE_UINT32:
                 case GUCEF_DATATYPE_BE_UINT32:
                 {
-                    UInt32 defaultValue = params.size() > 2 ? params[ 2 ].AsUInt32() : 0; 
+                    UInt32 defaultValue = params.size() > 2 ? params[ 2 ].AsUInt32() : 0;
                     functionResults.push_back( params[ 0 ].AsUInt32( defaultValue ) );
                     return true;
                 }
                 case GUCEF_DATATYPE_LE_INT64:
                 case GUCEF_DATATYPE_BE_INT64:
                 {
-                    Int64 defaultValue = params.size() > 2 ? params[ 2 ].AsInt64() : 0; 
+                    Int64 defaultValue = params.size() > 2 ? params[ 2 ].AsInt64() : 0;
                     functionResults.push_back( params[ 0 ].AsInt64( defaultValue ) );
                     return true;
                 }
                 case GUCEF_DATATYPE_LE_UINT64:
                 case GUCEF_DATATYPE_BE_UINT64:
                 {
-                    UInt64 defaultValue = params.size() > 2 ? params[ 2 ].AsUInt64() : 0; 
+                    UInt64 defaultValue = params.size() > 2 ? params[ 2 ].AsUInt64() : 0;
                     functionResults.push_back( params[ 0 ].AsUInt64( defaultValue ) );
                     return true;
                 }
                 case GUCEF_DATATYPE_FLOAT32:
                 {
-                    Float32 defaultValue = params.size() > 2 ? params[ 2 ].AsFloat32() : 0.0f; 
+                    Float32 defaultValue = params.size() > 2 ? params[ 2 ].AsFloat32() : 0.0f;
                     functionResults.push_back( params[ 0 ].AsFloat32( defaultValue ) );
                     return true;
                 }
                 case GUCEF_DATATYPE_FLOAT64:
                 {
-                    Float64 defaultValue = params.size() > 2 ? params[ 2 ].AsFloat64() : 0.0; 
+                    Float64 defaultValue = params.size() > 2 ? params[ 2 ].AsFloat64() : 0.0;
                     functionResults.push_back( params[ 0 ].AsFloat64( defaultValue ) );
                     return true;
                 }
                 case GUCEF_DATATYPE_ASCII_STRING:
                 {
-                    CAsciiString defaultValue = params.size() > 2 ? params[ 2 ].AsAsciiString() : CAsciiString::Empty; 
+                    CAsciiString defaultValue = params.size() > 2 ? params[ 2 ].AsAsciiString() : CAsciiString::Empty;
                     functionResults.push_back( params[ 0 ].AsAsciiString( defaultValue ) );
                     return true;
                 }
                 case GUCEF_DATATYPE_UTF8_STRING:
                 {
-                    CUtf8String defaultValue = params.size() > 2 ? params[ 2 ].AsUtf8String() : CUtf8String::Empty; 
+                    CUtf8String defaultValue = params.size() > 2 ? params[ 2 ].AsUtf8String() : CUtf8String::Empty;
                     functionResults.push_back( params[ 0 ].AsUtf8String( defaultValue ) );
                     return true;
                 }
             }
         }
-        
+
         // insufficient nr of params given or invalid type id
-        return false;                          
+        return false;
     }
 
-    virtual const CString& GetName( void ) const 
-    {  
+    virtual const CString& GetName( void ) const GUCEF_VIRTUAL_OVERRIDE
+    {
         static CString functionName = "AsType";
         return functionName;
     }

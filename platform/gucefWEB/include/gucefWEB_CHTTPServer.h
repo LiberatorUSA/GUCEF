@@ -1,5 +1,5 @@
 /*
- *  gucefWEB: GUCEF module providing Web application functionality 
+ *  gucefWEB: GUCEF module providing Web application functionality
  *  for standardized protocols
  *
  *  Copyright (C) 1998 - 2020.  Dinand Vanvelzen
@@ -108,42 +108,42 @@ class GUCEF_WEB_PUBLIC_CPP CHTTPServer : public CORE::CObservingNotifier
     public:
 
     static const CORE::CEvent WebSocketClientConnectedEvent;
-        
+
     typedef CORE::CTLinkedCloneableObj< CHttpRequestData > TWebSocketClientConnectedEventData;
-    
+
     public:
 
     typedef CString::StringVector TStringVector;
-    
+
     CHTTPServer( THttpServerRequestHandlerFactory* requestHandlerFactory = GUCEF_NULL ,
                  const CHttpServerSettings* settings = GUCEF_NULL                     );
 
     CHTTPServer( const CORE::PulseGeneratorPtr& pulsGenerator                         ,
                  THttpServerRequestHandlerFactory* requestHandlerFactory = GUCEF_NULL ,
                  const CHttpServerSettings* settings = GUCEF_NULL                     );
-    
+
     virtual ~CHTTPServer();
 
     void SetSettings( const CHttpServerSettings& settings );
 
     void GetSettings( CHttpServerSettings& settings );
-    
-    /** 
-     *  listen on default NIC with port given 
+
+    /**
+     *  listen on default NIC with port given
      */
     bool ListenOnPort( const UInt16 port );
-    
+
     bool Listen( void );
 
     bool IsActive( void ) const;
-    
+
     /**
-     *  stop listening for clients, close server socket 
+     *  stop listening for clients, close server socket
      */
-    void Close( void ); 
-    
+    void Close( void );
+
     bool SetPort( UInt16 port );
-    
+
     UInt16 GetPort( void ) const;
 
     CIHTTPServerRouterController* GetRouterController( void ) const;
@@ -151,7 +151,7 @@ class GUCEF_WEB_PUBLIC_CPP CHTTPServer : public CORE::CObservingNotifier
     THttpServerRequestHandlerFactory::TProductPtr GetRequestHandler( void ) const;
 
     THttpServerRequestHandlerFactory* GetRequestHandlerFactory( void ) const;
-    
+
     private:
 
     friend class CAsyncHttpServerRequestHandler;
@@ -166,8 +166,8 @@ class GUCEF_WEB_PUBLIC_CPP CHTTPServer : public CORE::CObservingNotifier
      */
     virtual void OnNotify( CORE::CNotifier* notifier                 ,
                            const CORE::CEvent& eventid               ,
-                           CORE::CICloneable* eventdata /* = NULL */ );
-                           
+                           CORE::CICloneable* eventdata /* = NULL */ ) GUCEF_VIRTUAL_OVERRIDE;
+
     void ExtractCommaSeparatedValues( const CString& stringToExtractFrom ,
                                       TStringVector& list                ) const;
 
@@ -183,7 +183,7 @@ class GUCEF_WEB_PUBLIC_CPP CHTTPServer : public CORE::CObservingNotifier
 
     bool ParseRequest( const CORE::CDynamicBuffer& inputBuffer ,
                        CHttpRequestData& requestData           );
-                        
+
     UInt32 ParseHeaderFields( const char* bufferPtr       ,
                               const UInt32 bufferSize     ,
                               TStringVector& headerFields ) const;
@@ -206,22 +206,22 @@ class GUCEF_WEB_PUBLIC_CPP CHTTPServer : public CORE::CObservingNotifier
 
     void OnWebSocketUpgrade( COMCORE::CTCPServerConnection* connection ,
                              const CHttpRequestData& requestData       );
-    
+
     bool InitSha1CodecLink( void );
 
     CORE::CString GenerateWebSocketResponseKey( const CORE::CString& clientKey );
-    
+
     virtual MT::TLockStatus Lock( UInt32 lockWaitTimeoutInMs = GUCEF_MT_DEFAULT_LOCK_TIMEOUT_IN_MS ) const GUCEF_VIRTUAL_OVERRIDE;
 
     virtual MT::TLockStatus Unlock( void ) const GUCEF_VIRTUAL_OVERRIDE;
-    
+
     CHTTPServer( const CHTTPServer& src );             /**< not implemented */
     CHTTPServer& operator=( const CHTTPServer& src );  /**< not implemented */
-    
+
     private:
 
     typedef CORE::CTEventHandlerFunctor< CHTTPServer > TEventCallback;
-    
+
     COMCORE::CTCPServerSocket m_tcpServerSocket;
     THttpServerRequestHandlerFactory::TProductPtr m_requestHandler;
     THttpServerRequestHandlerFactory* m_requestHandlerFactory;

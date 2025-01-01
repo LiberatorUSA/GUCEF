@@ -110,7 +110,7 @@ CNotificationIDRegistry::Register( const CString& keyvalue                      
         TRegistryList::const_iterator i = m_list.find( keyvalue );
         if ( i == m_list.end() )
         {
-            if ( GUCEFCORE_UINT32MAX > m_lastid )
+            if ( (GUCEFCORE_UINT32MAX-1) > m_lastid )
             {
                 m_list[ keyvalue ] = m_lastid;
                 ++m_lastid;
@@ -126,7 +126,7 @@ CNotificationIDRegistry::Register( const CString& keyvalue                      
              *  In practice it is rather unlikely this code will ever be used due to the insane
              *  amount of event registration actions required.
              */
-            for ( UInt32 n=0; n<ULONG_MAX; ++n )
+            for ( UInt32 n=0; n<(GUCEF_UINT32MAX-1); ++n )
             {
                 bool found = false;
                 i = m_list.begin();
@@ -252,7 +252,7 @@ CNotificationIDRegistry::IsRegistered( const CString& keyvalue ) const
 
 /*-------------------------------------------------------------------------*/
 
-const MT::CILockable* 
+const MT::CILockable*
 CNotificationIDRegistry::AsLockable( void ) const
 {GUCEF_TRACE;
 

@@ -154,6 +154,11 @@ FileSize( const CString& filename );
 
 /*-------------------------------------------------------------------------*/
 
+GUCEF_CORE_PUBLIC_CPP bool
+PathExists( const CString& path );
+
+/*-------------------------------------------------------------------------*/
+
 class GUCEF_CORE_PUBLIC_CPP CStorageVolumeInformation
 {
     public:

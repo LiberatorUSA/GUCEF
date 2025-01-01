@@ -54,7 +54,7 @@ namespace AWSSDK {
 //      IMPLEMENTATION                                                     //
 //                                                                         //
 //-------------------------------------------------------------------------*/
-        
+
 CClientConfiguration::CClientConfiguration( void )
     : Aws::Client::ClientConfiguration()
     , CORE::CIConfigurable()
@@ -92,7 +92,7 @@ CClientConfiguration::~CClientConfiguration()
 
 /*-------------------------------------------------------------------------*/
 
-CClientConfiguration& 
+CClientConfiguration&
 CClientConfiguration::operator=( const CClientConfiguration& src )
 {GUCEF_TRACE;
 
@@ -105,7 +105,7 @@ CClientConfiguration::operator=( const CClientConfiguration& src )
 
 /*-------------------------------------------------------------------------*/
 
-bool 
+bool
 CClientConfiguration::SaveConfig( CORE::CDataNode& tree ) const
 {GUCEF_TRACE;
 
@@ -115,7 +115,7 @@ CClientConfiguration::SaveConfig( CORE::CDataNode& tree ) const
 
 /*-------------------------------------------------------------------------*/
 
-bool 
+bool
 CClientConfiguration::LoadConfig( const CORE::CDataNode& cfg )
 {GUCEF_TRACE;
 
@@ -124,9 +124,9 @@ CClientConfiguration::LoadConfig( const CORE::CDataNode& cfg )
     region = cfg.GetAttributeValueOrChildValueByName( m_settingsPrefix + "region" ).AsUtf8String( region, true );
     useDualStack = cfg.GetAttributeValueOrChildValueByName( m_settingsPrefix + "useDualStack", useDualStack ).AsBool( useDualStack, true );
     maxConnections = cfg.GetAttributeValueOrChildValueByName( m_settingsPrefix + "maxConnections", maxConnections ).AsInt32( maxConnections, true );
-    httpRequestTimeoutMs = cfg.GetAttributeValueOrChildValueByName( m_settingsPrefix + "httpRequestTimeoutMs", httpRequestTimeoutMs ).AsInt32( httpRequestTimeoutMs, true );
-    requestTimeoutMs = cfg.GetAttributeValueOrChildValueByName( m_settingsPrefix + "requestTimeoutMs", requestTimeoutMs ).AsInt32( requestTimeoutMs, true );
-    connectTimeoutMs = cfg.GetAttributeValueOrChildValueByName( m_settingsPrefix + "connectTimeoutMs", connectTimeoutMs ).AsInt32( connectTimeoutMs, true );
+    httpRequestTimeoutMs = cfg.GetAttributeValueOrChildValueByName( m_settingsPrefix + "httpRequestTimeoutMs", (Int32)httpRequestTimeoutMs ).AsInt32( (Int32)httpRequestTimeoutMs, true );
+    requestTimeoutMs = cfg.GetAttributeValueOrChildValueByName( m_settingsPrefix + "requestTimeoutMs", (Int32)requestTimeoutMs ).AsInt32( (Int32)requestTimeoutMs, true );
+    connectTimeoutMs = cfg.GetAttributeValueOrChildValueByName( m_settingsPrefix + "connectTimeoutMs", (Int32)connectTimeoutMs ).AsInt32( (Int32)connectTimeoutMs, true );
     enableTcpKeepAlive = cfg.GetAttributeValueOrChildValueByName( m_settingsPrefix + "enableTcpKeepAlive", enableTcpKeepAlive ).AsBool( enableTcpKeepAlive, true );
     tcpKeepAliveIntervalMs = cfg.GetAttributeValueOrChildValueByName( m_settingsPrefix + "tcpKeepAliveIntervalMs", (UInt32) tcpKeepAliveIntervalMs ).AsUInt32( tcpKeepAliveIntervalMs, true );
     lowSpeedLimit = cfg.GetAttributeValueOrChildValueByName( m_settingsPrefix + "lowSpeedLimit", (UInt32) lowSpeedLimit ).AsUInt32( lowSpeedLimit, true );
@@ -156,7 +156,7 @@ CClientConfiguration::LoadConfig( const CORE::CDataNode& cfg )
 
 /*-------------------------------------------------------------------------*/
 
-const CORE::CString& 
+const CORE::CString&
 CClientConfiguration::GetClassTypeName( void ) const
 {GUCEF_TRACE;
 
@@ -166,7 +166,7 @@ CClientConfiguration::GetClassTypeName( void ) const
 
 /*-------------------------------------------------------------------------*/
 
-void 
+void
 CClientConfiguration::SetSettingsPrefix( const CORE::CString& prefix )
 {GUCEF_TRACE;
 
@@ -175,7 +175,7 @@ CClientConfiguration::SetSettingsPrefix( const CORE::CString& prefix )
 
 /*-------------------------------------------------------------------------*/
 
-const CORE::CString& 
+const CORE::CString&
 CClientConfiguration::GetSettingsPrefix( void ) const
 {GUCEF_TRACE;
 

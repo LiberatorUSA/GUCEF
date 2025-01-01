@@ -97,13 +97,13 @@ class Udp2RedisChannel : public CORE::CTaskConsumer
     virtual ~Udp2RedisChannel();
 
     virtual bool OnTaskStart( CORE::CICloneable* taskData ) GUCEF_VIRTUAL_OVERRIDE;
-    
+
     virtual bool OnTaskCycle( CORE::CICloneable* taskData ) GUCEF_VIRTUAL_OVERRIDE;
-    
+
     virtual void OnTaskEnded( CORE::CICloneable* taskData ,
                               bool wasForced              ) GUCEF_VIRTUAL_OVERRIDE;
 
-    virtual CORE::CString GetType( void ) const;
+    virtual CORE::CString GetType( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
     class ChannelSettings
     {
@@ -137,7 +137,7 @@ class Udp2RedisChannel : public CORE::CTaskConsumer
     };
 
     const ChannelMetrics& GetMetrics( void ) const;
-    
+
     private:
 
     typedef COMCORE::CUDPSocket::TPacketEntryVector TPacketEntryVector;
@@ -178,8 +178,8 @@ class Udp2RedisChannel : public CORE::CTaskConsumer
     private:
 
     void RegisterEventHandlers( void );
-    
-    int RedisSend( const TPacketEntryVector& udpPackets , 
+
+    int RedisSend( const TPacketEntryVector& udpPackets ,
                    CORE::UInt32 packetCount             );
 
     bool SendQueuedPackagesIfAny( void );
@@ -188,21 +188,21 @@ class Udp2RedisChannel : public CORE::CTaskConsumer
 
     bool AddToOverflowQueue( const TPacketEntryVector& udpPackets, CORE::UInt32 packetCount );
 
-    static void 
-    OnRedisASyncVoidReply( redisAsyncContext* context , 
-                           void *reply                , 
+    static void
+    OnRedisASyncVoidReply( redisAsyncContext* context ,
+                           void *reply                ,
                            void *privdata             );
 
-    void 
-    OnRedisASyncReply( redisAsyncContext* context , 
+    void
+    OnRedisASyncReply( redisAsyncContext* context ,
                        redisReply* reply          );
 
     static void
-    OnRedisASyncConnect( const struct redisAsyncContext* context , 
+    OnRedisASyncConnect( const struct redisAsyncContext* context ,
                          int status                              );
 
     static void
-    OnRedisASyncDisconnect( const struct redisAsyncContext* context , 
+    OnRedisASyncDisconnect( const struct redisAsyncContext* context ,
                             int status                              );
 
     static void
@@ -228,7 +228,7 @@ class Udp2RedisChannel : public CORE::CTaskConsumer
     typedef std::deque< CORE::CDynamicBuffer > TDynamicBufferQueue;
     typedef std::vector< redisAsyncContext* > redisAsyncContextVector;
 
-    ChannelSettings m_channelSettings;   
+    ChannelSettings m_channelSettings;
     CORE::CString m_redisStreamSendCmd;
     CORE::CTimer* m_redisReconnectTimer;
     redisAsyncContext* m_redisContext;
@@ -309,19 +309,19 @@ class Udp2Redis : public CORE::CObserver
     const CORE::CDataNode& GetGlobalConfig( void ) const;
 
     private:
-    
+
     typedef CORE::CTEventHandlerFunctor< Udp2Redis > TEventCallback;
-    
+
     void
     OnMetricsTimerCycle( CORE::CNotifier* notifier    ,
                          const CORE::CEvent& eventId  ,
-                         CORE::CICloneable* eventData );    
+                         CORE::CICloneable* eventData );
 
     private:
 
     typedef std::map< CORE::Int32, Udp2RedisChannel::ChannelSettings > ChannelSettingsMap;
     typedef std::vector< Udp2RedisChannelPtr > Udp2RedisChannelVector;
-    
+
     CORE::UInt16 m_udpStartPort;
     CORE::UInt16 m_channelCount;
     CORE::Int32 m_redisStreamStartChannelID;

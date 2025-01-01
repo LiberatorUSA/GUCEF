@@ -126,12 +126,12 @@ DI_First_Dir_Entry( const char* path )
         {
             GUCEF_DELETE data;
             return GUCEF_NULL;
-        
+
         }
     }
     catch ( const std::exception& )
     {
-        return GUCEF_NULL;    
+        return GUCEF_NULL;
     }
 }
 
@@ -150,7 +150,7 @@ DI_Next_Dir_Entry( struct SDI_Data* data )
     }
     catch ( const std::exception& )
     {
-        return 0;    
+        return 0;
     }
 }
 
@@ -165,7 +165,7 @@ DI_Timestamp( struct SDI_Data* data )
     {
         if ( GUCEF_NULL == data )
             return 0;
-        
+
         CResourceMetaData metaData;
         if ( data->cppIterator.TryReadMetaData( metaData ) )
         {
@@ -182,7 +182,7 @@ DI_Timestamp( struct SDI_Data* data )
     }
     catch ( const std::exception& )
     {
-        return 0;    
+        return 0;
     }
 }
 
@@ -197,7 +197,7 @@ DI_Size( struct SDI_Data* data )
     {
         if ( GUCEF_NULL == data )
             return 0;
-        
+
         CResourceMetaData metaData;
         if ( data->cppIterator.TryReadMetaData( metaData ) )
         {
@@ -210,7 +210,7 @@ DI_Size( struct SDI_Data* data )
     }
     catch ( const std::exception& )
     {
-        return 0;    
+        return 0;
     }
 }
 
@@ -225,12 +225,12 @@ DI_Is_It_A_File( struct SDI_Data* data )
     {
         if ( GUCEF_NULL == data )
             return 0;
-        
+
         return data->cppIterator.IsAFile() ? 1 : 0;
     }
     catch ( const std::exception& )
     {
-        return 0;    
+        return 0;
     }
 }
 
@@ -245,13 +245,13 @@ DI_Name( struct SDI_Data* data )
     {
         if ( GUCEF_NULL == data )
             return 0;
-        
+
         data->entryName = data->cppIterator.GetResourceName();
         return data->entryName.C_String();
     }
     catch ( const std::exception& )
     {
-        return 0;    
+        return 0;
     }
 }
 
@@ -266,7 +266,7 @@ DI_Cleanup( struct SDI_Data* data )
     {
         if ( GUCEF_NULL == data )
             return;
-        
+
         data->cppIterator.FindClose();
         data->entryName.Clear();
         GUCEF_DELETE data;
@@ -980,23 +980,10 @@ Relative_Path( const char *pathstr ,
 
 UInt32
 Is_Path_Valid( const char* path )
-{
-    #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
+{GUCEF_TRACE;
 
-    return GetFileAttributes( path ) != INVALID_FILE_ATTRIBUTES;
-
-    #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
-
-    // @TODO
-
-    #else
-
-    /*
-     *  Unsupported platform
-     */
-    return 0;
-
-    #endif
+    // direct to C++ version
+    return CORE::PathExists( path ) ? 1 : 0;
 }
 
 /*-------------------------------------------------------------------------*/

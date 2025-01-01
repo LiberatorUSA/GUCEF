@@ -87,8 +87,8 @@ namespace CORE {
 //-------------------------------------------------------------------------*/
 
 /**
- *  Abstract base class for adding a serialization API to decending classes.
- *  Serialize/Deserialze via the DataNode class as a DOM
+ *  Abstract base class for adding a serialization API to descending classes.
+ *  Serialize/Deserialize via the DataNode class as a DOM
  */
 class GUCEF_CORE_PUBLIC_CPP CIValueToDataNodeSerializer
 {
@@ -147,6 +147,11 @@ class GUCEF_CORE_PUBLIC_CPP CIValueToDataNodeSerializer
 
 
 
+    // disable Clang warning: reference cannot be bound to dereferenced null pointer in well-defined C++ code; comparison may be assumed to always evaluate to true [-Wtautological-undefined-compare]
+    // while technically the null reference should never occur this is intended to catch bad memory access a bit earlier in the call stack
+    #pragma clang diagnostic push
+    #pragma clang diagnostic ignored "-Wtautological-undefined-compare"
+
     // redirect pointers to reference param versions
     template < typename S >
     bool SerializeType( const S* mappedType, CORE::CDataNode& domRootNode, const CORE::CDataNodeSerializableSettings& serializerOptions )
@@ -172,7 +177,7 @@ class GUCEF_CORE_PUBLIC_CPP CIValueToDataNodeSerializer
         { return SerializeReferenceType< S >( mappedType, domRootNode, serializerOptions ); }
 
     // We provide a specialization for CIDataNodeSerializable since that type should take priority
-    // reason being that it can handle CDataNodeSerializableSettings plus helps to disambiguate in the case of multiple inhertitance
+    // reason being that it can handle CDataNodeSerializableSettings plus helps to disambiguate in the case of multiple inheritance
     template < typename S >
     bool SerializeReferenceType( const typename EnableIf< CORE::TypeHasMemberFunctionForDataNodeSerialization< S >::value, S >::type& mappedType, CORE::CDataNode& domRootNode, const CORE::CDataNodeSerializableSettings& serializerOptions )
         { return GUCEF_NULL != &mappedType ? Serialize( static_cast< const CIDataNodeSerializable& >( mappedType ), domRootNode, serializerOptions ) : false; }
@@ -217,6 +222,7 @@ class GUCEF_CORE_PUBLIC_CPP CIValueToDataNodeSerializer
     bool DeserializeReferenceType( typename EnableIfNot< CORE::TypeHasMemberFunctionForDataNodeDeserialization< S >::value, S >::type& mappedType, const CORE::CDataNode& domRootNode, const CORE::CDataNodeSerializableSettings& serializerOptions )
         { return GUCEF_NULL != &mappedType ? Deserialize( static_cast< S& >( mappedType ), domRootNode, serializerOptions ) : false; }
 
+    #pragma clang diagnostic pop
 };
 
 /*-------------------------------------------------------------------------//

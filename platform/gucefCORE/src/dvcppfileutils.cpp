@@ -901,7 +901,7 @@ DirExists( const CString& path )
 
         struct stat buf;
         if ( stat( path.C_String(), &buf ) == 0 )
-            if ( buf.st_mode & S_IFDIR != 0 )
+            if ( ( buf.st_mode & S_IFDIR ) != 0 )
                 return true;
         return false;
 
@@ -914,6 +914,34 @@ DirExists( const CString& path )
         #endif
     }
     return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+PathExists( const CString& path )
+{GUCEF_TRACE;
+
+    #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
+
+    std::wstring utf16Path = ToWString( path );
+    if ( utf16Path.size() > 0 )
+        return ::GetFileAttributesW( utf16Path.c_str() ) != INVALID_FILE_ATTRIBUTES;
+    return false;
+
+    #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
+
+    struct stat buf;
+    return ( stat( path.C_String(), &buf ) == 0 );
+
+    #else
+
+    /*
+     *  Unsupported platform
+     */
+    return false;
+
+    #endif
 }
 
 /*-------------------------------------------------------------------------*/
