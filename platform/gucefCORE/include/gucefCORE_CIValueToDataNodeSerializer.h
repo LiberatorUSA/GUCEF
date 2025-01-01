@@ -149,8 +149,10 @@ class GUCEF_CORE_PUBLIC_CPP CIValueToDataNodeSerializer
 
     // disable Clang warning: reference cannot be bound to dereferenced null pointer in well-defined C++ code; comparison may be assumed to always evaluate to true [-Wtautological-undefined-compare]
     // while technically the null reference should never occur this is intended to catch bad memory access a bit earlier in the call stack
+    #ifdef __clang__
     #pragma clang diagnostic push
     #pragma clang diagnostic ignored "-Wtautological-undefined-compare"
+    #endif
 
     // redirect pointers to reference param versions
     template < typename S >
@@ -222,7 +224,9 @@ class GUCEF_CORE_PUBLIC_CPP CIValueToDataNodeSerializer
     bool DeserializeReferenceType( typename EnableIfNot< CORE::TypeHasMemberFunctionForDataNodeDeserialization< S >::value, S >::type& mappedType, const CORE::CDataNode& domRootNode, const CORE::CDataNodeSerializableSettings& serializerOptions )
         { return GUCEF_NULL != &mappedType ? Deserialize( static_cast< S& >( mappedType ), domRootNode, serializerOptions ) : false; }
 
+    #ifdef __clang__
     #pragma clang diagnostic pop
+    #endif
 };
 
 /*-------------------------------------------------------------------------//
