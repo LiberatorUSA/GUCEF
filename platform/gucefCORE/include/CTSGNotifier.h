@@ -89,7 +89,7 @@ class GUCEF_CORE_PUBLIC_CPP CTSGNotifier : public CNotifier  ,
 
     CTSGNotifier( const CTSGNotifier& src );
 
-    virtual ~CTSGNotifier();
+    virtual ~CTSGNotifier() GUCEF_VIRTUAL_OVERRIDE;
 
     CTSGNotifier& operator=( const CTSGNotifier& src );
 
@@ -140,11 +140,11 @@ class GUCEF_CORE_PUBLIC_CPP CTSGNotifier : public CNotifier  ,
     CObserver& AsObserver( void );
 
     virtual void SetPulseGenerator( PulseGeneratorPtr newPulseGenerator );
-    
+
     virtual PulseGeneratorPtr GetPulseGenerator( void ) const;
 
     /**
-     *  A pumped observer uses pulse generator events to allow for async 
+     *  A pumped observer uses pulse generator events to allow for async
      *  OnNotify processing via OnPumpedNotify()
      *
      *  When doing this it does NOT by default also consider the pulse event itself as a
@@ -165,12 +165,12 @@ class GUCEF_CORE_PUBLIC_CPP CTSGNotifier : public CNotifier  ,
 
     virtual MT::TLockStatus NotificationUnlock( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
-    virtual MT::TLockStatus NotificationReadOnlyLock( UInt32 lockWaitTimeoutInMs = GUCEF_MT_DEFAULT_LOCK_TIMEOUT_IN_MS ) const GUCEF_VIRTUAL_OVERRIDE; 
+    virtual MT::TLockStatus NotificationReadOnlyLock( UInt32 lockWaitTimeoutInMs = GUCEF_MT_DEFAULT_LOCK_TIMEOUT_IN_MS ) const GUCEF_VIRTUAL_OVERRIDE;
 
-    virtual MT::TLockStatus NotificationReadOnlyUnlock( void ) const GUCEF_VIRTUAL_OVERRIDE; 
+    virtual MT::TLockStatus NotificationReadOnlyUnlock( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
     protected:
-    friend class CTSGObserver;    
+    friend class CTSGObserver;
 
     /**
      *  Same as NotifyObservers() except the notification is pumped first
@@ -210,7 +210,7 @@ class GUCEF_CORE_PUBLIC_CPP CTSGNotifier : public CNotifier  ,
      */
     virtual void OnNotify( CNotifier* notifier                ,
                            const CEvent& eventId              ,
-                           CICloneable* evenData = GUCEF_NULL );
+                           CICloneable* evenData = GUCEF_NULL ) GUCEF_VIRTUAL_OVERRIDE;
 
     void SignalUpcomingDestruction( void );
 
@@ -220,10 +220,10 @@ class GUCEF_CORE_PUBLIC_CPP CTSGNotifier : public CNotifier  ,
 
     virtual bool IsHoldingNotifications( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
-    protected: 
+    protected:
 
     MT::CMutex m_dataLock;
-    
+
     private:
 
     CTSGObserver m_tsgObserver;

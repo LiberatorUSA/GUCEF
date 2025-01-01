@@ -84,8 +84,8 @@ class CGenericPluginManager;
  *  These are typicly C++ modules that link back to the GUCEF modules and
  *  uppon load integrate themselves in the framework. This allows a generic plugin
  *  to be/do just about anything but with the drawback that it has to link to the GUCEF
- *  modules and as such has a more limited lifespan as a binary plugin. 
- *  Its compatiblity is very narrow and any change in the GUCEF and related libraries 
+ *  modules and as such has a more limited lifespan as a binary plugin.
+ *  Its compatiblity is very narrow and any change in the GUCEF and related libraries
  *  can break compatibility witha  generic plugin. As such only use generic plugins in cases
  *  were you are going to compile them anew for every new revision of the platform.
  */
@@ -99,10 +99,10 @@ class GUCEF_CORE_PUBLIC_CPP CGenericPlugin : public CIPlugin
 
     virtual TPluginMetaDataPtr GetMetaData( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
-    virtual void* GetModulePointer( void );
-    
+    virtual void* GetModulePointer( void ) GUCEF_VIRTUAL_OVERRIDE;
+
     void SetPluginParams( const CValueList& pluginParams );
-    
+
     const CValueList& GetPluginParams( void ) const;
 
     bool Link( void* modulePtr                   ,
@@ -111,7 +111,7 @@ class GUCEF_CORE_PUBLIC_CPP CGenericPlugin : public CIPlugin
     bool Unlink( void );
 
     private:
-    
+
     CGenericPlugin( const CGenericPlugin& src );
 
     CGenericPlugin& operator=( const CGenericPlugin& src );

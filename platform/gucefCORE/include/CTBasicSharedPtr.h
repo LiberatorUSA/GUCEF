@@ -456,6 +456,10 @@ CTBasicSharedPtr< T, LockType >::CTBasicSharedPtr( const CTBasicSharedPtr< T, Lo
     , m_ptr( GUCEF_NULL )
 {GUCEF_TRACE;
 
+    // disable Clang warining: reference cannot be bound to dereferenced null pointer in well-defined C++ code; comparison may be assumed to always evaluate to true [-Wtautological-undefined-compare]
+    // while technically the null reference should never occur this is intended to catch bad memory access a bit earlier in the call stack
+    #pragma clang diagnostic push
+    #pragma clang diagnostic ignored "-Wtautological-undefined-compare"
     if ( GUCEF_NULL != &src && GUCEF_NULL != src.m_shared )
     {
         MT::CObjectScopeLock lock( &src );
@@ -466,6 +470,7 @@ CTBasicSharedPtr< T, LockType >::CTBasicSharedPtr( const CTBasicSharedPtr< T, Lo
         }
         m_ptr = src.m_ptr;
     }
+    #pragma clang diagnostic pop
 }
 
 /*-------------------------------------------------------------------------*/

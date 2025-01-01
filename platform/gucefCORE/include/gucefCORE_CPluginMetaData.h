@@ -62,7 +62,7 @@ namespace CORE {
  */
 class GUCEF_CORE_PUBLIC_CPP CPluginMetaData : public CIPluginMetaData ,
                                               public CIConfigurable   ,
-                                              public CTSharedObjCreator< CPluginMetaData, MT::CMutex > 
+                                              public CTSharedObjCreator< CPluginMetaData, MT::CMutex >
 {
     public:
 
@@ -80,14 +80,14 @@ class GUCEF_CORE_PUBLIC_CPP CPluginMetaData : public CIPluginMetaData ,
 
     /**
      *  Optional textual description of the plugin functionality
-     */    
+     */
     virtual CString GetDescription( void ) const GUCEF_VIRTUAL_OVERRIDE;
-    
+
     void SetCopyright( const CString& description );
-    
+
     /**
      *  Optional textual copyright information regarding the plugin
-     */ 
+     */
     virtual CString GetCopyright( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
     void SetVersion( const TVersion& version );
@@ -98,47 +98,47 @@ class GUCEF_CORE_PUBLIC_CPP CPluginMetaData : public CIPluginMetaData ,
     virtual TVersion GetVersion( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
     void SetLoaderLogicTypeName( const CString& loaderLogicTypeName );
-    
+
     /**
      *  Optional info on which which loader logic should be used when loading the plugin
      */
     virtual CString GetLoaderLogicTypeName( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
     void SetPluginType( const CString& pluginType );
-    
+
     /**
-     *  Info regarding the type of plugin this is. 
+     *  Info regarding the type of plugin this is.
      *  PluginManagers can be added to the system to support the loading of different types
-     *  of plugins. Defining the plugin type allows these managers to pick the plugins they 
+     *  of plugins. Defining the plugin type allows these managers to pick the plugins they
      *  can manage
      */
     virtual CString GetPluginType( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
     void SetModuleFilename( const CString& moduleFilename );
-    
+
     virtual CString GetModuleFilename( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
     void SetAltModuleFilename( const CString& altModuleFilename );
-    
+
     /**
      *  Optional postfix which can be used in combination with ModuleFilename
      *  If the module cannot be located with just ModuleFilename an alternate
-     *  ModuleFilename will be constructed using the postfix (if any) and another 
+     *  ModuleFilename will be constructed using the postfix (if any) and another
      *  attempt made
      */
     virtual CString GetAltModuleFilename( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
     void SetFullModulePath( const CString& description );
-    
+
     /**
      *  Optional info regarding the full path of the module.
-     *  If none is specified globally defined root paths can be used in combination 
+     *  If none is specified globally defined root paths can be used in combination
      *  with the module filename to find the module
      */
-    virtual CString GetFullModulePath( void ) const;
+    virtual CString GetFullModulePath( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
     void SetModulePointer( void* modulePointer );
-    
+
     virtual void* GetModulePointer( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
     /**

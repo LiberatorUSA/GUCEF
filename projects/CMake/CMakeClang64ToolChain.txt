@@ -1,0 +1,22 @@
+
+set(CMAKE_SYSTEM_NAME Linux)
+
+# Set the C++ standard to use
+set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD_REQUIRED on)
+
+# set the compiler to Clang
+set(CMAKE_C_COMPILER clang)
+set(CMAKE_CXX_COMPILER clang++)
+#set(CMAKE_C_COMPILER /usr/bin/clang)
+#set(CMAKE_CXX_COMPILER /usr/bin/clang++)
+
+# Set the architecture to 64-bit
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -m64")
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -m64")
+
+# target ARM
+#set(CMAKE_SYSTEM_PROCESSOR arm)
+#set(GUCEF_TARGET_ARCH arm-linux-gnueabihf)
+#set(CMAKE_C_COMPILER_TARGET ${GUCEF_TARGET_ARCH})
+#set(CMAKE_CXX_COMPILER_TARGET ${GUCEF_TARGET_ARCH})

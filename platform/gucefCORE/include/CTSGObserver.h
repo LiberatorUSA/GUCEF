@@ -57,7 +57,7 @@ class GUCEF_CORE_PUBLIC_CPP CTSGObserver : public CPumpedObserver
     public:
 
     virtual const CString& GetClassTypeName( void ) const GUCEF_VIRTUAL_OVERRIDE;
-    
+
     protected:
 
     /**
@@ -76,18 +76,18 @@ class GUCEF_CORE_PUBLIC_CPP CTSGObserver : public CPumpedObserver
 
     virtual MT::TLockStatus Unlock( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
-    virtual void Shutdown( void );
+    virtual void Shutdown( void ) GUCEF_VIRTUAL_OVERRIDE;
 
     private:
     friend class CTSGNotifier;
 
     CTSGObserver( PulseGeneratorPtr pulsGenerator                ,
-                  bool allowSameThreadEventsToFlowThrough = true );                 
+                  bool allowSameThreadEventsToFlowThrough = true );
 
     virtual ~CTSGObserver();
 
     void SetParent( CTSGNotifier* parentNotifier );
-    
+
     private:
 
     CTSGObserver( void );

@@ -140,7 +140,7 @@ CLoaderDelegatedPluginLoadLogic::Initialize( void )
         if ( NULL != modulePtr )
         {
             TGucefLoaderCInterface* cInterface = GUCEF_NEW TGucefLoaderCInterface();
-            memset( cInterface, 0, sizeof(cInterface) );
+            memset( cInterface, 0, sizeof(TGucefLoaderCInterface) );
 
             cInterface->loadModule = (TGUCEFLOADERCINTERFACE_LoadModule) GetFunctionAddress( modulePtr, "LoadSpecificModule", 3*sizeof(const char*) + 4*sizeof(long) ).funcPtr;
             cInterface->unloadModule = (TGUCEFLOADERCINTERFACE_UnloadModule) GetFunctionAddress( modulePtr, "UnloadSpecificModule", sizeof(void*) ).funcPtr;

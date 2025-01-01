@@ -97,7 +97,7 @@ class GUCEF_CORE_PUBLIC_CPP CX11EventDispatcher : public CObservingNotifier
 
     protected:
 
-    virtual void OnObserverDestruction( CObserver* observer );
+    virtual void OnObserverDestruction( CObserver* observer ) GUCEF_VIRTUAL_OVERRIDE;
 
     virtual void LockData( void ) const;
 
@@ -105,7 +105,7 @@ class GUCEF_CORE_PUBLIC_CPP CX11EventDispatcher : public CObservingNotifier
 
     virtual void OnNotify( CNotifier* notifier           ,
                            const CEvent& eventid         ,
-                           CICloneable* eventdata = NULL );
+                           CICloneable* eventdata = NULL ) GUCEF_VIRTUAL_OVERRIDE;
 
     private:
     friend class CModule;

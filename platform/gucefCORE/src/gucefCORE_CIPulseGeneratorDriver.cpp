@@ -14,9 +14,9 @@
  *
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
- 
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      INCLUDES                                                           //
@@ -36,7 +36,7 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-namespace GUCEF { 
+namespace GUCEF {
 namespace CORE {
 
 /*-------------------------------------------------------------------------//
@@ -51,21 +51,21 @@ CIPulseGeneratorDriver::CIPulseGeneratorDriver( void )
 }
 
 /*--------------------------------------------------------------------------*/
-    
+
 CIPulseGeneratorDriver::CIPulseGeneratorDriver( const CIPulseGeneratorDriver& src )
 {GUCEF_TRACE;
 
 }
 
 /*--------------------------------------------------------------------------*/
-    
+
 CIPulseGeneratorDriver::~CIPulseGeneratorDriver()
 {GUCEF_TRACE;
 
 }
 
 /*--------------------------------------------------------------------------*/
-    
+
 CIPulseGeneratorDriver&
 CIPulseGeneratorDriver::operator=( const CIPulseGeneratorDriver& src )
 {GUCEF_TRACE;
@@ -79,12 +79,17 @@ void
 CIPulseGeneratorDriver::SendDriverPulse( CPulseGenerator& pulseGenerator )
 {GUCEF_TRACE;
 
+    // disable Clang warining: reference cannot be bound to dereferenced null pointer in well-defined C++ code; comparison may be assumed to always evaluate to true [-Wtautological-undefined-compare]
+    // while technically the null reference should never occur this is intended to catch bad memory access a bit earlier in the call stack
+    #pragma clang diagnostic push
+    #pragma clang diagnostic ignored "-Wtautological-undefined-compare"
     if ( GUCEF_NULL != &pulseGenerator )
         pulseGenerator.OnDriverPulse();
     else
     {
         GUCEF_ERROR_LOG( LOGLEVEL_IMPORTANT, "CIPulseGeneratorDriver:SendDriverPulse: Attempt to access NULL pulseGenerator" );
     }
+    #pragma clang diagnostic pop
 }
 
 /*-------------------------------------------------------------------------//
