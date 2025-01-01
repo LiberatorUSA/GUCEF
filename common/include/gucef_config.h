@@ -39,15 +39,15 @@
 /*-------------------------------------------------------------------------*/
 
 /*
- *      Switches for setting of the calling convention used
- *      Defaults to CALLSPEC_C
+ *      Switches for forcing the calling convention used
+ *      If you don't specify one of these a default will be selected for the target platform
  */
-#define GUCEF_USE_CALLSPEC_C
+/* #define GUCEF_USE_CALLSPEC_C */
 /* #define GUCEF_USE_CALLSPEC_STD */
 /* #define GUCEF_USE_CALLSPEC_PASCAL */
 /* #define GUCEF_USE_CALLSPEC_FAST */
 
-#define GUCEF_USE_PLUGIN_CALLSPEC_C
+/* #define GUCEF_USE_PLUGIN_CALLSPEC_C */
 /* #define GUCEF_USE_PLUGIN_CALLSPEC_STD */
 /* #define GUCEF_USE_PLUGIN_CALLSPEC_PASCAL */
 /* #define GUCEF_USE_PLUGIN_CALLSPEC_FAST */

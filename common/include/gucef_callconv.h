@@ -64,14 +64,22 @@
   #define GUCEF_CALLSPEC_PASCAL pascal
 #endif
 #if defined ( __BORLANDC__ ) || defined ( _MSC_VER )
-  #define GUCEF_CALLSPEC_FAST __fastcall
+  #define GUCEF_CALLSPEC_FASTCALL __fastcall
 #else
-  #define GUCEF_CALLSPEC_FAST fastcall
+  #define GUCEF_CALLSPEC_FASTCALL fastcall
+#endif
+#if defined ( __BORLANDC__ ) || defined ( _MSC_VER )
+  #define GUCEF_CALLSPEC_VECTORCALL __vectorcall
+#else
+  #define GUCEF_CALLSPEC_VECTORCALL vectorcall
 #endif
 
 /*
- *      Macro that switches to the desired calling convention
- *      for GUCEF modules. Default GUCEF_CALLSPEC_C
+ *  Macro that switches to the desired calling convention
+ *  for GUCEF modules.
+ *     Default GUCEF_CALLSPEC_C for 32 bit and below
+ *     Default GUCEF_CALLSPEC_FASTCALL for 64 bit but compilers don't like
+ *     it if you specify that since it gives the illusion of choice for x64
  */
 #undef GUCEF_CALLSPEC_TYPE
 #ifdef GUCEF_USE_CALLSPEC_C
@@ -83,18 +91,27 @@
     #ifdef GUCEF_USE_CALLSPEC_PASCAL
       #define GUCEF_CALLSPEC_TYPE GUCEF_CALLSPEC_PASCAL
     #else
-       #ifdef GUCEF_USE_CALLSPEC_FAST
-         #define GUCEF_CALLSPEC_TYPE GUCEF_CALLSPEC_FAST
+       #ifdef GUCEF_USE_CALLSPEC_FASTCALL
+         #define GUCEF_CALLSPEC_TYPE GUCEF_CALLSPEC_FASTCALL
        #else
-         #define GUCEF_CALLSPEC_TYPE GUCEF_CALLSPEC_C
+         #if ( GUCEF_BITNESS == GUCEF_BITNESS_32 )
+           #define GUCEF_CALLSPEC_TYPE GUCEF_CALLSPEC_C
+         #elif ( GUCEF_BITNESS == GUCEF_BITNESS_64 )
+           #define GUCEF_CALLSPEC_TYPE
+         #else
+           #define GUCEF_CALLSPEC_TYPE GUCEF_CALLSPEC_C
+         #endif
        #endif
      #endif
   #endif
 #endif
 
 /*
- *      Macro that switches to the desired calling convention
- *      for plugins. Default GUCEF_CALLSPEC_C
+ *  Macro that switches to the desired calling convention
+ *  for GUCEF plugin modules.
+ *     Default GUCEF_CALLSPEC_STD for 32 bit and below
+ *     Default GUCEF_CALLSPEC_FASTCALL for 64 bit but compilers don't like
+ *     it if you specify that since it gives the illusion of choice for x64
  */
 #undef GUCEF_PLUGIN_CALLSPEC_TYPE
 #ifdef GUCEF_USE_PLUGIN_CALLSPEC_C
@@ -109,7 +126,13 @@
        #ifdef GUCEF_USE_PLUGIN_CALLSPEC_FAST
          #define GUCEF_PLUGIN_CALLSPEC_TYPE GUCEF_CALLSPEC_FAST
        #else
-         #define GUCEF_PLUGIN_CALLSPEC_TYPE GUCEF_CALLSPEC_C
+         #if ( GUCEF_BITNESS == GUCEF_BITNESS_32 )
+           #define GUCEF_PLUGIN_CALLSPEC_TYPE GUCEF_CALLSPEC_STD
+         #elif ( GUCEF_BITNESS == GUCEF_BITNESS_64 )
+           #define GUCEF_PLUGIN_CALLSPEC_TYPE
+         #else
+           #define GUCEF_PLUGIN_CALLSPEC_TYPE GUCEF_CALLSPEC_STD
+         #endif
        #endif
      #endif
   #endif
@@ -191,6 +214,39 @@
   #define GUCEF_CALLSPEC_C_SUFFIX
   #define GUCEF_PLUGIN_CALLSPEC_C_PREFIX __attribute__((GUCEF_CALLSPEC_C))
   #define GUCEF_PLUGIN_CALLSPEC_C_SUFFIX
+#endif
+
+/*
+ *      Macro that switches between a calling convention prefix and
+ *      postfix notation for the calling convention macro for the default
+ *      calling convention
+ */
+#undef GUCEF_CALLSPEC_PREFIX
+#undef GUCEF_CALLSPEC_SUFFIX
+#undef GUCEF_PLUGIN_CALLSPEC_PREFIX
+#undef GUCEF_PLUGIN_CALLSPEC_SUFFIX
+#if ( GUCEF_BITNESS != GUCEF_BITNESS_64 )
+  #if defined ( __BORLANDC__ ) || defined ( _MSC_VER )
+    #define GUCEF_CALLSPEC_PREFIX GUCEF_CALLSPEC_TYPE
+    #define GUCEF_CALLSPEC_SUFFIX
+    #define GUCEF_PLUGIN_CALLSPEC_PREFIX GUCEF_CALLSPEC_TYPE
+    #define GUCEF_PLUGIN_CALLSPEC_SUFFIX
+  #elif ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID )
+    #define GUCEF_CALLSPEC_PREFIX
+    #define GUCEF_CALLSPEC_SUFFIX
+    #define GUCEF_PLUGIN_CALLSPEC_PREFIX
+    #define GUCEF_PLUGIN_CALLSPEC_SUFFIX
+  #else
+    #define GUCEF_CALLSPEC_PREFIX __attribute__((GUCEF_CALLSPEC_TYPE))
+    #define GUCEF_CALLSPEC_SUFFIX
+    #define GUCEF_PLUGIN_CALLSPEC_PREFIX __attribute__((GUCEF_PLUGIN_CALLSPEC_TYPE))
+    #define GUCEF_PLUGIN_CALLSPEC_SUFFIX
+  #endif
+#else
+  #define GUCEF_CALLSPEC_PREFIX
+  #define GUCEF_CALLSPEC_SUFFIX
+  #define GUCEF_PLUGIN_CALLSPEC_PREFIX
+  #define GUCEF_PLUGIN_CALLSPEC_SUFFIX
 #endif
 
 /*-------------------------------------------------------------------------*/

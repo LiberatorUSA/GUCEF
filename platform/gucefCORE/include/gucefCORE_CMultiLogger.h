@@ -63,7 +63,7 @@ class GUCEF_CORE_PUBLIC_CPP CMultiLogger : public CILogger
     virtual ~CMultiLogger();
 
     CMultiLogger& operator=( const CMultiLogger& src );
-    
+
     /**
      *  The logging backend should format the info given
      *  as appropriote and output it.
@@ -91,7 +91,7 @@ class GUCEF_CORE_PUBLIC_CPP CMultiLogger : public CILogger
                                        const UInt32 threadId        ,
                                        const CDateTime& timestamp   ) GUCEF_VIRTUAL_OVERRIDE;
 
-    virtual void FlushLog( void );
+    virtual void FlushLog( void ) GUCEF_VIRTUAL_OVERRIDE;
 
     virtual void SetMinimalLogLevel( const Int32 logLevel ) GUCEF_VIRTUAL_OVERRIDE;
 
@@ -114,7 +114,7 @@ class GUCEF_CORE_PUBLIC_CPP CMultiLogger : public CILogger
 
     TLoggerList m_loggers;
     std::map< TLogMsgType, bool > m_msgTypeEnablers;
-    Int32 m_minLogLevel;       
+    Int32 m_minLogLevel;
 };
 
 /*-------------------------------------------------------------------------//

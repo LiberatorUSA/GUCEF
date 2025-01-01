@@ -51,11 +51,11 @@ namespace CORE {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-CGeoLocation::CGeoLocation( Int32 latDeg             , 
-                            Int32 latMin             , 
+CGeoLocation::CGeoLocation( Int32 latDeg             ,
+                            Int32 latMin             ,
                             Float64 latSec           ,
-                            Int32 lonDeg             , 
-                            Int32 lonMin             , 
+                            Int32 lonDeg             ,
+                            Int32 lonMin             ,
                             Float64 lonSec           ,
                             Float64 altitudeInMeters )
     : m_latDeg( latDeg )
@@ -64,23 +64,23 @@ CGeoLocation::CGeoLocation( Int32 latDeg             ,
     , m_lonDeg( lonDeg )
     , m_lonMin( lonMin )
     , m_lonSec( lonSec )
-    , m_altitudeInMeters( altitudeInMeters ) 
+    , m_altitudeInMeters( altitudeInMeters )
 {GUCEF_TRACE;
 
 }
 
 /*-------------------------------------------------------------------------*/
 
-CGeoLocation::CGeoLocation( Float64 latitude         , 
-                            Float64 longitude        , 
-                            Float64 altitudeInMeters ) 
+CGeoLocation::CGeoLocation( Float64 latitude         ,
+                            Float64 longitude        ,
+                            Float64 altitudeInMeters )
     : m_latDeg( 0 )
     , m_latMin( 0 )
     , m_latSec( 0.0 )
     , m_lonDeg( 0 )
     , m_lonMin( 0 )
     , m_lonSec( 0.0 )
-    , m_altitudeInMeters( altitudeInMeters ) 
+    , m_altitudeInMeters( altitudeInMeters )
 {GUCEF_TRACE;
 
     SetLatitude( latitude );
@@ -89,89 +89,89 @@ CGeoLocation::CGeoLocation( Float64 latitude         ,
 
 /*-------------------------------------------------------------------------*/
 
-Int32 
-CGeoLocation::GetLatitudeDegrees( void ) const 
-{GUCEF_TRACE; 
-    
-    return m_latDeg; 
+Int32
+CGeoLocation::GetLatitudeDegrees( void ) const
+{GUCEF_TRACE;
+
+    return m_latDeg;
 }
 
 /*-------------------------------------------------------------------------*/
 
-Int32 
-CGeoLocation::GetLatitudeMinutes( void ) const 
-{GUCEF_TRACE; 
-    
-    return m_latMin; 
+Int32
+CGeoLocation::GetLatitudeMinutes( void ) const
+{GUCEF_TRACE;
+
+    return m_latMin;
 }
 
 /*-------------------------------------------------------------------------*/
 
-Float64 
-CGeoLocation::GetLatitudeSeconds( void ) const 
-{GUCEF_TRACE; 
-    
-    return m_latSec; 
+Float64
+CGeoLocation::GetLatitudeSeconds( void ) const
+{GUCEF_TRACE;
+
+    return m_latSec;
 }
 
 /*-------------------------------------------------------------------------*/
 
-Int32 
-CGeoLocation::GetLongitudeDegrees( void ) const 
-{GUCEF_TRACE; 
-    
-    return m_lonDeg; 
+Int32
+CGeoLocation::GetLongitudeDegrees( void ) const
+{GUCEF_TRACE;
+
+    return m_lonDeg;
 }
 
 /*-------------------------------------------------------------------------*/
 
-Int32 
-CGeoLocation::GetLongitudeMinutes( void ) const 
-{GUCEF_TRACE; 
-    
-    return m_lonMin; 
+Int32
+CGeoLocation::GetLongitudeMinutes( void ) const
+{GUCEF_TRACE;
+
+    return m_lonMin;
 }
 
 /*-------------------------------------------------------------------------*/
 
-Float64 
-CGeoLocation::GetLongitudeSeconds( void ) const 
-{GUCEF_TRACE; 
-    
-    return m_lonSec; 
+Float64
+CGeoLocation::GetLongitudeSeconds( void ) const
+{GUCEF_TRACE;
+
+    return m_lonSec;
 }
 
 /*-------------------------------------------------------------------------*/
 
-Float64 
-CGeoLocation::GetAltitudeInMeters( void ) const 
-{GUCEF_TRACE; 
-    
-    return m_altitudeInMeters; 
+Float64
+CGeoLocation::GetAltitudeInMeters( void ) const
+{GUCEF_TRACE;
+
+    return m_altitudeInMeters;
 }
 
 /*-------------------------------------------------------------------------*/
 
-Float64 
+Float64
 CGeoLocation::GetLatitude( void ) const
-{GUCEF_TRACE; 
-    
+{GUCEF_TRACE;
+
     return ToDecimalDegrees( m_latDeg, m_latMin, m_latSec );
 }
 
 /*-------------------------------------------------------------------------*/
 
-Float64 
+Float64
 CGeoLocation::GetLongitude( void ) const
-{GUCEF_TRACE; 
-    
+{GUCEF_TRACE;
+
     return ToDecimalDegrees( m_lonDeg, m_lonMin, m_lonSec );
 }
 
 /*-------------------------------------------------------------------------*/
 
-void 
-CGeoLocation::SetLatitude( Int32 deg, Int32 min, Float64 sec ) 
+void
+CGeoLocation::SetLatitude( Int32 deg, Int32 min, Float64 sec )
 {GUCEF_TRACE;
 
     m_latDeg = deg;
@@ -181,8 +181,8 @@ CGeoLocation::SetLatitude( Int32 deg, Int32 min, Float64 sec )
 
 /*-------------------------------------------------------------------------*/
 
-void 
-CGeoLocation::SetLongitude( Int32 deg, Int32 min, Float64 sec ) 
+void
+CGeoLocation::SetLongitude( Int32 deg, Int32 min, Float64 sec )
 {GUCEF_TRACE;
 
     m_lonDeg = deg;
@@ -192,8 +192,8 @@ CGeoLocation::SetLongitude( Int32 deg, Int32 min, Float64 sec )
 
 /*-------------------------------------------------------------------------*/
 
-void 
-CGeoLocation::SetLatitude( Float64 latitude ) 
+void
+CGeoLocation::SetLatitude( Float64 latitude )
 {GUCEF_TRACE;
 
     m_latDeg = static_cast<Int32>(latitude);
@@ -203,8 +203,8 @@ CGeoLocation::SetLatitude( Float64 latitude )
 
 /*-------------------------------------------------------------------------*/
 
-void 
-CGeoLocation::SetLongitude( Float64 longitude ) 
+void
+CGeoLocation::SetLongitude( Float64 longitude )
 {GUCEF_TRACE;
 
     m_lonDeg = static_cast<Int32>(longitude);
@@ -214,32 +214,32 @@ CGeoLocation::SetLongitude( Float64 longitude )
 
 /*-------------------------------------------------------------------------*/
 
-void 
-CGeoLocation::SetAltitudeInMeters( Float64 altInMeters ) 
+void
+CGeoLocation::SetAltitudeInMeters( Float64 altInMeters )
 {GUCEF_TRACE;
 
-    m_altitudeInMeters = altInMeters; 
+    m_altitudeInMeters = altInMeters;
 }
 
 /*-------------------------------------------------------------------------*/
 
-bool 
-CGeoLocation::operator==( const CGeoLocation& other ) const 
+bool
+CGeoLocation::operator==( const CGeoLocation& other ) const
 {GUCEF_TRACE;
 
-    return m_latDeg == other.m_latDeg && 
-           m_latMin == other.m_latMin && 
+    return m_latDeg == other.m_latDeg &&
+           m_latMin == other.m_latMin &&
            ( ( (Float32) std::fabs( m_latSec - other.m_latSec ) ) < GUCEF_FLOAT32_COMPARISON_EPSILON ) &&
-           m_lonDeg == other.m_lonDeg && 
-           m_lonMin == other.m_lonMin && 
+           m_lonDeg == other.m_lonDeg &&
+           m_lonMin == other.m_lonMin &&
            ( ( (Float32) std::fabs( m_lonSec - other.m_lonSec ) ) < GUCEF_FLOAT32_COMPARISON_EPSILON ) &&
            ( ( (Float32) std::fabs( m_altitudeInMeters - other.m_altitudeInMeters ) ) < GUCEF_FLOAT32_COMPARISON_EPSILON );
 }
 
 /*-------------------------------------------------------------------------*/
 
-bool 
-CGeoLocation::operator!=( const CGeoLocation& other ) const 
+bool
+CGeoLocation::operator!=( const CGeoLocation& other ) const
 {GUCEF_TRACE;
 
     return !(*this == other);
@@ -247,15 +247,15 @@ CGeoLocation::operator!=( const CGeoLocation& other ) const
 
 /*-------------------------------------------------------------------------*/
 
-bool 
-CGeoLocation::operator<( const CGeoLocation& other ) const 
+bool
+CGeoLocation::operator<( const CGeoLocation& other ) const
 {GUCEF_TRACE;
 
-    return m_latDeg < other.m_latDeg || 
-           m_latMin < other.m_latMin || 
+    return m_latDeg < other.m_latDeg ||
+           m_latMin < other.m_latMin ||
            m_latSec < other.m_latSec ||
-           m_lonDeg < other.m_lonDeg || 
-           m_lonMin < other.m_lonMin || 
+           m_lonDeg < other.m_lonDeg ||
+           m_lonMin < other.m_lonMin ||
            m_lonSec < other.m_lonSec ||
            m_altitudeInMeters < other.m_altitudeInMeters;
 }
@@ -263,16 +263,16 @@ CGeoLocation::operator<( const CGeoLocation& other ) const
 /*-------------------------------------------------------------------------*/
 
 // Convert to ISO 6709 string
-CString 
-CGeoLocation::ToISO6709String( void ) const 
+CString
+CGeoLocation::ToISO6709String( void ) const
 {GUCEF_TRACE;
 
     std::ostringstream oss;
     oss << std::fixed << std::setprecision(6)
-        << (m_latDeg >= 0 ? "+" : "") << m_latDeg << "°" << m_latMin << "'" << m_latSec << "\""
-        << (m_lonDeg >= 0 ? "+" : "") << m_lonDeg << "°" << m_lonMin << "'" << m_lonSec << "\"";
-    
-    if ( (Float32) std::fabs( m_altitudeInMeters ) < GUCEF_FLOAT32_COMPARISON_EPSILON ) 
+        << (m_latDeg >= 0 ? "+" : "") << m_latDeg << "\370" << m_latMin << "'" << m_latSec << "\""
+        << (m_lonDeg >= 0 ? "+" : "") << m_lonDeg << "\370" << m_lonMin << "'" << m_lonSec << "\"";
+
+    if ( (Float32) std::fabs( m_altitudeInMeters ) < GUCEF_FLOAT32_COMPARISON_EPSILON )
     {
         oss << ( m_altitudeInMeters >= 0 ? "+" : "") << m_altitudeInMeters << "CRS84";
     }
@@ -281,27 +281,27 @@ CGeoLocation::ToISO6709String( void ) const
 
 /*-------------------------------------------------------------------------*/
 
-CGeoLocation 
-CGeoLocation::ConvertISO6709StringToGeoLocation( const std::string& iso6709 ) 
+CGeoLocation
+CGeoLocation::ConvertISO6709StringToGeoLocation( const std::string& iso6709 )
 {GUCEF_TRACE;
 
     Int32 latDeg = 0, latMin = 0, lonDeg = 0, lonMin = 0;
     Float64 latSec = 0.0, lonSec = 0.0, alt = 0.0;
     char latSign = '+', lonSign = '+', altSign = '+';
-    
+
     std::istringstream iss( iso6709 );
     iss >> latSign >> latDeg >> latMin >> latSec >> lonSign >> lonDeg >> lonMin >> lonSec;
-    
-    if ( iss.peek() == '+' || iss.peek() == '-' ) 
+
+    if ( iss.peek() == '+' || iss.peek() == '-' )
     {
         iss >> altSign >> alt;
     }
 
-    if ( latSign == '-' ) 
+    if ( latSign == '-' )
         latDeg = -latDeg;
-    if ( lonSign == '-' ) 
+    if ( lonSign == '-' )
         lonDeg = -lonDeg;
-    if ( altSign == '-' ) 
+    if ( altSign == '-' )
         alt = -alt;
 
     return CGeoLocation( latDeg, latMin, latSec, lonDeg, lonMin, lonSec, alt );
@@ -316,9 +316,9 @@ CGeoLocation::ToGeoMicroformatString( void ) const
 
     std::ostringstream oss;
     oss << "<span class=\"geo\"><abbr class=\"latitude\" title=\""
-        << std::fixed << std::setprecision(6) << m_latDeg << "°" << m_latMin << "'" << m_latSec << "\""
+        << std::fixed << std::setprecision(6) << m_latDeg << "\370" << m_latMin << "'" << m_latSec << "\""
         << "\"></abbr><abbr class=\"longitude\" title=\""
-        << std::fixed << std::setprecision(6) << m_lonDeg << "°" << m_lonMin << "'" << m_lonSec << "\""
+        << std::fixed << std::setprecision(6) << m_lonDeg << "\370" << m_lonMin << "'" << m_lonSec << "\""
         << "\"></abbr></span>";
 
     return oss.str();
@@ -326,8 +326,8 @@ CGeoLocation::ToGeoMicroformatString( void ) const
 
 /*-------------------------------------------------------------------------*/
 
-CGeoLocation 
-CGeoLocation::ConvertGeoMicroformatToGeoLocation( const std::string& geoMicroformat ) 
+CGeoLocation
+CGeoLocation::ConvertGeoMicroformatToGeoLocation( const std::string& geoMicroformat )
 {GUCEF_TRACE;
 
     Int32 latDeg = 0, latMin = 0, lonDeg = 0, lonMin = 0;
@@ -362,11 +362,11 @@ CGeoLocation::ConvertGeoMicroformatToGeoLocation( const std::string& geoMicrofor
 /*-------------------------------------------------------------------------*/
 
 // Calculate distance between two GeoLocation instances using Haversine formula and altitude difference
-Float64 
-CGeoLocation::CalculateDistanceBetweenInKm( const CGeoLocation& loc1        , 
-                                            const CGeoLocation& loc2        , 
-                                            bool includeAltitude            , 
-                                            Float64 celestialBodyRadiusInKm ) 
+Float64
+CGeoLocation::CalculateDistanceBetweenInKm( const CGeoLocation& loc1        ,
+                                            const CGeoLocation& loc2        ,
+                                            bool includeAltitude            ,
+                                            Float64 celestialBodyRadiusInKm )
 {GUCEF_TRACE;
 
     Float64 lat1 = loc1.GetLatitude() * GUCEF_FLOAT64_PI / 180.0;
@@ -397,37 +397,37 @@ CGeoLocation::CalculateDistanceBetweenInKm( const CGeoLocation& loc1        ,
 
 // Convert to human-readable string
 CString
-CGeoLocation::ToHumanReadableString( void ) const 
+CGeoLocation::ToHumanReadableString( void ) const
 {GUCEF_TRACE;
 
     std::ostringstream oss;
     oss << std::fixed << std::setprecision(2)
-        << "Latitude: " << m_latDeg << "°" << m_latMin << "'" << m_latSec << "\", "
-        << "Longitude: " << m_lonDeg << "°" << m_lonMin << "'" << m_lonSec << "\", "
+        << "Latitude: " << m_latDeg << "\370" << m_latMin << "'" << m_latSec << "\", "
+        << "Longitude: " << m_lonDeg << "\370" << m_lonMin << "'" << m_lonSec << "\", "
         << "Altitude: " << m_altitudeInMeters << " meters";
     return oss.str();
 }
 
 /*-------------------------------------------------------------------------*/
 
-Float64 
-CGeoLocation::ToDecimalDegrees( Int32 deg, Int32 min, Float64 sec ) 
+Float64
+CGeoLocation::ToDecimalDegrees( Int32 deg, Int32 min, Float64 sec )
 {GUCEF_TRACE;
 
     bool degWasNegative = deg < 0;
     bool minWasNegative = min < 0;
     bool secWasNegative = sec < 0;
 
-    if ( degWasNegative ) 
+    if ( degWasNegative )
         deg = -deg;
     if ( minWasNegative )
         min = -min;
     if ( secWasNegative )
-        sec = -sec;   
+        sec = -sec;
 
     Float64 decDegrees = (Float64)deg + ( (Float64)min / 60.0 ) + ( (Float64)sec / 3600.0 );
-    
-    if ( degWasNegative || minWasNegative || secWasNegative ) 
+
+    if ( degWasNegative || minWasNegative || secWasNegative )
         decDegrees = -decDegrees;
 
     return decDegrees;
@@ -438,7 +438,7 @@ CGeoLocation::ToDecimalDegrees( Int32 deg, Int32 min, Float64 sec )
 bool
 CGeoLocation::IsInNorthernHemisphere( void ) const
 {GUCEF_TRACE;
-    
+
     return m_latDeg >= 0;
 }
 
@@ -447,7 +447,7 @@ CGeoLocation::IsInNorthernHemisphere( void ) const
 bool
 CGeoLocation::IsInSouthernHemisphere( void ) const
 {GUCEF_TRACE;
-    
+
     return m_latDeg < 0;
 }
 
@@ -456,8 +456,8 @@ CGeoLocation::IsInSouthernHemisphere( void ) const
 bool
 CGeoLocation::IsInWestDirectionFromMeridian( void ) const
 {GUCEF_TRACE;
-        
-    return m_lonDeg < 0;    
+
+    return m_lonDeg < 0;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -465,13 +465,13 @@ CGeoLocation::IsInWestDirectionFromMeridian( void ) const
 bool
 CGeoLocation::IsInEastDirectionFromMeridian( void ) const
 {GUCEF_TRACE;
-    
+
     return m_lonDeg >= 0;
 }
 
 /*-------------------------------------------------------------------------*/
 
-bool 
+bool
 CGeoLocation::IsAboveSeaLevel( void ) const
 {GUCEF_TRACE;
 
@@ -480,10 +480,10 @@ CGeoLocation::IsAboveSeaLevel( void ) const
 
 /*-------------------------------------------------------------------------*/
 
-CGeoLocation& 
+CGeoLocation&
 CGeoLocation::FromISO6709String( const std::string& iso6709 )
 {GUCEF_TRACE;
-    
+
     *this = ConvertISO6709StringToGeoLocation( iso6709 );
     return *this;
 }

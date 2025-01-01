@@ -149,7 +149,7 @@ class GUCEF_MT_PUBLIC_CPP CActiveObject : public virtual MT::CILockable
 
     /**
      *  Convenience member function for getting a single CPU affinity
-     *  Will return the last CPU the thread executed on. 
+     *  Will return the last CPU the thread executed on.
      *  Whether the thread will stay on said CPU depends on the affinity mask at large
      */
     bool GetCpuAffinityByCpuId( UInt32& cpuId ) const;
@@ -171,7 +171,7 @@ class GUCEF_MT_PUBLIC_CPP CActiveObject : public virtual MT::CILockable
      *  cycling.
      */
     virtual bool OnThreadStart( void* taskdata ) = 0;
-    
+
     /**
      *  Called after a successfull call to OnThreadStart
      */
@@ -185,12 +185,12 @@ class GUCEF_MT_PUBLIC_CPP CActiveObject : public virtual MT::CILockable
     virtual bool OnThreadCycle( void* taskdata ) = 0;
 
     virtual void OnThreadPausedForcibly( void* taskdata );
-    
+
     virtual void OnThreadResumed( void* taskdata );
 
     /**
      *  Last chance notification to decended classes of impending end of the tread
-     *  If the 'willBeForced' flag is true the thread will be killed next 
+     *  If the 'willBeForced' flag is true the thread will be killed next
      *  Since this would be used in cases where the thread is misbehaving one should
      *  keep that in mind in the implementation of this callback
      */
@@ -217,7 +217,7 @@ class GUCEF_MT_PUBLIC_CPP CActiveObject : public virtual MT::CILockable
 
     private:
     CActiveObject& operator=( const CActiveObject& src );
-    static Int32 GUCEF_CALLSPEC_STD_PREFIX OnActivate( void* thisobject ) GUCEF_CALLSPEC_STD_SUFFIX;
+    static Int32 GUCEF_CALLSPEC_PREFIX OnActivate( void* thisobject ) GUCEF_CALLSPEC_SUFFIX;
 
     struct SThreadData* _td;
     void* m_threadData;
