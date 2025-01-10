@@ -66,6 +66,11 @@ cd ./cert-manager
 ./setup.sh
 cd ..
 
+# setup the K9s TUI (Text User Interface)
+cd ./k9s
+./setup.sh
+cd ..
+
 # setup the Kubernetes dashboard
 cd ./dashboard
 ./setup.sh
