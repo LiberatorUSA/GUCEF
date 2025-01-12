@@ -51,3 +51,5 @@ projects/k3s/jenkins/jenkins-cli.jar
 projects/k3s/jenkins/CICD_USER_NAME.txt
 projects/k3s/jenkins/CICD_USER_PASS.txt
 projects/k3s/jenkins/CICD_USER_TOKEN.txt
+
+projects/k3s/longhorn/longhorn-disks.yaml

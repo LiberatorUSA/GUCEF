@@ -61,6 +61,11 @@ cd ./host-node
 ./setup.sh
 cd ..
 
+# Use Longhorn for storage management
+cd ./longhorn
+./setup.sh
+cd ..
+
 # install the common prereq of cert manager
 cd ./cert-manager
 ./setup.sh
