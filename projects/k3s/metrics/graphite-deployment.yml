@@ -30,7 +30,7 @@ spec:
          name: statsd   
        - containerPort: 8126
          name: statsd-admin  
-       - containerPort: 80
+       - containerPort: 8230
          name: http       
 ---
 apiVersion: v1
@@ -42,9 +42,9 @@ metadata:
 spec:
  type: LoadBalancer
  ports:
- - port: 80
+ - port: 8230
    protocol: TCP
-   targetPort: 80
+   targetPort: 8230
    name: http
  - port: 2003
    protocol: TCP

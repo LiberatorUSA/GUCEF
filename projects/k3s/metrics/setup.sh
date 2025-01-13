@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# First cleanup whatever may have been left behind from a previous round
+sudo kubectl delete namespace metrics
+
 # create a namespace to host metrics resources.
 sudo kubectl create namespace metrics
 
@@ -7,7 +10,7 @@ sudo kubectl create namespace metrics
 sudo kubectl create -f ./graphite-deployment.yml -n metrics
 
 # create the statsite image from source and make it available to use
-./create_statsite_image.sh
+#./create_statsite_image.sh
 
 # install statsite
 sudo kubectl create -f ./statsite-deployment.yml -n metrics
