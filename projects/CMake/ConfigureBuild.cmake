@@ -26,6 +26,8 @@ else ()
   set(GUCEF_LIB_TYPE SHARED)
 endif ()
 
+set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+
 # determine config values depending on build options 
 set(GUCEF_SET_MEMTRACK_DEBUG 0)
 set(GUCEF_SET_MEMTRACK_RELEASE 0)
