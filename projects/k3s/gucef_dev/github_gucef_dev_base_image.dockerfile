@@ -10,11 +10,12 @@
 FROM ubuntu:24.04
 RUN apt-get update && apt-get -y install apt-utils build-essential git-all clang clang-tools clang-tidy llvm cppcheck libssl-dev rpm libx11-dev graphviz doxygen cmake premake4 ssh gdb gdbserver openssh-server netcat-traditional supervisor vim grep gh
 
-# Install the GUCEF codebase
-RUN git clone https://github.com/DinandVanvelzen/GUCEF.git
-
 # Expose the port for gdbserver
 EXPOSE 4020
+
+# Add the script which will init the repo as needed on startup
+COPY ./repo_setup.sh /repo_setup.sh
+RUN chmod +x /repo_setup.sh
 
 # --------------------------------------------------------------------
 # For broad compatibility and access we will use a dedicated SSH server inside 

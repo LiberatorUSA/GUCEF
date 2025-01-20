@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: gucef-dev-base-code-pvc
+  namespace: gucef
+spec:
+  storageClassName: longhorn-raid
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 10Gi

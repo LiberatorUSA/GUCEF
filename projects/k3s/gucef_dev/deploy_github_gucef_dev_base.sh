@@ -2,6 +2,9 @@
 
 sudo kubectl create namespace gucef
 
+# Create the storage volume for the codebase
+sudo kubectl apply -f ./code-volume.yaml -n gucef
+
 # Deploy into k8s
 sudo kubectl apply -f ./deployment.yaml -n gucef
 

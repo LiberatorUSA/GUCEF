@@ -22,3 +22,10 @@ spec:
         ports:
         - containerPort: 22 # SSH server port
         - containerPort: 4020 # Debugging port
+        volumeMounts:
+        - mountPath: /code
+          name: code-storage
+      volumes:
+      - name: code-storage
+        persistentVolumeClaim:
+          claimName: gucef-dev-base-code-pvc
