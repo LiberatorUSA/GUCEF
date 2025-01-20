@@ -1,0 +1,24 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: gucef-dev-base
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: gucef-dev-base
+  template:
+    metadata:
+      labels:
+        app: gucef-dev-base
+    spec:
+      containers:
+      - name: gucef-dev-base
+        # if you created the image locally you can set the imagePullPolicy not to pull
+        # this is one way of avoiding the 'ErrImagePull' problem since k3s wont check its registries for the image
+        imagePullPolicy: Never
+        # Reference our locally created image
+        image: vanvelzen/github-gucef-dev-base:latest
+        ports:
+        - containerPort: 22 # SSH server port
+        - containerPort: 4020 # Debugging port

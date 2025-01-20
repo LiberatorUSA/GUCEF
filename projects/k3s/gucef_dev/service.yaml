@@ -1,0 +1,17 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: gucef-dev-base-service
+spec:
+  selector:
+    app: gucef-dev-base
+  ports:
+    - name: ssh
+      protocol: TCP
+      port: 10022
+      targetPort: 22
+    - name: debug
+      protocol: TCP
+      port: 14020
+      targetPort: 4020
+  type: LoadBalancer

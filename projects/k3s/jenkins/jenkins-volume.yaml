@@ -4,7 +4,20 @@ metadata:
   name: jenkins-pv-claim
   namespace: devops-tools
 spec:
-  storageClassName: raid
+  storageClassName: longhorn-raid
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 3Gi
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: jenkins-pv-workspace-claim
+  namespace: devops-tools
+spec:
+  storageClassName: longhorn-jbod
   accessModes:
     - ReadWriteOnce
   resources:

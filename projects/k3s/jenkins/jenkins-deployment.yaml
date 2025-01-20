@@ -88,12 +88,17 @@ spec:
           volumeMounts:
             - name: jenkins-data
               mountPath: /var/jenkins_home/data
+            - name: jenkins-workspace
+              mountPath: /var/jenkins_home/workspace
             - name: jenkins-casc-volume
               mountPath: /var/jenkins_home/casc_configs
       volumes:
         - name: jenkins-data
           persistentVolumeClaim:
               claimName: jenkins-pv-claim
+        - name: jenkins-workspace
+          persistentVolumeClaim:
+              claimName: jenkins-pv-workspace-claim
         - name: jenkins-casc-volume
           configMap:
             name: jenkins-casc
