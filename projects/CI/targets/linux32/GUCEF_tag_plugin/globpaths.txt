@@ -30,6 +30,7 @@ plugins/INPUT/inputdriverOIS/*
 plugins/INPUT/inputdriverXWINMSG/*
 plugins/PUBSUB/../*
 plugins/PUBSUB/pubsubpluginAWSSQS/*
+plugins/PUBSUB/pubsubpluginKAFKA/*
 plugins/PUBSUB/pubsubpluginMSMQ/*
 plugins/PUBSUB/pubsubpluginREDISCLUSTER/*
 plugins/PUBSUB/pubsubpluginSTORAGE/*

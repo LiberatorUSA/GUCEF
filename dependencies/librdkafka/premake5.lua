@@ -35,17 +35,11 @@ links( { "zlib" } )
 
 configuration( {} )
 defines( { "LIBRDKAFKACPP_EXPORTS", "LIBRDKAFKA_EXPORTS" } )
-  
-configuration( { LINUX32 } )
-links( { "dl" } )
   links( { "dl" } )
   
 
 configuration( { LINUX32 } )
 defines( { "WITH_LIBDL" } )
-  
-configuration( { LINUX64 } )
-links( { "dl" } )
   links( { "dl" } )
   
 
