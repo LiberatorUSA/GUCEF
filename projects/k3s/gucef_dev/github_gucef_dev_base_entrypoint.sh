@@ -3,5 +3,5 @@ set -e
 
 # Put something else here as needed ...
 
-# Start the SSH server
-exec /usr/sbin/sshd -D
+# Start supervisord
+exec /usr/bin/supervisord -c /etc/supervisor/conf.d/supervisord.conf
