@@ -12,6 +12,11 @@ spec:
       labels:
         app: gucef-dev-base
     spec:
+      securityContext:
+        runAsUser: 0
+        runAsGroup: 0
+        fsGroup: 101
+        #supplementalGroups: [4000]
       containers:
       - name: gucef-dev-base
         # if you created the image locally you can set the imagePullPolicy not to pull
@@ -25,6 +30,10 @@ spec:
         volumeMounts:
         - mountPath: /code
           name: code-storage
+        securityContext:
+          allowPrivilegeEscalation: true
+          capabilities:
+            add: [ "SYS_PTRACE" ]
       volumes:
       - name: code-storage
         persistentVolumeClaim:
