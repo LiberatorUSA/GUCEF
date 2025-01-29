@@ -606,6 +606,424 @@ class GUCEF_HIDDEN LinuxCpuUtilization
     }
 };
 
+/*--------------------------------------------------------------------------*/
+
+class GUCEF_HIDDEN CLinuxProcStatusParser
+{
+    public:
+
+    // Data members for known values in the status file
+    CString name;                          // Name of the process
+    Int32 pid;                             // Process ID
+    Int32 ppid;                            // Parent process ID
+    Int32 tracerPid;                       // PID of the process tracing this process (0 if not being traced)
+    Int32 uid;                             // User ID of the process owner
+    Int32 gid;                             // Group ID of the process owner
+    Int32 fdSize;                          // Number of file descriptor slots currently allocated
+    Int32 threads;                         // Number of threads in the process
+    Int32 voluntaryCtxtSwitches;           // Number of voluntary context switches
+    Int32 nonvoluntaryCtxtSwitches;        // Number of non-voluntary context switches
+    UInt64 vmPeak;                         // Peak virtual memory size in bytes
+    UInt64 vmSize;                         // Virtual memory size in bytes
+    UInt64 vmLck;                          // Locked memory size in bytes
+    UInt64 vmPin;                          // Pinned memory size in bytes
+    UInt64 vmHWM;                          // Peak resident set size ("high water mark") in bytes
+    UInt64 vmRSS;                          // Resident set size in bytes
+    UInt64 rssAnon;                        // Anonymous resident set size in bytes
+    UInt64 rssFile;                        // File resident set size in bytes
+    UInt64 rssShmem;                       // Shared memory resident set size in bytes
+    UInt64 vmData;                         // Data segment size in bytes
+    UInt64 vmStk;                          // Stack size in bytes
+    UInt64 vmExe;                          // Text (code) segment size in bytes
+    UInt64 vmLib;                          // Shared library code size in bytes
+    UInt64 vmPTE;                          // Page table entries size in bytes
+    UInt64 vmPMD;                          // Page middle directory size in bytes
+    UInt64 vmSwap;                         // Swapped-out virtual memory size in bytes
+    CString::StringMap otherValues;        // Catch-all bucket for other values
+
+    private:
+
+    UInt64 NormalizeUnit( const UInt64 value, const CString& unit )
+    {GUCEF_TRACE;
+
+        if ( unit == "kB" )
+        {
+            return value * 1024; // Convert kB to bytes
+        }
+
+        // No conversion needed?
+        return value;
+    }
+
+    CString NormalizeUnit( const CString& value, const CString& unit )
+    {GUCEF_TRACE;
+
+        if ( unit == "kB" )
+        {
+            return ToString( StringToInt64( value, 0 ) * 1024 ); // Convert kB to bytes
+        }
+
+        // No conversion needed?
+        if ( !unit.IsNULLOrEmpty() )
+            return value + " " + unit;
+        else
+            return value;
+    }
+
+    bool ParseFile( const CString& filePath )
+    {GUCEF_TRACE;
+
+        std::ifstream statusFile( filePath );
+        if ( !statusFile.is_open() )
+        {
+            GUCEF_DEBUG_LOG( LOGLEVEL_NORMAL, "CLinuxProcStatusParser: Cannot open file: " + filePath );
+            return false;
+        }
+
+        otherValues.clear();
+
+        size_t parsedValues = 0;
+        std::string line;
+        while ( std::getline( statusFile, line ) )
+        {
+            std::istringstream lineStream( line );
+            std::string key;
+            std::string value;
+            std::string unit;
+
+            // Split the line into key, value, and unit
+            if ( std::getline( lineStream, key, ':' ) )
+            {
+                lineStream >> value;
+
+                // Also parse out the 'unit' if the line item has one
+                // it will depend on the param type below whether its actually a unit or not
+                // the NormalizeUnit function will sort that out.
+                lineStream >> unit;
+
+                // Parse known values
+                if (key == "Name") {
+                    name = value.c_str(); ++parsedValues;
+                } else if (key == "Pid") {
+                    pid = StringToInt32( value, 0 ); ++parsedValues;
+                } else if (key == "PPid") {
+                    ppid = StringToInt32( value, 0 ); ++parsedValues;
+                } else if (key == "TracerPid") {
+                    tracerPid = StringToInt32( value ); ++parsedValues;
+                } else if (key == "Uid") {
+                    uid = StringToInt32( value ); ++parsedValues;
+                } else if (key == "Gid") {
+                    gid = StringToInt32( value ); ++parsedValues;
+                } else if (key == "FDSize") {
+                    fdSize = StringToInt32( value, 0 ); ++parsedValues;
+                } else if (key == "Threads") {
+                    threads = StringToInt32( value, 0 ); ++parsedValues;
+                } else if (key == "VmPeak") {
+                    vmPeak = NormalizeUnit( StringToUInt64( value, 0 ), unit ); ++parsedValues;
+                } else if (key == "VmSize") {
+                    vmSize = NormalizeUnit( StringToUInt64( value, 0 ), unit ); ++parsedValues;
+                } else if (key == "VmLck") {
+                    vmLck = NormalizeUnit( StringToUInt64( value, 0 ), unit ); ++parsedValues;
+                } else if (key == "VmPin") {
+                    vmPin = NormalizeUnit( StringToUInt64( value, 0 ), unit ); ++parsedValues;
+                } else if (key == "VmHWM") {
+                    vmHWM = NormalizeUnit( StringToUInt64( value, 0 ), unit ); ++parsedValues;
+                } else if (key == "VmRSS") {
+                    vmRSS = NormalizeUnit( StringToUInt64( value, 0 ), unit ); ++parsedValues;
+                } else if (key == "RssAnon") {
+                    rssAnon = NormalizeUnit( StringToUInt64( value, 0 ), unit ); ++parsedValues;
+                } else if (key == "RssFile") {
+                    rssFile = NormalizeUnit( StringToUInt64( value, 0 ), unit ); ++parsedValues;
+                } else if (key == "RssShmem") {
+                    rssShmem = NormalizeUnit( StringToUInt64( value, 0 ), unit ); ++parsedValues;
+                } else if (key == "VmData") {
+                    vmData = NormalizeUnit( StringToUInt64( value, 0 ), unit ); ++parsedValues;
+                } else if (key == "VmStk") {
+                    vmStk = NormalizeUnit( StringToUInt64( value, 0 ), unit ); ++parsedValues;
+                } else if (key == "VmExe") {
+                    vmExe = NormalizeUnit( StringToUInt64( value, 0 ), unit ); ++parsedValues;
+                } else if (key == "VmLib") {
+                    vmLib = NormalizeUnit( StringToUInt64( value, 0 ), unit ); ++parsedValues;
+                } else if (key == "VmPTE") {
+                    vmPTE = NormalizeUnit( StringToUInt64( value, 0 ), unit ); ++parsedValues;
+                } else if (key == "VmPMD") {
+                    vmPMD = NormalizeUnit( StringToUInt64( value, 0 ), unit ); ++parsedValues;
+                } else if (key == "VmSwap") {
+                    vmSwap = NormalizeUnit( StringToUInt64( value, 0 ), unit ); ++parsedValues;
+                } else if (key == "voluntary_ctxt_switches") {
+                    voluntaryCtxtSwitches = StringToInt32( value, 0 ); ++parsedValues;
+                } else if (key == "nonvoluntary_ctxt_switches") {
+                    nonvoluntaryCtxtSwitches = StringToInt32( value, 0 ); ++parsedValues;
+                }
+                else
+                {
+                    otherValues[ key ] = NormalizeUnit( value, unit );
+                }
+            }
+        }
+        parsedValues += otherValues.size();
+
+        GUCEF_DEBUG_LOG( LOGLEVEL_NORMAL, "CLinuxProcStatusParser: Parsed " + ToString( parsedValues ) + " values from file: " + filePath );
+        return true;
+    }
+
+    public:
+
+    bool Parse( pid_t pid )
+    {GUCEF_TRACE;
+
+        std::ostringstream procStatusPath;
+        procStatusPath << "/proc/" << pid << "/status";
+        return ParseFile( procStatusPath.str() );
+    }
+
+    void Clear( void )
+    {GUCEF_TRACE;
+
+        otherValues.clear();
+        name.Clear();
+        pid = 0;
+        ppid = 0;
+        tracerPid = 0;
+        uid = 0;
+        gid = 0;
+        fdSize = 0;
+        threads = 0;
+        voluntaryCtxtSwitches = 0;
+        nonvoluntaryCtxtSwitches = 0;
+        vmPeak = 0;
+        vmSize = 0;
+        vmLck = 0;
+        vmPin = 0;
+        vmHWM = 0;
+        vmRSS = 0;
+        rssAnon = 0;
+        rssFile = 0;
+        rssShmem = 0;
+        vmData = 0;
+        vmStk = 0;
+        vmExe = 0;
+        vmLib = 0;
+        vmPTE = 0;
+        vmPMD = 0;
+        vmSwap = 0;
+    }
+
+    CLinuxProcStatusParser( pid_t pid )
+        : name(), pid(0), ppid(0), tracerPid(0), uid(0), gid(0), fdSize(0), threads(0),
+          voluntaryCtxtSwitches(0), nonvoluntaryCtxtSwitches(0), vmPeak(0), vmSize(0), vmLck(0),
+          vmPin(0), vmHWM(0), vmRSS(0), rssAnon(0), rssFile(0), rssShmem(0), vmData(0), vmStk(0),
+          vmExe(0), vmLib(0), vmPTE(0), vmPMD(0), vmSwap(0)
+    {GUCEF_TRACE;
+
+        Parse( pid );
+    }
+
+    CLinuxProcStatusParser( void )
+        : name(), pid(0), ppid(0), tracerPid(0), uid(0), gid(0), fdSize(0), threads(0),
+          voluntaryCtxtSwitches(0), nonvoluntaryCtxtSwitches(0), vmPeak(0), vmSize(0), vmLck(0),
+          vmPin(0), vmHWM(0), vmRSS(0), rssAnon(0), rssFile(0), rssShmem(0), vmData(0), vmStk(0),
+          vmExe(0), vmLib(0), vmPTE(0), vmPMD(0), vmSwap(0)
+    {GUCEF_TRACE;
+
+    }
+
+    CString
+    GetOtherValue( const CString& key ) const
+    {GUCEF_TRACE;
+
+        CString::StringMap::const_iterator it = otherValues.find( key );
+        if ( it != otherValues.end() )
+        {
+            return it->second;
+        }
+        return CString::Empty;
+    }
+};
+
+/*--------------------------------------------------------------------------*/
+
+class GUCEF_HIDDEN CLinuxProcStatmParser
+{
+    public:
+
+    // Data members for values in the statm file
+    unsigned long size;     // Total program size
+    unsigned long resident; // Resident set size
+    unsigned long shared;   // Shared pages
+    unsigned long text;     // Text (code)
+    unsigned long lib;      // Library (unused in Linux 2.6)
+    unsigned long data;     // Data + stack
+    unsigned long dirty;    // Dirty pages (unused in Linux 2.6)
+
+    private:
+
+    bool ParseFile( const CString& filePath )
+    {GUCEF_TRACE;
+
+        std::ifstream statmFile( filePath );
+        if ( !statmFile.is_open() )
+        {
+            GUCEF_DEBUG_LOG( LOGLEVEL_NORMAL, "CLinuxProcStatmParser: Cannot open file: " + filePath );
+            return false;
+        }
+
+        statmFile >> size >> resident >> shared >> text >> lib >> data >> dirty;
+        GUCEF_DEBUG_LOG( LOGLEVEL_NORMAL, "CLinuxProcStatmParser: Successfully parsed file: " + filePath );
+        return true;
+    }
+
+    public:
+
+    void Clear( void )
+    {
+        size = 0;
+        resident = 0;
+        shared = 0;
+        text = 0;
+        lib = 0;
+        data = 0;
+        dirty = 0;
+    }
+
+    bool Parse( pid_t pid )
+    {GUCEF_TRACE;
+
+        std::ostringstream procStatmPath;
+        procStatmPath << "/proc/" << pid << "/statm";
+        return ParseFile( procStatmPath.str() );
+    }
+
+    CLinuxProcStatmParser( pid_t pid )
+        : size(0), resident(0), shared(0), text(0), lib(0), data(0), dirty(0)
+    {GUCEF_TRACE;
+
+        Parse( pid );
+    }
+
+    CLinuxProcStatmParser( void )
+        : size(0), resident(0), shared(0), text(0), lib(0), data(0), dirty(0)
+    {GUCEF_TRACE;
+    }
+};
+
+/*--------------------------------------------------------------------------*/
+
+class GUCEF_HIDDEN LinuxProcStatParser
+{
+    public:
+
+    pid_t pid;                          // Process ID
+    std::string comm;                   // Filename of the executable, in parentheses
+    char state;                         // State (R: running, S: sleeping, D: disk sleep, Z: zombie, T: stopped, t: tracing stop, W: paging, X: dead, x: dead, K: wakekill, W: waking, P: parked)
+    pid_t ppid;                         // Parent process ID
+    pid_t pgrp;                         // Process group ID
+    pid_t session;                      // Session ID
+    int tty_nr;                         // Controlling terminal of the process
+    pid_t tpgid;                        // ID of the foreground process group of the controlling terminal
+    unsigned int flags;                 // Kernel flags word of the process
+    unsigned long minflt;               // Number of minor faults the process has made which have not required loading a memory page from disk
+    unsigned long cminflt;              // Number of minor faults the process and its children have made
+    unsigned long majflt;               // Number of major faults the process has made which have required loading a memory page from disk
+    unsigned long cmajflt;              // Number of major faults the process and its children have made
+    unsigned long utime;                // Amount of time the process has been scheduled in user mode, measured in clock ticks
+    unsigned long stime;                // Amount of time the process has been scheduled in kernel mode, measured in clock ticks
+    long cutime;                        // Amount of time the process's children have been scheduled in user mode, measured in clock ticks
+    long cstime;                        // Amount of time the process's children have been scheduled in kernel mode, measured in clock ticks
+    long priority;                      // Priority value (nice value + 20)
+    long nice;                          // Nice value (range: -20 to 19)
+    long num_threads;                   // Number of threads in the process
+    long itrealvalue;                   // Obsolete, always 0
+    unsigned long long starttime;       // Time the process started after system boot, measured in clock ticks
+    unsigned long vsize;                // Virtual memory size in bytes
+    long rss;                           // Resident Set Size: number of pages the process has in real memory
+    unsigned long rsslim;               // Current soft limit in bytes on the RSS of the process
+    unsigned long startcode;            // Address above which program text can run
+    unsigned long endcode;              // Address below which program text can run
+    unsigned long startstack;           // Address of the start of the stack
+    unsigned long kstkesp;              // Current value of ESP (stack pointer)
+    unsigned long kstkeip;              // Current value of EIP (instruction pointer)
+    unsigned long signal;               // Bitmap of pending signals
+    unsigned long blocked;              // Bitmap of blocked signals
+    unsigned long sigignore;            // Bitmap of ignored signals
+    unsigned long sigcatch;             // Bitmap of caught signals
+    unsigned long wchan;                // "Channel" in which the process is waiting
+    unsigned long nswap;                // Number of pages swapped (not maintained)
+    unsigned long cnswap;               // Cumulative nswap for child processes (not maintained)
+    int exit_signal;                    // Signal to be sent to parent when the process dies
+    int processor;                      // CPU number last executed on
+    unsigned int rt_priority;           // Real-time scheduling priority
+    unsigned int policy;                // Scheduling policy
+    unsigned long long delayacct_blkio_ticks; // Aggregated block I/O delays, measured in clock ticks
+    unsigned long guest_time;           // Guest time of the process (time spent running a virtual CPU for a guest operating system), measured in clock ticks
+    long cguest_time;                   // Guest time of the process's children, measured in clock ticks
+    unsigned long start_data;           // Address above which program data+bss is placed
+    unsigned long end_data;             // Address below which program data+bss is placed
+    unsigned long start_brk;            // Address above which program heap can be expanded with brk()
+    unsigned long arg_start;            // Address above which program command-line arguments (argv) are placed
+    unsigned long arg_end;              // Address below which program command-line arguments (argv) are placed
+    unsigned long env_start;            // Address above which program environment is placed
+    unsigned long env_end;              // Address below which program environment is placed
+    int exit_code;                      // The thread's exit status
+
+    private:
+
+    bool ParseFile( const CString& filePath )
+    {GUCEF_TRACE;
+
+        std::ifstream statFile( filePath );
+        if ( !statFile.is_open() )
+        {
+            GUCEF_DEBUG_LOG( LOGLEVEL_NORMAL, "LinuxProcStatParser: Cannot open file: " + filePath );
+            return false;
+        }
+
+        std::string line;
+        std::getline(statFile, line);
+        std::istringstream iss(line);
+
+        iss >> pid >> comm >> state >> ppid >> pgrp >> session >> tty_nr >> tpgid >> flags >> minflt >> cminflt >> majflt >> cmajflt
+            >> utime >> stime >> cutime >> cstime >> priority >> nice >> num_threads >> itrealvalue >> starttime >> vsize >> rss >> rsslim
+            >> startcode >> endcode >> startstack >> kstkesp >> kstkeip >> signal >> blocked >> sigignore >> sigcatch >> wchan >> nswap
+            >> cnswap >> exit_signal >> processor >> rt_priority >> policy >> delayacct_blkio_ticks >> guest_time >> cguest_time >> start_data
+            >> end_data >> start_brk >> arg_start >> arg_end >> env_start >> env_end >> exit_code;
+
+
+        GUCEF_DEBUG_LOG( LOGLEVEL_NORMAL, "LinuxProcStatParser: Successfully parsed file: " + filePath );
+        return true;
+    }
+
+    public:
+
+    bool Parse( pid_t pid )
+    {GUCEF_TRACE;
+
+        std::ostringstream procStatPath;
+        procStatPath << "/proc/" << pid << "/stat";
+        return ParseFile( procStatPath.str() );
+    }
+
+    LinuxProcStatParser( pid_t pid )
+        : pid(pid), comm(), state(0), ppid(0), pgrp(0), session(0), tty_nr(0), tpgid(0), flags(0), minflt(0), cminflt(0), majflt(0), cmajflt(0),
+          utime(0), stime(0), cutime(0), cstime(0), priority(0), nice(0), num_threads(0), itrealvalue(0), starttime(0), vsize(0), rss(0), rsslim(0),
+          startcode(0), endcode(0), startstack(0), kstkesp(0), kstkeip(0), signal(0), blocked(0), sigignore(0), sigcatch(0), wchan(0), nswap(0),
+          cnswap(0), exit_signal(0), processor(0), rt_priority(0), policy(0), delayacct_blkio_ticks(0), guest_time(0), cguest_time(0), start_data(0),
+          end_data(0), start_brk(0), arg_start(0), arg_end(0), env_start(0), env_end(0), exit_code(0)
+    {GUCEF_TRACE;
+
+        Parse( pid );
+    }
+
+    LinuxProcStatParser( void )
+        : pid(0), comm(), state(0), ppid(0), pgrp(0), session(0), tty_nr(0), tpgid(0), flags(0), minflt(0), cminflt(0), majflt(0), cmajflt(0),
+          utime(0), stime(0), cutime(0), cstime(0), priority(0), nice(0), num_threads(0), itrealvalue(0), starttime(0), vsize(0), rss(0), rsslim(0),
+          startcode(0), endcode(0), startstack(0), kstkesp(0), kstkeip(0), signal(0), blocked(0), sigignore(0), sigcatch(0), wchan(0), nswap(0),
+          cnswap(0), exit_signal(0), processor(0), rt_priority(0), policy(0), delayacct_blkio_ticks(0), guest_time(0), cguest_time(0), start_data(0),
+          end_data(0), start_brk(0), arg_start(0), arg_end(0), env_start(0), env_end(0), exit_code(0)
+    {GUCEF_TRACE;
+
+    }
+};
 
 /*--------------------------------------------------------------------------*/
 
@@ -1338,8 +1756,9 @@ CheckOnProcessAliveStatus( TProcessId pid, OSWRAP_BOOLINT* status )
 /*--------------------------------------------------------------------------*/
 
 UInt32
-GetProcessMemoryUsage( TProcessId pid                      ,
-                       TProcessMemoryUsageInfo* memUseInfo )
+GetProcessMemoryUsage( TProcessId pid                          ,
+                       TProcessMemoryUsageInfo* memUseInfo     ,
+                       TProcessMemoryUsageInfo* prevMemUseInfo )
 {GUCEF_TRACE;
 
     if ( GUCEF_NULL == memUseInfo )
@@ -1358,7 +1777,7 @@ GetProcessMemoryUsage( TProcessId pid                      ,
     PROCESS_MEMORY_COUNTERS pmc;
     if ( ::GetProcessMemoryInfo( hProcess, &pmc, sizeof(pmc) ) )
     {
-        memUseInfo->pageFaultCountInBytes = (TProcessMemoryUsageInfo::TProcMemStatInt) pmc.PageFaultCount;
+        memUseInfo->pageFaultCount = (TProcessMemoryUsageInfo::TProcMemStatInt) pmc.PageFaultCount;
         memUseInfo->pageFileUsageInBytes = (TProcessMemoryUsageInfo::TProcMemStatInt) pmc.PagefileUsage;
         memUseInfo->peakPageFileUsageInBytes = (TProcessMemoryUsageInfo::TProcMemStatInt) pmc.PeakPagefileUsage;
         memUseInfo->peakWorkingSetSizeInBytes  = (TProcessMemoryUsageInfo::TProcMemStatInt) pmc.PeakWorkingSetSize;
@@ -1377,33 +1796,57 @@ GetProcessMemoryUsage( TProcessId pid                      ,
 
     #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
 
-    long totalProgramSize = 0;
-    long residentSetSize = 0;
-    long sharedPages = 0;
-    long codeSize = 0;
-    long dataAndStack = 0;
-    long librarySize = 0;
-    long dirtyPages = 0;
-    FILE* fp = NULL;
-    char procStatPath[ 64 ];
-
-    sprintf( procStatPath, "/proc/%d/statm", pid );
-    if ( (fp = ::fopen( procStatPath, "r" )) == NULL )
-        return OSWRAP_FALSE;
-    if ( ::fscanf( fp, "%ld%ld%ld%ld%ld%ld%ld", &totalProgramSize, &residentSetSize, &sharedPages, &codeSize, &dataAndStack, &librarySize, &dirtyPages ) < 1 )
+    // pageFaultCountInBytes is available from stat
+    //          /proc/<pid>/stat
+    LinuxProcStatParser procStatParser;
+    if ( procStatParser.Parse( pid ) )
     {
-        fclose( fp );
+        memUseInfo->pageFaultCount = (TProcessMemoryUsageInfo::TProcMemStatInt) ( procStatParser.minflt + procStatParser.majflt );
+    }
+    else
+    {
+        memUseInfo->pageFaultCount = 0;
+    }
+
+    // Try to get the other stats from /proc/<pid>/status
+    CLinuxProcStatusParser procStatusParser;
+    if ( procStatusParser.Parse( pid ) )
+    {
+        memUseInfo->pageFileUsageInBytes = (TProcessMemoryUsageInfo::TProcMemStatInt) procStatusParser.vmSwap;
+        memUseInfo->peakWorkingSetSizeInBytes = (TProcessMemoryUsageInfo::TProcMemStatInt) procStatusParser.vmHWM;
+        memUseInfo->workingSetSizeInBytes  = (TProcessMemoryUsageInfo::TProcMemStatInt) procStatusParser.vmRSS;
+
+        // peakPageFileUsageInBytes is not available
+        // we will have no monitor it ourselves through retention of the last vmSwap value and repeated invocation of this function
+        // Note that this is merely an approximation over time but its the best we can do on Linux
+        if ( GUCEF_NULL != prevMemUseInfo )
+        {
+            if ( procStatusParser.vmSwap > prevMemUseInfo->peakPageFileUsageInBytes )
+                memUseInfo->peakPageFileUsageInBytes = (TProcessMemoryUsageInfo::TProcMemStatInt) procStatusParser.vmSwap;
+            else
+                memUseInfo->peakPageFileUsageInBytes = prevMemUseInfo->peakPageFileUsageInBytes;
+        }
+        return OSWRAP_TRUE;
+    }
+    else
+    {
+        // Try to use /proc/<pid>/statm instead. Note that it doesn't have the same level of detail
+        // we will be missing some stats
+        CLinuxProcStatmParser procStatmParser;
+        if ( procStatmParser.Parse( pid ) )
+        {
+            long sizeOfPageInBytes = ::sysconf( _SC_PAGESIZE );
+
+            if ( 0 != procStatmParser.dirty ) // <- always 0 in later Linux versions, will only work on old Linux kernels
+                memUseInfo->pageFaultCount = (TProcessMemoryUsageInfo::TProcMemStatInt) procStatmParser.dirty * sizeOfPageInBytes;
+            memUseInfo->pageFileUsageInBytes = (TProcessMemoryUsageInfo::TProcMemStatInt) procStatmParser.shared * sizeOfPageInBytes;
+            memUseInfo->workingSetSizeInBytes = (TProcessMemoryUsageInfo::TProcMemStatInt) procStatmParser.resident * sizeOfPageInBytes;
+
+            return OSWRAP_TRUE;
+        }
+
         return OSWRAP_FALSE;
     }
-    fclose( fp );
-
-    long sizeOfPageInBytes = ::sysconf( _SC_PAGESIZE );
-
-    memUseInfo->pageFaultCountInBytes = (TProcessMemoryUsageInfo::TProcMemStatInt) dirtyPages * sizeOfPageInBytes;
-    memUseInfo->pageFileUsageInBytes = (TProcessMemoryUsageInfo::TProcMemStatInt) sharedPages * sizeOfPageInBytes;
-    memUseInfo->workingSetSizeInBytes = (TProcessMemoryUsageInfo::TProcMemStatInt) residentSetSize * sizeOfPageInBytes;
-
-    return OSWRAP_TRUE;
 
     #else
 
@@ -1465,6 +1908,10 @@ GetGlobalMemoryUsage( TGlobalMemoryUsageInfo* memUseInfo )
         memUseInfo->memoryLoadPercentage = (UInt8) ( 100 - ( memUseInfo->availablePhysicalMemoryInBytes / ( 0.01 * memUseInfo->totalPhysicalMemoryInBytes ) ) );
         memUseInfo->totalPageFileSizeInBytes = (TGlobalMemoryUsageInfo::TMemStatInt) ( info.totalswap * info.mem_unit );
         memUseInfo->availablePageFileSizeInBytes = (TGlobalMemoryUsageInfo::TMemStatInt) ( info.freeswap * info.mem_unit );
+        memUseInfo->totalVirtualMemoryInBytes = (TGlobalMemoryUsageInfo::TMemStatInt) ( (info.totalram + info.totalswap) * info.mem_unit );
+        memUseInfo->availableVirtualMemoryInBytes = (TGlobalMemoryUsageInfo::TMemStatInt) ( info.freeram * info.mem_unit );
+        memUseInfo->availExtendedVirtualMemoryInBytes = (TGlobalMemoryUsageInfo::TMemStatInt) ( (info.freeram + info.freeswap) * info.mem_unit );
+
         return OSWRAP_TRUE;
     }
     return OSWRAP_FALSE;
@@ -1571,7 +2018,7 @@ GetExeNameForProcessId( TProcessId pid         ,
         if ( GUCEF_NULL != srcStr && nrOfBytes > 0 )
         {
             memcpy( outNameBuffer, srcStr, nrOfBytes );
-            srcStr[ nrOfBytes-1 ] = '\0'; // Garantee a null terminator
+            srcStr[ nrOfBytes-1 ] = '\0'; // Guarantee a null terminator
         }
 
         *usedBufferSize = 0;
@@ -1638,67 +2085,60 @@ GetDurationSinceFiletimeInMs( LPFILETIME since )
 #if ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
 
 bool
-GetProcUptime( pid_t pid, UInt64* uptimeInMs )
+GetProcUptimeAndThreads( pid_t pid, UInt64* uptimeInMs, UInt32* nrOfThreads )
 {GUCEF_TRACE;
 
-    if ( GUCEF_NULL == uptimeInMs )
+    if ( GUCEF_NULL == uptimeInMs || GUCEF_NULL == nrOfThreads )
         return false;
-
-    FILE* fp = NULL;
-    char procStatPath[ 22 ];
     *uptimeInMs = 0;
+    *nrOfThreads = 0;
 
-    sprintf( procStatPath, "/proc/%d/stat", pid );
-
-    if ( ( fp = ::fopen( procStatPath, "r" ) ) == NULL )
-        return false;
-
-    char procState = 0;
-    if ( ::fscanf( fp, "%*d%*s%*c%c", &procState ) != 1 )
+    LinuxProcStatParser statParser;
+    if ( statParser.Parse( pid ) )
     {
-        fclose( fp );
-        return false;
-    }
-    fclose( fp );
+        *nrOfThreads = static_cast< UInt32 >( statParser.num_threads );
 
-    // R  Running
-    // S  Sleeping in an interruptible wait
-    // D  Waiting in uninterruptible disk sleep
-    // Z  Zombie
-    // T  Stopped (on a signal) or (before Linux 2.6.33)
-    //    trace stopped
-    // t  Tracing stop (Linux 2.6.33 onward)
-    // W  Paging (only before Linux 2.6.0)
-    // X  Dead (from Linux 2.6.0 onward)
-    // x  Dead (Linux 2.6.33 to 3.13 only)
-    // K  Wakekill (Linux 2.6.33 to 3.13 only)
-    // W  Waking (Linux 2.6.33 to 3.13 only)
-    // P  Parked (Linux 3.9 to 3.13 only)
-    switch ( procState )
-    {
-        case 'Z':
-        case 'X':
-        case 'x':
+        // R  Running
+        // S  Sleeping in an interruptible wait
+        // D  Waiting in uninterruptible disk sleep
+        // Z  Zombie
+        // T  Stopped (on a signal) or (before Linux 2.6.33)
+        //    trace stopped
+        // t  Tracing stop (Linux 2.6.33 onward)
+        // W  Paging (only before Linux 2.6.0)
+        // X  Dead (from Linux 2.6.0 onward)
+        // x  Dead (Linux 2.6.33 to 3.13 only)
+        // K  Wakekill (Linux 2.6.33 to 3.13 only)
+        // W  Waking (Linux 2.6.33 to 3.13 only)
+        // P  Parked (Linux 3.9 to 3.13 only)
+        switch ( statParser.state )
         {
-            // Since the proc is dead the uptime should be 0
-            return true;
+            case 'Z':
+            case 'X':
+            case 'x':
+            {
+                // Since the proc is dead the uptime should be 0
+                return true;
+            }
         }
+
+        // The proc appears by all indications still alive
+        // we now get the actual uptime
+        char procStatPath[ 24 ];
+        sprintf( procStatPath, "/proc/%d", pid );
+        struct stat statBuffer;
+        if ( 0 != ::stat( procStatPath, &statBuffer ) )
+        {
+            // Proc probaby died while executing this code
+            return false;
+        }
+
+        time_t nowTime = ::time( NULL );
+        *uptimeInMs = ( ( nowTime - statBuffer.st_mtim.tv_sec ) * 1000 ) + ( statBuffer.st_mtim.tv_nsec / 100000000 );
+        return true;
     }
 
-    // The proc appears by all indications still alive
-    // we now get the actual uptime
-    sprintf( procStatPath, "/proc/%d", pid );
-    struct stat statBuffer;
-    if ( 0 != ::stat( procStatPath, &statBuffer ) )
-    {
-        // Proc probaby died while executing this code
-        fclose( fp );
-        return false;
-    }
-
-    time_t nowTime = ::time( NULL );
-    *uptimeInMs = ( ( nowTime - statBuffer.st_mtim.tv_sec ) * 1000 ) + ( statBuffer.st_mtim.tv_nsec / 100000000 );
-    return true;
+    return false;
 }
 
 /*--------------------------------------------------------------------------*/
@@ -1735,19 +2175,14 @@ GetProcJiffies( pid_t pid, UInt64* userModeJiffies, UInt64* kernelModeJiffies )
     if ( GUCEF_NULL == userModeJiffies || GUCEF_NULL == kernelModeJiffies )
         return false;
 
-    FILE* fp = NULL;
-    char procStatPath[ 22 ];
-    sprintf( procStatPath, "/proc/%d/stat", pid );
-
-    if ( ( fp = ::fopen( procStatPath, "r" ) ) == NULL )
-        return false;
-    if ( ::fscanf( fp, "%*d%*s%*s%*d%*d%*d%*d%*d%*d%*d%*d%*d%*d%d%d", userModeJiffies, kernelModeJiffies ) != 2 )
+    LinuxProcStatParser statParser;
+    if ( statParser.Parse( pid ) )
     {
-        fclose( fp );
-        return false;
+        *userModeJiffies = static_cast< UInt64 >( statParser.utime );
+        *kernelModeJiffies = static_cast< UInt64 >( statParser.stime );
+        return true;
     }
-    fclose( fp );
-    return true;
+    return false;
 }
 
 /*--------------------------------------------------------------------------*/
@@ -2008,7 +2443,7 @@ GetProcessCpuUsage( TProcessId pid                              ,
         return OSWRAP_FALSE;
     }
 
-    GetProcUptime( pid, &cpuUseInfo->uptimeInMs );
+    GetProcUptimeAndThreads( pid, &cpuUseInfo->uptimeInMs, &cpuUseInfo->nrOfThreads );
 
     return OSWRAP_TRUE;
 

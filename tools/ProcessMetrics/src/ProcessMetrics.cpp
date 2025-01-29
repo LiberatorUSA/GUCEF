@@ -258,6 +258,7 @@ const CORE::CEvent ProcessMetrics::CProcInfo::PidChangedEvent = "GUCEF::CORE::Pr
 ProcessMetrics::CProcInfo::CProcInfo( void )
     : pid( 0 )
     , previousProcCpuDataDataPoint( GUCEF_NULL )
+    , prevMemUseInfo()
     , processInformation()
     , lastUptimeInMs( 0 )
     , exeName()
@@ -267,6 +268,7 @@ ProcessMetrics::CProcInfo::CProcInfo( void )
     , restartIfStopsRunning( false )
 {GUCEF_TRACE;
 
+    memset( &prevMemUseInfo, 0, sizeof( prevMemUseInfo ) );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -285,6 +287,7 @@ ProcessMetrics::CProcInfo::Clear( void )
 
     CORE::FreeProcCpuDataPoint( previousProcCpuDataDataPoint );
     previousProcCpuDataDataPoint = GUCEF_NULL;
+    memset( &prevMemUseInfo, 0, sizeof( prevMemUseInfo ) );
     pid = 0;
     processInformation.Clear();
     lastUptimeInMs = 0;
@@ -306,6 +309,7 @@ ProcessMetrics::CProcInfo::operator=( const CProcInfo& src )
 
         pid = src.pid;
         previousProcCpuDataDataPoint = CORE::CopyProcCpuDataPoint( previousProcCpuDataDataPoint, pid );
+        prevMemUseInfo = src.prevMemUseInfo;
         processInformation = src.processInformation;
         lastUptimeInMs = src.lastUptimeInMs;
         exeName = src.exeName;
@@ -472,7 +476,7 @@ ProcessMetrics::CProcInfo::RefreshPID( CORE::TProcessId newProcId )
     {
         if ( pid != newProcId )
         {
-            GUCEF_WARNING_LOG( CORE::LOGLEVEL_NORMAL, "ProcessMetrics:RefreshPID: Refusing to set new PID (" + CORE::ToString( newProcId ) + 
+            GUCEF_WARNING_LOG( CORE::LOGLEVEL_NORMAL, "ProcessMetrics:RefreshPID: Refusing to set new PID (" + CORE::ToString( newProcId ) +
                 ") for \"" + exeName + "\" because the PID was predefined as " + CORE::ToString( pid ));
         }
     }
@@ -516,7 +520,6 @@ ProcessMetrics::ProcessMetrics( void )
     , m_pubSubFeatures()
     , m_thresholdNotificationPrimaryPayloadCodecType()
     , m_gatherMemStats( true )
-    , m_gatherCpuStats( true )
     , m_enableRestApi( true )
     , m_enableEventMsgPublishing( true )
     , m_exeProcsToWatch()
@@ -540,8 +543,10 @@ ProcessMetrics::ProcessMetrics( void )
     , m_gatherGlobalTotalPageFileSizeInBytes( true )
     , m_gatherGlobalTotalPhysicalMemoryInBytes( false )
     , m_gatherGlobalTotalVirtualMemoryInBytes( true )
+    , m_gatherProcCpuStats( true )
     , m_gatherProcCpuUptime( true )
     , m_gatherProcCpuOverallPercentage( true )
+    , m_gatherProcCpuThreadCount( true )
     , m_gatherGlobalCpuStats( true )
     , m_gatherGlobalCpuCurrentFrequencyInMhz( true )
     , m_gatherGlobalCpuSpecMaxFrequencyInMhz( false )
@@ -694,11 +699,11 @@ ProcessMetrics::LaunchProcs( const CORE::CString::StringSet& procsToLaunch )
                         // service is running in a different session than the user's session. To get around this
                         // we have tp indirectly launch the process via a helper process that is running in the user's
                         // session. This helper process is a simple console app that takes the exe path and command line
-                        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "ProcessMetrics: Attempting to launch process \"" + procInfo.exeName + 
+                        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "ProcessMetrics: Attempting to launch process \"" + procInfo.exeName +
                             "\" using image \"" + exePath + "\" and command line \"" + cmdLine + "\"");
 
                         CORE::CString tempDir = CORE::TempDir();
-                        UInt32 i=0; 
+                        UInt32 i=0;
                         CORE::CString fileName;
                         CORE::CString helperScriptPath;
                         do
@@ -715,12 +720,12 @@ ProcessMetrics::LaunchProcs( const CORE::CString::StringSet& procsToLaunch )
                             CORE::CString exeResult;
                             if ( CORE::CommandLineExecute( helperScriptPath, exeResult, false ) )
                             {
-                                GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "ProcessMetrics: Successfully requested to launch process \"" + procInfo.exeName + 
+                                GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "ProcessMetrics: Successfully requested to launch process \"" + procInfo.exeName +
                                     "\" using image \"" + exePath + "\" and command line \"" + cmdLine + "\"");
                             }
                             else
                             {
-                                GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "ProcessMetrics: Failed to launch process \"" + procInfo.exeName + 
+                                GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "ProcessMetrics: Failed to launch process \"" + procInfo.exeName +
                                     "\" using image \"" + exePath + "\" and command line \"" + cmdLine + "\"");
                                 totalSuccess = false;
                             }
@@ -1058,17 +1063,18 @@ ProcessMetrics::OnMetricsTimerCycle( CORE::CNotifier* notifier    ,
             CProcInfo& procInfo = (*m).second;
             if ( procInfo.gatherMetrics )
             {
-                 CORE::TProcessMemoryUsageInfo memUseInfo;
-                if ( OSWRAP_TRUE == CORE::GetProcessMemoryUsage( procInfo.pid, &memUseInfo ) )
+                CORE::TProcessMemoryUsageInfo memUseInfo;
+                if ( OSWRAP_TRUE == CORE::GetProcessMemoryUsage( procInfo.pid, &memUseInfo, &procInfo.prevMemUseInfo ) )
                 {
+                    procInfo.prevMemUseInfo = memUseInfo;
                     const CORE::CString& procName = (*m).first;
                     CORE::CString metricPrefix = "ProcessMetrics." + procName + '.';
 
                     if ( m_gatherProcPageFaultCountInBytes )
                     {
-                        static const CORE::CString metricName = "MemUse.PageFaultCountInBytes";
-                        GUCEF_METRIC_TIMING( metricPrefix + metricName, memUseInfo.pageFaultCountInBytes, 1.0f );
-                        ValidateMetricThresholds( CORE::CVariant( memUseInfo.pageFaultCountInBytes ), metricName, procName );
+                        static const CORE::CString metricName = "MemUse.PageFaultCount";
+                        GUCEF_METRIC_TIMING( metricPrefix + metricName, memUseInfo.pageFaultCount, 1.0f );
+                        ValidateMetricThresholds( CORE::CVariant( memUseInfo.pageFaultCount ), metricName, procName );
                     }
                     if ( m_gatherProcPageFileUsageInBytes )
                     {
@@ -1179,7 +1185,7 @@ ProcessMetrics::OnMetricsTimerCycle( CORE::CNotifier* notifier    ,
         }
     }
 
-    if ( m_gatherCpuStats )
+    if ( m_gatherProcCpuStats )
     {
         TProcessIdMap::iterator m = m_exeProcsToWatch.begin();
         while ( m != m_exeProcsToWatch.end() )
@@ -1208,6 +1214,12 @@ ProcessMetrics::OnMetricsTimerCycle( CORE::CNotifier* notifier    ,
                         static const CORE::CString metricName = "CpuUse.TotalCpuUsePercentage";
                         GUCEF_METRIC_GAUGE( metricPrefix + metricName, cpuUseInfo.overallCpuConsumptionPercentage, 1.0f );
                         ValidateMetricThresholds( CORE::CVariant( cpuUseInfo.overallCpuConsumptionPercentage ), metricName, procName );
+                    }
+                    if ( m_gatherProcCpuThreadCount )
+                    {
+                        static const CORE::CString metricName = "CpuUse.ThreadCount";
+                        GUCEF_METRIC_GAUGE( metricPrefix + metricName, cpuUseInfo.nrOfThreads, 1.0f );
+                        ValidateMetricThresholds( CORE::CVariant( cpuUseInfo.nrOfThreads ), metricName, procName );
                     }
                 }
                 else
@@ -1723,7 +1735,6 @@ ProcessMetrics::LoadConfig( const CORE::CValueList& appConfig   ,
                             const CORE::CDataNode& globalConfig )
 {GUCEF_TRACE;
 
-    m_gatherCpuStats = CORE::StringToBool( appConfig.GetValueAlways( "gatherProcCPUStats" ), m_gatherCpuStats );
     m_enableRestApi = CORE::StringToBool( appConfig.GetValueAlways( "enableRestApi" ), m_enableRestApi );
     m_enableEventMsgPublishing = CORE::StringToBool( appConfig.GetValueAlways( "enableEventMsgPublishing" ), m_enableEventMsgPublishing );
     m_metricsTimer.SetInterval( CORE::StringToUInt32( appConfig.GetValueAlways( "metricsGatheringIntervalInMs" ), 1000 ) );
@@ -1747,8 +1758,10 @@ ProcessMetrics::LoadConfig( const CORE::CValueList& appConfig   ,
     m_gatherGlobalTotalPhysicalMemoryInBytes = CORE::StringToBool( appConfig.GetValueAlways( "gatherGlobalTotalPhysicalMemoryInBytes" ), m_gatherGlobalTotalPhysicalMemoryInBytes );
     m_gatherGlobalTotalVirtualMemoryInBytes = CORE::StringToBool( appConfig.GetValueAlways( "gatherGlobalTotalVirtualMemoryInBytes" ), m_gatherGlobalTotalVirtualMemoryInBytes );
 
-    m_gatherProcCpuUptime = CORE::StringToBool( appConfig.GetValueAlways( "gatherProcCPUUptime" ), m_gatherProcCpuUptime );
-    m_gatherProcCpuOverallPercentage = CORE::StringToBool( appConfig.GetValueAlways( "gatherProcCpuOverallPercentage" ), m_gatherProcCpuOverallPercentage );
+    m_gatherProcCpuStats = appConfig.GetValueAlways( "gatherProcCpuStats" ).AsBool( m_gatherProcCpuStats, true );
+    m_gatherProcCpuUptime = appConfig.GetValueAlways( "gatherProcCpuUptime" ).AsBool( m_gatherProcCpuUptime, true );
+    m_gatherProcCpuOverallPercentage = appConfig.GetValueAlways( "gatherProcCpuOverallPercentage" ).AsBool( m_gatherProcCpuOverallPercentage, true );
+    m_gatherProcCpuThreadCount = appConfig.GetValueAlways( "gatherProcCpuThreadCount" ).AsBool( m_gatherProcCpuThreadCount, true );
 
     m_gatherGlobalCpuStats = appConfig.GetValueAlways( "gatherGlobalCpuStats", m_gatherGlobalCpuStats ).AsBool( m_gatherGlobalCpuStats, true );
     m_gatherGlobalCpuCurrentFrequencyInMhz = appConfig.GetValueAlways( "gatherGlobalCpuCurrentFrequencyInMhz", m_gatherGlobalCpuCurrentFrequencyInMhz ).AsBool( m_gatherGlobalCpuCurrentFrequencyInMhz, true );
@@ -1814,7 +1827,7 @@ ProcessMetrics::LoadConfig( const CORE::CValueList& appConfig   ,
             UInt32 pidNr = CORE::StringToUInt32( pidStr, 0 );
             if ( 0 == pidNr )
             {
-                GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "ProcessMetrics: exeProcsToWatchWithPid has an invalid PID entry. ProcessName=" + 
+                GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "ProcessMetrics: exeProcsToWatchWithPid has an invalid PID entry. ProcessName=" +
                     procName + " PID=" + pidStr + ". Please check the config for errors" );
             }
             else

@@ -240,6 +240,7 @@ class ProcessMetrics : public CORE::CObservingNotifier
 
         CORE::TProcessId pid;
         CORE::TProcCpuDataPoint* previousProcCpuDataDataPoint;
+        CORE::TProcessMemoryUsageInfo prevMemUseInfo;
         CORE::CProcessInformation processInformation;
         UInt64 lastUptimeInMs;
         CORE::CString exeName;
@@ -286,7 +287,6 @@ class ProcessMetrics : public CORE::CObservingNotifier
     PUBSUB::CPubSubClientFeatures m_pubSubFeatures;
     CORE::CString m_thresholdNotificationPrimaryPayloadCodecType;
     bool m_gatherMemStats;
-    bool m_gatherCpuStats;
     bool m_enableRestApi;
     bool m_enableEventMsgPublishing;
     TProcessIdMap m_exeProcsToWatch;
@@ -313,8 +313,10 @@ class ProcessMetrics : public CORE::CObservingNotifier
     bool m_gatherGlobalTotalPhysicalMemoryInBytes;
     bool m_gatherGlobalTotalVirtualMemoryInBytes;
 
+    bool m_gatherProcCpuStats;
     bool m_gatherProcCpuUptime;
     bool m_gatherProcCpuOverallPercentage;
+    bool m_gatherProcCpuThreadCount;
 
     bool m_gatherGlobalCpuStats;
     bool m_gatherGlobalCpuCurrentFrequencyInMhz;

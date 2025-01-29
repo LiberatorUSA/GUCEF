@@ -115,7 +115,7 @@ struct SProcessMemoryUsageInfo
 
     TProcMemStatInt workingSetSizeInBytes;
     TProcMemStatInt peakWorkingSetSizeInBytes;
-    TProcMemStatInt pageFaultCountInBytes;
+    TProcMemStatInt pageFaultCount;
     TProcMemStatInt pageFileUsageInBytes;
     TProcMemStatInt peakPageFileUsageInBytes;
 };
@@ -152,6 +152,7 @@ struct SProcessCpuUsageInfo
 {
     UInt64 uptimeInMs;
     Float64 overallCpuConsumptionPercentage;
+    UInt32 nrOfThreads;
 };
 typedef struct SProcessCpuUsageInfo TProcessCpuUsageInfo;
 
@@ -358,9 +359,16 @@ GetProcessInformation( TProcessId pid            ,
 
 /*--------------------------------------------------------------------------*/
 
+/**
+ *  Attempts to obtain memory usage information for the specified process
+ *  @param pid the process id of the process you wish to obtain information for
+ *  @param memUseInfo output structure to hold the information that was gathered
+ *  @param prevMemUseInfo optional input structure to hold the previous invocation's information. Needed for proper peak/delta determination on some systems
+ */
 GUCEF_CORE_PUBLIC_C OSWRAP_BOOLINT
-GetProcessMemoryUsage( TProcessId pid                      ,
-                       TProcessMemoryUsageInfo* memUseInfo );
+GetProcessMemoryUsage( TProcessId pid                          ,
+                       TProcessMemoryUsageInfo* memUseInfo     ,
+                       TProcessMemoryUsageInfo* prevMemUseInfo );
 
 /*--------------------------------------------------------------------------*/
 
