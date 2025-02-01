@@ -1038,15 +1038,15 @@ class GUCEF_HIDDEN LinuxProcStatParser
 /*--------------------------------------------------------------------------*/
 #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
 
-int 
-GetWin32ProcThreadCount( DWORD pid ) 
+int
+GetWin32ProcThreadCount( DWORD pid )
 {GUCEF_TRACE;
 
     CORE::CDynamicBuffer buffer;
     ULONG neededBufferSize = 0;
     NTSTATUS ntStatus = TryNtQuerySystemInformation( SystemProcessInformation ,
-                                                     buffer.GetBufferPtr()    , 
-                                                     buffer.GetBufferSize()   , 
+                                                     buffer.GetBufferPtr()    ,
+                                                     buffer.GetBufferSize()   ,
                                                      &neededBufferSize        );
     if ( STATUS_INFO_LENGTH_MISMATCH == ntStatus )
     {
@@ -1064,19 +1064,19 @@ GetWin32ProcThreadCount( DWORD pid )
             return -1;
         }
     }
-    
+
     if ( WIN32_NT_SUCCESS( ntStatus ) )
     {
         // Successfully retrieved the global process information
         // We will now iterate through the list of processes to find the one we are looking for
         PSYSTEM_PROCESS_INFORMATION processInfo = (PSYSTEM_PROCESS_INFORMATION) buffer.GetBufferPtr();
-        while ( processInfo->NextEntryOffset != 0 ) 
+        while ( processInfo->NextEntryOffset != 0 )
         {
-            // In reality process id and thread id is of type HANDLE. 
-            // this is handled in the special PspCidTable. 
+            // In reality process id and thread id is of type HANDLE.
+            // this is handled in the special PspCidTable.
             // the win32 layer for some reason defines it as DWORD, but all native api use it as HANDLE
             DWORD entryPid = (DWORD)(ULONG)(ULONG_PTR) processInfo->UniqueProcessId;
-            if ( entryPid == pid ) 
+            if ( entryPid == pid )
             {
                 // We found the process we are looking for among the list of processes
                 return processInfo->NumberOfThreads;
@@ -1659,10 +1659,17 @@ ShowErrorMessage( const char* message     ,
 {GUCEF_TRACE;
 
     #ifdef GUCEF_MSWIN_BUILD
-    MessageBox( GetCurrentHWND()                    ,
-                description                         ,
-                message                             ,
-                MB_OK | MB_ICONERROR | MB_TASKMODAL );
+    if ( !IsRunningAsService() )
+    {
+        MessageBox( GetCurrentHWND()                    ,
+                    description                         ,
+                    message                             ,
+                    MB_OK | MB_ICONERROR | MB_TASKMODAL );
+    }
+    else
+    {
+        fprintf( stderr, "%s : %s\n", message, description );
+    }
     #else
     fprintf( stderr, "%s : %s\n", message, description );
     #endif
@@ -1944,7 +1951,7 @@ GetGlobalMemoryUsage( TGlobalMemoryUsageInfo* memUseInfo )
     // Free memory is memory that is not used for any purpose at all including sneaky caching
     // Hence from an application perspective, trying to guard against 'running out of memory' the
     // value you care about on Linux is 'available' memory.
-    // The excess bytes of free > available is what Linux us used for things like buffers and disk caches
+    // The excess bytes of free > available is what Linux uses for things like system managed buffers and disk caches
 
     #if 1
 

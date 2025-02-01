@@ -26,6 +26,7 @@
 #include <map>
 #include <iostream>
 #include <fstream>
+#include <sstream>
 #include <stdexcept>
 #include <string>
 #include <stdio.h>
@@ -235,7 +236,7 @@ GetHostname( void )
 
 // Helper function to get the parent process ID (PPID) of a given process ID (PID)
 pid_t GUCEF_HIDDEN
-GetParentPID( pid_t pid ) 
+GetParentPID( pid_t pid )
 {GUCEF_TRACE;
 
     CString statFile = "/proc/" + ToString( pid ) + "/stat";
@@ -244,7 +245,7 @@ GetParentPID( pid_t pid )
         return -1;
 
     CString::StringVector statParts = statContent.ParseElements( ' ', false );
-    if ( statParts.size() < 4 ) 
+    if ( statParts.size() < 4 )
     {
         return -1;
     }
@@ -257,10 +258,10 @@ GetParentPID( pid_t pid )
 
 // Check if the process is running as a service under SysVinit
 bool GUCEF_HIDDEN
-IsRunningAsSysVinitService( pid_t pid ) 
+IsRunningAsSysVinitService( pid_t pid )
 {GUCEF_TRACE;
 
-    CFileSystemIterator fsIterator;   
+    CFileSystemIterator fsIterator;
     if ( fsIterator.FindFirst( "/etc/rc.d" ) )
     {
         do
@@ -283,7 +284,7 @@ IsRunningAsSysVinitService( pid_t pid )
                     file.close();
                 }
             }
-        } 
+        }
         while ( fsIterator.FindNext() );
     }
 
@@ -296,10 +297,10 @@ IsRunningAsSysVinitService( pid_t pid )
 
 // Check if the process is running as a service under Upstart
 bool GUCEF_HIDDEN
-IsRunningAsUpstartService( pid_t pid ) 
+IsRunningAsUpstartService( pid_t pid )
 {GUCEF_TRACE;
 
-    CFileSystemIterator fsIterator;   
+    CFileSystemIterator fsIterator;
     if ( fsIterator.FindFirst( "/etc/init" ) )
     {
         do
@@ -322,7 +323,7 @@ IsRunningAsUpstartService( pid_t pid )
                     file.close();
                 }
             }
-        } 
+        }
         while ( fsIterator.FindNext() );
     }
 
@@ -335,10 +336,10 @@ IsRunningAsUpstartService( pid_t pid )
 
 // Check if the process is running as a service under OpenRC
 bool GUCEF_HIDDEN
-IsRunningAsOpenRCService( pid_t pid ) 
+IsRunningAsOpenRCService( pid_t pid )
 {GUCEF_TRACE;
 
-    CFileSystemIterator fsIterator;   
+    CFileSystemIterator fsIterator;
     if ( fsIterator.FindFirst( "/etc/init.d" ) )
     {
         do
@@ -361,7 +362,7 @@ IsRunningAsOpenRCService( pid_t pid )
                     file.close();
                 }
             }
-        } 
+        }
         while ( fsIterator.FindNext() );
     }
 
@@ -374,17 +375,17 @@ IsRunningAsOpenRCService( pid_t pid )
 
 // Check if the process is running as a service under systemd
 bool GUCEF_HIDDEN
-IsRunningAsSystemdService( pid_t pid ) 
+IsRunningAsSystemdService( pid_t pid )
 {GUCEF_TRACE;
 
     pid_t ppid = GetParentPID( pid );
-    while ( ppid > 1 ) 
+    while ( ppid > 1 )
     {
         CString cgroupFile = "/proc/" + ToString( ppid ) + "/cgroup";
         CString cgroupContent;
         if ( LoadTextFileAsString( cgroupFile, cgroupContent ) )
         {
-            if ( cgroupContent.HasSubstr( "name=systemd" ) >  -1 ) 
+            if ( cgroupContent.HasSubstr( "name=systemd" ) >  -1 )
             {
                 return true;
             }
@@ -397,6 +398,63 @@ IsRunningAsSystemdService( pid_t pid )
 }
 
 #endif
+/*-------------------------------------------------------------------------*/
+#if ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
+
+// Check if the process is running as a service under supervisord
+bool GUCEF_HIDDEN
+IsRunningAsSupervisordService( pid_t pid )
+{GUCEF_TRACE;
+
+    // Construct the path to the process's status file
+    std::ostringstream statusFilePath;
+    statusFilePath << "/proc/" << pid << "/status";
+
+    // Open the status file
+    std::ifstream statusFile(statusFilePath.str().c_str());
+    if (!statusFile.is_open()) {
+        return false;
+    }
+
+    // Read the file line by line
+    std::string line;
+    while (std::getline(statusFile, line)) {
+        // Check if the line contains "PPid:"
+        if (line.find("PPid:") == 0) {
+            // Extract the parent process ID
+            pid_t ppid = atoi(line.substr(6).c_str());
+
+            // Construct the path to the parent process's cmdline file
+            std::ostringstream ppidCmdlineFilePath;
+            ppidCmdlineFilePath << "/proc/" << ppid << "/cmdline";
+
+            // Open the parent process's cmdline file
+            std::ifstream ppidCmdlineFile(ppidCmdlineFilePath.str().c_str());
+            if (!ppidCmdlineFile.is_open()) {
+                return false;
+            }
+
+            // Read the entire file content
+            std::string ppidCmdline;
+            std::getline(ppidCmdlineFile, ppidCmdline, '\0');
+
+            // Close the file
+            ppidCmdlineFile.close();
+
+            // Check if the parent process's command line contains "supervisord"
+            if (ppidCmdline.find("supervisord") != std::string::npos) {
+                return true;
+            }
+        }
+    }
+
+    // Close the status file
+    statusFile.close();
+
+    return false;
+}
+
+#endif
 
 /*-------------------------------------------------------------------------*/
 
@@ -405,12 +463,12 @@ IsProcessRunningAsService( TProcessId pid )
 {GUCEF_TRACE;
 
     #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
-    
+
     ::SERVICE_STATUS_PROCESS serviceStatus;
     DWORD bytesNeeded = 0;
 
     ::SC_HANDLE scm = ::OpenSCManagerW( NULL, NULL, SC_MANAGER_ENUMERATE_SERVICE );
-    if ( NULL == scm ) 
+    if ( NULL == scm )
     {
         GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "IsRunningAsService: Failed to open Service Control Manager" );
         return false;
@@ -435,7 +493,7 @@ IsProcessRunningAsService( TProcessId pid )
         NULL
     );
 
-    if ( FALSE == success && ::GetLastError() != ERROR_MORE_DATA ) 
+    if ( FALSE == success && ::GetLastError() != ERROR_MORE_DATA )
     {
         ::CloseServiceHandle( scm );
         GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "IsRunningAsService: Failed to enumerate services" );
@@ -456,7 +514,7 @@ IsProcessRunningAsService( TProcessId pid )
         NULL
     );
 
-    if ( FALSE == success ) 
+    if ( FALSE == success )
     {
         delete[] buffer;
         ::CloseServiceHandle( scm );
@@ -465,16 +523,16 @@ IsProcessRunningAsService( TProcessId pid )
     }
 
     ::ENUM_SERVICE_STATUS_PROCESSW* services = (ENUM_SERVICE_STATUS_PROCESSW*) buffer;
-    for ( DWORD i=0; i<servicesReturned; ++i ) 
+    for ( DWORD i=0; i<servicesReturned; ++i )
     {
-        if ( services[ i ].ServiceStatusProcess.dwProcessId == (DWORD) pid ) 
+        if ( services[ i ].ServiceStatusProcess.dwProcessId == (DWORD) pid )
         {
             service = ::OpenServiceW( scm, services[ i ].lpServiceName, SERVICE_QUERY_STATUS );
-            if ( NULL != service) 
+            if ( NULL != service)
             {
                 success = ::QueryServiceStatusEx( service, SC_STATUS_PROCESS_INFO, (LPBYTE)&serviceStatus, sizeof(SERVICE_STATUS_PROCESS), &bytesNeeded );
                 ::CloseServiceHandle( service );
-                if ( FALSE != success ) 
+                if ( FALSE != success )
                 {
                     bool result = (serviceStatus.dwCurrentState == SERVICE_RUNNING);
                     delete[] buffer;
@@ -493,11 +551,12 @@ IsProcessRunningAsService( TProcessId pid )
 
     // On Linux there are multiple service managers, so we need to check for each one
     // or at least some popular ones. This code would need updating as new service managers are introduced
-    return IsRunningAsSystemdService( pid ) || 
-           IsRunningAsSysVinitService( pid ) || 
-           IsRunningAsUpstartService( pid ) || 
-           IsRunningAsOpenRCService( pid );
-    
+    return IsRunningAsSystemdService( pid ) ||
+           IsRunningAsSysVinitService( pid ) ||
+           IsRunningAsUpstartService( pid ) ||
+           IsRunningAsOpenRCService( pid ) ||
+           IsRunningAsSupervisordService( pid );
+
     #else
 
     // platform not supported
@@ -509,8 +568,8 @@ IsProcessRunningAsService( TProcessId pid )
 
 /*-------------------------------------------------------------------------*/
 
-bool 
-IsRunningAsService( void ) 
+bool
+IsRunningAsService( void )
 {GUCEF_TRACE;
 
     #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
@@ -563,12 +622,12 @@ GetExeImagePathForProcessId( TProcessId pid     ,
             }
         }
         while ( !hadError && mayBeTruncated );
-        
+
         if ( !hadError )
         {
             outNameBuffer.shrink_to_fit();
             imagePath = ToString( outNameBuffer ).Trim( true );
-            ::CloseHandle( handle );    
+            ::CloseHandle( handle );
             return true;
         }
         ::CloseHandle( handle );
@@ -900,7 +959,7 @@ CheckOnProcessAliveStatus( TProcessId pid, bool& status )
                         return true;
                     }
                     ++i;
-                }                
+                }
             }
         }
         else
@@ -1191,7 +1250,7 @@ CProcessInformation::TryGetProcessInformation( TProcessId pid            ,
         return totalSuccess;
 
         #else
-        
+
         GUCEF_WARNING_LOG( LOGLEVEL_NORMAL, "ProcessInformation:TryGetProcessInformation: Platform has no supported implementation" );
         return false;
 
