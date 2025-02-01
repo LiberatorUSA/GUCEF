@@ -40,6 +40,11 @@
 #define GUCEF_CORE_LOGGING_H
 #endif /* GUCEF_CORE_LOGGING_H ? */
 
+#ifndef GUCEF_CORE_CDYNAMICBUFFER_H
+#include "CDynamicBuffer.h"
+#define GUCEF_CORE_CDYNAMICBUFFER_H
+#endif /* GUCEF_CORE_CDYNAMICBUFFER_H ? */
+
 #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
 
   /* Do not use WIN32_LEAN_AND_MEAN because it will remove timeBeginPeriod() etc. */
@@ -1030,21 +1035,64 @@ class GUCEF_HIDDEN LinuxProcStatParser
 
 #endif
 
-
+/*--------------------------------------------------------------------------*/
 #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
 
-// Note that this structure definition was accidentally omitted from WinNT.h.
-// This error will be corrected in the future. In the meantime, to compile your application,
-// include the structure definition contained in this topic in your source code.
-// See: https://docs.microsoft.com/en-us/windows/win32/power/processor-power-information-str
-typedef struct _PROCESSOR_POWER_INFORMATION {
-  ULONG Number;
-  ULONG MaxMhz;
-  ULONG CurrentMhz;
-  ULONG MhzLimit;
-  ULONG MaxIdleState;
-  ULONG CurrentIdleState;
-} PROCESSOR_POWER_INFORMATION, *PPROCESSOR_POWER_INFORMATION;
+int 
+GetWin32ProcThreadCount( DWORD pid ) 
+{GUCEF_TRACE;
+
+    CORE::CDynamicBuffer buffer;
+    ULONG neededBufferSize = 0;
+    NTSTATUS ntStatus = TryNtQuerySystemInformation( SystemProcessInformation ,
+                                                     buffer.GetBufferPtr()    , 
+                                                     buffer.GetBufferSize()   , 
+                                                     &neededBufferSize        );
+    if ( STATUS_INFO_LENGTH_MISMATCH == ntStatus )
+    {
+        // This is expected, we need to allocate sufficient space in the buffer and try again
+        if ( buffer.SetBufferSize( neededBufferSize, false, true ) )
+        {
+            ntStatus = TryNtQuerySystemInformation( SystemProcessInformation ,
+                                                    buffer.GetBufferPtr()    ,
+                                                    buffer.GetBufferSize()   ,
+                                                    &neededBufferSize        );
+        }
+        else
+        {
+            GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "GetWin32ProcThreadCount: failed to allocate buffer of size " + ToString( (UInt64) neededBufferSize ) );
+            return -1;
+        }
+    }
+    
+    if ( WIN32_NT_SUCCESS( ntStatus ) )
+    {
+        // Successfully retrieved the global process information
+        // We will now iterate through the list of processes to find the one we are looking for
+        PSYSTEM_PROCESS_INFORMATION processInfo = (PSYSTEM_PROCESS_INFORMATION) buffer.GetBufferPtr();
+        while ( processInfo->NextEntryOffset != 0 ) 
+        {
+            // In reality process id and thread id is of type HANDLE. 
+            // this is handled in the special PspCidTable. 
+            // the win32 layer for some reason defines it as DWORD, but all native api use it as HANDLE
+            DWORD entryPid = (DWORD)(ULONG)(ULONG_PTR) processInfo->UniqueProcessId;
+            if ( entryPid == pid ) 
+            {
+                // We found the process we are looking for among the list of processes
+                return processInfo->NumberOfThreads;
+            }
+            processInfo = (PSYSTEM_PROCESS_INFORMATION) ( (PBYTE)processInfo + processInfo->NextEntryOffset );
+        }
+        GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "GetWin32ProcThreadCount: No entry for PID " + ToString( (UInt64) pid ) );
+    }
+    else
+    {
+        GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "GetWin32ProcThreadCount: call to TryNtQuerySystemInformation failed with NTSTATUS " + ToString( ntStatus ) );
+    }
+
+    // Could not obtain the information
+    return -1;
+}
 
 #endif
 
@@ -2250,6 +2298,10 @@ CreateProcCpuDataPoint( TProcessId pid )
         ::GetProcessTimes( dataPoint->hProcess, &dummy, &dummy, &dataPoint->procKernelTime, &dataPoint->procUserTime );
         ::GetSystemTimes( &dataPoint->globalIdleTime, &dataPoint->globalKernelTime, &dataPoint->globalUserTime );
     }
+    else
+    {
+        GUCEF_DEBUG_LOG( LOGLEVEL_NORMAL, "CreateProcCpuDataPoint: Failed to open process handle for pid " + ToString( pid ) );
+    }
 
     #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
     dataPoint->pid = pid;
@@ -2405,11 +2457,13 @@ GetProcessCpuUsage( TProcessId pid                              ,
         previousCpuDataDataPoint->globalUserTime = globalUserTime;
         previousCpuDataDataPoint->procKernelTime = kernelTime;
         previousCpuDataDataPoint->procUserTime = userTime;
-
-        return OSWRAP_TRUE;
     }
 
-    return OSWRAP_FALSE;
+    int nrOfThreads = GetWin32ProcThreadCount( pid );
+    if ( nrOfThreads > 0 )
+        cpuUseInfo->nrOfThreads = (UInt32) nrOfThreads;
+
+    return OSWRAP_TRUE;
 
     #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
 

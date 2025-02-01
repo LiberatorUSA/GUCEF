@@ -55,9 +55,74 @@ namespace CORE {
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
+//      CONSTANTS                                                          //
+//                                                                         //
+//-------------------------------------------------------------------------*/
+
+#ifndef STATUS_INFO_LENGTH_MISMATCH
+    #define STATUS_INFO_LENGTH_MISMATCH (NTSTATUS) 0xC0000004L
+#endif
+
+/*-------------------------------------------------------------------------*/
+
+#define KPRIORITY_LOW_PRIORITY                      0
+#define KPRIORITY_LOW_REALTIME_PRIORITY             16
+#define KPRIORITY_HIGH_PRIORITY                     31
+#define KPRIORITY_MAXIMUM_PRIORITY                  32
+
+/*-------------------------------------------------------------------------//
+//                                                                         //
 //      TYPES                                                              //
 //                                                                         //
 //-------------------------------------------------------------------------*/
+
+typedef LONG       KPRIORITY;
+
+/*-------------------------------------------------------------------------*/
+
+typedef enum _KWAIT_REASON
+{
+	Executive = 0,
+	FreePage = 1,
+	PageIn = 2,
+	PoolAllocation = 3,
+	DelayExecution = 4,
+	Suspended = 5,
+	UserRequest = 6,
+	WrExecutive = 7,
+	WrFreePage = 8,
+	WrPageIn = 9,
+	WrPoolAllocation = 10,
+	WrDelayExecution = 11,
+	WrSuspended = 12,
+	WrUserRequest = 13,
+	WrEventPair = 14,
+	WrQueue = 15,
+	WrLpcReceive = 16,
+	WrLpcReply = 17,
+	WrVirtualMemory = 18,
+	WrPageOut = 19,
+	WrRendezvous = 20,
+	Spare2 = 21,
+	Spare3 = 22,
+	Spare4 = 23,
+	Spare5 = 24,
+	WrCalloutStack = 25,
+	WrKernel = 26,
+	WrResource = 27,
+	WrPushLock = 28,
+	WrMutex = 29,
+	WrQuantumEnd = 30,
+	WrDispatchInt = 31,
+	WrPreempted = 32,
+	WrYieldExecution = 33,
+	WrFastMutex = 34,
+	WrGuardedMutex = 35,
+	WrRundown = 36,
+	MaximumWaitReason = 37
+} KWAIT_REASON;
+
+/*-------------------------------------------------------------------------*/
 
 typedef struct _CLIENT_ID
 {
@@ -219,6 +284,139 @@ _SYSTEM_PROCESSOR_PERFORMANCE_INFORMATION {
     LARGE_INTEGER Reserved1[2];
     ULONG Reserved2;
 } SYSTEM_PROCESSOR_PERFORMANCE_INFORMATION;
+
+/*-------------------------------------------------------------------------*/
+
+// Note that this structure definition was accidentally omitted from WinNT.h.
+// This error will be corrected in the future. In the meantime, to compile your application,
+// include the structure definition contained in this topic in your source code.
+// See: https://docs.microsoft.com/en-us/windows/win32/power/processor-power-information-str
+typedef struct _PROCESSOR_POWER_INFORMATION {
+  ULONG Number;
+  ULONG MaxMhz;
+  ULONG CurrentMhz;
+  ULONG MhzLimit;
+  ULONG MaxIdleState;
+  ULONG CurrentIdleState;
+} PROCESSOR_POWER_INFORMATION, *PPROCESSOR_POWER_INFORMATION;
+
+/*-------------------------------------------------------------------------*/
+
+typedef struct _SYSTEM_THREAD {
+  LARGE_INTEGER           KernelTime;             // Sum of thread's execution time in KernelMode, in native format.
+  LARGE_INTEGER           UserTime;               // Sum of thread's execution time in UserMode, in native format.
+  LARGE_INTEGER           CreateTime;             // Time of thread creation, in native format.
+  ULONG                   WaitTime;               // Sum of thread's waiting time, in native format.                                           
+  PVOID                   StartAddress;           // Thread start address.
+  CLIENT_ID               ClientId;               // Process and thread identyficators.
+  KPRIORITY               Priority;               // Thread priority.
+  LONG                    BasePriority;           // Thread base priority.
+  ULONG                   ContextSwitchCount;     // Number of context switches executed by thread.
+  ULONG                   State;                  // Current thread's state.
+  KWAIT_REASON            WaitReason;             // Reason for waiting (if any)
+
+} SYSTEM_THREAD, *PSYSTEM_THREAD;
+
+/*-------------------------------------------------------------------------*/
+
+typedef struct _SYSTEM_THREAD_INFORMATION {
+	LARGE_INTEGER KernelTime;
+	LARGE_INTEGER UserTime;
+	LARGE_INTEGER CreateTime;
+	ULONG WaitTime;
+	PVOID StartAddress;
+	CLIENT_ID ClientId;
+	KPRIORITY Priority;
+	LONG BasePriority;
+	ULONG ContextSwitchCount;
+	ULONG ThreadState;
+	KWAIT_REASON WaitReason;
+#ifdef _WIN64
+	ULONG Reserved[4];
+#endif
+}SYSTEM_THREAD_INFORMATION, *PSYSTEM_THREAD_INFORMATION;
+
+/*-------------------------------------------------------------------------*/
+
+typedef struct _SYSTEM_EXTENDED_THREAD_INFORMATION
+{
+	SYSTEM_THREAD_INFORMATION ThreadInfo;
+	PVOID StackBase;
+	PVOID StackLimit;
+	PVOID Win32StartAddress;
+	PVOID TebAddress; /* This is only filled in on Vista and above */
+	ULONG Reserved1;
+	ULONG Reserved2;
+	ULONG Reserved3;
+} SYSTEM_EXTENDED_THREAD_INFORMATION, *PSYSTEM_EXTENDED_THREAD_INFORMATION;
+
+/*-------------------------------------------------------------------------*/
+
+typedef struct _VM_COUNTERS
+{
+    SIZE_T PeakVirtualSize;             // The peak virtual address space size of this process, in bytes.
+    SIZE_T VirtualSize;                 // The virtual address space size of this process, in bytes.
+    ULONG PageFaultCount;               // The number of page faults.
+    SIZE_T PeakWorkingSetSize;          // The peak working set size, in bytes.
+    SIZE_T WorkingSetSize;              // The current working set size, in bytes
+    SIZE_T QuotaPeakPagedPoolUsage;     // The peak paged pool usage, in bytes.
+    SIZE_T QuotaPagedPoolUsage;         // The current paged pool usage, in bytes.
+    SIZE_T QuotaPeakNonPagedPoolUsage;  // The peak non-paged pool usage, in bytes.
+    SIZE_T QuotaNonPagedPoolUsage;      // The current non-paged pool usage, in bytes.
+    SIZE_T PagefileUsage;               // The Commit Charge value in bytes for this process. Commit Charge is the total amount of private memory that the memory manager has committed for a running process.
+    SIZE_T PeakPagefileUsage;           // The peak value in bytes of the Commit Charge during the lifetime of this process.
+    SIZE_T PrivatePageCount;            // The number of page faults that are demand-zero faults.
+} VM_COUNTERS, *PVM_COUNTERS;
+
+/*-------------------------------------------------------------------------*/
+
+ typedef struct _SYSTEM_PROCESS_INFORMATION
+ {
+      ULONG NextEntryOffset;                                 // Offset from begining of output buffer to next process entry. On last entry contains zero.
+      ULONG NumberOfThreads;                                 // Number of process'es threads.
+      LARGE_INTEGER WorkingSetPrivateSize;                   // since VISTA
+      ULONG HardFaultCount;                                  // since WIN7
+      ULONG NumberOfThreadsHighWatermark;                    // since WIN7
+      ULONGLONG CycleTime;                                   // since WIN7
+      LARGE_INTEGER CreateTime;                              // Process creation time, in 100-ns units.
+      LARGE_INTEGER UserTime;                                // Effective time in User Mode.
+      LARGE_INTEGER KernelTime;                              // Effective time in Kernel Mode.
+      UNICODE_STRING ImageName;                              // Process name, based on executable file name.
+      KPRIORITY BasePriority;                                // Process base priority.
+      HANDLE UniqueProcessId;                                // Unique identifier of process.
+      HANDLE InheritedFromUniqueProcessId;                   // Creator's identifier.
+      ULONG HandleCount;                                     // Nr of open HANDLEs.
+      ULONG SessionId;
+      ULONG_PTR UniqueProcessKey;                            // since VISTA (requires SystemExtendedProcessInformation)
+      VM_COUNTERS VirtualMemoryCounters;                     // Memory performance counters.
+      IO_COUNTERS IoCounters;                                // IO performance counters.
+      SYSTEM_THREAD_INFORMATION Threads[1];                  // Array of SYSTEM_THREAD structures descripting process's threads
+} SYSTEM_PROCESS_INFORMATION, *PSYSTEM_PROCESS_INFORMATION;
+
+/*-------------------------------------------------------------------------*/
+
+typedef struct _SYSTEM_EXTENDED_PROCESS_INFORMATION
+{
+	ULONG NextEntryOffset;
+	ULONG NumberOfThreads;
+	LARGE_INTEGER SpareLi1;
+	LARGE_INTEGER SpareLi2;
+	LARGE_INTEGER SpareLi3;
+	LARGE_INTEGER CreateTime;
+	LARGE_INTEGER UserTime;
+	LARGE_INTEGER KernelTime;
+	UNICODE_STRING ImageName;
+	KPRIORITY BasePriority;
+	ULONG ProcessId;
+	ULONG InheritedFromUniqueProcessId;
+	ULONG HandleCount;
+	ULONG SessionId;
+	PVOID PageDirectoryBase;
+	VM_COUNTERS VirtualMemoryCounters;
+	SIZE_T PrivatePageCount;
+	IO_COUNTERS IoCounters;
+	SYSTEM_EXTENDED_THREAD_INFORMATION Threads[1];
+} SYSTEM_EXTENDED_PROCESS_INFORMATION, *PSYSTEM_EXTENDED_PROCESS_INFORMATION;
 
 /*-------------------------------------------------------------------------*/
 
