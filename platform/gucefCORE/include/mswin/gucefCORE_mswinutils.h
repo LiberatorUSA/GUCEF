@@ -365,7 +365,6 @@ typedef struct _VM_COUNTERS
     SIZE_T QuotaNonPagedPoolUsage;      // The current non-paged pool usage, in bytes.
     SIZE_T PagefileUsage;               // The Commit Charge value in bytes for this process. Commit Charge is the total amount of private memory that the memory manager has committed for a running process.
     SIZE_T PeakPagefileUsage;           // The peak value in bytes of the Commit Charge during the lifetime of this process.
-    SIZE_T PrivatePageCount;            // The number of page faults that are demand-zero faults.
 } VM_COUNTERS, *PVM_COUNTERS;
 
 /*-------------------------------------------------------------------------*/
@@ -389,6 +388,7 @@ typedef struct _VM_COUNTERS
       ULONG SessionId;
       ULONG_PTR UniqueProcessKey;                            // since VISTA (requires SystemExtendedProcessInformation)
       VM_COUNTERS VirtualMemoryCounters;                     // Memory performance counters.
+      SIZE_T PrivatePageCount;                               // The number of page faults that are demand-zero faults.
       IO_COUNTERS IoCounters;                                // IO performance counters.
       SYSTEM_THREAD_INFORMATION Threads[1];                  // Array of SYSTEM_THREAD structures descripting process's threads
 } SYSTEM_PROCESS_INFORMATION, *PSYSTEM_PROCESS_INFORMATION;
