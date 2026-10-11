@@ -11,9 +11,10 @@
 
 # Configuration for module: gucefPUBSUB_TestApp
 
-set( HEADER_FILES
+set( HEADER_FILES 
   include/MockPubSubClient.h
   include/TestBasicPubSubMsg.h
+  include/TestCode_PubSubMsgBinaryStorageTest.h
   include/TestPubSubBookmark.h
   include/TestPubSubClientConfig.h
   include/TestPubSubClientFeatures.h
@@ -37,9 +38,10 @@ set( HEADER_FILES
   include/TestPubSubPlugin_WEB.h
 )
 
-set( SOURCE_FILES
+set( SOURCE_FILES 
   src/MockPubSubClient.cpp
   src/TestBasicPubSubMsg.cpp
+  src/TestCode_PubSubMsgBinaryStorageTest.cpp
   src/TestPubSubBookmark.cpp
   src/TestPubSubClientConfig.cpp
   src/TestPubSubClientFeatures.cpp
