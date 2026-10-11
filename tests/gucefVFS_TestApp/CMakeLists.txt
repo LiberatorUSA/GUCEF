@@ -13,10 +13,12 @@
 
 set( HEADER_FILES 
   include/TestCode_VFSFileLoadUnloadTest.h
+  include/TestZipArchiveWriter.h
 )
 
 set( SOURCE_FILES 
   src/TestCode_VFSFileLoadUnloadTest.cpp
+  src/TestZipArchiveWriter.cpp
   src/gucefVFS_TestApp.cpp
 )
 

@@ -81,6 +81,11 @@
 #define GUCEF_VFS_CARCHIVE_H
 #endif /* GUCEF_VFS_CARCHIVE_H ? */
 
+#ifndef GUCEF_VFS_CIARCHIVEWRITER_H
+#include "gucefVFS_CIArchiveWriter.h"
+#define GUCEF_VFS_CIARCHIVEWRITER_H
+#endif /* GUCEF_VFS_CIARCHIVEWRITER_H ? */
+
 #ifndef GUCEF_VFS_CARCHIVESETTINGS_H
 #include "gucefVFS_CArchiveSettings.h"
 #define GUCEF_VFS_CARCHIVESETTINGS_H
@@ -134,6 +139,9 @@ class GUCEF_VFS_PUBLIC_CPP CVFS : public CORE::CTSGNotifier          ,
     typedef CORE::CTAbstractFactory< CString, CArchive, MT::CMutex >    TAbstractArchiveFactory;
     typedef TAbstractArchiveFactory::TProductPtr                        TArchivePtr;
     typedef TAbstractArchiveFactory::TFactory                           TArchiveFactory;
+    typedef CORE::CTAbstractFactory< CString, CIArchiveWriter, MT::CMutex > TAbstractArchiveWriterFactory;
+    typedef TAbstractArchiveWriterFactory::TProductPtr                  TArchiveWriterPtr;
+    typedef TAbstractArchiveWriterFactory::TFactory                     TArchiveWriterFactory;
     typedef CArchive::TStringVector                                     TStringVector;
     typedef CArchive::TStringSet                                        TStringSet;
     
@@ -228,6 +236,22 @@ class GUCEF_VFS_PUBLIC_CPP CVFS : public CORE::CTSGNotifier          ,
     void UnregisterAllArchiveFactories( void );
 
     void GetListOfSupportedArchiveTypes( TAbstractArchiveFactory::TKeySet& outList ) const;
+
+    /**
+     *  Registers a factory for writers which create archives of the given type, typically done by plugins
+     */
+    void RegisterArchiveWriterFactory( const CString& archiveType            ,
+                                       TArchiveWriterFactory& writerFactory );
+
+    void UnregisterArchiveWriterFactory( const CString& archiveType );
+
+    void GetListOfSupportedArchiveWriterTypes( TAbstractArchiveWriterFactory::TKeySet& outList ) const;
+
+    /**
+     *  Creates a writer for creating a new archive of the given type
+     *  @return the writer or a NULL pointer if no writer is registered for the given type
+     */
+    TArchiveWriterPtr CreateArchiveWriter( const CString& archiveType ) const;
     
     TBasicVfsResourcePtr GetFile( const CORE::CString& file    ,
                                   const char* mode = "rb"      ,
@@ -814,6 +838,7 @@ class GUCEF_VFS_PUBLIC_CPP CVFS : public CORE::CTSGNotifier          ,
     CString m_asyncOpsThreadpool;
     UInt32 m_asyncOpsMinWorkerThreads;
     TAbstractArchiveFactory m_abstractArchiveFactory;
+    TAbstractArchiveWriterFactory m_abstractArchiveWriterFactory;
     TFileSystemArchiveFactory m_fileSystemArchiveFactory;
     TArchiveSettingsVector m_delayMountedArchiveSettings;
     TArchivePtrToMountEntryMap m_archivePtrToMountEntryLookup;
