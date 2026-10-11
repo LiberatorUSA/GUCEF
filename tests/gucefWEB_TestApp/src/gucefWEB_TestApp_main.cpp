@@ -88,6 +88,11 @@
 #define GUCEF_WEB_TESTAPP_TESTCHROMEDEVTOOLS_H
 #endif /* GUCEF_WEB_TESTAPP_TESTCHROMEDEVTOOLS_H ? */
 
+#ifndef GUCEF_WEB_TESTAPP_TESTHTTPCLIENT_H
+#include "TestHttpClient.h"
+#define GUCEF_WEB_TESTAPP_TESTHTTPCLIENT_H
+#endif /* GUCEF_WEB_TESTAPP_TESTHTTPCLIENT_H ? */
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      UTILITIES                                                          //
@@ -146,6 +151,7 @@ GUCEF_OSMAIN_BEGIN
         PerformWebSocketTests();
         PerformJsonRpcTests();
         PerformChromeDevToolsTests();
+        PerformHttpClientTests();
 
         CORE::CLogStreamScope::FlushLogs();
 

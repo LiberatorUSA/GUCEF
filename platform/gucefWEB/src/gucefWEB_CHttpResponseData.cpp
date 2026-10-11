@@ -90,6 +90,26 @@ CHttpResponseData::~CHttpResponseData()
 
 /*-------------------------------------------------------------------------*/
 
+void
+CHttpResponseData::Clear( void )
+{GUCEF_TRACE;
+
+    allowedMethods.clear();
+    cacheability.Clear();
+    eTag.Clear();
+    lastModified.Clear();
+    content.SetDataSize( 0 );
+    contentEncoding.Clear();
+    statusCode = 0;
+    contentType.Clear();
+    location.Clear();
+    acceptedTypes.clear();
+    keepConnectionsAlive = true;
+    otherHeaders.clear();
+}
+
+/*-------------------------------------------------------------------------*/
+
 CORE::CICloneable* 
 CHttpResponseData::Clone( void ) const 
 {GUCEF_TRACE;

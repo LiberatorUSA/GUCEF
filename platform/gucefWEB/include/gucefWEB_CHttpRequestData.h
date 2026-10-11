@@ -95,6 +95,30 @@ class GUCEF_WEB_PUBLIC_CPP CHttpRequestData : public CORE::CICloneable
 
     CString ConstructUriWithAuthority( void ) const;
 
+    /**
+     *  Sets the request target from an absolute URL of the form scheme://host[:port]/path[?query]
+     *  as used by a client: requestProtocol, requestHost (including the port if given), requestUri (the path)
+     *  and requestUriParams (the query, without '?'). A fragment is dropped.
+     *
+     *  @return whether the URL could be parsed
+     */
+    bool SetUrl( const CString& url );
+
+    /**
+     *  @return the absolute URL of the request including the query, the inverse of SetUrl()
+     */
+    CString GetUrl( void ) const;
+
+    /**
+     *  @return the host name of requestHost without the port, IPv6 addresses without brackets
+     */
+    CString GetHostName( void ) const;
+
+    /**
+     *  @return the port of requestHost, or the default port of the protocol if none is given
+     */
+    UInt16 GetPort( void ) const;
+
     CHttpRequestData( void );
     CHttpRequestData( const CHttpRequestData& src );
     virtual ~CHttpRequestData();

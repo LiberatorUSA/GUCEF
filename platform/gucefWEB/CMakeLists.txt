@@ -28,20 +28,29 @@ set( HEADER_FILES
   include/gucefWEB_CHTTPClient.h
   include/gucefWEB_CHTTPServer.h
   include/gucefWEB_CHTTPURLHandler.h
+  include/gucefWEB_CHttpClientBackendRequestBase.h
+  include/gucefWEB_CHttpClientBackendSelection.h
+  include/gucefWEB_CHttpClientRequestOptions.h
+  include/gucefWEB_CHttpClientRequestRunner.h
+  include/gucefWEB_CHttpClientRequestTask.h
   include/gucefWEB_CHttpCodecLinks.h
+  include/gucefWEB_CHttpCookieJar.h
   include/gucefWEB_CHttpEncodingTypes.h
   include/gucefWEB_CHttpMimeTypes.h
   include/gucefWEB_CHttpRequestData.h
   include/gucefWEB_CHttpResponseData.h
+  include/gucefWEB_CHttpUriResourceAccessor.h
   include/gucefWEB_CIHTTPServerResource.h
   include/gucefWEB_CIHTTPServerRouter.h
   include/gucefWEB_CIHTTPServerRouterController.h
+  include/gucefWEB_CIHttpClientBackend.h
   include/gucefWEB_CIHttpServerRequestHandler.h
   include/gucefWEB_CIWebSocketUpgradeHandler.h
   include/gucefWEB_CJsonRpcClient.h
   include/gucefWEB_CJsonRpcEndpoint.h
   include/gucefWEB_CJsonRpcServer.h
   include/gucefWEB_CModule.h
+  include/gucefWEB_CNativeHttpClientBackend.h
   include/gucefWEB_CStdParamParser.h
   include/gucefWEB_CTConfigurableMapHttpServerResource.h
   include/gucefWEB_CTDataNodeSerializableHttpServerResourceExpansion.h
@@ -83,19 +92,28 @@ set( SOURCE_FILES
   src/gucefWEB_CHTTPClient.cpp
   src/gucefWEB_CHTTPServer.cpp
   src/gucefWEB_CHTTPURLHandler.cpp
+  src/gucefWEB_CHttpClientBackendRequestBase.cpp
+  src/gucefWEB_CHttpClientBackendSelection.cpp
+  src/gucefWEB_CHttpClientRequestOptions.cpp
+  src/gucefWEB_CHttpClientRequestRunner.cpp
+  src/gucefWEB_CHttpClientRequestTask.cpp
   src/gucefWEB_CHttpCodecLinks.cpp
+  src/gucefWEB_CHttpCookieJar.cpp
   src/gucefWEB_CHttpEncodingTypes.cpp
   src/gucefWEB_CHttpMimeTypes.cpp
   src/gucefWEB_CHttpRequestData.cpp
   src/gucefWEB_CHttpResponseData.cpp
+  src/gucefWEB_CHttpUriResourceAccessor.cpp
   src/gucefWEB_CIHTTPServerResource.cpp
   src/gucefWEB_CIHTTPServerRouter.cpp
   src/gucefWEB_CIHTTPServerRouterController.cpp
+  src/gucefWEB_CIHttpClientBackend.cpp
   src/gucefWEB_CIHttpServerRequestHandler.cpp
   src/gucefWEB_CJsonRpcClient.cpp
   src/gucefWEB_CJsonRpcEndpoint.cpp
   src/gucefWEB_CJsonRpcServer.cpp
   src/gucefWEB_CModule.cpp
+  src/gucefWEB_CNativeHttpClientBackend.cpp
   src/gucefWEB_CStdParamParser.cpp
   src/gucefWEB_CTDataNodeSerializableHttpServerResourceExpansion.cpp
   src/gucefWEB_CTDataNodeSerializableMapHttpServerResource.cpp

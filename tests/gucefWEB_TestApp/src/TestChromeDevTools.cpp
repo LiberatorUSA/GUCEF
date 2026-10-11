@@ -25,6 +25,7 @@
 
 #include <string.h>
 #include <vector>
+#include <stdexcept>
 
 #ifndef GUCEF_CORE_H
 #include "gucefCORE.h"
@@ -427,6 +428,8 @@ PerformChromeDevToolsTests( void )
             WEB::SChromeDiscoveryResult discovery;
             ASSERT_TRUE( client.DiscoverTargetsAndWait( "127.0.0.1", FAKE_CHROME_PORT, discovery ) );
             ASSERT_TRUE( !discovery.targets.empty() );
+            if ( discovery.targets.empty() )
+                throw std::runtime_error( "no targets discovered, the rest of the test cannot run" );
             ASSERT_TRUE( client.ConnectAndWait( discovery.targets[ 0 ].webSocketDebuggerUrl ) );
             ASSERT_TRUE( client.IsConnected() && 1 == recorder.connected );
 
