@@ -4,6 +4,7 @@ dependencies/aws-cpp-sdk-core/*
 dependencies/aws-cpp-sdk-s3/*
 dependencies/aws-crt-cpp/*
 dependencies/curl/*
+dependencies/minizip/*
 dependencies/zziplib/*
 platform/gucefCORE/*
 platform/gucefMT/*

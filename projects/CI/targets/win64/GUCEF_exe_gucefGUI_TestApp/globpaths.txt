@@ -28,6 +28,7 @@ dependencies/libmng/*
 dependencies/libparsifal/*
 dependencies/libpng/*
 dependencies/libsquish/*
+dependencies/minizip/*
 dependencies/openexr/*
 dependencies/pcre/*
 dependencies/tiff/libtiff/*

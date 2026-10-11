@@ -6,6 +6,7 @@ libRocket: is version 1.2.1
 MyGui: is version 3.2.0
 zzlib version is: 0.13.49
 zlib version is: 1.3.2 from https://zlib.net (local edits marked "DV edit" in zconf.h)
+minizip is the contrib/minizip (with ZIP64) of zlib 1.3.2, only the zip, unzip and ioapi sources
 FreeImage version is: 3110
 freetype is actually Freetype2 which is version 2.6.3
 pcre is version 8.37
