@@ -7,6 +7,7 @@ MyGui: is version 3.2.0
 zzlib version is: 0.13.49
 zlib version is: 1.3.2 from https://zlib.net (local edits marked "DV edit" in zconf.h)
 minizip is the contrib/minizip (with ZIP64) of zlib 1.3.2, only the zip, unzip and ioapi sources
+libarchive is version 3.8.9 from https://github.com/libarchive/libarchive/releases (signature verified), configured for zlib only, see libarchive/libarchive/config.h
 FreeImage version is: 3110
 freetype is actually Freetype2 which is version 2.6.3
 pcre is version 8.37
