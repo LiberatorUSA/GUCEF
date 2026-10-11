@@ -1249,6 +1249,8 @@ void TestMemberCallbacksRaw()
             g_memberCallbackResult = 0;
 
             MemberCallbackTest obj( 10 );
+            // The chain object holds a reference to its last task: it must be out of scope before the task counts are checked
+            {
             CASyncTestAccess async;
 
             // arity 0: QueueMemberCallback(&obj, &Method0)
@@ -1275,6 +1277,7 @@ void TestMemberCallbacksRaw()
                 ASSERT_TRUE( g_memberCallbackResult == 15 ); // m_value(10) + a(5)
             }
 
+            }
             ASSERT_TRUE( TestFinalTaskCountsAfterTests() );
             GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Member Function Callbacks (Raw Pointer) test passed" );
         }
@@ -1297,6 +1300,8 @@ void TestMemberCallbacksSharedPtr()
             MemberCallbackTestPtr obj = MemberCallbackTest::CreateSharedObj();
             obj->m_value = 20;
 
+            // The chain object holds a reference to its last task: it must be out of scope before the task counts are checked
+            {
             CASyncTestAccess async;
 
             // arity 0 via shared ptr: QueueMemberCallback(sharedPtr, &Method0)
@@ -1323,6 +1328,7 @@ void TestMemberCallbacksSharedPtr()
                 ASSERT_TRUE( g_memberCallbackResult == 27 ); // m_value(20) + a(7)
             }
 
+            }
             ASSERT_TRUE( TestFinalTaskCountsAfterTests() );
             GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Member Function Callbacks (Shared Pointer) test passed" );
         }
@@ -1343,6 +1349,8 @@ void TestMemberCallbackChaining()
             g_memberCallbackResult = 0;
 
             MemberCallbackTest obj( 10 );
+            // The chain object holds a reference to its last task: it must be out of scope before the task counts are checked
+            {
             CASyncTestAccess async;
 
             // QueueMemberCallback (arity 0) -> ThenMemberCallback
@@ -1377,6 +1385,7 @@ void TestMemberCallbackChaining()
                 ASSERT_TRUE( g_memberCallbackResult == 305 );
             }
 
+            }
             ASSERT_TRUE( TestFinalTaskCountsAfterTests() );
             GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Member Function Callback Chaining test passed" );
         }
@@ -1397,6 +1406,8 @@ void TestMemberCallbackResultPassing()
             g_memberCallbackResult = 0;
 
             MemberCallbackTest obj( 10 );
+            // The chain object holds a reference to its last task: it must be out of scope before the task counts are checked
+            {
             CASyncTestAccess async;
 
             // Raw: QueueMemberCallback(arity_1) -> ThenPassToMemberCallback (forwards result + a1)
@@ -1431,6 +1442,7 @@ void TestMemberCallbackResultPassing()
                 ASSERT_TRUE( g_memberCallbackResult == 26 );
             }
 
+            }
             ASSERT_TRUE( TestFinalTaskCountsAfterTests() );
             GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Member Function Callback Result Passing test passed" );
         }

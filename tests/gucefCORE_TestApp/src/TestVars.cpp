@@ -112,7 +112,7 @@ PerformVarsTests( void )
         ASSERT_TRUE( envVarStr.IsFormattingValid() );
         
         #if GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX || GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID
-          envVarStr = CORE::ResolveVars( "$ENVVAR:PWD" );
+          envVarStr = CORE::ResolveVars( "$ENVVAR:PWD$" );
           ASSERT_TRUE( !envVarStr.IsNULLOrEmpty() );
           ASSERT_TRUE( envVarStr.IsFormattingValid() );
           ASSERT_TRUE( CORE::IsPathValid( envVarStr ) );
