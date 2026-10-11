@@ -35,6 +35,8 @@ links( { "gucefCOM", "gucefCOMCORE", "gucefCORE", "gucefMT", "gucefVFS" } )
 
 configuration( {} )
 defines( { "GUCEF_WEB_BUILD_MODULE", "MODULE_CONSENSUS_NAME=gucefWEB", "MODULE_NAME=gucefWEB", "MODULE_SEMVER=0_1_0_0" } )
+  links( { "winhttp.lib" } )
+  links( { "winhttp.lib" } )
 
 
 configuration( {} )
@@ -55,7 +57,6 @@ files( {
   "include/gucefWEB_CGlobalHttpCodecLinks.h",
   "include/gucefWEB_CHTTPClient.h",
   "include/gucefWEB_CHTTPServer.h",
-  "include/gucefWEB_CHTTPURLHandler.h",
   "include/gucefWEB_CHttpClientBackendRequestBase.h",
   "include/gucefWEB_CHttpClientBackendSelection.h",
   "include/gucefWEB_CHttpClientRequestOptions.h",
@@ -123,7 +124,6 @@ files( {
   "src/gucefWEB_CGlobalHttpCodecLinks.cpp",
   "src/gucefWEB_CHTTPClient.cpp",
   "src/gucefWEB_CHTTPServer.cpp",
-  "src/gucefWEB_CHTTPURLHandler.cpp",
   "src/gucefWEB_CHttpClientBackendRequestBase.cpp",
   "src/gucefWEB_CHttpClientBackendSelection.cpp",
   "src/gucefWEB_CHttpClientRequestOptions.cpp",
@@ -163,6 +163,32 @@ files( {
  } )
 
 
+
+configuration( { "WIN32" } )
+    vpaths { ["Platform Headers"] = { "**.h", "**.hpp", "**.hxx" } }
+    files( {
+      "include/mswin/gucefWEB_CWinHttpClientBackend.h"
+    } )
+
+    vpaths { ["Platform Source"] = { "**.c", "**.cpp", "**.cs", "**.asm" } }
+    files( {
+      "src/mswin/gucefWEB_CWinHttpClientBackend.cpp"
+    } )
+
+
+
+configuration( { "WIN64" } )
+    vpaths { ["Platform Headers"] = { "**.h", "**.hpp", "**.hxx" } }
+    files( {
+      "include/mswin/gucefWEB_CWinHttpClientBackend.h"
+    } )
+
+    vpaths { ["Platform Source"] = { "**.c", "**.cpp", "**.cs", "**.asm" } }
+    files( {
+      "src/mswin/gucefWEB_CWinHttpClientBackend.cpp"
+    } )
+
+
 configuration( {} )
 includedirs( { "../../common/include", "../gucefCOM/include", "../gucefCOMCORE/include", "../gucefCORE/include", "../gucefCORE/include/c_api", "../gucefMT/include", "../gucefVFS/include", "include" } )
 
@@ -179,7 +205,7 @@ configuration( { "LINUX64" } )
 includedirs( { "../gucefCOMCORE/include/linux", "../gucefCORE/include/linux" } )
 
 configuration( { "WIN32" } )
-includedirs( { "../gucefCOMCORE/include/mswin", "../gucefCORE/include/mswin", "../gucefMT/include/mswin" } )
+includedirs( { "../gucefCOMCORE/include/mswin", "../gucefCORE/include/mswin", "../gucefMT/include/mswin", "include/mswin" } )
 
 configuration( { "WIN64" } )
-includedirs( { "../gucefCOMCORE/include/mswin", "../gucefCORE/include/mswin", "../gucefMT/include/mswin" } )
+includedirs( { "../gucefCOMCORE/include/mswin", "../gucefCORE/include/mswin", "../gucefMT/include/mswin", "include/mswin" } )

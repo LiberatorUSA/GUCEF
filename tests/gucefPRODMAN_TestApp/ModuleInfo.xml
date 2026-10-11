@@ -17,5 +17,8 @@
             <Dependency Name="gucefPATCHER" />
             <Dependency Name="gucefPRODMAN" />
         </Linker>
+        <RuntimeDependencies>
+            <RuntimeDependency Name="dstorepluginPARSIFALXML" />
+        </RuntimeDependencies>
     </Module>
 </ModuleInfoEntry>

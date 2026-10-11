@@ -44,14 +44,23 @@ defines( { "MODULE_CONSENSUS_NAME=gucefPRODMAN_TestApp", "MODULE_NAME=gucefPRODM
 
 
 configuration( {} )
+vpaths { ["Headers"] = { "**.h", "**.hpp", "**.hxx" } }
+files( {
+  "include/TestProductListRetrieval.h"
+ } )
+
+
+
+configuration( {} )
 vpaths { ["Source"] = { "**.c", "**.cpp", "**.cs", "**.asm" } }
 files( {
+  "src/TestProductListRetrieval.cpp",
   "src/gucefPRODMAN_TestApp.cpp"
  } )
 
 
 configuration( {} )
-includedirs( { "../../common/include", "../../platform/gucefCOM/include", "../../platform/gucefCOMCORE/include", "../../platform/gucefCORE/include", "../../platform/gucefCORE/include/c_api", "../../platform/gucefMT/include", "../../platform/gucefPATCHER/include", "../../platform/gucefPRODMAN/include" } )
+includedirs( { "../../common/include", "../../platform/gucefCOM/include", "../../platform/gucefCOMCORE/include", "../../platform/gucefCORE/include", "../../platform/gucefCORE/include/c_api", "../../platform/gucefMT/include", "../../platform/gucefPATCHER/include", "../../platform/gucefPRODMAN/include", "include" } )
 
 configuration( { "ANDROID32" } )
 includedirs( { "../../platform/gucefCORE/include/android" } )

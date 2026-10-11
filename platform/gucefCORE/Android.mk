@@ -41,7 +41,6 @@ LOCAL_SRC_FILES := \
   src/CExclusiveActivationManager.cpp \
   src/CExclusiveActiveObj.cpp \
   src/CFileAccess.cpp \
-  src/CFileURLHandler.cpp \
   src/CGUCEFApplication.cpp \
   src/CGUCEFCOREModule.cpp \
   src/CGenericPlugin.cpp \
@@ -56,7 +55,6 @@ LOCAL_SRC_FILES := \
   src/CIPlugin.cpp \
   src/CIStreamable.cpp \
   src/CITypeNamed.cpp \
-  src/CIURLEvents.cpp \
   src/CLLNode.cpp \
   src/CLogManager.cpp \
   src/CMFileAccess.cpp \
@@ -114,10 +112,6 @@ LOCAL_SRC_FILES := \
   src/CTSingleton.cpp \
   src/CTimer.cpp \
   src/CTransactionEventControl.cpp \
-  src/CURL.cpp \
-  src/CURLDataRetriever.cpp \
-  src/CURLHandler.cpp \
-  src/CURLHandlerRegistry.cpp \
   src/CValueList.cpp \
   src/DVCPPOSWRAP.cpp \
   src/DVOSWRAP.cpp \
@@ -135,6 +129,8 @@ LOCAL_SRC_FILES := \
   src/gucefCORE_CAbstractFactoryBase.cpp \
   src/gucefCORE_CAsciiString.cpp \
   src/gucefCORE_CAsciiStringView.cpp \
+  src/gucefCORE_CAsyncUriResourceRetriever.cpp \
+  src/gucefCORE_CAsyncUriRetrievalTask.cpp \
   src/gucefCORE_CBackoffPolicy.cpp \
   src/gucefCORE_CBasicBracketLoggingFormatter.cpp \
   src/gucefCORE_CBusyWaitPulseGeneratorDriver.cpp \
@@ -215,6 +211,7 @@ LOCAL_SRC_FILES := \
   src/gucefCORE_CPluginGroup.cpp \
   src/gucefCORE_CPluginMetaData.cpp \
   src/gucefCORE_CProcess.cpp \
+  src/gucefCORE_CProgressReportingIOAccess.cpp \
   src/gucefCORE_CProperty.cpp \
   src/gucefCORE_CPropertyDefinition.cpp \
   src/gucefCORE_CPropertyDefinitionList.cpp \

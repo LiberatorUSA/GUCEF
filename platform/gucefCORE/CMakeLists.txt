@@ -31,7 +31,6 @@ set( HEADER_FILES
   include/CExclusiveActivationManager.h
   include/CExclusiveActiveObj.h
   include/CFileAccess.h
-  include/CFileURLHandler.h
   include/CGUCEFApplication.h
   include/CGUCEFCOREModule.h
   include/CGenericPlugin.h
@@ -47,7 +46,6 @@ set( HEADER_FILES
   include/CIStreamable.h
   include/CISysConsoleCmdHandler.h
   include/CITypeNamed.h
-  include/CIURLEvents.h
   include/CLLNode.h
   include/CLogManager.h
   include/CMFileAccess.h
@@ -112,10 +110,6 @@ set( HEADER_FILES
   include/CTThreadSafeExpansion.h
   include/CTimer.h
   include/CTransactionEventControl.h
-  include/CURL.h
-  include/CURLDataRetriever.h
-  include/CURLHandler.h
-  include/CURLHandlerRegistry.h
   include/CValueList.h
   include/CodecPluginLink.h
   include/ConfigStoreCodec.h
@@ -141,6 +135,8 @@ set( HEADER_FILES
   include/gucefCORE_CAbstractFactoryBase.h
   include/gucefCORE_CAsciiString.h
   include/gucefCORE_CAsciiStringView.h
+  include/gucefCORE_CAsyncUriResourceRetriever.h
+  include/gucefCORE_CAsyncUriRetrievalTask.h
   include/gucefCORE_CBackoffPolicy.h
   include/gucefCORE_CBasicBracketLoggingFormatter.h
   include/gucefCORE_CBusyWaitPulseGeneratorDriver.h
@@ -224,6 +220,7 @@ set( HEADER_FILES
   include/gucefCORE_CPluginGroup.h
   include/gucefCORE_CPluginMetaData.h
   include/gucefCORE_CProcess.h
+  include/gucefCORE_CProgressReportingIOAccess.h
   include/gucefCORE_CProperty.h
   include/gucefCORE_CPropertyDefinition.h
   include/gucefCORE_CPropertyDefinitionList.h
@@ -353,7 +350,6 @@ set( SOURCE_FILES
   src/CExclusiveActivationManager.cpp
   src/CExclusiveActiveObj.cpp
   src/CFileAccess.cpp
-  src/CFileURLHandler.cpp
   src/CGUCEFApplication.cpp
   src/CGUCEFCOREModule.cpp
   src/CGenericPlugin.cpp
@@ -368,7 +364,6 @@ set( SOURCE_FILES
   src/CIPlugin.cpp
   src/CIStreamable.cpp
   src/CITypeNamed.cpp
-  src/CIURLEvents.cpp
   src/CLLNode.cpp
   src/CLogManager.cpp
   src/CMFileAccess.cpp
@@ -426,10 +421,6 @@ set( SOURCE_FILES
   src/CTSingleton.cpp
   src/CTimer.cpp
   src/CTransactionEventControl.cpp
-  src/CURL.cpp
-  src/CURLDataRetriever.cpp
-  src/CURLHandler.cpp
-  src/CURLHandlerRegistry.cpp
   src/CValueList.cpp
   src/DVCPPOSWRAP.cpp
   src/DVOSWRAP.cpp
@@ -447,6 +438,8 @@ set( SOURCE_FILES
   src/gucefCORE_CAbstractFactoryBase.cpp
   src/gucefCORE_CAsciiString.cpp
   src/gucefCORE_CAsciiStringView.cpp
+  src/gucefCORE_CAsyncUriResourceRetriever.cpp
+  src/gucefCORE_CAsyncUriRetrievalTask.cpp
   src/gucefCORE_CBackoffPolicy.cpp
   src/gucefCORE_CBasicBracketLoggingFormatter.cpp
   src/gucefCORE_CBusyWaitPulseGeneratorDriver.cpp
@@ -527,6 +520,7 @@ set( SOURCE_FILES
   src/gucefCORE_CPluginGroup.cpp
   src/gucefCORE_CPluginMetaData.cpp
   src/gucefCORE_CProcess.cpp
+  src/gucefCORE_CProgressReportingIOAccess.cpp
   src/gucefCORE_CProperty.cpp
   src/gucefCORE_CPropertyDefinition.cpp
   src/gucefCORE_CPropertyDefinitionList.cpp
@@ -632,6 +626,9 @@ elseif (ANDROID64)
 elseif (LINUX32)
   set( PLATFORM_HEADER_FILES 
     include/linux/CXTermConsoleLogger.h
+    include/linux/gucefCORE_CDesktopTerminalConsoleLogger.h
+    include/linux/gucefCORE_CTerminalConsoleLogger.h
+    include/linux/gucefCORE_CTextLineConsoleLogger.h
     include/linux/gucefCORE_CX11EventDispatcher.h
     include/linux/gucefCORE_CX11Window.h
     include/linux/gucefCORE_pty.h
@@ -642,6 +639,9 @@ elseif (LINUX32)
 
   set( PLATFORM_SOURCE_FILES 
     src/linux/CXTermConsoleLogger.cpp
+    src/linux/gucefCORE_CDesktopTerminalConsoleLogger.cpp
+    src/linux/gucefCORE_CTerminalConsoleLogger.cpp
+    src/linux/gucefCORE_CTextLineConsoleLogger.cpp
     src/linux/gucefCORE_CX11EventDispatcher.cpp
     src/linux/gucefCORE_CX11Window.cpp
     src/linux/gucefCORE_pty.c
@@ -653,6 +653,9 @@ elseif (LINUX32)
 elseif (LINUX64)
   set( PLATFORM_HEADER_FILES 
     include/linux/CXTermConsoleLogger.h
+    include/linux/gucefCORE_CDesktopTerminalConsoleLogger.h
+    include/linux/gucefCORE_CTerminalConsoleLogger.h
+    include/linux/gucefCORE_CTextLineConsoleLogger.h
     include/linux/gucefCORE_CX11EventDispatcher.h
     include/linux/gucefCORE_CX11Window.h
     include/linux/gucefCORE_pty.h
@@ -663,6 +666,9 @@ elseif (LINUX64)
 
   set( PLATFORM_SOURCE_FILES 
     src/linux/CXTermConsoleLogger.cpp
+    src/linux/gucefCORE_CDesktopTerminalConsoleLogger.cpp
+    src/linux/gucefCORE_CTerminalConsoleLogger.cpp
+    src/linux/gucefCORE_CTextLineConsoleLogger.cpp
     src/linux/gucefCORE_CX11EventDispatcher.cpp
     src/linux/gucefCORE_CX11Window.cpp
     src/linux/gucefCORE_pty.c

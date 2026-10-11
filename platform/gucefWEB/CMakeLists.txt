@@ -27,7 +27,6 @@ set( HEADER_FILES
   include/gucefWEB_CGlobalHttpCodecLinks.h
   include/gucefWEB_CHTTPClient.h
   include/gucefWEB_CHTTPServer.h
-  include/gucefWEB_CHTTPURLHandler.h
   include/gucefWEB_CHttpClientBackendRequestBase.h
   include/gucefWEB_CHttpClientBackendSelection.h
   include/gucefWEB_CHttpClientRequestOptions.h
@@ -91,7 +90,6 @@ set( SOURCE_FILES
   src/gucefWEB_CGlobalHttpCodecLinks.cpp
   src/gucefWEB_CHTTPClient.cpp
   src/gucefWEB_CHTTPServer.cpp
-  src/gucefWEB_CHTTPURLHandler.cpp
   src/gucefWEB_CHttpClientBackendRequestBase.cpp
   src/gucefWEB_CHttpClientBackendSelection.cpp
   src/gucefWEB_CHttpClientRequestOptions.cpp
@@ -130,11 +128,39 @@ set( SOURCE_FILES
   src/gucefWEB_CWebSocketServer.cpp
 )
 
-# Make sure the PLATFORM_HEADER_FILES variable is always defined
- set( PLATFORM_HEADER_FILES "" )
 
-# Make sure the PLATFORM_SOURCE_FILES variable is always defined
- set( PLATFORM_SOURCE_FILES "" )
+
+if (WIN32)
+  set( PLATFORM_HEADER_FILES 
+    include/mswin/gucefWEB_CWinHttpClientBackend.h
+  )
+
+  set( PLATFORM_HEADER_INSTALL "WIN32" )
+  source_group( "Platform Header Files" FILES ${PLATFORM_HEADER_FILES} )
+
+  set( PLATFORM_SOURCE_FILES 
+    src/mswin/gucefWEB_CWinHttpClientBackend.cpp
+  )
+
+  set( PLATFORM_SOURCE_INSTALL "WIN32" )
+  source_group( "Platform Source Files" FILES ${PLATFORM_SOURCE_FILES} )
+
+elseif (WIN64)
+  set( PLATFORM_HEADER_FILES 
+    include/mswin/gucefWEB_CWinHttpClientBackend.h
+  )
+
+  set( PLATFORM_HEADER_INSTALL "WIN64" )
+  source_group( "Platform Header Files" FILES ${PLATFORM_HEADER_FILES} )
+
+  set( PLATFORM_SOURCE_FILES 
+    src/mswin/gucefWEB_CWinHttpClientBackend.cpp
+  )
+
+  set( PLATFORM_SOURCE_INSTALL "WIN64" )
+  source_group( "Platform Source Files" FILES ${PLATFORM_SOURCE_FILES} )
+
+endif ()
 
 # For ease of use make a variable that has all files for this module
 set( ALL_FILES ${HEADER_FILES} ${SOURCE_FILES} ${PLATFORM_HEADER_FILES} ${PLATFORM_SOURCE_FILES} )
@@ -146,6 +172,14 @@ target_link_libraries( ${MODULE_NAME} PUBLIC gucefCOM gucefCOMCORE gucefCORE guc
 set_property( TARGET ${MODULE_NAME} APPEND_STRING PROPERTY COMPILE_DEFINITIONS "GUCEF_WEB_BUILD_MODULE;MODULE_CONSENSUS_NAME=gucefWEB;MODULE_NAME=gucefWEB;MODULE_SEMVER=0_1_0_0" )
 set_property( TARGET ${MODULE_NAME} APPEND_STRING PROPERTY VERSION 0.1.0.0 )
 set_property( TARGET ${MODULE_NAME} APPEND_STRING PROPERTY SOVERSION 0.1.0.0 )
+
+if ( WIN32 )
+  target_link_libraries( ${MODULE_NAME} PRIVATE winhttp.lib )
+endif( WIN32 )
+
+if ( WIN64 )
+  target_link_libraries( ${MODULE_NAME} PRIVATE winhttp.lib )
+endif( WIN64 )
 
 include_directories( ../../common/include ../gucefCOM/include ../gucefCOMCORE/include ../gucefCORE/include ../gucefCORE/include/c_api ../gucefMT/include ../gucefVFS/include include )
 
@@ -166,11 +200,11 @@ if ( LINUX64 )
 endif( LINUX64 )
 
 if ( WIN32 )
-  include_directories( ../gucefCOMCORE/include/mswin ../gucefCORE/include/mswin ../gucefMT/include/mswin )
+  include_directories( ../gucefCOMCORE/include/mswin ../gucefCORE/include/mswin ../gucefMT/include/mswin include/mswin )
 endif( WIN32 )
 
 if ( WIN64 )
-  include_directories( ../gucefCOMCORE/include/mswin ../gucefCORE/include/mswin ../gucefMT/include/mswin )
+  include_directories( ../gucefCOMCORE/include/mswin ../gucefCORE/include/mswin ../gucefMT/include/mswin include/mswin )
 endif( WIN64 )
 
 

@@ -404,6 +404,29 @@ PerformFileUtilsTests( void )
         }
     GUCEF_TESTFW_TESTCASE_END
 
+    // Regression: the C style Move_File( dst, src ) moved in the wrong direction
+    GUCEF_TESTFW_TESTCASE( "Test: Move_File moves the source to the destination" )
+        try
+        {
+            CORE::CString dir = CORE::CombinePath( CORE::TempDir(), "gucefCORE_TestApp_Move_File" );
+            ASSERT_TRUE( CORE::CreateDirs( dir ) );
+            CORE::CString source = CORE::CombinePath( dir, "source.txt" );
+            CORE::CString destination = CORE::CombinePath( dir, "destination.txt" );
+            CORE::DeleteFile( destination );
+            ASSERT_TRUE( CORE::WriteStringAsTextFile( source, "moved content" ) );
+
+            ASSERT_TRUE( 0 != CORE::Move_File( destination.C_String(), source.C_String(), 1 ) );
+            ASSERT_FALSE( CORE::FileExists( source ) );
+            CORE::CString content;
+            ASSERT_TRUE( CORE::LoadTextFileAsString( destination, content, false ) );
+            ASSERT_TRUE( content == "moved content" );
+        }
+        catch( ... )
+        {
+            ERRORHERE;
+        }
+    GUCEF_TESTFW_TESTCASE_END
+
     // Regression: on Linux FileExists also returned true for directories, unlike on Windows
     GUCEF_TESTFW_TESTCASE( "Test: FileExists is only true for files and DirExists only for directories" )
         try

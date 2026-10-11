@@ -37,7 +37,6 @@ LOCAL_SRC_FILES := \
   src/gucefWEB_CGlobalHttpCodecLinks.cpp \
   src/gucefWEB_CHTTPClient.cpp \
   src/gucefWEB_CHTTPServer.cpp \
-  src/gucefWEB_CHTTPURLHandler.cpp \
   src/gucefWEB_CHttpClientBackendRequestBase.cpp \
   src/gucefWEB_CHttpClientBackendSelection.cpp \
   src/gucefWEB_CHttpClientRequestOptions.cpp \

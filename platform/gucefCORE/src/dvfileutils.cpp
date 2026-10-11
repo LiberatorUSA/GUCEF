@@ -728,8 +728,8 @@ Move_File( const char* dst, const char* src, char overwriteFlag )
 
     try
     {
-        // map to C++ version
-        return CORE::MoveFile( CString( dst ), CString( src ), 0 != overwriteFlag ) ? 1 : 0;
+        // map to C++ version, which takes the path to move from first
+        return CORE::MoveFile( CString( src ), CString( dst ), 0 != overwriteFlag ) ? 1 : 0;
     }
     catch ( const std::exception& )
     {

@@ -1018,7 +1018,13 @@ PerformHttpClientTests( void )
         try
         {
             ASSERT_TRUE( serverStarted );
+            #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
+            // WinHTTP is part of the operating system and comes before the native backend in the default order
+            ASSERT_TRUE( client.GetBackendNameForScheme( "http" ) == "winhttp" );
+            ASSERT_TRUE( client.GetBackendNameForScheme( "https" ) == "winhttp" );
+            #else
             ASSERT_TRUE( client.GetBackendNameForScheme( "http" ) == "native" );
+            #endif
 
             // https needs a backend from a plugin, without one the request fails with an explanation
             if ( client.GetBackendNameForScheme( "https" ).IsNULLOrEmpty() )
@@ -1038,6 +1044,13 @@ PerformHttpClientTests( void )
     GUCEF_TESTFW_TESTCASE_END
 
     PerformBackendTests( client, "native" );
+
+    #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
+    // WinHTTP is an operating system facility, no plugin needed. Windows build unverified
+    if ( WEB::CWebGlobal::Instance()->GetHttpClientBackendFactory().IsConstructible( "winhttp" ) )
+        PerformBackendTests( client, "winhttp" );
+    #endif /* GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN ? */
+
     PerformUriAccessorTests();
 
     // The curl backend comes from a plugin, when it is available the same tests run with it

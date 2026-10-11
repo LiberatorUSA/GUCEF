@@ -48,6 +48,7 @@ vpaths { ["Headers"] = { "**.h", "**.hpp", "**.hxx" } }
 files( {
   "include/TestASync.h",
   "include/TestAbstractFactory.h",
+  "include/TestAsyncUriResourceRetriever.h",
   "include/TestCodecPlugins.h",
   "include/TestCronSchedule.h",
   "include/TestCyclicDynamicBuffer.h",
@@ -56,6 +57,7 @@ files( {
   "include/TestDataNodeBinarySerializer.h",
   "include/TestDateTime.h",
   "include/TestDateTimeRange.h",
+  "include/TestDesktopTerminalConsoleLogger.h",
   "include/TestDynamicBufferStringStream.h",
   "include/TestDynamicBufferSwap.h",
   "include/TestFileUtils.h",
@@ -90,6 +92,7 @@ vpaths { ["Source"] = { "**.c", "**.cpp", "**.cs", "**.asm" } }
 files( {
   "src/TestASync.cpp",
   "src/TestAbstractFactory.cpp",
+  "src/TestAsyncUriResourceRetriever.cpp",
   "src/TestCodecPlugins.cpp",
   "src/TestCronSchedule.cpp",
   "src/TestCyclicDynamicBuffer.cpp",
@@ -98,6 +101,7 @@ files( {
   "src/TestDataNodeBinarySerializer.cpp",
   "src/TestDateTime.cpp",
   "src/TestDateTimeRange.cpp",
+  "src/TestDesktopTerminalConsoleLogger.cpp",
   "src/TestDynamicBufferStringStream.cpp",
   "src/TestDynamicBufferSwap.cpp",
   "src/TestFileUtils.cpp",

@@ -22,7 +22,6 @@ set( HEADER_FILES
   include/gucefVFS_CModule.h
   include/gucefVFS_CVFS.h
   include/gucefVFS_CVFSHandle.h
-  include/gucefVFS_CVFSURLHandler.h
   include/gucefVFS_CVfsGlobal.h
   include/gucefVFS_CVfsUriResourceAccessor.h
   include/gucefVFS_ETypes.h
@@ -41,7 +40,6 @@ set( SOURCE_FILES
   src/gucefVFS_CModule.cpp
   src/gucefVFS_CVFS.cpp
   src/gucefVFS_CVFSHandle.cpp
-  src/gucefVFS_CVFSURLHandler.cpp
   src/gucefVFS_CVfsGlobal.cpp
   src/gucefVFS_CVfsUriResourceAccessor.cpp
 )

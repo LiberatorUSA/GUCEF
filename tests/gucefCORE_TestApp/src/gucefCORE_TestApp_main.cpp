@@ -161,6 +161,8 @@
 
 #ifndef GUCEF_CORE_TESTAPP_TESTTHREADPOOLCANCELLATION_H
 #include "TestThreadPoolCancellation.h"
+#include "TestAsyncUriResourceRetriever.h"
+#include "TestDesktopTerminalConsoleLogger.h"
 #define GUCEF_CORE_TESTAPP_TESTTHREADPOOLCANCELLATION_H
 #endif /* GUCEF_CORE_TESTAPP_TESTTHREADPOOLCANCELLATION_H ? */
 
@@ -285,6 +287,8 @@ GUCEF_OSMAIN_BEGIN
         PerformFreeListTests();
         PerformASyncTests();
         PerformThreadPoolCancellationTests();
+        PerformAsyncUriResourceRetrieverTests();
+        PerformDesktopTerminalConsoleLoggerTests();
         PerformProcessTests();
         PerformXmlDStoreCodecTests();
         PerformDStoreStreamingTests();

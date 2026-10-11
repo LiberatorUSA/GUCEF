@@ -23,6 +23,7 @@ LOCAL_MODULE := gucefCORE_TestApp
 LOCAL_SRC_FILES := \
   src/TestASync.cpp \
   src/TestAbstractFactory.cpp \
+  src/TestAsyncUriResourceRetriever.cpp \
   src/TestCodecPlugins.cpp \
   src/TestCronSchedule.cpp \
   src/TestCyclicDynamicBuffer.cpp \
@@ -31,6 +32,7 @@ LOCAL_SRC_FILES := \
   src/TestDataNodeBinarySerializer.cpp \
   src/TestDateTime.cpp \
   src/TestDateTimeRange.cpp \
+  src/TestDesktopTerminalConsoleLogger.cpp \
   src/TestDynamicBufferStringStream.cpp \
   src/TestDynamicBufferSwap.cpp \
   src/TestFileUtils.cpp \

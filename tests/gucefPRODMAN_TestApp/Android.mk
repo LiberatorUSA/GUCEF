@@ -21,9 +21,11 @@ LOCAL_MODULE := gucefPRODMAN_TestApp
 @echo Module name: $(LOCAL_MODULE)
 
 LOCAL_SRC_FILES := \
+  src/TestProductListRetrieval.cpp \
   src/gucefPRODMAN_TestApp.cpp
 
 LOCAL_C_INCLUDES := \
+  $(MY_MODULE_PATH)/include \
   $(MY_MODULE_PATH)/../../common/include \
   $(MY_MODULE_PATH)/../../platform/gucefCOM/include \
   $(MY_MODULE_PATH)/../../platform/gucefCOMCORE/include \
