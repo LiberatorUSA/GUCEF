@@ -134,10 +134,13 @@ LOCAL_SRC_FILES := \
   src/gucefCORE_CASync.cpp \
   src/gucefCORE_CAbstractFactoryBase.cpp \
   src/gucefCORE_CAsciiString.cpp \
+  src/gucefCORE_CAsciiStringView.cpp \
+  src/gucefCORE_CBackoffPolicy.cpp \
   src/gucefCORE_CBasicBracketLoggingFormatter.cpp \
   src/gucefCORE_CBusyWaitPulseGeneratorDriver.cpp \
   src/gucefCORE_CCharSepLoggingFormatter.cpp \
   src/gucefCORE_CCoreGlobal.cpp \
+  src/gucefCORE_CCronSchedule.cpp \
   src/gucefCORE_CDStoreBinaryCodec.cpp \
   src/gucefCORE_CDataDrivenDStoreCodec.cpp \
   src/gucefCORE_CDataDrivenDStoreCodecFactory.cpp \
@@ -147,12 +150,16 @@ LOCAL_SRC_FILES := \
   src/gucefCORE_CDataNodeDocumentBuilder.cpp \
   src/gucefCORE_CDataNodeSerializableDataNode.cpp \
   src/gucefCORE_CDataNodeSerializableSettings.cpp \
+  src/gucefCORE_CDataNodeSubtreeCollector.cpp \
   src/gucefCORE_CDataUriResourceAccessor.cpp \
   src/gucefCORE_CDate.cpp \
   src/gucefCORE_CDateTime.cpp \
+  src/gucefCORE_CDateTimeRange.cpp \
   src/gucefCORE_CDirectoryWatcherEvents.cpp \
+  src/gucefCORE_CDocumentStreamWriter.cpp \
   src/gucefCORE_CDynamicBufferStringStream.cpp \
   src/gucefCORE_CDynamicBufferSwap.cpp \
+  src/gucefCORE_CDynamicBufferView.cpp \
   src/gucefCORE_CEnumerator.cpp \
   src/gucefCORE_CEventAggregateTrigger.cpp \
   src/gucefCORE_CFileSystemDirectoryWatcher.cpp \
@@ -180,6 +187,7 @@ LOCAL_SRC_FILES := \
   src/gucefCORE_CIFunction.cpp \
   src/gucefCORE_CILoggingFormatter.cpp \
   src/gucefCORE_CIMetricsSystemClient.cpp \
+  src/gucefCORE_CIMonotonicClock.cpp \
   src/gucefCORE_CINotifier.cpp \
   src/gucefCORE_CIObserver.cpp \
   src/gucefCORE_CIPluginLoadLogic.cpp \
@@ -193,6 +201,8 @@ LOCAL_SRC_FILES := \
   src/gucefCORE_CJsonLoggingFormatter.cpp \
   src/gucefCORE_CLinkedTransferBuffer.cpp \
   src/gucefCORE_CLoaderDelegatedPluginLoadLogic.cpp \
+  src/gucefCORE_CLogStream.cpp \
+  src/gucefCORE_CLogStreamScope.cpp \
   src/gucefCORE_CLoggingGlobal.cpp \
   src/gucefCORE_CLoggingTask.cpp \
   src/gucefCORE_CMetricsClientManager.cpp \
@@ -204,21 +214,28 @@ LOCAL_SRC_FILES := \
   src/gucefCORE_CPluginFactoryAdapterForDataDrivenDStoreCodec.cpp \
   src/gucefCORE_CPluginGroup.cpp \
   src/gucefCORE_CPluginMetaData.cpp \
+  src/gucefCORE_CProcess.cpp \
   src/gucefCORE_CProperty.cpp \
   src/gucefCORE_CPropertyDefinition.cpp \
   src/gucefCORE_CPropertyDefinitionList.cpp \
   src/gucefCORE_CPropertyList.cpp \
   src/gucefCORE_CPulseData.cpp \
   src/gucefCORE_CPulseGenerator.cpp \
+  src/gucefCORE_CRandom.cpp \
+  src/gucefCORE_CRateLimiter.cpp \
   src/gucefCORE_CResourceMetaData.cpp \
   src/gucefCORE_CRollingFileAccess.cpp \
+  src/gucefCORE_CSchedule.cpp \
   src/gucefCORE_CSimplisticPluginLoadLogic.cpp \
   src/gucefCORE_CSingleTaskDelegator.cpp \
   src/gucefCORE_CStdDataNodeSerializableTaskData.cpp \
+  src/gucefCORE_CStopwatch.cpp \
+  src/gucefCORE_CStringLogHelper.cpp \
   src/gucefCORE_CSubFileAccess.cpp \
   src/gucefCORE_CTEventHandlerFunctor.cpp \
   src/gucefCORE_CTEventHandlerFunctorProxy.cpp \
   src/gucefCORE_CTFraction.cpp \
+  src/gucefCORE_CTFreeList.cpp \
   src/gucefCORE_CTGlobalONRegistry.cpp \
   src/gucefCORE_CTIOAccessToStlStream.cpp \
   src/gucefCORE_CTIOAccessToStlStreambuff.cpp \
@@ -229,22 +246,31 @@ LOCAL_SRC_FILES := \
   src/gucefCORE_CTaskInfo.cpp \
   src/gucefCORE_CTaskManager.cpp \
   src/gucefCORE_CTaskManagerInfo.cpp \
+  src/gucefCORE_CThreadLogBuffers.cpp \
   src/gucefCORE_CThreadPool.cpp \
   src/gucefCORE_CThreadPoollnfo.cpp \
   src/gucefCORE_CThreadlnfo.cpp \
   src/gucefCORE_CTime.cpp \
+  src/gucefCORE_CTimestamp.cpp \
   src/gucefCORE_CTokenizer.cpp \
   src/gucefCORE_CUri.cpp \
   src/gucefCORE_CUriResourceAccessor.cpp \
   src/gucefCORE_CUriResourceAccessorFactory.cpp \
   src/gucefCORE_CUrlEncoder.cpp \
+  src/gucefCORE_CUtf16String.cpp \
+  src/gucefCORE_CUtf16StringView.cpp \
+  src/gucefCORE_CUtf32String.cpp \
+  src/gucefCORE_CUtf32StringView.cpp \
   src/gucefCORE_CUtf8String.cpp \
+  src/gucefCORE_CUtf8StringView.cpp \
   src/gucefCORE_CValueConstraint.cpp \
   src/gucefCORE_CValueConstraintList.cpp \
   src/gucefCORE_CValueDefinition.cpp \
   src/gucefCORE_CValueMapBuilder.cpp \
   src/gucefCORE_CVariant.cpp \
   src/gucefCORE_CVariantBinarySerializer.cpp \
+  src/gucefCORE_CVariantStream.cpp \
+  src/gucefCORE_CVariantView.cpp \
   src/gucefCORE_CVersion.cpp \
   src/gucefCORE_CVersionRange.cpp \
   src/gucefCORE_CoreCodecTypes.cpp \
@@ -256,25 +282,19 @@ LOCAL_SRC_FILES := \
   src/streamables.cpp \
   src/streamers.cpp \
   src/tsprinting.c \
-  src/android/gucefCORE_CAndroidSystemLogger.cpp \
   src/c_api/gucefCORE_c_variantdata.c
 
 LOCAL_C_INCLUDES := \
   $(MY_MODULE_PATH)/include \
-  $(MY_MODULE_PATH)/include/android \
   $(MY_MODULE_PATH)/include/c_api \
   $(MY_MODULE_PATH)/../../common/include \
   $(MY_MODULE_PATH)/../gucefMT/include
 
-LOCAL_CFLAGS := -DGUCEF_CORE_BUILD_MODULE
+LOCAL_CFLAGS := -DGUCEF_CORE_BUILD_MODULE -DMODULE_CONSENSUS_NAME=gucefCORE -DMODULE_NAME=gucefCORE -DMODULE_SEMVER=0_1_0_0
 
 
 LOCAL_SHARED_LIBRARIES := \
   gucefMT
-
-
-LOCAL_LDLIBS := \
-  -ldl
 
 include $(BUILD_SHARED_LIBRARY)
 

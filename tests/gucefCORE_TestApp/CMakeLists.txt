@@ -36,6 +36,7 @@ set( HEADER_FILES
   include/TestSharedPtr.h
   include/TestStopwatch.h
   include/TestString.h
+  include/TestThreadPoolCancellation.h
   include/TestTimestamp.h
   include/TestTokenizer.h
   include/TestUri.h
@@ -74,6 +75,7 @@ set( SOURCE_FILES
   src/TestSharedPtr.cpp
   src/TestStopwatch.cpp
   src/TestString.cpp
+  src/TestThreadPoolCancellation.cpp
   src/TestTimestamp.cpp
   src/TestTokenizer.cpp
   src/TestUri.cpp

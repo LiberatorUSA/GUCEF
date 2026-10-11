@@ -88,6 +88,7 @@ CTaskDelegator::CTaskDelegator( const ThreadPoolPtr& threadPool )
     , m_pulseGenerator()
     , m_threadPool( threadPool )
     , m_consumerBusy( false )
+    , m_cancelCurrentTask( false )
     , m_sendRegularPulses( false )
     , m_immediatePulseTickets( 0 )
     , m_immediatePulseTicketMax( 1 )
@@ -114,6 +115,7 @@ CTaskDelegator::CTaskDelegator( const ThreadPoolPtr& threadPool ,
     , m_task( task )
     , m_threadPool( threadPool )
     , m_consumerBusy( false )
+    , m_cancelCurrentTask( false )
     , m_sendRegularPulses( false )
     , m_immediatePulseTickets( 0 )
     , m_immediatePulseTicketMax( 1 )
@@ -308,6 +310,29 @@ CTaskDelegator::TaskCleanup( CTaskPtr task )
 /*-------------------------------------------------------------------------*/
 
 bool
+CTaskDelegator::CancelCurrentTask( UInt32 taskId )
+{GUCEF_TRACE;
+
+    if ( GetCurrentTaskId() == taskId )
+    {
+        m_cancelCurrentTask = true;
+        return true;
+    }
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CTaskDelegator::IsStopOfCurrentTaskRequested( void ) const
+{GUCEF_TRACE;
+
+    return m_cancelCurrentTask || IsDeactivationRequested();
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
 CTaskDelegator::OnThreadCycle( void* )
 {GUCEF_TRACE;
 
@@ -366,6 +391,9 @@ CTaskDelegator::ProcessTask( CTaskPtr task )
     if GUCEF_PREDICT_FALSE( pulseGenerator.IsNULL() || threadPool.IsNULL() || task.IsNULL()  )
         return false;
 
+    // A task which was asked to cancel before we got to it never starts
+    m_cancelCurrentTask = task->IsCancellationRequested();
+
     // At this point we should have a valid task which has a valid task consumer
     CTaskConsumerPtr taskConsumer = task->GetTaskConsumer();
     if GUCEF_PREDICT_FALSE( taskConsumer.IsNULL() )
@@ -384,7 +412,7 @@ CTaskDelegator::ProcessTask( CTaskPtr task )
     // given the signal that we are ready to begin operations
     while ( taskConsumer->GetIsInPhasedSetup() )
     {
-        if ( !IsDeactivationRequested() )
+        if ( !IsStopOfCurrentTaskRequested() )
         {
             pulseGenerator->WaitTillNextPulseWindow( 25 );
         }
@@ -394,7 +422,7 @@ CTaskDelegator::ProcessTask( CTaskPtr task )
         }
     }
     
-    if ( !IsDeactivationRequested() )
+    if ( !IsStopOfCurrentTaskRequested() )
     {
         // Now we go through the execution sequence within a cycle as if this
         // where a thread sequence
@@ -409,7 +437,7 @@ CTaskDelegator::ProcessTask( CTaskPtr task )
             taskConsumer->OnTaskStarted( task );
 
             // cycle the task as long as it is not "done"
-            while ( !IsDeactivationRequested() )
+            while ( !IsStopOfCurrentTaskRequested() )
             {
                 try
                 {
@@ -435,7 +463,7 @@ CTaskDelegator::ProcessTask( CTaskPtr task )
                         if ( m_taskRequestedCycleDelayInMs > 0 && m_taskRequestedCycleDelayInMs > m_minimalCycleDeltaInMilliSecs )
                         {
                             UInt32 timeLeftToWait = m_taskRequestedCycleDelayInMs; 
-                            while ( !IsDeactivationRequested() && timeLeftToWait >= m_minimalCycleDeltaInMilliSecs )
+                            while ( !IsStopOfCurrentTaskRequested() && timeLeftToWait >= m_minimalCycleDeltaInMilliSecs )
                             {
                                 UInt32 elapsedWaitTimeInMilliSecs = 0;
                                 pulseGenerator->WaitTillNextPulseWindow( m_minimalCycleDeltaInMilliSecs, timeLeftToWait, &elapsedWaitTimeInMilliSecs  );
@@ -474,7 +502,7 @@ CTaskDelegator::ProcessTask( CTaskPtr task )
             }
 
             taskConsumer->OnTaskEnding( task, false );
-            task->SetTaskStatus( taskWasFinished ? TASKSTATUS_FINISHED : TASKSTATUS_STOPPED );
+            task->SetTaskStatus( taskWasFinished ? TASKSTATUS_FINISHED : ( task->IsCancellationRequested() ? TASKSTATUS_CANCELLED : TASKSTATUS_STOPPED ) );
             taskConsumer->OnTaskEnded( task, false );            
 
             if ( !threadPool.IsNULL() )
@@ -499,7 +527,7 @@ CTaskDelegator::ProcessTask( CTaskPtr task )
     }
     else
     {
-        task->SetTaskStatus( TASKSTATUS_STOPPED );
+        task->SetTaskStatus( task->IsCancellationRequested() ? TASKSTATUS_CANCELLED : TASKSTATUS_STOPPED );
         
         // We never even got to start the consumer's work
         // not an error, just an efficiency thing so we still return success
@@ -614,10 +642,11 @@ CTaskDelegator::OnThreadEnded( void* taskdata ,
         if ( !taskConsumer.IsNULL() )
         {
             TTaskStatus taskStatusBeforeEnd = taskConsumer->GetTaskStatus();
-            if ( !( TASKSTATUS_STOPPED == taskStatusBeforeEnd || 
-                    TASKSTATUS_FINISHED == taskStatusBeforeEnd ) )
+            if ( !( TASKSTATUS_STOPPED == taskStatusBeforeEnd   ||
+                    TASKSTATUS_CANCELLED == taskStatusBeforeEnd ||
+                    TASKSTATUS_FINISHED == taskStatusBeforeEnd  ) )
             {
-                taskConsumer->SetTaskStatus( TASKSTATUS_STOPPED );
+                taskConsumer->SetTaskStatus( task->IsCancellationRequested() ? TASKSTATUS_CANCELLED : TASKSTATUS_STOPPED );
             }
         
             taskConsumer->OnTaskEnded( task, m_consumerBusy );

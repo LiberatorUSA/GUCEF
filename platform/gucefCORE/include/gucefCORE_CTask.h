@@ -222,6 +222,15 @@ class GUCEF_CORE_PUBLIC_CPP CTask : public CNotifier ,
     bool RequestCancellation( void ) const;
 
     /**
+     *  Marks the task as one for which cancellation was requested. A task thread which ends the task checks this to
+     *  end it as cancelled instead of stopped. Cancellation requests made through the thread pool set this,
+     *  there is normally no need to call it directly.
+     */
+    void SetCancellationRequested( bool cancellationRequested );
+
+    bool IsCancellationRequested( void ) const;
+
+    /**
      *  Operator to allow comparison of tasks based on their unique task id
      */
     bool operator==( const CTask& other ) const;
@@ -315,6 +324,7 @@ class GUCEF_CORE_PUBLIC_CPP CTask : public CNotifier ,
     CTaskConsumerPtr m_taskConsumer;
     TTaskId m_taskId;
     bool m_assumedOwnershipOfTaskData;  
+    bool m_cancellationRequested;
     TTaskStatus m_taskStatus;
     CString m_taskStatusExtraInfo;
     TTaskIdVector m_chainTasks;

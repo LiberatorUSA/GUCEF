@@ -159,6 +159,11 @@
 #define GUCEF_CORE_TESTAPP_TESTASYNC_H
 #endif /* GUCEF_CORE_TESTAPP_TESTASYNC_H ? */
 
+#ifndef GUCEF_CORE_TESTAPP_TESTTHREADPOOLCANCELLATION_H
+#include "TestThreadPoolCancellation.h"
+#define GUCEF_CORE_TESTAPP_TESTTHREADPOOLCANCELLATION_H
+#endif /* GUCEF_CORE_TESTAPP_TESTTHREADPOOLCANCELLATION_H ? */
+
 #ifndef GUCEF_CORE_TESTAPP_TESTFREELIST_H
 #include "TestFreeList.h"
 #define GUCEF_CORE_TESTAPP_TESTFREELIST_H
@@ -279,6 +284,7 @@ GUCEF_OSMAIN_BEGIN
         PerformDataDrivenDStoreCodecsTests();
         PerformFreeListTests();
         PerformASyncTests();
+        PerformThreadPoolCancellationTests();
         PerformProcessTests();
         PerformXmlDStoreCodecTests();
         PerformDStoreStreamingTests();

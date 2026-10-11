@@ -143,6 +143,14 @@ class GUCEF_CORE_PRIVATE_CPP CTaskDelegator : public MT::CActiveObject      ,
 
     CTaskPtr GetCurrentTask( void ) const;
 
+    /**
+     *  Asks the delegator to stop working on the task with the given id, if that is the task it is carrying out now.
+     *  Only the task ends: the consumer is given the chance to wrap up (OnTaskEnding / OnTaskEnded) and the task ends as
+     *  cancelled, after which the thread of the delegator is free to pick up other work.
+     *  @return true if the task is being carried out by this delegator
+     */
+    bool CancelCurrentTask( UInt32 taskId );
+
     UInt32 GetCurrentTaskId( void ) const;
 
     /**
@@ -201,6 +209,9 @@ class GUCEF_CORE_PRIVATE_CPP CTaskDelegator : public MT::CActiveObject      ,
 
     virtual bool ProcessTask( CTaskPtr task );
 
+    /** whether the task being carried out has to stop: the thread is shutting down or the task itself was cancelled */
+    bool IsStopOfCurrentTaskRequested( void ) const;
+
     virtual void TaskCleanup( CTaskPtr task );
 
     /**
@@ -249,6 +260,7 @@ class GUCEF_CORE_PRIVATE_CPP CTaskDelegator : public MT::CActiveObject      ,
 
     ThreadPoolPtr m_threadPool;
     bool m_consumerBusy;
+    volatile bool m_cancelCurrentTask;      /**< set when the task which is being carried out is asked to stop, the thread itself carries on */
     bool m_sendRegularPulses;
     Int32 m_immediatePulseTickets;
     Int32 m_immediatePulseTicketMax;
