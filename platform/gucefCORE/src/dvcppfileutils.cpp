@@ -1103,8 +1103,9 @@ FileExists( const CString& filename )
 
         #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_WASM_EMSCRIPTEN ) )
 
+        /* make sure we found a file not a directory, same as on Windows */
         struct stat buf;
-        return stat( RelativePath( filename ).C_String(), &buf ) == 0;
+        return stat( RelativePath( filename ).C_String(), &buf ) == 0 && !S_ISDIR( buf.st_mode );
 
         #else
 

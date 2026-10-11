@@ -404,6 +404,27 @@ PerformFileUtilsTests( void )
         }
     GUCEF_TESTFW_TESTCASE_END
 
+    // Regression: on Linux FileExists also returned true for directories, unlike on Windows
+    GUCEF_TESTFW_TESTCASE( "Test: FileExists is only true for files and DirExists only for directories" )
+        try
+        {
+            CORE::CString dir = CORE::CombinePath( CORE::TempDir(), "gucefCORE_TestApp_FileExists" );
+            ASSERT_TRUE( CORE::CreateDirs( dir ) );
+            CORE::CString file = CORE::CombinePath( dir, "file.txt" );
+            ASSERT_TRUE( CORE::WriteStringAsTextFile( file, "content" ) );
+
+            ASSERT_TRUE( CORE::FileExists( file ) );
+            ASSERT_FALSE( CORE::DirExists( file ) );
+            ASSERT_FALSE( CORE::FileExists( dir ) );
+            ASSERT_TRUE( CORE::DirExists( dir ) );
+            ASSERT_FALSE( CORE::FileExists( CORE::CombinePath( dir, "nothing.txt" ) ) );
+        }
+        catch( ... )
+        {
+            ERRORHERE;
+        }
+    GUCEF_TESTFW_TESTCASE_END
+
     CORE::CLogStreamScope::FlushLogs();
     GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "ALL File Utils TESTS COMPLETED" );
 }
