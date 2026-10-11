@@ -77,7 +77,6 @@ LOCAL_C_INCLUDES := \
   $(MY_MODULE_PATH)/../../../dependencies/libRocket/Source/Controls \
   $(MY_MODULE_PATH)/../../../dependencies/libRocket/Source/Core \
   $(MY_MODULE_PATH)/../../../platform/gucefCORE/include \
-  $(MY_MODULE_PATH)/../../../platform/gucefCORE/include/android \
   $(MY_MODULE_PATH)/../../../platform/gucefCORE/include/c_api \
   $(MY_MODULE_PATH)/../../../platform/gucefGUI/include \
   $(MY_MODULE_PATH)/../../../platform/gucefIMAGE/include \
@@ -85,7 +84,7 @@ LOCAL_C_INCLUDES := \
   $(MY_MODULE_PATH)/../../../platform/gucefMT/include \
   $(MY_MODULE_PATH)/../../../platform/gucefVFS/include
 
-LOCAL_CFLAGS := -DGUCEF_GUIDRIVERROCKET_BUILD_MODULE
+LOCAL_CFLAGS := -DGUCEF_GUIDRIVERROCKET_BUILD_MODULE -DMODULE_CONSENSUS_NAME=guidriverRocket -DMODULE_IS_PLUGIN=1 -DMODULE_NAME=guidriverRocket
 
 
 LOCAL_SHARED_LIBRARIES := \

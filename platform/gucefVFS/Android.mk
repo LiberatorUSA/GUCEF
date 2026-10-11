@@ -28,6 +28,7 @@ LOCAL_SRC_FILES := \
   src/gucefVFS_CArchiveSettings.cpp \
   src/gucefVFS_CAsyncVfsOperation.cpp \
   src/gucefVFS_CFileSystemArchive.cpp \
+  src/gucefVFS_CIArchiveWriter.cpp \
   src/gucefVFS_CModule.cpp \
   src/gucefVFS_CVFS.cpp \
   src/gucefVFS_CVFSHandle.cpp \
@@ -39,11 +40,10 @@ LOCAL_C_INCLUDES := \
   $(MY_MODULE_PATH)/include \
   $(MY_MODULE_PATH)/../../common/include \
   $(MY_MODULE_PATH)/../gucefCORE/include \
-  $(MY_MODULE_PATH)/../gucefCORE/include/android \
   $(MY_MODULE_PATH)/../gucefCORE/include/c_api \
   $(MY_MODULE_PATH)/../gucefMT/include
 
-LOCAL_CFLAGS := -DGUCEF_VFS_BUILD_MODULE
+LOCAL_CFLAGS := -DGUCEF_VFS_BUILD_MODULE -DMODULE_CONSENSUS_NAME=gucefVFS -DMODULE_NAME=gucefVFS -DMODULE_SEMVER=0_1_0_0
 
 
 LOCAL_SHARED_LIBRARIES := \

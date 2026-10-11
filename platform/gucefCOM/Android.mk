@@ -35,11 +35,10 @@ LOCAL_C_INCLUDES := \
   $(MY_MODULE_PATH)/../../common/include \
   $(MY_MODULE_PATH)/../gucefCOMCORE/include \
   $(MY_MODULE_PATH)/../gucefCORE/include \
-  $(MY_MODULE_PATH)/../gucefCORE/include/android \
   $(MY_MODULE_PATH)/../gucefCORE/include/c_api \
   $(MY_MODULE_PATH)/../gucefMT/include
 
-LOCAL_CFLAGS := -DGUCEF_COM_BUILD_MODULE
+LOCAL_CFLAGS := -DGUCEF_COM_BUILD_MODULE -DMODULE_CONSENSUS_NAME=gucefCOM -DMODULE_NAME=gucefCOM -DMODULE_SEMVER=0_1_0_0
 
 
 LOCAL_SHARED_LIBRARIES := \

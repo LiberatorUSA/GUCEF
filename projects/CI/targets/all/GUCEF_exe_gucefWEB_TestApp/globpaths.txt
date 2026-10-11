@@ -1,4 +1,5 @@
 common/include/*
+dependencies/curl/*
 dependencies/json-builder/*
 dependencies/json-parser/*
 dependencies/libparsifal/*
@@ -14,4 +15,5 @@ plugins/CORE/codecspluginZLIB/*
 plugins/CORE/dstorepluginJSONPARSER/*
 plugins/CORE/dstorepluginPARSIFALXML/*
 plugins/CORE/dstorepluginYAML/*
+plugins/WEB/httpclientpluginCURL/*
 tests/gucefWEB_TestApp/*

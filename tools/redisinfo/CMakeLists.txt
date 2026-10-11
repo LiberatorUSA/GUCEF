@@ -50,6 +50,10 @@ set_property( TARGET ${MODULE_NAME} APPEND_STRING PROPERTY COMPILE_DEFINITIONS "
 
 include_directories( ../../common/include ../../dependencies/ ../../dependencies/hiredis ../../dependencies/redis-plus-plus/src/ ../../dependencies/redis-plus-plus/src/sw/redis++ ../../dependencies/redis-plus-plus/src/sw/redis++/cxx11 ../../dependencies/redis-plus-plus/src/sw/redis++/cxx11/sw ../../dependencies/redis-plus-plus/src/sw/redis++/cxx11/sw/redis++ ../../dependencies/redis-plus-plus/src/sw/redis++/no_tls ../../dependencies/redis-plus-plus/src/sw/redis++/no_tls/sw ../../dependencies/redis-plus-plus/src/sw/redis++/no_tls/sw/redis++ ../../dependencies/redis-plus-plus/src/sw/redis++/patterns ../../platform/gucefCOM/include ../../platform/gucefCOMCORE/include ../../platform/gucefCORE/include ../../platform/gucefCORE/include/c_api ../../platform/gucefMT/include ../../platform/gucefVFS/include ../../platform/gucefWEB/include include )
 
+if ( ANDROID )
+  include_directories( ../../dependencies/hiredis )
+endif( ANDROID )
+
 if ( ANDROID32 )
   include_directories( ../../dependencies/hiredis ../../platform/gucefCORE/include/android )
 endif( ANDROID32 )
@@ -61,6 +65,10 @@ endif( ANDROID64 )
 if ( ARDUINO )
   include_directories( ../../dependencies/hiredis )
 endif( ARDUINO )
+
+if ( EMSCRIPTEN )
+  include_directories( ../../dependencies/hiredis )
+endif( EMSCRIPTEN )
 
 if ( EMSCRIPTEN32 )
   include_directories( ../../dependencies/hiredis )
@@ -74,6 +82,18 @@ if ( IOS )
   include_directories( ../../dependencies/hiredis )
 endif( IOS )
 
+if ( IPHONE )
+  include_directories( ../../dependencies/hiredis )
+endif( IPHONE )
+
+if ( IPHONEOS )
+  include_directories( ../../dependencies/hiredis )
+endif( IPHONEOS )
+
+if ( LINUX )
+  include_directories( ../../dependencies/hiredis )
+endif( LINUX )
+
 if ( LINUX32 )
   include_directories( ../../dependencies/hiredis ../../platform/gucefCOMCORE/include/linux ../../platform/gucefCORE/include/linux )
 endif( LINUX32 )
@@ -81,6 +101,22 @@ endif( LINUX32 )
 if ( LINUX64 )
   include_directories( ../../dependencies/hiredis ../../platform/gucefCOMCORE/include/linux ../../platform/gucefCORE/include/linux )
 endif( LINUX64 )
+
+if ( MAC )
+  include_directories( ../../dependencies/hiredis )
+endif( MAC )
+
+if ( MACOS )
+  include_directories( ../../dependencies/hiredis )
+endif( MACOS )
+
+if ( MACOSX )
+  include_directories( ../../dependencies/hiredis )
+endif( MACOSX )
+
+if ( MSWIN )
+  include_directories( ../../dependencies/hiredis )
+endif( MSWIN )
 
 if ( OSX )
   include_directories( ../../dependencies/hiredis )
@@ -93,6 +129,10 @@ endif( WIN32 )
 if ( WIN64 )
   include_directories( ../../dependencies/hiredis ../../platform/gucefCOMCORE/include/mswin ../../platform/gucefCORE/include/mswin ../../platform/gucefMT/include/mswin )
 endif( WIN64 )
+
+if ( WINDOWS )
+  include_directories( ../../dependencies/hiredis )
+endif( WINDOWS )
 
 
 

@@ -67,6 +67,8 @@ add_subdirectory( ${CMAKE_CURRENT_SOURCE_DIR}/../../../../plugins/VFS/vfspluginI
 add_subdirectory( ${CMAKE_CURRENT_SOURCE_DIR}/../../../../plugins/VFS/vfspluginLIBARCHIVE ${CMAKE_BINARY_DIR}/vfspluginLIBARCHIVE )
 add_subdirectory( ${CMAKE_CURRENT_SOURCE_DIR}/../../../../plugins/VFS/vfspluginVP ${CMAKE_BINARY_DIR}/vfspluginVP )
 add_subdirectory( ${CMAKE_CURRENT_SOURCE_DIR}/../../../../plugins/VFS/vfspluginZIP ${CMAKE_BINARY_DIR}/vfspluginZIP )
+add_subdirectory( ${CMAKE_CURRENT_SOURCE_DIR}/../../../../plugins/WEB/httpclientpluginCURL ${CMAKE_BINARY_DIR}/httpclientpluginCURL )
+add_subdirectory( ${CMAKE_CURRENT_SOURCE_DIR}/../../../../tests/ProjectGen_TestApp ${CMAKE_BINARY_DIR}/ProjectGen_TestApp )
 add_subdirectory( ${CMAKE_CURRENT_SOURCE_DIR}/../../../../tests/gucefCOMCORE_TestApp ${CMAKE_BINARY_DIR}/gucefCOMCORE_TestApp )
 add_subdirectory( ${CMAKE_CURRENT_SOURCE_DIR}/../../../../tests/gucefCOM_TestApp ${CMAKE_BINARY_DIR}/gucefCOM_TestApp )
 add_subdirectory( ${CMAKE_CURRENT_SOURCE_DIR}/../../../../tests/gucefCORE_TestApp ${CMAKE_BINARY_DIR}/gucefCORE_TestApp )
@@ -78,6 +80,7 @@ add_subdirectory( ${CMAKE_CURRENT_SOURCE_DIR}/../../../../tests/gucefPRODMAN_Tes
 add_subdirectory( ${CMAKE_CURRENT_SOURCE_DIR}/../../../../tests/gucefPUBSUB_TestApp ${CMAKE_BINARY_DIR}/gucefPUBSUB_TestApp )
 add_subdirectory( ${CMAKE_CURRENT_SOURCE_DIR}/../../../../tests/gucefVFS_TestApp ${CMAKE_BINARY_DIR}/gucefVFS_TestApp )
 add_subdirectory( ${CMAKE_CURRENT_SOURCE_DIR}/../../../../tests/gucefWEB_TestApp ${CMAKE_BINARY_DIR}/gucefWEB_TestApp )
+add_subdirectory( ${CMAKE_CURRENT_SOURCE_DIR}/../../../../tools/ProjectGen ${CMAKE_BINARY_DIR}/ProjectGen )
 
 
 if (ANDROID32)

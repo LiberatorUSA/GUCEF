@@ -171,7 +171,7 @@ LOCAL_C_INCLUDES := \
   $(MY_MODULE_PATH)/../../Include/Rocket/Core/Python \
   $(MY_MODULE_PATH)/../../Include/Rocket/Debugger
 
-LOCAL_CFLAGS := -DRocketCore_EXPORTS
+LOCAL_CFLAGS := -DMODULE_CONSENSUS_NAME=RocketCore -DMODULE_NAME=RocketCore -DRocketCore_EXPORTS
 
 
 LOCAL_SHARED_LIBRARIES := \

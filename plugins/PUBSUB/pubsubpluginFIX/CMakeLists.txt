@@ -11,7 +11,7 @@
 
 # Configuration for module: pubsubpluginFIX
 
-set( HEADER_FILES
+set( HEADER_FILES 
   include/pubsubpluginFIX.h
   include/pubsubpluginFIX_CFIXClientMessage.h
   include/pubsubpluginFIX_CFIXClientPubSubClient.h
@@ -27,7 +27,7 @@ set( HEADER_FILES
   include/pubsubpluginFIX_macros.h
 )
 
-set( SOURCE_FILES
+set( SOURCE_FILES 
   src/pubsubpluginFIX.cpp
   src/pubsubpluginFIX_CFIXClientMessage.cpp
   src/pubsubpluginFIX_CFIXClientPubSubClient.cpp

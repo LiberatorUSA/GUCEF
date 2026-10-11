@@ -97,6 +97,7 @@ add_subdirectory( ${CMAKE_CURRENT_SOURCE_DIR}/../../../../plugins/VFS/vfspluginI
 add_subdirectory( ${CMAKE_CURRENT_SOURCE_DIR}/../../../../plugins/VFS/vfspluginLIBARCHIVE ${CMAKE_BINARY_DIR}/vfspluginLIBARCHIVE )
 add_subdirectory( ${CMAKE_CURRENT_SOURCE_DIR}/../../../../plugins/VFS/vfspluginVP ${CMAKE_BINARY_DIR}/vfspluginVP )
 add_subdirectory( ${CMAKE_CURRENT_SOURCE_DIR}/../../../../plugins/VFS/vfspluginZIP ${CMAKE_BINARY_DIR}/vfspluginZIP )
+add_subdirectory( ${CMAKE_CURRENT_SOURCE_DIR}/../../../../plugins/WEB/httpclientpluginCURL ${CMAKE_BINARY_DIR}/httpclientpluginCURL )
 add_subdirectory( ${CMAKE_CURRENT_SOURCE_DIR}/../../../../tools/ProjectGen ${CMAKE_BINARY_DIR}/ProjectGen )
 
 

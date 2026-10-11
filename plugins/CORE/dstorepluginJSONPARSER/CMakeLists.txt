@@ -50,6 +50,10 @@ endif( EMSCRIPTEN64 )
 
 include_directories( ../../../common/include ../../../dependencies/json-builder ../../../dependencies/json-parser ../../../platform/gucefCORE/include ../../../platform/gucefCORE/include/c_api ../../../platform/gucefMT/include include )
 
+if ( ANDROID )
+  include_directories( ../../../dependencies/json-builder ../../../dependencies/json-parser )
+endif( ANDROID )
+
 if ( ANDROID32 )
   include_directories( ../../../dependencies/json-builder ../../../dependencies/json-parser ../../../platform/gucefCORE/include/android )
 endif( ANDROID32 )
@@ -61,6 +65,10 @@ endif( ANDROID64 )
 if ( ARDUINO )
   include_directories( ../../../dependencies/json-builder ../../../dependencies/json-parser )
 endif( ARDUINO )
+
+if ( EMSCRIPTEN )
+  include_directories( ../../../dependencies/json-builder ../../../dependencies/json-parser )
+endif( EMSCRIPTEN )
 
 if ( EMSCRIPTEN32 )
   include_directories( ../../../dependencies/json-builder ../../../dependencies/json-parser )
@@ -74,6 +82,18 @@ if ( IOS )
   include_directories( ../../../dependencies/json-builder ../../../dependencies/json-parser )
 endif( IOS )
 
+if ( IPHONE )
+  include_directories( ../../../dependencies/json-builder ../../../dependencies/json-parser )
+endif( IPHONE )
+
+if ( IPHONEOS )
+  include_directories( ../../../dependencies/json-builder ../../../dependencies/json-parser )
+endif( IPHONEOS )
+
+if ( LINUX )
+  include_directories( ../../../dependencies/json-builder ../../../dependencies/json-parser )
+endif( LINUX )
+
 if ( LINUX32 )
   include_directories( ../../../dependencies/json-builder ../../../dependencies/json-parser ../../../platform/gucefCORE/include/linux )
 endif( LINUX32 )
@@ -81,6 +101,22 @@ endif( LINUX32 )
 if ( LINUX64 )
   include_directories( ../../../dependencies/json-builder ../../../dependencies/json-parser ../../../platform/gucefCORE/include/linux )
 endif( LINUX64 )
+
+if ( MAC )
+  include_directories( ../../../dependencies/json-builder ../../../dependencies/json-parser )
+endif( MAC )
+
+if ( MACOS )
+  include_directories( ../../../dependencies/json-builder ../../../dependencies/json-parser )
+endif( MACOS )
+
+if ( MACOSX )
+  include_directories( ../../../dependencies/json-builder ../../../dependencies/json-parser )
+endif( MACOSX )
+
+if ( MSWIN )
+  include_directories( ../../../dependencies/json-builder ../../../dependencies/json-parser )
+endif( MSWIN )
 
 if ( OSX )
   include_directories( ../../../dependencies/json-builder ../../../dependencies/json-parser )
@@ -93,6 +129,10 @@ endif( WIN32 )
 if ( WIN64 )
   include_directories( ../../../dependencies/json-builder ../../../dependencies/json-parser ../../../platform/gucefCORE/include/mswin ../../../platform/gucefMT/include/mswin )
 endif( WIN64 )
+
+if ( WINDOWS )
+  include_directories( ../../../dependencies/json-builder ../../../dependencies/json-parser )
+endif( WINDOWS )
 
 
 
