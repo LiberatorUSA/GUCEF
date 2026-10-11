@@ -3664,6 +3664,13 @@ CProjectInfo::GenerateModuleDependencyIncludes( CModuleInfoEntryPtr& moduleInfoE
             TStringSetMap::const_iterator n = headerFiles.begin();
             while ( n != headerFiles.end() )
             {
+                // Per the processing instructions some dirs of the dependency are not to be used as include search paths
+                if ( dependencyModule->IsIncludeDirExcludedFromSearchPaths( (*n).first ) )
+                {
+                    ++n;
+                    continue;
+                }
+
                 // If the path is a relative path we refine it to be from this module's location
                 CORE::CString dependencyInclDir = CORE::RelativePath( (*n).first );
                 if ( !CORE::IsAbsolutePath( dependencyInclDir ) && 0 != dependencyInclDir.HasSubstr( "#$#ENVVAR:", true ) )

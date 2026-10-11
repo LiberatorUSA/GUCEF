@@ -761,6 +761,7 @@ ParseProcessingInstructions( const CProjectInfo& projectInfo                ,
         static const CORE::CString itemNodeName = "ITEM";
         static const CORE::CString nameAttribName = "NAME";
         static const CORE::CString typeAttribName = "TYPE";
+        static const CORE::CString typeAttribIncludeDirValue = "INCLUDEDIR";
         static const CORE::CString allPlatformsValue = "ALL";
 
         // Parse the instructions for the information we are looking for
@@ -829,9 +830,25 @@ ParseProcessingInstructions( const CProjectInfo& projectInfo                ,
                             {
                                 // Get the name and type of the item to add to the list
                                 CORE::CString itemName = curNode2->GetAttributeValue( nameAttribName );
+                                CORE::CString itemType = curNode2->GetAttributeValue( typeAttribName );
+                                if ( !itemName.IsNULLOrEmpty() && itemType.Equals( typeAttribIncludeDirValue, false ) )
+                                {
+                                    // This is not a processing exclusion: the files in the dir remain part of the module
+                                    // The dir is merely not to be used as an include search path. "." refers to the dir holding the instructions
+                                    if ( platformName.IsNULLOrEmpty() || platformName.Equals( allPlatformsValue, false ) )
+                                    {
+                                        instructionStorage.includeDirExcludeList[ KnownPlatforms::AllPlatforms ].push_back( itemName );
+                                        GUCEF_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "Added include search path exclude entry \"" + itemName + "\" based on the processing instructions for this dir" );
+                                    }
+                                    else
+                                    {
+                                        instructionStorage.includeDirExcludeList[ platformName ].push_back( itemName );
+                                        GUCEF_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "Added include search path exclude entry \"" + itemName + "\" for platform " + platformName + " based on the processing instructions for this dir" );
+                                    }
+                                }
+                                else
                                 if ( !itemName.IsNULLOrEmpty() )
                                 {
-                                    CORE::CString itemType = curNode2->GetAttributeValue( typeAttribName );
                                     bool itemIsADir = IsProcessingInstructionsItemADir( instructionsDir, itemName, itemType );
 
                                     // We found an item to add to our list
@@ -1813,6 +1830,85 @@ FindSubDirsWithFileTypes( const CProjectInfo& projectInfo                       
 
 /*---------------------------------------------------------------------------*/
 
+bool
+IsIncludeDirSearchPathExcludedByInstructions( const CProjectInfo& projectInfo                          ,
+                                              const CORE::CString& instructionsDir                     ,
+                                              const CORE::CString& itemName                            ,
+                                              const CORE::CString& platform                            ,
+                                              TDirProcessingInstructionsMap& newProcessingInstructions )
+{GUCEF_TRACE;
+
+    const TDirProcessingInstructions* instructions = GetProcessingInstructions( projectInfo, instructionsDir, newProcessingInstructions );
+    if ( GUCEF_NULL == instructions )
+        return false;
+
+    // Check both the entries specific to the given platform and those which apply to all platforms
+    TStringVectorMap::const_iterator i = instructions->includeDirExcludeList.begin();
+    while ( i != instructions->includeDirExcludeList.end() )
+    {
+        const CORE::CString& instructionsPlatform = (*i).first;
+        if ( instructionsPlatform == KnownPlatforms::AllPlatforms || instructionsPlatform.Equals( platform, false ) )
+        {
+            const TStringVector& entries = (*i).second;
+            TStringVector::const_iterator n = entries.begin();
+            while ( n != entries.end() )
+            {
+                if ( (*n).Equals( itemName, false ) )
+                    return true;
+                ++n;
+            }
+        }
+        ++i;
+    }
+    return false;
+}
+
+/*---------------------------------------------------------------------------*/
+
+void
+ApplyIncludeDirSearchPathExclusions( const CProjectInfo& projectInfo                          ,
+                                     CModuleInfoEntryPtr& moduleInfoEntry                     ,
+                                     TDirProcessingInstructionsMap& newProcessingInstructions )
+{GUCEF_TRACE;
+
+    const CORE::CString& moduleRootDir = moduleInfoEntry->GetAbsolutePathToModuleRootDir();
+
+    TModuleInfoPtrMap::const_iterator m = moduleInfoEntry->GetModulesPerPlatform().begin();
+    while ( m != moduleInfoEntry->GetModulesPerPlatform().end() )
+    {
+        const CORE::CString& platform = (*m).first;
+        CModuleInfoPtr moduleInfo = (*m).second;
+
+        TStringSetMap::const_iterator d = moduleInfo->GetIncludeDirs().begin();
+        while ( d != moduleInfo->GetIncludeDirs().end() )
+        {
+            const CORE::CString& relIncludeDir = (*d).first;
+            CORE::CString absIncludeDir = relIncludeDir.IsNULLOrEmpty() ? moduleRootDir : CORE::CombinePath( moduleRootDir, relIncludeDir );
+
+            // The dir can be referred to as "." by instructions in the dir itself or by name by instructions in its parent dir
+            bool isExcluded = IsIncludeDirSearchPathExcludedByInstructions( projectInfo, absIncludeDir, ".", platform, newProcessingInstructions );
+            if ( !isExcluded && !relIncludeDir.IsNULLOrEmpty() )
+            {
+                isExcluded = IsIncludeDirSearchPathExcludedByInstructions( projectInfo                            ,
+                                                                           CORE::StripLastSubDir( absIncludeDir ) ,
+                                                                           CORE::LastSubDir( absIncludeDir )      ,
+                                                                           platform                               ,
+                                                                           newProcessingInstructions              );
+            }
+
+            if ( isExcluded )
+            {
+                moduleInfo->ExcludeIncludeDirFromSearchPaths( relIncludeDir );
+                GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Include dir \"" + relIncludeDir + "\" of module " + moduleInfo->name + " will not be used as an include search path per the processing instructions" );
+            }
+            ++d;
+        }
+        ++m;
+    }
+}
+
+/*---------------------------------------------------------------------------*/
+
 void
 FillHeaderSubDirIncludes( const CProjectInfo& projectInfo      ,
                           CModuleInfoEntryPtr& moduleInfoEntry ,
@@ -2009,6 +2105,10 @@ FindSubDirsWithHeaders( const CProjectInfo& projectInfo                         
     // Such projects are sensitive to the inclusion of header parent dirs as include dirs in order for the include paths
     // to be correct. To cover this case we add relative parent dirs of dirs with headers
     FillHeaderSubDirIncludes( projectInfo, moduleInfoEntry );
+
+    // Some dirs with headers are not to be used as include search paths, for example because they contain
+    // a 3rd party header named like a system header. Their headers do remain part of the module.
+    ApplyIncludeDirSearchPathExclusions( projectInfo, moduleInfoEntry, newProcessingInstructions );
 }
 
 /*---------------------------------------------------------------------------*/
