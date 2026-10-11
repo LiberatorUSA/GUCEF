@@ -16,12 +16,25 @@
  *  License along with this library; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
  */
+ 
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      INCLUDES                                                           //
 //                                                                         //
 //-------------------------------------------------------------------------*/
+
+#define GUCEF_TESTFW_IMPL
+
+#ifndef GUCEF_MACROS_H
+#include "gucef_macros.h"
+#define GUCEF_MACROS_H
+#endif /* GUCEF_MACROS_H ? */
+
+#ifndef GUCEF_TEST_FRAMEWORK_H
+#include "gucef_test_framework.h"
+#define GUCEF_TEST_FRAMEWORK_H
+#endif /* GUCEF_TEST_FRAMEWORK_H ? */
 
 #ifndef GUCEF_CORE_H
 #include "gucefCORE.h"
@@ -50,48 +63,45 @@
 GUCEF_OSMAIN_BEGIN
 {GUCEF_TRACE;
 
-    using namespace GUCEF::CORE;
-    using namespace GUCEF::COMCORE;
-            
-    try 
-    {                               
-        PerformDNSTests();
-        
-        GUCEF::CORE::CString logFilename = GUCEF::CORE::RelativePath( "$CURWORKDIR$" );
-        GUCEF::CORE::AppendToPath( logFilename, "gucefCOMCORE_TestApp_Log.txt" );
-        GUCEF::CORE::CFileAccess logFileAccess( logFilename, "w" );
-        
-        GUCEF::CORE::CStdLogger logger( logFileAccess );
-        GUCEF::CORE::CCoreGlobal::Instance()->GetLogManager().AddLogger( &logger );
-        
-        GUCEF::CORE::CPlatformNativeConsoleLogger consoleOut;
-        GUCEF::CORE::CCoreGlobal::Instance()->GetLogManager().AddLogger( consoleOut.GetLogger() );
-        
-        GUCEF::CORE::CCoreGlobal::Instance()->GetLogManager().FlushBootstrapLogEntriesToLogs();
+    using namespace GUCEF;
 
-        
-        PerformPingTest();
-        SetupClientServerTest();
-        SetupSimpleTCPClient("httpd.apache.org", 80, "GET /\r\n");
-        
-        return 1;                                                                            
+    try
+    {
+        CORE::CString logFilename = CORE::RelativePath( "$CURWORKDIR$" );
+        CORE::AppendToPath( logFilename, "gucefCOMCORE_TestApp_Log.txt" );
+        CORE::CFileAccess logFileAccess( logFilename, "w" );
+
+        CORE::CStdLogger logger( logFileAccess );
+        CORE::CCoreGlobal::Instance()->GetLogManager().AddLogger( &logger );
+
+        CORE::CPlatformNativeConsoleLogger consoleOut;
+        if ( GUCEF_APP_TYPE == GUCEF_APP_TYPE_CONSOLE )
+            CORE::CCoreGlobal::Instance()->GetLogManager().AddLogger( consoleOut.GetLogger() );
+
+        CORE::CCoreGlobal::Instance()->GetLogManager().FlushBootstrapLogEntriesToLogs();
+
+        GUCEF_TESTFW_INIT( "gucefCOMCORE_TestApp" );
+        GUCEF_TESTFW_SET_CALLBACK( CORE::TestFrameworkLogCallback, GUCEF_NULL );
+
+        PerformDNSTests();
+        PerformClientServerTests();
+        PerformSimpleTCPClientTests();
+        PerformPingTests();
+
+        CORE::CLogStreamScope::FlushLogs();
+
+        CORE::CString xmlPath = CORE::RelativePath( "$CURWORKDIR$" );
+        CORE::AppendToPath( xmlPath, "gucefCOMCORE_TestApp_Results.xml" );
+        GUCEF_TESTFW_WRITE_RESULTS( xmlPath.C_String() );
+        return GUCEF_TESTFW_EXITCODE;
     }
     catch ( ... )
-    {        
-        GUCEF::CORE::ShowErrorMessage( "Unknown exception"                                                                 ,
-                                       "Unhandled exception during program execution, the application will now terminate"  );                                                         
+    {
+        CORE::ShowErrorMessage( "Unknown exception"                                                                 ,
+                                "Unhandled exception during program execution, the application will now terminate"  );
     }
-    return 1;                                                                                                                              
+    return 1;
 }
 GUCEF_OSMAIN_END
 
-/*-------------------------------------------------------------------------//
-//                                                                         //
-//      Info & Changes                                                     //
-//                                                                         //
-//-------------------------------------------------------------------------//
-
-- 10-12-2006
-        - Dinand: Added this comment section
-
------------------------------------------------------------------------------*/
+/*-------------------------------------------------------------------------*/

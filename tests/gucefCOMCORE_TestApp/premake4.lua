@@ -49,6 +49,7 @@ files( {
   "include/TestCode_ClientServer.h",
   "include/TestCode_DNS.h",
   "include/TestCode_PingTest.h",
+  "include/TestCode_Pump.h",
   "include/TestCode_SimpleTCPClient.h"
  } )
 

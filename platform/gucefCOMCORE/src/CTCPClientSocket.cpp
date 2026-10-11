@@ -587,6 +587,11 @@ CTCPClientSocket::CheckRecieveBuffer( void )
                                        0                                                                            ,
                                        &errorcode                                                                   );
 
+            // A non-blocking socket which has been read empty reports that nothing more can be read right now,
+            // which is the normal end of a read cycle when the amount of data was an exact multiple of the block size
+            if ( bytesrecv == SOCKET_ERROR && DVSOCKET_EWOULDBLOCK == errorcode )
+                break;
+
             // Check for an error
             if ( ( bytesrecv == SOCKET_ERROR ) || ( errorcode != 0 ) )
             {
