@@ -28,6 +28,11 @@
 #define GUCEF_CORE_LOGGING_H
 #endif /* GUCEF_CORE_LOGGING_H ? */
 
+#ifndef GUCEF_CORE_CCOREGLOBAL_H
+#include "gucefCORE_CCoreGlobal.h"
+#define GUCEF_CORE_CCOREGLOBAL_H
+#endif /* GUCEF_CORE_CCOREGLOBAL_H ? */
+
 #include "gucefCORE_CPlatformNativeConsoleLogger.h"
 
 #if GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN
@@ -72,6 +77,9 @@ CPlatformNativeConsoleLogger::CPlatformNativeConsoleLogger( void )
 CPlatformNativeConsoleLogger::~CPlatformNativeConsoleLogger()
 {GUCEF_TRACE;
 
+    // The logger may have been registered with the log manager: it must not be invoked after it is deleted
+    if ( GUCEF_NULL != m_nativeConsoleLogger )
+        CCoreGlobal::Instance()->GetLogManager().RemoveLogger( m_nativeConsoleLogger );
     GUCEF_DELETE m_nativeConsoleLogger;
     m_nativeConsoleLogger = NULL;
 }
