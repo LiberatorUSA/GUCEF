@@ -1,8 +1,9 @@
 #ifndef __CONFIG_H__
 #define __CONFIG_H__
 
-#define IL_USE_PRAGMA_LIBS  // Links to only the libraries that are requested.
-#define IL_INLINE_ASM 1  // Define if you can support at least some ASM
+// DV edit: this is the configuration for Linux, the Windows specifics that were here do not apply
+// #define IL_USE_PRAGMA_LIBS  // Links to only the libraries that are requested, MSVC only.
+// #define IL_INLINE_ASM 1  // Define if you can support at least some ASM, the asm of DevIL is written for MSVC
 
 // Supported images formats (IL)
 
@@ -45,11 +46,11 @@
 // #define IL_NO_TIF
 // #define IL_NO_TPL
 // #define IL_NO_WAL
-// #define IL_NO_WDP
+#define IL_NO_WDP   // DV edit: needs the JPEG XR library which is not part of this build
 // #define IL_NO_XPM
 
 #define IL_USE_JPEGLIB_UNMODIFIED 1
-#define IL_USE_DXTC_NVIDIA
+// #define IL_USE_DXTC_NVIDIA   // DV edit: needs the nvtt library, squish is used instead
 #define IL_USE_DXTC_SQUISH
 
 //#define IL_NO_GAMES
@@ -69,11 +70,11 @@
 #undef ILUT_USE_ALLEGRO
 
 #undef ILUT_USE_DIRECTX8
-#define ILUT_USE_DIRECTX9
-#define ILUT_USE_DIRECTX10
+#undef ILUT_USE_DIRECTX9
+#undef ILUT_USE_DIRECTX10
 #define ILUT_USE_OPENGL
-#define ILUT_USE_SDL
-#define ILUT_USE_WIN32
+#undef ILUT_USE_SDL
+#undef ILUT_USE_WIN32
 
 
 #endif /* __CONFIG_H__ */

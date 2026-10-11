@@ -44,6 +44,16 @@ aws-lambda-runtime is version 0.2.7 from GitHub @ https://github.com/awslabs/aws
 libyaml is in-flight version 0.2.6 from GitHub @ https://github.com/yaml/libyaml obtained source dated 2023-04-23
 opentelemetry-cpp is version 1.21.0 from GitHub
 RmlUI is version 6.2 from GitHub @ https://github.com/mikke89/RmlUi/releases/tag/6.2
+jasper: local edit marked "DV edit" in src/libjasper/include/jasper/jas_config.h, the values of a POSIX system instead of cmake template lines
+tiff: local edit marked "DV edit" in libtiff/tif_config.h, io.h and setmode() only on Windows, unistd.h and snprintf() elsewhere
+openexr: local edits marked "DV edit" in IlmBase/config.windows/IlmBaseConfig.h and OpenEXR/config.windows/OpenEXRConfig.h, pthreads, POSIX semaphores and sysconf() on non-Windows. The Win32 thread sources are only part of the build on Windows (IlmBase/IlmThread/ProjectGenInstructions.xml)
+FreeImage: local edits marked "DV edit": LibJXR/image/sys/ansi.h (byteswap declaration and wchar.h for ANSI platforms), LibRawLite/internal/dcraw_common.cpp (powf64 renamed dcraw_powf64 since glibc has a function by that name), LibJXR/jxrgluelib/JXRGlueJxr.c (wchar.h). The processor specific WebP code for other architectures is excluded in LibWebP/src/dsp/ProjectGenInstructions.xml
+DevIL: the Linux config include/IL/linux/config.h was renamed DevILconfig.h like the Windows one and had its Windows specifics removed (marked "DV edit"). The older il_exr.c and il_utx.c, which are duplicates of the .cpp versions, are excluded in src-IL/src/ProjectGenExcludeList.txt
+Ogre: local edit marked "DV edit" in OgreMain/include/OgrePlatform.h, [[deprecated]] without the empty parentheses newer compilers refuse
+libRocket: local edits marked "DV edit" or returning NULL instead of false in Include/Rocket/Core/StringBase.inl and Source/Core/FontDatabase.cpp, fixes for compilers that are stricter about pointers
+RmlUi: local edits marked "DV edit" in Include/RmlUi/Core/RmlUiMath.h (the types header is included last, since the templates of the vector and matrix types use what the math header declares), Matrix4.h/Vector2.h/Vector4.h (include the renamed RmlUiMath.h) and Source/Core/FontEngineDefault/FreeTypeInterface.cpp (compatibility with the older FreeType which is part of this code base)
+MyGui: local edit marked "DV edit" in MyGUIEngine/include/MyGUI_Prerequest.h, nullptr is only emulated for compilers from before C++11
+cegui: local edit marked "DV edit" in cegui/include/CEGUI/Config.h, glibc iconv takes a non-const input buffer
 
 Note for MS Windows builds: 
 - to build the DirectInput dependent code you must have the DirectX SDK installed on your system.
