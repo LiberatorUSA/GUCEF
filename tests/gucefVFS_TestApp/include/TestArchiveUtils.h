@@ -56,6 +56,12 @@ namespace TestArchiveUtils {
 bool LoadVfsPlugin( const GUCEF::CORE::CString& pluginName );
 
 /**
+ *  The tests with entries of many gigabytes take minutes, which is too long for every run. They only run when asked:
+ *  start the application with -large or set the environment variable GUCEF_TEST_LARGE_FILES to 1.
+ */
+bool LargeFileTestsEnabled( void );
+
+/**
  *  A source of zero bytes of a given size which takes no memory or disk space,
  *  optionally pretending its size is unknown like a stream would
  */

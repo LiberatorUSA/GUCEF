@@ -390,41 +390,48 @@ PerformLibArchiveTests( void )
         }
     GUCEF_TESTFW_TESTCASE_END
 
-    GUCEF_TESTFW_TESTCASE( "Test: A tar entry of more than 8 GiB uses pax and reads back" )
-        try
-        {
-            const UInt64 entrySize = 9ULL * 1024 * 1024 * 1024;
-            CORE::CString archivePath = CORE::CombinePath( dir, "large.tgz" );
+    if ( TestArchiveUtils::LargeFileTestsEnabled() )
+    {
+        GUCEF_TESTFW_TESTCASE( "Test: A tar entry of more than 8 GiB uses pax and reads back" )
+            try
             {
-                CORE::CFileAccess output( archivePath, "wb" );
-                VFS::CVFS::TArchiveWriterPtr writer = vfs.CreateArchiveWriter( "tgz" );
-                ASSERT_FALSE( writer.IsNULL() );
-                if ( !writer.IsNULL() )
+                const UInt64 entrySize = 9ULL * 1024 * 1024 * 1024;
+                CORE::CString archivePath = CORE::CombinePath( dir, "large.tgz" );
                 {
-                    ASSERT_TRUE( writer->Open( output ) );
-                    CZeroSource zeros( entrySize, true );
-                    ASSERT_TRUE( writer->AddFile( "huge.bin", zeros, VFS::CArchiveWriterEntrySettings() ) );
-                    ASSERT_TRUE( writer->Close() );
+                    CORE::CFileAccess output( archivePath, "wb" );
+                    VFS::CVFS::TArchiveWriterPtr writer = vfs.CreateArchiveWriter( "tgz" );
+                    ASSERT_FALSE( writer.IsNULL() );
+                    if ( !writer.IsNULL() )
+                    {
+                        ASSERT_TRUE( writer->Open( output ) );
+                        CZeroSource zeros( entrySize, true );
+                        ASSERT_TRUE( writer->AddFile( "huge.bin", zeros, VFS::CArchiveWriterEntrySettings() ) );
+                        ASSERT_TRUE( writer->Close() );
+                    }
                 }
+
+                CORE::CProcess::TStringVector args;
+                args.push_back( archivePath );
+                args.push_back( "large" );
+                args.push_back( CORE::UInt64ToString( entrySize ) );
+                args.push_back( "huge.bin" );
+                ASSERT_TRUE( RunPythonCheck( scriptPath, args ) );
+
+                ASSERT_TRUE( vfs.MountArchive( "libarchive_large", "libarchivetemp/large.tgz", "tgz", "libarchive_large", false, false ) );
+                ASSERT_TRUE( entrySize == vfs.GetFileSize( "libarchive_large/huge.bin" ) );
+                ASSERT_TRUE( vfs.UnmountArchiveByName( "libarchive_large" ) );
+                CORE::DeleteFile( archivePath );
             }
-
-            CORE::CProcess::TStringVector args;
-            args.push_back( archivePath );
-            args.push_back( "large" );
-            args.push_back( CORE::UInt64ToString( entrySize ) );
-            args.push_back( "huge.bin" );
-            ASSERT_TRUE( RunPythonCheck( scriptPath, args ) );
-
-            ASSERT_TRUE( vfs.MountArchive( "libarchive_large", "libarchivetemp/large.tgz", "tgz", "libarchive_large", false, false ) );
-            ASSERT_TRUE( entrySize == vfs.GetFileSize( "libarchive_large/huge.bin" ) );
-            ASSERT_TRUE( vfs.UnmountArchiveByName( "libarchive_large" ) );
-            CORE::DeleteFile( archivePath );
-        }
-        catch ( ... )
-        {
-            ERRORHERE;
-        }
-    GUCEF_TESTFW_TESTCASE_END
+            catch ( ... )
+            {
+                ERRORHERE;
+            }
+        GUCEF_TESTFW_TESTCASE_END
+    }
+    else
+    {
+        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "libarchive plugin tests: skipping the test with an entry of more than 8 GiB, it takes minutes. Use -large or set GUCEF_TEST_LARGE_FILES=1 to run it" );
+    }
 
     vfs.UnmountArchiveByName( "LibArchiveTempDir" );
 

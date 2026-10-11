@@ -327,43 +327,50 @@ PerformZipArchiveWriterTests( void )
         }
     GUCEF_TESTFW_TESTCASE_END
 
-    GUCEF_TESTFW_TESTCASE( "Test: Entries of more than 4 GiB use ZIP64, with known and unknown sizes" )
-        try
-        {
-            const UInt64 entrySize = 4500ULL * 1024 * 1024;
-            CORE::CString zipPath = CORE::CombinePath( dir, "large.zip" );
+    if ( TestArchiveUtils::LargeFileTestsEnabled() )
+    {
+        GUCEF_TESTFW_TESTCASE( "Test: Entries of more than 4 GiB use ZIP64, with known and unknown sizes" )
+            try
             {
-                CORE::CFileAccess output( zipPath, "wb" );
-                VFS::CVFS::TArchiveWriterPtr writer = vfs.CreateArchiveWriter( "zip" );
-                ASSERT_FALSE( writer.IsNULL() );
-                if ( !writer.IsNULL() )
+                const UInt64 entrySize = 4500ULL * 1024 * 1024;
+                CORE::CString zipPath = CORE::CombinePath( dir, "large.zip" );
                 {
-                    ASSERT_TRUE( writer->Open( output ) );
-                    VFS::CArchiveWriterEntrySettings settings;
-                    settings.compression = VFS::CArchiveWriterEntrySettings::COMPRESSION_DEFLATE;
-                    settings.compressionLevel = 1;
+                    CORE::CFileAccess output( zipPath, "wb" );
+                    VFS::CVFS::TArchiveWriterPtr writer = vfs.CreateArchiveWriter( "zip" );
+                    ASSERT_FALSE( writer.IsNULL() );
+                    if ( !writer.IsNULL() )
+                    {
+                        ASSERT_TRUE( writer->Open( output ) );
+                        VFS::CArchiveWriterEntrySettings settings;
+                        settings.compression = VFS::CArchiveWriterEntrySettings::COMPRESSION_DEFLATE;
+                        settings.compressionLevel = 1;
 
-                    TestArchiveUtils::CZeroSource knownSize( entrySize, true );
-                    ASSERT_TRUE( writer->AddFile( "known.bin", knownSize, settings ) );
-                    TestArchiveUtils::CZeroSource unknownSize( entrySize, false );
-                    ASSERT_TRUE( writer->AddFile( "unknown.bin", unknownSize, settings ) );
-                    ASSERT_TRUE( writer->Close() );
+                        TestArchiveUtils::CZeroSource knownSize( entrySize, true );
+                        ASSERT_TRUE( writer->AddFile( "known.bin", knownSize, settings ) );
+                        TestArchiveUtils::CZeroSource unknownSize( entrySize, false );
+                        ASSERT_TRUE( writer->AddFile( "unknown.bin", unknownSize, settings ) );
+                        ASSERT_TRUE( writer->Close() );
+                    }
                 }
-            }
 
-            CORE::CProcess::TStringVector extraArgs;
-            extraArgs.push_back( CORE::UInt64ToString( entrySize ) );
-            extraArgs.push_back( "known.bin" );
-            extraArgs.push_back( "unknown.bin" );
-            ASSERT_TRUE( CheckWithPython( scriptPath, zipPath, "large", extraArgs ) );
-            ASSERT_TRUE( CheckWithUnzip( zipPath ) );
-            CORE::DeleteFile( zipPath );
-        }
-        catch ( ... )
-        {
-            ERRORHERE;
-        }
-    GUCEF_TESTFW_TESTCASE_END
+                CORE::CProcess::TStringVector extraArgs;
+                extraArgs.push_back( CORE::UInt64ToString( entrySize ) );
+                extraArgs.push_back( "known.bin" );
+                extraArgs.push_back( "unknown.bin" );
+                ASSERT_TRUE( CheckWithPython( scriptPath, zipPath, "large", extraArgs ) );
+                ASSERT_TRUE( CheckWithUnzip( zipPath ) );
+                CORE::DeleteFile( zipPath );
+            }
+            catch ( ... )
+            {
+                ERRORHERE;
+            }
+        GUCEF_TESTFW_TESTCASE_END
+    }
+    else
+    {
+        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "ZIP archive writer tests: skipping the test with entries of more than 4 GiB, it takes minutes. Use -large or set GUCEF_TEST_LARGE_FILES=1 to run it" );
+    }
 
     CORE::CLogStreamScope::FlushLogs();
     GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "ALL ZIP archive writer TESTS COMPLETED" );

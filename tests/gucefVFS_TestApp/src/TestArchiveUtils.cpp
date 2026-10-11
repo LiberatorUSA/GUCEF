@@ -40,6 +40,16 @@ namespace TestArchiveUtils {
 /*-------------------------------------------------------------------------*/
 
 bool
+LargeFileTestsEnabled( void )
+{GUCEF_TRACE;
+
+    const char* value = CORE::GUCEFGetEnv( "GUCEF_TEST_LARGE_FILES" );
+    return GUCEF_NULL != value && '\0' != value[ 0 ] && 0 != strcmp( value, "0" );
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
 LoadVfsPlugin( const CORE::CString& pluginName )
 {GUCEF_TRACE;
 

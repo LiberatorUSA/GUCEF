@@ -328,6 +328,8 @@ GUCEF_OSMAIN_BEGIN
         {
             if ( 0 == strcmp( argv[ i ], "-manual" ) )
                 return RunManualTests( argc, argv );
+            if ( 0 == strcmp( argv[ i ], "-large" ) )
+                CORE::GUCEFSetEnv( "GUCEF_TEST_LARGE_FILES", "1" );
         }
 
         CORE::CString logFilename = CORE::RelativePath( "$CURWORKDIR$" );
