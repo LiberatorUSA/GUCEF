@@ -160,7 +160,13 @@ CreateTestProject( const CORE::CString& rootDir )
                           "        </Linker>\n"
                           "    </Module>\n"
                           "</ModuleInfoEntry>\n" ) &&
-           WriteTestFile( CORE::CombinePath( appDir, "src" ), "main.cpp", "/* source */\n" );
+           WriteTestFile( CORE::CombinePath( appDir, "src" ), "main.cpp", "/* source */\n" ) &&
+           WriteTestFile( appDir, "ProjectGenInstructions.xml",
+                          "<PROJECTGENERATOR>\n"
+                          "    <PLATFORMS>\n"
+                          "        <PLATFORM NAME=\"testos\" ALIASES=\"testlike\" PLATFORMDIRS=\"testosdir\" />\n"
+                          "    </PLATFORMS>\n"
+                          "</PROJECTGENERATOR>\n" );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -224,6 +230,8 @@ PerformIncludeDirInstructionTests( void )
         PROJECTGEN::TStringSetMap::const_iterator i = libInfo->GetIncludeDirs().begin();
         while ( i != libInfo->GetIncludeDirs().end() )
         {
+            GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "TestLib include dir: \"" + (*i).first + "\" with " + CORE::ToString( (UInt32) (*i).second.size() ) + " headers, excluded from search paths: " +
+                       CORE::BoolToString( libInfo->IsIncludeDirExcludedFromSearchPaths( (*i).first ) ) );
             if ( IsInternalDir( (*i).first ) )
             {
                 internalDir = (*i).first;
@@ -283,6 +291,44 @@ PerformIncludeDirInstructionTests( void )
         ASSERT_TRUE( !restoredInfo.IsNULL() && restoredInfo->IsIncludeDirExcludedFromSearchPaths( internalDir ) );
         }
 
+    }
+    catch( ... )
+    {
+        ERRORHERE;
+    }
+    GUCEF_TESTFW_TESTCASE_END
+
+    // Regression: parsing a PLATFORMS section in the processing instructions looped forever
+    GUCEF_TESTFW_TESTCASE( "PLATFORMS: platforms defined in processing instructions are parsed" )
+    try
+    {
+        ASSERT_TRUE( EnsureXmlCodecIsAvailable() );
+
+        CORE::CString rootDir = CORE::CombinePath( CORE::TempDir(), "ProjectGen_TestApp_IncludeDirTest" );
+        ASSERT_TRUE( CreateTestProject( rootDir ) );
+
+        PROJECTGEN::CProjectInfoPtr projectInfo = PROJECTGEN::CProjectInfo::CreateSharedObj();
+        PROJECTGEN::CDirCrawlingProjectInfoGatherer infoGatherer;
+        CORE::CValueList params;
+        PROJECTGEN::TStringVector rootDirs;
+        rootDirs.push_back( rootDir );
+        infoGatherer.GatherInfo( rootDirs, projectInfo, params );
+
+        bool foundPlatformDefinition = false;
+        PROJECTGEN::TDirProcessingInstructionsMap::const_iterator i = projectInfo->dirProcessingInstructions.begin();
+        while ( i != projectInfo->dirProcessingInstructions.end() )
+        {
+            PROJECTGEN::TPlatformDefinitionMap::const_iterator p = (*i).second.platforms.find( "testos" );
+            if ( p != (*i).second.platforms.end() )
+            {
+                foundPlatformDefinition = true;
+                ASSERT_TRUE( (*p).second.name == "testos" );
+                ASSERT_TRUE( (*p).second.aliases.find( "testlike" ) != (*p).second.aliases.end() );
+                ASSERT_TRUE( (*p).second.platformDirs.find( "testosdir" ) != (*p).second.platformDirs.end() );
+            }
+            ++i;
+        }
+        ASSERT_TRUE( foundPlatformDefinition );
     }
     catch( ... )
     {

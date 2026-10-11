@@ -777,9 +777,10 @@ ParseProcessingInstructions( const CProjectInfo& projectInfo                ,
             CORE::CDataNode::TConstDataNodeSet::iterator w = platformsNodes.begin();
             while ( w != platformsNodes.end() )
             {
-                CORE::CDataNode::TConstDataNodeSet platformNodes = rootNode->FindChildrenOfType( platformNodeName, false );
-                CORE::CDataNode::TConstDataNodeSet::iterator q = platformsNodes.begin();
-                while ( q != platformsNodes.end() )
+                // The platform definitions are children of the PLATFORMS node
+                CORE::CDataNode::TConstDataNodeSet platformNodes = (*w)->FindChildrenOfType( platformNodeName, false );
+                CORE::CDataNode::TConstDataNodeSet::iterator q = platformNodes.begin();
+                while ( q != platformNodes.end() )
                 {
                     const CORE::CDataNode* platformNode = (*q);
                     TStringVector platformNames = platformNode->GetAttributeValueOrChildValueByName( "NAME" ).AsString().Lowercase().ParseElements( ';', false );
@@ -790,9 +791,11 @@ ParseProcessingInstructions( const CProjectInfo& projectInfo                ,
                         if ( !platformName.IsNULLOrEmpty() )
                         {
                             TPlatformDefinition& platformDefinition = instructionStorage.platforms[ platformName ];
+                            platformDefinition.name = platformName;
                             platformDefinition.aliases = StringVectorToStringSet( platformNode->GetAttributeValueOrChildValueByName( "ALIASES" ).AsString().Lowercase().ParseElements( ';', false ) );
                             platformDefinition.platformDirs = StringVectorToStringSet( platformNode->GetAttributeValueOrChildValueByName( "PLATFORMDIRS" ).AsString().ParseElements( ';', false ) );
                         }
+                        ++j;
                     }
                     ++q;
                 }
