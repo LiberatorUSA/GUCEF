@@ -12,12 +12,16 @@
 # Configuration for module: gucefVFS_TestApp
 
 set( HEADER_FILES 
+  include/TestArchiveUtils.h
   include/TestCode_VFSFileLoadUnloadTest.h
+  include/TestLibArchive.h
   include/TestZipArchiveWriter.h
 )
 
 set( SOURCE_FILES 
+  src/TestArchiveUtils.cpp
   src/TestCode_VFSFileLoadUnloadTest.cpp
+  src/TestLibArchive.cpp
   src/TestZipArchiveWriter.cpp
   src/gucefVFS_TestApp.cpp
 )

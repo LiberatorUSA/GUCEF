@@ -18,6 +18,7 @@
 			<RuntimeDependency Name="vfspluginITV" />
 			<RuntimeDependency Name="vfspluginVP" />
 			<RuntimeDependency Name="vfspluginZIP" />
+			<RuntimeDependency Name="vfspluginLIBARCHIVE" />
 			<RuntimeDependency Name="vfspluginAWSS3" />
 		</RuntimeDependencies>
     </Module>

@@ -4,6 +4,7 @@ dependencies/aws-cpp-sdk-core/*
 dependencies/aws-cpp-sdk-s3/*
 dependencies/aws-crt-cpp/*
 dependencies/curl/*
+dependencies/libarchive/*
 dependencies/minizip/*
 dependencies/zziplib/*
 platform/gucefCORE/*
@@ -13,6 +14,7 @@ plugins/SHARED/pluginglueAWSSDK/*
 plugins/VFS/vfspluginAWSS3/*
 plugins/VFS/vfspluginDVP/*
 plugins/VFS/vfspluginITV/*
+plugins/VFS/vfspluginLIBARCHIVE/*
 plugins/VFS/vfspluginVP/*
 plugins/VFS/vfspluginZIP/*
 tests/gucefVFS_TestApp/*

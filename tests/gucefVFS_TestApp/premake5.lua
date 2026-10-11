@@ -46,7 +46,10 @@ defines( { "GUCEF_VFS_TESTAPP_BUILD_MODULE", "MODULE_CONSENSUS_NAME=gucefVFS_Tes
 configuration( {} )
 vpaths { ["Headers"] = { "**.h", "**.hpp", "**.hxx" } }
 files( {
-  "include/TestCode_VFSFileLoadUnloadTest.h"
+  "include/TestArchiveUtils.h",
+  "include/TestCode_VFSFileLoadUnloadTest.h",
+  "include/TestLibArchive.h",
+  "include/TestZipArchiveWriter.h"
  } )
 
 
@@ -54,7 +57,10 @@ files( {
 configuration( {} )
 vpaths { ["Source"] = { "**.c", "**.cpp", "**.cs", "**.asm" } }
 files( {
+  "src/TestArchiveUtils.cpp",
   "src/TestCode_VFSFileLoadUnloadTest.cpp",
+  "src/TestLibArchive.cpp",
+  "src/TestZipArchiveWriter.cpp",
   "src/gucefVFS_TestApp.cpp"
  } )
 

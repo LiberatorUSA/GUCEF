@@ -63,6 +63,11 @@
 #define GUCEF_VFS_TESTAPP_TESTZIPARCHIVEWRITER_H
 #endif /* GUCEF_VFS_TESTAPP_TESTZIPARCHIVEWRITER_H ? */
 
+#ifndef GUCEF_VFS_TESTAPP_TESTLIBARCHIVE_H
+#include "TestLibArchive.h"
+#define GUCEF_VFS_TESTAPP_TESTLIBARCHIVE_H
+#endif /* GUCEF_VFS_TESTAPP_TESTLIBARCHIVE_H ? */
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //
@@ -344,6 +349,7 @@ GUCEF_OSMAIN_BEGIN
 
         PerformVFSFileLoadUnloadTest();
         PerformZipArchiveWriterTests();
+        PerformLibArchiveTests();
 
         CORE::CLogStreamScope::FlushLogs();
 
