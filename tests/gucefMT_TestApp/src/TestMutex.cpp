@@ -48,6 +48,16 @@
 #define GUCEF_MT_CREADWRITELOCK_H
 #endif /* GUCEF_MT_CREADWRITELOCK_H ? */
 
+#ifndef GUCEF_MT_COBJECTSCOPELOCK_H
+#include "gucefMT_CObjectScopeLock.h"
+#define GUCEF_MT_COBJECTSCOPELOCK_H
+#endif /* GUCEF_MT_COBJECTSCOPELOCK_H ? */
+
+#ifndef GUCEF_MT_COBJECTSCOPEREADONLYLOCK_H
+#include "gucefMT_CObjectScopeReadOnlyLock.h"
+#define GUCEF_MT_COBJECTSCOPEREADONLYLOCK_H
+#endif /* GUCEF_MT_COBJECTSCOPEREADONLYLOCK_H ? */
+
 #ifndef GUCEF_CORE_LOGGING_H
 #include "gucefCORE_Logging.h"
 #define GUCEF_CORE_LOGGING_H
@@ -597,6 +607,88 @@ PerformFinishedThreadCleanupRegressionTest( void )
 
 /*-------------------------------------------------------------------------*/
 
+/**
+ *  Lockable that counts lock calls and reports a configurable lock status
+ */
+class CCountingLockable : public MT::CILockable
+{
+    public:
+
+    CCountingLockable( MT::TLockStatus lockStatus )
+        : m_lockStatus( lockStatus ), lockCount( 0 ), unlockCount( 0 ), readOnlyLockCount( 0 ), readOnlyUnlockCount( 0 )
+    {}
+
+    virtual const MT::CILockable* AsLockable( void ) const GUCEF_VIRTUAL_OVERRIDE { return this; }
+    virtual MT::TLockStatus Lock( UInt32 lockWaitTimeoutInMs ) const GUCEF_VIRTUAL_OVERRIDE { ++lockCount; return m_lockStatus; }
+    virtual MT::TLockStatus Unlock( void ) const GUCEF_VIRTUAL_OVERRIDE { ++unlockCount; return MT::LOCKSTATUS_OPERATION_SUCCESS; }
+    virtual MT::TLockStatus ReadOnlyLock( UInt32 lockWaitTimeoutInMs ) const GUCEF_VIRTUAL_OVERRIDE { ++readOnlyLockCount; return m_lockStatus; }
+    virtual MT::TLockStatus ReadOnlyUnlock( void ) const GUCEF_VIRTUAL_OVERRIDE { ++readOnlyUnlockCount; return MT::LOCKSTATUS_OPERATION_SUCCESS; }
+
+    MT::TLockStatus m_lockStatus;
+    mutable UInt32 lockCount;
+    mutable UInt32 unlockCount;
+    mutable UInt32 readOnlyLockCount;
+    mutable UInt32 readOnlyUnlockCount;
+};
+
+/*-------------------------------------------------------------------------*/
+
+/**
+ *  Regression: scope locks unlocked on scope exit even when the lock attempt reported
+ *  LOCKSTATUS_NOT_APPLICABLE, releasing a lock the scope never took
+ */
+static void
+PerformObjectScopeLockNotApplicableRegressionTest( void )
+{
+    GUCEF_TESTFW_TESTCASE( "Mutex: Object scope locks only unlock what they locked" )
+    try
+    {
+        CCountingLockable notApplicable( MT::LOCKSTATUS_NOT_APPLICABLE );
+        {
+            MT::CObjectScopeLock lock( notApplicable );
+            ASSERT_TRUE( lock.IsLocked() );
+        }
+        {
+            MT::CObjectScopeLock lock( notApplicable );
+            ASSERT_TRUE( lock.EarlyUnlock() );
+            ASSERT_FALSE( lock.IsLocked() );
+        }
+        {
+            MT::CObjectScopeReadOnlyLock lock( notApplicable );
+            ASSERT_TRUE( lock.IsLocked() );
+        }
+        ASSERT_TRUE( 2 == notApplicable.lockCount );
+        ASSERT_TRUE( 0 == notApplicable.unlockCount );
+        ASSERT_TRUE( 1 == notApplicable.readOnlyLockCount );
+        ASSERT_TRUE( 0 == notApplicable.readOnlyUnlockCount );
+
+        CCountingLockable lockable( MT::LOCKSTATUS_OPERATION_SUCCESS );
+        {
+            MT::CObjectScopeLock lock( lockable );
+            ASSERT_TRUE( lock.IsLocked() );
+        }
+        {
+            MT::CObjectScopeLock lock( lockable );
+            ASSERT_TRUE( lock.EarlyUnlock() );
+        }
+        {
+            MT::CObjectScopeReadOnlyLock lock( lockable );
+            ASSERT_TRUE( lock.IsLocked() );
+        }
+        ASSERT_TRUE( 2 == lockable.lockCount );
+        ASSERT_TRUE( 2 == lockable.unlockCount );
+        ASSERT_TRUE( 1 == lockable.readOnlyLockCount );
+        ASSERT_TRUE( 1 == lockable.readOnlyUnlockCount );
+    }
+    catch( ... )
+    {
+        ERRORHERE;
+    }
+    GUCEF_TESTFW_TESTCASE_END
+}
+
+/*-------------------------------------------------------------------------*/
+
 void
 PerformMutexTests( void )
 {GUCEF_TRACE;
@@ -615,6 +707,7 @@ PerformMutexTests( void )
     PerformWriterReleaseRegressionTest();
     PerformThreadDelayRegressionTest();
     PerformFinishedThreadCleanupRegressionTest();
+    PerformObjectScopeLockNotApplicableRegressionTest();
 
     GUCEF::CORE::CLogStreamScope::FlushLogs();
     GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "ALL MUTEX TESTS COMPLETED" );

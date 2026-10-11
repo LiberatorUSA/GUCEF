@@ -220,8 +220,9 @@ class CTBasicSharedPtr : public MT::CILockable ,
 
         Unlink();
 
+        // Note: after Unlink() this has no shared data and thus no lock of its own, the reference count
+        // we are about to increment is protected by the lock of the other shared pointer
         MT::CObjectScopeLock lockOther( other );
-        MT::CObjectScopeLock lock( this );
 
         // The static cast below is performed as a compile time validation
         // of the type passed.
