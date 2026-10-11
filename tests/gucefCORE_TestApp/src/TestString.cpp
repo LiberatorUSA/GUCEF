@@ -725,7 +725,11 @@ PerformTypedStringLinkedModeTests( void )
         ASSERT_FALSE( owned.IsLinked() );
         ASSERT_TRUE(  linked == owned );
         /* Both should point to the same underlying raw buffer */
-        ASSERT_TRUE(  linked.C_String() == owned.C_String() );
+        /* Note: the const overload must be used: the non-const C_String() hands out a writable buffer and thus promotes a linked string to an owned copy */
+        const StringType& constLinked = linked;
+        const StringType& constOwned = owned;
+        ASSERT_TRUE(  constLinked.C_String() == constOwned.C_String() );
+        ASSERT_TRUE(  linked.IsLinked() );
     }
     catch( ... ) { ERRORHERE; }
     GUCEF_TESTFW_TESTCASE_END
@@ -841,7 +845,9 @@ PerformAsciiStringLinkedAndViewTests( void )
         ASSERT_TRUE(  linked.IsLinked() );
         ASSERT_TRUE(  linked == "raw buffer content" );
         ASSERT_TRUE(  linked.Length() == 18 );
-        ASSERT_TRUE(  linked.C_String() == rawBuf );
+        /* Note: the const overload must be used: the non-const C_String() promotes a linked string to an owned copy */
+        const CORE::CAsciiString& constLinked = linked;
+        ASSERT_TRUE(  constLinked.C_String() == rawBuf );
     }
     catch( ... ) { ERRORHERE; }
     GUCEF_TESTFW_TESTCASE_END
@@ -929,7 +935,8 @@ PerformAsciiStringLinkedAndViewTests( void )
         ASSERT_TRUE(  6 == view.HasSubstr( "World" ) );
         ASSERT_TRUE(  view.Lowercase() == "hello world" );
         ASSERT_TRUE(  view.Uppercase() == "HELLO WORLD" );
-        ASSERT_TRUE(  view.SubstrFromRange( 0, 4 ) == "Hello" );
+        /* endIndex is exclusive per the SubstrFromRange() contract */
+        ASSERT_TRUE(  view.SubstrFromRange( 0, 5 ) == "Hello" );
     }
     catch( ... ) { ERRORHERE; }
     GUCEF_TESTFW_TESTCASE_END
@@ -1094,6 +1101,37 @@ PerformUtf32StringViewTests( void )
 
 /*-------------------------------------------------------------------------*/
 
+/**
+ *  Regression: the reverse (back to front) operations of CUtf8String read one byte before the string buffer
+ *  when they reached the first code point. This is only reliably detected with AddressSanitizer enabled
+ */
+void
+PerformUtf8ReverseIterationRegressionTests( void )
+{
+    GUCEF_TESTFW_TESTCASE( "[CUtf8String] Reverse operations reaching the first code point" )
+    try
+    {
+        CORE::CUtf8String str( "abc" );
+        ASSERT_TRUE( 0 == str.HasChar( 'a', false ) );
+        ASSERT_TRUE( -1 == str.HasChar( 'z', false ) );
+        ASSERT_TRUE( 2 == str.HasChar( 'c', false ) );
+
+        CORE::CUtf8String whitespace( "   " );
+        ASSERT_TRUE( whitespace.Trim( false ).IsNULLOrEmpty() );
+
+        CORE::CUtf8String path( "a/bc" );
+        ASSERT_TRUE( path.SubstrToChar( 'a', false ) == "/bc" );
+
+        CORE::CUtf8String noMatch( "xyz" );
+        // exercises the reverse comparison loop up to the first code point, mainly of interest under AddressSanitizer
+        ASSERT_TRUE( noMatch.FindMaxSubstrEquality( "qyz", 0, false, true ) <= 3 );
+    }
+    catch( ... ) { ERRORHERE; }
+    GUCEF_TESTFW_TESTCASE_END
+}
+
+/*-------------------------------------------------------------------------*/
+
 void
 PerformStringTests( void )
 {
@@ -1116,6 +1154,7 @@ PerformStringTests( void )
     PerformUtf8StringViewTests();
     PerformUtf16StringViewTests();
     PerformUtf32StringViewTests();
+    PerformUtf8ReverseIterationRegressionTests();
 
     CORE::CLogStreamScope::FlushLogs();
     GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "ALL CString TESTS COMPLETED" );

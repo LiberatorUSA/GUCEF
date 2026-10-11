@@ -422,8 +422,9 @@ class GUCEF_CORE_PRIVATE_CPP COSDateTimeUtils
         struct ::timespec tspecB;
         DateTimeToTimespec( datetimeB, tspecB );
 
-        Int64 deltaSecs = tspecA.tv_sec - tspecB.tv_sec;
-        Int64 deltaNanoSecs = tspecA.tv_nsec - tspecB.tv_nsec;
+        // Difference from A towards B: positive if B is later than A, same as the Windows implementation
+        Int64 deltaSecs = (Int64) tspecB.tv_sec - (Int64) tspecA.tv_sec;
+        Int64 deltaNanoSecs = (Int64) tspecB.tv_nsec - (Int64) tspecA.tv_nsec;
         return ( deltaSecs * 1000 ) + ( deltaNanoSecs / 1000000 );
     }
 

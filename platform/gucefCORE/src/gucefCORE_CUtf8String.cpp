@@ -75,6 +75,32 @@ const CUtf8String::StringSet CUtf8String::EmptyStringSet;
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+/**
+ *  Decodes the codepoint at cpPos and returns a pointer to the previous codepoint
+ *  Unlike utf8rcodepoint() this never reads before the start of the string:
+ *  utf8rcodepoint() always steps back which for the first codepoint means reading the byte before the buffer
+ *  For the first codepoint the start of the string is returned
+ */
+static const char*
+Utf8ReverseCodepoint( const char* stringStart ,
+                      const void* cpPos       ,
+                      UInt32* codepoint       )
+{GUCEF_TRACE;
+
+    if ( cpPos <= (const void*) stringStart )
+    {
+        utf8codepoint( stringStart, codepoint );
+        return stringStart;
+    }
+    return (const char*) utf8rcodepoint( cpPos, codepoint );
+}
+
+/*-------------------------------------------------------------------------//
+//                                                                         //
+//      UTILITIES                                                          //
+//                                                                         //
+//-------------------------------------------------------------------------*/
+
 CUtf8String::CUtf8String( void )
     : m_string( GUCEF_NULL )
     , m_length( 0 )
@@ -1728,7 +1754,7 @@ CUtf8String::SubstrToChar( UInt32 searchchar              ,
             UInt32 codePoint = 0;
             for ( Int32 i=startIndex; i>=0; --i )
             {
-                cpPos = (const char*) utf8rcodepoint( prevCpPos, &codePoint );
+                cpPos = Utf8ReverseCodepoint( m_string, prevCpPos, &codePoint );
                 if ( codePoint == searchchar )
                 {
                     const char* prevPrevCpPos = (const char*) utf8codepoint( prevCpPos, &codePoint );
@@ -1887,7 +1913,7 @@ CUtf8String::Trim( bool frontToBack ) const
             Int32 i = (Int32) m_length-1;
             do
             {
-                cpPos = utf8rcodepoint( cpPos, &cp );
+                cpPos = (void*) Utf8ReverseCodepoint( m_string, cpPos, &cp );
                 if ( cp == ' ' ||  cp == '\t' )
                 {
                     ++charsToCut;
@@ -2178,7 +2204,7 @@ CUtf8String::HasChar( UInt32 searchchar       ,
         Int32 i = (Int32) max;
         do
         {
-            cpPos = utf8rcodepoint( cpPos, &cp );
+            cpPos = (void*) Utf8ReverseCodepoint( m_string, cpPos, &cp );
             if ( cp == searchchar )
                 return i;
             --i;
@@ -2451,7 +2477,7 @@ CUtf8String::FindMaxSubstrEquality( const CUtf8String& searchStr ,
 
                 // Grow the comparison segment enough bytes to fit 1 extra codepoint
                 UInt32 cp;
-                cpPos = (const char*) utf8rcodepoint( cpPos, &cp );
+                cpPos = Utf8ReverseCodepoint( thisStr->m_string, cpPos, &cp );
                 subByteSize = (UInt32)( startPos - cpPos );
 
                 ++subLength;

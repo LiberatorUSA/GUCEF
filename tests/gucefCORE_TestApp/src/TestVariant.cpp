@@ -457,7 +457,8 @@ PerformVariantTests( void )
             CORE::CVariant var;
             var = wstr;
             ASSERT_TRUE( var.IsString() );
-            ASSERT_TRUE( var.GetTypeId() == GUCEF_DATATYPE_UTF16_STRING );
+            // std::wstring is UTF-16 where wchar_t is 2 bytes (Windows) and UTF-32 where it is 4 bytes (Linux etc)
+            ASSERT_TRUE( var.GetTypeId() == ( 2 == sizeof( wchar_t ) ? GUCEF_DATATYPE_UTF16_STRING : GUCEF_DATATYPE_UTF32_STRING ) );
             // ByteSize should be wchar count * sizeof(wchar_t) + null term
             ASSERT_TRUE( var.ByteSize() == (wstr.size() + 1) * sizeof(wchar_t) );
         }
@@ -477,7 +478,8 @@ PerformVariantTests( void )
             CORE::CVariant var;
             var.LinkTo( wstr );
             ASSERT_TRUE( var.IsString() );
-            ASSERT_TRUE( var.GetTypeId() == GUCEF_DATATYPE_UTF16_STRING );
+            // std::wstring is UTF-16 where wchar_t is 2 bytes (Windows) and UTF-32 where it is 4 bytes (Linux etc)
+            ASSERT_TRUE( var.GetTypeId() == ( 2 == sizeof( wchar_t ) ? GUCEF_DATATYPE_UTF16_STRING : GUCEF_DATATYPE_UTF32_STRING ) );
             ASSERT_TRUE( var.IsDynamicMemoryLinked() );
             // Verify ByteSize accounts for wchar_t size
             ASSERT_TRUE( var.ByteSize() == (wstr.size() + 1) * sizeof(wchar_t) );

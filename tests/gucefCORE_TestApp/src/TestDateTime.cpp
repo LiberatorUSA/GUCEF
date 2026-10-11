@@ -260,6 +260,21 @@ PerformDateTimeTests( void )
 
     PerformDateTimeStringParsingTests();
 
+    // Regression: on Linux the time difference 'from A towards B' had its sign inverted
+    GUCEF_TESTFW_TESTCASE( "Test: Time difference towards a later time is positive" )
+        try
+        {
+            CORE::CDateTime earlier( 2030, 1, 1, 0, 0, 0, 0, 0 );
+            CORE::CDateTime later( 2030, 1, 1, 0, 0, 1, 500, 0 );
+            ASSERT_TRUE( 1500 == earlier.GetTimeDifferenceInMillisecondsTowards( later ) );
+            ASSERT_TRUE( -1500 == later.GetTimeDifferenceInMillisecondsTowards( earlier ) );
+        }
+        catch( ... )
+        {
+            ERRORHERE;
+        }
+    GUCEF_TESTFW_TESTCASE_END
+
     CORE::CLogStreamScope::FlushLogs();
     GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "ALL DateTime TESTS COMPLETED" );
 }

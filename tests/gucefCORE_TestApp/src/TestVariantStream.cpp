@@ -785,6 +785,28 @@ PerformVariantStreamTests( void )
         ASSERT_TRUE( rnum == num );
     GUCEF_TESTFW_TESTCASE_END
 
+    // Regression: on Linux std::wstring is UTF-32 (4 byte wchar_t) but was treated as UTF-16
+    // and converting a std::wstring to UTF-8 was not implemented at all
+    GUCEF_TESTFW_TESTCASE( "Test 40: std::wstring with a code point outside the BMP" )
+        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Test 40: std::wstring with a code point outside the BMP" );
+        CORE::CVariantStream stream;
+        std::wstring wstr = L"Smile \U0001F600 end";
+
+        stream << wstr;
+        ASSERT_TRUE( stream.IsValid() );
+
+        stream.ResetReadPosition();
+        std::wstring rwstr;
+        stream >> rwstr;
+        ASSERT_TRUE( stream.IsValid() );
+        ASSERT_TRUE( rwstr == wstr );
+
+        // the UTF-8 form of U+1F600 is F0 9F 98 80
+        CORE::CString utf8 = CORE::ToString( wstr );
+        ASSERT_TRUE( utf8.HasSubstr( "\xF0\x9F\x98\x80" ) > 0 );
+        ASSERT_TRUE( CORE::ToWString( utf8 ) == wstr );
+    GUCEF_TESTFW_TESTCASE_END
+
     // Test 40: Write and read UTF-16 and UTF-32 strings
     GUCEF_TESTFW_TESTCASE( "Test 40: Write and read UTF-16 and UTF-32 strings" )
         GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Test 40: Write and read UTF-16 and UTF-32 strings" );
