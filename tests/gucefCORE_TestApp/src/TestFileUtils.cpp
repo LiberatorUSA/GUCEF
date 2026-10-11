@@ -175,6 +175,61 @@ PerformFileUtilsTests( void )
         }
     GUCEF_TESTFW_TESTCASE_END
 
+    // Regression: on Linux CFileSystemIterator changed the process wide working dir and resolved entries
+    // relative to it, so concurrent iterators (other threads or interleaved use) misclassified entries
+    GUCEF_TESTFW_TESTCASE( "Test: CFileSystemIterator does not depend on the working dir" )
+        try
+        {
+            CORE::CString rootDir = CORE::CombinePath( CORE::TempDir(), "gucefCORE_TestApp_FsIterator" );
+            CORE::CString dirA = CORE::CombinePath( rootDir, "A" );
+            CORE::CString dirB = CORE::CombinePath( rootDir, "B" );
+            ASSERT_TRUE( CORE::CreateDirs( CORE::CombinePath( dirA, "subDirA" ) ) );
+            ASSERT_TRUE( CORE::CreateDirs( dirB ) );
+            ASSERT_TRUE( CORE::WriteStringAsTextFile( CORE::CombinePath( dirA, "fileA1.txt" ), "A1" ) );
+            ASSERT_TRUE( CORE::WriteStringAsTextFile( CORE::CombinePath( dirA, "fileA2.txt" ), "A2" ) );
+            ASSERT_TRUE( CORE::WriteStringAsTextFile( CORE::CombinePath( dirB, "fileB1.txt" ), "B1" ) );
+
+            CORE::CString cwdBefore = CORE::CurrentWorkingDir();
+
+            // Interleave two iterators on different dirs, entries of A must still be classified correctly
+            CORE::CFileSystemIterator itA;
+            CORE::CFileSystemIterator itB;
+            ASSERT_TRUE( itA.FindFirst( dirA ) );
+            ASSERT_TRUE( itB.FindFirst( dirB ) );
+
+            UInt32 filesInA = 0;
+            UInt32 dirsInA = 0;
+            do
+            {
+                CORE::CString name = itA.GetResourceName();
+                ASSERT_TRUE( itA.GetResourcePath() == CORE::CombinePath( dirA, name ) );
+                if ( itA.IsAFile() )
+                {
+                    ASSERT_TRUE( name.StartsWith( "fileA" ) );
+                    ++filesInA;
+                }
+                else
+                if ( itA.IsADirectory() )
+                {
+                    ASSERT_TRUE( name == "subDirA" );
+                    ++dirsInA;
+                }
+                itB.FindNext();
+            }
+            while ( itA.FindNext() );
+            itA.FindClose();
+            itB.FindClose();
+
+            ASSERT_TRUE( 2 == filesInA );
+            ASSERT_TRUE( 1 == dirsInA );
+            ASSERT_TRUE( cwdBefore == CORE::CurrentWorkingDir() );
+        }
+        catch( ... )
+        {
+            ERRORHERE;
+        }
+    GUCEF_TESTFW_TESTCASE_END
+
     CORE::CLogStreamScope::FlushLogs();
     GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "ALL File Utils TESTS COMPLETED" );
 }

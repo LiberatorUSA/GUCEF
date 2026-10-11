@@ -2988,9 +2988,12 @@ class CFileSystemIterator::CFileSystemIteratorOsData
         {
             if ( linkedPath.IsNULLOrEmpty() )
             {
-                CString symlinkPath = entry->d_name;
-                if ( TryResolveLinuxSymlinkPath( symlinkPath, linkedPath ) )
+                if ( TryResolveLinuxSymlinkPath( GetEntryPath(), linkedPath ) )
                 {
+                    // Relative link targets are relative to the dir containing the link
+                    if ( !linkedPath.IsNULLOrEmpty() && '/' != linkedPath[ 0 ] )
+                        linkedPath = CombinePath( rootPath, linkedPath );
+
                     // Get info on the entry.
                     if ( stat( linkedPath.C_String(), &linkedStatinfo ) >= 0 )
                     {
@@ -3011,6 +3014,25 @@ class CFileSystemIterator::CFileSystemIteratorOsData
             ClearSymlinkInfo();
         }
         return false;
+    }
+
+    CString
+    GetEntryPath( void ) const
+    {GUCEF_TRACE;
+
+        if ( GUCEF_NULL == entry )
+            return CString::Empty;
+        return CombinePath( rootPath, entry->d_name );
+    }
+
+    void
+    StatEntry( void )
+    {GUCEF_TRACE;
+
+        // Note that we use the full path here on purpose instead of changing the
+        // process wide working dir which would break concurrent iterators on other threads
+        if ( 0 != ::lstat( GetEntryPath().C_String(), &statinfo ) )
+            memset( &statinfo, 0, sizeof statinfo );
     }
 
     #else
@@ -3128,9 +3150,6 @@ CFileSystemIterator::FindFirst( const CString& path )
     }
     m_osData->ClearSymlinkInfo();
 
-    // change working dir to be able to read file information
-    ::chdir( m_osData->rootPath.C_String() );
-
     // Read first entry
     m_osData->entry = ::readdir( m_osData->dir );
     if ( GUCEF_NULL != m_osData->entry )
@@ -3165,7 +3184,7 @@ CFileSystemIterator::FindFirst( const CString& path )
         if ( GUCEF_NULL != m_osData->entry )
         {
             // Get info on the entry.
-            ::lstat( m_osData->entry->d_name, &m_osData->statinfo );
+            m_osData->StatEntry();
 
             m_osData->isActive = true;
             return true;
@@ -3225,7 +3244,7 @@ CFileSystemIterator::FindNext( void )
         if ( GUCEF_NULL != m_osData->entry  )
         {
             // Get info on the entry.
-            ::lstat( m_osData->entry->d_name, &m_osData->statinfo );
+            m_osData->StatEntry();
             return true;
         }
     }
@@ -3488,7 +3507,7 @@ CFileSystemIterator::GetResourcePath( void ) const
 
         #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_WASM_EMSCRIPTEN ) )
 
-        return m_osData->entry->d_name;
+        return m_osData->GetEntryPath();
 
         #else
 
