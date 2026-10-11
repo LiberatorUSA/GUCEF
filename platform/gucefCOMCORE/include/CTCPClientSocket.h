@@ -226,7 +226,10 @@ class GUCEF_COMCORE_EXPORT_CPP CTCPClientSocket : public CTCPConnection
     CTCPClientSocket( void );                /* default constructor cannot be used since we need to register the socket */
     CTCPClientSocket& operator=( const CTCPClientSocket& src ); /* making a copy of a socket doesn't make sense */
     
-    void CheckRecieveBuffer( void );
+    /**
+     *  @return false if this object was deleted as a result of notifying observers, if so it must not be touched anymore
+     */
+    bool CheckRecieveBuffer( void );
 
     bool Connect( bool blocking );
 

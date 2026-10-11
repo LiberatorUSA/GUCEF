@@ -1150,6 +1150,63 @@ PerformUtf8ReverseIterationRegressionTests( void )
 
 /*-------------------------------------------------------------------------*/
 
+/**
+ *  Regression: constructing a string from a byte range which does not include a null terminator looked at the
+ *  byte just beyond the range to find one. When that byte happened to be 0, as is the case for any string literal,
+ *  the final content byte was mistaken for the terminator: ByteSize() came out one too small and the last
+ *  code point was cut in half
+ */
+static void
+PerformUtf8StringFromByteRangeRegressionTests( void )
+{
+    GUCEF_TESTFW_TESTCASE( "Test: CUtf8String from a byte range without terminator keeps all content" )
+        try
+        {
+            // 'h' + e-acute + 'llo w' + u-circumflex + 'rld ' + euro sign: 17 bytes, 13 code points
+            const char* literal = "h\xC3\xA9llo w\xC3\xBBrld \xE2\x82\xAC";
+            const UInt32 contentBytes = 17;
+
+            // The range excludes the terminator while the byte after it, the literal's own terminator, is 0
+            CORE::CUtf8String exactRange( literal, contentBytes );
+            ASSERT_TRUE( contentBytes + 1 == exactRange.ByteSize() );
+            ASSERT_TRUE( 13 == exactRange.Length() );
+            ASSERT_TRUE( contentBytes == exactRange.STL_String().size() );
+            ASSERT_TRUE( 0 == memcmp( literal, exactRange.C_String(), contentBytes + 1 ) );
+
+            // Same outcome as a string created from the terminated literal
+            CORE::CUtf8String fromLiteral( literal );
+            ASSERT_TRUE( fromLiteral.ByteSize() == exactRange.ByteSize() );
+            ASSERT_TRUE( fromLiteral == exactRange );
+
+            // A range that does include the terminator
+            CORE::CUtf8String withTerminator( literal, contentBytes + 1 );
+            ASSERT_TRUE( contentBytes + 1 == withTerminator.ByteSize() );
+            ASSERT_TRUE( 13 == withTerminator.Length() );
+            ASSERT_TRUE( fromLiteral == withTerminator );
+
+            // A buffer where the byte beyond the range is non zero
+            char buffer[ 18 ];
+            memcpy( buffer, literal, contentBytes );
+            buffer[ contentBytes ] = 'X';
+            CORE::CUtf8String fromBuffer( buffer, contentBytes );
+            ASSERT_TRUE( contentBytes + 1 == fromBuffer.ByteSize() );
+            ASSERT_TRUE( fromLiteral == fromBuffer );
+
+            // ASCII only content, where the cut off was just as wrong
+            CORE::CUtf8String ascii( "plain text", 10 );
+            ASSERT_TRUE( 11 == ascii.ByteSize() );
+            ASSERT_TRUE( 10 == ascii.Length() );
+            ASSERT_TRUE( ascii == "plain text" );
+        }
+        catch( ... )
+        {
+            ERRORHERE;
+        }
+    GUCEF_TESTFW_TESTCASE_END
+}
+
+/*-------------------------------------------------------------------------*/
+
 void
 PerformStringTests( void )
 {
@@ -1173,6 +1230,7 @@ PerformStringTests( void )
     PerformUtf16StringViewTests();
     PerformUtf32StringViewTests();
     PerformUtf8ReverseIterationRegressionTests();
+    PerformUtf8StringFromByteRangeRegressionTests();
 
     CORE::CLogStreamScope::FlushLogs();
     GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "ALL CString TESTS COMPLETED" );

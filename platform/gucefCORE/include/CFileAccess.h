@@ -162,6 +162,13 @@ class GUCEF_CORE_PUBLIC_CPP CFileAccess : public CIOAccess
 
     virtual void Flush( void ) GUCEF_VIRTUAL_OVERRIDE;
 
+    /**
+     *  Flushes all buffered data and asks the O/S to write it through to the storage device.
+     *  Unlike Flush() this survives a power loss or O/S crash once it returns true.
+     *  @return true if the data was flushed and synced to storage
+     */
+    bool Sync( void );
+
     virtual CICloneable* Clone( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
     bool SetFileToUse( const CString& filename          ,

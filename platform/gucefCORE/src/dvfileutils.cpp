@@ -71,6 +71,11 @@
 #define GUCEF_CORE_DVCPPFILEUTILS_H
 #endif /* GUCEF_CORE_DVCPPFILEUTILS_H ? */
 
+#ifndef GUCEF_CORE_CPROCESS_H
+#include "gucefCORE_CProcess.h"
+#define GUCEF_CORE_CPROCESS_H
+#endif /* GUCEF_CORE_CPROCESS_H ? */
+
 #ifndef GUCEF_CORE_GUCEF_ESSENTIALS_H
 #include "gucef_essentials.h"
 #define GUCEF_CORE_GUCEF_ESSENTIALS_H
@@ -801,6 +806,13 @@ Execute_Program( const char *filename ,
 
         #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
 
+        // Like on Windows the program is started and left to run on its own, we do not wait for it
+        CORE::CProcess::TStringVector args;
+        if ( NULL != cmdline )
+            args = CORE::CProcess::SplitCommandLine( cmdline );
+
+        CORE::CProcess process;
+        return process.Launch( filename, args, CORE::CString::Empty, CORE::CProcess::TStringMap(), true ) ? 1 : 0;
 
         #endif
     }

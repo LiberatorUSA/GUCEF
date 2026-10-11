@@ -79,6 +79,8 @@
 namespace GUCEF {
 namespace CORE {
 
+class CDynamicBuffer;
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      UTILITIES                                                          //
@@ -144,6 +146,23 @@ GUCEF_CORE_PUBLIC_CPP bool
 MoveFile( const CString& oldPath ,
           const CString& newPath ,
           const bool overwrite   );
+
+/*-------------------------------------------------------------------------*/
+
+/**
+ *  Durably replaces the content of a file: the data is written to a temporary file in the same
+ *  directory, synced to storage and then moved over the target. Readers (and a crash at any point)
+ *  see either the complete old content or the complete new content, never a partial file.
+ *  If anything fails the original file is left untouched and the temporary file is removed.
+ */
+GUCEF_CORE_PUBLIC_CPP bool
+WriteFileAtomically( const CString& path         ,
+                     const void* data            ,
+                     UInt32 dataSizeInBytes      );
+
+GUCEF_CORE_PUBLIC_CPP bool
+WriteFileAtomically( const CString& path          ,
+                     const CDynamicBuffer& buffer );
 
 /*-------------------------------------------------------------------------*/
 

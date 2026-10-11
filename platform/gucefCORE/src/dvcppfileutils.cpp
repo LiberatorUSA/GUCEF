@@ -118,6 +118,16 @@
 #define GUCEF_CORE_CDYNAMICBUFFER_H
 #endif /* GUCEF_CORE_CDYNAMICBUFFER_H ? */
 
+#ifndef GUCEF_CORE_CRANDOM_H
+#include "gucefCORE_CRandom.h"
+#define GUCEF_CORE_CRANDOM_H
+#endif /* GUCEF_CORE_CRANDOM_H ? */
+
+#ifndef GUCEF_CORE_CFILEACCESS_H
+#include "CFileAccess.h"
+#define GUCEF_CORE_CFILEACCESS_H
+#endif /* GUCEF_CORE_CFILEACCESS_H ? */
+
 #include "dvcppfileutils.h"
 
 /*-------------------------------------------------------------------------//
@@ -957,6 +967,10 @@ MoveFile( const CString& oldPath ,
     if ( 0 != ::stat( actualOldPath.C_String(), &originalPermissions ) )
         return 0;
 
+    // rename() always replaces an existing target, honor the caller's wishes
+    if ( !overwrite && FileExists( actualNewPath ) )
+        return 0;
+
     ::chmod( actualOldPath.C_String(), 0777 );
 
     if ( 0 != ::rename( actualOldPath.C_String(), actualNewPath.C_String() ) )
@@ -977,6 +991,90 @@ MoveFile( const CString& oldPath ,
     return false;
 
     #endif
+}
+
+/*-------------------------------------------------------------------------*/
+
+static bool
+SyncDirectory( const CString& dirPath )
+{GUCEF_TRACE;
+
+    #if ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_WASM_EMSCRIPTEN ) )
+
+    // The rename itself is only durable once the directory entry is on disk
+    int fd = ::open( dirPath.IsNULLOrEmpty() ? "." : dirPath.C_String(), O_RDONLY | O_DIRECTORY );
+    if ( fd < 0 )
+        return false;
+    bool success = 0 == ::fsync( fd );
+    ::close( fd );
+    return success;
+
+    #else
+
+    // MoveFile uses MOVEFILE_WRITE_THROUGH on Windows which covers this
+    return true;
+
+    #endif
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+WriteFileAtomically( const CString& path    ,
+                     const void* data       ,
+                     UInt32 dataSizeInBytes )
+{GUCEF_TRACE;
+
+    if ( path.IsNULLOrEmpty() || ( GUCEF_NULL == data && 0 != dataSizeInBytes ) )
+        return false;
+
+    CString actualPath = RelativePath( path );
+
+    // The temp file must be in the same directory to guarantee the move is a rename on the same file system
+    UInt8 randomBytes[ 4 ];
+    CString tempPath = actualPath + ".tmp";
+    if ( CRandom::GetRandomBytes( randomBytes, sizeof( randomBytes ) ) )
+    {
+        static const char* hexDigits = "0123456789abcdef";
+        for ( UInt32 i=0; i<sizeof( randomBytes ); ++i )
+        {
+            tempPath += CString( hexDigits + ( randomBytes[ i ] >> 4 ), 1 );
+            tempPath += CString( hexDigits + ( randomBytes[ i ] & 0xF ), 1 );
+        }
+    }
+
+    bool success = false;
+    {
+        CFileAccess tempFile( tempPath, "wb" );
+        if ( tempFile.IsValid() )
+        {
+            success = ( 0 == dataSizeInBytes ) || ( dataSizeInBytes == tempFile.Write( data, 1, dataSizeInBytes ) );
+            success = success && tempFile.Sync();
+        }
+    }
+
+    if ( success )
+        success = MoveFile( tempPath, actualPath, true );
+    if ( !success )
+    {
+        GUCEF_ERROR_LOG( LOGLEVEL_NORMAL, "WriteFileAtomically: Failed to replace \"" + actualPath + "\"" );
+        if ( FileExists( tempPath ) )
+            DeleteFile( tempPath );
+        return false;
+    }
+
+    SyncDirectory( StripFilename( actualPath ) );
+    return true;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+WriteFileAtomically( const CString& path          ,
+                     const CDynamicBuffer& buffer )
+{GUCEF_TRACE;
+
+    return WriteFileAtomically( path, buffer.GetConstBufferPtr(), buffer.GetDataSize() );
 }
 
 /*-------------------------------------------------------------------------*/

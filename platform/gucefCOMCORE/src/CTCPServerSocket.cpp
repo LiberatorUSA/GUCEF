@@ -273,7 +273,10 @@ CTCPServerSocket::OnPulse( CORE::CNotifier* notifier                 ,
             TConnectionSet::iterator i = m_activeConnections.begin();
             while ( i != m_activeConnections.end() )
             {
-                (*i)->Update( m_maxUpdatesPerCycle );
+                // false means the connection was deleted by an observer. Connections are owned by this socket
+                // which makes it the one that got deleted, so there is nothing left for us to do
+                if ( !(*i)->Update( m_maxUpdatesPerCycle ) )
+                    return;
                 ++i;
             }
             
@@ -462,6 +465,7 @@ CTCPServerSocket::AcceptClients( void )
                         return;
                     }
                     clientcon->_blocking = _blocking;
+                    clientcon->SetUserData( GUCEF_NULL );     // whoever handled the previous client is done with this object
                     if ( !_blocking )
                     {
                         /*
@@ -579,6 +583,16 @@ CTCPServerSocket::ListenOnPort( UInt16 servport )
         NotifyObservers( ServerSocketErrorEvent );
         return false;
     }
+
+    #if ( GUCEF_PLATFORM != GUCEF_PLATFORM_MSWIN )
+
+    // Allow rebinding the port right after a previous server closed, which would otherwise be refused while
+    // connections of that previous server linger in TIME_WAIT. On Windows this option has other semantics
+    // (it allows port hijacking) and the problem does not exist so it is not set there.
+    int allowAddressReuse = 1;
+    dvsocket_setsockopt( _data->sockid, SOL_SOCKET, SO_REUSEADDR, (const char*) &allowAddressReuse, sizeof(int), &error );
+
+    #endif
 
 	/*
 	 *      We set the protocol family to TCP/IP
@@ -900,22 +914,21 @@ CTCPServerSocket::SendToConnection( UInt32 connectionIndex                ,
     if ( connectionIndex < _connections.size() )
     {
         CTCPServerConnection* connection = _connections[ connectionIndex ];
-        
+        if ( GUCEF_NULL == connection )
+            return false;
+
         serverLock.EarlyUnlock();
         MT::CObjectScopeLock connectionLock( connection->AsLockable() );
 
         if ( connection->IsActive() )
         {
-            if ( GUCEF_NULL != remoteClientIPCheck )
+            if ( GUCEF_NULL != remoteClientIPCheck && connection->GetRemoteIP() != *remoteClientIPCheck )
             {
-                if ( connection->GetRemoteIP() != *remoteClientIPCheck )
-                {
-                    // Refusing to send because the IP check failed.
-                    return false;
-                }
-
-                return connection->Send( dataSource, dataSize );
+                // Refusing to send because the IP check failed.
+                return false;
             }
+
+            return connection->Send( dataSource, dataSize );
         }
     }
     return false;

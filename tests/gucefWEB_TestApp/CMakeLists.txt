@@ -12,13 +12,21 @@
 # Configuration for module: gucefWEB_TestApp
 
 set( HEADER_FILES 
+  include/TestChromeDevTools.h
   include/TestCode_CHTTPClient.h
   include/TestCode_CHTTPServer.h
+  include/TestJsonRpc.h
+  include/TestWebSocket.h
+  include/TestWebSocketCodec.h
 )
 
 set( SOURCE_FILES 
+  src/TestChromeDevTools.cpp
   src/TestCode_CHTTPClient.cpp
   src/TestCode_CHTTPServer.cpp
+  src/TestJsonRpc.cpp
+  src/TestWebSocket.cpp
+  src/TestWebSocketCodec.cpp
   src/gucefWEB_TestApp_main.cpp
 )
 

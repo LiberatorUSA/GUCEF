@@ -184,6 +184,36 @@
 #define GUCEF_CORE_TESTAPP_TESTLOGGING_H
 #endif /* GUCEF_CORE_TESTAPP_TESTLOGGING_H ? */
 
+#ifndef GUCEF_CORE_TESTAPP_TESTPROCESS_H
+#include "TestProcess.h"
+#define GUCEF_CORE_TESTAPP_TESTPROCESS_H
+#endif /* GUCEF_CORE_TESTAPP_TESTPROCESS_H ? */
+
+#ifndef GUCEF_CORE_TESTAPP_TESTXMLDSTORECODEC_H
+#include "TestXmlDStoreCodec.h"
+#define GUCEF_CORE_TESTAPP_TESTXMLDSTORECODEC_H
+#endif /* GUCEF_CORE_TESTAPP_TESTXMLDSTORECODEC_H ? */
+
+#ifndef GUCEF_CORE_TESTAPP_TESTDSTORESTREAMING_H
+#include "TestDStoreStreaming.h"
+#define GUCEF_CORE_TESTAPP_TESTDSTORESTREAMING_H
+#endif /* GUCEF_CORE_TESTAPP_TESTDSTORESTREAMING_H ? */
+
+#ifndef GUCEF_CORE_TESTAPP_TESTCODECPLUGINS_H
+#include "TestCodecPlugins.h"
+#define GUCEF_CORE_TESTAPP_TESTCODECPLUGINS_H
+#endif /* GUCEF_CORE_TESTAPP_TESTCODECPLUGINS_H ? */
+
+#ifndef GUCEF_CORE_TESTAPP_TESTRANDOM_H
+#include "TestRandom.h"
+#define GUCEF_CORE_TESTAPP_TESTRANDOM_H
+#endif /* GUCEF_CORE_TESTAPP_TESTRANDOM_H ? */
+
+#ifndef GUCEF_CORE_TESTAPP_TESTRATELIMITING_H
+#include "TestRateLimiting.h"
+#define GUCEF_CORE_TESTAPP_TESTRATELIMITING_H
+#endif /* GUCEF_CORE_TESTAPP_TESTRATELIMITING_H ? */
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      UTILITIES                                                          //
@@ -249,6 +279,12 @@ GUCEF_OSMAIN_BEGIN
         PerformDataDrivenDStoreCodecsTests();
         PerformFreeListTests();
         PerformASyncTests();
+        PerformProcessTests();
+        PerformXmlDStoreCodecTests();
+        PerformDStoreStreamingTests();
+        PerformCodecPluginTests();
+        PerformRandomTests();
+        PerformRateLimitingTests();
 
         GUCEF::CORE::CString xmlPath = GUCEF::CORE::RelativePath( "$CURWORKDIR$" );
         GUCEF::CORE::AppendToPath( xmlPath, "gucefCORE_TestApp_Results.xml" );

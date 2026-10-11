@@ -54,6 +54,7 @@
 #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_WASM_EMSCRIPTEN ) )
     #include <stdlib.h>
     #include <stdio.h>
+    #include <unistd.h>            /* needed for fsync() */
 #endif
 
 /*-------------------------------------------------------------------------//
@@ -558,6 +559,34 @@ CFileAccess::Flush( void )
     {
         fflush( m_file );
     }
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CFileAccess::Sync( void )
+{GUCEF_TRACE;
+
+    if ( GUCEF_NULL == m_file )
+        return false;
+
+    if ( 0 != fflush( m_file ) )
+        return false;
+
+    #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
+
+    return 0 == _commit( _fileno( m_file ) );
+
+    #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_WASM_EMSCRIPTEN ) )
+
+    return 0 == fsync( fileno( m_file ) );
+
+    #else
+
+    GUCEF_WARNING_LOG( LOGLEVEL_NORMAL, "CFileAccess::Sync: Platform has no supported implementation" );
+    return false;
+
+    #endif
 }
 
 /*-------------------------------------------------------------------------*/

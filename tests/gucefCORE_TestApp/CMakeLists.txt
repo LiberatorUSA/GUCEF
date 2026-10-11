@@ -14,8 +14,10 @@
 set( HEADER_FILES 
   include/TestASync.h
   include/TestAbstractFactory.h
+  include/TestCodecPlugins.h
   include/TestCronSchedule.h
   include/TestCyclicDynamicBuffer.h
+  include/TestDStoreStreaming.h
   include/TestDataDrivenDStoreCodecs.h
   include/TestDataNodeBinarySerializer.h
   include/TestDateTime.h
@@ -27,6 +29,9 @@ set( HEADER_FILES
   include/TestIniParser.h
   include/TestLogging.h
   include/TestNotifierObserver.h
+  include/TestProcess.h
+  include/TestRandom.h
+  include/TestRateLimiting.h
   include/TestSchedule.h
   include/TestSharedPtr.h
   include/TestStopwatch.h
@@ -39,14 +44,17 @@ set( HEADER_FILES
   include/TestVariantStream.h
   include/TestVars.h
   include/TestVersion.h
+  include/TestXmlDStoreCodec.h
   src/TestFreeList.h
 )
 
 set( SOURCE_FILES 
   src/TestASync.cpp
   src/TestAbstractFactory.cpp
+  src/TestCodecPlugins.cpp
   src/TestCronSchedule.cpp
   src/TestCyclicDynamicBuffer.cpp
+  src/TestDStoreStreaming.cpp
   src/TestDataDrivenDStoreCodecs.cpp
   src/TestDataNodeBinarySerializer.cpp
   src/TestDateTime.cpp
@@ -59,6 +67,9 @@ set( SOURCE_FILES
   src/TestIniParser.cpp
   src/TestLogging.cpp
   src/TestNotifierObserver.cpp
+  src/TestProcess.cpp
+  src/TestRandom.cpp
+  src/TestRateLimiting.cpp
   src/TestSchedule.cpp
   src/TestSharedPtr.cpp
   src/TestStopwatch.cpp
@@ -71,6 +82,7 @@ set( SOURCE_FILES
   src/TestVariantStream.cpp
   src/TestVars.cpp
   src/TestVersion.cpp
+  src/TestXmlDStoreCodec.cpp
   src/gucefCORE_TestApp_main.cpp
 )
 

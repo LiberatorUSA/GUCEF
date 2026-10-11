@@ -15,6 +15,7 @@ set( HEADER_FILES
   include/gucefWEB.h
   include/gucefWEB_CAsyncHttpServerRequestHandler.h
   include/gucefWEB_CAsyncHttpServerResponseHandler.h
+  include/gucefWEB_CChromeDevToolsClient.h
   include/gucefWEB_CCodecBasedHTTPServerResource.h
   include/gucefWEB_CConfigurableHttpServerResource.h
   include/gucefWEB_CDataNodeSerializableHttpServerResource.h
@@ -36,6 +37,10 @@ set( HEADER_FILES
   include/gucefWEB_CIHTTPServerRouter.h
   include/gucefWEB_CIHTTPServerRouterController.h
   include/gucefWEB_CIHttpServerRequestHandler.h
+  include/gucefWEB_CIWebSocketUpgradeHandler.h
+  include/gucefWEB_CJsonRpcClient.h
+  include/gucefWEB_CJsonRpcEndpoint.h
+  include/gucefWEB_CJsonRpcServer.h
   include/gucefWEB_CModule.h
   include/gucefWEB_CStdParamParser.h
   include/gucefWEB_CTConfigurableMapHttpServerResource.h
@@ -46,9 +51,17 @@ set( HEADER_FILES
   include/gucefWEB_CTaskManagerServerResource.h
   include/gucefWEB_CVfsHttpServerResource.h
   include/gucefWEB_CWebGlobal.h
+  include/gucefWEB_CWebSocketClient.h
+  include/gucefWEB_CWebSocketConnection.h
+  include/gucefWEB_CWebSocketFrameCodec.h
+  include/gucefWEB_CWebSocketHandshake.h
+  include/gucefWEB_CWebSocketMessageParser.h
+  include/gucefWEB_CWebSocketServer.h
   include/gucefWEB_ETypes.h
   include/gucefWEB_HTTPCode.h
+  include/gucefWEB_JsonRpcTypes.h
   include/gucefWEB_ViewTypes.h
+  include/gucefWEB_WebSocketTypes.h
   include/gucefWEB_config.h
   include/gucefWEB_macros.h
 )
@@ -57,6 +70,7 @@ set( SOURCE_FILES
   src/gucefWEB.cpp
   src/gucefWEB_CAsyncHttpServerRequestHandler.cpp
   src/gucefWEB_CAsyncHttpServerResponseHandler.cpp
+  src/gucefWEB_CChromeDevToolsClient.cpp
   src/gucefWEB_CCodecBasedHTTPServerResource.cpp
   src/gucefWEB_CConfigurableHttpServerResource.cpp
   src/gucefWEB_CDataNodeSerializableHttpServerResource.cpp
@@ -78,6 +92,9 @@ set( SOURCE_FILES
   src/gucefWEB_CIHTTPServerRouter.cpp
   src/gucefWEB_CIHTTPServerRouterController.cpp
   src/gucefWEB_CIHttpServerRequestHandler.cpp
+  src/gucefWEB_CJsonRpcClient.cpp
+  src/gucefWEB_CJsonRpcEndpoint.cpp
+  src/gucefWEB_CJsonRpcServer.cpp
   src/gucefWEB_CModule.cpp
   src/gucefWEB_CStdParamParser.cpp
   src/gucefWEB_CTDataNodeSerializableHttpServerResourceExpansion.cpp
@@ -87,6 +104,12 @@ set( SOURCE_FILES
   src/gucefWEB_CTaskManagerServerResource.cpp
   src/gucefWEB_CVfsHttpServerResource.cpp
   src/gucefWEB_CWebGlobal.cpp
+  src/gucefWEB_CWebSocketClient.cpp
+  src/gucefWEB_CWebSocketConnection.cpp
+  src/gucefWEB_CWebSocketFrameCodec.cpp
+  src/gucefWEB_CWebSocketHandshake.cpp
+  src/gucefWEB_CWebSocketMessageParser.cpp
+  src/gucefWEB_CWebSocketServer.cpp
 )
 
 # Make sure the PLATFORM_HEADER_FILES variable is always defined

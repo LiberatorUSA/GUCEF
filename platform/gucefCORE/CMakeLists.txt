@@ -141,6 +141,7 @@ set( HEADER_FILES
   include/gucefCORE_CAbstractFactoryBase.h
   include/gucefCORE_CAsciiString.h
   include/gucefCORE_CAsciiStringView.h
+  include/gucefCORE_CBackoffPolicy.h
   include/gucefCORE_CBasicBracketLoggingFormatter.h
   include/gucefCORE_CBusyWaitPulseGeneratorDriver.h
   include/gucefCORE_CCharSepLoggingFormatter.h
@@ -155,12 +156,14 @@ set( HEADER_FILES
   include/gucefCORE_CDataNodeDocumentBuilder.h
   include/gucefCORE_CDataNodeSerializableDataNode.h
   include/gucefCORE_CDataNodeSerializableSettings.h
+  include/gucefCORE_CDataNodeSubtreeCollector.h
   include/gucefCORE_CDataUriResourceAccessor.h
   include/gucefCORE_CDate.h
   include/gucefCORE_CDateTime.h
   include/gucefCORE_CDateTimeRange.h
   include/gucefCORE_CDeferredTask.h
   include/gucefCORE_CDirectoryWatcherEvents.h
+  include/gucefCORE_CDocumentStreamWriter.h
   include/gucefCORE_CDynamicBufferStringStream.h
   include/gucefCORE_CDynamicBufferSwap.h
   include/gucefCORE_CDynamicBufferView.h
@@ -193,6 +196,7 @@ set( HEADER_FILES
   include/gucefCORE_CIFunction.h
   include/gucefCORE_CILoggingFormatter.h
   include/gucefCORE_CIMetricsSystemClient.h
+  include/gucefCORE_CIMonotonicClock.h
   include/gucefCORE_CINotifier.h
   include/gucefCORE_CIObserver.h
   include/gucefCORE_CIPluginLoadLogic.h
@@ -219,12 +223,15 @@ set( HEADER_FILES
   include/gucefCORE_CPluginFactoryAdapterForDataDrivenDStoreCodec.h
   include/gucefCORE_CPluginGroup.h
   include/gucefCORE_CPluginMetaData.h
+  include/gucefCORE_CProcess.h
   include/gucefCORE_CProperty.h
   include/gucefCORE_CPropertyDefinition.h
   include/gucefCORE_CPropertyDefinitionList.h
   include/gucefCORE_CPropertyList.h
   include/gucefCORE_CPulseData.h
   include/gucefCORE_CPulseGenerator.h
+  include/gucefCORE_CRandom.h
+  include/gucefCORE_CRateLimiter.h
   include/gucefCORE_CResourceMetaData.h
   include/gucefCORE_CRollingFileAccess.h
   include/gucefCORE_CSchedule.h
@@ -440,6 +447,7 @@ set( SOURCE_FILES
   src/gucefCORE_CAbstractFactoryBase.cpp
   src/gucefCORE_CAsciiString.cpp
   src/gucefCORE_CAsciiStringView.cpp
+  src/gucefCORE_CBackoffPolicy.cpp
   src/gucefCORE_CBasicBracketLoggingFormatter.cpp
   src/gucefCORE_CBusyWaitPulseGeneratorDriver.cpp
   src/gucefCORE_CCharSepLoggingFormatter.cpp
@@ -454,11 +462,13 @@ set( SOURCE_FILES
   src/gucefCORE_CDataNodeDocumentBuilder.cpp
   src/gucefCORE_CDataNodeSerializableDataNode.cpp
   src/gucefCORE_CDataNodeSerializableSettings.cpp
+  src/gucefCORE_CDataNodeSubtreeCollector.cpp
   src/gucefCORE_CDataUriResourceAccessor.cpp
   src/gucefCORE_CDate.cpp
   src/gucefCORE_CDateTime.cpp
   src/gucefCORE_CDateTimeRange.cpp
   src/gucefCORE_CDirectoryWatcherEvents.cpp
+  src/gucefCORE_CDocumentStreamWriter.cpp
   src/gucefCORE_CDynamicBufferStringStream.cpp
   src/gucefCORE_CDynamicBufferSwap.cpp
   src/gucefCORE_CDynamicBufferView.cpp
@@ -489,6 +499,7 @@ set( SOURCE_FILES
   src/gucefCORE_CIFunction.cpp
   src/gucefCORE_CILoggingFormatter.cpp
   src/gucefCORE_CIMetricsSystemClient.cpp
+  src/gucefCORE_CIMonotonicClock.cpp
   src/gucefCORE_CINotifier.cpp
   src/gucefCORE_CIObserver.cpp
   src/gucefCORE_CIPluginLoadLogic.cpp
@@ -515,12 +526,15 @@ set( SOURCE_FILES
   src/gucefCORE_CPluginFactoryAdapterForDataDrivenDStoreCodec.cpp
   src/gucefCORE_CPluginGroup.cpp
   src/gucefCORE_CPluginMetaData.cpp
+  src/gucefCORE_CProcess.cpp
   src/gucefCORE_CProperty.cpp
   src/gucefCORE_CPropertyDefinition.cpp
   src/gucefCORE_CPropertyDefinitionList.cpp
   src/gucefCORE_CPropertyList.cpp
   src/gucefCORE_CPulseData.cpp
   src/gucefCORE_CPulseGenerator.cpp
+  src/gucefCORE_CRandom.cpp
+  src/gucefCORE_CRateLimiter.cpp
   src/gucefCORE_CResourceMetaData.cpp
   src/gucefCORE_CRollingFileAccess.cpp
   src/gucefCORE_CSchedule.cpp
@@ -745,11 +759,11 @@ if ( LINUX64 )
 endif( LINUX64 )
 
 if ( WIN32 )
-  target_link_libraries( ${MODULE_NAME} PRIVATE PowrProf.lib Shlwapi.lib Ws2_32.lib )
+  target_link_libraries( ${MODULE_NAME} PRIVATE Bcrypt.lib PowrProf.lib Shlwapi.lib Ws2_32.lib )
 endif( WIN32 )
 
 if ( WIN64 )
-  target_link_libraries( ${MODULE_NAME} PRIVATE PowrProf.lib Shlwapi.lib Ws2_32.lib )
+  target_link_libraries( ${MODULE_NAME} PRIVATE Bcrypt.lib PowrProf.lib Shlwapi.lib Ws2_32.lib )
 endif( WIN64 )
 
 include_directories( ../../common/include ../gucefMT/include include include/c_api )

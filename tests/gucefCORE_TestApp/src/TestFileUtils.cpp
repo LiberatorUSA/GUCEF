@@ -38,6 +38,16 @@
 #define GUCEF_CORE_DVCPPFILEUTILS_H
 #endif /* GUCEF_CORE_DVCPPFILEUTILS_H ? */
 
+#ifndef GUCEF_CORE_CFILEACCESS_H
+#include "CFileAccess.h"
+#define GUCEF_CORE_CFILEACCESS_H
+#endif /* GUCEF_CORE_CFILEACCESS_H ? */
+
+#if ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
+  #include <sys/stat.h>
+  #include <unistd.h>
+#endif
+
 #ifndef GUCEF_CORE_LOGGING_H
 #include "gucefCORE_Logging.h"
 #define GUCEF_CORE_LOGGING_H
@@ -47,6 +57,11 @@
 #include "gucef_test_framework.h"
 #define GUCEF_TEST_FRAMEWORK_H
 #endif /* GUCEF_TEST_FRAMEWORK_H ? */
+
+#ifndef GUCEF_CORE_CDYNAMICBUFFER_H
+#include "CDynamicBuffer.h"
+#define GUCEF_CORE_CDYNAMICBUFFER_H
+#endif /* GUCEF_CORE_CDYNAMICBUFFER_H ? */
 
 #include "TestFileUtils.h"
 
@@ -223,6 +238,165 @@ PerformFileUtilsTests( void )
             ASSERT_TRUE( 2 == filesInA );
             ASSERT_TRUE( 1 == dirsInA );
             ASSERT_TRUE( cwdBefore == CORE::CurrentWorkingDir() );
+        }
+        catch( ... )
+        {
+            ERRORHERE;
+        }
+    GUCEF_TESTFW_TESTCASE_END
+
+    GUCEF_TESTFW_TESTCASE( "Test: CFileAccess::Sync flushes to storage" )
+        try
+        {
+            CORE::CString dir = CORE::CombinePath( CORE::TempDir(), "gucefCORE_TestApp_Durable" );
+            ASSERT_TRUE( CORE::CreateDirs( dir ) );
+            CORE::CString path = CORE::CombinePath( dir, "synced.txt" );
+
+            CORE::CFileAccess unopened;
+            ASSERT_FALSE( unopened.Sync() );
+
+            {
+                CORE::CFileAccess file( path, "wb" );
+                ASSERT_TRUE( file.IsValid() );
+                ASSERT_TRUE( 5 == file.Write( "hello", 1, 5 ) );
+                ASSERT_TRUE( file.Sync() );
+
+                // the data must be readable by others while the file is still open
+                CORE::CString content;
+                ASSERT_TRUE( CORE::LoadTextFileAsString( path, content, false ) );
+                ASSERT_TRUE( content == "hello" );
+            }
+            CORE::DeleteFile( path );
+        }
+        catch( ... )
+        {
+            ERRORHERE;
+        }
+    GUCEF_TESTFW_TESTCASE_END
+
+    GUCEF_TESTFW_TESTCASE( "Test: WriteFileAtomically creates and replaces files without leftovers" )
+        try
+        {
+            CORE::CString dir = CORE::CombinePath( CORE::TempDir(), "gucefCORE_TestApp_Atomic" );
+            ASSERT_TRUE( CORE::CreateDirs( dir ) );
+            CORE::CString path = CORE::CombinePath( dir, "target.txt" );
+            if ( CORE::FileExists( path ) )
+                CORE::DeleteFile( path );
+
+            // new file
+            ASSERT_TRUE( CORE::WriteFileAtomically( path, "first version", 13 ) );
+            CORE::CString content;
+            ASSERT_TRUE( CORE::LoadTextFileAsString( path, content, false ) );
+            ASSERT_TRUE( content == "first version" );
+
+            // replace with a different size
+            CORE::CDynamicBuffer buffer;
+            buffer.CopyFrom( 6, "second" );
+            ASSERT_TRUE( CORE::WriteFileAtomically( path, buffer ) );
+            ASSERT_TRUE( CORE::LoadTextFileAsString( path, content, false ) );
+            ASSERT_TRUE( content == "second" );
+
+            // empty content
+            ASSERT_TRUE( CORE::WriteFileAtomically( path, GUCEF_NULL, 0 ) );
+            ASSERT_TRUE( CORE::LoadTextFileAsString( path, content, false ) );
+            ASSERT_TRUE( content.IsNULLOrEmpty() );
+
+            // only the target may remain in the directory
+            UInt32 fileCount = 0;
+            CORE::CFileSystemIterator it;
+            if ( it.FindFirst( dir ) )
+            {
+                do
+                {
+                    ++fileCount;
+                    ASSERT_TRUE( it.GetResourceName() == "target.txt" );
+                }
+                while ( it.FindNext() );
+                it.FindClose();
+            }
+            ASSERT_TRUE( 1 == fileCount );
+        }
+        catch( ... )
+        {
+            ERRORHERE;
+        }
+    GUCEF_TESTFW_TESTCASE_END
+
+    GUCEF_TESTFW_TESTCASE( "Test: WriteFileAtomically leaves the original intact when the replace fails" )
+        try
+        {
+            CORE::CString dir = CORE::CombinePath( CORE::TempDir(), "gucefCORE_TestApp_AtomicFail" );
+            ASSERT_TRUE( CORE::CreateDirs( dir ) );
+
+            // Case 1: the target is a directory so moving the temp file over it fails after the temp file was written
+            CORE::CString dirTarget = CORE::CombinePath( dir, "isadir" );
+            ASSERT_TRUE( CORE::CreateDirs( dirTarget ) );
+            ASSERT_FALSE( CORE::WriteFileAtomically( dirTarget, "data", 4 ) );
+            ASSERT_TRUE( CORE::DirExists( dirTarget ) );
+
+            #if ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
+
+            // Case 2: the temp file cannot be written at all. Not applicable when running as root
+            if ( 0 != geteuid() )
+            {
+                CORE::CString lockedDir = CORE::CombinePath( dir, "locked" );
+                ASSERT_TRUE( CORE::CreateDirs( lockedDir ) );
+                CORE::CString lockedFile = CORE::CombinePath( lockedDir, "original.txt" );
+                ASSERT_TRUE( CORE::WriteStringAsTextFile( lockedFile, "original" ) );
+                ::chmod( lockedDir.C_String(), 0555 );
+
+                bool replaced = CORE::WriteFileAtomically( lockedFile, "replacement", 11 );
+                ::chmod( lockedDir.C_String(), 0755 );
+
+                ASSERT_FALSE( replaced );
+                CORE::CString content;
+                ASSERT_TRUE( CORE::LoadTextFileAsString( lockedFile, content, false ) );
+                ASSERT_TRUE( content == "original" );
+            }
+
+            #endif
+
+            // no temp files may be left behind in the dir
+            UInt32 entryCount = 0;
+            CORE::CFileSystemIterator it;
+            if ( it.FindFirst( dir ) )
+            {
+                do
+                {
+                    ++entryCount;
+                    ASSERT_FALSE( it.GetResourceName().HasSubstr( ".tmp" ) >= 0 );
+                }
+                while ( it.FindNext() );
+                it.FindClose();
+            }
+        }
+        catch( ... )
+        {
+            ERRORHERE;
+        }
+    GUCEF_TESTFW_TESTCASE_END
+
+    // Regression: on Linux MoveFile ignored the overwrite flag and always replaced an existing target
+    GUCEF_TESTFW_TESTCASE( "Test: MoveFile honors the overwrite flag" )
+        try
+        {
+            CORE::CString dir = CORE::CombinePath( CORE::TempDir(), "gucefCORE_TestApp_MoveFile" );
+            ASSERT_TRUE( CORE::CreateDirs( dir ) );
+            CORE::CString source = CORE::CombinePath( dir, "source.txt" );
+            CORE::CString target = CORE::CombinePath( dir, "target.txt" );
+            ASSERT_TRUE( CORE::WriteStringAsTextFile( source, "source" ) );
+            ASSERT_TRUE( CORE::WriteStringAsTextFile( target, "target" ) );
+
+            ASSERT_FALSE( CORE::MoveFile( source, target, false ) );
+            CORE::CString content;
+            ASSERT_TRUE( CORE::LoadTextFileAsString( target, content, false ) );
+            ASSERT_TRUE( content == "target" );
+            ASSERT_TRUE( CORE::FileExists( source ) );
+
+            ASSERT_TRUE( CORE::MoveFile( source, target, true ) );
+            ASSERT_TRUE( CORE::LoadTextFileAsString( target, content, false ) );
+            ASSERT_TRUE( content == "source" );
+            ASSERT_FALSE( CORE::FileExists( source ) );
         }
         catch( ... )
         {

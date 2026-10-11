@@ -58,6 +58,36 @@
 #define GUCEF_WEB_CHTTPCLIENT_H
 #endif /* GUCEF_WEB_CHTTPCLIENT_H ? */
 
+#ifndef GUCEF_WEB_CHTTPSERVER_H
+#include "gucefWEB_CHTTPServer.h"
+#define GUCEF_WEB_CHTTPSERVER_H
+#endif /* GUCEF_WEB_CHTTPSERVER_H ? */
+
+#ifndef GUCEF_WEB_CWEBSOCKETSERVER_H
+#include "gucefWEB_CWebSocketServer.h"
+#define GUCEF_WEB_CWEBSOCKETSERVER_H
+#endif /* GUCEF_WEB_CWEBSOCKETSERVER_H ? */
+
+#ifndef GUCEF_WEB_CWEBSOCKETCLIENT_H
+#include "gucefWEB_CWebSocketClient.h"
+#define GUCEF_WEB_CWEBSOCKETCLIENT_H
+#endif /* GUCEF_WEB_CWEBSOCKETCLIENT_H ? */
+
+#ifndef GUCEF_WEB_CJSONRPCENDPOINT_H
+#include "gucefWEB_CJsonRpcEndpoint.h"
+#define GUCEF_WEB_CJSONRPCENDPOINT_H
+#endif /* GUCEF_WEB_CJSONRPCENDPOINT_H ? */
+
+#ifndef GUCEF_WEB_CJSONRPCSERVER_H
+#include "gucefWEB_CJsonRpcServer.h"
+#define GUCEF_WEB_CJSONRPCSERVER_H
+#endif /* GUCEF_WEB_CJSONRPCSERVER_H ? */
+
+#ifndef GUCEF_WEB_CCHROMEDEVTOOLSCLIENT_H
+#include "gucefWEB_CChromeDevToolsClient.h"
+#define GUCEF_WEB_CCHROMEDEVTOOLSCLIENT_H
+#endif /* GUCEF_WEB_CCHROMEDEVTOOLSCLIENT_H ? */
+
 #ifndef GUCEF_WEB_CHTTPURLHANDLER_H
 #include "gucefWEB_CHTTPURLHandler.h"
 #define GUCEF_WEB_CHTTPURLHANDLER_H
@@ -125,6 +155,12 @@ CWebGlobal::Initialize( void )
     GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "gucefWEB Global systems initializing" );
 
     CHTTPClient::RegisterEvents();
+    CHTTPServer::RegisterEvents();
+    CWebSocketServer::RegisterEvents();
+    CWebSocketClient::RegisterEvents();
+    CJsonRpcEndpoint::RegisterEvents();
+    CJsonRpcServer::RegisterEvents();
+    CChromeDevToolsClient::RegisterEvents();
     CHTTPURLHandler::Register();
 
     m_globalHttpCodecLinks = GUCEF_NEW CGlobalHttpCodecLinks();

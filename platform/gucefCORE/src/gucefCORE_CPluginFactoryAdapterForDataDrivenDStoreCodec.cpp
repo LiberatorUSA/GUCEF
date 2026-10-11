@@ -140,6 +140,32 @@ CDataDrivenDStoreCodecPluginLink::BuildDataTree( CDataNode* treeroot, CIOAccess*
 
 /*-------------------------------------------------------------------------*/
 
+CDocumentStreamWriterPtr
+CDataDrivenDStoreCodecPluginLink::CreateDocumentWriter( CIOAccess& output )
+{GUCEF_TRACE;
+
+    if GUCEF_PREDICT_TRUE( GUCEF_NULL != m_codecPlugin )
+    {
+        return m_codecPlugin->CreateDocumentWriter( &m_ddCodecData, output );
+    }
+    return CDocumentStreamWriterPtr();
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CDataDrivenDStoreCodecPluginLink::ParseDocument( CIOAccess& input, CIDocumentParserCallbacks& callbacks )
+{GUCEF_TRACE;
+
+    if GUCEF_PREDICT_TRUE( GUCEF_NULL != m_codecPlugin )
+    {
+        return m_codecPlugin->ParseDocument( &m_ddCodecData, input, callbacks );
+    }
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
 CString 
 CDataDrivenDStoreCodecPluginLink::GetName( void ) const
 {GUCEF_TRACE;

@@ -53,6 +53,11 @@
 #define GUCEF_COMCORE_CTCPSERVERSOCKET_H
 #endif /* GUCEF_COMCORE_CTCPSERVERSOCKET_H ? */
 
+#ifndef GUCEF_WEB_CIWEBSOCKETUPGRADEHANDLER_H
+#include "gucefWEB_CIWebSocketUpgradeHandler.h"
+#define GUCEF_WEB_CIWEBSOCKETUPGRADEHANDLER_H
+#endif /* GUCEF_WEB_CIWEBSOCKETUPGRADEHANDLER_H ? */
+
 #ifndef GUCEF_WEB_CIHTTPSERVERROUTERCONTROLLER_H
 #include "gucefWEB_CIHTTPServerRouterController.h"
 #define GUCEF_WEB_CIHTTPSERVERROUTERCONTROLLER_H
@@ -111,6 +116,8 @@ class GUCEF_WEB_PUBLIC_CPP CHTTPServer : public CORE::CObservingNotifier
 
     typedef CORE::CTLinkedCloneableObj< CHttpRequestData > TWebSocketClientConnectedEventData;
 
+    static void RegisterEvents( void );
+
     public:
 
     typedef CString::StringVector TStringVector;
@@ -152,6 +159,16 @@ class GUCEF_WEB_PUBLIC_CPP CHTTPServer : public CORE::CObservingNotifier
 
     THttpServerRequestHandlerFactory* GetRequestHandlerFactory( void ) const;
 
+    /**
+     *  Sets the handler that takes over connections which successfully upgrade to the web socket protocol.
+     *  Without a handler the upgrade is still accepted (when allowed by the settings) and the
+     *  WebSocketClientConnectedEvent is sent but nobody will process the data of the connection.
+     *  With a handler the connection is handed over once the upgrade is done: its data goes to the
+     *  CIWebSocketConnectionHandler the handler linked to the connection.
+     *  The handler must outlive the server or be unset (GUCEF_NULL) before it is destroyed.
+     */
+    void SetWebSocketUpgradeHandler( CIWebSocketUpgradeHandler* handler );
+
     private:
 
     friend class CAsyncHttpServerRequestHandler;
@@ -174,7 +191,10 @@ class GUCEF_WEB_PUBLIC_CPP CHTTPServer : public CORE::CObservingNotifier
     void StripItems( TStringVector& list ,
                      char stripDelim     ) const;
 
-    void SyncProcessReceivedData( COMCORE::CTCPServerConnection* connection ,
+    /**
+     *  @return false if the connection was handed to a web socket handler and must be left alone
+     */
+    bool SyncProcessReceivedData( COMCORE::CTCPServerConnection* connection ,
                                   const CORE::CDynamicBuffer& inputBuffer   ,
                                   CORE::CDynamicBuffer& outputBuffer        );
 
@@ -207,9 +227,10 @@ class GUCEF_WEB_PUBLIC_CPP CHTTPServer : public CORE::CObservingNotifier
     void OnWebSocketUpgrade( COMCORE::CTCPServerConnection* connection ,
                              const CHttpRequestData& requestData       );
 
-    bool InitSha1CodecLink( void );
-
-    CORE::CString GenerateWebSocketResponseKey( const CORE::CString& clientKey );
+    void
+    OnClientDisconnectedEvent( CORE::CNotifier* notifier    ,
+                               const CORE::CEvent& eventId  ,
+                               CORE::CICloneable* eventData );
 
     virtual MT::TLockStatus Lock( UInt32 lockWaitTimeoutInMs = GUCEF_MT_DEFAULT_LOCK_TIMEOUT_IN_MS ) const GUCEF_VIRTUAL_OVERRIDE;
 
@@ -226,7 +247,7 @@ class GUCEF_WEB_PUBLIC_CPP CHTTPServer : public CORE::CObservingNotifier
     THttpServerRequestHandlerFactory::TProductPtr m_requestHandler;
     THttpServerRequestHandlerFactory* m_requestHandlerFactory;
     CHttpServerSettings m_settings;
-    CORE::CCodecRegistry::TICodecPtr m_sha1Codec;
+    CIWebSocketUpgradeHandler* m_webSocketHandler;
     MT::CMutex m_lock;
 };
 

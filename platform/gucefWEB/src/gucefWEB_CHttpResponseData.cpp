@@ -105,11 +105,17 @@ CHttpResponseData::Serialize( CORE::CDynamicBuffer& outputBuffer ) const
 
     // @TODO: Optimize this
     
-    CString response = "HTTP/1.1 " + CORE::Int32ToString( statusCode ) + "\r\nServer: gucefWEB/" + CORE::CDateTime::CompileDateTime().ToIso8601DateTimeString( false, true ) + "\r\n";
-    if ( keepConnectionsAlive )
-        response += "Connection: keep-alive\r\n";
-    else
-        response += "Connection: close\r\n";
+    // Protocol switching responses (web socket) need the reason phrase and an explicit Connection: Upgrade
+    CString response = "HTTP/1.1 " + CORE::Int32ToString( statusCode ) + ( 101 == statusCode ? " Switching Protocols" : "" ) + "\r\nServer: gucefWEB/" + CORE::CDateTime::CompileDateTime().ToIso8601DateTimeString( false, true ) + "\r\n";
+
+    // A Connection header explicitly provided by the caller takes precedence over the one we derive
+    if ( otherHeaders.find( "Connection" ) == otherHeaders.end() )
+    {
+        if ( keepConnectionsAlive )
+            response += "Connection: keep-alive\r\n";
+        else
+            response += "Connection: close\r\n";
+    }
     if ( !location.IsNULLOrEmpty() )
     {
         response += "Content-Location: " + location + "\r\n";
@@ -132,7 +138,8 @@ CHttpResponseData::Serialize( CORE::CDynamicBuffer& outputBuffer ) const
             response += "Content-Encoding: " + contentEncoding + "\r\n";
         response += "Content-Type: " + contentType + "\r\n";
     }
-    response += "Content-Length: " + CORE::UInt32ToString( content.GetDataSize() ) + "\r\n";
+    if ( 101 != statusCode )
+        response += "Content-Length: " + CORE::UInt32ToString( content.GetDataSize() ) + "\r\n";
 
     // You cannot send back accept types to the client using a standard HTTP header since
     // it is a HTTP request only header. We don't want the client to aimlessly retry different

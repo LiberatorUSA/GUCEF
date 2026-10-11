@@ -384,17 +384,21 @@ CDataNodeBinaryContainerSerializer::Serialize( const CDataNodeBinarySerializerOp
                                                UInt32& bytesWritten                            )
 {GUCEF_TRACE;
 
+    // the node follows the header
+    UInt32 headerBytesWritten = 0;
     if ( SerializeHeader( options             ,
                           currentTargetOffset ,
                           target              ,
-                          bytesWritten        ) )
+                          headerBytesWritten  ) )
     {
-        return CDataNodeBinarySerializer::Serialize( options             ,
-                                                     node                ,
-                                                     currentTargetOffset ,
-                                                     target              ,
-                                                     bytesWritten        );
+        bytesWritten += headerBytesWritten;
+        return CDataNodeBinarySerializer::Serialize( options                                  ,
+                                                     node                                     ,
+                                                     currentTargetOffset + headerBytesWritten ,
+                                                     target                                   ,
+                                                     bytesWritten                             );
     }
+    bytesWritten += headerBytesWritten;
     return false;
 }
 
@@ -454,18 +458,22 @@ CDataNodeBinaryContainerSerializer::Deserialize( CDataNodeBinarySerializerOption
                                                  UInt32& bytesRead                         )
 {GUCEF_TRACE;
 
+    // the node follows the header
+    UInt32 headerBytesRead = 0;
     if ( DeserializeHeader( options             ,
                             currentSourceOffset ,
                             source              ,
-                            bytesRead           ) )
+                            headerBytesRead     ) )
     {
-        return CDataNodeBinarySerializer::Deserialize( options             ,
-                                                       linkWherePossible   ,
-                                                       node                ,
-                                                       currentSourceOffset ,
-                                                       source              ,
-                                                       bytesRead           );
+        bytesRead += headerBytesRead;
+        return CDataNodeBinarySerializer::Deserialize( options                               ,
+                                                       linkWherePossible                     ,
+                                                       node                                  ,
+                                                       currentSourceOffset + headerBytesRead ,
+                                                       source                                ,
+                                                       bytesRead                             );
     }
+    bytesRead += headerBytesRead;
     return false;
 }
 

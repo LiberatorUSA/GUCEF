@@ -71,8 +71,10 @@ using namespace GUCEF::CORE;
 
 /*---------------------------------------------------------------------------*/
 
+// The "-raw" variants output the binary digest instead of its hex string representation
 static const char* supportedCryptoHashTypes[] = {
-    "md5", "sha1", "sha3", "sha256", "keccak"
+    "md5", "sha1", "sha3", "sha256", "keccak",
+    "md5-raw", "sha1-raw", "sha3-raw", "sha256-raw", "keccak-raw"
 };
 
 static const char* supportedHashTypes[] = {
@@ -88,153 +90,74 @@ static const Int32 hashCodecCount = (Int32) ( sizeof( supportedHashTypes ) / siz
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-//  Note that the crypto hash classes have a base class in the dependent library but its commented out
-//  if that is implemented later the various functions below can be cleaned up into 1
-
-/*---------------------------------------------------------------------------*/
-
-UInt32
-GenerateKeccakCryptoHash( TIOAccess* input  ,
-                          TIOAccess* output )
+/**
+ *  Converts a hex string as produced by the hash library into the binary bytes it represents
+ */
+static bool
+HexStringToBytes( const std::string& hexStr, std::string& bytes )
 {
-    UInt32 inputBytesRead = 0;
-    UInt8 tempInputBuffer[ TEMP_READ_HASH_BUFFER_SIZE ];
+    if ( 0 != ( hexStr.size() % 2 ) )
+        return false;
 
-    Keccak cryptohashAlgo;
-
-    /* crypto hash the input in chunks */
-    while ( 0 == input->eof( input ) )
+    bytes.clear();
+    bytes.reserve( hexStr.size() / 2 );
+    for ( size_t i=0; i<hexStr.size(); i+=2 )
     {
-        inputBytesRead = input->read( input, tempInputBuffer, 1, TEMP_READ_HASH_BUFFER_SIZE );
-        cryptohashAlgo.add( tempInputBuffer, inputBytesRead );
+        int byteValue = 0;
+        for ( size_t n=i; n<i+2; ++n )
+        {
+            char c = hexStr[ n ];
+            int nibble = 0;
+            if ( c >= '0' && c <= '9' )
+                nibble = c - '0';
+            else
+            if ( c >= 'a' && c <= 'f' )
+                nibble = c - 'a' + 10;
+            else
+            if ( c >= 'A' && c <= 'F' )
+                nibble = c - 'A' + 10;
+            else
+                return false;
+            byteValue = ( byteValue << 4 ) | nibble;
+        }
+        bytes.push_back( (char) byteValue );
     }
-
-    std::string resultHash = cryptohashAlgo.getHash();
-
-    if ( 1 == output->write( output, resultHash.c_str(), (UInt32) resultHash.size(), 1 ) )
-        return 1;
-    return 0;
+    return true;
 }
 
 /*---------------------------------------------------------------------------*/
 
+/**
+ *  Hashes all of the input and writes the hash to the output either as a hex string or as the raw binary digest
+ *  Note that the hash classes have a base class in the dependent library but its commented out hence the template
+ */
+template < class THashAlgo >
 UInt32
-GenerateSHA256CryptoHash( TIOAccess* input  ,
-                          TIOAccess* output )
+GenerateHash( TIOAccess* input  ,
+              TIOAccess* output ,
+              bool rawDigest    )
 {
     UInt32 inputBytesRead = 0;
     UInt8 tempInputBuffer[ TEMP_READ_HASH_BUFFER_SIZE ];
 
-    SHA256 cryptohashAlgo;
+    THashAlgo hashAlgo;
 
-    /* crypto hash the input in chunks */
+    /* hash the input in chunks */
     while ( 0 == input->eof( input ) )
     {
         inputBytesRead = input->read( input, tempInputBuffer, 1, TEMP_READ_HASH_BUFFER_SIZE );
-        cryptohashAlgo.add( tempInputBuffer, inputBytesRead );
-    }
-
-    std::string resultHash = cryptohashAlgo.getHash();
-
-    if ( 1 == output->write( output, resultHash.c_str(), (UInt32) resultHash.size(), 1 ) )
-        return 1;
-    return 0;
-}
-
-/*---------------------------------------------------------------------------*/
-
-UInt32
-GenerateSHA3CryptoHash( TIOAccess* input  ,
-                        TIOAccess* output )
-{
-    UInt32 inputBytesRead = 0;
-    UInt8 tempInputBuffer[ TEMP_READ_HASH_BUFFER_SIZE ];
-
-    SHA3 cryptohashAlgo;
-
-    /* crypto hash the input in chunks */
-    while ( 0 == input->eof( input ) )
-    {
-        inputBytesRead = input->read( input, tempInputBuffer, 1, TEMP_READ_HASH_BUFFER_SIZE );
-        cryptohashAlgo.add( tempInputBuffer, inputBytesRead );
-    }
-
-    std::string resultHash = cryptohashAlgo.getHash();
-
-    if ( 1 == output->write( output, resultHash.c_str(), (UInt32) resultHash.size(), 1 ) )
-        return 1;
-    return 0;
-}
-
-/*---------------------------------------------------------------------------*/
-
-UInt32
-GenerateSHA1CryptoHash( TIOAccess* input  ,
-                        TIOAccess* output )
-{
-    UInt32 inputBytesRead = 0;
-    UInt8 tempInputBuffer[ TEMP_READ_HASH_BUFFER_SIZE ];
-
-    SHA1 cryptohashAlgo;
-
-    /* crypto hash the input in chunks */
-    while ( 0 == input->eof( input ) )
-    {
-        inputBytesRead = input->read( input, tempInputBuffer, 1, TEMP_READ_HASH_BUFFER_SIZE );
-        cryptohashAlgo.add( tempInputBuffer, inputBytesRead );
-    }
-
-    std::string resultHash = cryptohashAlgo.getHash();
-
-    if ( 1 == output->write( output, resultHash.c_str(), (UInt32) resultHash.size(), 1 ) )
-        return 1;
-    return 0;
-}
-
-/*---------------------------------------------------------------------------*/
-
-UInt32
-GenerateMD5CryptoHash( TIOAccess* input  ,
-                       TIOAccess* output )
-{
-    UInt32 inputBytesRead = 0;
-    UInt8 tempInputBuffer[ TEMP_READ_HASH_BUFFER_SIZE ];
-
-    MD5 cryptohashAlgo;
-
-    /* crypto hash the input in chunks */
-    while ( 0 == input->eof( input ) )
-    {
-        inputBytesRead = input->read( input, tempInputBuffer, 1, TEMP_READ_HASH_BUFFER_SIZE );
-        cryptohashAlgo.add( tempInputBuffer, inputBytesRead );
-    }
-
-    std::string resultHash = cryptohashAlgo.getHash();
-
-    if ( 1 == output->write( output, resultHash.c_str(), (UInt32) resultHash.size(), 1 ) )
-        return 1;
-    return 0;
-}
-
-/*---------------------------------------------------------------------------*/
-
-UInt32
-GenerateCRC32Hash( TIOAccess* input  ,
-                   TIOAccess* output )
-{
-    UInt32 inputBytesRead = 0;
-    UInt8 tempInputBuffer[ TEMP_READ_HASH_BUFFER_SIZE ];
-
-    CRC32 hashAlgo;
-
-    /* crypto hash the input in chunks */
-    while ( 0 == input->eof( input ) )
-    {
-        inputBytesRead = input->read( input, tempInputBuffer, 1, TEMP_READ_HASH_BUFFER_SIZE );
+        if ( 0 == inputBytesRead )
+            break;
         hashAlgo.add( tempInputBuffer, inputBytesRead );
     }
 
     std::string resultHash = hashAlgo.getHash();
+    if ( rawDigest )
+    {
+        std::string hexHash = resultHash;
+        if ( !HexStringToBytes( hexHash, resultHash ) )
+            return 0;
+    }
 
     if ( 1 == output->write( output, resultHash.c_str(), (UInt32) resultHash.size(), 1 ) )
         return 1;
@@ -306,20 +229,30 @@ CODECPLUGIN_Encode( void* plugdata         ,
     if ( 0 == strcmp( "CryptographicHashCodec", familyType ) )
     {
         if ( 0 == strcmp( "md5", codecType ) )
-            return GenerateMD5CryptoHash( input, output );
+            return GenerateHash< MD5 >( input, output, false );
         if ( 0 == strcmp( "sha1", codecType ) )
-            return GenerateSHA1CryptoHash( input, output );
+            return GenerateHash< SHA1 >( input, output, false );
         if ( 0 == strcmp( "sha3", codecType ) )
-            return GenerateSHA3CryptoHash( input, output );
+            return GenerateHash< SHA3 >( input, output, false );
         if ( 0 == strcmp( "sha256", codecType ) )
-            return GenerateSHA256CryptoHash( input, output );
+            return GenerateHash< SHA256 >( input, output, false );
         if ( 0 == strcmp( "keccak", codecType ) )
-            return GenerateKeccakCryptoHash( input, output );
+            return GenerateHash< Keccak >( input, output, false );
+        if ( 0 == strcmp( "md5-raw", codecType ) )
+            return GenerateHash< MD5 >( input, output, true );
+        if ( 0 == strcmp( "sha1-raw", codecType ) )
+            return GenerateHash< SHA1 >( input, output, true );
+        if ( 0 == strcmp( "sha3-raw", codecType ) )
+            return GenerateHash< SHA3 >( input, output, true );
+        if ( 0 == strcmp( "sha256-raw", codecType ) )
+            return GenerateHash< SHA256 >( input, output, true );
+        if ( 0 == strcmp( "keccak-raw", codecType ) )
+            return GenerateHash< Keccak >( input, output, true );
     }
     if ( 0 == strcmp( "ChecksumCodec", familyType ) )
     {
         if ( 0 == strcmp( "crc32", codecType ) )
-            return GenerateCRC32Hash( input, output );
+            return GenerateHash< CRC32 >( input, output, false );
     }
     return 0;
 }

@@ -16,6 +16,8 @@
 			<RuntimeDependency Name="dstorepluginJSONPARSER" />
 			<RuntimeDependency Name="dstorepluginPARSIFALXML" />
 			<RuntimeDependency Name="dstorepluginYAML" />
+			<RuntimeDependency Name="codecspluginSTBRUMMEHASH" />
+			<RuntimeDependency Name="codecspluginZLIB" />
 			<RuntimeDependency Name="dstorepluginPROTOBUF" />
 		</RuntimeDependencies>
     </Module>

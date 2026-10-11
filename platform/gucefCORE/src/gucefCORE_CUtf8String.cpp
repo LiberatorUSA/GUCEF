@@ -750,7 +750,11 @@ CUtf8String::Set( const char* str           ,
                 const char* ptrAtCodePointIndex = CodepointPtrAtIndex( str, byteSize, lengthInCodePoints, lengthInCodePoints, indexBytesFromStart );
 
                 // Check for a null terminator
-                if ( GUCEF_NULL == ptrAtCodePointIndex || *ptrAtCodePointIndex != '\0' )
+                // The terminator only counts if it is within the byte range we were given. The position right after
+                // the last code point is the end of the range for input without a terminator and reading it would look
+                // at memory which is not ours. That makes the outcome depend on whatever happens to follow the buffer
+                // and wrongly takes the final content byte for the terminator when that memory happens to be a 0 byte.
+                if ( GUCEF_NULL == ptrAtCodePointIndex || ptrAtCodePointIndex >= str+byteSize || *ptrAtCodePointIndex != '\0' )
                 {
                     // did not find the expected null terminator at the end of 'length'
                     hasNullTerminator = false;
