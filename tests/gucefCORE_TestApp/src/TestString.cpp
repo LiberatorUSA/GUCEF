@@ -335,6 +335,18 @@ PerformTypedStringTests( void )
         ASSERT_TRUE( testStr2 != testStr1 );
         CORE::UInt32 equality = testStr1.FindMaxSubstrEquality( testStr2, 0, true, true );
         ASSERT_TRUE( 0 == equality );
+
+        // front to back: counts the matching leading code points
+        StringType testStr3( "abcxyz" );
+        ASSERT_TRUE( 3 == testStr3.FindMaxSubstrEquality( StringType( "abcq" ), 0, true, true ) );
+
+        // back to front: counts the matching trailing code points
+        ASSERT_TRUE( 3 == testStr3.FindMaxSubstrEquality( StringType( "qxyz" ), 0, false, true ) );
+        ASSERT_TRUE( 0 == testStr3.FindMaxSubstrEquality( StringType( "xyq" ), 0, false, true ) );
+
+        // back to front with an offset from the end of this string
+        StringType testStr4( "abcxyzQ" );
+        ASSERT_TRUE( 3 == testStr4.FindMaxSubstrEquality( StringType( "qxyz" ), 1, false, true ) );
     }
     catch( ... ) { ERRORHERE; }
     GUCEF_TESTFW_TESTCASE_END
@@ -1123,8 +1135,14 @@ PerformUtf8ReverseIterationRegressionTests( void )
         ASSERT_TRUE( path.SubstrToChar( 'a', false ) == "/bc" );
 
         CORE::CUtf8String noMatch( "xyz" );
-        // exercises the reverse comparison loop up to the first code point, mainly of interest under AddressSanitizer
-        ASSERT_TRUE( noMatch.FindMaxSubstrEquality( "qyz", 0, false, true ) <= 3 );
+        // back to front comparisons reaching the first code point, also of interest under AddressSanitizer
+        ASSERT_TRUE( 2 == noMatch.FindMaxSubstrEquality( "qyz", 0, false, true ) );
+        ASSERT_TRUE( 3 == noMatch.FindMaxSubstrEquality( "xyz", 0, false, true ) );
+
+        // multi byte code points: U+00E9 is encoded as 2 bytes
+        CORE::CUtf8String multiByte( "a\xC3\xA9z" );
+        ASSERT_TRUE( 2 == multiByte.FindMaxSubstrEquality( CORE::CUtf8String( "b\xC3\xA9z" ), 0, false, true ) );
+        ASSERT_TRUE( 1 == multiByte.FindMaxSubstrEquality( CORE::CUtf8String( "\xC3\xA8z" ), 0, false, true ) );
     }
     catch( ... ) { ERRORHERE; }
     GUCEF_TESTFW_TESTCASE_END

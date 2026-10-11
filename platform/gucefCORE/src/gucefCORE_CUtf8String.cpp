@@ -2459,30 +2459,30 @@ CUtf8String::FindMaxSubstrEquality( const CUtf8String& searchStr ,
         }
         else
         {
-            // Loop trough the buffer growing our comparison string
+            // Compare code points back to front, same semantics as the ASCII implementation:
+            // this string from its end minus startOffset code points, the search string from its end
+            if ( 0 == maxMatchLength )
+                return 0;
+
             UInt32 bytesFromStart=0;
-            const char* startPos = thisStr->CodepointPtrAtIndex( thisStr->m_length-1-startOffset, bytesFromStart );
-            const char* cpPos = startPos;
-            const char* otherString = theSearchStr->CodepointPtrAtIndex( theSearchStr->m_length-1-startOffset, bytesFromStart );
+            const char* thisStrCpPos = thisStr->CodepointPtrAtIndex( thisStr->m_length-1-startOffset, bytesFromStart );
+            const char* searchStrCpPos = theSearchStr->CodepointPtrAtIndex( theSearchStr->m_length-1, bytesFromStart );
 
-            UInt32 subLength=1;
-            size_t subByteSize = utf8codepointcalcsize( cpPos );
-            while ( subLength<=maxMatchLength )
-            {                         // @TODO: refactor: compare based on code points not memcmp()
-                if ( memcmp( startPos-subByteSize, otherString-subByteSize, subByteSize ) != 0 )
-                {
-                    // Reached the maximum equality length
-                    return subLength-1;
-                }
+            UInt32 matchingCpCount=0;
+            while ( matchingCpCount<maxMatchLength )
+            {
+                UInt32 thisStrCp = 0;
+                UInt32 searchStrCp = 0;
+                const char* thisStrPrevCpPos = Utf8ReverseCodepoint( thisStr->m_string, thisStrCpPos, &thisStrCp );
+                const char* searchStrPrevCpPos = Utf8ReverseCodepoint( theSearchStr->m_string, searchStrCpPos, &searchStrCp );
+                if ( thisStrCp != searchStrCp )
+                    break;
 
-                // Grow the comparison segment enough bytes to fit 1 extra codepoint
-                UInt32 cp;
-                cpPos = Utf8ReverseCodepoint( thisStr->m_string, cpPos, &cp );
-                subByteSize = (UInt32)( startPos - cpPos );
-
-                ++subLength;
+                ++matchingCpCount;
+                thisStrCpPos = thisStrPrevCpPos;
+                searchStrCpPos = searchStrPrevCpPos;
             }
-            return subLength-1;
+            return matchingCpCount;
         }
     }
 
