@@ -192,8 +192,9 @@ CFileAccess::Open( const CString& file ,
 
     if ( _writeable )
     {
+        // Note that an empty path means the file is in the current working directory
         CString path = StripFilename( m_filename );
-        if ( !DirExists( path ) )
+        if ( !path.IsNULLOrEmpty() && !DirExists( path ) )
         {
             if ( !CreateDirs( path ) )
             {
@@ -235,8 +236,9 @@ CFileAccess::Open( const CString& file               ,
 
     if ( _writeable )
     {
+        // Note that an empty path means the file is in the current working directory
         CString path = StripFilename( file );
-        if ( !CreateDirs( path ) )
+        if ( !path.IsNULLOrEmpty() && !DirExists( path ) && !CreateDirs( path ) )
         {
             GUCEF_DEBUG_LOG( LOGLEVEL_NORMAL, "FileAccess:Open: Failed to recursively create directories" );
             return false;

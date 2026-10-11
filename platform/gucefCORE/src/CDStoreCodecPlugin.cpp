@@ -609,7 +609,8 @@ CDStoreCodecPlugin::StoreDataTree( void** codecData        ,
                                    const CString& filename )
 {GUCEF_TRACE;
 
-    if ( CreateDirs( filename ) )
+    // Note: opening the file for writing creates any missing parent directories
+    // Calling CreateDirs() on the file path itself would create a directory named after the file
     {
         CFileAccess access( filename, "wb" );
         if ( access.IsValid() )

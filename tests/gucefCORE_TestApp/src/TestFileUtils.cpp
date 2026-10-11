@@ -33,6 +33,11 @@
 #define GUCEF_CORE_DVCPPSTRINGUTILS_H
 #endif /* GUCEF_CORE_DVCPPSTRINGUTILS_H ? */
 
+#ifndef GUCEF_CORE_DVCPPFILEUTILS_H
+#include "dvcppfileutils.h"
+#define GUCEF_CORE_DVCPPFILEUTILS_H
+#endif /* GUCEF_CORE_DVCPPFILEUTILS_H ? */
+
 #ifndef GUCEF_CORE_LOGGING_H
 #include "gucefCORE_Logging.h"
 #define GUCEF_CORE_LOGGING_H
@@ -122,6 +127,52 @@ PerformFileUtilsTests( void )
 
     GUCEF_TESTFW_TESTCASE( "Test: RelativePath function" )
         TestRelativePathFunction();
+    GUCEF_TESTFW_TESTCASE_END
+
+    // Regression: StripFilename() returned the input as-is when there was no directory part
+    // which caused CFileAccess to create a directory named after the file
+    GUCEF_TESTFW_TESTCASE( "Test: StripFilename edge cases" )
+        try
+        {
+            ASSERT_TRUE( CORE::StripFilename( "file.txt" ).IsNULLOrEmpty() );
+            CORE::CString dirSep( GUCEF_DIRSEPCHAR );
+            ASSERT_TRUE( CORE::StripFilename( dirSep + "file.txt" ) == dirSep );
+            ASSERT_TRUE( CORE::StripFilename( "dir" + dirSep + "file.txt" ) == "dir" );
+        }
+        catch( ... )
+        {
+            ERRORHERE;
+        }
+    GUCEF_TESTFW_TESTCASE_END
+
+    // Regression: on Linux CreateDirs() failed for absolute paths and looped forever on relative paths with multiple segments
+    GUCEF_TESTFW_TESTCASE( "Test: CreateDirs with absolute and multi segment paths" )
+        try
+        {
+            CORE::CString nestedDir = CORE::CombinePath( CORE::TempDir(), "gucefCORE_TestApp_CreateDirs/a/b/c" );
+            ASSERT_TRUE( CORE::CreateDirs( nestedDir ) );
+            ASSERT_TRUE( CORE::DirExists( nestedDir ) );
+            // creating it again must also succeed
+            ASSERT_TRUE( CORE::CreateDirs( nestedDir ) );
+        }
+        catch( ... )
+        {
+            ERRORHERE;
+        }
+    GUCEF_TESTFW_TESTCASE_END
+
+    // Regression: TempDir() had no implementation outside of Windows
+    GUCEF_TESTFW_TESTCASE( "Test: TempDir returns an existing directory" )
+        try
+        {
+            CORE::CString tempDir = CORE::TempDir();
+            ASSERT_TRUE( !tempDir.IsNULLOrEmpty() );
+            ASSERT_TRUE( CORE::DirExists( tempDir ) );
+        }
+        catch( ... )
+        {
+            ERRORHERE;
+        }
     GUCEF_TESTFW_TESTCASE_END
 
     CORE::CLogStreamScope::FlushLogs();

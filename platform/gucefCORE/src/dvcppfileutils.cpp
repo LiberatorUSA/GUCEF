@@ -839,14 +839,19 @@ CreateDirs( const CString& path )
     Int32 dirSepCharIndex = actualPath.HasChar( GUCEF_DIRSEPCHAR, true );
     while ( dirSepCharIndex >= 0 )
     {
-        CString dirSegment = actualPath.SubstrToIndex( (UInt32) dirSepCharIndex, true );
-        if ( 0 != ::mkdir( dirSegment.C_String(), accessPerms ) && EEXIST != errno )
+        // Note that for an absolute path the first separator is the root dir which always exists
+        if ( dirSepCharIndex > 0 )
         {
-            GUCEF_ERROR_LOG( LOGLEVEL_NORMAL, "CreateDirs: Unable to create dir: \"" + dirSegment + "\" ErrorCode=" + ToString( (UInt32) errno ) );
-            return false;
+            CString dirSegment = actualPath.SubstrToIndex( (UInt32) dirSepCharIndex, true );
+            if ( 0 != ::mkdir( dirSegment.C_String(), accessPerms ) && EEXIST != errno )
+            {
+                GUCEF_ERROR_LOG( LOGLEVEL_NORMAL, "CreateDirs: Unable to create dir: \"" + dirSegment + "\" ErrorCode=" + ToString( (UInt32) errno ) );
+                return false;
+            }
         }
 
-        dirSepCharIndex = actualPath.HasChar( GUCEF_DIRSEPCHAR, dirSepCharIndex, true );
+        // continue the search after the current separator
+        dirSepCharIndex = actualPath.HasChar( GUCEF_DIRSEPCHAR, (UInt32) dirSepCharIndex+1, true );
     }
 
     if ( 0 != ::mkdir( actualPath.C_String(), accessPerms ) && EEXIST != errno )
@@ -863,14 +868,19 @@ CreateDirs( const CString& path )
     Int32 dirSepCharIndex = actualPath.HasChar( GUCEF_DIRSEPCHAR, true );
     while ( dirSepCharIndex >= 0 )
     {
-        CString dirSegment = actualPath.SubstrToIndex( (UInt32) dirSepCharIndex, true );
-        if ( 0 != ::mkdir( dirSegment.C_String(), accessPerms ) && EEXIST != errno )
+        // Note that for an absolute path the first separator is the root dir which always exists
+        if ( dirSepCharIndex > 0 )
         {
-            GUCEF_ERROR_LOG( LOGLEVEL_NORMAL, "CreateDirs: Unable to create dir: \"" + dirSegment + "\" ErrorCode=" + ToString( (UInt32) errno ) );
-            return false;
+            CString dirSegment = actualPath.SubstrToIndex( (UInt32) dirSepCharIndex, true );
+            if ( 0 != ::mkdir( dirSegment.C_String(), accessPerms ) && EEXIST != errno )
+            {
+                GUCEF_ERROR_LOG( LOGLEVEL_NORMAL, "CreateDirs: Unable to create dir: \"" + dirSegment + "\" ErrorCode=" + ToString( (UInt32) errno ) );
+                return false;
+            }
         }
 
-        dirSepCharIndex = actualPath.HasChar( GUCEF_DIRSEPCHAR, dirSepCharIndex, true );
+        // continue the search after the current separator
+        dirSepCharIndex = actualPath.HasChar( GUCEF_DIRSEPCHAR, (UInt32) dirSepCharIndex+1, true );
     }
 
     if ( 0 != ::mkdir( actualPath.C_String(), accessPerms ) && EEXIST != errno )
