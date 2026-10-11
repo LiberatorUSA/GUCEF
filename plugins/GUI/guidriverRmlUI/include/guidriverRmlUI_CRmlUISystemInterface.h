@@ -26,7 +26,7 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#include <RmlUI/Core/SystemInterface.h>
+#include <RmlUi/Core/SystemInterface.h>
 
 #ifndef GUCE_MYGUIOGRE_MACROS_H
 #include "guidriverRmlUI_macros.h"
@@ -48,7 +48,7 @@ namespace guidriverRmlUI {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-class GUCEF_guidriverRmlUI_PUBLIC_CPP CRmlUISystemInterface : public RmlUI::Core::SystemInterface
+class GUCEF_guidriverRmlUI_PUBLIC_CPP CRmlUISystemInterface : public Rml::SystemInterface
 {
 	public:
     
@@ -58,14 +58,14 @@ class GUCEF_guidriverRmlUI_PUBLIC_CPP CRmlUISystemInterface : public RmlUI::Core
 
 	/// Get the number of seconds elapsed since the start of the application.
 	/// @return Elapsed time, in seconds.
-	virtual float GetElapsedTime();
+	virtual double GetElapsedTime() GUCEF_VIRTUAL_OVERRIDE;
 
 	/// Log the specified message.
 	/// @param[in] type Type of log message, ERROR, WARNING, etc.
 	/// @param[in] message Message to log.
 	/// @return True to continue execution, false to break into the debugger.
-	virtual bool LogMessage( RmlUI::Core::Log::Type type        , 
-                             const RmlUI::Core::String& message );
+	virtual bool LogMessage( Rml::Log::Type type        , 
+                             const Rml::String& message );
 };
 
 /*-------------------------------------------------------------------------//

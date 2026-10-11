@@ -1,5 +1,5 @@
 /*
- *  guidriverRocketOpenGL: module providing a GUI backend using Rocket and OpenGL
+ *  guidriverRmlUIOpenGL: module providing a GUI backend using RmlUi and OpenGL
  *  Copyright (C) 2002 - 2007.  Dinand Vanvelzen
  *
  *  This library is free software; you can redistribute it and/or
@@ -23,7 +23,7 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#include <Rocket/Core.h>
+#include <RmlUi/Core.h>
 
 #ifndef GUCEF_CORE_COBSERVINGNOTIFIER_H
 #include "CObservingNotifier.h"
@@ -45,12 +45,12 @@
 #define GUCEF_INPUT_CINPUTCONTROLLER_H
 #endif /* GUCEF_INPUT_CINPUTCONTROLLER_H ? */
 
-#ifndef GUCEF_GUIDRIVERROCKET_CGUICONTEXT_H
-#include "guidriverRocket_CGUIContext.h"
-#define GUCEF_GUIDRIVERROCKET_CGUICONTEXT_H
-#endif /* GUCEF_GUIDRIVERROCKET_CGUICONTEXT_H ? */
+#ifndef GUCEF_GUIDRIVERRMLUI_CGUICONTEXT_H
+#include "guidriverRmlUI_CGUIContext.h"
+#define GUCEF_GUIDRIVERRMLUI_CGUICONTEXT_H
+#endif /* GUCEF_GUIDRIVERRMLUI_CGUICONTEXT_H ? */
 
-#include "guidriverRocketOpenGL_CRocketGuiDriver.h"
+#include "guidriverRmlUIOpenGL_CRmlUIGuiDriver.h"
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -59,7 +59,7 @@
 //-------------------------------------------------------------------------*/
 
 namespace GUCEF {
-namespace GUIDRIVERROCKETGL {
+namespace GUIDRIVERRMLUIGL {
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -67,74 +67,72 @@ namespace GUIDRIVERROCKETGL {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-CRocketGuiDriver::CRocketGuiDriver( void )
+CRmlUIGuiDriver::CRmlUIGuiDriver( void )
     : GUI::CGUIDriver()              ,
-      m_rocketRenderer()             ,
+      m_renderer()             ,
       m_systemInterface()            ,
       m_fileInterface()              ,
-      m_isRocketInitialized( false ) ,
+      m_isRmlUIInitialized( false ) ,
       m_contextSet()                 ,
       m_fontTypes()
 {GUCEF_TRACE;
 
-	Rocket::Core::SetRenderInterface( &m_rocketRenderer );
-    Rocket::Core::SetSystemInterface( &m_systemInterface );
-    Rocket::Core::SetFileInterface( &m_fileInterface );
+	Rml::SetRenderInterface( &m_renderer );
+    Rml::SetSystemInterface( &m_systemInterface );
+    Rml::SetFileInterface( &m_fileInterface );
 }
 
 /*-------------------------------------------------------------------------*/
 
-CRocketGuiDriver::~CRocketGuiDriver()
+CRmlUIGuiDriver::~CRmlUIGuiDriver()
 {GUCEF_TRACE;
 
-    Rocket::Core::Shutdown();
-
-    Rocket::Core::SetRenderInterface( NULL );
-    Rocket::Core::SetSystemInterface( NULL );
-    Rocket::Core::SetFileInterface( NULL );
+    // Shutting down also releases the contexts and everything else RmlUi holds, which uses the interfaces
+    // that are our members and have to stay valid until then
+    if ( m_isRmlUIInitialized )
+        Rml::Shutdown();
 }
 
 /*-------------------------------------------------------------------------*/
 
 GUI::TGuiContextPtr
-CRocketGuiDriver::CreateGUIContext( GUI::TWindowContextPtr windowContext )
+CRmlUIGuiDriver::CreateGUIContext( GUI::TWindowContextPtr windowContext )
 {GUCEF_TRACE;
 
-    // Lazy initialize Rocket as needed
-    if ( !m_isRocketInitialized )
+    // Lazy initialize RmlUi as needed
+    if ( !m_isRmlUIInitialized )
     {
-        m_isRocketInitialized = Rocket::Core::Initialise();
-        if ( !m_isRocketInitialized )
+        m_isRmlUIInitialized = Rml::Initialise();
+        if ( !m_isRmlUIInitialized )
         {
-            GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "Failed to initialize Rocket" );
+            GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "Failed to initialize RmlUi" );
             return GUI::TGuiContextPtr();
         }
         else
         {
-            GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "Initialized Rocket" );
+            GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "Initialized RmlUi" );
         }
     }
 
-    Rocket::Core::Context* context = NULL;
+    Rml::Context* context = NULL;
     if ( NULL != windowContext )
     {
-        // Create the main Rocket context using the parameters of the windowContext
-        context = Rocket::Core::CreateContext( CORE::PointerToString( windowContext.GetPointer() ).C_String()                  ,
-                                               Rocket::Core::Vector2i( windowContext->GetWidth(), windowContext->GetHeight() ) );
+        // Create the main RmlUi context using the parameters of the windowContext
+        context = Rml::CreateContext( CORE::PointerToString( windowContext.GetPointer() ).C_String()                  ,
+                                      Rml::Vector2i( windowContext->GetWidth(), windowContext->GetHeight() ) );
     }
     else
     {
-        // Create the main Rocket context using defaults, it is expected to be altered later
-        GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "Initialized Rocket context with defaults since no window context was provided" );
-        context = Rocket::Core::CreateContext( "default"                      ,
-                                               Rocket::Core::Vector2i( 2, 2 ) );
+        // Create the main RmlUi context using defaults, it is expected to be altered later
+        GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "Initialized RmlUi context with defaults since no window context was provided" );
+        context = Rml::CreateContext( "default"                      ,
+                                               Rml::Vector2i( 2, 2 ) );
     }
 
     if ( NULL == context )
     {
-        // Unable to create a Rocket context
-        GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "Failed to create Rocket GUI context" );
-        Rocket::Core::Shutdown();
+        // Unable to create a RmlUi context
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "Failed to create RmlUi GUI context" );
         return GUI::TGuiContextPtr();
     }
 
@@ -146,7 +144,7 @@ CRocketGuiDriver::CreateGUIContext( GUI::TWindowContextPtr windowContext )
     INPUT::CInputContext* inputContext = INPUT::CInputGlobal::Instance()->GetInputController().CreateContext( inputContextParams );
 
     // Add a reference to the context in our set
-    GUI::TGuiContextPtr guiContextPtr = GUI::TGuiContextPtr( new GUIDRIVERROCKET::CGUIContext( this, context, windowContext, inputContext ) );
+    GUI::TGuiContextPtr guiContextPtr = GUI::TGuiContextPtr( new guidriverRmlUI::CGUIContext( this, context, windowContext, inputContext ) );
     m_contextSet.insert( guiContextPtr );
 
     return guiContextPtr;
@@ -155,7 +153,7 @@ CRocketGuiDriver::CreateGUIContext( GUI::TWindowContextPtr windowContext )
 /*-------------------------------------------------------------------------*/
 
 GUI::CGUIDriver::TGUIContextSet
-CRocketGuiDriver::GetContextList( void )
+CRmlUIGuiDriver::GetContextList( void )
 {GUCEF_TRACE;
 
     return m_contextSet;
@@ -164,7 +162,7 @@ CRocketGuiDriver::GetContextList( void )
 /*-------------------------------------------------------------------------*/
 
 GUI::UInt32
-CRocketGuiDriver::GetContextCount( void )
+CRmlUIGuiDriver::GetContextCount( void )
 {GUCEF_TRACE;
 
     return (GUI::UInt32) m_contextSet.size();
@@ -173,25 +171,16 @@ CRocketGuiDriver::GetContextCount( void )
 /*-------------------------------------------------------------------------*/
 
 GUI::CString
-CRocketGuiDriver::GetDriverName( void )
+CRmlUIGuiDriver::GetDriverName( void )
 {GUCEF_TRACE;
 
-    return "RocketOpenGL";
+    return "RmlUIOpenGL";
 }
 
 /*-------------------------------------------------------------------------*/
 
 GUI::CGUIDriver::TStringSet
-CRocketGuiDriver::GetAvailableFormTypes( void )
-{GUCEF_TRACE;
-
-    return GUI::CGUIDriver::TStringSet();
-}
-
-/*-------------------------------------------------------------------------*/
-
-GUI::CGUIDriver::TStringSet
-CRocketGuiDriver::GetAvailableWidgetTypes( void )
+CRmlUIGuiDriver::GetAvailableFormTypes( void )
 {GUCEF_TRACE;
 
     return GUI::CGUIDriver::TStringSet();
@@ -200,7 +189,16 @@ CRocketGuiDriver::GetAvailableWidgetTypes( void )
 /*-------------------------------------------------------------------------*/
 
 GUI::CGUIDriver::TStringSet
-CRocketGuiDriver::GetAvailableFonts( void )
+CRmlUIGuiDriver::GetAvailableWidgetTypes( void )
+{GUCEF_TRACE;
+
+    return GUI::CGUIDriver::TStringSet();
+}
+
+/*-------------------------------------------------------------------------*/
+
+GUI::CGUIDriver::TStringSet
+CRmlUIGuiDriver::GetAvailableFonts( void )
 {GUCEF_TRACE;
 
     return m_fontTypes;
@@ -209,15 +207,15 @@ CRocketGuiDriver::GetAvailableFonts( void )
 /*-------------------------------------------------------------------------*/
 
 bool
-CRocketGuiDriver::LoadFontFromAsset( const GUI::CString& assetPath )
+CRmlUIGuiDriver::LoadFontFromAsset( const GUI::CString& assetPath )
 {GUCEF_TRACE;
 
-    // Simple pass on the load request to Rocket, all the callback inerfaces will take
+    // Simple pass on the load request to RmlUi, all the callback inerfaces will take
     // care of integrating with GUCEF
-    if ( Rocket::Core::FontDatabase::LoadFontFace( assetPath.C_String() ) )
+    if ( Rml::LoadFontFace( assetPath.C_String() ) )
     {
         // @TODO: fix somehow
-        // This is not correct but at present Rocket cant give you the name of the font back
+        // This is not correct but at present RmlUi cant give you the name of the font back
         m_fontTypes.insert( assetPath );
         return true;
     }
@@ -227,17 +225,17 @@ CRocketGuiDriver::LoadFontFromAsset( const GUI::CString& assetPath )
 /*-------------------------------------------------------------------------*/
 
 const GUI::CString&
-CRocketGuiDriver::GetClassTypeName( void ) const
+CRmlUIGuiDriver::GetClassTypeName( void ) const
 {GUCEF_TRACE;
 
-    static GUI::CString classTypeName = "GUCEF::GUIDRIVERROCKETGL::CRocketGuiDriver";
+    static GUI::CString classTypeName = "GUCEF::GUIDRIVERRMLUIGL::CRmlUIGuiDriver";
     return classTypeName;
 }
 
 /*-------------------------------------------------------------------------*/
 
 GUI::CString
-CRocketGuiDriver::GetDriverProperty( const GUI::CString& propertyName ) const
+CRmlUIGuiDriver::GetDriverProperty( const GUI::CString& propertyName ) const
 {GUCEF_TRACE;
 
     return GUI::CString();
@@ -246,7 +244,7 @@ CRocketGuiDriver::GetDriverProperty( const GUI::CString& propertyName ) const
 /*-------------------------------------------------------------------------*/
 
 bool
-CRocketGuiDriver::SaveConfig( CORE::CDataNode& tree ) const
+CRmlUIGuiDriver::SaveConfig( CORE::CDataNode& tree ) const
 {GUCEF_TRACE;
 
     return false;
@@ -255,7 +253,7 @@ CRocketGuiDriver::SaveConfig( CORE::CDataNode& tree ) const
 /*-------------------------------------------------------------------------*/
 
 bool
-CRocketGuiDriver::LoadConfig( const CORE::CDataNode& treeroot )
+CRmlUIGuiDriver::LoadConfig( const CORE::CDataNode& treeroot )
 {GUCEF_TRACE;
 
     return true;
@@ -267,7 +265,7 @@ CRocketGuiDriver::LoadConfig( const CORE::CDataNode& treeroot )
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-}; /* namespace GUIDRIVERROCKETGL */
+}; /* namespace GUIDRIVERRMLUIGL */
 }; /* namespace GUCEF */
 
 /*-------------------------------------------------------------------------*/

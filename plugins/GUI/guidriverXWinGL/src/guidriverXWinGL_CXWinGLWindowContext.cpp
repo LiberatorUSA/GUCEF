@@ -30,6 +30,11 @@
 #define GUCEF_CORE_LOGGING_H
 #endif /* GUCEF_CORE_LOGGING_H ? */
 
+#ifndef GUCEF_CORE_CCOREGLOBAL_H
+#include "gucefCORE_CCoreGlobal.h"
+#define GUCEF_CORE_CCOREGLOBAL_H
+#endif /* GUCEF_CORE_CCOREGLOBAL_H ? */
+
 #ifndef GUCEF_CORE_CX11EVENTDISPATCHER_H
 #include "gucefCORE_CX11EventDispatcher.h"
 #define GUCEF_CORE_CX11EVENTDISPATCHER_H
@@ -139,9 +144,9 @@ void
 CXWinGLWindowContext::Shutdown( void )
 {GUCEF_TRACE;
 
-	CORE::CPulseGenerator& pulseGenerator = CORE::CCoreGlobal::Instance()->GetPulseGenerator();
-    pulseGenerator.RequestStopOfPeriodicUpdates( this );
-    UnsubscribeFrom( &pulseGenerator );
+	CORE::PulseGeneratorPtr pulseGenerator = CORE::CCoreGlobal::Instance()->GetPulseGenerator();
+    pulseGenerator->RequestStopOfPeriodicUpdates( this );
+    UnsubscribeFrom( pulseGenerator.GetPointerAlways() );
 
     if ( 0 != m_window.GetWindow() )
     {
@@ -301,9 +306,9 @@ CXWinGLWindowContext::Initialize( const GUI::CString& title                ,
     //m_window.GrabFocus();
 
     // Grab the main app pulse generator and set the update interval for the context to the desired refresh rate
-    CORE::CPulseGenerator& pulseGenerator = CORE::CCoreGlobal::Instance()->GetPulseGenerator();
-    pulseGenerator.RequestPeriodicPulses( this, 1000 / videoSettings.GetFrequency() );
-    SubscribeTo( &pulseGenerator, CORE::CPulseGenerator::PulseEvent );
+    CORE::PulseGeneratorPtr pulseGenerator = CORE::CCoreGlobal::Instance()->GetPulseGenerator();
+    pulseGenerator->RequestPeriodicPulses( this, 1000 / videoSettings.GetFrequency() );
+    SubscribeTo( pulseGenerator.GetPointerAlways(), CORE::CPulseGenerator::PulseEvent );
 
     GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "CXWinGLWindowContext: Succesfully created OpenGL rendering context" );
 

@@ -17,8 +17,8 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
  */
 
-#ifndef GUCEF_guidriverRmlUI_CRmlUIVFSINTERFACE_H
-#define GUCEF_guidriverRmlUI_CRmlUIVFSINTERFACE_H
+#ifndef GUCEF_guidriverRmlUI_CRmlUISTREAMADAPTER_H
+#define GUCEF_guidriverRmlUI_CRmlUISTREAMADAPTER_H
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -26,12 +26,15 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#include <RmlUI/Core.h>
+#ifndef RmlUICORESTREAM_H
+#include "RmlUi/Core/Stream.h"
+#define RmlUICORESTREAM_H
+#endif /* RmlUICORESTREAM_H ? */
 
-#ifndef GUCEF_VFS_CVFS_H
-#include "gucefVFS_CVFS.h"
-#define GUCEF_VFS_CVFS_H
-#endif /* GUCEF_VFS_CVFS_H ? */
+#ifndef GUCEF_CORE_CIOACCESS_H
+#include "CIOAccess.h"
+#define GUCEF_CORE_CIOACCESS_H
+#endif /* GUCEF_CORE_CIOACCESS_H ? */
 
 #ifndef GUCEF_guidriverRmlUI_MACROS_H
 #include "guidriverRmlUI_macros.h"
@@ -53,59 +56,100 @@ namespace guidriverRmlUI {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-/**
- *  Class which can be used to override RmlUI's basic C style file I/O with access to the GUCEF VFS
- */
-class GUCEF_guidriverRmlUI_PUBLIC_CPP CRmlUIVFSInterface : public RmlUI::Core::FileInterface
+class GUCEF_guidriverRmlUI_PUBLIC_CPP CRmlUIStreamAdapter : public Rml::Stream
 {
-    public:
+	public:
 
-	CRmlUIVFSInterface();
+	CRmlUIStreamAdapter( CORE::CIOAccess& access );
 
-	virtual ~CRmlUIVFSInterface();
+	virtual ~CRmlUIStreamAdapter();
 
-	/// Opens a file.
-	/// @param file The file handle to write to.
-	/// @return A valid file handle, or NULL on failure
-	virtual RmlUI::Core::FileHandle Open( const RmlUI::Core::String& path );
+	/// Closes the stream.
+	virtual void Close();
 
-	/// Closes a previously opened file.
-	/// @param file The file handle previously opened through Open().
-	virtual void Close( RmlUI::Core::FileHandle file );
+	/// Returns the mode the stream was opened in.
+	int GetStreamMode() const;
 
-	/// Reads data from a previously opened file.
-	/// @param buffer The buffer to be read into.
-	/// @param size The number of bytes to read into the buffer.
-	/// @param file The handle of the file.
-	/// @return The total number of bytes read into the buffer.
-	virtual size_t Read( void* buffer, size_t size, RmlUI::Core::FileHandle file );
+	/// Obtain the source url of this stream (if available)
+	const Rml::URL& GetSourceURL() const;
 
-	/// Seeks to a point in a previously opened file.
-	/// @param file The handle of the file to seek.
-	/// @param offset The number of bytes to seek.
-	/// @param origin One of either SEEK_SET (seek from the beginning of the file), SEEK_END (seek from the end of the file) or SEEK_CUR (seek from the current file position).
-	/// @return True if the operation completed successfully, false otherwise.
-	virtual bool Seek( RmlUI::Core::FileHandle file, long offset, int origin );
+	/// Are we at the end of the stream
+	virtual bool IsEOS() const;
 
-	/// Returns the current position of the file pointer.
-	/// @param file The handle of the file to be queried.
-	/// @return The number of bytes from the origin of the file.
-	virtual size_t Tell( RmlUI::Core::FileHandle file );
+	/// Returns the size of this stream (in bytes).
+	virtual size_t Length() const;
 
-	/// Called when this file interface is released.
-	virtual void Release();
+	/// Returns the position of the stream pointer (in bytes).
+	virtual size_t Tell() const;
+	
+    /// Sets the stream position (in bytes).
+	virtual bool Seek( long offset, int origin ) const;
+
+	/// Read from the stream.
+	virtual size_t Read( void* buffer, size_t bytes ) const;
+	
+    /// Read from the stream into another stream.
+	virtual size_t Read (Rml::Stream* stream, size_t bytes ) const;
+	
+    /// Read from the stream and append to the string buffer
+	virtual size_t Read( Rml::String& buffer, size_t bytes ) const;
+
+	/// Read from the stream, without increasing the stream offset.
+	virtual size_t Peek( void* buffer, size_t bytes ) const;
+
+	/// Write to the stream at the current position.
+	virtual size_t Write( const void* buffer, size_t bytes );
+
+	/// Write to this stream from another stream.
+	virtual size_t Write( const Stream* stream, size_t bytes );
+
+	/// Write a character array to the stream.
+	virtual size_t Write( const char* string );
+
+	/// Write a string to the stream
+	virtual size_t Write( const Rml::String& string );
+
+	/// Truncate the stream to the specified length.
+	virtual size_t Truncate( size_t bytes );
+
+	/// Push onto the front of the stream.
+	virtual size_t PushFront( const void* buffer, size_t bytes );
+
+	/// Push onto the back of the stream.
+	virtual size_t PushBack( const void* buffer, size_t bytes );
+
+	/// Pop from the front of the stream.
+	virtual size_t PopFront( size_t bytes );
+
+	/// Pop from the back of the stream.
+	virtual size_t PopBack( size_t bytes );
+
+	/// Returns true if the stream is ready for reading, false otherwise.
+	/// This is usually only implemented on streams supporting asynchronous
+	/// operations.
+	virtual bool IsReadReady();
+
+	/// Returns true if the stream is ready for writing, false otherwise.
+	/// This is usually only implemented on streams supporting asynchronous
+	/// operations.
+	virtual bool IsWriteReady();
+
+    protected:
+
+	/// Sets the mode on the stream; should be called by a stream when it is opened.
+	void SetStreamDetails( const Rml::URL& url, int stream_mode );		
+
+	/// Deletes the stream.
+	virtual void OnReferenceDeactivate();
 
     private:
 
-    RmlUI::Core::FileHandle FindOpenHandleSlot( void ) const;
+    CRmlUIStreamAdapter( void );
+    CRmlUIStreamAdapter( const CRmlUIStreamAdapter& src );
 
     private:
 
-    typedef std::map< RmlUI::Core::FileHandle, VFS::TBasicVfsResourcePtr > TFileHandleMap;
-    typedef std::set< RmlUI::Core::FileHandle > THandleSet;
-
-    VFS::CVFS* m_vfs;
-    TFileHandleMap m_fileHandles;
+    CORE::CIOAccess* m_access;
 };
 
 /*-------------------------------------------------------------------------//
@@ -119,7 +163,7 @@ class GUCEF_guidriverRmlUI_PUBLIC_CPP CRmlUIVFSInterface : public RmlUI::Core::F
 
 /*-------------------------------------------------------------------------*/
           
-#endif /* GUCEF_guidriverRmlUI_CRmlUIVFSINTERFACE_H ? */
+#endif /* GUCEF_guidriverRmlUI_CRmlUISTREAMADAPTER_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //

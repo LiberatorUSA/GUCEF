@@ -120,7 +120,7 @@ class GUIDRIVERXWINGL_PUBLIC_CPP CXWinGLWindowContext : public GUI::CWindowConte
 
 /*-------------------------------------------------------------------------*/
 
-typedef CORE::CTSharedPtr< CXWinGLWindowContext >  TXWinGLWindowContextPtr;
+typedef CORE::CTSharedPtr< CXWinGLWindowContext, MT::CMutex >  TXWinGLWindowContextPtr;
 
 /*-------------------------------------------------------------------------//
 //                                                                         //

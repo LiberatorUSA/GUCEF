@@ -22,8 +22,8 @@ LOCAL_MODULE_FILENAME := libguidriverRmlUIOpenGL
 @echo Module name: $(LOCAL_MODULE)
 
 LOCAL_SRC_FILES := \
-  src/guidriverRmlUIOpenGL_CRocketGuiDriver.cpp \
-  src/guidriverRmlUIOpenGL_CRocketRenderInterfaceOpenGL.cpp \
+  src/guidriverRmlUIOpenGL_CRmlUIGuiDriver.cpp \
+  src/guidriverRmlUIOpenGL_CRmlUIRenderInterfaceOpenGL.cpp \
   src/guidriverRmlUIOpenGL_pluginAPI.cpp
 
 LOCAL_C_INCLUDES := \

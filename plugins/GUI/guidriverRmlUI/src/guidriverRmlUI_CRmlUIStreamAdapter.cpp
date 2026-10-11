@@ -46,7 +46,7 @@ namespace guidriverRmlUI {
 //-------------------------------------------------------------------------*/
 
 CRmlUIStreamAdapter::CRmlUIStreamAdapter( CORE::CIOAccess& access )
-    : RmlUI::Core::Stream() ,
+    : Rml::Stream() ,
       m_access( &access )
 {GUCEF_TRACE;
 
@@ -82,11 +82,11 @@ CRmlUIStreamAdapter::GetStreamMode() const
 
 /*-------------------------------------------------------------------------*/
 
-const RmlUI::Core::URL&
+const Rml::URL&
 CRmlUIStreamAdapter::GetSourceURL() const
 {GUCEF_TRACE;
 
-    static RmlUI::Core::URL dummy;
+    static Rml::URL dummy;
     return dummy;
 }
 
@@ -138,7 +138,7 @@ CRmlUIStreamAdapter::Read( void* buffer, size_t bytes ) const
 /*-------------------------------------------------------------------------*/
 
 size_t
-CRmlUIStreamAdapter::Read( RmlUI::Core::Stream* stream, size_t bytes ) const
+CRmlUIStreamAdapter::Read( Rml::Stream* stream, size_t bytes ) const
 {GUCEF_TRACE;
 
     return stream->Write( this, bytes );
@@ -147,7 +147,7 @@ CRmlUIStreamAdapter::Read( RmlUI::Core::Stream* stream, size_t bytes ) const
 /*-------------------------------------------------------------------------*/
 	
 size_t
-CRmlUIStreamAdapter::Read( RmlUI::Core::String& buffer, size_t bytes ) const
+CRmlUIStreamAdapter::Read( Rml::String& buffer, size_t bytes ) const
 {GUCEF_TRACE;
 
     GUI::CString strBuffer;
@@ -181,7 +181,7 @@ CRmlUIStreamAdapter::Write( const void* buffer, size_t bytes )
 /*-------------------------------------------------------------------------*/
 
 size_t
-CRmlUIStreamAdapter::Write( const RmlUI::Core::Stream* stream, size_t bytes )
+CRmlUIStreamAdapter::Write( const Rml::Stream* stream, size_t bytes )
 {GUCEF_TRACE;
     
     return stream->Read( this, bytes );
@@ -199,10 +199,10 @@ CRmlUIStreamAdapter::Write( const char* string )
 /*-------------------------------------------------------------------------*/
 
 size_t
-CRmlUIStreamAdapter::Write( const RmlUI::Core::String& string )
+CRmlUIStreamAdapter::Write( const Rml::String& string )
 {GUCEF_TRACE;
 
-    return m_access->Write( GUI::CString( string.CString(), string.Length() ) );
+    return m_access->Write( GUI::CString( string.c_str(), (CORE::UInt32) string.size() ) );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -272,7 +272,7 @@ CRmlUIStreamAdapter::IsWriteReady()
 /*-------------------------------------------------------------------------*/
 
 void
-CRmlUIStreamAdapter::SetStreamDetails( const RmlUI::Core::URL& url, int stream_mode )
+CRmlUIStreamAdapter::SetStreamDetails( const Rml::URL& url, int stream_mode )
 {GUCEF_TRACE;
 
 }

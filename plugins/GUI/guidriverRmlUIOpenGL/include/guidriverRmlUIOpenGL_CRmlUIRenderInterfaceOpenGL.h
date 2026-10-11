@@ -1,5 +1,5 @@
 /*
- *  guidriverRocketOpenGL: module providing a GUI backend using Rocket and OpenGL
+ *  guidriverRmlUIOpenGL: module providing a GUI backend using RmlUi and OpenGL
  *  Copyright (C) 2002 - 2007.  Dinand Vanvelzen
  *
  *  This library is free software; you can redistribute it and/or
@@ -48,8 +48,8 @@
  *
  */
 
-#ifndef GUCEF_GUIDRIVERROCKETGL_CROCKETRENDERINTERFACEOPENGL_H
-#define GUCEF_GUIDRIVERROCKETGL_CROCKETRENDERINTERFACEOPENGL_H
+#ifndef GUCEF_GUIDRIVERRMLUIGL_CRMLUIRENDERINTERFACEOPENGL_H
+#define GUCEF_GUIDRIVERRMLUIGL_CRMLUIRENDERINTERFACEOPENGL_H
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -57,15 +57,22 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#ifndef ROCKETCORERENDERINTERFACE_H
-#include "Rocket/Core/RenderInterface.h"
-#define ROCKETCORERENDERINTERFACE_H
-#endif /* ROCKETCORERENDERINTERFACE_H ? */
+#include <vector>
 
-#ifndef GUCEF_GUIDRIVERROCKETGL_MACROS_H
-#include "guidriverRocketOpenGL_macros.h"
-#define GUCEF_GUIDRIVERROCKETGL_MACROS_H
-#endif /* GUCEF_GUIDRIVERROCKETGL_MACROS_H ? */
+#ifndef RMLUICORERENDERINTERFACE_H
+#include "RmlUi/Core/RenderInterface.h"
+#define RMLUICORERENDERINTERFACE_H
+#endif /* RMLUICORERENDERINTERFACE_H ? */
+
+#ifndef RMLUICOREMATRIX4_H
+#include "RmlUi/Core/Matrix4.h"
+#define RMLUICOREMATRIX4_H
+#endif /* RMLUICOREMATRIX4_H ? */
+
+#ifndef GUCEF_GUIDRIVERRMLUIGL_MACROS_H
+#include "guidriverRmlUIOpenGL_macros.h"
+#define GUCEF_GUIDRIVERRMLUIGL_MACROS_H
+#endif /* GUCEF_GUIDRIVERRMLUIGL_MACROS_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -74,7 +81,7 @@
 //-------------------------------------------------------------------------*/
 
 namespace GUCEF {
-namespace GUIDRIVERROCKETGL {
+namespace GUIDRIVERRMLUIGL {
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -83,45 +90,65 @@ namespace GUIDRIVERROCKETGL {
 //-------------------------------------------------------------------------*/
 
 
-class GUIDRIVERROCKETGL_PUBLIC_CPP CRocketRenderInterfaceOpenGL : public Rocket::Core::RenderInterface
+/**
+ *  Render interface of RmlUi which draws using the fixed function pipeline of OpenGL.
+ *  What it expects of the application is that the viewport and the projection are set up before the GUI is rendered.
+ *  RmlUi uses premultiplied alpha for everything it renders, the blend function is set for that when geometry is drawn.
+ */
+class GUIDRIVERRMLUIGL_PUBLIC_CPP CRmlUIRenderInterfaceOpenGL : public Rml::RenderInterface
 {
     public:
 
-	CRocketRenderInterfaceOpenGL( void );
+	CRmlUIRenderInterfaceOpenGL( void );
 
-    virtual ~CRocketRenderInterfaceOpenGL();
+    virtual ~CRmlUIRenderInterfaceOpenGL() GUCEF_VIRTUAL_OVERRIDE;
 
-	/// Called by Rocket when it wants to render geometry that it does not wish to optimise.
-	virtual void RenderGeometry(Rocket::Core::Vertex* vertices, int num_vertices, int* indices, int num_indices, Rocket::Core::TextureHandle texture, const Rocket::Core::Vector2f& translation);
+	/// Called by RmlUi when it wants to compile geometry to be rendered later, which is kept in memory
+	virtual Rml::CompiledGeometryHandle CompileGeometry( Rml::Span< const Rml::Vertex > vertices ,
+                                                         Rml::Span< const int > indices          ) GUCEF_VIRTUAL_OVERRIDE;
 
-	/// Called by Rocket when it wants to compile geometry it believes will be static for the forseeable future.
-	virtual Rocket::Core::CompiledGeometryHandle CompileGeometry(Rocket::Core::Vertex* vertices, int num_vertices, int* indices, int num_indices, Rocket::Core::TextureHandle texture);
+	/// Called by RmlUi when it wants to render compiled geometry
+	virtual void RenderGeometry( Rml::CompiledGeometryHandle geometry ,
+                                 Rml::Vector2f translation            ,
+                                 Rml::TextureHandle texture           ) GUCEF_VIRTUAL_OVERRIDE;
 
-	/// Called by Rocket when it wants to render application-compiled geometry.
-	virtual void RenderCompiledGeometry(Rocket::Core::CompiledGeometryHandle geometry, const Rocket::Core::Vector2f& translation);
+	/// Called by RmlUi when it wants to release compiled geometry
+	virtual void ReleaseGeometry( Rml::CompiledGeometryHandle geometry ) GUCEF_VIRTUAL_OVERRIDE;
 
-	/// Called by Rocket when it wants to release application-compiled geometry.
-	virtual void ReleaseCompiledGeometry(Rocket::Core::CompiledGeometryHandle geometry);
+	/// Called by RmlUi when a texture is required by the library, textures are loaded using the file interface of RmlUi
+	virtual Rml::TextureHandle LoadTexture( Rml::Vector2i& texture_dimensions ,
+                                            const Rml::String& source         ) GUCEF_VIRTUAL_OVERRIDE;
 
-	/// Called by Rocket when it wants to enable or disable scissoring to clip content.
-	virtual void EnableScissorRegion(bool enable);
+	/// Called by RmlUi when a texture is required to be built from an internally-generated sequence of pixels.
+	virtual Rml::TextureHandle GenerateTexture( Rml::Span< const Rml::byte > source ,
+                                                Rml::Vector2i source_dimensions     ) GUCEF_VIRTUAL_OVERRIDE;
 
-	/// Called by Rocket when it wants to change the scissor region.
-	virtual void SetScissorRegion(int x, int y, int width, int height);
+	/// Called by RmlUi when a loaded texture is no longer required.
+	virtual void ReleaseTexture( Rml::TextureHandle texture ) GUCEF_VIRTUAL_OVERRIDE;
 
-	/// Called by Rocket when a texture is required by the library.
-	virtual bool LoadTexture(Rocket::Core::TextureHandle& texture_handle, Rocket::Core::Vector2i& texture_dimensions, const Rocket::Core::String& source);
+	/// Called by RmlUi when it wants to enable or disable scissoring to clip content.
+	virtual void EnableScissorRegion( bool enable ) GUCEF_VIRTUAL_OVERRIDE;
 
-	/// Called by Rocket when a texture is required to be built from an internally-generated sequence of pixels.
-	virtual bool GenerateTexture(Rocket::Core::TextureHandle& texture_handle, const Rocket::Core::byte* source, const Rocket::Core::Vector2i& source_dimensions);
+	/// Called by RmlUi when it wants to change the scissor region.
+	virtual void SetScissorRegion( Rml::Rectanglei region ) GUCEF_VIRTUAL_OVERRIDE;
 
-	/// Called by Rocket when a loaded texture is no longer required.
-	virtual void ReleaseTexture(Rocket::Core::TextureHandle texture_handle);
+	/// Called by RmlUi when it wants the geometry to be transformed, as for elements with a CSS transform
+	virtual void SetTransform( const Rml::Matrix4f* transform ) GUCEF_VIRTUAL_OVERRIDE;
 
     private:
 
-    CRocketRenderInterfaceOpenGL( const CRocketRenderInterfaceOpenGL& src );
-    CRocketRenderInterfaceOpenGL& operator=( const CRocketRenderInterfaceOpenGL& src );
+    CRmlUIRenderInterfaceOpenGL( const CRmlUIRenderInterfaceOpenGL& src );
+    CRmlUIRenderInterfaceOpenGL& operator=( const CRmlUIRenderInterfaceOpenGL& src );
+
+    struct SCompiledGeometry
+    {
+        std::vector< Rml::Vertex > vertices;
+        std::vector< int > indices;
+    };
+
+    private:
+
+    bool m_hasTransform;
 };
 
 /*-------------------------------------------------------------------------//
@@ -130,12 +157,12 @@ class GUIDRIVERROCKETGL_PUBLIC_CPP CRocketRenderInterfaceOpenGL : public Rocket:
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-}; /* namespace GUIDRIVERROCKETGL */
+}; /* namespace GUIDRIVERRMLUIGL */
 }; /* namespace GUCEF */
 
 /*-------------------------------------------------------------------------*/
           
-#endif /* GUCEF_GUIDRIVERROCKETGL_CROCKETRENDERINTERFACEOPENGL_H ? */
+#endif /* GUCEF_GUIDRIVERRMLUIGL_CRMLUIRENDERINTERFACEOPENGL_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //

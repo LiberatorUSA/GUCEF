@@ -1,5 +1,5 @@
 /*
- *  guidriverRocketOpenGL: module providing a GUI backend using Rocket and OpenGL
+ *  guidriverRmlUIOpenGL: module providing a GUI backend using RmlUi and OpenGL
  *  Copyright (C) 2002 - 2007.  Dinand Vanvelzen
  *
  *  This library is free software; you can redistribute it and/or
@@ -17,8 +17,8 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
  */
 
-#ifndef GUCEF_GUIDRIVERROCKETGL_CROCKETGUIDRIVER_H
-#define GUCEF_GUIDRIVERROCKETGL_CROCKETGUIDRIVER_H
+#ifndef GUCEF_GUIDRIVERRMLUIGL_CRMLUIGUIDRIVER_H
+#define GUCEF_GUIDRIVERRMLUIGL_CRMLUIGUIDRIVER_H
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -41,25 +41,25 @@
 #define GUCEF_GUI_CGUIDRIVER_H
 #endif /* GUCEF_GUI_CGUIDRIVER_H ? */
 
-#ifndef GUCEF_GUIDRIVERROCKET_CROCKETSYSTEMINTERFACE_H
-#include "guidriverRocket_CRocketSystemInterface.h"
-#define GUCEF_GUIDRIVERROCKET_CROCKETSYSTEMINTERFACE_H
-#endif /* GUCEF_GUIDRIVERROCKET_CROCKETSYSTEMINTERFACE_H ? */
+#ifndef GUCEF_GUIDRIVERRMLUI_CRMLUISYSTEMINTERFACE_H
+#include "guidriverRmlUI_CRmlUISystemInterface.h"
+#define GUCEF_GUIDRIVERRMLUI_CRMLUISYSTEMINTERFACE_H
+#endif /* GUCEF_GUIDRIVERRMLUI_CRMLUISYSTEMINTERFACE_H ? */
 
-#ifndef GUCEF_GUIDRIVERROCKET_CROCKETVFSINTERFACE_H
-#include "guidriverRocket_CRocketVFSInterface.h"
-#define GUCEF_GUIDRIVERROCKET_CROCKETVFSINTERFACE_H
-#endif /* GUCEF_GUIDRIVERROCKET_CROCKETVFSINTERFACE_H ? */
+#ifndef GUCEF_GUIDRIVERRMLUI_CRMLUIVFSINTERFACE_H
+#include "guidriverRmlUI_CRmlUIVFSInterface.h"
+#define GUCEF_GUIDRIVERRMLUI_CRMLUIVFSINTERFACE_H
+#endif /* GUCEF_GUIDRIVERRMLUI_CRMLUIVFSINTERFACE_H ? */
 
-#ifndef GUCEF_GUIDRIVERROCKETGL_CROCKETRENDERINTERFACEOPENGL_H
-#include "guidriverRocketOpenGL_CRocketRenderInterfaceOpenGL.h"
-#define GUCEF_GUIDRIVERROCKETGL_CROCKETRENDERINTERFACEOPENGL_H
-#endif /* GUCEF_GUIDRIVERROCKETGL_CROCKETRENDERINTERFACEOPENGL_H ? */
+#ifndef GUCEF_GUIDRIVERRMLUIGL_CRMLUIRENDERINTERFACEOPENGL_H
+#include "guidriverRmlUIOpenGL_CRmlUIRenderInterfaceOpenGL.h"
+#define GUCEF_GUIDRIVERRMLUIGL_CRMLUIRENDERINTERFACEOPENGL_H
+#endif /* GUCEF_GUIDRIVERRMLUIGL_CRMLUIRENDERINTERFACEOPENGL_H ? */
 
-#ifndef GUCEF_GUIDRIVERROCKETGL_MACROS_H
-#include "guidriverRocketOpenGL_macros.h"
-#define GUCEF_GUIDRIVERROCKETGL_MACROS_H
-#endif /* GUCEF_GUIDRIVERROCKETGL_MACROS_H ? */
+#ifndef GUCEF_GUIDRIVERRMLUIGL_MACROS_H
+#include "guidriverRmlUIOpenGL_macros.h"
+#define GUCEF_GUIDRIVERRMLUIGL_MACROS_H
+#endif /* GUCEF_GUIDRIVERRMLUIGL_MACROS_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -68,7 +68,7 @@
 //-------------------------------------------------------------------------*/
 
 namespace GUCEF {
-namespace GUIDRIVERROCKETGL {
+namespace GUIDRIVERRMLUIGL {
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -76,13 +76,13 @@ namespace GUIDRIVERROCKETGL {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-class GUIDRIVERROCKETGL_PUBLIC_CPP CRocketGuiDriver : public GUI::CGUIDriver
+class GUIDRIVERRMLUIGL_PUBLIC_CPP CRmlUIGuiDriver : public GUI::CGUIDriver
 {    
     public:
 
-    CRocketGuiDriver( void );
+    CRmlUIGuiDriver( void );
 
-    virtual ~CRocketGuiDriver();
+    virtual ~CRmlUIGuiDriver();
     
     virtual GUI::TGuiContextPtr CreateGUIContext( GUI::TWindowContextPtr windowContext );
     
@@ -124,14 +124,14 @@ class GUIDRIVERROCKETGL_PUBLIC_CPP CRocketGuiDriver : public GUI::CGUIDriver
     virtual bool LoadConfig( const CORE::CDataNode& treeroot );    
     private:
     
-    CRocketGuiDriver( const CRocketGuiDriver& src );
+    CRmlUIGuiDriver( const CRmlUIGuiDriver& src );
 
     private:
 
-    CRocketRenderInterfaceOpenGL m_rocketRenderer;
-    GUIDRIVERROCKET::CRocketSystemInterface m_systemInterface;
-    GUIDRIVERROCKET::CRocketVFSInterface m_fileInterface;
-    bool m_isRocketInitialized;
+    CRmlUIRenderInterfaceOpenGL m_renderer;
+    guidriverRmlUI::CRmlUISystemInterface m_systemInterface;
+    guidriverRmlUI::CRmlUIVFSInterface m_fileInterface;
+    bool m_isRmlUIInitialized;
     GUI::CGUIDriver::TGUIContextSet m_contextSet;
     TStringSet m_fontTypes;
 };
@@ -142,12 +142,12 @@ class GUIDRIVERROCKETGL_PUBLIC_CPP CRocketGuiDriver : public GUI::CGUIDriver
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-}; /* namespace GUIDRIVERROCKETGL */
+}; /* namespace GUIDRIVERRMLUIGL */
 }; /* namespace GUCEF */
 
 /*-------------------------------------------------------------------------*/
           
-#endif /* GUCEF_GUIDRIVERROCKETGL_CROCKETGUIDRIVER_H ? */
+#endif /* GUCEF_GUIDRIVERRMLUIGL_CRMLUIGUIDRIVER_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //

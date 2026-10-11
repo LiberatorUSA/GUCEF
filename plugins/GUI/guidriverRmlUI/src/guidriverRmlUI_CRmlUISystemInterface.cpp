@@ -51,7 +51,7 @@ namespace guidriverRmlUI {
 //-------------------------------------------------------------------------*/
 
 CRmlUISystemInterface::CRmlUISystemInterface( void )
-    : RmlUI::Core::SystemInterface()
+    : Rml::SystemInterface()
 {GUCEF_TRACE;
 
 }
@@ -65,52 +65,52 @@ CRmlUISystemInterface::~CRmlUISystemInterface()
 
 /*---------------------------------------------------------------------------*/
 
-float
+double
 CRmlUISystemInterface::GetElapsedTime()
 {GUCEF_TRACE;
 
-    return CORE::GUCEFGetTickCount() / 1000.0f;
+    return CORE::GUCEFGetTickCount() / 1000.0;
 }
 
 /*---------------------------------------------------------------------------*/
 
 bool
-CRmlUISystemInterface::LogMessage( RmlUI::Core::Log::Type type        , 
-                                    const RmlUI::Core::String& message )
+CRmlUISystemInterface::LogMessage( Rml::Log::Type type        , 
+                                    const Rml::String& message )
 {GUCEF_TRACE;
 
     static CORE::CString logPrefix = "RmlUI: ";
     
     switch ( type )
     {
-        case RmlUI::Core::Log::LT_ALWAYS :
+        case Rml::Log::LT_ALWAYS :
         {
-            GUCEF_ERROR_LOG( CORE::LOGLEVEL_CRITICAL, logPrefix + message.CString() );
+            GUCEF_ERROR_LOG( CORE::LOGLEVEL_CRITICAL, logPrefix + message.c_str() );
             return true;
         }
-        case RmlUI::Core::Log::LT_ERROR :
+        case Rml::Log::LT_ERROR :
         {
-            GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, logPrefix + message.CString() );
+            GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, logPrefix + message.c_str() );
             return true;
         }
-        case RmlUI::Core::Log::LT_ASSERT :
+        case Rml::Log::LT_ASSERT :
         {
-            GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, logPrefix + message.CString() );
+            GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, logPrefix + message.c_str() );
             return true;
         }
-        case RmlUI::Core::Log::LT_WARNING :
+        case Rml::Log::LT_WARNING :
         {
-            GUCEF_WARNING_LOG( CORE::LOGLEVEL_NORMAL, logPrefix + message.CString() );
+            GUCEF_WARNING_LOG( CORE::LOGLEVEL_NORMAL, logPrefix + message.c_str() );
             return true;
         }
-        case RmlUI::Core::Log::LT_INFO :
+        case Rml::Log::LT_INFO :
         {
-            GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, logPrefix + message.CString() );
+            GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, logPrefix + message.c_str() );
             return true;
         }
-        case RmlUI::Core::Log::LT_DEBUG :
+        case Rml::Log::LT_DEBUG :
         {
-            GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, logPrefix + message.CString() );
+            GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, logPrefix + message.c_str() );
             return true;
         }
         default:

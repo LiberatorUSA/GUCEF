@@ -46,7 +46,7 @@ namespace guidriverRmlUI {
 //-------------------------------------------------------------------------*/
 
 CRmlUIVFSInterface::CRmlUIVFSInterface()
-    : RmlUI::Core::FileInterface()  ,
+    : Rml::FileInterface()  ,
       m_vfs( &VFS::CVfsGlobal::Instance()->GetVfs() ) ,
       m_fileHandles()
 {GUCEF_TRACE;
@@ -63,11 +63,11 @@ CRmlUIVFSInterface::~CRmlUIVFSInterface()
 
 /*-------------------------------------------------------------------------*/
 
-RmlUI::Core::FileHandle
+Rml::FileHandle
 CRmlUIVFSInterface::FindOpenHandleSlot( void ) const
 {GUCEF_TRACE;
 
-    RmlUI::Core::FileHandle testIndex = 1;    
+    Rml::FileHandle testIndex = 1;    
     TFileHandleMap::const_iterator i = m_fileHandles.begin();
     while ( i != m_fileHandles.end() )
     {
@@ -81,17 +81,17 @@ CRmlUIVFSInterface::FindOpenHandleSlot( void ) const
 
     // If we get here then we went through the outstanding handle list 
     // and didnt find any gaps. We will simply add a new slot at the end.
-    return (RmlUI::Core::FileHandle) m_fileHandles.size()+1;
+    return (Rml::FileHandle) m_fileHandles.size()+1;
 }
 
 /*-------------------------------------------------------------------------*/
 
-RmlUI::Core::FileHandle
-CRmlUIVFSInterface::Open( const RmlUI::Core::String& path )
+Rml::FileHandle
+CRmlUIVFSInterface::Open( const Rml::String& path )
 {GUCEF_TRACE;
 
-    RmlUI::Core::FileHandle openSlot = FindOpenHandleSlot();
-    VFS::TBasicVfsResourcePtr vfsFileHandle = m_vfs->GetFile( path.CString() );
+    Rml::FileHandle openSlot = FindOpenHandleSlot();
+    VFS::TBasicVfsResourcePtr vfsFileHandle = m_vfs->GetFile( path.c_str() );
     if ( !vfsFileHandle.IsNULL() )
     {
         // Set the VFS on the open slot which is now in use
@@ -104,7 +104,7 @@ CRmlUIVFSInterface::Open( const RmlUI::Core::String& path )
 /*-------------------------------------------------------------------------*/
 
 void
-CRmlUIVFSInterface::Close( RmlUI::Core::FileHandle file )
+CRmlUIVFSInterface::Close( Rml::FileHandle file )
 {GUCEF_TRACE;
 
     VFS::TBasicVfsResourcePtr vfsFile = m_fileHandles[ file ];
@@ -118,7 +118,7 @@ CRmlUIVFSInterface::Close( RmlUI::Core::FileHandle file )
 /*-------------------------------------------------------------------------*/
 
 size_t
-CRmlUIVFSInterface::Read( void* buffer, size_t size, RmlUI::Core::FileHandle file )
+CRmlUIVFSInterface::Read( void* buffer, size_t size, Rml::FileHandle file )
 {GUCEF_TRACE;
 
     VFS::TBasicVfsResourcePtr vfsFile = m_fileHandles[ file ];
@@ -137,7 +137,7 @@ CRmlUIVFSInterface::Read( void* buffer, size_t size, RmlUI::Core::FileHandle fil
 /*-------------------------------------------------------------------------*/
 
 bool
-CRmlUIVFSInterface::Seek( RmlUI::Core::FileHandle file, long offset, int origin )
+CRmlUIVFSInterface::Seek( Rml::FileHandle file, long offset, int origin )
 {GUCEF_TRACE;
 
     VFS::TBasicVfsResourcePtr vfsFile = m_fileHandles[ file ];
@@ -156,7 +156,7 @@ CRmlUIVFSInterface::Seek( RmlUI::Core::FileHandle file, long offset, int origin 
 /*-------------------------------------------------------------------------*/
 
 size_t
-CRmlUIVFSInterface::Tell( RmlUI::Core::FileHandle file )
+CRmlUIVFSInterface::Tell( Rml::FileHandle file )
 {GUCEF_TRACE;
 
     VFS::TBasicVfsResourcePtr vfsFile = m_fileHandles[ file ];

@@ -83,7 +83,7 @@ CXWinGLWindowManagerImp::CreateWindowContext( const GUI::CString& title         
                                               const CORE::CValueList* params      )
 {GUCEF_TRACE;
 
-    TXWinGLWindowContextPtr windowContext = new CXWinGLWindowContext();
+    TXWinGLWindowContextPtr windowContext( new CXWinGLWindowContext() );
     if ( windowContext->Initialize( title    ,
                                     settings ) )
     {
