@@ -42,6 +42,11 @@
 #define GUCEF_CORE_CCOREGLOBAL_H
 #endif /* GUCEF_CORE_CCOREGLOBAL_H ? */
 
+#ifndef GUCEF_MT_CSCOPEMUTEX_H
+#include "gucefMT_CScopeMutex.h"
+#define GUCEF_MT_CSCOPEMUTEX_H
+#endif /* GUCEF_MT_CSCOPEMUTEX_H ? */
+
 #ifndef GUCEF_CORE_CPLUGINCONTROL_H
 #include "CPluginControl.h"
 #define GUCEF_CORE_CPLUGINCONTROL_H
@@ -450,9 +455,17 @@ StringToLinkedDependencyScope( const CORE::CString& linkedDependencyScopeStr )
 
 /*-------------------------------------------------------------------------*/
 
+// Serializes the lazy XML codec lookup and plugin load, which can be invoked concurrently
+static MT::CMutex g_xmlDStoreCodecLock;
+
+/*-------------------------------------------------------------------------*/
+
 CORE::CDStoreCodecRegistry::TDStoreCodecPtr
 GetXmlDStoreCodec( void )
 {GUCEF_TRACE;
+
+    // This is used concurrently from the module processing tasks: serialize the lazy lookup/plugin load
+    MT::CScopeMutex lock( g_xmlDStoreCodecLock );
 
     static CORE::CDStoreCodecRegistry::TDStoreCodecPtr codecPtr;
     if ( codecPtr.IsNULL() )
@@ -1698,20 +1711,46 @@ HasPlatformDefinition( const CModuleInfoEntryPtr& moduleInfoEntry ,
 
 /*--------------------------------------------------------------------------*/
 
+static CORE::CString::StringSet
+CreateKnownLicenseFiles( void )
+{
+    CORE::CString::StringSet licenseFiles;
+    licenseFiles.insert( "license" );
+    licenseFiles.insert( "license.txt" );
+    licenseFiles.insert( "copying" );
+    licenseFiles.insert( "copying.lesser" );
+    return licenseFiles;
+}
+
+/*--------------------------------------------------------------------------*/
+
+static CORE::CString::StringSet
+CreateKnownSemVerFiles( void )
+{
+    CORE::CString::StringSet semverFiles;
+    semverFiles.insert( "semver" );
+    semverFiles.insert( "semver.txt" );
+    semverFiles.insert( "version" );
+    semverFiles.insert( "version.txt" );
+    semverFiles.insert( "version-semver" );
+    semverFiles.insert( "version-semver.txt" );
+    return semverFiles;
+}
+
+/*--------------------------------------------------------------------------*/
+
+// Initialized at module load time, before any of the concurrent module processing tasks run
+static const CORE::CString::StringSet g_knownLicenseFiles = CreateKnownLicenseFiles();
+static const CORE::CString::StringSet g_knownSemVerFiles = CreateKnownSemVerFiles();
+
+/*--------------------------------------------------------------------------*/
+
 const CORE::CString::StringSet&
 GetKnownLicenseFiles( void )
 {GUCEF_TRACE;
 
-    static CORE::CString::StringSet licenseFiles;
-
-    if ( licenseFiles.empty() )
-    {
-        licenseFiles.insert( "license" );
-        licenseFiles.insert( "license.txt" );
-        licenseFiles.insert( "copying" );
-        licenseFiles.insert( "copying.lesser" );
-    }
-    return licenseFiles;
+    // Note: the set is created at module load time since this is used concurrently from the module processing tasks
+    return g_knownLicenseFiles;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -1981,18 +2020,8 @@ const CORE::CString::StringSet&
 GetKnownSemVerFiles( void )
 {GUCEF_TRACE;
 
-    static CORE::CString::StringSet semverFiles;
-
-    if ( semverFiles.empty() )
-    {
-        semverFiles.insert( "semver" );
-        semverFiles.insert( "semver.txt" );
-        semverFiles.insert( "version" );
-        semverFiles.insert( "version.txt" );
-        semverFiles.insert( "version-semver" );
-        semverFiles.insert( "version-semver.txt" );
-    }
-    return semverFiles;
+    // Note: the set is created at module load time since this is used concurrently from the module processing tasks
+    return g_knownSemVerFiles;
 }
 
 /*---------------------------------------------------------------------------*/

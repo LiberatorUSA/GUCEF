@@ -117,22 +117,46 @@ GetProcessingInstructions( const CProjectInfo& projectInfo ,
 
 /*---------------------------------------------------------------------------*/
 
+static TStringVector
+CreateSourceFileExtensions( void )
+{
+    TStringVector fileTypes;
+    fileTypes.push_back( "c" );
+    fileTypes.push_back( "cc" );
+    fileTypes.push_back( "cpp" );
+    fileTypes.push_back( "cxx" );
+    fileTypes.push_back( "asm" );
+    fileTypes.push_back( "cs" );
+    return fileTypes;
+}
+
+/*---------------------------------------------------------------------------*/
+
+static TStringVector
+CreateHeaderFileExtensions( void )
+{
+    TStringVector fileTypes;
+    fileTypes.push_back( "h" );
+    fileTypes.push_back( "hpp" );
+    fileTypes.push_back( "hxx" );
+    return fileTypes;
+}
+
+/*---------------------------------------------------------------------------*/
+
+// Initialized at module load time, before any of the concurrent module processing tasks run
+static const TStringVector g_sourceFileExtensions = CreateSourceFileExtensions();
+static const TStringVector g_headerFileExtensions = CreateHeaderFileExtensions();
+
+/*---------------------------------------------------------------------------*/
+
 const TStringVector&
 GetSourceFileExtensions( void )
 {GUCEF_TRACE;
 
-    static TStringVector fileTypes;
-
-    if ( fileTypes.empty() )
-    {
-        fileTypes.push_back( "c" );
-        fileTypes.push_back( "cc" );
-        fileTypes.push_back( "cpp" );
-        fileTypes.push_back( "cxx" );
-        fileTypes.push_back( "asm" );
-        fileTypes.push_back( "cs" );
-    }
-    return fileTypes;
+    // Note: the list is created at module load time. Lazily filling a function local static here was not thread-safe
+    // and this is called concurrently from the module processing tasks, causing modules to randomly lose their files
+    return g_sourceFileExtensions;
 }
 
 /*--------------------------------------------------------------------------*/
@@ -141,15 +165,8 @@ const TStringVector&
 GetHeaderFileExtensions( void )
 {GUCEF_TRACE;
 
-    static TStringVector fileTypes;
-
-    if ( fileTypes.empty() )
-    {
-        fileTypes.push_back( "h" );
-        fileTypes.push_back( "hpp" );
-        fileTypes.push_back( "hxx" );
-    }
-    return fileTypes;
+    // Note: the list is created at module load time, see GetSourceFileExtensions()
+    return g_headerFileExtensions;
 }
 
 /*---------------------------------------------------------------------------*/
