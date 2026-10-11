@@ -50,6 +50,8 @@
   #include <pthread.h>
   #include <signal.h>
   #include <sys/time.h>
+  #include <time.h>
+  #include <errno.h>
 
 #elif ( GUCEF_PLATFORM == GUCEF_PLATFORM_WASM_EMSCRIPTEN )
 
@@ -131,7 +133,11 @@ ThreadDelay( UInt32 delay )
     #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
     Sleep( delay );
     #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
-    sleep( delay );
+    /* note that sleep() takes seconds while delay is in milliseconds */
+    struct timespec remaining;
+    remaining.tv_sec = (time_t) ( delay / 1000 );
+    remaining.tv_nsec = (long) ( ( delay % 1000 ) * 1000000 );
+    while ( 0 != nanosleep( &remaining, &remaining ) && EINTR == errno ) {}
     #elif ( GUCEF_PLATFORM == GUCEF_PLATFORM_WASM_EMSCRIPTEN )
     usleep( delay * 1000 ); // usleep expects microseconds
     #endif
@@ -448,12 +454,32 @@ ThreadKill( struct SThreadData* td )
 
     if ( NULL != td && 0 != td->thread )
     {
-        Int32 retval = (Int32) pthread_kill( td->thread, 0 );
-        if ( 0 != retval )
+        /*
+         *  Note that a thread handle is no longer valid once the thread has been joined,
+         *  using it after that (as pthread_kill() used to do here) is undefined behaviour and crashes with glibc.
+         *  As such td->thread is cleared whenever the thread is reaped.
+         */
+        Int32 retval = 0;
+        #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX )
+        if ( 0 != pthread_tryjoin_np( td->thread, GUCEF_NULL ) )
         {
-            /* an error occured */
-
+            /* The thread is still running: cancellation is the closest equivalent to TerminateThread() */
+            retval = (Int32) pthread_cancel( td->thread );
+            struct timespec ts;
+            clock_gettime( CLOCK_REALTIME, &ts );
+            ts.tv_sec += 5;
+            if ( 0 != retval || 0 != pthread_timedjoin_np( td->thread, GUCEF_NULL, &ts ) )
+            {
+                /* We could not reap the thread, let the system clean it up once it ends */
+                pthread_detach( td->thread );
+            }
         }
+        #else
+        /* Android has no thread cancellation: detach so the thread is cleaned up once it ends */
+        pthread_detach( td->thread );
+        #endif
+        td->thread = 0;
+
         pthread_cond_signal( &td->exitSignal );
         pthread_attr_destroy( &td->attr );
         return retval;
@@ -505,6 +531,17 @@ ThreadWait( struct SThreadData* td ,
 
     #elif ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX )
 
+    if ( GUCEF_NULL != td && 0 != td->thread && timeoutInMs < 0 )
+    {
+        /* A negative timeout means wait indefinitely */
+        if ( 0 == pthread_join( td->thread, GUCEF_NULL ) )
+        {
+            /* the handle is no longer valid once joined */
+            td->thread = 0;
+            return GUCEF_THREAD_WAIT_OK;
+        }
+        return GUCEF_THREAD_WAIT_FAILED;
+    }
     if ( GUCEF_NULL != td && 0 != td->thread )
     {
         static const long max_nsec = 1000000 * 1000;
@@ -519,7 +556,13 @@ ThreadWait( struct SThreadData* td ,
         }
         int errorCode = pthread_timedjoin_np( td->thread, GUCEF_NULL, &ts );
         if ( 0 == errorCode )
+        {
+            /* the handle is no longer valid once joined */
+            td->thread = 0;
             return GUCEF_THREAD_WAIT_OK;
+        }
+        if ( ETIMEDOUT == errorCode )
+            return GUCEF_THREAD_WAIT_TIMEOUT;
     }
     return GUCEF_THREAD_WAIT_FAILED;
 

@@ -412,9 +412,12 @@ CMutex::IsLocked( void ) const
     
     #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_WASM_EMSCRIPTEN ) )
 
-    if ( pthread_mutex_trylock( &((TMutexData*)_mutexdata)->id ) != 0 )
+    /* attempt a lock to see if its locked by anyone, same semantics as the Windows implementation */
+    if ( pthread_mutex_trylock( &((TMutexData*)_mutexdata)->id ) == 0 )
+    {
+        pthread_mutex_unlock( &((TMutexData*)_mutexdata)->id );
         return false;
-    pthread_mutex_unlock( &((TMutexData*)_mutexdata)->id );
+    }
     return true;
 
     #else
