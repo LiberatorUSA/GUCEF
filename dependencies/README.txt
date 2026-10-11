@@ -30,7 +30,7 @@ librdkafka is version 2.3.0 from https://github.com/confluentinc/librdkafka/rele
 OIS is at version 1.3 and can be obtained from http://sourceforge.net/projects/wgois
 json-parser is at version 1.1.0 and can be obtained from https://github.com/udp/json-parser
 zookeeper-client-c is from Zookeeper version 3.5.6 source tar dated 2019-10-16 00:35
-curl is release version 7.69.1 from GitHub
+curl is release version 8.23.0 from https://github.com/curl/curl/releases (signature verified), TLS via system OpenSSL on Linux and Schannel on Windows, see lib/curl_config.h
 stbrumme-hash-library is version 8 from https://github.com/stbrumme/hash-library obtained source dated 2022-01-22
 Protocol Buffers is at release v21.12 from https://github.com/protocolbuffers/protobuf/releases/tag/v21.12
 aws-cpp-sdk-core is version 1.10.51 from GitHub (Jan 13th 2023) @ https://github.com/aws/aws-sdk-cpp/releases/tag/1.10.51
