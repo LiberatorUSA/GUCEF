@@ -1,6 +1,6 @@
 <PROJECTGENERATOR>
     <INCLUDES PLATFORM="ALL">
-        <ITEM NAME="../gucefMT/src/gucefMT_mutex.c" TYPE="FILE" />
+        <ITEM NAME="../gucefMT/src/gucefMT_MUTEX.c" TYPE="FILE" />
         <ITEM NAME="../gucefMT/include/gucefMT_mutex.h" TYPE="FILE" />
         <ITEM NAME="../gucefMT/src/gucefMT_CILockable.cpp" TYPE="FILE" />
         <ITEM NAME="../gucefMT/include/gucefMT_CILockable.h" TYPE="FILE" />
@@ -31,6 +31,10 @@
         <ITEM NAME="../gucefCORE/include/gucefCORE_CString.h" TYPE="FILE" />
         <ITEM NAME="../gucefCORE/src/gucefCORE_CAsciiString.cpp" TYPE="FILE" />
         <ITEM NAME="../gucefCORE/include/gucefCORE_CAsciiString.h" TYPE="FILE" />
+        <ITEM NAME="../gucefCORE/src/gucefCORE_CRandom.cpp" TYPE="FILE" />
+        <ITEM NAME="../gucefCORE/include/gucefCORE_CRandom.h" TYPE="FILE" />
+        <ITEM NAME="../gucefCORE/src/gucefCORE_CProcess.cpp" TYPE="FILE" />
+        <ITEM NAME="../gucefCORE/include/gucefCORE_CProcess.h" TYPE="FILE" />
         <ITEM NAME="../gucefCORE/src/gucefCORE_CTimestamp.cpp" TYPE="FILE" />
         <ITEM NAME="../gucefCORE/include/gucefCORE_CTimestamp.h" TYPE="FILE" />
         <ITEM NAME="../gucefCORE/src/gucefCORE_CUtf16String.cpp" TYPE="FILE" />
