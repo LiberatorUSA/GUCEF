@@ -46,6 +46,7 @@
 #endif /* GUCEF_CORE_LOGGING_H ? */
 
 #include "TestIncludeDirInstruction.h"
+#include "TestModuleInfoMerge.h"
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -79,6 +80,7 @@ GUCEF_OSMAIN_BEGIN
         GUCEF::CORE::AppendToPath( xmlPath, "ProjectGen_TestApp_Results.xml" );
 
         PerformIncludeDirInstructionTests();
+        PerformModuleInfoMergeTests();
 
         GUCEF::CORE::CLogStreamScope::FlushLogs();
         GUCEF_TESTFW_WRITE_RESULTS( xmlPath.C_String() );

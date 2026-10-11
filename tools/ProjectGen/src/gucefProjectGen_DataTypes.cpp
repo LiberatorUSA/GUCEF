@@ -1001,6 +1001,22 @@ MergeModuleInfo( const CModuleInfoEntryPtr& moduleInfoEntry ,
             // definition for which a build order must be set
             return false;
         }
+        else
+        if ( !allPlatformsInfo.IsNULL() && allPlatformsInfo->buildOrder > -1 )
+        {
+            // Only the 'all' platform is defined which is fine: the module is generic code which can be built
+            // for any platform, so it applies to the target platform as is
+            mergedModuleInfo = CModuleInfo::CreateSharedObjWithParam( *allPlatformsInfo );
+            return true;
+        }
+        else
+        if ( !targetPlatformInfo.IsNULL() && targetPlatformInfo->buildOrder > -1 )
+        {
+            // Only the target platform is defined, the module is not available for all platforms
+            // but it is for this one
+            mergedModuleInfo = CModuleInfo::CreateSharedObjWithParam( *targetPlatformInfo );
+            return true;
+        }
     }
 
     // This module should not be used since it doesn't have platform specific info

@@ -514,7 +514,7 @@ GUCEF_PROJECTGEN_PUBLIC_CPP
 bool
 MergeModuleInfo( const CModuleInfoEntryPtr& moduleInfo  ,
                  const CORE::CString& targetPlatform    ,
-                 CModuleInfo& mergedModuleInfo          );
+                 CModuleInfoPtr& mergedModuleInfo       );
 
 /*-------------------------------------------------------------------------*/
 
