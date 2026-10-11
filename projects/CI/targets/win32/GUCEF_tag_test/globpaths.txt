@@ -12,6 +12,7 @@ dependencies/Ogre/include/*
 dependencies/RmlUi/Include/*
 dependencies/RmlUi/Source/Core/*
 dependencies/aws-cpp-sdk-core/include/*
+dependencies/aws-cpp-sdk-sns/*
 dependencies/aws-cpp-sdk-sqs/*
 dependencies/aws-crt-cpp/crt/aws-c-auth/include/*
 dependencies/aws-crt-cpp/crt/aws-c-cal/include/*
@@ -65,6 +66,7 @@ plugins/IMAGE/imgpluginITV/*
 plugins/INPUT/inputdriverDIRECTINPUT8/*
 plugins/INPUT/inputdriverMSWINMSG/*
 plugins/INPUT/inputdriverOIS/*
+plugins/PUBSUB/pubsubpluginAWSSNS/*
 plugins/PUBSUB/pubsubpluginAWSSQS/*
 plugins/PUBSUB/pubsubpluginMSMQ/*
 plugins/SHARED/pluginglueAWSSDK/include/*

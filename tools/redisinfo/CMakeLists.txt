@@ -123,11 +123,11 @@ if ( OSX )
 endif( OSX )
 
 if ( WIN32 )
-  include_directories( ../../dependencies/hiredis ../../platform/gucefCOMCORE/include/mswin ../../platform/gucefCORE/include/mswin ../../platform/gucefMT/include/mswin )
+  include_directories( ../../dependencies/hiredis ../../platform/gucefCOMCORE/include/mswin ../../platform/gucefCORE/include/mswin ../../platform/gucefMT/include/mswin ../../platform/gucefWEB/include/mswin )
 endif( WIN32 )
 
 if ( WIN64 )
-  include_directories( ../../dependencies/hiredis ../../platform/gucefCOMCORE/include/mswin ../../platform/gucefCORE/include/mswin ../../platform/gucefMT/include/mswin )
+  include_directories( ../../dependencies/hiredis ../../platform/gucefCOMCORE/include/mswin ../../platform/gucefCORE/include/mswin ../../platform/gucefMT/include/mswin ../../platform/gucefWEB/include/mswin )
 endif( WIN64 )
 
 if ( WINDOWS )
