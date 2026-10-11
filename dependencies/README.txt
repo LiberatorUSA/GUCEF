@@ -38,6 +38,8 @@ aws-cpp-sdk-s3 is version 1.10.51 from GitHub (Jan 13th 2023) @ https://github.c
 aws-cpp-sdk-sqs is version 1.10.51 from GitHub (Jan 13th 2023) @ https://github.com/aws/aws-sdk-cpp/releases/tag/1.10.51
 aws-cpp-sdk-sns is version 1.10.51 from GitHub (Jan 13th 2023) @ https://github.com/aws/aws-sdk-cpp/releases/tag/1.10.51
 aws-cpp-sdk-secretsmanager is version 1.10.51 from GitHub (Jan 13th 2023) @ https://github.com/aws/aws-sdk-cpp/releases/tag/1.10.51
+aws-cpp-sdk-core/s3/sns/sqs/secretsmanager: local edit marked "DV edit" in the *_EXPORTS.h headers, on non-Windows the API macros export symbols explicitly since our builds hide them by default
+aws-crt-cpp (aws-checksums): local edit marked "DV edit" in source/intel/asm/crc32c_sse42_asm.c, GCC without optimization uses the software CRC since its inline assembly does not compile unoptimized
 aws-lambda-runtime is version 0.2.7 from GitHub @ https://github.com/awslabs/aws-lambda-cpp/releases/tag/v0.2.7
 libyaml is in-flight version 0.2.6 from GitHub @ https://github.com/yaml/libyaml obtained source dated 2023-04-23
 opentelemetry-cpp is version 1.21.0 from GitHub
