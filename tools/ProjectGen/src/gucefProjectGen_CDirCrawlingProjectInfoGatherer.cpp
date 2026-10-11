@@ -315,11 +315,13 @@ RemoveString( TStringVector& list            ,
         return true;
     }
 
+    // A pattern with wildcards, such as "*_neon.c", removes everything it matches
     bool removedString = false;
+    bool isWildcardPattern = searchStr.HasChar( '*', true ) >= 0;
     TStringVector::iterator i = list.begin();
     while ( i != list.end() )
     {
-        if ( (*i) == searchStr )
+        if ( (*i) == searchStr || ( isWildcardPattern && (*i).WildcardEquals( searchStr, '*', true ) ) )
         {
             list.erase( i );
             i = list.begin();
@@ -347,11 +349,13 @@ RemoveString( TStringSet& list               ,
         return true;
     }
 
+    // A pattern with wildcards, such as "*_neon.c", removes everything it matches
     bool removedString = false;
+    bool isWildcardPattern = searchStr.HasChar( '*', true ) >= 0;
     TStringSet::iterator i = list.begin();
     while ( i != list.end() )
     {
-        if ( (*i) == searchStr )
+        if ( (*i) == searchStr || ( isWildcardPattern && (*i).WildcardEquals( searchStr, '*', true ) ) )
         {
             list.erase( i );
             i = list.begin();

@@ -22,6 +22,7 @@ LOCAL_MODULE := ProjectGen_TestApp
 
 LOCAL_SRC_FILES := \
   src/ProjectGen_TestApp_main.cpp \
+  src/TestGeneratorFeatures.cpp \
   src/TestIncludeDirInstruction.cpp \
   src/TestModuleInfoMerge.cpp
 

@@ -3601,10 +3601,36 @@ CProjectInfo::GetModulesMappedByBuildOrderForTarget( const CORE::CString& consen
 
 /*---------------------------------------------------------------------------*/
 
+/**
+ *  Whether the module has the given dependency for all platforms, as opposed to only for particular platforms
+ */
+static bool
+IsDependencyForAllPlatforms( const CModuleInfoEntryPtr& moduleInfoEntry ,
+                             const CORE::CString& dependencyName        )
+{GUCEF_TRACE;
+
+    const CModuleInfoPtr allPlatformsInfo = moduleInfoEntry->FindModuleInfoForPlatform( KnownPlatforms::AllPlatforms );
+    return !allPlatformsInfo.IsNULL() && allPlatformsInfo->GetNamesOfDependencies().find( dependencyName ) != allPlatformsInfo->GetNamesOfDependencies().end();
+}
+
+/*-------------------------------------------------------------------------*/
+
 bool
 CProjectInfo::GenerateModuleDependencyIncludes( CModuleInfoEntryPtr& moduleInfoEntry            ,
                                                 const CModuleInfoEntryPtr dependencyModuleEntry ,
                                                 const CORE::CString& platformName               )
+{GUCEF_TRACE;
+
+    return GenerateModuleDependencyIncludesInto( moduleInfoEntry, dependencyModuleEntry, platformName, platformName );
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CProjectInfo::GenerateModuleDependencyIncludesInto( CModuleInfoEntryPtr& moduleInfoEntry            ,
+                                                    const CModuleInfoEntryPtr dependencyModuleEntry ,
+                                                    const CORE::CString& platformName               ,
+                                                    const CORE::CString& storePlatformName          )
 {GUCEF_TRACE;
 
     // Narrow it down to the platform we are interested in
@@ -3623,7 +3649,7 @@ CProjectInfo::GenerateModuleDependencyIncludes( CModuleInfoEntryPtr& moduleInfoE
         if ( ( dependencyModule->moduleType == MODULETYPE_HEADER_INCLUDE_LOCATION ) ||
              ( dependencyModule->moduleType == MODULETYPE_BINARY_PACKAGE )           )
         {
-            moduleInfo = moduleInfoEntry->FindOrCreateModuleInfoForPlatform( platformName, true );
+            moduleInfo = moduleInfoEntry->FindOrCreateModuleInfoForPlatform( storePlatformName, true );
 
             // Determine the relative path to this other module's root
             CORE::CString relativePath = CORE::GetRelativePathToOtherPathRoot( moduleInfoEntry->GetAbsolutePathToModuleRootDir()       ,
@@ -3654,7 +3680,7 @@ CProjectInfo::GenerateModuleDependencyIncludes( CModuleInfoEntryPtr& moduleInfoE
             // to that end we will grab this module's definition for this platform or make a
             // new one if no entry exists yet
             if ( moduleInfo.IsNULL() )
-                moduleInfo = moduleInfoEntry->FindOrCreateModuleInfoForPlatform( platformName, true );
+                moduleInfo = moduleInfoEntry->FindOrCreateModuleInfoForPlatform( storePlatformName, true );
 
             // Determine the relative path to this other module and subsequently the include dirs
             CORE::CString relativePath = CORE::GetRelativePathToOtherPathRoot( moduleInfoEntry->GetAbsolutePathToModuleRootDir()       ,
@@ -3752,6 +3778,20 @@ CProjectInfo::GenerateModuleDependencyIncludesForPlatform( CModuleInfoEntryPtr& 
                     totalSuccess = GenerateModuleDependencyIncludes( moduleInfoEntry              ,
                                                                      dependencyModuleEntry        ,
                                                                      KnownPlatforms::AllPlatforms ) && totalSuccess;
+                }
+                else
+                if ( platformName != KnownPlatforms::AllPlatforms                                                  &&
+                     dependencyModuleEntry->HasAllPlatformsDefinition()                                            &&
+                     !IsDependencyForAllPlatforms( moduleInfoEntry, dependencyModuleEntry->GetConsensusName() )    )
+                {
+                    // The module depends on a dependency, which is defined for all platforms, only on this platform.
+                    // The include dirs of that dependency are thus needed for this platform and not for the others.
+                    GUCEF_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "ProjectInfo: Adding the include dirs of the all platforms dependency \"" + dependencyModuleEntry->GetConsensusName() +
+                                                            "\" to module \"" + moduleInfoEntry->GetConsensusName() + "\" for platform " + platformName );
+                    totalSuccess = GenerateModuleDependencyIncludesInto( moduleInfoEntry              ,
+                                                                         dependencyModuleEntry        ,
+                                                                         KnownPlatforms::AllPlatforms ,
+                                                                         platformName                 ) && totalSuccess;
                 }
             }
             ++i;

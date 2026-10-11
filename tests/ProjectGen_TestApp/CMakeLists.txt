@@ -12,12 +12,14 @@
 # Configuration for module: ProjectGen_TestApp
 
 set( HEADER_FILES 
+  include/TestGeneratorFeatures.h
   include/TestIncludeDirInstruction.h
   include/TestModuleInfoMerge.h
 )
 
 set( SOURCE_FILES 
   src/ProjectGen_TestApp_main.cpp
+  src/TestGeneratorFeatures.cpp
   src/TestIncludeDirInstruction.cpp
   src/TestModuleInfoMerge.cpp
 )

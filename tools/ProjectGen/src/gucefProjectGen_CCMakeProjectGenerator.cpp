@@ -1104,11 +1104,60 @@ GenerateCMakeModuleLinkerLine( const CProjectInfo& projectInfo   ,
 
 /*---------------------------------------------------------------------------*/
 
+/**
+ *  Compile options which a module asks for per compiler, as given with CompilerFlags in the Compiler section of the
+ *  module info. The compilers GCC (C code) and G++ (C++ code) are supported, the options are passed to the GNU and
+ *  Clang compilers, which is what the names stand for.
+ */
+CORE::CString
+GenerateCMakeModuleCompilerFlagsLine( const CModuleInfoPtr& moduleInfo  ,
+                                      const CORE::CString& moduleName   ,
+                                      const CORE::CString& platformName )
+{GUCEF_TRACE;
+
+    CORE::CString sectionContent;
+    const CORE::CStringMap& flagsPerCompiler = moduleInfo->compilerSettings.GetCompilerFlags();
+
+    CORE::CStringMap::const_iterator i = flagsPerCompiler.begin();
+    while ( i != flagsPerCompiler.end() )
+    {
+        const CORE::CString& compilerName = (*i).first;
+        bool isCxx = compilerName.Equals( "G++", false );
+        bool isC = compilerName.Equals( "GCC", false );
+        if ( isCxx || isC )
+        {
+            GUCEF_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "Generating CMake module compiler options for module " + moduleName + " and platform " + platformName );
+
+            CORE::CString::StringVector flags = (*i).second.ParseElements( ' ', false );
+            CORE::CString flagList;
+            for ( CORE::CString::StringVector::iterator f = flags.begin(); f != flags.end(); ++f )
+            {
+                if ( !(*f).IsNULLOrEmpty() )
+                    flagList += ( flagList.IsNULLOrEmpty() ? "" : ";" ) + ConvertEnvVarStrings( (*f) );
+            }
+
+            if ( !flagList.IsNULLOrEmpty() )
+            {
+                CORE::CString language = isCxx ? "CXX" : "C";
+                sectionContent += "if ( CMAKE_" + language + "_COMPILER_ID STREQUAL \"GNU\" OR CMAKE_" + language + "_COMPILER_ID MATCHES \"Clang\" )\n" +
+                                  "  target_compile_options( ${MODULE_NAME} PRIVATE $<$<COMPILE_LANGUAGE:" + language + ">:" + flagList + "> )\n" +
+                                  "endif()\n";
+            }
+        }
+        ++i;
+    }
+    return sectionContent;
+}
+
+/*---------------------------------------------------------------------------*/
+
 CORE::CString
 GenerateCMakeModuleDefinesLine( const CModuleInfoPtr& moduleInfo  ,
                                 const CORE::CString& moduleName   ,
                                 const CORE::CString& platformName )
 {GUCEF_TRACE;
+
+    CORE::CString compilerFlagsSection = GenerateCMakeModuleCompilerFlagsLine( moduleInfo, moduleName, platformName );
 
     if ( !moduleInfo->preprocessorSettings.GetDefines().empty() )
     {
@@ -1132,10 +1181,10 @@ GenerateCMakeModuleDefinesLine( const CModuleInfoPtr& moduleInfo  ,
             ++i;
         }
         sectionContent += "\" )\n";
-        return sectionContent;
+        return sectionContent + compilerFlagsSection;
     }
 
-    return CORE::CString();
+    return compilerFlagsSection;
 }
 
 /*---------------------------------------------------------------------------*/          

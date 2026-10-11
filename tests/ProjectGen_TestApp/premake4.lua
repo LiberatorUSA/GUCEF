@@ -46,6 +46,7 @@ defines( { "MODULE_CONSENSUS_NAME=ProjectGen_TestApp", "MODULE_NAME=ProjectGen_T
 configuration( {} )
 vpaths { ["Headers"] = { "**.h", "**.hpp", "**.hxx" } }
 files( {
+  "include/TestGeneratorFeatures.h",
   "include/TestIncludeDirInstruction.h",
   "include/TestModuleInfoMerge.h"
  } )
@@ -56,6 +57,7 @@ configuration( {} )
 vpaths { ["Source"] = { "**.c", "**.cpp", "**.cs", "**.asm" } }
 files( {
   "src/ProjectGen_TestApp_main.cpp",
+  "src/TestGeneratorFeatures.cpp",
   "src/TestIncludeDirInstruction.cpp",
   "src/TestModuleInfoMerge.cpp"
  } )

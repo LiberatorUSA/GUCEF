@@ -48,6 +48,8 @@
 #include "TestIncludeDirInstruction.h"
 #include "TestModuleInfoMerge.h"
 
+#include "TestGeneratorFeatures.h"
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      UTILITIES                                                          //
@@ -81,6 +83,7 @@ GUCEF_OSMAIN_BEGIN
 
         PerformIncludeDirInstructionTests();
         PerformModuleInfoMergeTests();
+        PerformGeneratorFeatureTests();
 
         GUCEF::CORE::CLogStreamScope::FlushLogs();
         GUCEF_TESTFW_WRITE_RESULTS( xmlPath.C_String() );
