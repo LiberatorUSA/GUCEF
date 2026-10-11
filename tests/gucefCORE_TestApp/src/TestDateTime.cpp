@@ -23,6 +23,8 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+#include <time.h>
+
 #ifndef GUCEF_CORE_CDATETIME_H
 #include "gucefCORE_CDateTime.h"
 #define GUCEF_CORE_CDATETIME_H
@@ -268,6 +270,87 @@ PerformDateTimeTests( void )
             CORE::CDateTime later( 2030, 1, 1, 0, 0, 1, 500, 0 );
             ASSERT_TRUE( 1500 == earlier.GetTimeDifferenceInMillisecondsTowards( later ) );
             ASSERT_TRUE( -1500 == later.GetTimeDifferenceInMillisecondsTowards( earlier ) );
+        }
+        catch( ... )
+        {
+            ERRORHERE;
+        }
+    GUCEF_TESTFW_TESTCASE_END
+
+    // Regression: on Linux the day of the month was shifted by one in the conversions to and from the O/S
+    GUCEF_TESTFW_TESTCASE( "Test: Conversion to and from unix time keeps the date" )
+        try
+        {
+            // 2021-06-15 12:34:56 UTC
+            const UInt64 knownTicks = 1623760496000ULL;
+            CORE::CDateTime utc( 2021, 6, 15, 12, 34, 56, 0, 0 );
+            ASSERT_TRUE( knownTicks == utc.ToUnixEpochBasedTicksInMillisecs() );
+
+            CORE::CDateTime fromTicks;
+            fromTicks.FromUnixEpochBasedTicksInMillisecs( knownTicks );
+            ASSERT_TRUE( 2021 == fromTicks.GetYear() && 6 == fromTicks.GetMonth() && 15 == fromTicks.GetDay() );
+            ASSERT_TRUE( 12 == fromTicks.GetHours() && 34 == fromTicks.GetMinutes() && 56 == fromTicks.GetSeconds() );
+
+            CORE::CDateTime fromTimeT( (time_t) ( knownTicks / 1000 ), true );
+            ASSERT_TRUE( 2021 == fromTimeT.GetYear() && 6 == fromTimeT.GetMonth() && 15 == fromTimeT.GetDay() );
+            ASSERT_TRUE( 12 == fromTimeT.GetHours() && 34 == fromTimeT.GetMinutes() );
+        }
+        catch( ... )
+        {
+            ERRORHERE;
+        }
+    GUCEF_TESTFW_TESTCASE_END
+
+    // Regression: on Linux the timezone offset was ignored when converting to UTC
+    GUCEF_TESTFW_TESTCASE( "Test: A local time with a timezone offset converts to the right UTC time" )
+        try
+        {
+            // 07:34:56 at UTC-5 is 12:34:56 UTC
+            CORE::CDateTime local( 2021, 6, 15, 7, 34, 56, 0, -300 );
+            ASSERT_TRUE( 1623760496000ULL == local.ToUnixEpochBasedTicksInMillisecs() );
+
+            CORE::CDateTime utc = local.ToUTC();
+            ASSERT_TRUE( 0 == utc.GetTimeZoneUTCOffsetInMins() );
+            ASSERT_TRUE( 15 == utc.GetDay() && 12 == utc.GetHours() && 34 == utc.GetMinutes() );
+
+            // the same moment in different timezones compares equal
+            ASSERT_TRUE( local == CORE::CDateTime( 2021, 6, 15, 12, 34, 56, 0, 0 ) );
+
+            // 23:30 at UTC-5 is the next day in UTC
+            CORE::CDateTime lateEvening( 2021, 6, 15, 23, 30, 0, 0, -300 );
+            CORE::CDateTime nextDay = lateEvening.ToUTC();
+            ASSERT_TRUE( 16 == nextDay.GetDay() && 4 == nextDay.GetHours() && 30 == nextDay.GetMinutes() );
+        }
+        catch( ... )
+        {
+            ERRORHERE;
+        }
+    GUCEF_TESTFW_TESTCASE_END
+
+    // Regression: on Linux the current date used the day of the week instead of the day of the month
+    GUCEF_TESTFW_TESTCASE( "Test: The current local and UTC date-times match the C library" )
+        try
+        {
+            time_t now = ::time( GUCEF_NULL );
+            struct tm localNow = *::localtime( &now );
+            struct tm utcNow = *::gmtime( &now );
+
+            CORE::CDateTime local = CORE::CDateTime::NowLocalDateTime();
+            CORE::CDateTime utc = CORE::CDateTime::NowUTCDateTime();
+            CORE::CDate today = CORE::CDate::TodaysLocalDate();
+            CORE::CDate todayUtc = CORE::CDate::TodaysUTCDate();
+
+            // allow for the clock passing midnight during the test
+            ASSERT_TRUE( localNow.tm_mday == local.GetDay() || ::time( GUCEF_NULL ) != now );
+            ASSERT_TRUE( localNow.tm_hour == local.GetHours() || ::time( GUCEF_NULL ) != now );
+            ASSERT_TRUE( utcNow.tm_mday == utc.GetDay() || ::time( GUCEF_NULL ) != now );
+            ASSERT_TRUE( utcNow.tm_hour == utc.GetHours() || ::time( GUCEF_NULL ) != now );
+            ASSERT_TRUE( localNow.tm_mday == today.GetDay() || ::time( GUCEF_NULL ) != now );
+            ASSERT_TRUE( utcNow.tm_mday == todayUtc.GetDay() || ::time( GUCEF_NULL ) != now );
+
+            // both describe the same moment
+            Int64 differenceInMs = local.GetTimeDifferenceInMillisecondsTowards( utc );
+            ASSERT_TRUE( differenceInMs > -2000 && differenceInMs < 2000 );
         }
         catch( ... )
         {

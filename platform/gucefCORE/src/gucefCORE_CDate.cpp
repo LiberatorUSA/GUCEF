@@ -85,7 +85,7 @@ CDate::CDate( const time_t& src, bool isUtc )
 
     m_year = (Int16) brokenDownTime->tm_year+1900;
     m_month = (UInt8) brokenDownTime->tm_mon+1;
-    m_day = (UInt8) brokenDownTime->tm_wday+1;
+    m_day = (UInt8) brokenDownTime->tm_mday;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -138,7 +138,7 @@ CDate::TodaysUTCDate( void )
     ::gmtime_r( &time.tv_sec, &utcTime );
     return CDate( (Int16) utcTime.tm_year+1900,
                   (UInt8) utcTime.tm_mon+1,
-                  (UInt8) utcTime.tm_wday+1);
+                  (UInt8) utcTime.tm_mday);
 
     #else
 
@@ -168,7 +168,7 @@ CDate::TodaysLocalDate( void )
     ::localtime_r( &time.tv_sec, &hereTime );
     return CDate( (Int16) hereTime.tm_year+1900,
                   (UInt8) hereTime.tm_mon+1,
-                  (UInt8) hereTime.tm_wday+1);
+                  (UInt8) hereTime.tm_mday);
 
     #else
 
