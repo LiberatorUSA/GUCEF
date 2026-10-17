@@ -52,6 +52,7 @@ CAudioEngineParams::CAudioEngineParams( void )
     , m_threadPoolName( "AudioEngine" )
     , m_startDevice( true )
     , m_panLaw( AUDIOPANLAW_CONSTANT_POWER )
+    , m_limiterEnabled( true )
 {GUCEF_TRACE;
 
 }
@@ -71,6 +72,7 @@ CAudioEngineParams::CAudioEngineParams( const CAudioEngineParams& src )
     , m_threadPoolName( src.m_threadPoolName )
     , m_startDevice( src.m_startDevice )
     , m_panLaw( src.m_panLaw )
+    , m_limiterEnabled( src.m_limiterEnabled )
 {GUCEF_TRACE;
 
 }
@@ -95,6 +97,7 @@ CAudioEngineParams::operator=( const CAudioEngineParams& src )
         m_threadPoolName = src.m_threadPoolName;
         m_startDevice = src.m_startDevice;
         m_panLaw = src.m_panLaw;
+        m_limiterEnabled = src.m_limiterEnabled;
     }
     return *this;
 }
@@ -320,6 +323,24 @@ CAudioEngineParams::SetPanLaw( TAudioPanLaw panLaw )
 {GUCEF_TRACE;
 
     m_panLaw = panLaw;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CAudioEngineParams::GetLimiterEnabled( void ) const
+{GUCEF_TRACE;
+
+    return m_limiterEnabled;
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CAudioEngineParams::SetLimiterEnabled( bool enabled )
+{GUCEF_TRACE;
+
+    m_limiterEnabled = enabled;
 }
 
 

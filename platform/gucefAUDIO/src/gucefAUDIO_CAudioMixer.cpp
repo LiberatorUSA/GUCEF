@@ -22,6 +22,7 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+#include <math.h>
 #include <string.h>
 
 #include "gucefAUDIO_CAudioMixer.h"
@@ -52,6 +53,10 @@ CAudioMixer::CAudioMixer( const CAudioFormat& mixFormat, UInt32 maxBlockFrames, 
     , m_panLaw( AUDIOPANLAW_CONSTANT_POWER )
     , m_totalFrames( 0 )
     , m_clipped( 0 )
+    , m_limiterEnabled( false )
+    , m_limiterGain( 1.0f )
+    , m_limiterRelease( 1.0f - (Float32) exp( -1.0 / ( 0.05 * ( 0 != mixFormat.GetSampleRate() ? mixFormat.GetSampleRate() : 48000 ) ) ) )
+    , m_limited( 0 )
 {GUCEF_TRACE;
 
     // The mix format is always float
@@ -229,6 +234,34 @@ CAudioMixer::GetTotalFramesMixed( void ) const
 
 /*-------------------------------------------------------------------------*/
 
+void
+CAudioMixer::SetLimiterEnabled( bool enabled )
+{GUCEF_TRACE;
+
+    m_limiterEnabled = enabled;
+    m_limiterGain = 1.0f;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CAudioMixer::IsLimiterEnabled( void ) const
+{GUCEF_TRACE;
+
+    return m_limiterEnabled;
+}
+
+/*-------------------------------------------------------------------------*/
+
+UInt64
+CAudioMixer::GetLimitedFrameCount( void ) const
+{GUCEF_TRACE;
+
+    return m_limited;
+}
+
+/*-------------------------------------------------------------------------*/
+
 UInt64
 CAudioMixer::GetClippedSampleCount( void ) const
 {GUCEF_TRACE;
@@ -319,7 +352,34 @@ CAudioMixer::MixBlock( Float32* output, UInt32 frames )
     }
 
     // 4. the master bus is what comes out, limited to what a speaker can be given
-    const Float32* master = &m_buses[ 0 ]->m_buffer[ 0 ];
+    Float32* master = &m_buses[ 0 ]->m_buffer[ 0 ];
+    if ( m_limiterEnabled )
+    {
+        // just below full level, so what the limiter lets through is never cut off below
+        static const Float32 ceiling = 0.98f;
+        for ( UInt32 f=0; f<frames; ++f )
+        {
+            Float32* frame = master + (size_t) f * channels;
+            Float32 peak = 0.0f;
+            for ( UInt32 c=0; c<channels; ++c )
+            {
+                const Float32 level = frame[ c ] < 0.0f ? -frame[ c ] : frame[ c ];
+                if ( level > peak )
+                    peak = level;
+            }
+
+            // down at once as far as this frame needs, back up gradually
+            m_limiterGain += ( 1.0f - m_limiterGain ) * m_limiterRelease;
+            if ( peak * m_limiterGain > ceiling )
+                m_limiterGain = ceiling / peak;
+            if ( m_limiterGain < 1.0f )
+            {
+                ++m_limited;
+                for ( UInt32 c=0; c<channels; ++c )
+                    frame[ c ] *= m_limiterGain;
+            }
+        }
+    }
     for ( size_t i=0; i<samples; ++i )
     {
         Float32 sample = master[ i ];

@@ -15,6 +15,16 @@
             <Define String="GUCEF_AUDIO_TESTAPP_BUILD_MODULE" />
         </Preprocessor>
         <RuntimeDependencies>
+            <RuntimeDependency Name="audiodriverALSA" />
+            <RuntimeDependency Name="audiocodecpluginAU" />
         </RuntimeDependencies>
+    </Module>
+    <Module Platform="emscripten" >
+        <Dependencies>
+            <Dependency Name="audiodriverWEBAUDIO" />
+        </Dependencies>
+        <Linker>
+            <Dependency Name="audiodriverWEBAUDIO" />
+        </Linker>
     </Module>
 </ModuleInfoEntry>

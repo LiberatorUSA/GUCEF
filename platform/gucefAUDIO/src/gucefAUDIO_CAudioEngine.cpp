@@ -264,6 +264,7 @@ CAudioEngine::Initialize( const CAudioEngineParams& params )
     m_mixer = GUCEF_NEW CAudioMixer( m_deviceFormat, m_maxBlock, m_params.GetMaxVoices(), m_params.GetMaxBuses() );
     m_mixer->SetListener( this );
     m_mixer->SetPanLaw( m_params.GetPanLaw() );
+    m_mixer->SetLimiterEnabled( m_params.GetLimiterEnabled() );
     m_directFloat = SAMPLETYPE_FLOAT32 == m_deviceFormat.GetSampleType();
     if ( !m_directFloat )
         m_scratch.assign( (size_t) m_maxBlock * m_deviceFormat.GetChannelCount(), 0.0f );

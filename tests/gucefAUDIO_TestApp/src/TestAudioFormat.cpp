@@ -87,7 +87,7 @@ PerformFormatTests( void )
         ASSERT_TRUE( 2 == cd.GetBytesPerSample() );
         ASSERT_TRUE( 4 == cd.GetBytesPerFrame() );
         ASSERT_FALSE( cd.HasExplicitChannelLayout() );
-        ASSERT_TRUE( ( AUDIO::SPEAKER_FRONT_LEFT | AUDIO::SPEAKER_FRONT_RIGHT ) == cd.GetChannelLayout() );
+        ASSERT_TRUE( ( AUDIO::AUDIOSPEAKER_FRONT_LEFT | AUDIO::AUDIOSPEAKER_FRONT_RIGHT ) == cd.GetChannelLayout() );
 
         ASSERT_FALSE( AUDIO::CAudioFormat( 0, 2, AUDIO::SAMPLETYPE_INT16 ).IsValid() );
         ASSERT_FALSE( AUDIO::CAudioFormat( 44100, 0, AUDIO::SAMPLETYPE_INT16 ).IsValid() );
@@ -123,7 +123,7 @@ PerformFormatTests( void )
     try
     {
         ASSERT_TRUE( 0 == AUDIO::CAudioFormat::GetDefaultChannelLayout( 0 ) );
-        ASSERT_TRUE( AUDIO::SPEAKER_FRONT_CENTER == AUDIO::CAudioFormat::GetDefaultChannelLayout( 1 ) );
+        ASSERT_TRUE( AUDIO::AUDIOSPEAKER_FRONT_CENTER == AUDIO::CAudioFormat::GetDefaultChannelLayout( 1 ) );
         ASSERT_TRUE( 0x3 == AUDIO::CAudioFormat::GetDefaultChannelLayout( 2 ) );
         ASSERT_TRUE( 0x33 == AUDIO::CAudioFormat::GetDefaultChannelLayout( 4 ) );
         ASSERT_TRUE( 0x3F == AUDIO::CAudioFormat::GetDefaultChannelLayout( 6 ) );       // 5.1
@@ -141,7 +141,7 @@ PerformFormatTests( void )
     try
     {
         AUDIO::CAudioFormat format( 48000, 2, AUDIO::SAMPLETYPE_FLOAT32 );
-        format.SetChannelLayout( AUDIO::SPEAKER_FRONT_LEFT | AUDIO::SPEAKER_FRONT_RIGHT | AUDIO::SPEAKER_LOW_FREQUENCY );
+        format.SetChannelLayout( AUDIO::AUDIOSPEAKER_FRONT_LEFT | AUDIO::AUDIOSPEAKER_FRONT_RIGHT | AUDIO::AUDIOSPEAKER_LOW_FREQUENCY );
         ASSERT_TRUE( format.HasExplicitChannelLayout() );
         ASSERT_TRUE( 3 == format.GetChannelCount() );
         format.SetChannelCount( 3 );                        // consistent, layout stays
@@ -150,7 +150,7 @@ PerformFormatTests( void )
         ASSERT_FALSE( format.HasExplicitChannelLayout() );
         ASSERT_TRUE( 0x3 == format.GetChannelLayout() );
 
-        AUDIO::CAudioFormat constructed( 48000, 0, AUDIO::SAMPLETYPE_INT16, AUDIO::SPEAKER_FRONT_CENTER | AUDIO::SPEAKER_LOW_FREQUENCY );
+        AUDIO::CAudioFormat constructed( 48000, 0, AUDIO::SAMPLETYPE_INT16, AUDIO::AUDIOSPEAKER_FRONT_CENTER | AUDIO::AUDIOSPEAKER_LOW_FREQUENCY );
         ASSERT_TRUE( 2 == constructed.GetChannelCount() );
     }
     catch( ... )
@@ -169,7 +169,7 @@ PerformFormatTests( void )
         ASSERT_TRUE( a != AUDIO::CAudioFormat( 48000, 2, AUDIO::SAMPLETYPE_INT16 ) );
         ASSERT_TRUE( a != AUDIO::CAudioFormat( 44100, 1, AUDIO::SAMPLETYPE_INT16 ) );
         ASSERT_TRUE( a != AUDIO::CAudioFormat( 44100, 2, AUDIO::SAMPLETYPE_FLOAT32 ) );
-        ASSERT_TRUE( a != AUDIO::CAudioFormat( 44100, 2, AUDIO::SAMPLETYPE_INT16, AUDIO::SPEAKER_FRONT_CENTER | AUDIO::SPEAKER_LOW_FREQUENCY ) );
+        ASSERT_TRUE( a != AUDIO::CAudioFormat( 44100, 2, AUDIO::SAMPLETYPE_INT16, AUDIO::AUDIOSPEAKER_FRONT_CENTER | AUDIO::AUDIOSPEAKER_LOW_FREQUENCY ) );
     }
     catch( ... )
     {

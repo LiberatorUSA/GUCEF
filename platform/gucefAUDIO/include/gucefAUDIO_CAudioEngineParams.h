@@ -119,6 +119,10 @@ class GUCEF_AUDIO_PUBLIC_CPP CAudioEngineParams
     TAudioPanLaw GetPanLaw( void ) const;
     void SetPanLaw( TAudioPanLaw panLaw );
 
+    /** True (default) to have the mixer turn the output down where it would go over full level, see CAudioMixer::SetLimiterEnabled */
+    bool GetLimiterEnabled( void ) const;
+    void SetLimiterEnabled( bool enabled );
+
     private:
 
     CString m_driverName;
@@ -133,6 +137,7 @@ class GUCEF_AUDIO_PUBLIC_CPP CAudioEngineParams
     CString m_threadPoolName;
     bool m_startDevice;
     TAudioPanLaw m_panLaw;
+    bool m_limiterEnabled;
 };
 
 /*-------------------------------------------------------------------------//

@@ -12,21 +12,31 @@
 # Configuration for module: gucefAUDIO_TestApp
 
 set( HEADER_FILES 
+  include/TestAudioAlsa.h
+  include/TestAudioCodecPlugin.h
   include/TestAudioCodecs.h
   include/TestAudioConversion.h
   include/TestAudioDevices.h
   include/TestAudioEngine.h
   include/TestAudioFormat.h
   include/TestAudioMixer.h
+  include/TestAudioStream.h
+  include/TestAudioTestSignals.h
+  include/TestAudioWebAudio.h
 )
 
 set( SOURCE_FILES 
+  src/TestAudioAlsa.cpp
+  src/TestAudioCodecPlugin.cpp
   src/TestAudioCodecs.cpp
   src/TestAudioConversion.cpp
   src/TestAudioDevices.cpp
   src/TestAudioEngine.cpp
   src/TestAudioFormat.cpp
   src/TestAudioMixer.cpp
+  src/TestAudioStream.cpp
+  src/TestAudioTestSignals.cpp
+  src/TestAudioWebAudio.cpp
   src/gucefAUDIO_TestApp.cpp
 )
 
@@ -49,7 +59,17 @@ add_dependencies( ${MODULE_NAME} gucefAUDIO gucefCORE gucefMT )
 target_link_libraries( ${MODULE_NAME} PUBLIC gucefAUDIO gucefCORE gucefMT )
 set_property( TARGET ${MODULE_NAME} APPEND_STRING PROPERTY COMPILE_DEFINITIONS "GUCEF_AUDIO_TESTAPP_BUILD_MODULE;MODULE_CONSENSUS_NAME=gucefAUDIO_TestApp;MODULE_NAME=gucefAUDIO_TestApp" )
 
-include_directories( ../../common/include ../../platform/gucefAUDIO/include ../../platform/gucefCORE/include ../../platform/gucefCORE/include/c_api ../../platform/gucefMT/include include )
+if ( EMSCRIPTEN32 )
+  add_dependencies( ${MODULE_NAME} audiodriverWEBAUDIO )
+  target_link_libraries( ${MODULE_NAME} PUBLIC audiodriverWEBAUDIO )
+endif( EMSCRIPTEN32 )
+
+if ( EMSCRIPTEN64 )
+  add_dependencies( ${MODULE_NAME} audiodriverWEBAUDIO )
+  target_link_libraries( ${MODULE_NAME} PUBLIC audiodriverWEBAUDIO )
+endif( EMSCRIPTEN64 )
+
+include_directories( ../../common/include ../../platform/gucefAUDIO/include ../../platform/gucefAUDIO/include/c_api ../../platform/gucefCORE/include ../../platform/gucefCORE/include/c_api ../../platform/gucefMT/include include )
 
 if ( ANDROID32 )
   include_directories( ../../platform/gucefCORE/include/android )
@@ -58,6 +78,14 @@ endif( ANDROID32 )
 if ( ANDROID64 )
   include_directories( ../../platform/gucefCORE/include/android )
 endif( ANDROID64 )
+
+if ( EMSCRIPTEN32 )
+  include_directories( ../../plugins/AUDIO/audiodriverWEBAUDIO/include )
+endif( EMSCRIPTEN32 )
+
+if ( EMSCRIPTEN64 )
+  include_directories( ../../plugins/AUDIO/audiodriverWEBAUDIO/include )
+endif( EMSCRIPTEN64 )
 
 if ( LINUX32 )
   include_directories( ../../platform/gucefCORE/include/linux )

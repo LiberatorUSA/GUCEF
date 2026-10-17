@@ -489,8 +489,8 @@ CAudioVoice::RenderBlock( Float32* busBuffer, UInt32 frames, TAudioPanLaw panLaw
     for ( UInt32 c=0; c<limited; ++c )
         gains[ c ] = volume;
     const UInt32 layout = m_mixFormat.GetChannelLayout();
-    const Int32 left = IndexOfSpeaker( layout, SPEAKER_FRONT_LEFT );
-    const Int32 right = IndexOfSpeaker( layout, SPEAKER_FRONT_RIGHT );
+    const Int32 left = IndexOfSpeaker( layout, AUDIOSPEAKER_FRONT_LEFT );
+    const Int32 right = IndexOfSpeaker( layout, AUDIOSPEAKER_FRONT_RIGHT );
     const Float32 pan = m_pan.Load();
     if ( left >= 0 && right >= 0 && (UInt32) left < limited && (UInt32) right < limited && 0.0f != pan )
     {

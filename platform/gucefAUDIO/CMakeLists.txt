@@ -18,6 +18,9 @@ set( HEADER_FILES
   include/gucefAUDIO_CAudioBuffer.h
   include/gucefAUDIO_CAudioBus.h
   include/gucefAUDIO_CAudioClip.h
+  include/gucefAUDIO_CAudioCodecCPlugin.h
+  include/gucefAUDIO_CAudioCodecCPluginCodec.h
+  include/gucefAUDIO_CAudioCodecPluginManager.h
   include/gucefAUDIO_CAudioCodecRegistry.h
   include/gucefAUDIO_CAudioConverter.h
   include/gucefAUDIO_CAudioDevice.h
@@ -30,12 +33,15 @@ set( HEADER_FILES
   include/gucefAUDIO_CAudioFormat.h
   include/gucefAUDIO_CAudioGlobal.h
   include/gucefAUDIO_CAudioMixer.h
+  include/gucefAUDIO_CAudioPushDevice.h
+  include/gucefAUDIO_CAudioStream.h
   include/gucefAUDIO_CAudioVoice.h
   include/gucefAUDIO_CIAudioCodec.h
   include/gucefAUDIO_CLinearResampler.h
   include/gucefAUDIO_CNullAudioDriver.h
   include/gucefAUDIO_CPcmStreamSource.h
   include/gucefAUDIO_CRawAudioCodec.h
+  include/gucefAUDIO_CToneSequenceSource.h
   include/gucefAUDIO_CWavAudioCodec.h
   include/gucefAUDIO_ETypes.h
   include/gucefAUDIO_IAudioDeviceCallback.h
@@ -43,6 +49,7 @@ set( HEADER_FILES
   include/gucefAUDIO_IAudioSource.h
   include/gucefAUDIO_config.h
   include/gucefAUDIO_macros.h
+  include/c_api/gucefAUDIO_c_audiocodec_plugin_api.h
 )
 
 set( SOURCE_FILES 
@@ -51,6 +58,9 @@ set( SOURCE_FILES
   src/gucefAUDIO_CAudioBuffer.cpp
   src/gucefAUDIO_CAudioBus.cpp
   src/gucefAUDIO_CAudioClip.cpp
+  src/gucefAUDIO_CAudioCodecCPlugin.cpp
+  src/gucefAUDIO_CAudioCodecCPluginCodec.cpp
+  src/gucefAUDIO_CAudioCodecPluginManager.cpp
   src/gucefAUDIO_CAudioCodecRegistry.cpp
   src/gucefAUDIO_CAudioConverter.cpp
   src/gucefAUDIO_CAudioDevice.cpp
@@ -63,12 +73,15 @@ set( SOURCE_FILES
   src/gucefAUDIO_CAudioFormat.cpp
   src/gucefAUDIO_CAudioGlobal.cpp
   src/gucefAUDIO_CAudioMixer.cpp
+  src/gucefAUDIO_CAudioPushDevice.cpp
+  src/gucefAUDIO_CAudioStream.cpp
   src/gucefAUDIO_CAudioVoice.cpp
   src/gucefAUDIO_CIAudioCodec.cpp
   src/gucefAUDIO_CLinearResampler.cpp
   src/gucefAUDIO_CNullAudioDriver.cpp
   src/gucefAUDIO_CPcmStreamSource.cpp
   src/gucefAUDIO_CRawAudioCodec.cpp
+  src/gucefAUDIO_CToneSequenceSource.cpp
   src/gucefAUDIO_CWavAudioCodec.cpp
   src/gucefAUDIO_IAudioSource.cpp
 )
@@ -90,7 +103,7 @@ set_property( TARGET ${MODULE_NAME} APPEND_STRING PROPERTY COMPILE_DEFINITIONS "
 set_property( TARGET ${MODULE_NAME} APPEND_STRING PROPERTY VERSION 0.1.0.0 )
 set_property( TARGET ${MODULE_NAME} APPEND_STRING PROPERTY SOVERSION 0.1.0.0 )
 
-include_directories( ../../common/include ../gucefCORE/include ../gucefCORE/include/c_api ../gucefMT/include include )
+include_directories( ../../common/include ../gucefCORE/include ../gucefCORE/include/c_api ../gucefMT/include include include/c_api )
 
 if ( ANDROID32 )
   include_directories( ../gucefCORE/include/android )

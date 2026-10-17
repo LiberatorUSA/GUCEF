@@ -21,18 +21,24 @@ LOCAL_MODULE := gucefAUDIO_TestApp
 @echo Module name: $(LOCAL_MODULE)
 
 LOCAL_SRC_FILES := \
+  src/TestAudioAlsa.cpp \
+  src/TestAudioCodecPlugin.cpp \
   src/TestAudioCodecs.cpp \
   src/TestAudioConversion.cpp \
   src/TestAudioDevices.cpp \
   src/TestAudioEngine.cpp \
   src/TestAudioFormat.cpp \
   src/TestAudioMixer.cpp \
+  src/TestAudioStream.cpp \
+  src/TestAudioTestSignals.cpp \
+  src/TestAudioWebAudio.cpp \
   src/gucefAUDIO_TestApp.cpp
 
 LOCAL_C_INCLUDES := \
   $(MY_MODULE_PATH)/include \
   $(MY_MODULE_PATH)/../../common/include \
   $(MY_MODULE_PATH)/../../platform/gucefAUDIO/include \
+  $(MY_MODULE_PATH)/../../platform/gucefAUDIO/include/c_api \
   $(MY_MODULE_PATH)/../../platform/gucefCORE/include \
   $(MY_MODULE_PATH)/../../platform/gucefCORE/include/c_api \
   $(MY_MODULE_PATH)/../../platform/gucefMT/include

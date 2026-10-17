@@ -46,6 +46,9 @@ files( {
   "include/gucefAUDIO_CAudioBuffer.h",
   "include/gucefAUDIO_CAudioBus.h",
   "include/gucefAUDIO_CAudioClip.h",
+  "include/gucefAUDIO_CAudioCodecCPlugin.h",
+  "include/gucefAUDIO_CAudioCodecCPluginCodec.h",
+  "include/gucefAUDIO_CAudioCodecPluginManager.h",
   "include/gucefAUDIO_CAudioCodecRegistry.h",
   "include/gucefAUDIO_CAudioConverter.h",
   "include/gucefAUDIO_CAudioDevice.h",
@@ -58,19 +61,23 @@ files( {
   "include/gucefAUDIO_CAudioFormat.h",
   "include/gucefAUDIO_CAudioGlobal.h",
   "include/gucefAUDIO_CAudioMixer.h",
+  "include/gucefAUDIO_CAudioPushDevice.h",
+  "include/gucefAUDIO_CAudioStream.h",
   "include/gucefAUDIO_CAudioVoice.h",
   "include/gucefAUDIO_CIAudioCodec.h",
   "include/gucefAUDIO_CLinearResampler.h",
   "include/gucefAUDIO_CNullAudioDriver.h",
   "include/gucefAUDIO_CPcmStreamSource.h",
   "include/gucefAUDIO_CRawAudioCodec.h",
+  "include/gucefAUDIO_CToneSequenceSource.h",
   "include/gucefAUDIO_CWavAudioCodec.h",
   "include/gucefAUDIO_ETypes.h",
   "include/gucefAUDIO_IAudioDeviceCallback.h",
   "include/gucefAUDIO_IAudioResampler.h",
   "include/gucefAUDIO_IAudioSource.h",
   "include/gucefAUDIO_config.h",
-  "include/gucefAUDIO_macros.h"
+  "include/gucefAUDIO_macros.h",
+  "include/c_api/gucefAUDIO_c_audiocodec_plugin_api.h"
  } )
 
 
@@ -83,6 +90,9 @@ files( {
   "src/gucefAUDIO_CAudioBuffer.cpp",
   "src/gucefAUDIO_CAudioBus.cpp",
   "src/gucefAUDIO_CAudioClip.cpp",
+  "src/gucefAUDIO_CAudioCodecCPlugin.cpp",
+  "src/gucefAUDIO_CAudioCodecCPluginCodec.cpp",
+  "src/gucefAUDIO_CAudioCodecPluginManager.cpp",
   "src/gucefAUDIO_CAudioCodecRegistry.cpp",
   "src/gucefAUDIO_CAudioConverter.cpp",
   "src/gucefAUDIO_CAudioDevice.cpp",
@@ -95,19 +105,22 @@ files( {
   "src/gucefAUDIO_CAudioFormat.cpp",
   "src/gucefAUDIO_CAudioGlobal.cpp",
   "src/gucefAUDIO_CAudioMixer.cpp",
+  "src/gucefAUDIO_CAudioPushDevice.cpp",
+  "src/gucefAUDIO_CAudioStream.cpp",
   "src/gucefAUDIO_CAudioVoice.cpp",
   "src/gucefAUDIO_CIAudioCodec.cpp",
   "src/gucefAUDIO_CLinearResampler.cpp",
   "src/gucefAUDIO_CNullAudioDriver.cpp",
   "src/gucefAUDIO_CPcmStreamSource.cpp",
   "src/gucefAUDIO_CRawAudioCodec.cpp",
+  "src/gucefAUDIO_CToneSequenceSource.cpp",
   "src/gucefAUDIO_CWavAudioCodec.cpp",
   "src/gucefAUDIO_IAudioSource.cpp"
  } )
 
 
 configuration( {} )
-includedirs( { "../../common/include", "../gucefCORE/include", "../gucefCORE/include/c_api", "../gucefMT/include", "include" } )
+includedirs( { "../../common/include", "../gucefCORE/include", "../gucefCORE/include/c_api", "../gucefMT/include", "include", "include/c_api" } )
 
 configuration( { "ANDROID32" } )
 includedirs( { "../gucefCORE/include/android" } )

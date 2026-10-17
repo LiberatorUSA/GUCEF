@@ -67,6 +67,16 @@
 #define GUCEF_AUDIO_CRAWAUDIOCODEC_H
 #endif /* GUCEF_AUDIO_CRAWAUDIOCODEC_H ? */
 
+#ifndef GUCEF_AUDIO_CAUDIOSTREAM_H
+#include "gucefAUDIO_CAudioStream.h"
+#define GUCEF_AUDIO_CAUDIOSTREAM_H
+#endif /* GUCEF_AUDIO_CAUDIOSTREAM_H ? */
+
+#ifndef GUCEF_AUDIO_CAUDIOCODECPLUGINMANAGER_H
+#include "gucefAUDIO_CAudioCodecPluginManager.h"
+#define GUCEF_AUDIO_CAUDIOCODECPLUGINMANAGER_H
+#endif /* GUCEF_AUDIO_CAUDIOCODECPLUGINMANAGER_H ? */
+
 #include "gucefAUDIO_CAudioGlobal.h"
 
 /*-------------------------------------------------------------------------//
@@ -119,6 +129,7 @@ CAudioGlobal::Deinstance( void )
 CAudioGlobal::CAudioGlobal( void )
     : m_audioCodecRegistry( GUCEF_NULL )
     , m_audioDriverRegistry( GUCEF_NULL )
+    , m_audioCodecPluginManager( GUCEF_NULL )
 {GUCEF_TRACE;
 
 }
@@ -129,7 +140,14 @@ CAudioGlobal::~CAudioGlobal()
 {GUCEF_TRACE;
 
     GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "Shutting down gucefAUDIO global systems" );
+    CAudioStream::StopReadAheadTask();
     CORE::CCoreGlobal::Instance()->GetPluginControl().UnlistModuleForLinkBack( "gucefAUDIO" );
+
+    // Codec plugins first: their codecs are in the registry and their streams may still be open
+    if ( GUCEF_NULL != m_audioCodecPluginManager )
+        m_audioCodecPluginManager->UnlinkAll();
+    GUCEF_DELETE m_audioCodecPluginManager;
+    m_audioCodecPluginManager = GUCEF_NULL;
 
     GUCEF_DELETE m_audioDriverRegistry;
     m_audioDriverRegistry = GUCEF_NULL;
@@ -158,6 +176,15 @@ CAudioGlobal::GetAudioDriverRegistry( void )
 
 /*-------------------------------------------------------------------------*/
 
+CAudioCodecPluginManager&
+CAudioGlobal::GetAudioCodecPluginManager( void )
+{GUCEF_TRACE;
+
+    return *m_audioCodecPluginManager;
+}
+
+/*-------------------------------------------------------------------------*/
+
 void
 CAudioGlobal::Initialize( void )
 {GUCEF_TRACE;
@@ -171,6 +198,7 @@ CAudioGlobal::Initialize( void )
 
     m_audioCodecRegistry = GUCEF_NEW CAudioCodecRegistry();
     m_audioDriverRegistry = GUCEF_NEW CAudioDriverRegistry();
+    m_audioCodecPluginManager = GUCEF_NEW CAudioCodecPluginManager();
 
     // The driver that needs no hardware and no plugin
     m_audioDriverRegistry->TryRegister( "null", TAudioDriverPtr( GUCEF_NEW CNullAudioDriver() ) );

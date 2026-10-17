@@ -253,6 +253,49 @@ PerformBasicMixingTests( void )
     }
     GUCEF_TESTFW_TESTCASE_END
 
+    GUCEF_TESTFW_TESTCASE( "AudioMixer: The limiter turns a loud moment down instead of cutting it off, and comes back gradually" )
+    try
+    {
+        AUDIO::CAudioMixer mixer( MixFormat, 256, 8, 4 );
+        ASSERT_FALSE( mixer.IsLimiterEnabled() );
+        mixer.SetLimiterEnabled( true );
+        ASSERT_TRUE( mixer.IsLimiterEnabled() );
+
+        // music at half level, and a short loud effect on top of it
+        AUDIO::TAudioVoicePtr music = MakeVoice( mixer, MakeConstant( 48000, 1, 48000, 0.5f ) );
+        AUDIO::TAudioVoicePtr effect = MakeVoice( mixer, MakeConstant( 48000, 1, 480, 0.9f ) );
+        ASSERT_TRUE( mixer.AddVoice( music.GetPointerAlways() ) && mixer.AddVoice( effect.GetPointerAlways() ) );
+
+        GUCEF::vector< Float32 > out = MixFrames( mixer, 480 );
+        Float32 peak = 0.0f;
+        for ( size_t i=0; i<out.size(); ++i )
+            peak = out[ i ] > peak ? out[ i ] : peak;
+        ASSERT_TRUE( peak <= 0.98f + 1e-5f );                                   // never over full level ...
+        ASSERT_TRUE( Near( 0.98f, out[ 0 ], 1e-4f ) && Near( 0.98f, out[ 959 ], 1e-4f ) );   // ... but no quieter than needed
+        ASSERT_TRUE( 0 == mixer.GetClippedSampleCount() );
+        ASSERT_TRUE( 480 == mixer.GetLimitedFrameCount() );
+
+        // the effect is over: the music comes back up over tens of milliseconds, without a jump
+        out = MixFrames( mixer, 14400 );
+        ASSERT_TRUE( out[ 0 ] < 0.5f && out[ 0 ] > 0.68f * 0.5f );
+        for ( size_t f=1; f<14400; ++f )
+            ASSERT_TRUE( out[ f * 2 ] >= out[ ( f - 1 ) * 2 ] - 1e-6f );
+        ASSERT_TRUE( Near( 0.5f, out[ 14399 * 2 ], 1e-3f ) );
+        ASSERT_TRUE( 0 == mixer.GetClippedSampleCount() );
+
+        // the engine has it on unless asked otherwise
+        AUDIO::CAudioEngineParams params;
+        ASSERT_TRUE( params.GetLimiterEnabled() );
+        params.SetLimiterEnabled( false );
+        AUDIO::CAudioEngineParams copy( params );
+        ASSERT_FALSE( copy.GetLimiterEnabled() );
+    }
+    catch( ... )
+    {
+        ERRORHERE;
+    }
+    GUCEF_TESTFW_TESTCASE_END
+
     GUCEF_TESTFW_TESTCASE( "AudioMixer: Broken audio (not a number) is silent, not poisoning the mix" )
     try
     {

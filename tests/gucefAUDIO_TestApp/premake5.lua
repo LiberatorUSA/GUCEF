@@ -41,17 +41,30 @@ links( { "gucefAUDIO", "gucefCORE", "gucefMT" } )
 
 configuration( {} )
 defines( { "GUCEF_AUDIO_TESTAPP_BUILD_MODULE", "MODULE_CONSENSUS_NAME=gucefAUDIO_TestApp", "MODULE_NAME=gucefAUDIO_TestApp" } )
+  
+configuration( { EMSCRIPTEN32 } )
+links( { "audiodriverWEBAUDIO" } )
+  links( { "audiodriverWEBAUDIO" } )
+  
+configuration( { EMSCRIPTEN64 } )
+links( { "audiodriverWEBAUDIO" } )
+  links( { "audiodriverWEBAUDIO" } )
 
 
 configuration( {} )
 vpaths { ["Headers"] = { "**.h", "**.hpp", "**.hxx" } }
 files( {
+  "include/TestAudioAlsa.h",
+  "include/TestAudioCodecPlugin.h",
   "include/TestAudioCodecs.h",
   "include/TestAudioConversion.h",
   "include/TestAudioDevices.h",
   "include/TestAudioEngine.h",
   "include/TestAudioFormat.h",
-  "include/TestAudioMixer.h"
+  "include/TestAudioMixer.h",
+  "include/TestAudioStream.h",
+  "include/TestAudioTestSignals.h",
+  "include/TestAudioWebAudio.h"
  } )
 
 
@@ -59,24 +72,35 @@ files( {
 configuration( {} )
 vpaths { ["Source"] = { "**.c", "**.cpp", "**.cs", "**.asm" } }
 files( {
+  "src/TestAudioAlsa.cpp",
+  "src/TestAudioCodecPlugin.cpp",
   "src/TestAudioCodecs.cpp",
   "src/TestAudioConversion.cpp",
   "src/TestAudioDevices.cpp",
   "src/TestAudioEngine.cpp",
   "src/TestAudioFormat.cpp",
   "src/TestAudioMixer.cpp",
+  "src/TestAudioStream.cpp",
+  "src/TestAudioTestSignals.cpp",
+  "src/TestAudioWebAudio.cpp",
   "src/gucefAUDIO_TestApp.cpp"
  } )
 
 
 configuration( {} )
-includedirs( { "../../common/include", "../../platform/gucefAUDIO/include", "../../platform/gucefCORE/include", "../../platform/gucefCORE/include/c_api", "../../platform/gucefMT/include", "include" } )
+includedirs( { "../../common/include", "../../platform/gucefAUDIO/include", "../../platform/gucefAUDIO/include/c_api", "../../platform/gucefCORE/include", "../../platform/gucefCORE/include/c_api", "../../platform/gucefMT/include", "include" } )
 
 configuration( { "ANDROID32" } )
 includedirs( { "../../platform/gucefCORE/include/android" } )
 
 configuration( { "ANDROID64" } )
 includedirs( { "../../platform/gucefCORE/include/android" } )
+
+configuration( { "EMSCRIPTEN32" } )
+includedirs( { "../../plugins/AUDIO/audiodriverWEBAUDIO/include" } )
+
+configuration( { "EMSCRIPTEN64" } )
+includedirs( { "../../plugins/AUDIO/audiodriverWEBAUDIO/include" } )
 
 configuration( { "LINUX32" } )
 includedirs( { "../../platform/gucefCORE/include/linux" } )

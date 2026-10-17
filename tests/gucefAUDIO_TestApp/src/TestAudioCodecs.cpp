@@ -312,14 +312,14 @@ PerformWavTests( void )
             }
 
         // a layout that is not the usual one for its channel count is kept
-        AUDIO::CAudioFormat odd( 44100, 0, AUDIO::SAMPLETYPE_INT16, AUDIO::SPEAKER_FRONT_CENTER | AUDIO::SPEAKER_LOW_FREQUENCY );
+        AUDIO::CAudioFormat odd( 44100, 0, AUDIO::SAMPLETYPE_INT16, AUDIO::AUDIOSPEAKER_FRONT_CENTER | AUDIO::AUDIOSPEAKER_LOW_FREQUENCY );
         const AUDIO::CAudioBuffer oddAudio = MakeTestAudio( odd, 50 );
         CMemoryFile oddFile;
         ASSERT_TRUE( wav.Encode( oddAudio, oddFile.access ) );
         oddFile.access.Setpos( 0 );
         AUDIO::CAudioBuffer oddDecoded;
         ASSERT_TRUE( wav.DecodeAll( oddFile.access, oddDecoded ) );
-        ASSERT_TRUE( oddDecoded.GetFormat().GetChannelLayout() == ( AUDIO::SPEAKER_FRONT_CENTER | AUDIO::SPEAKER_LOW_FREQUENCY ) );
+        ASSERT_TRUE( oddDecoded.GetFormat().GetChannelLayout() == ( AUDIO::AUDIOSPEAKER_FRONT_CENTER | AUDIO::AUDIOSPEAKER_LOW_FREQUENCY ) );
         ASSERT_TRUE( SameBytes( oddAudio, oddDecoded ) );
     }
     catch( ... )

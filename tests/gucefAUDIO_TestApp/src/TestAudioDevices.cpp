@@ -41,6 +41,16 @@
 #define GUCEF_TEST_FRAMEWORK_H
 #endif /* GUCEF_TEST_FRAMEWORK_H ? */
 
+#ifndef GUCEF_CORE_CCOREGLOBAL_H
+#include "gucefCORE_CCoreGlobal.h"
+#define GUCEF_CORE_CCOREGLOBAL_H
+#endif /* GUCEF_CORE_CCOREGLOBAL_H ? */
+
+#ifndef GUCEF_CORE_CTASKMANAGER_H
+#include "gucefCORE_CTaskManager.h"
+#define GUCEF_CORE_CTASKMANAGER_H
+#endif /* GUCEF_CORE_CTASKMANAGER_H ? */
+
 #include "TestAudioDevices.h"
 
 /*-------------------------------------------------------------------------//
@@ -100,6 +110,89 @@ class CRampCallback : public AUDIO::IAudioDeviceCallback
     UInt32 channels;
     Float32 capturedPeak;
 };
+
+/**
+ *  A push device whose backend is a script: it can refuse to start, report an underrun or the loss of the device at a
+ *  given write, and it notes the thread its writes run on. Each write takes a millisecond, as a blocking backend would
+ */
+class CScriptedPushDevice : public AUDIO::CAudioPushDevice
+{
+    public:
+
+    CScriptedPushDevice( AUDIO::IAudioDeviceCallback* callback, bool canStart, UInt32 underrunAtPush, UInt32 lostAtPush, AUDIO::TAudioDirection direction = AUDIO::AUDIODIRECTION_PLAYBACK )
+        : AUDIO::CAudioPushDevice( AUDIO::CAudioDeviceInfo( "scripted", "Scripted push device", direction ), callback, AUDIO::CNullAudioDriver::GetDefaultFormat(), 64 )
+        , canStart( canStart ), underrunAtPush( underrunAtPush ), lostAtPush( lostAtPush ), pushes( 0 ), framesPushed( 0 ), pushThreadId( 0 ), starts( 0 ), stops( 0 )
+        , threadStartFails( false ), threadStarts( 0 ), threadEnds( 0 ), threadStartThreadId( 0 ), threadEndThreadId( 0 )
+    {}
+
+    virtual ~CScriptedPushDevice() GUCEF_VIRTUAL_OVERRIDE
+    {
+        Stop();
+    }
+
+    bool canStart;
+    UInt32 underrunAtPush;
+    UInt32 lostAtPush;
+    MT::CTAtomic< UInt32 > pushes;
+    MT::CTAtomic< UInt32 > framesPushed;
+    MT::CTAtomic< UInt32 > pushThreadId;
+    UInt32 starts;
+    UInt32 stops;
+    bool threadStartFails;
+    MT::CTAtomic< UInt32 > threadStarts;
+    MT::CTAtomic< UInt32 > threadEnds;
+    MT::CTAtomic< UInt32 > threadStartThreadId;
+    MT::CTAtomic< UInt32 > threadEndThreadId;
+
+    protected:
+
+    virtual bool OnDeviceThreadStart( void ) GUCEF_VIRTUAL_OVERRIDE
+    {
+        threadStartThreadId.Store( MT::GetCurrentTaskID() );
+        threadStarts.FetchAdd( 1 );
+        return !threadStartFails;
+    }
+
+    virtual void OnDeviceThreadEnd( void ) GUCEF_VIRTUAL_OVERRIDE
+    {
+        threadEndThreadId.Store( MT::GetCurrentTaskID() );
+        threadEnds.FetchAdd( 1 );
+    }
+
+    virtual bool OnPushStart( void ) GUCEF_VIRTUAL_OVERRIDE
+    {
+        ++starts;
+        return canStart;
+    }
+
+    virtual TPushResult PushFrames( const void*, UInt32 frameCount ) GUCEF_VIRTUAL_OVERRIDE
+    {
+        pushThreadId.Store( MT::GetCurrentTaskID() );
+        const UInt32 push = pushes.FetchAdd( 1 ) + 1;
+        MT::PrecisionDelay( 1 );
+        if ( push == lostAtPush )
+            return PUSHRESULT_DEVICE_LOST;
+        framesPushed.FetchAdd( frameCount );
+        return push == underrunAtPush ? PUSHRESULT_UNDERRUN_RECOVERED : PUSHRESULT_OK;
+    }
+
+    virtual void OnPushStop( void ) GUCEF_VIRTUAL_OVERRIDE
+    {
+        ++stops;
+    }
+};
+
+bool
+WaitForPushes( const CScriptedPushDevice& device, UInt32 count, UInt32 timeoutInMs )
+{
+    UInt32 waited = 0;
+    while ( device.pushes.Load() < count && waited < timeoutInMs )
+    {
+        MT::PrecisionDelay( 2 );
+        waited += 2;
+    }
+    return device.pushes.Load() >= count;
+}
 
 /** A driver for the registry tests: refuses or accepts everything, at the priority it was made with */
 class CFakeDriver : public AUDIO::CAudioDriver
@@ -366,6 +459,145 @@ PerformRegistryTests( void )
 /*-------------------------------------------------------------------------*/
 
 void
+PerformPushDeviceTests( void )
+{GUCEF_TRACE;
+
+    GUCEF_TESTFW_TESTCASE( "AudioPushDevice: Renders and pushes period by period on a thread of its pool until stopped" )
+    try
+    {
+        CRampCallback callback;
+        CScriptedPushDevice device( &callback, true, 0, 0 );
+        ASSERT_TRUE( device.Start() );
+        ASSERT_TRUE( device.IsStarted() );
+        ASSERT_TRUE( WaitForPushes( device, 5, 5000 ) );
+
+        // the thread belongs to the pool the device was made for, so the task manager knows it
+        CORE::ThreadPoolPtr pool = CORE::CCoreGlobal::Instance()->GetTaskManager().GetThreadPool( AUDIO::CAudioPushDevice::DefaultThreadPoolName );
+        ASSERT_FALSE( pool.IsNULL() );
+        ASSERT_TRUE( !pool.IsNULL() && pool->GetActiveNrOfDedicatedThreads() >= 1 );
+        ASSERT_TRUE( device.pushThreadId.Load() != MT::GetCurrentTaskID() );
+
+        ASSERT_TRUE( device.Stop() );
+        ASSERT_FALSE( device.IsStarted() );
+        ASSERT_TRUE( 1 == device.starts && 1 == device.stops );
+
+        // nothing happens after Stop() returned, and every period that was rendered was pushed
+        const UInt32 pushes = device.pushes.Load();
+        MT::PrecisionDelay( 20 );
+        ASSERT_TRUE( pushes == device.pushes.Load() );
+        ASSERT_TRUE( pushes == callback.renderCalls.size() );
+        for ( size_t i=0; i<callback.renderCalls.size(); ++i )
+            ASSERT_TRUE( 64 == callback.renderCalls[ i ] );
+        ASSERT_TRUE( device.GetTotalFramesPushed() == (UInt64) pushes * 64 );
+        ASSERT_TRUE( 0 == device.GetUnderrunCount() && 0 == callback.lost );
+
+        // and it starts again
+        ASSERT_TRUE( device.Start() );
+        ASSERT_TRUE( WaitForPushes( device, pushes + 3, 5000 ) );
+        ASSERT_TRUE( device.Stop() );
+    }
+    catch( ... )
+    {
+        ERRORHERE;
+    }
+    GUCEF_TESTFW_TESTCASE_END
+
+    GUCEF_TESTFW_TESTCASE( "AudioPushDevice: A backend that cannot be readied makes Start fail without a thread, capture is refused" )
+    try
+    {
+        CRampCallback callback;
+        CScriptedPushDevice device( &callback, false, 0, 0 );
+        ASSERT_FALSE( device.Start() );
+        ASSERT_FALSE( device.IsStarted() );
+        MT::PrecisionDelay( 20 );
+        ASSERT_TRUE( 0 == device.pushes.Load() && callback.renderCalls.empty() );
+
+        CScriptedPushDevice capture( &callback, true, 0, 0, AUDIO::AUDIODIRECTION_CAPTURE );
+        ASSERT_FALSE( capture.Start() );
+        ASSERT_TRUE( 0 == capture.starts );
+    }
+    catch( ... )
+    {
+        ERRORHERE;
+    }
+    GUCEF_TESTFW_TESTCASE_END
+
+    GUCEF_TESTFW_TESTCASE( "AudioPushDevice: Underruns are counted and a lost backend is reported once and ends the device thread" )
+    try
+    {
+        CRampCallback callback;
+        CScriptedPushDevice device( &callback, true, 2, 4 );
+        ASSERT_TRUE( device.Start() );
+
+        UInt32 waited = 0;
+        while ( device.IsStarted() && waited < 5000 )
+        {
+            MT::PrecisionDelay( 2 );
+            waited += 2;
+        }
+        ASSERT_FALSE( device.IsStarted() );
+        ASSERT_TRUE( 1 == callback.lost );
+        ASSERT_TRUE( 4 == device.pushes.Load() );
+        ASSERT_TRUE( 1 == device.GetUnderrunCount() );
+        ASSERT_TRUE( device.GetTotalFramesPushed() == 3 * 64 );
+
+        // the backend is still stopped properly
+        ASSERT_TRUE( device.Stop() );
+        ASSERT_TRUE( 1 == device.stops );
+    }
+    catch( ... )
+    {
+        ERRORHERE;
+    }
+    GUCEF_TESTFW_TESTCASE_END
+
+    GUCEF_TESTFW_TESTCASE( "AudioPushDevice: Per thread set up of the backend runs on the device thread, around all pushes, once per start" )
+    try
+    {
+        CRampCallback callback;
+        CScriptedPushDevice device( &callback, true, 0, 0 );
+        ASSERT_TRUE( device.Start() );
+        ASSERT_TRUE( WaitForPushes( device, 3, 5000 ) );
+        ASSERT_TRUE( 1 == device.threadStarts.Load() && 0 == device.threadEnds.Load() );
+        ASSERT_TRUE( device.threadStartThreadId.Load() == device.pushThreadId.Load() );
+        ASSERT_TRUE( device.threadStartThreadId.Load() != MT::GetCurrentTaskID() );
+        ASSERT_TRUE( device.Stop() );
+        ASSERT_TRUE( 1 == device.threadEnds.Load() );
+        ASSERT_TRUE( device.threadEndThreadId.Load() == device.pushThreadId.Load() );
+
+        ASSERT_TRUE( device.Start() );
+        ASSERT_TRUE( WaitForPushes( device, device.pushes.Load() + 2, 5000 ) );
+        ASSERT_TRUE( device.Stop() );
+        ASSERT_TRUE( 2 == device.threadStarts.Load() && 2 == device.threadEnds.Load() );
+
+        // a thread that cannot be set up is a lost device: no audio is pushed and the backend still stops
+        CScriptedPushDevice refusing( &callback, true, 0, 0 );
+        refusing.threadStartFails = true;
+        const UInt32 lostBefore = callback.lost;
+        ASSERT_TRUE( refusing.Start() );
+        UInt32 waited = 0;
+        while ( refusing.IsStarted() && waited < 5000 )
+        {
+            MT::PrecisionDelay( 2 );
+            waited += 2;
+        }
+        ASSERT_FALSE( refusing.IsStarted() );
+        ASSERT_TRUE( lostBefore + 1 == callback.lost );
+        ASSERT_TRUE( 0 == refusing.pushes.Load() );
+        ASSERT_TRUE( 0 == refusing.threadEnds.Load() );
+        ASSERT_TRUE( refusing.Stop() );
+        ASSERT_TRUE( 1 == refusing.stops );
+    }
+    catch( ... )
+    {
+        ERRORHERE;
+    }
+    GUCEF_TESTFW_TESTCASE_END
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
 PerformAudioDeviceTests( void )
 {GUCEF_TRACE;
 
@@ -376,6 +608,7 @@ PerformAudioDeviceTests( void )
     PerformInfoTests();
     PerformNullDriverTests();
     PerformRegistryTests();
+    PerformPushDeviceTests();
 }
 
 /*-------------------------------------------------------------------------*/

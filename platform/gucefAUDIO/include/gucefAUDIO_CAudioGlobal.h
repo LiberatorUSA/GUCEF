@@ -48,6 +48,7 @@ namespace AUDIO {
 class CGUCEFAUDIOModule;
 class CAudioCodecRegistry;
 class CAudioDriverRegistry;
+class CAudioCodecPluginManager;
 
 /*-------------------------------------------------------------------------*/
 
@@ -66,6 +67,9 @@ class GUCEF_AUDIO_PUBLIC_CPP CAudioGlobal
 
     /** All audio drivers by name. The null driver is always there, drivers of plugins are added when the plugin loads */
     CAudioDriverRegistry& GetAudioDriverRegistry( void );
+
+    /** Loads audio codec plugins with the C interface; their codec types end up in the codec registry */
+    CAudioCodecPluginManager& GetAudioCodecPluginManager( void );
 
     private:
     friend class CGUCEFAUDIOModule;
@@ -87,6 +91,7 @@ class GUCEF_AUDIO_PUBLIC_CPP CAudioGlobal
 
     CAudioCodecRegistry* m_audioCodecRegistry;
     CAudioDriverRegistry* m_audioDriverRegistry;
+    CAudioCodecPluginManager* m_audioCodecPluginManager;
 
     static CAudioGlobal* g_instance;
 };

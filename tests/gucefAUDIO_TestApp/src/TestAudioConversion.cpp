@@ -338,8 +338,8 @@ PerformChannelTests( void )
     try
     {
         GUCEF::vector< Float32 > matrix;
-        const CAudioFormat topA( 48000, 0, f32, AUDIO::SPEAKER_TOP_CENTER | AUDIO::SPEAKER_TOP_BACK_CENTER );
-        const CAudioFormat topB( 48000, 0, f32, AUDIO::SPEAKER_TOP_FRONT_LEFT | AUDIO::SPEAKER_TOP_FRONT_RIGHT | AUDIO::SPEAKER_TOP_BACK_LEFT );
+        const CAudioFormat topA( 48000, 0, f32, AUDIO::AUDIOSPEAKER_TOP_CENTER | AUDIO::AUDIOSPEAKER_TOP_BACK_CENTER );
+        const CAudioFormat topB( 48000, 0, f32, AUDIO::AUDIOSPEAKER_TOP_FRONT_LEFT | AUDIO::AUDIOSPEAKER_TOP_FRONT_RIGHT | AUDIO::AUDIOSPEAKER_TOP_BACK_LEFT );
         ASSERT_TRUE( CAudioConverter::BuildChannelMatrix( topA, topB, matrix ) );
         ASSERT_TRUE( 6 == matrix.size() );
         ASSERT_FALSE( CAudioConverter::BuildChannelMatrix( CAudioFormat(), CAudioFormat( 48000, 2, f32 ), matrix ) );

@@ -22,6 +22,11 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+#ifndef GUCEF_CORE_DVCPPSTRINGUTILS_H
+#include "dvcppstringutils.h"
+#define GUCEF_CORE_DVCPPSTRINGUTILS_H
+#endif /* GUCEF_CORE_DVCPPSTRINGUTILS_H ? */
+
 #ifndef GUCEF_CORE_LOGGING_H
 #include "gucefCORE_Logging.h"
 #define GUCEF_CORE_LOGGING_H
@@ -63,10 +68,11 @@ bool
 CAudioCodecRegistry::TryFindCodec( const CString& codecType, TAudioCodecPtr& codec ) const
 {GUCEF_TRACE;
 
-    std::string name = codecType.STL_String();
-    if ( !name.empty() && '.' == name[ 0 ] )
-        name.erase( 0, 1 );
-    return TryLookup( CString( name ).Lowercase(), codec );
+    // a leading dot is accepted, as in ".wav"
+    CString name = codecType;
+    if ( 0 == name.HasChar( '.' ) )
+        name = name.CutChars( 1, true );
+    return TryLookup( name.Lowercase(), codec );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -75,12 +81,12 @@ bool
 CAudioCodecRegistry::TryFindCodecForFilename( const CString& filename, TAudioCodecPtr& codec ) const
 {GUCEF_TRACE;
 
-    const std::string path = filename.STL_String();
-    const std::string::size_type separator = path.find_last_of( "/\\" );
-    const std::string::size_type dot = path.find_last_of( '.' );
-    if ( std::string::npos == dot || ( std::string::npos != separator && dot < separator ) || dot + 1 >= path.size() )
+    // only the file name is considered, a dot in a directory name is not an extension
+    const CString name = CORE::ExtractFilename( filename );
+    const Int32 dot = name.HasChar( '.', false );
+    if ( dot < 0 || (UInt32) dot + 1 >= name.Length() )
         return false;
-    return TryFindCodec( CString( path.substr( dot + 1 ) ), codec );
+    return TryFindCodec( name.CutChars( (UInt32) dot + 1, true ), codec );
 }
 
 /*-------------------------------------------------------------------------//

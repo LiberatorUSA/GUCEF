@@ -118,14 +118,25 @@ class GUCEF_AUDIO_PUBLIC_CPP CAudioMixer
 
     void SetPanLaw( TAudioPanLaw panLaw );
 
+    /**
+     *  With the limiter on, the master output is turned down just enough when it would go over full level (instantly,
+     *  for the frames that need it) and comes back up over about 50 ms, instead of being cut off at full level, which
+     *  is heard as distortion. Off by default here; the engine switches it on by default (CAudioEngineParams)
+     */
+    void SetLimiterEnabled( bool enabled );
+    bool IsLimiterEnabled( void ) const;
+
     /** Mixes 'frames' frames of interleaved float audio into 'output' (replaces what is there). Samples are limited to -1.0 .. 1.0 */
     void Mix( Float32* output, UInt32 frames );
 
     /** Total frames mixed so far */
     UInt64 GetTotalFramesMixed( void ) const;
 
-    /** Number of times the master output had to be limited because it went over full level */
+    /** Number of samples of the master output that had to be cut off because they went over full level */
     UInt64 GetClippedSampleCount( void ) const;
+
+    /** Number of frames the limiter turned down */
+    UInt64 GetLimitedFrameCount( void ) const;
 
     private:
 
@@ -146,6 +157,10 @@ class GUCEF_AUDIO_PUBLIC_CPP CAudioMixer
     TAudioPanLaw m_panLaw;
     UInt64 m_totalFrames;
     UInt64 m_clipped;
+    bool m_limiterEnabled;
+    Float32 m_limiterGain;                      /**< the gain the limiter applies now, 1 when it does nothing */
+    Float32 m_limiterRelease;                   /**< how much of the way back to 1 the gain goes per frame */
+    UInt64 m_limited;
 };
 
 /*-------------------------------------------------------------------------//

@@ -27,6 +27,9 @@ LOCAL_SRC_FILES := \
   src/gucefAUDIO_CAudioBuffer.cpp \
   src/gucefAUDIO_CAudioBus.cpp \
   src/gucefAUDIO_CAudioClip.cpp \
+  src/gucefAUDIO_CAudioCodecCPlugin.cpp \
+  src/gucefAUDIO_CAudioCodecCPluginCodec.cpp \
+  src/gucefAUDIO_CAudioCodecPluginManager.cpp \
   src/gucefAUDIO_CAudioCodecRegistry.cpp \
   src/gucefAUDIO_CAudioConverter.cpp \
   src/gucefAUDIO_CAudioDevice.cpp \
@@ -39,17 +42,21 @@ LOCAL_SRC_FILES := \
   src/gucefAUDIO_CAudioFormat.cpp \
   src/gucefAUDIO_CAudioGlobal.cpp \
   src/gucefAUDIO_CAudioMixer.cpp \
+  src/gucefAUDIO_CAudioPushDevice.cpp \
+  src/gucefAUDIO_CAudioStream.cpp \
   src/gucefAUDIO_CAudioVoice.cpp \
   src/gucefAUDIO_CIAudioCodec.cpp \
   src/gucefAUDIO_CLinearResampler.cpp \
   src/gucefAUDIO_CNullAudioDriver.cpp \
   src/gucefAUDIO_CPcmStreamSource.cpp \
   src/gucefAUDIO_CRawAudioCodec.cpp \
+  src/gucefAUDIO_CToneSequenceSource.cpp \
   src/gucefAUDIO_CWavAudioCodec.cpp \
   src/gucefAUDIO_IAudioSource.cpp
 
 LOCAL_C_INCLUDES := \
   $(MY_MODULE_PATH)/include \
+  $(MY_MODULE_PATH)/include/c_api \
   $(MY_MODULE_PATH)/../../common/include \
   $(MY_MODULE_PATH)/../gucefCORE/include \
   $(MY_MODULE_PATH)/../gucefCORE/include/c_api \

@@ -53,6 +53,11 @@
 #include "TestAudioFormat.h"
 #include "TestAudioConversion.h"
 #include "TestAudioCodecs.h"
+#include "TestAudioTestSignals.h"
+#include "TestAudioAlsa.h"
+#include "TestAudioCodecPlugin.h"
+#include "TestAudioWebAudio.h"
+#include "TestAudioStream.h"
 #include "TestAudioDevices.h"
 #include "TestAudioMixer.h"
 #include "TestAudioEngine.h"
@@ -96,6 +101,11 @@ GUCEF_OSMAIN_BEGIN
         PerformAudioDeviceTests();
         PerformAudioMixerTests();
         PerformAudioEngineTests();
+        PerformAudioStreamTests();
+        PerformAudioTestSignalTests();
+        PerformAudioAlsaTests();
+        PerformAudioCodecPluginTests();
+        PerformAudioWebAudioTests();
 
         GUCEF_TESTFW_WRITE_RESULTS( xmlPath.C_String() );
         return GUCEF_TESTFW_EXITCODE;

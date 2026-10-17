@@ -308,19 +308,19 @@ CAudioConverter::BuildChannelMatrix( const CAudioFormat& source, const CAudioFor
         return true;
     }
 
-    const Int32 dFL = to.IndexOf( SPEAKER_FRONT_LEFT ), dFR = to.IndexOf( SPEAKER_FRONT_RIGHT ), dFC = to.IndexOf( SPEAKER_FRONT_CENTER );
+    const Int32 dFL = to.IndexOf( AUDIOSPEAKER_FRONT_LEFT ), dFR = to.IndexOf( AUDIOSPEAKER_FRONT_RIGHT ), dFC = to.IndexOf( AUDIOSPEAKER_FRONT_CENTER );
 
     // Mixing down to one channel: the average of everything that is not the low frequency effects channel
     if ( 1 == d )
     {
         UInt32 contributing = 0;
         for ( UInt32 c=0; c<s; ++c )
-            if ( SPEAKER_LOW_FREQUENCY != from.positions[ c ] )
+            if ( AUDIOSPEAKER_LOW_FREQUENCY != from.positions[ c ] )
                 ++contributing;
         if ( 0 == contributing )
             contributing = s;
         for ( UInt32 c=0; c<s; ++c )
-            if ( SPEAKER_LOW_FREQUENCY != from.positions[ c ] || contributing == s )
+            if ( AUDIOSPEAKER_LOW_FREQUENCY != from.positions[ c ] || contributing == s )
                 MATRIX( 0, c ) = 1.0f / (Float32) contributing;
         return true;
     }
@@ -350,38 +350,38 @@ CAudioConverter::BuildChannelMatrix( const CAudioFormat& source, const CAudioFor
 
         switch ( speaker )
         {
-            case SPEAKER_FRONT_CENTER :
+            case AUDIOSPEAKER_FRONT_CENTER :
             {
                 if ( dFL >= 0 ) MATRIX( dFL, c ) += SqrtHalf;
                 if ( dFR >= 0 ) MATRIX( dFR, c ) += SqrtHalf;
                 break;
             }
-            case SPEAKER_BACK_LEFT :
-            case SPEAKER_SIDE_LEFT :
-            case SPEAKER_FRONT_LEFT_OF_CENTER :
+            case AUDIOSPEAKER_BACK_LEFT :
+            case AUDIOSPEAKER_SIDE_LEFT :
+            case AUDIOSPEAKER_FRONT_LEFT_OF_CENTER :
             {
                 // back and side channels stand in for each other when only one of the pair exists
-                const Int32 sideTarget = ( SPEAKER_BACK_LEFT == speaker ) ? to.IndexOf( SPEAKER_SIDE_LEFT ) : ( ( SPEAKER_SIDE_LEFT == speaker ) ? to.IndexOf( SPEAKER_BACK_LEFT ) : -1 );
+                const Int32 sideTarget = ( AUDIOSPEAKER_BACK_LEFT == speaker ) ? to.IndexOf( AUDIOSPEAKER_SIDE_LEFT ) : ( ( AUDIOSPEAKER_SIDE_LEFT == speaker ) ? to.IndexOf( AUDIOSPEAKER_BACK_LEFT ) : -1 );
                 if ( sideTarget >= 0 )
                     MATRIX( sideTarget, c ) += 1.0f;
                 else if ( dFL >= 0 )
                     MATRIX( dFL, c ) += SqrtHalf;
                 break;
             }
-            case SPEAKER_BACK_RIGHT :
-            case SPEAKER_SIDE_RIGHT :
-            case SPEAKER_FRONT_RIGHT_OF_CENTER :
+            case AUDIOSPEAKER_BACK_RIGHT :
+            case AUDIOSPEAKER_SIDE_RIGHT :
+            case AUDIOSPEAKER_FRONT_RIGHT_OF_CENTER :
             {
-                const Int32 sideTarget = ( SPEAKER_BACK_RIGHT == speaker ) ? to.IndexOf( SPEAKER_SIDE_RIGHT ) : ( ( SPEAKER_SIDE_RIGHT == speaker ) ? to.IndexOf( SPEAKER_BACK_RIGHT ) : -1 );
+                const Int32 sideTarget = ( AUDIOSPEAKER_BACK_RIGHT == speaker ) ? to.IndexOf( AUDIOSPEAKER_SIDE_RIGHT ) : ( ( AUDIOSPEAKER_SIDE_RIGHT == speaker ) ? to.IndexOf( AUDIOSPEAKER_BACK_RIGHT ) : -1 );
                 if ( sideTarget >= 0 )
                     MATRIX( sideTarget, c ) += 1.0f;
                 else if ( dFR >= 0 )
                     MATRIX( dFR, c ) += SqrtHalf;
                 break;
             }
-            case SPEAKER_BACK_CENTER :
+            case AUDIOSPEAKER_BACK_CENTER :
             {
-                const Int32 bl = to.IndexOf( SPEAKER_BACK_LEFT ), br = to.IndexOf( SPEAKER_BACK_RIGHT );
+                const Int32 bl = to.IndexOf( AUDIOSPEAKER_BACK_LEFT ), br = to.IndexOf( AUDIOSPEAKER_BACK_RIGHT );
                 if ( bl >= 0 && br >= 0 )
                 {
                     MATRIX( bl, c ) += SqrtHalf;

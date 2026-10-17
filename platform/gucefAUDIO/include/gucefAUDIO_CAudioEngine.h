@@ -25,8 +25,6 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#include <map>
-
 #ifndef GUCEF_CORE_CTSGNOTIFIER_H
 #include "CTSGNotifier.h"
 #define GUCEF_CORE_CTSGNOTIFIER_H
@@ -242,7 +240,7 @@ class GUCEF_AUDIO_PUBLIC_CPP CAudioEngine : public CORE::CTSGNotifier ,
         SVoiceEntry( void ) : voice(), startSource(), stopSource(), pauseSource(), endedSource(), pauseTarget( false ) {}
     };
 
-    typedef std::map< CAudioVoice*, SVoiceEntry > TVoiceMap;
+    typedef GUCEF::map< CAudioVoice*, SVoiceEntry > TVoiceMap;
 
     // IAudioDeviceCallback: the audio thread
     virtual void OnRenderAudio( void* buffer, UInt32 frameCount ) GUCEF_VIRTUAL_OVERRIDE;
