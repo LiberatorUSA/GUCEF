@@ -64,6 +64,16 @@
 #define GUCEF_MT_TESTAPP_TESTMUTEX_H
 #endif /* GUCEF_MT_TESTAPP_TESTMUTEX_H ? */
 
+#ifndef GUCEF_MT_TESTAPP_TESTSPSCQUEUE_H
+#include "TestSpscQueue.h"
+#define GUCEF_MT_TESTAPP_TESTSPSCQUEUE_H
+#endif /* GUCEF_MT_TESTAPP_TESTSPSCQUEUE_H ? */
+
+#ifndef GUCEF_MT_TESTAPP_TESTATOMIC_H
+#include "TestAtomic.h"
+#define GUCEF_MT_TESTAPP_TESTATOMIC_H
+#endif /* GUCEF_MT_TESTAPP_TESTATOMIC_H ? */
+
 #ifndef GUCEF_MT_TESTAPP_TESTREADERWRITERLOCK_H
 #include "TestReaderWriterLock.h"
 #define GUCEF_MT_TESTAPP_TESTREADERWRITERLOCK_H
@@ -210,6 +220,8 @@ GUCEF_OSMAIN_BEGIN
 
         PerformMutexTests();
         PerformReaderWriterLockTests();
+        PerformAtomicTests();
+        PerformSpscQueueTests();
 
         // Tests finished normally — disarm the watchdog before it fires
         watchdog.Cancel();
