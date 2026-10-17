@@ -277,9 +277,27 @@ function(GUCEF_config_sample SAMPLENAME)
 
 endfunction(GUCEF_config_sample)
 
+# The config files of an app or tool, <module dir>/config/<target>*.ini and <target>*.json, are copied next to its
+# binary after each build: that is where the app looks for them ($MODULEDIR$). Other files in that dir, like examples
+# in sub dirs, are left alone. A config file added later is picked up when CMake runs again
+function(GUCEF_deploy_config_files TARGETNAME)
+  file(GLOB _configFiles LIST_DIRECTORIES false
+    "${CMAKE_CURRENT_SOURCE_DIR}/config/${TARGETNAME}*.ini"
+    "${CMAKE_CURRENT_SOURCE_DIR}/config/${TARGETNAME}*.json"
+    )
+  if (_configFiles)
+    add_custom_command(TARGET ${TARGETNAME} POST_BUILD
+      COMMAND ${CMAKE_COMMAND} -E copy_if_different ${_configFiles} $<TARGET_FILE_DIR:${TARGETNAME}>
+      COMMENT "Copying the config files of ${TARGETNAME} next to it"
+      VERBATIM
+      )
+  endif ()
+endfunction(GUCEF_deploy_config_files)
+
 # setup GUCEF tool build
 function(GUCEF_config_tool TOOLNAME)
   GUCEF_config_common(${TOOLNAME})
+  GUCEF_deploy_config_files(${TOOLNAME})
 
   # set install RPATH for Unix systems
   if (UNIX AND GUCEF_FULL_RPATH)
@@ -308,6 +326,7 @@ endfunction(GUCEF_config_tool)
 # setup GUCEF tool build
 function(GUCEF_config_app APPNAME)
   GUCEF_config_common(${APPNAME})
+  GUCEF_deploy_config_files(${APPNAME})
 
   # set install RPATH for Unix systems
   if (UNIX AND GUCEF_FULL_RPATH)
