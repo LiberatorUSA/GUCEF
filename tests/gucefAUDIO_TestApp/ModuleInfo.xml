@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="ISO-8859-1" ?>
+<ModuleInfoEntry>
+    <Module Name="gucefAUDIO_TestApp" Platform="All" Type="Executable" Tags="test" >
+        <Dependencies>
+            <Dependency Name="gucefMT" />
+            <Dependency Name="gucefCORE" />
+            <Dependency Name="gucefAUDIO" />
+        </Dependencies>
+        <Linker>
+            <Dependency Name="gucefMT" />
+            <Dependency Name="gucefCORE" />
+            <Dependency Name="gucefAUDIO" />
+        </Linker>
+        <Preprocessor>
+            <Define String="GUCEF_AUDIO_TESTAPP_BUILD_MODULE" />
+        </Preprocessor>
+        <RuntimeDependencies>
+        </RuntimeDependencies>
+    </Module>
+</ModuleInfoEntry>
