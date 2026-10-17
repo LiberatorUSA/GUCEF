@@ -1373,6 +1373,11 @@ CVFS::GetFile( const CORE::CString& file          ,
             {
                 GUCEF_ERROR_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "Vfs: Requested file pre-conditions passed but could not be loaded from mounted archive using mount link remainder: " + mountLink->remainder );
             }
+            else
+            {
+                // Remember where in the VFS this came from, the archives only know their own relative paths
+                filePtr->SetVfsPath( filepath );
+            }
             return filePtr;
         }
 
@@ -1757,6 +1762,7 @@ CVFS::MountArchive( const CString& archiveName           ,
             TMountEntryPtr archiveEntry = MountEntry::CreateSharedObj();
             archiveEntry->path = archiveResource->GetFilename();
             archiveEntry->abspath = archiveResource->GetFilePath();
+            archiveEntry->archiveType = archiveType;
             archiveEntry->writeable = writeableRequest;
             archiveEntry->archive = archive;
 
@@ -1769,13 +1775,45 @@ CVFS::MountArchive( const CString& archiveName           ,
 
             SubscribeTo( archive.GetPointerAlways() );
 
+            GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "VFS:MountArchive: Mounted archive of type \"" << archiveType <<
+                "\" from a resource at path: " << archiveEntry->mountPath );
+
             TArchiveMountedEventData eData( archiveEntry->mountPath );
             NotifyObservers( ArchiveMountedEvent, &eData );
             return true;
         }
+        else
+        {
+            GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "VFS:MountArchive: Failed to load archive of type \"" << archiveType <<
+                "\" from a resource, which was to be mounted at path: " << mountPoint );
+        }
+    }
+    else
+    {
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "VFS:MountArchive: No factory available to handle archive of type: " << archiveType );
     }
 
     return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CVFS::MountArchive( const CString& archiveName      ,
+                    CORE::IOAccessPtr archiveAccess ,
+                    const CString& archiveType      ,
+                    const CString& mountPoint       ,
+                    const bool writeableRequest     )
+{GUCEF_TRACE;
+
+    if ( archiveAccess.IsNULL() )
+        return false;
+
+    TBasicVfsResourcePtr archiveResource( TVfsResourcePtr( GUCEF_NEW CVFSHandle( archiveAccess ,
+                                                                                 archiveName   ,
+                                                                                 archiveName   ) ) );
+
+    return MountArchive( archiveName, archiveResource, archiveType, mountPoint, writeableRequest );
 }
 
 /*-------------------------------------------------------------------------*/

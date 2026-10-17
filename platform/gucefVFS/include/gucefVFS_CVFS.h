@@ -218,8 +218,23 @@ class GUCEF_VFS_PUBLIC_CPP CVFS : public CORE::CTSGNotifier          ,
                                            CORE::CICloneable* requestorData = GUCEF_NULL              ,
                                            const CORE::CString& asyncRequestId = CORE::CString::Empty );
     
+    /**
+     *  Mounts an archive of the given type that is read from an already opened resource instead of a path.
+     *  This allows archives inside other archives, archives in memory, archives behind file descriptors etc.
+     *  Note that the archive type has to support loading from a resource, not all do.
+     */
     bool MountArchive( const CString& archiveName           ,
                        TBasicVfsResourcePtr archiveResource ,
+                       const CString& archiveType           ,
+                       const CString& mountPoint            ,
+                       const bool writeableRequest          );
+
+    /**
+     *  Convenience variant of the resource based MountArchive() for when only an IO access object is at hand.
+     *  The IO access object is wrapped into a resource named after the archive.
+     */
+    bool MountArchive( const CString& archiveName           ,
+                       CORE::IOAccessPtr archiveAccess      ,
                        const CString& archiveType           ,
                        const CString& mountPoint            ,
                        const bool writeableRequest          );
