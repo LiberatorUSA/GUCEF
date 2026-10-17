@@ -1,0 +1,8 @@
+common/include/*
+platform/gucefAUDIO/*
+platform/gucefCORE/*
+platform/gucefIMAGE/*
+platform/gucefMT/*
+platform/gucefVIDEO/*
+plugins/VIDEO/videocodecpluginSMK/*
+tests/gucefVIDEO_TestApp/*
