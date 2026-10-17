@@ -150,6 +150,7 @@ CThreadPool::CThreadPool( PulseGeneratorPtr threadPoolPulseContext ,
     , m_allTaskObjs( TTaskObjFreeList::REUSE_OBJECT_VIA_CLEAR_METHOD_IF_AVAILABLE )
     , m_freeTaskConsumers()
     , m_taskDedicatedDelegators()
+    , m_retiredDelegators()
     , m_taskGenericDelegators()
     , m_acceptNewWork( true )
     , m_allowAppThreadToWork( false )
@@ -250,13 +251,17 @@ void
 CThreadPool::RemoveDelegator( CNotifier* notifier )
 {GUCEF_TRACE;
 
+    // This runs while we handle the delegator's own event. The delegator references this pool and can hold
+    // the last reference to it, as happens once a pool has been unregistered, so it is retired here instead of
+    // released: releasing it could destroy this pool from within its own event handling
+    // See ReleaseRetiredDelegators()
     MT::CObjectScopeLock lock( this );
     TTaskDelegatorSet::iterator i = m_taskDedicatedDelegators.begin();
     while ( i != m_taskDedicatedDelegators.end() )
     {
         if ( static_cast< const CNotifier* >( (*i).GetPointerAlways() ) == notifier )
         {
-            TTaskDelegatorBasicPtr delegator = (*i);
+            m_retiredDelegators.insert( (*i) );
             m_taskDedicatedDelegators.erase( i );
             return;
         }
@@ -267,12 +272,26 @@ CThreadPool::RemoveDelegator( CNotifier* notifier )
     {
         if ( static_cast< const CNotifier* >( (*i).GetPointerAlways() ) == notifier )
         {
-            TTaskDelegatorBasicPtr delegator = (*i);
+            m_retiredDelegators.insert( (*i) );
             m_taskGenericDelegators.erase( i );
             return;
         }
         ++i;
     }
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CThreadPool::ReleaseRetiredDelegators( void )
+{GUCEF_TRACE;
+
+    TTaskDelegatorSet retiredDelegators;
+    {
+        MT::CObjectScopeLock lock( this );
+        retiredDelegators.swap( m_retiredDelegators );
+    }
+    // the delegators are released here, outside of our lock
 }
 
 /*-------------------------------------------------------------------------*/
@@ -1124,6 +1143,9 @@ CFutureResult
 CThreadPool::SetupSingularTaskImpl( CTaskPtr task )
 {GUCEF_TRACE;
 
+    // Our caller holds a reference to us, which makes this a safe point to release delegators whose threads ended
+    ReleaseRetiredDelegators();
+
     // We will need a task object which represents the task to be executed
     // This variant of the function expects things to arrive more pre-baked
     if ( task.IsNULL() || TTaskStatus::TASKSTATUS_RESOURCE_LIMIT_REACHED == task->GetTaskStatus() )
@@ -1190,6 +1212,9 @@ CThreadPool::SetupSingularTaskImpl( CTaskPtr task )
 
     // Now spawn a task delegator
     GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "ThreadPool(" + m_poolName + "): Setting up task of type \"" + taskConsumer->GetType() + "\" with ID " + ToString( task->GetTaskId() )  );
+    // The consumer is linked to its task before its thread starts, as GetQueuedTask() does for queued work: everything
+    // that works through the consumer (RequestTaskToStop(), the task id, the status) needs that link from the start
+    taskConsumer->SetCurrentTask( task );
     CTaskDelegatorPtr delegator( ( GUCEF_NEW CSingleTaskDelegator( CreateSharedPtr(), task ) )->CreateSharedPtr() );
     SubscribeTo( delegator.GetPointerAlways() );
 
@@ -1216,6 +1241,7 @@ CThreadPool::SetupSingularTaskImpl( CTaskPtr task )
         GUCEF_ERROR_LOG( LOGLEVEL_NORMAL, "ThreadPool(" + m_poolName + "): Failed to activate dedicated delegator for task type \"" + taskConsumer->GetType() +
             "\" with task ID " + ToString( task->GetTaskId() )  + " and thread ID " + ToString( delegator->GetThreadID() )  );
 
+        taskConsumer->SetCurrentTask( CTaskPtr() );
         task->SetTaskStatus( TTaskStatus::TASKSTATUS_STARTUP_FAILED );
         return task;
     }
@@ -1230,6 +1256,9 @@ CThreadPool::SetupSingularTaskImpl( CTaskConsumerPtr taskConsumer  ,
                                     CDataNode* taskDataDom         ,
                                     bool consumerWasCreatedByPool  )
 {GUCEF_TRACE;
+
+    // Our caller holds a reference to us, which makes this a safe point to release delegators whose threads ended
+    ReleaseRetiredDelegators();
 
     // We will need a task object which represents the task to be executed
     CTaskPtr task;
@@ -1294,6 +1323,9 @@ CThreadPool::SetupSingularTaskImpl( CTaskConsumerPtr taskConsumer  ,
 
     // Now spawn a task delegator
     GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "ThreadPool(" + m_poolName + "): Setting up task of type \"" + taskConsumer->GetType() + "\" with ID " + ToString( task->GetTaskId() )  );
+    // The consumer is linked to its task before its thread starts, as GetQueuedTask() does for queued work: everything
+    // that works through the consumer (RequestTaskToStop(), the task id, the status) needs that link from the start
+    taskConsumer->SetCurrentTask( task );
     CTaskDelegatorPtr delegator( ( GUCEF_NEW CSingleTaskDelegator( CreateSharedPtr(), task ) )->CreateSharedPtr() );
     SubscribeTo( delegator.GetPointerAlways() );
     m_taskDedicatedDelegators.insert( delegator );
@@ -1320,6 +1352,7 @@ CThreadPool::SetupSingularTaskImpl( CTaskConsumerPtr taskConsumer  ,
         GUCEF_ERROR_LOG( LOGLEVEL_NORMAL, "ThreadPool(" + m_poolName + "): Failed to activate dedicated delegator for task type \"" + taskConsumer->GetType() +
             "\" with task ID " + ToString( task->GetTaskId() )  + " and thread ID " + ToString( delegator->GetThreadID() )  );
 
+        taskConsumer->SetCurrentTask( CTaskPtr() );
         task->SetTaskStatus( TTaskStatus::TASKSTATUS_STARTUP_FAILED );
         return task;
     }

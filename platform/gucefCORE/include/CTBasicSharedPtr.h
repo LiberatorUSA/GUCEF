@@ -1353,8 +1353,18 @@ CTBasicSharedPtr< T, LockType >::Unlink( void )
                     localSharedRef->m_voidDestructor = GUCEF_NULL;
                     localSharedRef->m_originalAddressAsCreated = GUCEF_NULL;
 
+                    // Shared data that is part of the object, lock included, goes with the object: the lock is released while it
+                    // still exists. This also leaves objects that are recycled instead of destroyed (free lists) with a usable lock
+                    if ( !sharedDataIsIndependent )
+                        localSharedRef->m_lock.Unlock();
+
                     GUCEF_CHECKALLOCPTR( originalAddressAsCreated );
                     voidDestructor->DestroyKnownVoidedObject( originalAddressAsCreated );
+                }
+                else
+                if ( !sharedDataIsIndependent )
+                {
+                    localSharedRef->m_lock.Unlock();
                 }
                 m_ptr = GUCEF_NULL;
 
@@ -1402,8 +1412,17 @@ CTBasicSharedPtr< T, LockType >::Unlink( void )
                     localSharedRef->m_voidDestructor = GUCEF_NULL;
                     localSharedRef->m_originalAddressAsCreated = GUCEF_NULL;
 
+                    // see above: shared data that is part of the object releases its lock before the object goes
+                    if ( !sharedDataIsIndependent )
+                        localSharedRef->m_lock.Unlock();
+
                     GUCEF_CHECKALLOCPTR( originalAddressAsCreated );
                     voidDestructor->DestroyKnownVoidedObject( originalAddressAsCreated );
+                }
+                else
+                if ( !sharedDataIsIndependent )
+                {
+                    localSharedRef->m_lock.Unlock();
                 }
 
                 if ( sharedDataIsIndependent )

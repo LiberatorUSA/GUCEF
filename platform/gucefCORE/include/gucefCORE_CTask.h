@@ -88,6 +88,8 @@ class CSingleTaskDelegator;
 class CThreadPool;
 class CTaskManager;
 class CASync;
+class CFutureResultSource;
+template< typename T, class LockType > class CTFreeList;
 
 typedef CTBasicSharedPtr< CThreadPool, MT::CMutex >    CThreadPoolPtr;
 
@@ -259,7 +261,9 @@ class GUCEF_CORE_PUBLIC_CPP CTask : public CNotifier ,
     friend class CTaskConsumer;
     friend class CThreadPool;
     friend class CTaskManager;
+    friend class CTFreeList< CTask, MT::CMutex >;     /**< resets task objects for reuse through Clear() */
     friend class CASync;
+    friend class CFutureResultSource;
 
     void SetTaskStatus( TTaskStatus newStatus );
 
@@ -277,6 +281,10 @@ class GUCEF_CORE_PUBLIC_CPP CTask : public CNotifier ,
                TTaskStatus taskStatus          ,
                ThreadPoolPtr threadPool        );
 
+    /**
+     *  Readies the task object for reuse by a next task, as the thread pool's free list does
+     *  Everything of the previous use goes, including the task id: the next use gets a new one
+     */
     void Clear( void );
 
     /**
@@ -314,6 +322,11 @@ class GUCEF_CORE_PUBLIC_CPP CTask : public CNotifier ,
     private:
 
     CTask& operator=( const CTask& src ) GUCEF_DELETED_MEMBER;  /**< copying doesnt make sense */
+
+    private:
+
+    /** Releases what one use of the task holds, shared by Clear() and the destructor */
+    void ClearUseState( void );
 
     private:
 

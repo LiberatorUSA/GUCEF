@@ -162,6 +162,8 @@ CPumpedObserver::CPumpedObserver( bool allowSameThreadEventsToFlowThrough )
     , m_allowSameThreadEventsToFlowThrough( allowSameThreadEventsToFlowThrough )
     , m_mailbox()
     , m_notificationsHolds( 0 )
+    , m_mailBeingDelivered( GUCEF_NULL )
+    , m_mailBeingDeliveredLostItsNotifier( false )
 {GUCEF_TRACE;
 
     assert( !m_pulseGenerator.IsNULL() );
@@ -178,6 +180,8 @@ CPumpedObserver::CPumpedObserver( PulseGeneratorPtr pulseGenerator        ,
     , m_allowSameThreadEventsToFlowThrough( allowSameThreadEventsToFlowThrough )
     , m_mailbox()
     , m_notificationsHolds( 0 )
+    , m_mailBeingDelivered( GUCEF_NULL )
+    , m_mailBeingDeliveredLostItsNotifier( false )
 {GUCEF_TRACE;
 
     RegisterPulseGeneratorEventHandlers();
@@ -192,6 +196,8 @@ CPumpedObserver::CPumpedObserver( const CPumpedObserver& src )
     , m_allowSameThreadEventsToFlowThrough( src.m_allowSameThreadEventsToFlowThrough )
     , m_mailbox()
     , m_notificationsHolds( 0 )
+    , m_mailBeingDelivered( GUCEF_NULL )
+    , m_mailBeingDeliveredLostItsNotifier( false )
 {GUCEF_TRACE;
 
     m_pulseGenerator = src.m_pulseGenerator;
@@ -254,6 +260,15 @@ CPumpedObserver::ClearNotifierReferencesFromMailbox( CNotifier* notifier )
         {
             if ( mail->m_notifier == notifier )
             {
+                if ( mail == m_mailBeingDelivered )
+                {
+                    // The notifier was destroyed from within the handling of its own event, on the pumping thread
+                    // OnPulse() still uses this mail and will dispose of it, we must leave it in place
+                    m_mailBeingDeliveredLostItsNotifier = true;
+                    ++i;
+                    continue;
+                }
+
                 GUCEF_DELETE mail->GetCallback();
                 GUCEF_DELETE mail->GetData();
                 GUCEF_DELETE mail;
@@ -361,6 +376,12 @@ CPumpedObserver::OnPulse( CNotifier* notifier                       ,
                     CICloneable* eventData = maildata->GetData();
                     CIEventHandlerFunctorBase* callback = maildata->GetCallback();
                     CNotifier* eventNotifier = maildata->GetNotifier();
+
+                    // Handlers can destroy the notifier of the mail being delivered, which purges its mail
+                    // That purge has to leave this mail alone, see ClearNotifierReferencesFromMailbox()
+                    m_mailBeingDelivered = maildata;
+                    m_mailBeingDeliveredLostItsNotifier = false;
+
                     if ( GUCEF_NULL == callback )
                     {
                         OnPumpedNotify( eventNotifier ,
@@ -382,11 +403,23 @@ CPumpedObserver::OnPulse( CNotifier* notifier                       ,
             }
             catch ( const timeout_exception& )
             {
+                m_mailBeingDelivered = GUCEF_NULL;
+                if ( m_mailBeingDeliveredLostItsNotifier )
+                {
+                    // There is no retrying an event of a notifier which no longer exists
+                    GUCEF_DELETE maildata->GetCallback();
+                    GUCEF_DELETE maildata->GetData();
+                    m_mailbox.PopMail( lock );
+                    m_mailBeingDeliveredLostItsNotifier = false;
+                }
+
                 // no luck, perhaps better luck next pulse
                 GUCEF_EXCEPTION_LOG( LOGLEVEL_NORMAL, "PumpedObserver: caught timeout_exception while attempting to notify regarding event " + eventid.GetName() );
                 return;
             }
 
+            m_mailBeingDelivered = GUCEF_NULL;
+            m_mailBeingDeliveredLostItsNotifier = false;
             m_mailbox.PopMail( lock );
         }
     }

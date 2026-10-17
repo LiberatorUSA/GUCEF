@@ -224,6 +224,8 @@ class GUCEF_CORE_PUBLIC_CPP CPumpedObserver : public CObserver
     bool m_allowSameThreadEventsToFlowThrough;
     MT::CTMailBox< CEvent > m_mailbox;
     mutable Int32 m_notificationsHolds;
+    CICloneable* m_mailBeingDelivered;             /**< mail OnPulse() is delivering, it stays owned by OnPulse() */
+    bool m_mailBeingDeliveredLostItsNotifier;      /**< its notifier was destroyed while it was being delivered */
 };
 
 /*-------------------------------------------------------------------------//

@@ -135,7 +135,7 @@ CTask::CTask( CTask&& src ) GUCEF_NOEXCEPT
 CTask::~CTask()
 {GUCEF_TRACE;
 
-    Clear();
+    ClearUseState();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -192,13 +192,15 @@ CTask::SetTaskData( CICloneable* taskData, bool assumeOwnershipOfTaskData )
 
     if ( !assumeOwnershipOfTaskData && GUCEF_NULL != taskData )
     {
-        m_taskData = taskData = taskData->Clone();
+        // We keep a copy of data we do not get to own, and that copy is ours to delete
+        m_taskData = taskData->Clone();
+        m_assumedOwnershipOfTaskData = GUCEF_NULL != m_taskData;
     }
     else
     {
         m_taskData = taskData;
+        m_assumedOwnershipOfTaskData = assumeOwnershipOfTaskData;
     }
-    m_assumedOwnershipOfTaskData = assumeOwnershipOfTaskData;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -534,6 +536,35 @@ void
 CTask::Clear( void )
 {GUCEF_TRACE;
 
+    ClearUseState();
+
+    // Nobody who observed the previous use gets to see the next one
+    UnsubscribeAllFromNotifier();
+
+    // The next use is a different task and gets its own id, as a newly constructed task would: ids are handles,
+    // something holding on to the id of the previous use must not reach the next one
+    // The new id is obtained before the old one is released so it cannot be the same one
+    MT::CScopeMutex lock( m_lock );
+    TTaskId newTaskId;
+    if ( CCoreGlobal::Instance()->GetTaskManager().TryGetGlobalTaskId( newTaskId ) )
+    {
+        {
+            TTaskId previousTaskId( m_taskId );     // takes over the previous id, releasing it at the end of this scope
+        }
+        m_taskId = newTaskId;
+    }
+    else
+    {
+        m_taskStatus = TTaskStatus::TASKSTATUS_RESOURCE_LIMIT_REACHED;
+    }
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CTask::ClearUseState( void )
+{GUCEF_TRACE;
+
     MT::CScopeMutex lock( m_lock );
 
     SetTaskData( GUCEF_NULL, false );
@@ -867,6 +898,14 @@ CTask::RequestCancellation( void ) const
     CThreadPoolPtr threadPool = GetThreadPool();
     if ( !threadPool.IsNULL() )
         return threadPool->RequestTaskCancellation( taskId, false, true );
+
+    // A task that is not in a pool (the status carrier behind a CFutureResultSource) has nobody to forward
+    // the request to, so record it. Whoever does the work polls IsCancellationRequested()
+    if ( !IsTaskInEndState() )
+    {
+        const_cast< CTask* >( this )->SetCancellationRequested( true );
+        return true;
+    }
     return false;
 }
 

@@ -24,6 +24,7 @@
 //-------------------------------------------------------------------------*/
 
 #include <string.h>
+#include <vector>
 
 #ifndef GUCEF_CORE_CNOTIFICATIONIDREGISTRY_H
 #include "CNotificationIDRegistry.h"
@@ -39,6 +40,16 @@
 #include "CObserver.h"
 #define GUCEF_CORE_COBSERVER_H
 #endif /* GUCEF_CORE_COBSERVER_H ? */
+
+#ifndef GUCEF_CORE_CPUMPEDOBSERVER_H
+#include "CPumpedObserver.h"
+#define GUCEF_CORE_CPUMPEDOBSERVER_H
+#endif /* GUCEF_CORE_CPUMPEDOBSERVER_H ? */
+
+#ifndef GUCEF_CORE_CPULSEGENERATOR_H
+#include "gucefCORE_CPulseGenerator.h"
+#define GUCEF_CORE_CPULSEGENERATOR_H
+#endif /* GUCEF_CORE_CPULSEGENERATOR_H ? */
 
 #ifndef GUCEF_CORE_CCOREGLOBAL_H
 #include "gucefCORE_CCoreGlobal.h"
@@ -252,6 +263,49 @@ protected:
             GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Observer: scheduling notifier for destruction" );
             m_notifierToDestroy->ScheduleForDestruction();
             m_notifierToDestroy = GUCEF_NULL;
+        }
+    }
+};
+
+/*-------------------------------------------------------------------------*/
+
+/**
+ *  Pumped observer which records the notifiers of the ModifyEvents delivered to it and
+ *  destroys a given notifier from within the delivery of that notifier's event
+ */
+class CNotifierDestroyingPumpedObserver : public CPumpedObserver
+{
+private:
+    const CNotifierDestroyingPumpedObserver& operator=( const CNotifierDestroyingPumpedObserver& );
+    CNotifierDestroyingPumpedObserver( const CNotifierDestroyingPumpedObserver& );
+
+public:
+
+    CNotifierDestroyingPumpedObserver( PulseGeneratorPtr pulseGenerator )
+        : CPumpedObserver( pulseGenerator, false )
+        , m_notifierToDestroy( GUCEF_NULL )
+        , m_modifySources()
+    {
+    }
+
+    CMyNotifier* m_notifierToDestroy;
+    std::vector< const CNotifier* > m_modifySources;
+
+protected:
+
+    virtual void OnPumpedNotify( CNotifier* notifier                 ,
+                                 const CEvent& eventid               ,
+                                 CICloneable* eventdata = GUCEF_NULL ) GUCEF_VIRTUAL_OVERRIDE
+    {
+        if ( eventid == CNotifier::ModifyEvent )
+        {
+            m_modifySources.push_back( notifier );
+            if ( notifier == m_notifierToDestroy )
+            {
+                CMyNotifier* doomed = m_notifierToDestroy;
+                m_notifierToDestroy = GUCEF_NULL;
+                delete doomed;
+            }
         }
     }
 };
@@ -968,6 +1022,45 @@ PerformNotifierObserverTests( void )
 
         notifier = GUCEF_NULL;
         // killObserver intentionally not deleted — see note above
+    }
+    catch ( ... )
+    {
+        ERRORHERE;
+    }
+    GUCEF_TESTFW_TESTCASE_END
+
+    /*-----------------------------------------------------------------------*/
+    /* Test 15: A pumped observer handler may destroy the notifier of the    */
+    /*          event it is handling                                         */
+    /*-----------------------------------------------------------------------*/
+
+    GUCEF_TESTFW_TESTCASE( "Pumped observer handler destroying the notifier of the event being delivered" )
+    try
+    {
+        // The destruction purges the mailbox of that notifier's mail, the mail being delivered included,
+        // while the pulse is still delivering it. Mail of the destroyed notifier which was queued behind it
+        // must be dropped and mail of other notifiers must still be delivered, exactly once
+        PulseGeneratorPtr pulseGenerator = ( GUCEF_NEW CPulseGenerator() )->CreateSharedPtr();
+        CNotifierDestroyingPumpedObserver observer( pulseGenerator );
+
+        CMyNotifier* doomedNotifier = new CMyNotifier();
+        CMyNotifier* otherNotifier = new CMyNotifier();
+        doomedNotifier->Subscribe( &observer );
+        otherNotifier->Subscribe( &observer );
+        observer.m_notifierToDestroy = doomedNotifier;
+
+        doomedNotifier->DoNotifyObservers();
+        doomedNotifier->DoNotifyObservers();
+        otherNotifier->DoNotifyObservers();
+
+        pulseGenerator->ForceDirectPulse();
+        pulseGenerator->ForceDirectPulse();
+
+        ASSERT_TRUE( 2 == observer.m_modifySources.size() );
+        ASSERT_TRUE( doomedNotifier == observer.m_modifySources[ 0 ] );
+        ASSERT_TRUE( otherNotifier == observer.m_modifySources[ 1 ] );
+
+        delete otherNotifier;
     }
     catch ( ... )
     {
