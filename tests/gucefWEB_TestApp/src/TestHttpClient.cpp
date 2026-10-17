@@ -24,9 +24,6 @@
 //-------------------------------------------------------------------------*/
 
 #include <string.h>
-#include <string>
-#include <vector>
-#include <map>
 #include <thread>
 
 #ifndef GUCEF_CORE_H
@@ -110,6 +107,15 @@ ToCString( const CORE::CDynamicBuffer& buffer )
 
 /*-------------------------------------------------------------------------*/
 
+/** the number of bytes of the text, without the null terminator */
+static UInt32
+TextByteCount( const CORE::CString& text )
+{
+    return text.IsNULLOrEmpty() ? 0 : text.ByteSize() - 1;    // ByteSize includes the null terminator
+}
+
+/*-------------------------------------------------------------------------*/
+
 /** compares text and logs the actual text when it differs, so a failure tells what was received */
 static bool
 SameText( const CORE::CString& actual, const CORE::CString& expected )
@@ -168,7 +174,7 @@ class CScriptedHttpServer : public CORE::CObserver
     }
 
     UInt32 GetRequestCount( void ) { MT::CScopeMutex lock( m_lock ); return m_requestCount; }
-    CORE::CString GetLastCookieHeader( void ) { MT::CScopeMutex lock( m_lock ); return m_lastCookieHeader.c_str(); }
+    CORE::CString GetLastCookieHeader( void ) { MT::CScopeMutex lock( m_lock ); return m_lastCookieHeader; }
 
     virtual const CORE::CString& GetClassTypeName( void ) const GUCEF_VIRTUAL_OVERRIDE
     {
@@ -202,11 +208,11 @@ class CScriptedHttpServer : public CORE::CObserver
 
         if ( COMCORE::CTCPConnection::DataRecievedEvent == eventId )
         {
-            std::map< void*, SConnection >::iterator i = m_connections.find( notifier );
+            GUCEF::map< void*, SConnection >::iterator i = m_connections.find( notifier );
             if ( i == m_connections.end() )
                 return;
             COMCORE::CTCPConnection::TDataRecievedEventData* data = static_cast< COMCORE::CTCPConnection::TDataRecievedEventData* >( eventData );
-            (*i).second.request.append( data->GetData().AsConstTypePtr< char >(), data->GetData().GetDataSize() );
+            (*i).second.request.Append( data->GetData().AsConstTypePtr< char >(), data->GetData().GetDataSize() );
             TryAnswer( (*i).second );
         }
     }
@@ -216,8 +222,8 @@ class CScriptedHttpServer : public CORE::CObserver
     struct SConnection
     {
         COMCORE::CTCPServerConnection* connection;
-        std::string request;
-        std::vector< std::string > pieces;
+        CORE::CString request;
+        GUCEF::vector< CORE::CString > pieces;
         size_t nextPiece;
         bool answered;
         bool closeAfterAnswer;
@@ -238,15 +244,15 @@ class CScriptedHttpServer : public CORE::CObserver
     /** one piece per connection per round, so the client receives them in separate reads */
     void SendPendingPieces( void )
     {
-        std::vector< COMCORE::CTCPServerConnection* > toClose;
-        for ( std::map< void*, SConnection >::iterator i = m_connections.begin(); i != m_connections.end(); ++i )
+        GUCEF::vector< COMCORE::CTCPServerConnection* > toClose;
+        for ( GUCEF::map< void*, SConnection >::iterator i = m_connections.begin(); i != m_connections.end(); ++i )
         {
             SConnection& state = (*i).second;
             if ( !state.answered || state.nextPiece >= state.pieces.size() )
                 continue;
-            const std::string& piece = state.pieces[ state.nextPiece++ ];
-            if ( !piece.empty() )
-                state.connection->Send( piece.data(), (UInt32) piece.size() );
+            const CORE::CString& piece = state.pieces[ state.nextPiece++ ];
+            if ( !piece.IsNULLOrEmpty() )
+                state.connection->Send( piece.C_String(), TextByteCount( piece ) );
             if ( state.nextPiece >= state.pieces.size() && state.closeAfterAnswer )
                 toClose.push_back( state.connection );
         }
@@ -254,36 +260,38 @@ class CScriptedHttpServer : public CORE::CObserver
             toClose[ c ]->Close();
     }
 
-    static std::string HeaderValue( const std::string& headers, const std::string& name )
+    static CORE::CString HeaderValue( const CORE::CString& headers, const CORE::CString& name )
     {
-        std::string lowerHeaders = headers, lowerName = "\n" + name + ":";
-        for ( size_t i=0; i<lowerHeaders.size(); ++i ) lowerHeaders[ i ] = (char) tolower( lowerHeaders[ i ] );
-        for ( size_t i=0; i<lowerName.size(); ++i ) lowerName[ i ] = (char) tolower( lowerName[ i ] );
-        size_t pos = lowerHeaders.find( lowerName );
-        if ( std::string::npos == pos )
-            return std::string();
-        size_t start = headers.find_first_not_of( " \t", pos + lowerName.size() );
-        size_t end = headers.find( "\r\n", start );
-        return headers.substr( start, end - start );
+        CORE::CString lowerHeaders = headers.Lowercase();
+        CORE::CString lowerName = ( "\n" + name + ":" ).Lowercase();
+        Int32 pos = lowerHeaders.HasSubstr( lowerName, true );
+        if ( pos < 0 )
+            return CORE::CString();
+        UInt32 start = (UInt32) pos + lowerName.Length();
+        while ( start < headers.Length() && ( ' ' == headers[ start ] || '\t' == headers[ start ] ) )
+            ++start;
+        Int32 end = headers.HasSubstr( "\r\n", (Int32) start, true );
+        return headers.SubstrFromRange( start, end < 0 ? headers.Length() : (UInt32) end );
     }
 
     /** decodes a chunked request body, returns false while it is incomplete */
-    static bool DecodeChunked( const std::string& raw, std::string& body )
+    static bool DecodeChunked( const CORE::CString& raw, CORE::CString& body )
     {
-        size_t pos = 0;
-        body.clear();
+        UInt32 pos = 0;
+        body.Clear();
         while ( true )
         {
-            size_t lineEnd = raw.find( "\r\n", pos );
-            if ( std::string::npos == lineEnd )
+            Int32 lineEnd = raw.HasSubstr( "\r\n", (Int32) pos, true );
+            if ( lineEnd < 0 )
                 return false;
-            unsigned long size = strtoul( raw.substr( pos, lineEnd - pos ).c_str(), GUCEF_NULL, 16 );
-            pos = lineEnd + 2;
+            const CORE::CString sizeText = raw.SubstrFromRange( pos, (UInt32) lineEnd );    // const: only the const C_String() never returns NULL
+            UInt32 size = (UInt32) strtoul( sizeText.C_String(), GUCEF_NULL, 16 );
+            pos = (UInt32) lineEnd + 2;
             if ( 0 == size )
-                return raw.size() >= pos + 2;
-            if ( raw.size() < pos + size + 2 )
+                return raw.Length() >= pos + 2;
+            if ( raw.Length() < pos + size + 2 )
                 return false;
-            body.append( raw, pos, size );
+            body += raw.SubstrFromRange( pos, pos + size );
             pos += size + 2;
         }
     }
@@ -292,28 +300,31 @@ class CScriptedHttpServer : public CORE::CObserver
     {
         if ( state.answered )
             return;
-        size_t headerEnd = state.request.find( "\r\n\r\n" );
-        if ( std::string::npos == headerEnd )
+        Int32 headerEnd = state.request.HasSubstr( "\r\n\r\n", true );
+        if ( headerEnd < 0 )
             return;
-        std::string headers = state.request.substr( 0, headerEnd + 2 );
-        std::string rawBody = state.request.substr( headerEnd + 4 );
-        std::string body;
-        if ( HeaderValue( headers, "Transfer-Encoding" ).find( "chunked" ) != std::string::npos )
+        CORE::CString headers = state.request.SubstrToIndex( (UInt32) headerEnd + 2, true );
+        CORE::CString rawBody = state.request.CutChars( (UInt32) headerEnd + 4, true );
+        CORE::CString body;
+        if ( HeaderValue( headers, "Transfer-Encoding" ).HasSubstr( "chunked", true ) >= 0 )
         {
             if ( !DecodeChunked( rawBody, body ) )
                 return;
         }
         else
         {
-            size_t contentLength = (size_t) strtoul( HeaderValue( headers, "Content-Length" ).c_str(), GUCEF_NULL, 10 );
-            if ( rawBody.size() < contentLength )
+            const CORE::CString contentLengthText = HeaderValue( headers, "Content-Length" );    // const: only the const C_String() never returns NULL
+            UInt32 contentLength = (UInt32) strtoul( contentLengthText.C_String(), GUCEF_NULL, 10 );
+            if ( rawBody.Length() < contentLength )
                 return;
-            body = rawBody.substr( 0, contentLength );
+            body = rawBody.SubstrToIndex( contentLength, true );
         }
 
-        std::string method = headers.substr( 0, headers.find( ' ' ) );
-        size_t pathStart = headers.find( ' ' ) + 1;
-        std::string path = headers.substr( pathStart, headers.find( ' ', pathStart ) - pathStart );
+        Int32 methodEnd = headers.HasChar( ' ', true );
+        CORE::CString method = methodEnd < 0 ? headers : headers.SubstrToIndex( (UInt32) methodEnd, true );
+        UInt32 pathStart = (UInt32) ( methodEnd + 1 );
+        Int32 pathEnd = headers.HasChar( ' ', pathStart, true );
+        CORE::CString path = headers.SubstrFromRange( pathStart, pathEnd < 0 ? headers.Length() : (UInt32) pathEnd );
         {
             MT::CScopeMutex lock( m_lock );
             ++m_requestCount;
@@ -324,26 +335,26 @@ class CScriptedHttpServer : public CORE::CObserver
         Route( state, method, path, headers, body );
     }
 
-    static std::string Response( int status, const std::string& extraHeaders, const std::string& body, bool withLength = true )
+    static CORE::CString Response( int status, const CORE::CString& extraHeaders, const CORE::CString& body, bool withLength = true )
     {
         char statusLine[ 64 ];
         sprintf( statusLine, "HTTP/1.1 %d X\r\n", status );
-        std::string response = statusLine + extraHeaders;
+        CORE::CString response = statusLine + extraHeaders;
         if ( withLength )
-            response += "Content-Length: " + std::to_string( body.size() ) + "\r\n";
+            response += "Content-Length: " + CORE::ToString( TextByteCount( body ) ) + "\r\n";
         return response + "\r\n" + body;
     }
 
-    void Route( SConnection& state, const std::string& method, const std::string& path, const std::string& headers, const std::string& body )
+    void Route( SConnection& state, const CORE::CString& method, const CORE::CString& path, const CORE::CString& headers, const CORE::CString& body )
     {
-        std::vector< std::string >& p = state.pieces;
+        GUCEF::vector< CORE::CString >& p = state.pieces;
         if ( path == "/hello" )
         {
             // the header arrives in three reads, split in the middle of a line
-            std::string response = Response( 200, "Content-Type: text/plain\r\nAccept-Ranges: bytes\r\n", "hello world" );
-            p.push_back( response.substr( 0, 10 ) );
-            p.push_back( response.substr( 10, 25 ) );
-            p.push_back( response.substr( 35 ) );
+            CORE::CString response = Response( 200, "Content-Type: text/plain\r\nAccept-Ranges: bytes\r\n", "hello world" );
+            p.push_back( response.SubstrFromRange( 0, 10 ) );
+            p.push_back( response.SubstrFromRange( 10, 35 ) );
+            p.push_back( response.CutChars( 35, true ) );
         }
         else
         if ( path == "/chunked" )
@@ -367,7 +378,7 @@ class CScriptedHttpServer : public CORE::CObserver
             p.push_back( Response( 302, "Location: /redirect/2\r\n", "go on" ) );
         else
         if ( path == "/redirect/2" )
-            p.push_back( Response( 301, "Location: http://127.0.0.1:" + std::to_string( SCRIPTED_SERVER_PORT ) + "/hello\r\n", "moved" ) );
+            p.push_back( Response( 301, "Location: http://127.0.0.1:" + CORE::ToString( SCRIPTED_SERVER_PORT ) + "/hello\r\n", "moved" ) );
         else
         if ( path == "/loop" )
             p.push_back( Response( 302, "Location: /loop\r\n", "" ) );
@@ -389,26 +400,27 @@ class CScriptedHttpServer : public CORE::CObserver
         else
         if ( path == "/range" )
         {
-            std::string content = "0123456789abcdefghijklmnopqrstuvwxyz";
-            std::string range = HeaderValue( headers, "Range" );
+            CORE::CString content = "0123456789abcdefghijklmnopqrstuvwxyz";
+            const CORE::CString range = HeaderValue( headers, "Range" );    // const: only the const C_String() never returns NULL
             unsigned long first = 0, last = 0;
-            if ( 2 == sscanf( range.c_str(), "bytes=%lu-%lu", &first, &last ) )
-                p.push_back( Response( 206, "", content.substr( first, last - first + 1 ) ) );
+            if ( 2 == sscanf( range.C_String(), "bytes=%lu-%lu", &first, &last ) )
+                p.push_back( Response( 206, "", content.SubstrFromRange( (UInt32) first, (UInt32) ( last + 1 ) ) ) );
             else
-            if ( 1 == sscanf( range.c_str(), "bytes=%lu-", &first ) )
-                p.push_back( Response( 206, "", content.substr( first ) ) );
+            if ( 1 == sscanf( range.C_String(), "bytes=%lu-", &first ) )
+                p.push_back( Response( 206, "", content.CutChars( (UInt32) first, true ) ) );
             else
                 p.push_back( Response( 200, "", content ) );
         }
         else
         if ( path == "/large" )
         {
-            std::string content( 2 * 1024 * 1024, 'x' );
-            for ( size_t i=0; i<content.size(); i += 4096 )
-                content[ i ] = (char) ( 'a' + ( i / 4096 ) % 26 );
-            std::string response = Response( 200, "", content );
-            for ( size_t i=0; i<response.size(); i += 256 * 1024 )
-                p.push_back( response.substr( i, 256 * 1024 ) );
+            GUCEF::vector< char > contentBytes( 2 * 1024 * 1024, 'x' );
+            for ( size_t i=0; i<contentBytes.size(); i += 4096 )
+                contentBytes[ i ] = (char) ( 'a' + ( i / 4096 ) % 26 );
+            CORE::CString response = Response( 200, "", CORE::CString( &contentBytes[ 0 ], (UInt32) contentBytes.size() ) );
+            UInt32 responseLength = response.Length();
+            for ( UInt32 i=0; i<responseLength; i += 256 * 1024 )
+                p.push_back( response.SubstrFromRange( i, i + 256 * 1024 ) );
         }
         else
         if ( path == "/status/404" )
@@ -436,10 +448,10 @@ class CScriptedHttpServer : public CORE::CObserver
     COMCORE::CTCPServerSocket m_socket;
     volatile bool m_running;
     std::thread m_thread;
-    std::map< void*, SConnection > m_connections;
+    GUCEF::map< void*, SConnection > m_connections;
     MT::CMutex m_lock;
     UInt32 m_requestCount;
-    std::string m_lastCookieHeader;
+    CORE::CString m_lastCookieHeader;
 };
 
 /*-------------------------------------------------------------------------*/
@@ -449,22 +461,22 @@ class CStreamSource : public CORE::CIOAccess
 {
     public:
 
-    CStreamSource( const std::string& text ) : m_text( text ), m_pos( 0 ) {}
+    CStreamSource( const CORE::CString& text ) : m_text( text ), m_pos( 0 ) {}
 
     virtual void Open( void ) GUCEF_VIRTUAL_OVERRIDE { m_pos = 0; }
     virtual void Close( void ) GUCEF_VIRTUAL_OVERRIDE {}
     virtual bool Opened( void ) const GUCEF_VIRTUAL_OVERRIDE { return true; }
     virtual UInt32 Read( void* dest, UInt32 esize, UInt32 elements ) GUCEF_VIRTUAL_OVERRIDE
     {
-        size_t count = std::min( (size_t) esize * elements, m_text.size() - m_pos );
-        memcpy( dest, m_text.data() + m_pos, count );
+        size_t count = std::min( (size_t) esize * elements, (size_t) TextByteCount( m_text ) - m_pos );
+        memcpy( dest, m_text.C_String() + m_pos, count );
         m_pos += count;
         return esize > 0 ? (UInt32) ( count / esize ) : 0;
     }
     virtual UInt64 Tell( void ) const GUCEF_VIRTUAL_OVERRIDE { return m_pos; }
     virtual Int32 Seek( Int64 offset, Int32 origin ) GUCEF_VIRTUAL_OVERRIDE { return -1; }
     virtual char GetChar( void ) GUCEF_VIRTUAL_OVERRIDE { char c = 0; Read( &c, 1, 1 ); return c; }
-    virtual bool Eof( void ) const GUCEF_VIRTUAL_OVERRIDE { return m_pos >= m_text.size(); }
+    virtual bool Eof( void ) const GUCEF_VIRTUAL_OVERRIDE { return m_pos >= TextByteCount( m_text ); }
     virtual bool IsReadable( void ) const GUCEF_VIRTUAL_OVERRIDE { return true; }
     virtual bool IsWriteable( void ) const GUCEF_VIRTUAL_OVERRIDE { return false; }
     virtual bool IsValid( void ) GUCEF_VIRTUAL_OVERRIDE { return true; }
@@ -474,7 +486,7 @@ class CStreamSource : public CORE::CIOAccess
 
     private:
 
-    std::string m_text;
+    CORE::CString m_text;
     size_t m_pos;
 };
 
@@ -513,7 +525,7 @@ class CClassicRecorder : public CORE::CObserver
         else if ( WEB::CHTTPClient::ConnectionErrorEvent == eventId ) { events.push_back( "connectionerror" ); disconnected = true; }
     }
 
-    std::vector< std::string > events;
+    GUCEF::vector< CORE::CString > events;
     CORE::CString body;
     UInt32 contentSize;
     int httpCode;
@@ -647,17 +659,17 @@ LoadHttpClientPlugin( const CORE::CString& pluginName )
 
 /** runs the tests which apply to every backend, with the client using only the given backend */
 static void
-PerformBackendTests( WEB::CHTTPClient& client, const std::string& backendName )
+PerformBackendTests( WEB::CHTTPClient& client, const CORE::CString& backendName )
 {GUCEF_TRACE;
 
     CORE::CString::StringVector preferred;
-    preferred.push_back( backendName.c_str() );
+    preferred.push_back( backendName );
     client.SetPreferredBackends( preferred );
 
-    GUCEF_TESTFW_TESTCASE( ( std::string( "Test (" ) + backendName + "): The backend is chosen for http" ).c_str() )
+    GUCEF_TESTFW_TESTCASE( ( "Test (" + backendName + "): The backend is chosen for http" ).C_String() )
         try
         {
-            ASSERT_TRUE( client.GetBackendNameForScheme( "http" ) == backendName.c_str() );
+            ASSERT_TRUE( client.GetBackendNameForScheme( "http" ) == backendName );
         }
         catch ( ... )
         {
@@ -665,7 +677,7 @@ PerformBackendTests( WEB::CHTTPClient& client, const std::string& backendName )
         }
     GUCEF_TESTFW_TESTCASE_END
 
-    GUCEF_TESTFW_TESTCASE( ( std::string( "Test (" ) + backendName + "): Execute reads responses split over reads, chunked and close delimited" ).c_str() )
+    GUCEF_TESTFW_TESTCASE( ( "Test (" + backendName + "): Execute reads responses split over reads, chunked and close delimited" ).C_String() )
         try
         {
             WEB::CHttpResponseData response;
@@ -702,7 +714,7 @@ PerformBackendTests( WEB::CHTTPClient& client, const std::string& backendName )
         }
     GUCEF_TESTFW_TESTCASE_END
 
-    GUCEF_TESTFW_TESTCASE( ( std::string( "Test (" ) + backendName + "): Redirects are followed and rewritten as required" ).c_str() )
+    GUCEF_TESTFW_TESTCASE( ( "Test (" + backendName + "): Redirects are followed and rewritten as required" ).C_String() )
         try
         {
             WEB::CHttpResponseData response;
@@ -743,7 +755,7 @@ PerformBackendTests( WEB::CHTTPClient& client, const std::string& backendName )
         }
     GUCEF_TESTFW_TESTCASE_END
 
-    GUCEF_TESTFW_TESTCASE( ( std::string( "Test (" ) + backendName + "): Cookies from responses are sent with later requests" ).c_str() )
+    GUCEF_TESTFW_TESTCASE( ( "Test (" + backendName + "): Cookies from responses are sent with later requests" ).C_String() )
         try
         {
             WEB::CHttpCookieJarPtr jar( GUCEF_NEW WEB::CHttpCookieJar() );
@@ -774,7 +786,7 @@ PerformBackendTests( WEB::CHTTPClient& client, const std::string& backendName )
         }
     GUCEF_TESTFW_TESTCASE_END
 
-    GUCEF_TESTFW_TESTCASE( ( std::string( "Test (" ) + backendName + "): Ranges, streamed downloads and streamed uploads" ).c_str() )
+    GUCEF_TESTFW_TESTCASE( ( "Test (" + backendName + "): Ranges, streamed downloads and streamed uploads" ).C_String() )
         try
         {
             WEB::CHttpClientRequestOptions range = client.GetDefaultOptions();
@@ -819,7 +831,7 @@ PerformBackendTests( WEB::CHTTPClient& client, const std::string& backendName )
         }
     GUCEF_TESTFW_TESTCASE_END
 
-    GUCEF_TESTFW_TESTCASE( ( std::string( "Test (" ) + backendName + "): Timeouts and connection failures are reported" ).c_str() )
+    GUCEF_TESTFW_TESTCASE( ( "Test (" + backendName + "): Timeouts and connection failures are reported" ).C_String() )
         try
         {
             WEB::CHttpClientRequestOptions quick = client.GetDefaultOptions();
@@ -840,13 +852,13 @@ PerformBackendTests( WEB::CHTTPClient& client, const std::string& backendName )
         }
     GUCEF_TESTFW_TESTCASE_END
 
-    GUCEF_TESTFW_TESTCASE( ( std::string( "Test (" ) + backendName + "): ExecuteAsync carries out requests on a thread pool and returns futures" ).c_str() )
+    GUCEF_TESTFW_TESTCASE( ( "Test (" + backendName + "): ExecuteAsync carries out requests on a thread pool and returns futures" ).C_String() )
         try
         {
             client.SetThreadPoolName( "HttpClientTestPool" );
 
             // several at the same time
-            std::vector< CORE::CFutureResult > futures;
+            GUCEF::vector< CORE::CFutureResult > futures;
             for ( int i=0; i<5; ++i )
                 futures.push_back( client.ExecuteAsync( MakeRequest( i % 2 ? "/hello" : "/chunked" ) ) );
             for ( size_t i=0; i<futures.size(); ++i )
@@ -877,7 +889,7 @@ PerformBackendTests( WEB::CHTTPClient& client, const std::string& backendName )
         }
     GUCEF_TESTFW_TESTCASE_END
 
-    GUCEF_TESTFW_TESTCASE( ( std::string( "Test (" ) + backendName + "): The classic API raises its events as before" ).c_str() )
+    GUCEF_TESTFW_TESTCASE( ( "Test (" + backendName + "): The classic API raises its events as before" ).C_String() )
         try
         {
             CClassicRecorder recorder;

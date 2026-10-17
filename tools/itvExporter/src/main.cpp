@@ -24,8 +24,6 @@
 //-------------------------------------------------------------------------*/
 
 #include <stdio.h>
-#include <string>
-#include <vector>
 
 #ifndef GUCEF_CORE_LOGGING_H
 #include "gucefCORE_Logging.h"
@@ -177,15 +175,11 @@ WritePcmWaveHeader( const PcmWaveHeader& header ,
 
 /*-------------------------------------------------------------------------*/
 
-/**
- *  The return value of Setpos() differs between the various IO access implementations
- *  so we verify the outcome using the actual position instead
- */
+/** Setpos() follows fsetpos(): 0 is success */
 bool
 SeekTo( CORE::CIOAccess& access, CORE::UInt64 position )
 {
-    access.Setpos( position );
-    return access.Tell() == position;
+    return 0 == access.Setpos( position );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -260,7 +254,7 @@ ExpandVgaPalette( IMAGE::CPixelMap& palette )
 
 /*-------------------------------------------------------------------------*/
 
-typedef std::vector< CORE::UInt8 > TByteVector;
+typedef GUCEF::vector< CORE::UInt8 > TByteVector;
 
 /**
  *  Reads the payload of a resource, which is everything after the 55 byte resource header
@@ -303,14 +297,13 @@ CORE::CString
 ToHex( const CORE::UInt8* data, size_t size )
 {
     static const char digits[] = "0123456789abcdef";
-    std::string hex;
-    hex.reserve( size * 2 );
+    CORE::CString hex;
     for ( size_t i=0; i<size; ++i )
     {
         hex += digits[ data[ i ] >> 4 ];
         hex += digits[ data[ i ] & 0xF ];
     }
-    return CORE::CString( hex.c_str(), (CORE::UInt32) hex.size() );
+    return hex;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -322,8 +315,7 @@ ToHex( const CORE::UInt8* data, size_t size )
 CORE::CString
 JsonEscape( const CORE::UInt8* text, size_t size )
 {
-    std::string out;
-    out.reserve( size + 8 );
+    CORE::CString out;
     for ( size_t i=0; i<size; ++i )
     {
         CORE::UInt8 c = text[ i ];
@@ -349,7 +341,7 @@ JsonEscape( const CORE::UInt8* text, size_t size )
             }
         }
     }
-    return CORE::CString( out.c_str(), (CORE::UInt32) out.size() );
+    return out;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -431,7 +423,7 @@ static const SPartKind* GetPartKind( const CORE::CString& resourceType )
 /*-------------------------------------------------------------------------*/
 
 static void
-AppendJsonU32( std::string& json, const char* name, CORE::UInt32 value )
+AppendJsonU32( CORE::CString& json, const char* name, CORE::UInt32 value )
 {
     char buffer[ 64 ];
     sprintf( buffer, ",\n      \"%s\": %u", name, (unsigned int) value );
@@ -439,7 +431,7 @@ AppendJsonU32( std::string& json, const char* name, CORE::UInt32 value )
 }
 
 static void
-AppendJsonFloat( std::string& json, const char* name, CORE::UInt32 rawValue )
+AppendJsonFloat( CORE::CString& json, const char* name, CORE::UInt32 rawValue )
 {
     float value;
     memcpy( &value, &rawValue, sizeof( value ) );
@@ -449,7 +441,7 @@ AppendJsonFloat( std::string& json, const char* name, CORE::UInt32 rawValue )
 }
 
 static void
-AppendJsonSignedPairs( std::string& json, const char* name, const CORE::UInt8* data, size_t pairCount )
+AppendJsonSignedPairs( CORE::CString& json, const char* name, const CORE::UInt8* data, size_t pairCount )
 {
     // The game stores a range as ( max, min ) with signed bytes, a fixed value as ( v, v )
     json += ",\n      \"";
@@ -470,12 +462,12 @@ AppendJsonSignedPairs( std::string& json, const char* name, const CORE::UInt8* d
  *  Decodes the header and tail of a definition resource into named json fields.
  *  Returns an empty string if the tail does not have the size the table layout requires.
  */
-static std::string
+static CORE::CString
 DecodeDefinitionFields( const CORE::CString& resourceType ,
                         const TByteVector& payload        ,
                         size_t tailOffset                 )
 {
-    std::string json = "{\n      \"flag\": ";
+    CORE::CString json = "{\n      \"flag\": ";
     char buffer[ 64 ];
     sprintf( buffer, "%u", (unsigned int) payload[ 0 ] );
     json += buffer;
@@ -493,12 +485,12 @@ DecodeDefinitionFields( const CORE::CString& resourceType ,
     if ( GUCEF_NULL != part )
     {
         if ( tailSize < 16 )
-            return std::string();
+            return CORE::CString();
         CORE::UInt32 materialCount = ReadLE32( tailBytes, 12 );
         if ( materialCount > 1000 || tailSize != 16 + 8 * (size_t) materialCount + 4 * part->extraCount )
-            return std::string();
+            return CORE::CString();
 
-        json += std::string( ",\n      \"kind\": \"" ) + part->kind + "\"";
+        json += CORE::CString( ",\n      \"kind\": \"" ) + part->kind + "\"";
         AppendJsonU32( json, part->powerName, ReadLE32( tailBytes, 0 ) );
         AppendJsonU32( json, "spaces", ReadLE32( tailBytes, 4 ) );
         AppendJsonU32( json, "cost", ReadLE32( tailBytes, 8 ) );
@@ -517,7 +509,7 @@ DecodeDefinitionFields( const CORE::CString& resourceType ,
     if ( "itv17" == resourceType )
     {
         if ( tailSize != 17 )
-            return std::string();
+            return CORE::CString();
         json += ",\n      \"kind\": \"building\"";
         AppendJsonU32( json, "maxWorkers", ReadLE32( tailBytes, 0 ) );
         AppendJsonU32( json, "maintenanceCost", ReadLE32( tailBytes, 4 ) );
@@ -531,9 +523,9 @@ DecodeDefinitionFields( const CORE::CString& resourceType ,
         // All 4 tables derive from the same class which starts with a block of 30 bytes
         size_t extraSize = "itv6" == resourceType ? 2 : ( "itv8" == resourceType ? 15 : 1 );
         if ( tailSize != 30 + extraSize )
-            return std::string();
+            return CORE::CString();
         const char* kind = "itv6" == resourceType ? "planet" : ( "itv7" == resourceType ? "star" : ( "itv8" == resourceType ? "race" : "material" ) );
-        json += std::string( ",\n      \"kind\": \"" ) + kind + "\"";
+        json += CORE::CString( ",\n      \"kind\": \"" ) + kind + "\"";
         AppendJsonSignedPairs( json, "attributes", &tailBytes[ 0 ], 15 );
         if ( "itv8" == resourceType )
         {
@@ -567,7 +559,7 @@ DecodeDefinitionFields( const CORE::CString& resourceType ,
     }
     else
     {
-        return std::string();
+        return CORE::CString();
     }
     json += "\n    }";
     return json;
@@ -618,10 +610,10 @@ ExtractDefinitionResource( VFS::CVFSHandle& resource             ,
     entry += "    \"name\": \"" + JsonEscape( name, nameChars ) + "\",\n";
     entry += "    \"description\": \"" + JsonEscape( desc, descChars ) + "\",\n";
 
-    std::string fields = DecodeDefinitionFields( resourceType, payload, pos );
-    if ( !fields.empty() )
+    CORE::CString fields = DecodeDefinitionFields( resourceType, payload, pos );
+    if ( !fields.IsNULLOrEmpty() )
     {
-        entry += "    \"fields\": " + CORE::CString( fields.c_str(), (CORE::UInt32) fields.size() ) + ",\n";
+        entry += "    \"fields\": " + fields + ",\n";
     }
     else
     {
@@ -708,7 +700,7 @@ CreateRgbaPixelMap( const CORE::UInt8* indices        ,
     const CORE::UInt8* colors = static_cast< const CORE::UInt8* >( palette.GetDataPtr() );
     CORE::UInt32 colorCount = palette.GetWidthInPixels() * palette.GetHeightInPixels();
 
-    std::vector< CORE::UInt8 > rgba( (size_t) width * height * 4 );
+    GUCEF::vector< CORE::UInt8 > rgba( (size_t) width * height * 4 );
     for ( size_t i=0; i<(size_t) width * height; ++i )
     {
         CORE::UInt8 index = indices[ i ];
@@ -819,7 +811,7 @@ ExtractFontResource( VFS::CVFSHandle& resource             ,
     CORE::UInt32 rows = ( glyphCount + columns - 1 ) / columns;
     CORE::UInt32 atlasWidth = columns * glyphWidth;
     CORE::UInt32 atlasHeight = rows * glyphHeight;
-    std::vector< CORE::UInt8 > atlas( (size_t) atlasWidth * atlasHeight, 0 );
+    GUCEF::vector< CORE::UInt8 > atlas( (size_t) atlasWidth * atlasHeight, 0 );
 
     CORE::CString glyphs;
     for ( CORE::UInt32 g=0; g<glyphCount; ++g )

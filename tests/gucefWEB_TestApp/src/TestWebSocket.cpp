@@ -24,7 +24,6 @@
 //-------------------------------------------------------------------------*/
 
 #include <string.h>
-#include <vector>
 
 #ifndef GUCEF_CORE_H
 #include "gucefCORE.h"
@@ -201,15 +200,15 @@ class CWsRecorder : public CORE::CObserver
 
     UInt32 serverConnects, serverDisconnects, serverTexts, serverBinaries;
     UInt32 clientConnects, clientCloses, clientErrors, clientTexts, clientBinaries;
-    std::vector< WEB::TWebSocketConnectionPtr > serverConnections;
-    std::vector< WEB::SWebSocketPeerInfo > serverPeers;
-    std::vector< WEB::SWebSocketCloseInfo > serverCloses;
-    std::vector< CORE::CString > serverTextMessages;
-    std::vector< CORE::CDynamicBuffer > serverBinaryMessages;
+    GUCEF::vector< WEB::TWebSocketConnectionPtr > serverConnections;
+    GUCEF::vector< WEB::SWebSocketPeerInfo > serverPeers;
+    GUCEF::vector< WEB::SWebSocketCloseInfo > serverCloses;
+    GUCEF::vector< CORE::CString > serverTextMessages;
+    GUCEF::vector< CORE::CDynamicBuffer > serverBinaryMessages;
     WEB::SWebSocketPeerInfo clientPeer;
     WEB::SWebSocketCloseInfo clientClose;
-    std::vector< CORE::CString > clientTextMessages;
-    std::vector< CORE::CDynamicBuffer > clientBinaryMessages;
+    GUCEF::vector< CORE::CString > clientTextMessages;
+    GUCEF::vector< CORE::CDynamicBuffer > clientBinaryMessages;
     bool echoServer;                        /**< echo everything the server receives back to its sender */
     WEB::CWebSocketServer* serverToScheduleOnText;  /**< scheduled for destruction from within the notification of the next text message */
 };

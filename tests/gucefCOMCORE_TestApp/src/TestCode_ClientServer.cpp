@@ -24,8 +24,6 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#include <string>
-
 #ifndef GUCEF_CORE_H
 #include "gucefCORE.h"
 #define GUCEF_CORE_H
@@ -74,7 +72,7 @@ class CTestTCPClientServer : public CORE::CObserver
 {
     public:
 
-    CTestTCPClientServer( const std::string& reply )
+    CTestTCPClientServer( const CORE::CString& reply )
         : CORE::CObserver()
         , m_serverSock( false )
         , m_clientSock( false )
@@ -117,8 +115,8 @@ class CTestTCPClientServer : public CORE::CObserver
     bool m_clientDisconnected;
     bool m_serverSawClient;
     bool m_serverSawDisconnect;
-    std::string m_serverReceived;
-    std::string m_clientReceived;
+    CORE::CString m_serverReceived;
+    CORE::CString m_clientReceived;
 
     protected:
 
@@ -159,15 +157,15 @@ class CTestTCPClientServer : public CORE::CObserver
             if ( CTCPClientSocket::DataRecievedEvent == eventid )
             {
                 CTCPClientSocket::TDataRecievedEventData* data = static_cast< CTCPClientSocket::TDataRecievedEventData* >( eventdata );
-                m_clientReceived.append( data->GetData().AsConstTypePtr< char >(), data->GetData().GetDataSize() );
+                m_clientReceived.Append( data->GetData().AsConstTypePtr< char >(), data->GetData().GetDataSize() );
             }
         }
         else
         if ( CTCPConnection::DataRecievedEvent == eventid && notifier == m_serverConnection )
         {
             CTCPConnection::TDataRecievedEventData* data = static_cast< CTCPConnection::TDataRecievedEventData* >( eventdata );
-            m_serverReceived.append( data->GetData().AsConstTypePtr< char >(), data->GetData().GetDataSize() );
-            m_serverConnection->Send( m_reply.data(), (UInt32) m_reply.size() );
+            m_serverReceived.Append( data->GetData().AsConstTypePtr< char >(), data->GetData().GetDataSize() );
+            m_serverConnection->Send( m_reply.C_String(), m_reply.ByteSize() - 1 );    // ByteSize includes the null terminator
         }
     }
 
@@ -176,7 +174,7 @@ class CTestTCPClientServer : public CORE::CObserver
     CTCPServerSocket m_serverSock;
     CTCPClientSocket m_clientSock;
     CTCPServerConnection* m_serverConnection;
-    std::string m_reply;
+    CORE::CString m_reply;
 };
 
 /*-------------------------------------------------------------------------//

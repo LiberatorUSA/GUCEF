@@ -329,7 +329,10 @@ PerformWebSocketCodecTests( void )
 
             // an over long reason is truncated so the frame stays valid
             out.Clear( true );
-            ASSERT_TRUE( Codec::EncodeCloseFrame( 1000, CORE::CString( std::string( 200, 'x' ) ), false, out ) );
+            CORE::CString overLongReason;
+            for ( UInt32 x=0; x<200; ++x )
+                overLongReason += 'x';
+            ASSERT_TRUE( Codec::EncodeCloseFrame( 1000, overLongReason, false, out ) );
             ASSERT_TRUE( 2 + 125 == out.GetDataSize() );
         }
         catch( ... )

@@ -24,7 +24,6 @@
 //-------------------------------------------------------------------------*/
 
 #include <string.h>
-#include <vector>
 #include <deque>
 
 #ifndef GUCEF_CORE_H
@@ -169,7 +168,7 @@ class CCaptureTransport : public WEB::CIJsonRpcTransport
         sent.push_back( messageText );
         return true;
     }
-    std::vector< CORE::CString > sent;
+    GUCEF::vector< CORE::CString > sent;
 };
 
 /**
@@ -321,8 +320,8 @@ class CRpcRecorder : public CORE::CObserver
 
     UInt32 responses;
     UInt32 notifications;
-    std::vector< WEB::SJsonRpcResponse > responseList;
-    std::vector< WEB::SJsonRpcNotification > notificationList;
+    GUCEF::vector< WEB::SJsonRpcResponse > responseList;
+    GUCEF::vector< WEB::SJsonRpcNotification > notificationList;
 };
 
 static bool

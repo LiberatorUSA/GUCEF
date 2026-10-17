@@ -330,7 +330,7 @@ class CChromeRecorder : public CORE::CObserver
     }
 
     UInt32 discoveryCompleted, discoveryFailed, connected, disconnected, protocolEvents;
-    std::vector< WEB::SChromeProtocolEvent > events;
+    GUCEF::vector< WEB::SChromeProtocolEvent > events;
 };
 
 /*-------------------------------------------------------------------------*/
@@ -437,7 +437,7 @@ PerformChromeDevToolsTests( void )
             ASSERT_TRUE( client.NetworkEnable() );
 
             // cookies, with their attributes
-            std::vector< WEB::SChromeCookie > cookies;
+            std::vector< WEB::SChromeCookie > cookies;    // std::vector because CChromeDevToolsClient::GetAllCookies() takes one
             ASSERT_TRUE( client.GetAllCookies( cookies ) );
             ASSERT_TRUE( 2 == cookies.size() );
             if ( 2 == cookies.size() )

@@ -23,8 +23,6 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#include <vector>
-
 #ifndef GUCEF_CORE_CCOREGLOBAL_H
 #include "gucefCORE_CCoreGlobal.h"
 #define GUCEF_CORE_CCOREGLOBAL_H
@@ -115,7 +113,7 @@ class CServerListRecorder : public CORE::CObservingNotifier
 {
     public:
 
-    std::vector< MULTIPLAY::CServerListProvider::TServerInfo > servers;
+    GUCEF::vector< MULTIPLAY::CServerListProvider::TServerInfo > servers;
     UInt32 finished;
     UInt32 failed;
     UInt32 aborted;

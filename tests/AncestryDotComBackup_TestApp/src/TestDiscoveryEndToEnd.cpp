@@ -361,8 +361,8 @@ PerformDiscoveryEndToEndTests( void )
             journal.Close();
             CORE::CString journalText;
             ASSERT_TRUE( CORE::LoadTextFileAsString( layout.GetDiscoveryJournalPath(), journalText ) );
-            ASSERT_FALSE( std::string( journalText.C_String() ).find( "secret123" ) != std::string::npos );
-            ASSERT_FALSE( std::string( catalog.RenderReport().C_String() ).find( "secret123" ) != std::string::npos );
+            ASSERT_FALSE( journalText.HasSubstr( "secret123", true ) >= 0 );
+            ASSERT_FALSE( catalog.RenderReport().HasSubstr( "secret123", true ) >= 0 );
 
             // and the catalog can be rebuilt from the journal
             CEndpointCatalog rebuilt;

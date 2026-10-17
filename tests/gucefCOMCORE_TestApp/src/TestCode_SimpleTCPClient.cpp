@@ -24,8 +24,6 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#include <string>
-
 #ifndef GUCEF_CORE_H
 #include "gucefCORE.h"
 #define GUCEF_CORE_H
@@ -109,7 +107,7 @@ class CSimpleTCPClient : public CORE::CObserver
 
     bool m_connected;
     CORE::Int32 m_errorCode;
-    std::string m_received;
+    CORE::CString m_received;
 
     protected:
 
@@ -127,7 +125,7 @@ class CSimpleTCPClient : public CORE::CObserver
         if ( eventid == CTCPClientSocket::DataRecievedEvent )
         {
             CTCPClientSocket::TDataRecievedEventData* data = static_cast< CTCPClientSocket::TDataRecievedEventData* >( eventdata );
-            m_received.append( data->GetData().AsConstTypePtr< char >(), data->GetData().GetDataSize() );
+            m_received.Append( data->GetData().AsConstTypePtr< char >(), data->GetData().GetDataSize() );
         }
         else
         if ( eventid == CTCPClientSocket::SocketErrorEvent )
@@ -152,7 +150,7 @@ class CAnswerOnceServer : public CORE::CObserver
 {
     public:
 
-    CAnswerOnceServer( const std::string& response )
+    CAnswerOnceServer( const CORE::CString& response )
         : CORE::CObserver(), m_socket( false ), m_response( response ), m_request()
     {GUCEF_TRACE;
 
@@ -169,7 +167,7 @@ class CAnswerOnceServer : public CORE::CObserver
 
     bool Start( UInt16 port ) { return m_socket.ListenOnPort( port ); }
 
-    std::string m_request;
+    CORE::CString m_request;
 
     protected:
 
@@ -187,16 +185,16 @@ class CAnswerOnceServer : public CORE::CObserver
         if ( CTCPConnection::DataRecievedEvent == eventid && notifier != &m_socket )
         {
             CTCPConnection::TDataRecievedEventData* data = static_cast< CTCPConnection::TDataRecievedEventData* >( eventdata );
-            m_request.append( data->GetData().AsConstTypePtr< char >(), data->GetData().GetDataSize() );
+            m_request.Append( data->GetData().AsConstTypePtr< char >(), data->GetData().GetDataSize() );
             CTCPServerConnection* connection = static_cast< CTCPServerConnection* >( notifier );
-            connection->Send( m_response.data(), (UInt32) m_response.size() );
+            connection->Send( m_response.C_String(), m_response.ByteSize() - 1 );    // ByteSize includes the null terminator
         }
     }
 
     private:
 
     CTCPServerSocket m_socket;
-    std::string m_response;
+    CORE::CString m_response;
 };
 
 /*-------------------------------------------------------------------------//
@@ -220,7 +218,7 @@ PerformSimpleTCPClientTests( void )
             CSimpleTCPClient client( "127.0.0.1", TestServerPort, "GET /\r\n" );
             ASSERT_TRUE( client.Start() );
 
-            ASSERT_TRUE( PumpUntil( [&client]() { return client.m_received.size() >= 40; }, 5000 ) );
+            ASSERT_TRUE( PumpUntil( [&client]() { return client.m_received.Length() >= 40; }, 5000 ) );
             ASSERT_TRUE( client.m_connected );
             ASSERT_TRUE( client.m_received == "HTTP/1.0 200 OK\r\nContent-Length: 2\r\n\r\nok" );
             ASSERT_TRUE( server.m_request == "GET /\r\n" );

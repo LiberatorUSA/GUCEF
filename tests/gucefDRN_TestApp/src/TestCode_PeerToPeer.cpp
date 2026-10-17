@@ -23,8 +23,6 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#include <vector>
-
 #ifndef GUCEF_CORE_H
 #include "gucefCORE.h"          /* GUCEF CORE library API */
 #define GUCEF_CORE_H
@@ -180,8 +178,8 @@ class CTestPeerToPeer : public CORE::CObservingNotifier
     DRN::CDRNNode::CDRNPeerLinkPtr m_linkB;
     DRN::CDRNPeerLinkData::TDRNDataStreamPtr m_streamA;
     DRN::CDRNPeerLinkData::TDRNDataStreamPtr m_streamB;
-    std::vector< CORE::CDynamicBuffer > m_streamAOutput;
-    std::vector< CORE::CDynamicBuffer > m_streamBOutput;
+    GUCEF::vector< CORE::CDynamicBuffer > m_streamAOutput;
+    GUCEF::vector< CORE::CDynamicBuffer > m_streamBOutput;
     DRN::CDRNPeerLinkData::TDRNDataGroupPtr  m_dataGroupA;
     DRN::CDRNPeerLinkData::TDRNDataGroupPtr  m_dataGroupB;
     DRN::CDRNDataGroup::CDRNDataGroupPropertiesPtr m_groupProperties;
@@ -278,7 +276,7 @@ class CTestPeerToPeer : public CORE::CObservingNotifier
         return false;
     }
 
-    bool IsStreamTestComplete( std::vector< CORE::CDynamicBuffer >& output )
+    bool IsStreamTestComplete( GUCEF::vector< CORE::CDynamicBuffer >& output )
     {
         if ( output.size() > 0 )
         {
@@ -714,7 +712,7 @@ class CTestPeerToPeer : public CORE::CObservingNotifier
 
             // First we test what stream we are dealing with and when we know we also grab the output stream
             // for so we can send something back
-            std::vector< CORE::CDynamicBuffer >* outputBuffers = NULL;
+            GUCEF::vector< CORE::CDynamicBuffer >* outputBuffers = NULL;
             DRN::CDRNPeerLinkData::TDRNDataStreamPtr publicizedStream;
             DRN::CDRNPeerLinkData::TDRNDataStreamPtr subscribedStream = m_linkA->GetLinkData().GetSubscribedDataStreamWithName( stream->GetName() );
             if ( subscribedStream == (void*)(stream) )

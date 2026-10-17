@@ -144,7 +144,7 @@ class CGucefGuiTestAppSettings : public CORE::CGloballyConfigurable
     typedef struct SFormInfo TFormInfo;
 
     private:
-    typedef std::map< GUI::CString, TFormInfo > TFormInfoMap;
+    typedef GUCEF::map< GUI::CString, TFormInfo > TFormInfoMap;
 
 
     GUI::CString m_windowManagerName;

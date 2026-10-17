@@ -88,8 +88,6 @@
 #include "gucefCORE_CDateTime.h"
 
 #include <algorithm>
-#include <set>
-#include <sstream>
 #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
 #include <sys/utime.h>
 #define GUCEF_UTIME _utime
@@ -150,7 +148,7 @@ JsonAvailable( void )
 static bool
 Contains( const CORE::CString& text, const char* part )
 {
-    return std::string( text.C_String() ).find( part ) != std::string::npos;
+    return text.HasSubstr( part, true ) >= 0;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -769,14 +767,12 @@ class CLineCollector : public CIGedcomHandler
     public:
     virtual void OnLine( const SGedcomLine& line ) GUCEF_VIRTUAL_OVERRIDE
     {
-        std::ostringstream s;
-        s << line.level << "|" << std::string( line.xref ? line.xref : "", line.xrefLength ) << "|" << std::string( line.tag, line.tagLength ) << "|"
-          << std::string( line.value ? line.value : "", line.valueLength ) << "|" << line.lineNumber;
-        lines.push_back( s.str() );
+        lines.push_back( CORE::ToString( line.level ) + "|" + CORE::CString( line.xref ? line.xref : "", line.xrefLength ) + "|" + CORE::CString( line.tag, line.tagLength ) + "|"
+                         + CORE::CString( line.value ? line.value : "", line.valueLength ) + "|" + CORE::ToString( line.lineNumber ) );
     }
     virtual void OnMalformedLine( UInt32 lineNumber ) GUCEF_VIRTUAL_OVERRIDE { malformed.push_back( lineNumber ); }
-    std::vector< std::string > lines;
-    std::vector< UInt32 > malformed;
+    GUCEF::vector< CORE::CString > lines;
+    GUCEF::vector< UInt32 > malformed;
 };
 
 /*-------------------------------------------------------------------------*/
@@ -788,9 +784,9 @@ PerformGedcomTests( void )
     GUCEF_TESTFW_TESTCASE( "Test: The lines of a GEDCOM file are split in level, id, tag and value" )
         try
         {
-            const std::string text = "0 HEAD\n0 @I1@ INDI\n1 NAME Jan /Test/\n2 CONT   two spaces\n1 BIRT\n";
+            const CORE::CString text = "0 HEAD\n0 @I1@ INDI\n1 NAME Jan /Test/\n2 CONT   two spaces\n1 BIRT\n";
             CLineCollector collector;
-            ASSERT_TRUE( CGedcomReader::Parse( text.c_str(), text.size(), collector ) == 5 );
+            ASSERT_TRUE( CGedcomReader::Parse( text.C_String(), text.ByteSize() - 1, collector ) == 5 );    // ByteSize includes the null terminator
             ASSERT_TRUE( collector.malformed.empty() );
             ASSERT_TRUE( collector.lines[ 0 ] == "0||HEAD||1" );
             ASSERT_TRUE( collector.lines[ 1 ] == "0|I1|INDI||2" );
@@ -807,19 +803,19 @@ PerformGedcomTests( void )
     GUCEF_TESTFW_TESTCASE( "Test: All line ends and a byte order mark are accepted" )
         try
         {
-            const std::string crlf = "\xEF\xBB\xBF" "0 HEAD\r\n1 CHAR UTF-8\r\n0 TRLR\r\n";
+            const CORE::CString crlf = "\xEF\xBB\xBF" "0 HEAD\r\n1 CHAR UTF-8\r\n0 TRLR\r\n";
             CLineCollector a;
-            ASSERT_TRUE( CGedcomReader::Parse( crlf.c_str(), crlf.size(), a ) == 3 );
+            ASSERT_TRUE( CGedcomReader::Parse( crlf.C_String(), crlf.ByteSize() - 1, a ) == 3 );    // ByteSize includes the null terminator
             ASSERT_TRUE( a.lines[ 0 ] == "0||HEAD||1" && a.lines[ 2 ] == "0||TRLR||3" );
 
-            const std::string cr = "0 HEAD\r1 CHAR UTF-8\r0 TRLR";
+            const CORE::CString cr = "0 HEAD\r1 CHAR UTF-8\r0 TRLR";
             CLineCollector b;
-            ASSERT_TRUE( CGedcomReader::Parse( cr.c_str(), cr.size(), b ) == 3 );
+            ASSERT_TRUE( CGedcomReader::Parse( cr.C_String(), cr.ByteSize() - 1, b ) == 3 );
             ASSERT_TRUE( b.lines[ 2 ] == "0||TRLR||3" );
 
-            const std::string blanks = "\n\n0 HEAD\n\n\n0 TRLR\n";
+            const CORE::CString blanks = "\n\n0 HEAD\n\n\n0 TRLR\n";
             CLineCollector c;
-            ASSERT_TRUE( CGedcomReader::Parse( blanks.c_str(), blanks.size(), c ) == 2 );
+            ASSERT_TRUE( CGedcomReader::Parse( blanks.C_String(), blanks.ByteSize() - 1, c ) == 2 );
             ASSERT_TRUE( c.malformed.empty() );
 
             CLineCollector d;
@@ -834,9 +830,9 @@ PerformGedcomTests( void )
     GUCEF_TESTFW_TESTCASE( "Test: Lines that are not GEDCOM are reported and skipped" )
         try
         {
-            const std::string text = "0 HEAD\nthis is not gedcom\n1 \n0 @I1 INDI\n1x NAME\n0 TRLR\n";
+            const CORE::CString text = "0 HEAD\nthis is not gedcom\n1 \n0 @I1 INDI\n1x NAME\n0 TRLR\n";
             CLineCollector collector;
-            ASSERT_TRUE( CGedcomReader::Parse( text.c_str(), text.size(), collector ) == 2 );
+            ASSERT_TRUE( CGedcomReader::Parse( text.C_String(), text.ByteSize() - 1, collector ) == 2 );
             ASSERT_TRUE( collector.malformed.size() == 4 );
             ASSERT_TRUE( collector.malformed[ 0 ] == 2 && collector.malformed[ 1 ] == 3 && collector.malformed[ 2 ] == 4 && collector.malformed[ 3 ] == 5 );
         }
@@ -1350,7 +1346,7 @@ PerformPacingAndFeedTests( void )
             ASSERT_TRUE( budget.GetDelayBeforeNextInMs( t0 ) == 0 );       // the first one goes right away
 
             // the pause is 60% to 140% of the delay and is not the same every time
-            std::set< UInt32 > pauses;
+            GUCEF::set< UInt32 > pauses;
             for ( UInt32 i=0; i<3; ++i )
             {
                 ASSERT_TRUE( budget.CanRequest( t0, reason ) );
@@ -1368,7 +1364,7 @@ PerformPacingAndFeedTests( void )
             // and the same pause is not used every time
             CRequestBudget varied;
             varied.Configure( 1000, 40, 0, 0 );
-            std::set< UInt32 > seen;
+            GUCEF::set< UInt32 > seen;
             for ( UInt32 i=0; i<30; ++i )
             {
                 varied.RecordRequest( t0 );
@@ -1942,8 +1938,8 @@ PerformBrowserTests( void )
             CORE::DeleteFile( chromium );
             CORE::DeleteFile( chrome );
 
-            const std::string originalPath = getenv( "PATH" ) != GUCEF_NULL ? getenv( "PATH" ) : "";
-            setenv( "PATH", dir.STL_String().c_str(), 1 );
+            const CORE::CString originalPath = getenv( "PATH" ) != GUCEF_NULL ? getenv( "PATH" ) : "";
+            setenv( "PATH", dir.C_String(), 1 );
 
             // only chromium: chromium is used
             CORE::WriteStringAsTextFile( chromium, "#!/bin/sh\n" );
@@ -1958,7 +1954,7 @@ PerformBrowserTests( void )
             browser.SetExecutablePath( "/my/own/browser" );
             ASSERT_TRUE( browser.FindExecutable() == "/my/own/browser" );
 
-            setenv( "PATH", originalPath.c_str(), 1 );
+            setenv( "PATH", originalPath.C_String(), 1 );
             CORE::DeleteFile( chromium );
             CORE::DeleteFile( chrome );
         }
