@@ -75,6 +75,11 @@
 #define GUCEF_TEST_FRAMEWORK_H
 #endif /* GUCEF_TEST_FRAMEWORK_H ? */
 
+#ifndef GUCEF_CORE_CEVENTAGGREGATETRIGGER_H
+#include "gucefCORE_CEventAggregateTrigger.h"
+#define GUCEF_CORE_CEVENTAGGREGATETRIGGER_H
+#endif /* GUCEF_CORE_CEVENTAGGREGATETRIGGER_H ? */
+
 #include "TestNotifierObserver.h"
 
 /*-------------------------------------------------------------------------//
@@ -314,6 +319,193 @@ protected:
 //      UTILITIES                                                          //
 //                                                                         //
 //-------------------------------------------------------------------------*/
+
+/** Counts the pulses it gets; on its first pulse it can subscribe another observer to the pulse generator */
+class CPulseCounter : public CObserver
+{
+    public:
+
+    UInt32 m_pulses;
+    CPulseGenerator* m_pulseGenerator;
+    CObserver* m_toSubscribeOnFirstPulse;
+
+    CPulseCounter( void ) : CObserver(), m_pulses( 0 ), m_pulseGenerator( GUCEF_NULL ), m_toSubscribeOnFirstPulse( GUCEF_NULL ) {}
+
+    virtual ~CPulseCounter() { UnsubscribeAllFromObserver(); }
+
+    virtual void OnNotify( CNotifier* notifier, const CEvent& eventId, CICloneable* eventData ) GUCEF_VIRTUAL_OVERRIDE
+    {
+        if ( CPulseGenerator::PulseEvent != eventId )
+            return;
+        ++m_pulses;
+        if ( 1 == m_pulses && GUCEF_NULL != m_toSubscribeOnFirstPulse && GUCEF_NULL != m_pulseGenerator )
+        {
+            // like a window that first takes down what it had, then sets itself up
+            m_toSubscribeOnFirstPulse->UnsubscribeFrom( *m_pulseGenerator );
+            m_toSubscribeOnFirstPulse->SubscribeTo( m_pulseGenerator, CPulseGenerator::PulseEvent );
+        }
+    }
+
+    virtual const CString& GetClassTypeName( void ) const GUCEF_VIRTUAL_OVERRIDE
+    {
+        static const CString classTypeName = "CPulseCounter";
+        return classTypeName;
+    }
+};
+
+/*-------------------------------------------------------------------------*/
+
+/** The event of the teardown tests, an event of its own like the pulse of a pulse generator */
+static const CEvent&
+TeardownEvent( void )
+{
+    static const CEvent teardownEvent( "GUCEF::CORE::TestNotifierObserver::TeardownEvent" );
+    return teardownEvent;
+}
+
+/** When it gets the event: unsubscribes itself, then deletes another observer, or deletes itself */
+class CTeardownObserver : public CObserver
+{
+    public:
+
+    UInt32 m_count;
+    CObserver* m_toDelete;
+    bool m_deleteSelf;
+    bool* m_deleted;
+
+    CTeardownObserver( void ) : CObserver(), m_count( 0 ), m_toDelete( GUCEF_NULL ), m_deleteSelf( false ), m_deleted( GUCEF_NULL ) {}
+
+    // like most observers it leaves the unsubscribing to the destruction of CObserver
+    virtual ~CTeardownObserver() { if ( GUCEF_NULL != m_deleted ) *m_deleted = true; }
+
+    virtual void OnNotify( CNotifier* notifier, const CEvent& eventId, CICloneable* eventData ) GUCEF_VIRTUAL_OVERRIDE
+    {
+        if ( TeardownEvent() != eventId )
+            return;
+        ++m_count;
+        if ( GUCEF_NULL != m_toDelete )
+        {
+            UnsubscribeAllFromObserver();
+            CObserver* toDelete = m_toDelete;
+            m_toDelete = GUCEF_NULL;
+            delete toDelete;
+        }
+        if ( m_deleteSelf )
+            delete this;
+    }
+
+    virtual const CString& GetClassTypeName( void ) const GUCEF_VIRTUAL_OVERRIDE
+    {
+        static const CString classTypeName = "CTeardownObserver";
+        return classTypeName;
+    }
+};
+
+/*-------------------------------------------------------------------------*/
+
+/** Counts an event; the first one to get it deletes the other observers it was given, like a game that takes down its window */
+class CDeletingObserver : public CObserver
+{
+    public:
+
+    UInt32 m_count;
+    GUCEF::vector< CDeletingObserver* >* m_others;
+
+    CDeletingObserver( void ) : CObserver(), m_count( 0 ), m_others( GUCEF_NULL ) {}
+
+    virtual ~CDeletingObserver() { UnsubscribeAllFromObserver(); }
+
+    virtual void OnNotify( CNotifier* notifier, const CEvent& eventId, CICloneable* eventData ) GUCEF_VIRTUAL_OVERRIDE
+    {
+        if ( CNotifier::ModifyEvent != eventId && CNotifier::SubscribeEvent != eventId && CNotifier::UnsubscribeEvent != eventId && CNotifier::DestructionEvent != eventId )
+            ++m_count;
+        if ( GUCEF_NULL != m_others )
+        {
+            GUCEF::vector< CDeletingObserver* >& others = *m_others;
+            m_others = GUCEF_NULL;
+            for ( size_t i=0; i<others.size(); ++i )
+            {
+                if ( others[ i ] != this )
+                {
+                    delete others[ i ];
+                    others[ i ] = GUCEF_NULL;
+                }
+            }
+        }
+    }
+
+    virtual const CString& GetClassTypeName( void ) const GUCEF_VIRTUAL_OVERRIDE
+    {
+        static const CString classTypeName = "CDeletingObserver";
+        return classTypeName;
+    }
+};
+
+/*-------------------------------------------------------------------------*/
+
+/** Records the events it gets; when it gets the start event it has the notifier send two more, which then wait in its mailbox */
+class CEventOrderRecorder : public CObserver
+{
+    public:
+
+    CMyNotifier* m_notifier;
+    CEvent m_onStart;
+    CEvent m_send[ 2 ];
+    GUCEF::vector< CEvent > m_received;
+
+    CEventOrderRecorder( void ) : CObserver(), m_notifier( GUCEF_NULL ), m_onStart(), m_received() {}
+
+    virtual ~CEventOrderRecorder() { UnsubscribeAllFromObserver(); }
+
+    virtual void OnNotify( CNotifier* notifier, const CEvent& eventId, CICloneable* eventData ) GUCEF_VIRTUAL_OVERRIDE
+    {
+        if ( eventId == m_onStart || eventId == m_send[ 0 ] || eventId == m_send[ 1 ] )
+            m_received.push_back( eventId );
+        if ( eventId == m_onStart )
+        {
+            m_notifier->DoNotifyObservers( m_send[ 0 ] );
+            m_notifier->DoNotifyObservers( m_send[ 1 ] );
+        }
+    }
+
+    virtual const CString& GetClassTypeName( void ) const GUCEF_VIRTUAL_OVERRIDE
+    {
+        static const CString classTypeName = "CEventOrderRecorder";
+        return classTypeName;
+    }
+};
+
+/*-------------------------------------------------------------------------*/
+
+/** Subscribes an observer to the pulse generator when the aggregate trigger fires, like an application that starts its work then */
+class CTriggeredSubscriber : public CObserver
+{
+    public:
+
+    UInt32 m_triggers;
+    CPulseGenerator* m_pulseGenerator;
+    CObserver* m_toSubscribe;
+
+    CTriggeredSubscriber( void ) : CObserver(), m_triggers( 0 ), m_pulseGenerator( GUCEF_NULL ), m_toSubscribe( GUCEF_NULL ) {}
+
+    virtual ~CTriggeredSubscriber() { UnsubscribeAllFromObserver(); }
+
+    virtual void OnNotify( CNotifier* notifier, const CEvent& eventId, CICloneable* eventData ) GUCEF_VIRTUAL_OVERRIDE
+    {
+        if ( CEventAggregateTrigger::AggregateTriggerEvent != eventId )
+            return;
+        ++m_triggers;
+        m_toSubscribe->SubscribeTo( m_pulseGenerator, CPulseGenerator::PulseEvent );
+    }
+
+    virtual const CString& GetClassTypeName( void ) const GUCEF_VIRTUAL_OVERRIDE
+    {
+        static const CString classTypeName = "CTriggeredSubscriber";
+        return classTypeName;
+    }
+};
+
+/*-------------------------------------------------------------------------*/
 
 void
 PerformNotifierObserverTests( void )
@@ -1109,6 +1301,202 @@ PerformNotifierObserverTests( void )
         ASSERT_TRUE( otherNotifier == observer.m_modifySources[ 1 ] );
 
         delete otherNotifier;
+    }
+    catch ( ... )
+    {
+        ERRORHERE;
+    }
+    GUCEF_TESTFW_TESTCASE_END
+
+    GUCEF_TESTFW_TESTCASE( "Unsubscribe and subscribe while the notifier is busy are carried out in the order they were asked for" )
+    try
+    {
+        // while the pulse is delivered the requests wait in the mailbox of the notifier; done in the wrong order the
+        // later subscription would be undone by the earlier unsubscription
+        PulseGeneratorPtr pulseGenerator = ( GUCEF_NEW CPulseGenerator() )->CreateSharedPtr();
+        CPulseCounter first;
+        CPulseCounter late;
+        first.m_pulseGenerator = pulseGenerator.GetPointerAlways();
+        first.m_toSubscribeOnFirstPulse = &late;
+        first.SubscribeTo( pulseGenerator.GetPointerAlways(), CPulseGenerator::PulseEvent );
+
+        pulseGenerator->ForceDirectPulse();
+        pulseGenerator->ForceDirectPulse();
+        pulseGenerator->ForceDirectPulse();
+        ASSERT_TRUE( late.m_pulses >= 2 );
+
+        // and an observer is notified once per event, also when the subscriptions changed during the notification
+        ASSERT_TRUE( 3 == first.m_pulses );
+    }
+    catch ( ... )
+    {
+        ERRORHERE;
+    }
+    GUCEF_TESTFW_TESTCASE_END
+
+    GUCEF_TESTFW_TESTCASE( "Observers deleted by an observer while the event is delivered are passed by, the others still get it once" )
+    try
+    {
+        // for an event of its own and for observers of all events: the first one to get the event deletes every
+        // other observer at an even place
+        const CEvent ownEvent( "GUCEF::CORE::TestNotifierObserver::OwnEvent" );
+        for ( int allEvents=0; allEvents<2; ++allEvents )
+        {
+            CMyNotifier notifier;
+            GUCEF::vector< CDeletingObserver* > observers;
+            for ( int i=0; i<64; ++i )
+            {
+                CDeletingObserver* observer = new CDeletingObserver();
+                if ( 1 == allEvents )
+                    notifier.Subscribe( observer );
+                else
+                    observer->SubscribeTo( &notifier, ownEvent );
+                observers.push_back( observer );
+            }
+            GUCEF::vector< CDeletingObserver* > doomed;
+            for ( size_t i=0; i<observers.size(); i+=2 )
+                doomed.push_back( observers[ i ] );
+            for ( size_t i=0; i<observers.size(); ++i )
+                observers[ i ]->m_others = &doomed;
+
+            notifier.DoNotifyObservers( ownEvent );
+
+            // the one that did the deleting, and those that are left, got it once
+            UInt32 survivors = 0;
+            for ( size_t i=1; i<observers.size(); i+=2 )
+            {
+                ASSERT_TRUE( 1 == observers[ i ]->m_count );
+                ++survivors;
+            }
+            ASSERT_TRUE( 32 == survivors );
+            for ( size_t i=0; i<doomed.size(); ++i )
+                if ( GUCEF_NULL != doomed[ i ] )
+                    ASSERT_TRUE( 1 == doomed[ i ]->m_count );
+
+            // and the next event goes to those that are left
+            notifier.DoNotifyObservers( ownEvent );
+            for ( size_t i=1; i<observers.size(); i+=2 )
+                ASSERT_TRUE( 2 == observers[ i ]->m_count );
+
+            for ( size_t i=1; i<observers.size(); i+=2 )
+                delete observers[ i ];
+            for ( size_t i=0; i<doomed.size(); ++i )
+                delete doomed[ i ];
+        }
+    }
+    catch ( ... )
+    {
+        ERRORHERE;
+    }
+    GUCEF_TESTFW_TESTCASE_END
+
+    GUCEF_TESTFW_TESTCASE( "An observer can unsubscribe itself and then delete another observer while it gets an event" )
+    try
+    {
+        // like an application that stops: it lets go of its subscriptions and takes down its window, which observes
+        // the same notifier
+        CMyNotifier notifier;
+        CTeardownObserver first;
+        CTeardownObserver* window = new CTeardownObserver();
+        CTeardownObserver last;
+        first.SubscribeTo( &notifier, TeardownEvent() );
+        window->SubscribeTo( &notifier, TeardownEvent() );
+        last.SubscribeTo( &notifier, TeardownEvent() );
+        first.m_toDelete = window;
+        last.m_toDelete = GUCEF_NULL;
+
+        notifier.DoNotifyObservers( TeardownEvent() );
+        ASSERT_TRUE( 1 == first.m_count );
+        ASSERT_TRUE( 1 == last.m_count );
+
+        // the one that unsubscribed gets nothing more
+        notifier.DoNotifyObservers( TeardownEvent() );
+        ASSERT_TRUE( 1 == first.m_count );
+        ASSERT_TRUE( 2 == last.m_count );
+    }
+    catch ( ... )
+    {
+        ERRORHERE;
+    }
+    GUCEF_TESTFW_TESTCASE_END
+
+    GUCEF_TESTFW_TESTCASE( "An observer can delete itself while it gets an event" )
+    try
+    {
+        CMyNotifier notifier;
+        GUCEF::vector< CTeardownObserver* > observers;
+        bool deleted[ 8 ] = { false, false, false, false, false, false, false, false };
+        for ( int i=0; i<8; ++i )
+        {
+            CTeardownObserver* observer = new CTeardownObserver();
+            observer->m_deleteSelf = ( 0 == i % 2 );
+            observer->m_deleted = &deleted[ i ];
+            observer->SubscribeTo( &notifier, TeardownEvent() );
+            observers.push_back( observer );
+        }
+        notifier.DoNotifyObservers( TeardownEvent() );
+        for ( int i=0; i<8; ++i )
+        {
+            ASSERT_TRUE( ( 0 == i % 2 ) == deleted[ i ] );
+            if ( !deleted[ i ] )
+                ASSERT_TRUE( 1 == observers[ i ]->m_count );
+        }
+        notifier.DoNotifyObservers( TeardownEvent() );
+        for ( int i=1; i<8; i+=2 )
+        {
+            ASSERT_TRUE( 2 == observers[ i ]->m_count );
+            delete observers[ i ];
+        }
+    }
+    catch ( ... )
+    {
+        ERRORHERE;
+    }
+    GUCEF_TESTFW_TESTCASE_END
+
+    GUCEF_TESTFW_TESTCASE( "Events sent while the notifier is busy arrive in the order they were sent" )
+    try
+    {
+        CMyNotifier notifier;
+        const CEvent startEvent( "GUCEF::CORE::TestNotifierObserver::StartEvent" );
+        const CEvent firstEvent( "GUCEF::CORE::TestNotifierObserver::FirstEvent" );
+        const CEvent secondEvent( "GUCEF::CORE::TestNotifierObserver::SecondEvent" );
+        CEventOrderRecorder recorder;
+        recorder.m_notifier = &notifier;
+        recorder.m_onStart = startEvent;
+        recorder.m_send[ 0 ] = firstEvent;
+        recorder.m_send[ 1 ] = secondEvent;
+        notifier.Subscribe( &recorder );
+
+        notifier.DoNotifyObservers( startEvent );
+        ASSERT_TRUE( 3 == recorder.m_received.size() );
+        ASSERT_TRUE( 3 == recorder.m_received.size() && startEvent == recorder.m_received[ 0 ] && firstEvent == recorder.m_received[ 1 ] && secondEvent == recorder.m_received[ 2 ] );
+    }
+    catch ( ... )
+    {
+        ERRORHERE;
+    }
+    GUCEF_TESTFW_TESTCASE_END
+
+    GUCEF_TESTFW_TESTCASE( "An observer subscribed to the pulse generator when an aggregate trigger fires gets the pulses after it" )
+    try
+    {
+        PulseGeneratorPtr pulseGenerator = ( GUCEF_NEW CPulseGenerator() )->CreateSharedPtr();
+        CMyNotifier ready;
+        CEventAggregateTrigger trigger( pulseGenerator );
+        const CEvent readyEvent( "GUCEF::CORE::TestNotifierObserver::ReadyEvent" );
+        trigger.SubscribeAndAddEventToTriggerCriterea( &ready, readyEvent );
+        CPulseCounter late;
+        CTriggeredSubscriber starter;
+        starter.m_pulseGenerator = pulseGenerator.GetPointerAlways();
+        starter.m_toSubscribe = &late;
+        starter.SubscribeTo( &trigger, CEventAggregateTrigger::AggregateTriggerEvent );
+
+        ready.DoNotifyObservers( readyEvent );
+        for ( UInt32 i=0; i<3; ++i )
+            pulseGenerator->ForceDirectPulse();
+        ASSERT_TRUE( 1 == starter.m_triggers );
+        ASSERT_TRUE( late.m_pulses >= 2 );
     }
     catch ( ... )
     {

@@ -661,7 +661,9 @@ CNotifierImplementor::UnsubscribeFromAllEvents( CObserver* observer            ,
             return;
         }
 
-        if ( !busyProcessingMailbox )
+        // When an observer is destroyed while we deliver an event the mail waits for the end of that delivery:
+        // processing it here would change the administration under the feet of the delivery
+        if ( !busyProcessingMailbox && !wasBusy )
             ProcessMailbox();
     }
     else
@@ -866,12 +868,19 @@ CNotifierImplementor::NotifyObservers( CNotifier& sender          ,
         TNotificationList::iterator l = m_eventobservers.find( eventid );
         if ( l != m_eventobservers.end() )
         {
-            TEventNotificationMap& observers = (*l).second;        
-            TEventNotificationMap::iterator n = observers.begin();
-            while ( n != observers.end() )
+            TEventNotificationMap* observers = &(*l).second;
+            TEventNotificationMap::iterator n = observers->begin();
+            while ( n != observers->end() )
             {
                 oPtr = (*n).first;
                 bool notified = false;
+
+                // After a change of the subscriptions we start over, observers that already got the event are passed by
+                if ( notifiedObservers.find( oPtr ) != notifiedObservers.end() )
+                {
+                    ++n;
+                    continue;
+                }
 
                 // Check if we should perform notification using the generic
                 // handler or a user specified callback.
@@ -901,6 +910,10 @@ CNotifierImplementor::NotifyObservers( CNotifier& sender          ,
                                 Destroy( this );
                                 return false;
                             }
+
+                            // The observer may be gone, destroyed by its callback: then so are its callbacks
+                            if ( !IsSubscribedToEvent( oPtr, eventid ) )
+                                break;
                         }
                         ++m;
                     }
@@ -942,10 +955,29 @@ CNotifierImplementor::NotifyObservers( CNotifier& sender          ,
                             // the administration has been altered, we now have no choice
                             // but to start from the beginning. Its some extra work but 'notifiedObservers'
                             // will make sure we do not notifiy redundantly
-                            n = observers.begin();
+                            // The observers of the event may be gone altogether
+                            l = m_eventobservers.find( eventid );
+                            if ( l == m_eventobservers.end() )
+                                break;
+                            observers = &(*l).second;
+                            n = observers->begin();
                             continue;
                         }
                     }
+                }
+
+                // The observer may have been removed while it was notified (its destruction cannot wait for the mailbox)
+                // which makes its place in the administration invalid: carry on from its place if it is still there,
+                // else from the beginning
+                l = m_eventobservers.find( eventid );
+                if ( l == m_eventobservers.end() )
+                    break;
+                observers = &(*l).second;
+                n = observers->find( oPtr );
+                if ( n == observers->end() )
+                {
+                    n = observers->begin();
+                    continue;
                 }
                 ++n;
             }
@@ -997,6 +1029,15 @@ CNotifierImplementor::NotifyObservers( CNotifier& sender          ,
                             i = m_observers.begin();
                             continue;
                         }
+                    }
+
+                    // The observer may have been removed while it was notified: carry on from its place if it is
+                    // still there, else from the beginning
+                    i = m_observers.find( oPtr );
+                    if ( i == m_observers.end() )
+                    {
+                        i = m_observers.begin();
+                        continue;
                     }
                 }
             }
@@ -1050,10 +1091,12 @@ CNotifierImplementor::ProcessCmdMailbox( void )
 {GUCEF_TRACE;
 
     // Now we check if any command requests where received while we where busy
+    // They are carried out in the order in which they were given: an unsubscribe followed by a subscribe
+    // must leave the subscription in place
     while ( !m_cmdMailStack.empty() )
     {
-        TCmdMailElement cmdMailElement( m_cmdMailStack[ m_cmdMailStack.size()-1 ] );
-        m_cmdMailStack.pop_back();
+        TCmdMailElement cmdMailElement( m_cmdMailStack.front() );
+        m_cmdMailStack.erase( m_cmdMailStack.begin() );
 
         if ( cmdMailElement.observerIsDestroyed )
         {
@@ -1119,16 +1162,15 @@ CNotifierImplementor::ProcessEventMailbox( void )
 {GUCEF_TRACE;
 
     // Now we check if any notifications requests where received while we where busy
-    if ( !m_eventMailStack.empty() )
+    // They are delivered in the order in which they were sent, all of them
+    while ( !m_eventMailStack.empty() )
     {
-        TEventMailElement entry( m_eventMailStack[ m_eventMailStack.size()-1 ] );
-        m_eventMailStack.pop_back();
+        TEventMailElement entry( m_eventMailStack.front() );
+        m_eventMailStack.erase( m_eventMailStack.begin() );
 
         if ( !entry.specificObserverIsDestroyed )
         {
             // Dispatch the message in our mailbox
-            // If the mailbox has any more items remaining we will end up back here
-            // for the next mail item
             if ( GUCEF_NULL == entry.specificObserver )
             {
                 NotifyObservers( *entry.sender, entry.eventID, entry.eventData, true );
@@ -1140,6 +1182,18 @@ CNotifierImplementor::ProcessEventMailbox( void )
         }
         GUCEF_DELETE entry.eventData;
     }
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CNotifierImplementor::IsSubscribedToEvent( CObserver* observer, const CEvent& eventid ) const
+{GUCEF_TRACE;
+
+    TNotificationList::const_iterator l = m_eventobservers.find( eventid );
+    if ( l == m_eventobservers.end() )
+        return false;
+    return (*l).second.find( observer ) != (*l).second.end();
 }
 
 /*-------------------------------------------------------------------------*/

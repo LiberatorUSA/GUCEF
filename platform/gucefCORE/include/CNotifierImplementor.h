@@ -291,6 +291,9 @@ class GUCEF_HIDDEN CNotifierImplementor : public MT::CILockable
     UInt32 GetSubscriptionCountForObserver( CObserver* observer ) const;
     
     void ProcessMailbox( void );
+
+    /** Whether the observer is subscribed to the event specifically */
+    bool IsSubscribedToEvent( CObserver* observer, const CEvent& eventid ) const;
     
     void ProcessCmdMailbox( void );
     
