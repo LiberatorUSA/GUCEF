@@ -539,6 +539,7 @@ PerformDStoreStreamingTests( void )
                 people.SetName( "people" );
 
                 CORE::CDynamicBuffer output;
+                output.SetGrowthStrategy( CORE::CDynamicBuffer::GROWTHSTRATEGY_GEOMETRIC );     // written in many small pieces
                 {
                     CORE::CDynamicBufferAccess access( &output, false );
                     CORE::CDocumentStreamWriterPtr writer = codec->CreateDocumentWriter( access );

@@ -161,6 +161,10 @@
 
 #ifndef GUCEF_CORE_TESTAPP_TESTTHREADPOOLCANCELLATION_H
 #include "TestThreadPoolCancellation.h"
+#include "TestFutureResultSource.h"
+#include "TestExternalThreads.h"
+#include "TestDedicatedTasks.h"
+#include "TestDynamicBuffer.h"
 #include "TestAsyncUriResourceRetriever.h"
 #include "TestDesktopTerminalConsoleLogger.h"
 #define GUCEF_CORE_TESTAPP_TESTTHREADPOOLCANCELLATION_H
@@ -221,6 +225,16 @@
 #define GUCEF_CORE_TESTAPP_TESTRATELIMITING_H
 #endif /* GUCEF_CORE_TESTAPP_TESTRATELIMITING_H ? */
 
+#ifndef GUCEF_CORE_TESTAPP_TESTFILEACCESS_H
+#include "TestFileAccess.h"
+#define GUCEF_CORE_TESTAPP_TESTFILEACCESS_H
+#endif /* GUCEF_CORE_TESTAPP_TESTFILEACCESS_H ? */
+
+#ifndef GUCEF_CORE_TESTAPP_TESTFRAMEWORKSKIP_H
+#include "TestFrameworkSkip.h"
+#define GUCEF_CORE_TESTAPP_TESTFRAMEWORKSKIP_H
+#endif /* GUCEF_CORE_TESTAPP_TESTFRAMEWORKSKIP_H ? */
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      UTILITIES                                                          //
@@ -276,6 +290,7 @@ GUCEF_OSMAIN_BEGIN
         PerformIniParserTests();        
         PerformSharedPtrTests();
         PerformTokenizerTests();
+        PerformDynamicBufferTests();
         PerformDynamicBufferSwapTests();
         PerformDynamicBufferViewTests();
         PerformDynamicBufferStringStreamTests();
@@ -287,6 +302,9 @@ GUCEF_OSMAIN_BEGIN
         PerformFreeListTests();
         PerformASyncTests();
         PerformThreadPoolCancellationTests();
+        PerformFutureResultSourceTests();
+        PerformExternalThreadTests();
+        PerformDedicatedTaskTests();
         PerformAsyncUriResourceRetrieverTests();
         PerformDesktopTerminalConsoleLoggerTests();
         PerformProcessTests();
@@ -295,6 +313,8 @@ GUCEF_OSMAIN_BEGIN
         PerformCodecPluginTests();
         PerformRandomTests();
         PerformRateLimitingTests();
+        PerformFileAccessTests();
+        PerformTestFrameworkSkipTests();
 
         GUCEF::CORE::CString xmlPath = GUCEF::CORE::RelativePath( "$CURWORKDIR$" );
         GUCEF::CORE::AppendToPath( xmlPath, "gucefCORE_TestApp_Results.xml" );

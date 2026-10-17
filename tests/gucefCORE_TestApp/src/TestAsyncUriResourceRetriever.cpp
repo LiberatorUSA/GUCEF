@@ -363,6 +363,7 @@ PerformAsyncUriResourceRetrieverTests( void )
         {
             // 1MiB file with a known pattern
             CORE::CDynamicBuffer content;
+            content.SetGrowthStrategy( CORE::CDynamicBuffer::GROWTHSTRATEGY_GEOMETRIC );    // filled byte by byte
             for ( UInt32 i=0; i<1024*1024; ++i )
             {
                 UInt8 value = (UInt8) ( i % 251 );

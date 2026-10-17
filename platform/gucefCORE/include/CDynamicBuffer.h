@@ -78,6 +78,21 @@ class GUCEF_CORE_PUBLIC_CPP CDynamicBuffer : public CICloneable
 
     typedef GUCEF::vector< CDynamicBuffer >        TDynamicBufferVector;
 
+    /**
+     *  How the buffer grows when an operation needs more room and auto enlarge is enabled
+     *  Explicit sizing (SetBufferSize(), SetDataSize()) is always exact
+     */
+    enum EGrowthStrategy
+    {
+        GROWTHSTRATEGY_EXACT     = 0,   /**< grow to exactly what is needed, the default */
+        GROWTHSTRATEGY_GEOMETRIC = 1,   /**< grow by a percentage of the current buffer size, at least to what is needed: amortized constant time appends */
+        GROWTHSTRATEGY_BLOCKS    = 2    /**< grow to what is needed rounded up to a multiple of a block size */
+    };
+    typedef enum EGrowthStrategy TGrowthStrategy;
+
+    static const UInt32 DefaultGeometricGrowthPercentage = 100;
+    static const UInt32 DefaultGrowthBlockSize = 4096;
+
     CDynamicBuffer( CIOAccess& ioAccess );
 
     CDynamicBuffer( void ) GUCEF_NOEXCEPT;
@@ -220,6 +235,17 @@ class GUCEF_CORE_PUBLIC_CPP CDynamicBuffer : public CICloneable
     void SetAutoEnlarge( bool autoenlarge );
 
     bool GetAutoEnlarge( void ) const;
+
+    /**
+     *  Sets how the buffer grows when auto enlarge is enabled, see EGrowthStrategy
+     *  The parameter is the growth percentage for GROWTHSTRATEGY_GEOMETRIC and the block size in bytes for
+     *  GROWTHSTRATEGY_BLOCKS, 0 selects the default for the strategy. It is not used by GROWTHSTRATEGY_EXACT
+     */
+    void SetGrowthStrategy( TGrowthStrategy strategy, UInt32 strategyParam = 0 );
+
+    TGrowthStrategy GetGrowthStrategy( void ) const;
+
+    UInt32 GetGrowthStrategyParam( void ) const;
 
     /**
      *  Special operation that allows you to link to data outside of the dynamic buffer
@@ -541,10 +567,18 @@ class GUCEF_CORE_PUBLIC_CPP CDynamicBuffer : public CICloneable
         */
     void SecureLinkBeforeMutation( void );
 
+    /**
+     *  Makes sure the buffer holds at least requiredSize bytes for an operation that grows the buffer implicitly
+     *  Honours the auto enlarge setting and the growth strategy
+     */
+    bool EnsureBufferSizeForGrowth( UInt32 requiredSize );
+
     private:
 
     bool m_linked;     /**< is the buffer only linked to data owned by someone else ? */
     bool _autoenlarge; /**< automatically enlarge buffer ? */
+    TGrowthStrategy m_growthStrategy;   /**< how to enlarge the buffer */
+    UInt32 m_growthStrategyParam;       /**< percentage or block size depending on the strategy, 0 = default */
     Int8* _buffer;     /**< our byte buffer */
     UInt32 _bsize;     /**< current size of the buffer */
     UInt32 m_dataSize; /**< logical buffer size, extend of the buffer actually filled with data */
