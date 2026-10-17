@@ -49,8 +49,6 @@ filter "ALL"
   include( "dependencies/hiredis" )
   include( "dependencies/json-builder" )
   include( "dependencies/json-parser" )
-  include( "dependencies/libRocket/Source/Controls" )
-  include( "dependencies/libRocket/Source/Core" )
   include( "dependencies/libarchive" )
   include( "dependencies/libparsifal" )
   include( "dependencies/librdkafka" )
@@ -88,11 +86,10 @@ filter "ALL"
   include( "plugins/GUI/guidriverMyGUI" )
   include( "plugins/GUI/guidriverMyGUIOgre" )
   include( "plugins/GUI/guidriverMyGUIOpenGL" )
+  include( "plugins/GUI/guidriverNull" )
   include( "plugins/GUI/guidriverOgre" )
   include( "plugins/GUI/guidriverRmlUI" )
   include( "plugins/GUI/guidriverRmlUIOpenGL" )
-  include( "plugins/GUI/guidriverRocket" )
-  include( "plugins/GUI/guidriverRocketOpenGL" )
   include( "plugins/IMAGE/imgpluginFLIC" )
   include( "plugins/IMAGE/imgpluginITV" )
   include( "plugins/PROJECTGEN/ProjectGenDependsFilter" )
@@ -142,10 +139,14 @@ filter "EMSCRIPTEN"
 filter "EMSCRIPTEN32"
   include( "dependencies/zlib" )
   include( "plugins/AUDIO/audiodriverWEBAUDIO" )
+  include( "plugins/GUI/guidriverEmscripten" )
+  include( "plugins/INPUT/inputdriverEMSCRIPTEN" )
 
 filter "EMSCRIPTEN64"
   include( "dependencies/zlib" )
   include( "plugins/AUDIO/audiodriverWEBAUDIO" )
+  include( "plugins/GUI/guidriverEmscripten" )
+  include( "plugins/INPUT/inputdriverEMSCRIPTEN" )
 
 filter "IOS"
 
@@ -173,6 +174,7 @@ filter "LINUX32"
   include( "dependencies/tiff/libtiff" )
   include( "dependencies/zlib" )
   include( "plugins/AUDIO/audiodriverALSA" )
+  include( "plugins/GUI/guidriverEGL" )
   include( "plugins/GUI/guidriverXWinGL" )
   include( "plugins/IMAGE/imgpluginDEVIL" )
   include( "plugins/IMAGE/imgpluginFreeImage" )
@@ -197,6 +199,7 @@ filter "LINUX64"
   include( "dependencies/tiff/libtiff" )
   include( "dependencies/zlib" )
   include( "plugins/AUDIO/audiodriverALSA" )
+  include( "plugins/GUI/guidriverEGL" )
   include( "plugins/GUI/guidriverXWinGL" )
   include( "plugins/IMAGE/imgpluginDEVIL" )
   include( "plugins/IMAGE/imgpluginFreeImage" )

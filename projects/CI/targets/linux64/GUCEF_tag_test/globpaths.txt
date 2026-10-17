@@ -53,10 +53,13 @@ platform/gucefINPUT/*
 platform/gucefMT/include/*
 platform/gucefPUBSUB/include/*
 platform/gucefVFS/include/*
+platform/gucefVIDEO/include/*
 platform/gucefWEB/include/*
 plugins/AUDIO/audiodriverALSA/*
 plugins/GUI/guidriverCEGUI/*
+plugins/GUI/guidriverEGL/*
 plugins/GUI/guidriverMyGUI/*
+plugins/GUI/guidriverNull/*
 plugins/GUI/guidriverOgre/*
 plugins/GUI/guidriverRmlUI/*
 plugins/GUI/guidriverXWinGL/*

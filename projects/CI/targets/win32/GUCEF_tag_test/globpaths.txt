@@ -42,6 +42,7 @@ dependencies/openexr/*
 dependencies/pcre/*
 dependencies/tiff/libtiff/*
 dependencies/zlib/*
+platform/gucefAUDIO/include/*
 platform/gucefCOMCORE/include/*
 platform/gucefCOM/include/*
 platform/gucefCORE/include/*
@@ -53,9 +54,11 @@ platform/gucefMT/include/*
 platform/gucefMT/src//*
 platform/gucefPUBSUB/include/*
 platform/gucefVFS/include/*
+platform/gucefVIDEO/include/*
 platform/gucefWEB/include/*
 plugins/GUI/guidriverCEGUI/*
 plugins/GUI/guidriverMyGUI/*
+plugins/GUI/guidriverNull/*
 plugins/GUI/guidriverOgre/*
 plugins/GUI/guidriverRmlUI/*
 plugins/GUI/guidriverWin32/*

@@ -31,7 +31,9 @@ platform/gucefIMAGE/include/*
 platform/gucefINPUT/include/*
 platform/gucefMT/include/*
 platform/gucefVFS/include/*
+platform/gucefVIDEO/include/*
 plugins/AUDIO/audiodriverALSA/*
+plugins/GUI/guidriverEGL/*
 plugins/GUI/guidriverXWinGL/*
 plugins/IMAGE/imgpluginDEVIL/*
 plugins/IMAGE/imgpluginFreeImage/*

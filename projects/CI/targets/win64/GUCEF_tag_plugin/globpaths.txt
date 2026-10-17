@@ -30,6 +30,7 @@ platform/gucefINPUT/include/*
 platform/gucefMT/include/*
 platform/gucefPUBSUB/include/*
 platform/gucefVFS/include/*
+platform/gucefVIDEO/include/*
 platform/gucefWEB/include/*
 plugins/AUDIO/audiodriverWASAPI/*
 plugins/GUI/guidriverWin32/*
