@@ -25,6 +25,8 @@
 
 #include <stdio.h>   /* snprintf */
 
+#include <typeinfo>
+
 #ifndef GUCEF_CORE_CSTRING_H
 #include "gucefCORE_CString.h"
 #define GUCEF_CORE_CSTRING_H
@@ -1207,6 +1209,39 @@ PerformUtf8StringFromByteRangeRegressionTests( void )
 
 /*-------------------------------------------------------------------------*/
 
+/**
+ *  An empty string is empty whatever storage it has: the writable C string of an empty string is "", not NULL,
+ *  and empty strings with and without storage are equal
+ */
+template < class TString >
+static void
+PerformTypedEmptyStringTests( void )
+{
+    GUCEF_TESTFW_TESTCASE( ( CORE::CString( "[" ) + typeid( TString ).name() + "] An empty string gives a writable empty C string and equals any other empty string" ).C_String() )
+    try
+    {
+        TString empty;
+        ASSERT_TRUE( GUCEF_NULL != empty.C_String() );                                   // used to be NULL for the non-const accessor
+        ASSERT_TRUE( 0 == empty.C_String()[ 0 ] );
+        ASSERT_TRUE( empty.IsNULLOrEmpty() && 0 == empty.Length() );
+
+        const TString neverTouched;
+        const TString fromLiteral( "" );
+        ASSERT_TRUE( empty == neverTouched && neverTouched == empty );                   // storage or not, both are empty
+        ASSERT_TRUE( empty == fromLiteral && fromLiteral == empty );
+        ASSERT_TRUE( neverTouched == fromLiteral && fromLiteral == neverTouched );
+        ASSERT_FALSE( empty == TString( "a" ) || TString( "a" ) == empty );
+
+        // and it stays usable as a normal string
+        empty += "xy";
+        ASSERT_TRUE( empty == TString( "xy" ) && 2 == empty.Length() );
+    }
+    catch( ... ) { ERRORHERE; }
+    GUCEF_TESTFW_TESTCASE_END
+}
+
+/*-------------------------------------------------------------------------*/
+
 void
 PerformStringTests( void )
 {
@@ -1231,6 +1266,10 @@ PerformStringTests( void )
     PerformUtf32StringViewTests();
     PerformUtf8ReverseIterationRegressionTests();
     PerformUtf8StringFromByteRangeRegressionTests();
+    PerformTypedEmptyStringTests< CORE::CAsciiString >();
+    PerformTypedEmptyStringTests< CORE::CUtf8String  >();
+    PerformTypedEmptyStringTests< CORE::CUtf16String >();
+    PerformTypedEmptyStringTests< CORE::CUtf32String >();
 
     CORE::CLogStreamScope::FlushLogs();
     GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "ALL CString TESTS COMPLETED" );

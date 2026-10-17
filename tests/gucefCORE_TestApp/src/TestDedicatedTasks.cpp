@@ -59,6 +59,11 @@
 #define GUCEF_TEST_FRAMEWORK_H
 #endif /* GUCEF_TEST_FRAMEWORK_H ? */
 
+#ifndef GUCEF_CORE_COBSERVER_H
+#include "CObserver.h"
+#define GUCEF_CORE_COBSERVER_H
+#endif /* GUCEF_CORE_COBSERVER_H ? */
+
 #include "TestDedicatedTasks.h"
 
 using namespace GUCEF;
@@ -159,6 +164,30 @@ WaitUntilCycled( const MT::CTAtomic< UInt32 >& cycles, UInt32 timeoutInMs )
     return 0 != cycles.Load();
 }
 
+/** Counts the task events a pool passes on to its observers */
+class CPoolTaskObserver : public CORE::CObserver
+{
+    public:
+
+    CPoolTaskObserver( void ) : CORE::CObserver(), started( 0 ), killed( 0 ), finished( 0 ) {}
+
+    UInt32 started;
+    UInt32 killed;
+    UInt32 finished;
+
+    protected:
+
+    virtual void OnNotify( CORE::CNotifier* notifier, const CORE::CEvent& eventid, CORE::CICloneable* eventdata ) GUCEF_VIRTUAL_OVERRIDE
+    {
+        if ( CORE::CThreadPool::TaskStartedEvent == eventid )
+            ++started;
+        else if ( CORE::CThreadPool::TaskKilledEvent == eventid )
+            ++killed;
+        else if ( CORE::CThreadPool::TaskFinishedEvent == eventid )
+            ++finished;
+    }
+};
+
 }
 
 /*-------------------------------------------------------------------------//
@@ -222,6 +251,38 @@ PerformDedicatedTaskTests( void )
         }
         ASSERT_TRUE( before == pool->GetActiveNrOfDedicatedThreads() );
         ASSERT_TRUE( before == pool->GetActiveNrOfThreads() );
+    }
+    catch( ... )
+    {
+        ERRORHERE;
+    }
+    GUCEF_TESTFW_TESTCASE_END
+
+    // The pool passes the events of its task consumers on to its own observers. It never heard them (subscriptions to
+    // one event without a callback were not recorded by the notifier) and when it did, a started task was passed on as killed
+    GUCEF_TESTFW_TESTCASE( "DedicatedTasks: Observers of a pool hear that a task started and finished, not that it was killed" )
+    try
+    {
+        CORE::ThreadPoolPtr pool = taskManager.GetOrCreateThreadPool( "DedicatedTasksEvents" );
+        CPoolTaskObserver observer;
+        observer.SubscribeTo( pool.GetPointerAlways() );
+
+        TCountingConsumerPtr consumer( GUCEF_NEW CCountingConsumer( 2 ) );
+        CORE::CFutureResult started = pool->StartTaskWithConsumer( consumer );
+        ASSERT_FALSE( started.HasNoFuture() );
+        ASSERT_TRUE( WaitUntil( consumer->ended, 5000 ) );
+
+        // the pool hears the events of its consumers on the pulses of the main thread
+        UInt32 waited = 0;
+        while ( 0 == observer.finished && waited < 3000 )
+        {
+            PumpFor( 50 );
+            waited += 50;
+        }
+        ASSERT_TRUE( 1 == observer.started );
+        ASSERT_TRUE( 1 == observer.finished );
+        ASSERT_TRUE( 0 == observer.killed );
+        observer.UnsubscribeAllFromObserver();
     }
     catch( ... )
     {

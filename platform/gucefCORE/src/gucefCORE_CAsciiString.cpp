@@ -384,13 +384,10 @@ bool
 CAsciiString::operator==( const CAsciiString &other ) const
 {GUCEF_TRACE;
 
-    if ( GUCEF_NULL == m_string && GUCEF_NULL == other.m_string )
-    {
-        return true;
-    }
+    // empty is empty, with or without storage
     if ( GUCEF_NULL == m_string || GUCEF_NULL == other.m_string )
     {
-        return false;
+        return m_length == other.m_length && 0 == m_length;
     }
     return strcmp( m_string       ,
                    other.m_string ) == 0;
@@ -737,6 +734,13 @@ CAsciiString::C_String( void )
 {GUCEF_TRACE;
 
     PromoteToOwned();
+    if ( GUCEF_NULL == m_string )
+    {
+        // an empty string without storage: give it a terminator, so the writable C string is "" as the const one is
+        m_string = GUCEF_NEW char[ 1 ];
+        m_string[ 0 ] = '\0';
+        m_length = 0;
+    }
     return m_string;
 }
 

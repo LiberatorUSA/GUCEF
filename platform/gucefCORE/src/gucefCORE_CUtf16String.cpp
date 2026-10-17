@@ -1079,6 +1079,14 @@ UInt16*
 CUtf16String::C_String( void )
 {GUCEF_TRACE;
     PromoteToOwned();
+    if ( GUCEF_NULL == m_string )
+    {
+        // an empty string without storage: give it a terminator, so the writable C string is empty as the const one is
+        m_string = GUCEF_NEW UInt16[ 1 ];
+        m_string[ 0 ] = 0;
+        m_byteSize = sizeof( UInt16 );
+        m_length = 0u;
+    }
     return m_string;
 }
 

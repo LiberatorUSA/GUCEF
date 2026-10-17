@@ -615,17 +615,26 @@ bool
 CDynamicBuffer::EnsureBufferSizeForGrowth( UInt32 requiredSize )
 {GUCEF_TRACE;
 
+    return EnsureBufferSizeForGrowth( requiredSize, m_growthStrategy, m_growthStrategyParam );
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CDynamicBuffer::EnsureBufferSizeForGrowth( UInt32 requiredSize, TGrowthStrategy strategy, UInt32 strategyParam )
+{GUCEF_TRACE;
+
     if ( requiredSize <= _bsize )
         return true;
     if ( !_autoenlarge )
         return false;
 
     UInt64 newSize = requiredSize;
-    switch ( m_growthStrategy )
+    switch ( strategy )
     {
         case GROWTHSTRATEGY_GEOMETRIC:
         {
-            const UInt64 percentage = 0 != m_growthStrategyParam ? m_growthStrategyParam : DefaultGeometricGrowthPercentage;
+            const UInt64 percentage = 0 != strategyParam ? strategyParam : DefaultGeometricGrowthPercentage;
             const UInt64 grown = (UInt64) _bsize + ( ( (UInt64) _bsize * percentage ) / 100 );
             if ( grown > newSize )
                 newSize = grown;
@@ -633,7 +642,7 @@ CDynamicBuffer::EnsureBufferSizeForGrowth( UInt32 requiredSize )
         }
         case GROWTHSTRATEGY_BLOCKS:
         {
-            const UInt64 blockSize = 0 != m_growthStrategyParam ? m_growthStrategyParam : DefaultGrowthBlockSize;
+            const UInt64 blockSize = 0 != strategyParam ? strategyParam : DefaultGrowthBlockSize;
             newSize = ( ( newSize + blockSize - 1 ) / blockSize ) * blockSize;
             break;
         }

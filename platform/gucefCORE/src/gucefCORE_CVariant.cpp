@@ -2473,8 +2473,7 @@ CVariant::Set( const void* data, UInt32 dataSize, UInt8 varType, bool linkOnlyFo
         {
             if ( GUCEF_NULL == data || dataSize < sizeof(Int8) )
                 return false;
-            const Int8* typedData = reinterpret_cast< const Int8* >( data );
-            m_variantData.union_data.int8_data = (*typedData);
+            memcpy( &m_variantData.union_data.int8_data, data, sizeof( Int8 ) );     // the data need not be aligned for the type
             m_variantData.containedType = GUCEF_DATATYPE_INT8;
             return true;
         }
@@ -2482,8 +2481,7 @@ CVariant::Set( const void* data, UInt32 dataSize, UInt8 varType, bool linkOnlyFo
         {
             if ( GUCEF_NULL == data || dataSize < sizeof(UInt8) )
                 return false;
-            const UInt8* typedData = reinterpret_cast< const UInt8* >( data );
-            m_variantData.union_data.uint8_data = (*typedData);
+            memcpy( &m_variantData.union_data.uint8_data, data, sizeof( UInt8 ) );     // the data need not be aligned for the type
             m_variantData.containedType = GUCEF_DATATYPE_UINT8;
             return true;
         }
@@ -2492,8 +2490,7 @@ CVariant::Set( const void* data, UInt32 dataSize, UInt8 varType, bool linkOnlyFo
         {
             if ( GUCEF_NULL == data || dataSize < sizeof(Int16) )
                 return false;
-            const Int16* typedData = reinterpret_cast< const Int16* >( data );
-            m_variantData.union_data.int16_data = (*typedData);
+            memcpy( &m_variantData.union_data.int16_data, data, sizeof( Int16 ) );     // the data need not be aligned for the type
             m_variantData.containedType = GUCEF_DATATYPE_INT16;
             return true;
         }
@@ -2502,8 +2499,7 @@ CVariant::Set( const void* data, UInt32 dataSize, UInt8 varType, bool linkOnlyFo
         {
             if ( GUCEF_NULL == data || dataSize < sizeof(UInt16) )
                 return false;
-            const UInt16* typedData = reinterpret_cast< const UInt16* >( data );
-            m_variantData.union_data.uint16_data = (*typedData);
+            memcpy( &m_variantData.union_data.uint16_data, data, sizeof( UInt16 ) );     // the data need not be aligned for the type
             m_variantData.containedType = GUCEF_DATATYPE_UINT16;
             return true;
         }
@@ -2512,8 +2508,7 @@ CVariant::Set( const void* data, UInt32 dataSize, UInt8 varType, bool linkOnlyFo
         {
             if ( GUCEF_NULL == data || dataSize < sizeof(Int32) )
                 return false;
-            const Int32* typedData = reinterpret_cast< const Int32* >( data );
-            m_variantData.union_data.int32_data = (*typedData);
+            memcpy( &m_variantData.union_data.int32_data, data, sizeof( Int32 ) );     // the data need not be aligned for the type
             m_variantData.containedType = GUCEF_DATATYPE_INT32;
             return true;
         }
@@ -2522,8 +2517,7 @@ CVariant::Set( const void* data, UInt32 dataSize, UInt8 varType, bool linkOnlyFo
         {
             if ( GUCEF_NULL == data || dataSize < sizeof(UInt32) )
                 return false;
-            const UInt32* typedData = reinterpret_cast< const UInt32* >( data );
-            m_variantData.union_data.uint32_data = (*typedData);
+            memcpy( &m_variantData.union_data.uint32_data, data, sizeof( UInt32 ) );     // the data need not be aligned for the type
             m_variantData.containedType = GUCEF_DATATYPE_UINT32;
             return true;
         }
@@ -2532,8 +2526,7 @@ CVariant::Set( const void* data, UInt32 dataSize, UInt8 varType, bool linkOnlyFo
         {
             if ( GUCEF_NULL == data || dataSize < sizeof(Int64) )
                 return false;
-            const Int64* typedData = reinterpret_cast< const Int64* >( data );
-            m_variantData.union_data.int64_data = (*typedData);
+            memcpy( &m_variantData.union_data.int64_data, data, sizeof( Int64 ) );     // the data need not be aligned for the type
             m_variantData.containedType = GUCEF_DATATYPE_INT64;
             return true;
         }
@@ -2548,8 +2541,7 @@ CVariant::Set( const void* data, UInt32 dataSize, UInt8 varType, bool linkOnlyFo
         {
             if ( GUCEF_NULL == data || dataSize < sizeof(UInt64) )
                 return false;
-            const UInt64* typedData = reinterpret_cast< const UInt64* >( data );
-            m_variantData.union_data.uint64_data = (*typedData);
+            memcpy( &m_variantData.union_data.uint64_data, data, sizeof( UInt64 ) );     // the data need not be aligned for the type
             m_variantData.containedType = varType;
             return true;
         }
@@ -2557,8 +2549,7 @@ CVariant::Set( const void* data, UInt32 dataSize, UInt8 varType, bool linkOnlyFo
         {
             if ( GUCEF_NULL == data || dataSize < sizeof(Float32) )
                 return false;
-            const Float32* typedData = reinterpret_cast< const Float32* >( data );
-            m_variantData.union_data.float32_data = (*typedData);
+            memcpy( &m_variantData.union_data.float32_data, data, sizeof( Float32 ) );     // the data need not be aligned for the type
             m_variantData.containedType = GUCEF_DATATYPE_FLOAT32;
             return true;
         }
@@ -2566,8 +2557,7 @@ CVariant::Set( const void* data, UInt32 dataSize, UInt8 varType, bool linkOnlyFo
         {
             if ( GUCEF_NULL == data || dataSize < sizeof(Float64) )
                 return false;
-            const Float64* typedData = reinterpret_cast< const Float64* >( data );
-            m_variantData.union_data.float64_data = (*typedData);
+            memcpy( &m_variantData.union_data.float64_data, data, sizeof( Float64 ) );     // the data need not be aligned for the type
             m_variantData.containedType = GUCEF_DATATYPE_FLOAT64;
             return true;
         }
@@ -2575,8 +2565,7 @@ CVariant::Set( const void* data, UInt32 dataSize, UInt8 varType, bool linkOnlyFo
         {
             if ( GUCEF_NULL == data || dataSize < sizeof(Int32) )
                 return false;
-            const Int32* typedData = reinterpret_cast< const Int32* >( data );
-            m_variantData.union_data.int32_data = (*typedData);
+            memcpy( &m_variantData.union_data.int32_data, data, sizeof( Int32 ) );     // the data need not be aligned for the type
             m_variantData.containedType = GUCEF_DATATYPE_BOOLEAN_INT32;
             return true;
         }

@@ -46,6 +46,7 @@
 #if ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
   #include <sys/stat.h>
   #include <unistd.h>
+  #include <dirent.h>
 #endif
 
 #ifndef GUCEF_CORE_LOGGING_H
@@ -90,6 +91,22 @@ using namespace GUCEF;
 //      UTILITIES                                                          //
 //                                                                         //
 //-------------------------------------------------------------------------*/
+
+#if ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
+/** The number of file descriptors the process has open, counted without the iterator under test */
+static UInt32
+CountOpenFileDescriptors( void )
+{
+    UInt32 count = 0;
+    DIR* fdDir = ::opendir( "/proc/self/fd" );
+    if ( GUCEF_NULL == fdDir )
+        return 0;
+    while ( GUCEF_NULL != ::readdir( fdDir ) )
+        ++count;
+    ::closedir( fdDir );
+    return count;
+}
+#endif
 
 void
 TestRelativePathFunction( void )
@@ -447,6 +464,96 @@ PerformFileUtilsTests( void )
             ERRORHERE;
         }
     GUCEF_TESTFW_TESTCASE_END
+
+    GUCEF_TESTFW_TESTCASE( "Test: Remove_Directory removes a directory with its files and sub directories" )
+        try
+        {
+            CORE::CString dir = CORE::CombinePath( CORE::TempDir(), "gucefCORE_TestApp_RemoveDir" );
+            CORE::CString sub = CORE::CombinePath( dir, "sub" );
+            ASSERT_TRUE( CORE::CreateDirs( sub ) );
+            ASSERT_TRUE( CORE::WriteStringAsTextFile( CORE::CombinePath( dir, "a.txt" ), "a" ) );
+            ASSERT_TRUE( CORE::WriteStringAsTextFile( CORE::CombinePath( sub, "b.txt" ), "b" ) );
+
+            ASSERT_TRUE( 0 != CORE::Remove_Directory( dir.C_String(), 1 ) );
+            ASSERT_FALSE( CORE::DirExists( dir ) );
+        }
+        catch( ... )
+        {
+            ERRORHERE;
+        }
+    GUCEF_TESTFW_TESTCASE_END
+
+    #if ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
+    GUCEF_TESTFW_TESTCASE( "Test: CFileSystemIterator releases the directory when a listing ends" )
+        try
+        {
+            CORE::CString dir = CORE::CombinePath( CORE::TempDir(), "gucefCORE_TestApp_IteratorRelease" );
+            ASSERT_TRUE( CORE::CreateDirs( dir ) );
+            ASSERT_TRUE( CORE::WriteStringAsTextFile( CORE::CombinePath( dir, "a.txt" ), "a" ) );
+            ASSERT_TRUE( CORE::WriteStringAsTextFile( CORE::CombinePath( dir, "b.txt" ), "b" ) );
+
+            const UInt32 before = CountOpenFileDescriptors();
+            for ( UInt32 i=0; i<20; ++i )
+            {
+                // listed to the end
+                CORE::CFileSystemIterator it;
+                if ( it.FindFirst( dir ) )
+                {
+                    while ( it.FindNext() ) {}
+                }
+
+                // nothing matches the pattern
+                CORE::CFileSystemIterator none;
+                ASSERT_FALSE( none.FindFirst( CORE::CombinePath( dir, "*.nothing" ) ) );
+            }
+            ASSERT_TRUE( before == CountOpenFileDescriptors() );
+        }
+        catch( ... )
+        {
+            ERRORHERE;
+        }
+    GUCEF_TESTFW_TESTCASE_END
+
+    GUCEF_TESTFW_TESTCASE( "Test: CFileSystemIterator resolves a symlink whose target path is longer than the first read buffer" )
+        try
+        {
+            // the target path is over 256 bytes, so the link is read again into a grown buffer
+            CORE::CString base = CORE::CombinePath( CORE::TempDir(), "gucefCORE_TestApp_LongLink" );
+            CORE::Remove_Directory( base.C_String(), 1 );
+            CORE::CString targetDir = base;
+            for ( UInt32 i=0; i<5; ++i )
+                targetDir = CORE::CombinePath( targetDir, "a_rather_long_directory_name_to_make_the_path_long_" + CORE::ToString( i ) );
+            ASSERT_TRUE( CORE::CreateDirs( targetDir ) );
+            const CORE::CString target = CORE::CombinePath( targetDir, "target.txt" );
+            ASSERT_TRUE( target.Length() > 256 );
+            ASSERT_TRUE( CORE::WriteStringAsTextFile( target, "0123456789" ) );
+            ASSERT_TRUE( 0 == symlink( target.C_String(), CORE::CombinePath( base, "link" ).C_String() ) );
+
+            bool foundLink = false;
+            CORE::CFileSystemIterator it;
+            if ( it.FindFirst( base ) )
+            {
+                do
+                {
+                    if ( "link" == it.GetResourceName() )
+                    {
+                        foundLink = true;
+                        ASSERT_TRUE( it.IsSymlink() );
+                        ASSERT_TRUE( target == it.GetSymlinkedResourcePath() );      // exactly the target, nothing left over from the first read
+                    }
+                }
+                while ( it.FindNext() );
+            }
+            it.FindClose();
+            ASSERT_TRUE( foundLink );
+            CORE::Remove_Directory( base.C_String(), 1 );
+        }
+        catch( ... )
+        {
+            ERRORHERE;
+        }
+    GUCEF_TESTFW_TESTCASE_END
+    #endif
 
     CORE::CLogStreamScope::FlushLogs();
     GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "ALL File Utils TESTS COMPLETED" );

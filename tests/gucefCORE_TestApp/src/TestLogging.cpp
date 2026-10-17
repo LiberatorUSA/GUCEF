@@ -23,8 +23,6 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#include <vector>
-
 #ifndef GUCEF_MT_DVMTOSWRAP_H
 #include "gucefMT_dvmtoswrap.h"
 #define GUCEF_MT_DVMTOSWRAP_H
@@ -158,7 +156,7 @@ class CTestCaptureLogger : public CORE::CILogger
         bool wasFormatted;
     };
 
-    std::vector< SEntry > m_entries;
+    GUCEF::vector< SEntry > m_entries;
     MT::CMutex m_lock;                  /**< loggers can be invoked from multiple threads */
     Int32 m_minLogLevel;
 
@@ -908,7 +906,7 @@ PerformLoggingTests( void )
             CORE::CString logFilePath = CORE::CombinePath( CORE::TempDir(), "gucefCORE_TestApp_LoggingTest22_" + CORE::ToString( MT::GetCurrentTaskID() ) + ".txt" );
             UInt32 mainThreadId = MT::GetCurrentTaskID();
 
-            std::vector< CLoggingTestWorker* > workers;
+            GUCEF::vector< CLoggingTestWorker* > workers;
             for ( UInt32 w=0; w<LoggingTestNrOfWorkerThreads; ++w )
                 workers.push_back( GUCEF_NEW CLoggingTestWorker( w ) );
 

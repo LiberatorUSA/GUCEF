@@ -491,6 +491,9 @@ ParsifalElementEnd( void* userdata         ,
 
         /* we'll reuse Stringbuf just setting its length to 0: */
 		XMLStringbuf_SetLength( &sd->textBuffer, 0 );
+
+        /* the value was handed out as linked data, valid for the duration of the callback only */
+        free( text );
     }
 
     (*sd->handlers.OnNodeEnd)( sd->privdata, qname );
@@ -854,6 +857,8 @@ MODULE_API_FUNCTION( DSTOREPLUG_Store_Node_Att )( void** plugdata              ,
         if ( attindex+1 < attscount )
         {
             sprintf( fd->line+linelen, "%s=\"%s\" ", escAttName, escAttValue );
+            free( escAttName );
+            free( escAttValue );
             return;
         }
         if ( haschildren )
@@ -956,7 +961,10 @@ MODULE_API_FUNCTION( DSTOREPLUG_Src_File_Close )( void** plugdata  ,
         {
                 TSrcFileData* sd = (TSrcFileData*) *filedata;
                 XMLParser_Free( sd->parser );
+                XMLStringbuf_Free( &sd->textBuffer );
                 sd->access->close( sd->access );
+                free( sd );
+                *filedata = GUCEF_NULL;
         }
 }
 

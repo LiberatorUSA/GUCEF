@@ -47,10 +47,12 @@ LOCAL_SRC_FILES := \
   src/TestIniParser.cpp \
   src/TestLogging.cpp \
   src/TestNotifierObserver.cpp \
+  src/TestPluginUnload.cpp \
   src/TestProcess.cpp \
   src/TestRandom.cpp \
   src/TestRateLimiting.cpp \
   src/TestSchedule.cpp \
+  src/TestSfinaeUtils.cpp \
   src/TestSharedPtr.cpp \
   src/TestStopwatch.cpp \
   src/TestString.cpp \
@@ -60,6 +62,7 @@ LOCAL_SRC_FILES := \
   src/TestUri.cpp \
   src/TestVariant.cpp \
   src/TestVariantBinarySerializer.cpp \
+  src/TestVariantMapAdapter.cpp \
   src/TestVariantStream.cpp \
   src/TestVars.cpp \
   src/TestVersion.cpp \

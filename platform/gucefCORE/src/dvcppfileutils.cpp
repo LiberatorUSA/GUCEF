@@ -1121,6 +1121,69 @@ FileExists( const CString& filename )
 /*-------------------------------------------------------------------------*/
 
 bool
+DeleteDir( const CString& path       ,
+           const bool deleteContents )
+{GUCEF_TRACE;
+
+    const CString actualPath = RelativePath( path );
+    if ( !DirExists( actualPath ) )
+        return false;
+
+    if ( deleteContents )
+    {
+        // The entries are gathered first, removing entries while a listing is open is not portable
+        CString::StringVector files;
+        CString::StringVector dirs;
+        CFileSystemIterator it;
+        if ( it.FindFirst( actualPath ) )
+        {
+            do
+            {
+                const CString entryPath = CombinePath( actualPath, it.GetResourceName() );
+                if ( it.IsADirectory() && !it.IsSymlink() )
+                    dirs.push_back( entryPath );
+                else
+                    files.push_back( entryPath );
+            }
+            while ( it.FindNext() );
+            it.FindClose();
+        }
+
+        for ( CString::StringVector::const_iterator i = files.begin(); i != files.end(); ++i )
+        {
+            if ( !DeleteFile( (*i) ) )
+            {
+                GUCEF_ERROR_LOG( LOGLEVEL_NORMAL, "DeleteDir: Failed to delete file " << (*i) << " in " << actualPath );
+                return false;
+            }
+        }
+        for ( CString::StringVector::const_iterator i = dirs.begin(); i != dirs.end(); ++i )
+        {
+            if ( !DeleteDir( (*i), true ) )
+                return false;
+        }
+    }
+
+    #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
+
+    std::wstring wPath = ToWString( actualPath );
+    return 0 != ::RemoveDirectoryW( wPath.c_str() );
+
+    #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_WASM_EMSCRIPTEN ) )
+
+    return 0 == ::rmdir( actualPath.C_String() );
+
+    #else
+
+    GUCEF_WARNING_LOG( LOGLEVEL_NORMAL, "DeleteDir: Platform has no supported implementation" );
+    return false;
+
+    #endif
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
 DirExists( const CString& path )
 {GUCEF_TRACE;
 
@@ -1256,26 +1319,27 @@ TryResolveLinuxSymlinkPath( const CString& symlinkPath, CString& resolvedPath )
 
     if ( !symlinkPath.IsNULLOrEmpty()  )
     {
-        Int32 bytesRead = 0;
         CString linkedPath;
-
-        linkedPath.Reserve( 256 );
-        if ( GUCEF_NULL != linkedPath.C_String() )
+        UInt32 bufferSize = 256;
+        while ( true )
         {
-            do
+            linkedPath.Reserve( bufferSize );
+            char* buffer = linkedPath.C_String();
+            if ( GUCEF_NULL == buffer )
+                return false;
+
+            const Int32 bytesRead = (Int32) readlink( symlinkPath.C_String(), buffer, bufferSize );
+            if ( -1 == bytesRead )
+                return false;
+
+            // A full buffer means the target may not have fit: read it again into a bigger one.
+            // readlink() does not terminate what it writes
+            if ( (UInt32) bytesRead < bufferSize )
             {
-                bytesRead = readlink( symlinkPath.C_String(), linkedPath.C_String(), linkedPath.ByteSize() );
-                if ( -1 == bytesRead )
-                {
-                    return false;
-                }
-                if ( bytesRead == (Int32) linkedPath.ByteSize() )
-                {
-                    // truncation may have occured
-                    linkedPath.Reserve( linkedPath.ByteSize() * 2 );
-                }
+                buffer[ bytesRead ] = '\0';
+                break;
             }
-            while ( GUCEF_NULL != linkedPath.C_String() && bytesRead == (Int32) linkedPath.ByteSize() );
+            bufferSize *= 2;
         }
 
         linkedPath.DetermineLength();
@@ -3289,6 +3353,10 @@ CFileSystemIterator::FindFirst( const CString& path )
             return true;
         }
     }
+
+    // Nothing to iterate: the directory is released here, FindClose() only acts on an active iteration
+    ::closedir( m_osData->dir );
+    m_osData->dir = GUCEF_NULL;
     m_osData->isActive = false;
     return false;
 
@@ -3348,6 +3416,9 @@ CFileSystemIterator::FindNext( void )
         }
     }
 
+    // The end of the listing: the directory is released here, FindClose() only acts on an active iteration
+    ::closedir( m_osData->dir );
+    m_osData->dir = GUCEF_NULL;
     m_osData->isActive = false;
     return false;
 

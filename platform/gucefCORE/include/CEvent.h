@@ -55,10 +55,10 @@ class CNotificationIDRegistry;
  *  Used to identify an event within the GUCEF event system.
  *
  *  For performance reasons numeric ID's are used for event comparison
- *  operations. Note that a call must be made to Initialize() before the
- *  event object is used. This initialization procedure is required to give you
- *  the performance required plus the ability to define event objects as global
- *  variables.
+ *  operations. Initialize() gives the event its id; modules call it for their events when they load. This
+ *  initialization procedure is required to give you the performance required plus the ability to define event
+ *  objects as global variables. An event that has a name but no id yet (for instance a global that was constructed
+ *  after its module registered it) finds its id on first use in a comparison or GetID().
  */
 class GUCEF_CORE_PUBLIC_CPP CEvent
 {
@@ -112,6 +112,9 @@ class GUCEF_CORE_PUBLIC_CPP CEvent
     void Initialize( void ) const;
 
     bool IsInitialized( void ) const;
+
+    /** Initializes the event if it has a name but no id yet; comparisons and GetID() do this themselves */
+    void EnsureInitialized( void ) const;
 
     private:
     friend class CNotificationIDRegistry;

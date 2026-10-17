@@ -24,8 +24,7 @@
 //-------------------------------------------------------------------------*/
 
 #include <limits>
-#include <string>
-#include <vector>
+#include <stdio.h>
 
 #ifndef GUCEF_MT_CTATOMIC_H
 #include "gucefMT_CTAtomic.h"
@@ -132,8 +131,8 @@ struct SThreadArg
 bool
 RunThreads( CAtomicTestThread::TFunction function, void* shared, UInt32 count )
 {
-    std::vector< SThreadArg > args( count );
-    std::vector< CAtomicTestThread* > threads;
+    GUCEF::vector< SThreadArg > args( count );
+    GUCEF::vector< CAtomicTestThread* > threads;
     for ( UInt32 i=0; i<count; ++i )
     {
         args[ i ].index = i;
@@ -577,15 +576,23 @@ CheckPublicationAcrossThreads( void )
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+/** The name of a test case of the suite of a backend, in the given buffer */
+const char*
+CaseName( char* buffer, size_t bufferSize, const char* backendName, const char* title )
+{
+    snprintf( buffer, bufferSize, "Atomic [%s]: %s", backendName, title );
+    return buffer;
+}
+
 template< typename Tag >
 void
 PerformBackendTests( const char* backendName, bool expectLockFree )
 {
-    const std::string prefix = std::string( "Atomic [" ) + backendName + "]: ";
+    char name[ 128 ];
 
     {
-        const std::string name = prefix + "Operations on all integer widths";
-        GUCEF_TESTFW_TESTCASE( name.c_str() )
+        CaseName( name, sizeof( name ), backendName, "Operations on all integer widths" );
+        GUCEF_TESTFW_TESTCASE( name )
         try
         {
             CheckAllIntegerWidths< Tag >();
@@ -598,8 +605,8 @@ PerformBackendTests( const char* backendName, bool expectLockFree )
     }
 
     {
-        const std::string name = prefix + "Every memory order";
-        GUCEF_TESTFW_TESTCASE( name.c_str() )
+        CaseName( name, sizeof( name ), backendName, "Every memory order" );
+        GUCEF_TESTFW_TESTCASE( name )
         try
         {
             CheckMemoryOrders< UInt8, Tag >();
@@ -615,8 +622,8 @@ PerformBackendTests( const char* backendName, bool expectLockFree )
     }
 
     {
-        const std::string name = prefix + "Pointers, bool and enumerations";
-        GUCEF_TESTFW_TESTCASE( name.c_str() )
+        CaseName( name, sizeof( name ), backendName, "Pointers, bool and enumerations" );
+        GUCEF_TESTFW_TESTCASE( name )
         try
         {
             CheckPointerBoolAndEnum< Tag >();
@@ -629,8 +636,8 @@ PerformBackendTests( const char* backendName, bool expectLockFree )
     }
 
     {
-        const std::string name = prefix + "Fences and lock freedom";
-        GUCEF_TESTFW_TESTCASE( name.c_str() )
+        CaseName( name, sizeof( name ), backendName, "Fences and lock freedom" );
+        GUCEF_TESTFW_TESTCASE( name )
         try
         {
             CheckFencesAndLockFreedom< Tag >( expectLockFree );
@@ -643,8 +650,8 @@ PerformBackendTests( const char* backendName, bool expectLockFree )
     }
 
     {
-        const std::string name = prefix + "No lost updates across threads";
-        GUCEF_TESTFW_TESTCASE( name.c_str() )
+        CaseName( name, sizeof( name ), backendName, "No lost updates across threads" );
+        GUCEF_TESTFW_TESTCASE( name )
         try
         {
             CheckCountersAcrossThreads< Tag >();
@@ -657,8 +664,8 @@ PerformBackendTests( const char* backendName, bool expectLockFree )
     }
 
     {
-        const std::string name = prefix + "Spin lock gives mutual exclusion";
-        GUCEF_TESTFW_TESTCASE( name.c_str() )
+        CaseName( name, sizeof( name ), backendName, "Spin lock gives mutual exclusion" );
+        GUCEF_TESTFW_TESTCASE( name )
         try
         {
             CheckSpinLockAcrossThreads< Tag >();
@@ -671,8 +678,8 @@ PerformBackendTests( const char* backendName, bool expectLockFree )
     }
 
     {
-        const std::string name = prefix + "Release / acquire publication";
-        GUCEF_TESTFW_TESTCASE( name.c_str() )
+        CaseName( name, sizeof( name ), backendName, "Release / acquire publication" );
+        GUCEF_TESTFW_TESTCASE( name )
         try
         {
             CheckPublicationAcrossThreads< Tag >();

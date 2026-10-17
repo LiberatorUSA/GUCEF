@@ -110,7 +110,7 @@ class CTVariantMapAdapterCpp2C
      */
 
     static UInt8 insert( void* privdata, TVariantData* key, TVariantData* value, UInt8 linkIfPossible );    /**< attempts to insert a key-value pair into the map. It does not overwrite thus will fail if the key exists */
-    static UInt8 set( void* privdata, TVariantData* key, TVariantData* value, UInt8 linkIfPossible );       /**< attempts to set an existing key's value pair into the map. It does not overwrite thus will fail if the key exists */
+    static UInt8 set( void* privdata, TVariantData* key, TVariantData* value, UInt8 linkIfPossible );       /**< sets a key-value pair into the map: the value of an existing key is overwritten, a missing key is added */
     static void clear( void* privdata );                                                                    /**< clears the map */
     static UInt8 erase( void* privdata, const TVariantData* searchKey );                                    /**< attempts to erase a key-value pair from the map, if the key doesnt exists the operation fails and is a no-op */
 
@@ -241,17 +241,8 @@ CTVariantMapAdapterCpp2C< TK, TV, TKC, AllocType >::insert( void* privdata, TVar
                 CVariant valueToInsertVar;
                 valueToInsertVar.LinkTo( value );
 
-                if ( 0 != linkIfPossible )
-                {
-                    // @TODO: check if the value type supports linking
-                    TK nativeValueToInsert = valueToInsertVar.AsTValue< TK >();
-                    (*api->m_map)[ nativeSearchKey ] = nativeValueToInsert;
-                }
-                else
-                {
-                    TK nativeValueToInsert = valueToInsertVar.AsTValue< TK >();
-                    (*api->m_map)[ nativeSearchKey ] = nativeValueToInsert;
-                }
+                // The value is converted to the value type of the map, which always makes a copy
+                (*api->m_map)[ nativeSearchKey ] = valueToInsertVar.AsTValue< TV >();
                 return 1; // success
             }
         }
@@ -277,25 +268,12 @@ CTVariantMapAdapterCpp2C< TK, TV, TKC, AllocType >::set( void* privdata, TVarian
             searchKeyVar.LinkTo( key );
             TK nativeSearchKey = searchKeyVar.AsTValue< TK >();
 
-            // For a set we need to check if the key already exists
-            // We specifically DO want to overwrite existing keys
-            typename TLinkedMapType::iterator i = api->m_map->find( nativeSearchKey );
-            if ( i != api->m_map->end() )
-            {
-                CVariant valueToInsertVar;
-                valueToInsertVar.LinkTo( value );
-
-                if ( 0 != linkIfPossible )
-                {
-                    // @TODO: check if the value type supports linking
-                    (*i).second = valueToInsertVar.AsTValue< TK >();
-                }
-                else
-                {
-                    (*i).second = valueToInsertVar.AsTValue< TK >();
-                }
-                return 1; // success
-            }
+            // A set overwrites the value of an existing key and adds a missing one.
+            // The value is converted to the value type of the map, which always makes a copy
+            CVariant valueToSetVar;
+            valueToSetVar.LinkTo( value );
+            (*api->m_map)[ nativeSearchKey ] = valueToSetVar.AsTValue< TV >();
+            return 1; // success
         }
     }
     return 0; // failure to insert

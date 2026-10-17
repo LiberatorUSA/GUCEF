@@ -254,7 +254,7 @@ CVariantBinarySerializer::Deserialize( CVariant& var                ,
             return false;
         }
 
-        UInt8 typeId = source.AsConstType< UInt8 >( currentSourceOffset );
+        UInt8 typeId = source.ReadValue< UInt8 >( currentSourceOffset );
         currentSourceOffset += sizeof( typeId );
         bytesRead += sizeof( typeId );
 
@@ -264,7 +264,7 @@ CVariantBinarySerializer::Deserialize( CVariant& var                ,
 
         if ( CVariant::UsesDynamicMemory( typeId ) )
         {
-            UInt32 payloadSize = source.AsConstType< UInt32 >( currentSourceOffset );
+            UInt32 payloadSize = source.ReadValue< UInt32 >( currentSourceOffset );
             currentSourceOffset += sizeof( payloadSize );
             bytesRead += sizeof( payloadSize );
 

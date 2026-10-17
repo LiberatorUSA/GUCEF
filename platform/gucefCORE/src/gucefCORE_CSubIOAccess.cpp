@@ -158,7 +158,10 @@ CSubIOAccess::Read( void *dest      ,
     if ( m_parent.IsNULL() || 0 == esize || 0 == elements )
         return 0;
 
-    // Never read past the end of the window, partial elements are cut off
+    // Never read past the end of the window, partial elements are cut off. As with a file the position can be
+    // beyond the end, there is nothing to read there
+    if ( m_pos >= m_size )
+        return 0;
     const UInt64 remaining = m_size - m_pos;
     const UInt64 elementsLeft = remaining / esize;
     if ( elementsLeft < elements )
@@ -166,10 +169,8 @@ CSubIOAccess::Read( void *dest      ,
     if ( 0 == elements )
         return 0;
 
-    // The parent may be shared with other windows so it is always repositioned first.
-    // The value Setpos() returns differs between the kinds of IO access, so we check where it ended up.
-    m_parent->Setpos( m_offset + m_pos );
-    if ( m_parent->Tell() != m_offset + m_pos )
+    // The parent may be shared with other windows so it is always repositioned first
+    if ( 0 != m_parent->Setpos( m_offset + m_pos ) )
         return 0;
 
     const UInt32 elementsRead = m_parent->Read( dest, esize, elements );
@@ -222,7 +223,8 @@ CSubIOAccess::Seek( Int64 offset ,
         default: { return 1; }
     }
 
-    if ( target < 0 || (UInt64) target > m_size )
+    // as fseek(): before the start fails, beyond the end is allowed (reads there return nothing)
+    if ( target < 0 )
         return 1;
 
     m_pos = (UInt64) target;
@@ -235,9 +237,7 @@ UInt32
 CSubIOAccess::Setpos( UInt64 position )
 {GUCEF_TRACE;
 
-    if ( position > m_size )
-        return 1;
-
+    // as fsetpos(): any position, also beyond the end of the window where reads return nothing
     m_pos = position;
     return 0;
 }

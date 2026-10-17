@@ -1282,6 +1282,11 @@ CUtf8String::C_String( void )
 {GUCEF_TRACE;
 
     PromoteToOwned();
+    if ( GUCEF_NULL == m_string )
+    {
+        // an empty string without storage: give it a terminator, so the writable C string is "" as the const one is
+        Reserve( 1, 0 );
+    }
     return reinterpret_cast< char* >( m_string );
 }
 

@@ -70,7 +70,6 @@
 #define GUCEF_MT_DVMTOSWRAP_H
 #endif /* GUCEF_MT_DVMTOSWRAP_H ? */
 
-#include <set>
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -136,7 +135,7 @@ typedef CTFreeList< TestObjNoClear, TNoLock >::TSharedPtr TestObjNoClearPtr;
 // A type which tracks the lifetime of every instance by address, catching double construction and double destruction
 struct TestObjLifetime
 {
-    static std::set< const void* > liveInstances;
+    static GUCEF::set< const void* > liveInstances;
     static UInt32 doubleConstructions;
     static UInt32 doubleDestructions;
 
@@ -148,7 +147,7 @@ struct TestObjLifetime
     static void Reset( void ) { liveInstances.clear(); doubleConstructions = 0; doubleDestructions = 0; }
 };
 
-std::set< const void* > TestObjLifetime::liveInstances;
+GUCEF::set< const void* > TestObjLifetime::liveInstances;
 UInt32 TestObjLifetime::doubleConstructions = 0;
 UInt32 TestObjLifetime::doubleDestructions = 0;
 

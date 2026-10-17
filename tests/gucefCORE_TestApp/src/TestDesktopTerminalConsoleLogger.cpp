@@ -70,8 +70,6 @@
 #include <unistd.h>
 #include <fcntl.h>
 #include <sys/stat.h>
-#include <string>
-#include <vector>
 
 #ifndef GUCEF_CORE_CDESKTOPTERMINALCONSOLELOGGER_H
 #include "gucefCORE_CDesktopTerminalConsoleLogger.h"
@@ -118,10 +116,11 @@ class CEnvironmentScope
     {
         for ( size_t i=0; i<m_saved.size(); ++i )
         {
-            if ( m_saved[ i ].wasSet )
-                setenv( m_saved[ i ].name.c_str(), m_saved[ i ].value.c_str(), 1 );
+            const SSaved& saved = m_saved[ i ];    // const: only the const C_String() never returns NULL, the value can be empty
+            if ( saved.wasSet )
+                setenv( saved.name.C_String(), saved.value.C_String(), 1 );
             else
-                unsetenv( m_saved[ i ].name.c_str() );
+                unsetenv( saved.name.C_String() );
         }
     }
 
@@ -139,7 +138,7 @@ class CEnvironmentScope
 
     private:
 
-    struct SSaved { std::string name; std::string value; bool wasSet; };
+    struct SSaved { CORE::CString name; CORE::CString value; bool wasSet; };
 
     void Remember( const char* name )
     {
@@ -155,7 +154,7 @@ class CEnvironmentScope
         m_saved.push_back( saved );
     }
 
-    std::vector< SSaved > m_saved;
+    GUCEF::vector< SSaved > m_saved;
 };
 
 /*-------------------------------------------------------------------------//
@@ -468,7 +467,9 @@ PerformDesktopTerminalConsoleLoggerTests( void )
                 ASSERT_TRUE( 0 == logger.GetDroppedLineCount() );
 
                 // nobody reads anymore: the pipe fills up and then lines are dropped
-                CORE::CString filler = "a long line of text which takes up space in the pipe, " + CORE::CString( std::string( 200, 'x' ).c_str() );
+                CORE::CString filler = "a long line of text which takes up space in the pipe, ";
+                for ( UInt32 x=0; x<200; ++x )
+                    filler += 'x';
                 UInt64 start = MT::PrecisionTickCount();
                 for ( UInt32 i=0; i<2000; ++i )
                     LogLine( logger, filler );

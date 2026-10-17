@@ -404,91 +404,10 @@ Remove_Directory( const char *dir  ,
                   UInt32 del_files )
 {GUCEF_TRACE;
 
-    if ( del_files )
-    {
-        /*
-         *      The user wishes to delete the directory even if the
-         *      directory is not empty. We will proceed to delete all
-         *      files in the directory first.
-         */
-        struct SDI_Data* ddata = DI_First_Dir_Entry( dir );
-        UInt32 more = 1;
-        if ( GUCEF_NULL == ddata )
-            return 0;
-
-        while ( more )
-        {
-            if ( DI_Is_It_A_File( ddata ) )
-            {
-                /*
-                 *      Attempt to delete the file we found in
-                 *      the directory.
-                 */
-                if ( !Delete_File( DI_Name( ddata ) ) )
-                    return 0;
-            }
-            else
-            {
-                /*
-                 *      Attempt to delete the directory we found
-                 *      and all files inside it.
-                 */
-                size_t nameLength = strlen( DI_Name( ddata ) );
-                size_t dirLength = strlen( dir );
-                size_t subDirBufferLength = dirLength + nameLength + 1;
-
-                char* subdir = (char*) calloc( subDirBufferLength, 1 );
-                if ( GUCEF_NULL != subdir )
-                {
-                    #if defined( __STDC_LIB_EXT1__ ) || defined( __STDC_WANT_SECURE_LIB__ )
-                    strcpy_s( subdir, subDirBufferLength, dir );
-                    #else
-                    strcpy( subdir, dir );
-                    #endif
-                    Append_To_Path( subdir, subDirBufferLength, DI_Name( ddata ) );
-                    if ( !Remove_Directory( subdir, del_files ) )
-                    {
-                        free( subdir );
-                        return 0;
-                    }
-                    free( subdir );
-                }
-            }
-
-            /*
-             *      Itterate to next directory entry
-             */
-            more = DI_Next_Dir_Entry( ddata );
-        }
-
-        /*
-         *      Clean-up our dir itterator
-         */
-        DI_Cleanup( ddata );
-    }
-
-    #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
-
-    /*
-     *      Attempt to remove the directory itself. We can call the WIN32
-     *      function directly here because it won't delete any files in the
-     *      dir.
-     */
-
-    return RemoveDirectory( dir );
-
-    #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_WASM_EMSCRIPTEN ) )
-
-    return 0 == rmdir( dir ) ? 1 : 0;
-
-    #else
-
-    /*
-     *      Not implemented for your O/S
-     */
-    return 0;
-
-    #endif
+    // map to C++ version
+    if ( GUCEF_NULL == dir )
+        return 0;
+    return DeleteDir( dir, 0 != del_files ) ? 1 : 0;
 }
 
 /*-------------------------------------------------------------------------*/

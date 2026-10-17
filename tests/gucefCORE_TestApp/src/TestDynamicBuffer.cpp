@@ -29,6 +29,11 @@
 #define GUCEF_CORE_CDYNAMICBUFFER_H
 #endif /* GUCEF_CORE_CDYNAMICBUFFER_H ? */
 
+#ifndef GUCEF_CORE_CDYNAMICBUFFERACCESS_H
+#include "CDynamicBufferAccess.h"
+#define GUCEF_CORE_CDYNAMICBUFFERACCESS_H
+#endif /* GUCEF_CORE_CDYNAMICBUFFERACCESS_H ? */
+
 #ifndef GUCEF_CORE_LOGGING_H
 #include "gucefCORE_Logging.h"
 #define GUCEF_CORE_LOGGING_H
@@ -181,6 +186,49 @@ PerformDynamicBufferTests( void )
         ASSERT_TRUE( 128 == buffer.GetBufferSize() );
         ASSERT_TRUE( 3 == buffer.CopyFrom( 200, 3, "abc" ) );       // CopyFrom grows the same way
         ASSERT_TRUE( 256 == buffer.GetBufferSize() );
+    }
+    catch( ... )
+    {
+        ERRORHERE;
+    }
+    GUCEF_TESTFW_TESTCASE_END
+
+    GUCEF_TESTFW_TESTCASE( "DynamicBuffer: A buffer access grows its buffer with its own strategy, leaving the buffer's setting as it is" )
+    try
+    {
+        CORE::CDynamicBuffer buffer;
+        UInt32 sizeChanges = 0;
+        {
+            CORE::CDynamicBufferAccess access( buffer, CORE::CDynamicBuffer::GROWTHSTRATEGY_GEOMETRIC );
+            ASSERT_TRUE( access.HasOwnGrowthStrategy() );
+            UInt32 lastBufferSize = buffer.GetBufferSize();
+            for ( UInt32 i=0; i<100000; ++i )
+            {
+                const UInt8 value = (UInt8) ( i % 251 );
+                ASSERT_TRUE( 1 == access.Write( &value, 1, 1 ) );
+                if ( buffer.GetBufferSize() != lastBufferSize )
+                {
+                    ++sizeChanges;
+                    lastBufferSize = buffer.GetBufferSize();
+                }
+            }
+        }
+        ASSERT_TRUE( HasPattern( buffer, 100000 ) );
+        ASSERT_TRUE( sizeChanges <= 18 );                                               // doubling from 1 byte passes 100000 at the 18th size
+        ASSERT_TRUE( CORE::CDynamicBuffer::GROWTHSTRATEGY_EXACT == buffer.GetGrowthStrategy() );
+
+        // without a strategy of its own the access grows the buffer the buffer's way
+        CORE::CDynamicBuffer exact;
+        CORE::CDynamicBufferAccess exactAccess( exact );
+        ASSERT_FALSE( exactAccess.HasOwnGrowthStrategy() );
+        ASSERT_TRUE( 3 == exactAccess.Write( "abc", 1, 3 ) );
+        ASSERT_TRUE( 3 == exact.GetBufferSize() );
+
+        exactAccess.SetGrowthStrategy( CORE::CDynamicBuffer::GROWTHSTRATEGY_BLOCKS, 16 );
+        ASSERT_TRUE( 1 == exactAccess.Write( "d", 1, 1 ) );
+        ASSERT_TRUE( 16 == exact.GetBufferSize() );
+        exactAccess.UseBufferGrowthStrategy();
+        ASSERT_FALSE( exactAccess.HasOwnGrowthStrategy() );
     }
     catch( ... )
     {

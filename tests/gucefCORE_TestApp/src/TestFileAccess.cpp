@@ -265,6 +265,58 @@ PerformFileAccessTests( void )
         }
     GUCEF_TESTFW_TESTCASE_END
 
+    GUCEF_TESTFW_TESTCASE( "Test: Positioning a dynamic buffer access behaves as fsetpos() and fseek() on a file" )
+        try
+        {
+            CORE::CDynamicBufferAccess access;
+            access.LinkTo( payload, payloadSize );
+            ASSERT_TRUE( 0 == access.Setpos( 10 ) );                    // 0 on success, it used to return the new position
+            ASSERT_TRUE( 10 == access.Tell() );
+            ASSERT_TRUE( 0 == access.Setpos( payloadSize ) );
+            ASSERT_TRUE( payloadSize == access.Tell() );
+
+            // beyond the end is a valid position, there is just nothing to read
+            char buffer[ 8 ];
+            ASSERT_TRUE( 0 == access.Setpos( payloadSize + 5 ) );
+            ASSERT_TRUE( payloadSize + 5 == access.Tell() );
+            ASSERT_TRUE( access.Eof() );
+            ASSERT_TRUE( 0 == access.Read( buffer, 1, 4 ) );
+            ASSERT_TRUE( 0 == access.GetChar() );
+            ASSERT_TRUE( access.ReadLine().IsNULLOrEmpty() );
+            ASSERT_TRUE( payloadSize + 5 == access.Tell() );            // reading there does not move it back
+
+            // fseek() alike: relative to the start, the position and the end, never before the start
+            ASSERT_TRUE( 0 == access.Seek( 3, SEEK_SET ) && 3 == access.Tell() );
+            ASSERT_TRUE( 0 == access.Seek( 2, SEEK_CUR ) && 5 == access.Tell() );
+            ASSERT_TRUE( 0 == access.Seek( -2, SEEK_END ) && payloadSize - 2 == access.Tell() );
+            ASSERT_TRUE( 0 == access.Seek( 4, SEEK_END ) && payloadSize + 4 == access.Tell() );
+            ASSERT_TRUE( 0 != access.Seek( -1, SEEK_SET ) );
+            ASSERT_TRUE( payloadSize + 4 == access.Tell() );            // a failed seek leaves the position alone
+
+            // the C view hands out the same
+            ASSERT_TRUE( 0 == access.CStyleAccess()->setpos( access.CStyleAccess(), 7 ) );
+            ASSERT_TRUE( 7 == access.Tell() );
+
+            // writing beyond the data fills the gap with zeros, as a file does
+            CORE::CDynamicBuffer data;
+            CORE::CDynamicBufferAccess writer( data );
+            ASSERT_TRUE( 3 == writer.Write( "abc", 1, 3 ) );
+            ASSERT_TRUE( 0 == writer.Setpos( 600 ) );
+            ASSERT_TRUE( 2 == writer.Write( "yz", 1, 2 ) );
+            ASSERT_TRUE( 602 == data.GetDataSize() );
+            const char* bytes = static_cast< const char* >( data.GetConstBufferPtr() );
+            bool gapIsZero = true;
+            for ( UInt32 i=3; i<600; ++i )
+                gapIsZero = gapIsZero && 0 == bytes[ i ];
+            ASSERT_TRUE( gapIsZero );
+            ASSERT_TRUE( 0 == memcmp( bytes, "abc", 3 ) && 0 == memcmp( bytes + 600, "yz", 2 ) );
+        }
+        catch ( ... )
+        {
+            ERRORHERE;
+        }
+    GUCEF_TESTFW_TESTCASE_END
+
     GUCEF_TESTFW_TESTCASE( "Test: A window on another IO access reads only its own range" )
         try
         {
@@ -303,10 +355,15 @@ PerformFileAccessTests( void )
             ASSERT_TRUE( window.GetChar() == payload[ 15 ] );
             ASSERT_TRUE( 0 == window.Seek( -1, SEEK_END ) );
             ASSERT_TRUE( window.GetChar() == payload[ 17 ] );
-            ASSERT_TRUE( 0 != window.Seek( 100, SEEK_SET ) );
+            // as fseek() and fsetpos(): beyond the end is a position, with nothing to read; before the start fails
+            ASSERT_TRUE( 0 == window.Seek( 100, SEEK_SET ) );
+            ASSERT_TRUE( window.Tell() == 100 && window.Eof() );
+            ASSERT_TRUE( window.Read( buffer, 1, 1 ) == 0 );
+            ASSERT_TRUE( 0 == window.Setpos( 9 ) );
+            ASSERT_TRUE( window.Tell() == 9 );
+            ASSERT_TRUE( window.Read( buffer, 1, 1 ) == 0 );
             ASSERT_TRUE( 0 != window.Seek( -100, SEEK_CUR ) );
-            ASSERT_TRUE( 0 != window.Setpos( 9 ) );
-            ASSERT_TRUE( window.Tell() == 8 ); // failed seeks leave the position alone
+            ASSERT_TRUE( window.Tell() == 9 ); // failed seeks leave the position alone
 
             ASSERT_TRUE( window.Write( buffer, 1, 1 ) == 0 );
 

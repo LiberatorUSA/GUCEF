@@ -628,6 +628,9 @@ CPluginControl::RegisterPlugin( TPluginMetaDataStoragePtr& pluginMetaData ,
         TPluginManagerSet::iterator w = m_pluginManagers.begin();
         while ( w != m_pluginManagers.end() )
         {
+            // The meta data carries the type of the manager it is offered to, so the plugin that a manager makes from it
+            // knows its type and is unregistered through that manager later
+            pluginMetaData->SetPluginType( (*w)->GetPluginType() );
             TPluginPtr pluginPtr = (*w)->RegisterPlugin( pluginMetaData->GetModulePointer(), pluginMetaData );
             if ( pluginPtr )
             {
@@ -642,6 +645,7 @@ CPluginControl::RegisterPlugin( TPluginMetaDataStoragePtr& pluginMetaData ,
         }
 
         // We were not able to register the module with any of the managers even though we could load it
+        pluginMetaData->SetPluginType( CString::Empty );
         GUCEF_ERROR_LOG( LOGLEVEL_NORMAL, "PluginControl: Failed to register module with name \"" +
                                 pluginMetaData->GetModuleFilename() + "\" and group \"" + groupName + "\" and version " +
                                 VersionToString( pluginMetaData->GetVersion() ) + " with any plugin manager" );
@@ -873,6 +877,16 @@ CPluginControl::UnloadPlugin( TPluginPtr& pluginPtr     ,
         if ( !NotifyObservers( PluginUnloadStartedEvent, &pluginUnloadStartedEventData ) ) return false;
 
         (*m).second->UnloadPlugin( modulePtr );
+
+        // The meta data that went back into the group still has the handle of the module that is gone now.
+        // Clear it, otherwise loading the group again treats the module as loaded and registers a dangling handle
+        CPluginGroup::TPluginMetaDataSet& groupMetaData = pluginGroup.GetPluginMetaData();
+        for ( CPluginGroup::TPluginMetaDataSet::iterator n = groupMetaData.begin(); n != groupMetaData.end(); ++n )
+        {
+            TPluginMetaDataStoragePtr metaData = (*n);     // set entries are const, the meta data they point at is not
+            if ( !metaData.IsNULL() && modulePtr == metaData->GetModulePointer() )
+                metaData->SetModulePointer( GUCEF_NULL );
+        }
 
         // We will unload the module
         GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "PluginControl: Unloaded module with name \"" +

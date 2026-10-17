@@ -24,7 +24,6 @@
 //-------------------------------------------------------------------------*/
 
 #include <string.h>
-#include <vector>
 
 #ifndef GUCEF_CORE_CCOREGLOBAL_H
 #include "gucefCORE_CCoreGlobal.h"
@@ -225,8 +224,8 @@ class CKeepingCollector : public CORE::CDataNodeSubtreeCollector
             ancestorVersion = ancestors[ 0 ].GetAttributeValue( "version" ).AsString();
     }
 
-    std::vector< CORE::CDataNode > subtrees;
-    std::vector< CORE::CString > ancestorNames;
+    GUCEF::vector< CORE::CDataNode > subtrees;
+    GUCEF::vector< CORE::CString > ancestorNames;
     CORE::CString ancestorVersion;
 };
 
@@ -539,9 +538,9 @@ PerformDStoreStreamingTests( void )
                 people.SetName( "people" );
 
                 CORE::CDynamicBuffer output;
-                output.SetGrowthStrategy( CORE::CDynamicBuffer::GROWTHSTRATEGY_GEOMETRIC );     // written in many small pieces
                 {
-                    CORE::CDynamicBufferAccess access( &output, false );
+                    // written in many small pieces
+                    CORE::CDynamicBufferAccess access( &output, false, CORE::CDynamicBuffer::GROWTHSTRATEGY_GEOMETRIC );
                     CORE::CDocumentStreamWriterPtr writer = codec->CreateDocumentWriter( access );
                     ASSERT_FALSE( writer.IsNULL() );
                     if ( !writer.IsNULL() )

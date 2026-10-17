@@ -356,7 +356,7 @@ CThreadPool::OnPumpedNotify( CNotifier* notifier    ,
     else
     if ( CTaskConsumer::TaskStartedEvent == eventid )
     {
-        NotifyObservers( TaskKilledEvent );
+        NotifyObservers( TaskStartedEvent, eventdata );
     }
     else
     if ( CTaskConsumer::TaskStartupFailedEvent == eventid )

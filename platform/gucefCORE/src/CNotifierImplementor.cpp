@@ -410,12 +410,11 @@ CNotifierImplementor::Subscribe( CObserver* observer                            
                 /*
                  *  If we get here then we have a new observer on our hands for the given
                  *  known event, as such we need to update our administration.
+                 *  Without a callback the entry stays empty, which means the event goes to OnNotify()
                  */
+                TEventHandlerFunctorInterfaceVector& callbacks = eventObservers[ observer ];
                 if ( GUCEF_NULL != callback )
-                {
-                    TEventHandlerFunctorInterfaceVector& callbacks = eventObservers[ observer ];
                     callbacks.push_back( static_cast< CIEventHandlerFunctorBase* >( callback->Clone() ) );
-                }
             }
             else
             {
@@ -426,11 +425,9 @@ CNotifierImplementor::Subscribe( CObserver* observer                            
                  *  Adding the event entry is accomplished by using the index operator on the map
                  */
                 TEventNotificationMap& eventObservers = m_eventobservers[ eventid ];
+                TEventHandlerFunctorInterfaceVector& callbacks = eventObservers[ observer ];
                 if ( GUCEF_NULL != callback )
-                {
-                    TEventHandlerFunctorInterfaceVector& callbacks = eventObservers[ observer ];
                     callbacks.push_back( static_cast< CIEventHandlerFunctorBase* >( callback->Clone() ) );
-                }
             }
         }
 

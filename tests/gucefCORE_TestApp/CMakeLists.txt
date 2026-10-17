@@ -37,10 +37,12 @@ set( HEADER_FILES
   include/TestIniParser.h
   include/TestLogging.h
   include/TestNotifierObserver.h
+  include/TestPluginUnload.h
   include/TestProcess.h
   include/TestRandom.h
   include/TestRateLimiting.h
   include/TestSchedule.h
+  include/TestSfinaeUtils.h
   include/TestSharedPtr.h
   include/TestStopwatch.h
   include/TestString.h
@@ -50,6 +52,7 @@ set( HEADER_FILES
   include/TestUri.h
   include/TestVariant.h
   include/TestVariantBinarySerializer.h
+  include/TestVariantMapAdapter.h
   include/TestVariantStream.h
   include/TestVars.h
   include/TestVersion.h
@@ -84,10 +87,12 @@ set( SOURCE_FILES
   src/TestIniParser.cpp
   src/TestLogging.cpp
   src/TestNotifierObserver.cpp
+  src/TestPluginUnload.cpp
   src/TestProcess.cpp
   src/TestRandom.cpp
   src/TestRateLimiting.cpp
   src/TestSchedule.cpp
+  src/TestSfinaeUtils.cpp
   src/TestSharedPtr.cpp
   src/TestStopwatch.cpp
   src/TestString.cpp
@@ -97,6 +102,7 @@ set( SOURCE_FILES
   src/TestUri.cpp
   src/TestVariant.cpp
   src/TestVariantBinarySerializer.cpp
+  src/TestVariantMapAdapter.cpp
   src/TestVariantStream.cpp
   src/TestVars.cpp
   src/TestVersion.cpp

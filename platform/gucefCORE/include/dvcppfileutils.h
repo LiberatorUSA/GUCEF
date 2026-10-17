@@ -171,6 +171,16 @@ DirExists( const CString& path );
 
 /*-------------------------------------------------------------------------*/
 
+/**
+ *  Removes a directory. With deleteContents the files and sub directories in it are removed first,
+ *  symbolic links are removed as links and not followed. Without it only an empty directory is removed.
+ */
+GUCEF_CORE_PUBLIC_CPP bool
+DeleteDir( const CString& path          ,
+           const bool deleteContents    );
+
+/*-------------------------------------------------------------------------*/
+
 GUCEF_CORE_PUBLIC_CPP bool
 CreatePathDirectories( const CString& path );
 

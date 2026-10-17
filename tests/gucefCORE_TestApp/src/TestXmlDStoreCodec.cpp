@@ -82,6 +82,10 @@ using namespace GUCEF;
 
 /*-------------------------------------------------------------------------*/
 
+// the group the plugin is loaded in by these tests, its own so unloading it touches nothing else
+static const char* XmlPluginGroup = "xmldstore_tests";
+static bool g_loadedXmlPluginHere = false;
+
 static bool
 GetXmlCodec( CORE::CDStoreCodecRegistry::TDStoreCodecPtr& xmlCodec )
 {GUCEF_TRACE;
@@ -100,10 +104,11 @@ GetXmlCodec( CORE::CDStoreCodecRegistry::TDStoreCodecPtr& xmlCodec )
     #endif
 
     CORE::CPluginControl& pluginControl = coreGlobal->GetPluginControl();
-    if ( !pluginControl.AddPluginFromDir( firstPluginPath, "test", true ) )
-        pluginControl.AddPluginFromDir( secondPluginPath, "test", true );
+    if ( !pluginControl.AddPluginFromDir( firstPluginPath, XmlPluginGroup, true ) )
+        pluginControl.AddPluginFromDir( secondPluginPath, XmlPluginGroup, true );
 
-    return coreGlobal->GetDStoreCodecRegistry().TryLookup( "xml", xmlCodec, false );
+    g_loadedXmlPluginHere = coreGlobal->GetDStoreCodecRegistry().TryLookup( "xml", xmlCodec, false );
+    return g_loadedXmlPluginHere;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -203,6 +208,41 @@ PerformXmlDStoreCodecTests( void )
             ERRORHERE;
         }
     GUCEF_TESTFW_TESTCASE_END
+
+    // A C plugin found by trial and error (no plugin type given) must still be unloaded through its plugin manager,
+    // which takes its codec out of the registry, and it must load again afterwards
+    if ( g_loadedXmlPluginHere )
+    {
+        GUCEF_TESTFW_TESTCASE( "Test: The xml plugin unloads cleanly and loads again" )
+            try
+            {
+                CORE::CDStoreCodecRegistry& registry = CORE::CCoreGlobal::Instance()->GetDStoreCodecRegistry();
+                CORE::CPluginControl& pluginControl = CORE::CCoreGlobal::Instance()->GetPluginControl();
+                xmlCodec.Unlink();
+
+                ASSERT_TRUE( pluginControl.UnloadPluginGroup( XmlPluginGroup ) );
+                CORE::CDStoreCodecRegistry::TDStoreCodecPtr gone;
+                ASSERT_FALSE( registry.TryLookup( "xml", gone, false ) );
+
+                ASSERT_TRUE( pluginControl.LoadPluginGroup( XmlPluginGroup ) );
+                CORE::CDStoreCodecRegistry::TDStoreCodecPtr reloaded;
+                ASSERT_TRUE( registry.TryLookup( "xml", reloaded, false ) );
+                if ( !reloaded.IsNULL() )
+                {
+                    CORE::CDataNode sourceNode( "Again" );
+                    sourceNode.SetAttribute( "value", "1" );
+                    CORE::CDynamicBuffer xmlData;
+                    CORE::CDynamicBufferAccess xmlDataAccess( xmlData );
+                    ASSERT_TRUE( reloaded->StoreDataTree( &sourceNode, &xmlDataAccess ) );
+                    ASSERT_TRUE( BufferContains( xmlData, "Again" ) );
+                }
+            }
+            catch( ... )
+            {
+                ERRORHERE;
+            }
+        GUCEF_TESTFW_TESTCASE_END
+    }
 
     CORE::CLogStreamScope::FlushLogs();
     GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "ALL XML DStore Codec TESTS COMPLETED" );

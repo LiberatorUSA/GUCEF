@@ -705,10 +705,9 @@ bool
 CUtf32String::operator==( const CUtf32String& other ) const
 {GUCEF_TRACE;
 
-    if ( GUCEF_NULL == m_string && GUCEF_NULL == other.m_string )
-        return true;
+    // empty is empty, with or without storage
     if ( GUCEF_NULL == m_string || GUCEF_NULL == other.m_string )
-        return false;
+        return m_length == other.m_length && 0u == m_length;
     if ( m_length != other.m_length )
         return false;
     return Utf32Strcmp( m_string, other.m_string ) == 0;
@@ -881,6 +880,13 @@ CUtf32String::C_String( void )
 {GUCEF_TRACE;
 
     PromoteToOwned();
+    if ( GUCEF_NULL == m_string )
+    {
+        // an empty string without storage: give it a terminator, so the writable C string is empty as the const one is
+        m_string = GUCEF_NEW UInt32[ 1 ];
+        m_string[ 0 ] = 0u;
+        m_length = 0u;
+    }
     return m_string;
 }
 

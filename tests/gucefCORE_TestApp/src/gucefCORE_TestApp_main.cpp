@@ -162,6 +162,9 @@
 #ifndef GUCEF_CORE_TESTAPP_TESTTHREADPOOLCANCELLATION_H
 #include "TestThreadPoolCancellation.h"
 #include "TestFutureResultSource.h"
+#include "TestVariantMapAdapter.h"
+#include "TestPluginUnload.h"
+#include "TestSfinaeUtils.h"
 #include "TestExternalThreads.h"
 #include "TestDedicatedTasks.h"
 #include "TestDynamicBuffer.h"
@@ -303,6 +306,7 @@ GUCEF_OSMAIN_BEGIN
         PerformASyncTests();
         PerformThreadPoolCancellationTests();
         PerformFutureResultSourceTests();
+        PerformVariantMapAdapterTests();
         PerformExternalThreadTests();
         PerformDedicatedTaskTests();
         PerformAsyncUriResourceRetrieverTests();
@@ -311,6 +315,8 @@ GUCEF_OSMAIN_BEGIN
         PerformXmlDStoreCodecTests();
         PerformDStoreStreamingTests();
         PerformCodecPluginTests();
+        PerformPluginUnloadTests();
+        PerformSfinaeUtilsTests();
         PerformRandomTests();
         PerformRateLimitingTests();
         PerformFileAccessTests();

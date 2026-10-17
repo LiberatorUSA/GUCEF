@@ -23,7 +23,6 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#include <vector>
 #include <memory>
 
 #ifndef GUCEF_CORE_CASYNC_H
@@ -92,7 +91,7 @@ using namespace GUCEF;
 //-------------------------------------------------------------------------*/
 
 static MT::CMutex g_testMutex;
-static std::vector<int> g_testResults;
+static GUCEF::vector<int> g_testResults;
 static int g_testCounter = 0;
 static CORE::CString g_threadPoolName = "TestASyncThreadPool";
 
@@ -1035,7 +1034,7 @@ void TestConcurrentOperations()
             CORE::ThreadPoolPtr threadPool = CORE::CCoreGlobal::Instance()->GetTaskManager().GetOrCreateThreadPool( CORE::CTaskManager::DefaultThreadPoolName );
             threadPool->SetDesiredMinNrOfWorkerThreads( numConcurrentTasks );
             
-            std::vector<CORE::CFutureResult> futures;
+            GUCEF::vector<CORE::CFutureResult> futures;
             futures.reserve( numConcurrentTasks );
         
             // Launch multiple concurrent async operations

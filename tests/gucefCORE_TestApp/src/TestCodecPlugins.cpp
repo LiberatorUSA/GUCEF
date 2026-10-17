@@ -118,6 +118,9 @@ class CPartialWriteBufferAccess : public CORE::CDynamicBufferAccess
 
 /*-------------------------------------------------------------------------*/
 
+// the group the plugins are loaded in by these tests, their own so unloading it touches nothing else
+static const char* CodecPluginGroup = "codecplugin_tests";
+
 static bool
 EnsureCodecPluginIsLoaded( const CORE::CString& pluginName )
 {GUCEF_TRACE;
@@ -132,9 +135,9 @@ EnsureCodecPluginIsLoaded( const CORE::CString& pluginName )
     #endif
 
     CORE::CPluginControl& pluginControl = CORE::CCoreGlobal::Instance()->GetPluginControl();
-    if ( pluginControl.AddPluginFromDir( firstPluginPath, "test", true ) )
+    if ( pluginControl.AddPluginFromDir( firstPluginPath, CodecPluginGroup, true ) )
         return true;
-    return pluginControl.AddPluginFromDir( secondPluginPath, "test", true );
+    return pluginControl.AddPluginFromDir( secondPluginPath, CodecPluginGroup, true );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -448,6 +451,37 @@ PerformCodecPluginTests( void )
 
     PerformZLibCodecTests();
     PerformHashCodecTests();
+
+    // C plugins found by trial and error (no plugin type given) must still be unloaded through their plugin manager,
+    // which takes their codecs out of the registry, and they must load again afterwards
+    CORE::CCodecRegistry::TICodecPtr deflate;
+    if ( GetCodec( CORE::CoreCodecTypes::CompressionCodec, "deflate", deflate ) )
+    {
+        deflate.Unlink();
+        GUCEF_TESTFW_TESTCASE( "Test: Codec plugins unload cleanly and load again" )
+            try
+            {
+                CORE::CPluginControl& pluginControl = CORE::CCoreGlobal::Instance()->GetPluginControl();
+                ASSERT_TRUE( pluginControl.UnloadPluginGroup( CodecPluginGroup ) );
+                CORE::CCodecRegistry::TICodecPtr gone;
+                ASSERT_FALSE( GetCodec( CORE::CoreCodecTypes::CompressionCodec, "deflate", gone ) );
+
+                ASSERT_TRUE( pluginControl.LoadPluginGroup( CodecPluginGroup ) );
+                CORE::CCodecRegistry::TICodecPtr reloaded;
+                ASSERT_TRUE( GetCodec( CORE::CoreCodecTypes::CompressionCodec, "deflate", reloaded ) );
+                if ( !reloaded.IsNULL() )
+                {
+                    CORE::CDynamicBuffer original;
+                    CreateCompressibleTestData( original, 64 * 1024 );
+                    PerformCompressionRoundTripTest( reloaded, original, 1024 * 1024 );
+                }
+            }
+            catch( ... )
+            {
+                ERRORHERE;
+            }
+        GUCEF_TESTFW_TESTCASE_END
+    }
 
     CORE::CLogStreamScope::FlushLogs();
     GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "ALL Codec Plugin TESTS COMPLETED" );

@@ -26,6 +26,8 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+#include <string.h>     /* memcpy */
+
 #ifndef GUCEF_CORE_LOGGING_H
 #include "gucefCORE_Logging.h"
 #define GUCEF_CORE_LOGGING_H
@@ -246,6 +248,13 @@ class GUCEF_CORE_PUBLIC_CPP CDynamicBuffer : public CICloneable
     TGrowthStrategy GetGrowthStrategy( void ) const;
 
     UInt32 GetGrowthStrategyParam( void ) const;
+
+    /**
+     *  Makes sure the buffer holds at least requiredSize bytes, growing it the way the given strategy says
+     *  This is what the implicit growth of the buffer uses with its own strategy, it allows users of the buffer
+     *  (CDynamicBufferAccess for example) to grow it with a strategy of their choosing. Honours auto enlarge.
+     */
+    bool EnsureBufferSizeForGrowth( UInt32 requiredSize, TGrowthStrategy strategy, UInt32 strategyParam );
 
     /**
      *  Special operation that allows you to link to data outside of the dynamic buffer
@@ -519,6 +528,16 @@ class GUCEF_CORE_PUBLIC_CPP CDynamicBuffer : public CICloneable
 
     /**
      *  Utility member function:
+     *  Copies a value of the given type out of the buffer at the given offset. Unlike AsConstType() the offset does not
+     *  have to suit the alignment of the type, which is what reading packed data (serialized streams, file formats) needs
+     *
+     *  @throw EIllegalCast thrown when the buffer does not have the bytes of the type at the offset
+     */
+    template< typename T >
+    T ReadValue( const UInt32 byteOffset = 0 ) const;
+
+    /**
+     *  Utility member function:
      *  Performs easy casting to the given type as a pointer at the given offset
      *
      *  @throw EIllegalCast thrown when the cast cannot be performed with the data available in the buffer
@@ -569,7 +588,7 @@ class GUCEF_CORE_PUBLIC_CPP CDynamicBuffer : public CICloneable
 
     /**
      *  Makes sure the buffer holds at least requiredSize bytes for an operation that grows the buffer implicitly
-     *  Honours the auto enlarge setting and the growth strategy
+     *  Honours the auto enlarge setting and the growth strategy of the buffer
      */
     bool EnsureBufferSizeForGrowth( UInt32 requiredSize );
 
@@ -628,6 +647,24 @@ CDynamicBuffer::AsConstType( const UInt32 byteOffset /* = 0 */ ) const
     }
 
     GUCEF_EMSGTHROW( EIllegalCast, "GUCEF::CORE::CDynamicBuffer::AsConstType(): Cannot cast to the given type. Need " + 
+        ToString( (UInt32) sizeof( T ) ) + " bytes at offset " + ToString( byteOffset ) + ". Only have " + ToString( GetRemainingDataSize( byteOffset ) ) );
+}
+
+/*-------------------------------------------------------------------------*/
+
+template< typename T >
+T
+CDynamicBuffer::ReadValue( const UInt32 byteOffset /* = 0 */ ) const
+{GUCEF_TRACE;
+
+    if ( byteOffset + sizeof( T ) <= GetDataSize() )
+    {
+        T value;
+        memcpy( &value, static_cast< const char* >( GetConstBufferPtr() ) + byteOffset, sizeof( T ) );
+        return value;
+    }
+
+    GUCEF_EMSGTHROW( EIllegalCast, "GUCEF::CORE::CDynamicBuffer::ReadValue(): Cannot read the given type. Need " +
         ToString( (UInt32) sizeof( T ) ) + " bytes at offset " + ToString( byteOffset ) + ". Only have " + ToString( GetRemainingDataSize( byteOffset ) ) );
 }
 

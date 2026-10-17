@@ -24,7 +24,6 @@
 //-------------------------------------------------------------------------*/
 
 #include <string.h>
-#include <vector>
 
 #ifndef GUCEF_CORE_CNOTIFICATIONIDREGISTRY_H
 #include "CNotificationIDRegistry.h"
@@ -224,7 +223,7 @@ public:
         return NotifyObservers();
     }
 
-    std::string GetTypeName( void ) const
+    CString GetTypeName( void ) const
     {
         return "XtraBase::CMyNotifier";
     }
@@ -289,7 +288,7 @@ public:
     }
 
     CMyNotifier* m_notifierToDestroy;
-    std::vector< const CNotifier* > m_modifySources;
+    GUCEF::vector< const CNotifier* > m_modifySources;
 
 protected:
 
@@ -394,16 +393,16 @@ PerformNotifierObserverTests( void )
         ASSERT_TRUE( observers[ 0 ]->GetNotifierCount() == 0 );
         ASSERT_TRUE( observers[ 0 ]->GetSubscriptionCount() == 0 );
 
-        // observer[1]: specific-event subscription to one notifier
-        // Without a callback the observer is NOT written into m_eventobservers, so count = 4 (base link only)
+        // observer[1]: specific-event subscription to one notifier, without a callback
+        // The observer is recorded for the event like a callback subscription: 4 (base link) + 1 = 5
         notifierA.Subscribe( observers[ 1 ], myEventA );
         ASSERT_TRUE( observers[ 1 ]->GetNotifierCount() == 1 );
-        ASSERT_TRUE( observers[ 1 ]->GetSubscriptionCount() == 4 );
+        ASSERT_TRUE( observers[ 1 ]->GetSubscriptionCount() == 5 );
 
-        // observer[1]: also specific-event subscription to second notifier (4 + 4 = 8)
+        // observer[1]: also specific-event subscription to second notifier (5 + 5 = 10)
         notifierB->Subscribe( observers[ 1 ], myEventB );
         ASSERT_TRUE( observers[ 1 ]->GetNotifierCount() == 2 );
-        ASSERT_TRUE( observers[ 1 ]->GetSubscriptionCount() == 8 );
+        ASSERT_TRUE( observers[ 1 ]->GetSubscriptionCount() == 10 );
 
         // observer[2]: subscribe then unsubscribe-all
         notifierA.Subscribe( observers[ 2 ] );
@@ -588,9 +587,9 @@ PerformNotifierObserverTests( void )
     try
     {
         // Subscribe(observer, specificEvent, callback) adds the observer to m_eventobservers
-        // (Phase 1 dispatch) so only that event triggers the callback.  Without a callback
-        // the observer is NOT placed in m_eventobservers and receives nothing for that event.
-        // Selective delivery therefore requires callbacks.
+        // (Phase 1 dispatch) so only that event triggers the callback. Without a callback the
+        // observer is placed there as well and gets the event through OnNotify(), see the test
+        // "Specific event subscription without a callback".
         //
         // Subscription count with callback: 4 (base link) + 1 per callback entry = 5 per notifier.
 
@@ -652,6 +651,55 @@ PerformNotifierObserverTests( void )
 
         delete notifierB;
         for ( UInt32 i = 0; i < 100; ++i )
+            delete observers[ i ];
+    }
+    catch ( ... )
+    {
+        ERRORHERE;
+    }
+    GUCEF_TESTFW_TESTCASE_END
+
+    // CNotifier::Subscribe( observer, eventid ) documents that the observer is subscribed to the custom event; the
+    // event comes through OnNotify(). This form was only recorded when a callback was given, so the event was never delivered
+    GUCEF_TESTFW_TESTCASE( "Specific event subscription without a callback" )
+    try
+    {
+        CNotificationIDRegistry* registry = &CCoreGlobal::Instance()->GetNotificationIDRegistry();
+        CEvent myEventA = registry->Register( "TestApp::myEventA", true );
+        CEvent myEventB = registry->Register( "TestApp::myEventB", true );
+
+        CEvent observerECache[ 3 ];
+        SETARRAYMEM( observerECache, 3, CEvent() );
+        CMyObserver* observers[ 3 ];
+        for ( UInt32 i = 0; i < 3; ++i )
+            observers[ i ] = new CMyObserver( i, observerECache );
+
+        CMyNotifier notifierA;
+        notifierA.Subscribe( observers[ 0 ], myEventA );                // only myEventA
+        notifierA.Subscribe( observers[ 1 ], myEventB );                // only myEventB
+        notifierA.Subscribe( observers[ 2 ] );                          // everything
+        notifierA.Subscribe( observers[ 2 ], myEventA );                // and myEventA once more: still one delivery
+        SETARRAYMEM( observerECache, 3, CEvent() );
+
+        notifierA.DoNotifyObservers( myEventA );
+        ASSERT_TRUE( observerECache[ 0 ] == myEventA );
+        ASSERT_FALSE( observerECache[ 1 ].IsInitialized() );       // nothing came
+        ASSERT_TRUE( observerECache[ 2 ] == myEventA );
+
+        SETARRAYMEM( observerECache, 3, CEvent() );
+        notifierA.DoNotifyObservers( myEventB );
+        ASSERT_FALSE( observerECache[ 0 ].IsInitialized() );       // nothing came
+        ASSERT_TRUE( observerECache[ 1 ] == myEventB );
+        ASSERT_TRUE( observerECache[ 2 ] == myEventB );
+
+        // after unsubscribing from the event nothing more comes
+        notifierA.Unsubscribe( observers[ 0 ], myEventA );
+        SETARRAYMEM( observerECache, 3, CEvent() );
+        notifierA.DoNotifyObservers( myEventA );
+        ASSERT_FALSE( observerECache[ 0 ].IsInitialized() );       // nothing came
+        ASSERT_TRUE( observers[ 0 ]->GetSubscriptionCount() == 4 );
+
+        for ( UInt32 i = 0; i < 3; ++i )
             delete observers[ i ];
     }
     catch ( ... )
@@ -1061,6 +1109,32 @@ PerformNotifierObserverTests( void )
         ASSERT_TRUE( otherNotifier == observer.m_modifySources[ 1 ] );
 
         delete otherNotifier;
+    }
+    catch ( ... )
+    {
+        ERRORHERE;
+    }
+    GUCEF_TESTFW_TESTCASE_END
+
+    // Events are usually static objects that a module registers when it loads. When the module's load runs before the
+    // static event objects are constructed (static initialization order), the construction resets them; comparing
+    // such an event must still work instead of tripping over the missing id
+    GUCEF_TESTFW_TESTCASE( "An event that has a name but was not initialized compares and identifies by its name" )
+    try
+    {
+        const CORE::CEvent notInitialized( "GUCEF::CORE::TestNotifierObserver::LazyEvent" );
+        const CORE::CEvent initialized( "GUCEF::CORE::TestNotifierObserver::LazyEvent" );
+        const CORE::CEvent other( "GUCEF::CORE::TestNotifierObserver::OtherLazyEvent" );
+        initialized.Initialize();
+        ASSERT_FALSE( notInitialized.IsInitialized() );
+
+        ASSERT_TRUE( notInitialized == initialized );
+        ASSERT_TRUE( initialized == notInitialized );
+        ASSERT_FALSE( notInitialized != initialized );
+        ASSERT_TRUE( notInitialized != other );
+        ASSERT_TRUE( notInitialized.GetID() == initialized.GetID() );
+        ASSERT_TRUE( ( other < initialized ) != ( initialized < other ) );
+        ASSERT_TRUE( notInitialized.IsInitialized() );
     }
     catch ( ... )
     {

@@ -172,9 +172,9 @@ bool
 CEvent::operator==( const CEvent& other ) const
 {GUCEF_TRACE;
 
-    // If you hit the asserts below then the event object was not initialized
-    assert( m_eventID > 0 );
-    assert( other.m_eventID > 0 );
+    // An event that has a name resolves its id on first use, see EnsureInitialized()
+    EnsureInitialized();
+    other.EnsureInitialized();
     return m_eventID == other.m_eventID;
 }
 
@@ -202,9 +202,9 @@ bool
 CEvent::operator!=( const CEvent& other ) const
 {GUCEF_TRACE;
 
-    // If you hit the asserts below then the event object was not initialized
-    assert( m_eventID > 0 );
-    assert( other.m_eventID > 0 );
+    // An event that has a name resolves its id on first use, see EnsureInitialized()
+    EnsureInitialized();
+    other.EnsureInitialized();
     return m_eventID != other.m_eventID;
 }
 
@@ -214,9 +214,9 @@ bool
 CEvent::operator<( const CEvent& other ) const
 {GUCEF_TRACE;
 
-    // If you hit the asserts below then the event object was not initialized
-    assert( m_eventID > 0 );
-    assert( other.m_eventID > 0 );
+    // An event that has a name resolves its id on first use, see EnsureInitialized()
+    EnsureInitialized();
+    other.EnsureInitialized();
     return m_eventID < other.m_eventID;
 }
 
@@ -226,8 +226,7 @@ UInt32
 CEvent::GetID( void ) const
 {GUCEF_TRACE;
 
-    // If you hit the asserts below then the event object was not initialized
-    assert( m_eventID > 0 );
+    EnsureInitialized();
     return m_eventID;
 }
 
@@ -260,6 +259,21 @@ CEvent::Initialize( void ) const
          */
         const_cast< CEvent& >( *this ) = CORE::CCoreGlobal::Instance()->GetNotificationIDRegistry().Lookup( m_eventName, true );
     }
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CEvent::EnsureInitialized( void ) const
+{GUCEF_TRACE;
+
+    // Events are mostly static objects a module registers when it loads. When that registration runs before the static
+    // event objects are constructed (the order of static initialization between source files is not defined) their
+    // construction leaves them without an id again. An event that has a name can always find its id, so it does here.
+    // If you hit the assert below then the event object was never given a name
+    if ( 0 == m_eventID && !m_eventName.IsNULLOrEmpty() )
+        Initialize();
+    assert( m_eventID > 0 );
 }
 
 /*-------------------------------------------------------------------------*/
