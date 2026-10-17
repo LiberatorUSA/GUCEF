@@ -232,7 +232,7 @@ class GUCEF_DRN_EXPORT_CPP CDRNPeerLinkData : public CORE::CObservingNotifier
     typedef std::map< UInt16, TDRNDataGroupPtr >  TIDToDataGroupMap;
     typedef std::map< UInt16, TDRNDataStreamPtr > TIDToDataStreamMap;
         
-    CORE::T16BitNumericIDGenerator m_idGenerator;
+    CORE::T16BitNumericIDGenerator::TNumericIDGeneratorTypedPtr m_idGenerator;   /**< shared: the ids refer to it */
     TDataGroupMap m_subscribedDataGroups;
     TDataStreamMap m_subscribedDataStreams;
     TIDToDataGroupMap m_subscribedDataGroupsID;

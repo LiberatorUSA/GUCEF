@@ -60,6 +60,7 @@ CDRNPeerLinkData::CDRNPeerLinkData( CDRNPeerLink& peerLink )
 {GUCEF_TRACE;
 
     assert( m_peerLink!= NULL );
+    m_idGenerator = CORE::T16BitNumericIDGenerator::CreateSharedObj();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -133,7 +134,7 @@ CDRNPeerLinkData::PublicizeStream( TDRNDataStreamPtr& dataStream )
 {GUCEF_TRACE;
 
     m_publicizedDataStreams[ dataStream->GetName() ] = dataStream;    
-    TDRNDataStreamEntry entry = { dataStream, new CORE::T16BitNumericID( m_idGenerator.GenerateID() ) };
+    TDRNDataStreamEntry entry = { dataStream, new CORE::T16BitNumericID( m_idGenerator->GenerateID() ) };
     m_publicizedDataStreamsID[ *entry.id ] = entry;
     
     SubscribeTo( dataStream.GetPointer(), CDRNDataStream::DataTransmittedEvent );
@@ -174,7 +175,7 @@ CDRNPeerLinkData::PublicizeDataGroup( TDRNDataGroupPtr& dataGroup )
 {GUCEF_TRACE;
 
     m_publicizedDataGroups[ dataGroup->GetName() ] = dataGroup;    
-    TDRNDataGroupEntry entry = { dataGroup, new CORE::T16BitNumericID( m_idGenerator.GenerateID() ) };
+    TDRNDataGroupEntry entry = { dataGroup, new CORE::T16BitNumericID( m_idGenerator->GenerateID() ) };
     m_publicizedDataGroupsID[ *entry.id ] = entry;
     
     SubscribeTo( dataGroup.GetPointer() );    
