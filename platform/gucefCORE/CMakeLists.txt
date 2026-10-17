@@ -254,6 +254,7 @@ set( HEADER_FILES
   include/gucefCORE_CTLinkedCloneable.h
   include/gucefCORE_CTMailboxForSharedCloneables.h
   include/gucefCORE_CTMultiRegistry.h
+  include/gucefCORE_CTWeakPtr.h
   include/gucefCORE_CTask.h
   include/gucefCORE_CTaskConsumer.h
   include/gucefCORE_CTaskDelegator.h

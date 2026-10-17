@@ -336,6 +336,11 @@
 #define GUCEF_CORE_CTSHAREDPTR_H
 #endif /* GUCEF_CORE_CTSHAREDPTR_H ? */
 
+#ifndef GUCEF_CORE_CTWEAKPTR_H
+#include "gucefCORE_CTWeakPtr.h"
+#define GUCEF_CORE_CTWEAKPTR_H
+#endif /* GUCEF_CORE_CTWEAKPTR_H ? */
+
 #ifndef GUCEF_CORE_CCODECREGISTRY_H
 #include "CCodecRegistry.h"
 #define GUCEF_CORE_CCODECREGISTRY_H
