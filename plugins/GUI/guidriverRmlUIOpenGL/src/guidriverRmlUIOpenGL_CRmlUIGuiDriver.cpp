@@ -14,7 +14,7 @@
  *
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
  */
 
 /*-------------------------------------------------------------------------//
@@ -23,32 +23,22 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#include <RmlUi/Core.h>
+#include "RmlUi_Renderer_GL3.h"
 
-#ifndef GUCEF_CORE_COBSERVINGNOTIFIER_H
-#include "CObservingNotifier.h"
-#define GUCEF_CORE_COBSERVINGNOTIFIER_H
-#endif /* GUCEF_CORE_COBSERVINGNOTIFIER_H ? */
+#ifndef GUCEF_CORE_LOGGING_H
+#include "gucefCORE_Logging.h"
+#define GUCEF_CORE_LOGGING_H
+#endif /* GUCEF_CORE_LOGGING_H ? */
 
-#ifndef GUCEF_CORE_CICONFIGURABLE_H
-#include "gucefCORE_CIConfigurable.h"
-#define GUCEF_CORE_CICONFIGURABLE_H
-#endif /* GUCEF_CORE_CICONFIGURABLE_H ? */
+#ifndef GUCEF_CORE_DVCPPSTRINGUTILS_H
+#include "dvcppstringutils.h"
+#define GUCEF_CORE_DVCPPSTRINGUTILS_H
+#endif /* GUCEF_CORE_DVCPPSTRINGUTILS_H ? */
 
-#ifndef GUCEF_INPUT_CINPUTGLOBAL_H
-#include "gucefINPUT_CInputGlobal.h"
-#define GUCEF_INPUT_CINPUTGLOBAL_H
-#endif /* GUCEF_INPUT_CINPUTGLOBAL_H ? */
-
-#ifndef GUCEF_INPUT_CINPUTCONTROLLER_H
-#include "CInputController.h"
-#define GUCEF_INPUT_CINPUTCONTROLLER_H
-#endif /* GUCEF_INPUT_CINPUTCONTROLLER_H ? */
-
-#ifndef GUCEF_GUIDRIVERRMLUI_CGUICONTEXT_H
-#include "guidriverRmlUI_CGUIContext.h"
-#define GUCEF_GUIDRIVERRMLUI_CGUICONTEXT_H
-#endif /* GUCEF_GUIDRIVERRMLUI_CGUICONTEXT_H ? */
+#ifndef GUCEF_GUIDRIVERRMLUIGL_CRMLUIOPENGLCONTEXT_H
+#include "guidriverRmlUIOpenGL_CRmlUIOpenGLContext.h"
+#define GUCEF_GUIDRIVERRMLUIGL_CRMLUIOPENGLCONTEXT_H
+#endif /* GUCEF_GUIDRIVERRMLUIGL_CRMLUIOPENGLCONTEXT_H ? */
 
 #include "guidriverRmlUIOpenGL_CRmlUIGuiDriver.h"
 
@@ -67,19 +57,25 @@ namespace GUIDRIVERRMLUIGL {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+namespace {
+
+typedef void* ( *TGetProcAddress )( const char* name );
+
+bool g_glLoaded = false;
+
+}
+
+/*-------------------------------------------------------------------------//
+//                                                                         //
+//      IMPLEMENTATION                                                     //
+//                                                                         //
+//-------------------------------------------------------------------------*/
+
 CRmlUIGuiDriver::CRmlUIGuiDriver( void )
-    : GUI::CGUIDriver()              ,
-      m_renderer()             ,
-      m_systemInterface()            ,
-      m_fileInterface()              ,
-      m_isRmlUIInitialized( false ) ,
-      m_contextSet()                 ,
-      m_fontTypes()
+    : guidriverRmlUI::CRmlUIDriver()
+    , m_glDescription()
 {GUCEF_TRACE;
 
-	Rml::SetRenderInterface( &m_renderer );
-    Rml::SetSystemInterface( &m_systemInterface );
-    Rml::SetFileInterface( &m_fileInterface );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -87,10 +83,6 @@ CRmlUIGuiDriver::CRmlUIGuiDriver( void )
 CRmlUIGuiDriver::~CRmlUIGuiDriver()
 {GUCEF_TRACE;
 
-    // Shutting down also releases the contexts and everything else RmlUi holds, which uses the interfaces
-    // that are our members and have to stay valid until then
-    if ( m_isRmlUIInitialized )
-        Rml::Shutdown();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -99,164 +91,78 @@ GUI::TGuiContextPtr
 CRmlUIGuiDriver::CreateGUIContext( GUI::TWindowContextPtr windowContext )
 {GUCEF_TRACE;
 
-    // Lazy initialize RmlUi as needed
-    if ( !m_isRmlUIInitialized )
+    if ( !IsRmlUiReady() )
+        return GUI::TGuiContextPtr();
+    if ( windowContext.IsNULL() )
     {
-        m_isRmlUIInitialized = Rml::Initialise();
-        if ( !m_isRmlUIInitialized )
-        {
-            GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "Failed to initialize RmlUi" );
-            return GUI::TGuiContextPtr();
-        }
-        else
-        {
-            GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "Initialized RmlUi" );
-        }
-    }
-
-    Rml::Context* context = NULL;
-    if ( NULL != windowContext )
-    {
-        // Create the main RmlUi context using the parameters of the windowContext
-        context = Rml::CreateContext( CORE::PointerToString( windowContext.GetPointer() ).C_String()                  ,
-                                      Rml::Vector2i( windowContext->GetWidth(), windowContext->GetHeight() ) );
-    }
-    else
-    {
-        // Create the main RmlUi context using defaults, it is expected to be altered later
-        GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "Initialized RmlUi context with defaults since no window context was provided" );
-        context = Rml::CreateContext( "default"                      ,
-                                               Rml::Vector2i( 2, 2 ) );
-    }
-
-    if ( NULL == context )
-    {
-        // Unable to create a RmlUi context
-        GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "Failed to create RmlUi GUI context" );
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "RmlUIGuiDriver: A context needs a window with an OpenGL context" );
         return GUI::TGuiContextPtr();
     }
 
-    // Create an input context using the default driver and set it for this GUI context so that we can interact
-    // with the GUI based on input events. Note that in order to correctly tie in the input system we have to pass the
-    // correct parameters for the O/S
-    CORE::CValueList inputContextParams;
-    inputContextParams.Set( "WINDOW", windowContext->GetProperty( "WINDOW" ) );
-    INPUT::CInputContext* inputContext = INPUT::CInputGlobal::Instance()->GetInputController().CreateContext( inputContextParams );
-
-    // Add a reference to the context in our set
-    GUI::TGuiContextPtr guiContextPtr = GUI::TGuiContextPtr( new guidriverRmlUI::CGUIContext( this, context, windowContext, inputContext ) );
-    m_contextSet.insert( guiContextPtr );
-
-    return guiContextPtr;
-}
-
-/*-------------------------------------------------------------------------*/
-
-GUI::CGUIDriver::TGUIContextSet
-CRmlUIGuiDriver::GetContextList( void )
-{GUCEF_TRACE;
-
-    return m_contextSet;
-}
-
-/*-------------------------------------------------------------------------*/
-
-GUI::UInt32
-CRmlUIGuiDriver::GetContextCount( void )
-{GUCEF_TRACE;
-
-    return (GUI::UInt32) m_contextSet.size();
-}
-
-/*-------------------------------------------------------------------------*/
-
-GUI::CString
-CRmlUIGuiDriver::GetDriverName( void )
-{GUCEF_TRACE;
-
-    return "RmlUIOpenGL";
-}
-
-/*-------------------------------------------------------------------------*/
-
-GUI::CGUIDriver::TStringSet
-CRmlUIGuiDriver::GetAvailableFormTypes( void )
-{GUCEF_TRACE;
-
-    return GUI::CGUIDriver::TStringSet();
-}
-
-/*-------------------------------------------------------------------------*/
-
-GUI::CGUIDriver::TStringSet
-CRmlUIGuiDriver::GetAvailableWidgetTypes( void )
-{GUCEF_TRACE;
-
-    return GUI::CGUIDriver::TStringSet();
-}
-
-/*-------------------------------------------------------------------------*/
-
-GUI::CGUIDriver::TStringSet
-CRmlUIGuiDriver::GetAvailableFonts( void )
-{GUCEF_TRACE;
-
-    return m_fontTypes;
-}
-
-/*-------------------------------------------------------------------------*/
-
-bool
-CRmlUIGuiDriver::LoadFontFromAsset( const GUI::CString& assetPath )
-{GUCEF_TRACE;
-
-    // Simple pass on the load request to RmlUi, all the callback inerfaces will take
-    // care of integrating with GUCEF
-    if ( Rml::LoadFontFace( assetPath.C_String() ) )
+    // the GL functions are loaded once, in the first window's GL context
+    if ( !g_glLoaded )
     {
-        // @TODO: fix somehow
-        // This is not correct but at present RmlUi cant give you the name of the font back
-        m_fontTypes.insert( assetPath );
-        return true;
+        TGetProcAddress getProcAddress = (TGetProcAddress) CORE::StringToPointer( windowContext->GetProperty( "GL_GETPROCADDRESS" ) );
+        Rml::String message;
+        g_glLoaded = RmlGL3::Initialize( &message, getProcAddress );
+        m_glDescription = message.c_str();
+        if ( !g_glLoaded )
+        {
+            GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "RmlUIGuiDriver: " << m_glDescription );
+            return GUI::TGuiContextPtr();
+        }
+        GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "RmlUIGuiDriver: " << m_glDescription );
     }
-    return false;
+
+    // retro art stays sharp when scaled
+    RenderInterface_GL3::SetTextureFilterNearest( true );
+    RenderInterface_GL3* renderer = GUCEF_NEW RenderInterface_GL3();
+    if ( !(*renderer) )
+    {
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "RmlUIGuiDriver: The OpenGL renderer could not be made (shaders)" );
+        delete renderer;
+        return GUI::TGuiContextPtr();
+    }
+
+    CRmlUIOpenGLContext* context = GUCEF_NEW CRmlUIOpenGLContext( this, windowContext, renderer );
+    GUI::TGuiContextPtr contextPtr( context );
+    if ( !context->IsValid() )
+        return GUI::TGuiContextPtr();
+    AddContext( contextPtr );
+    return contextPtr;
 }
 
 /*-------------------------------------------------------------------------*/
 
-const GUI::CString&
+CRmlUIGuiDriver::TStringSet
+CRmlUIGuiDriver::GetCapabilities( void )
+{GUCEF_TRACE;
+
+    TStringSet capabilities = guidriverRmlUI::CRmlUIDriver::GetCapabilities();
+    capabilities.insert( "CaptureFrame" );
+    capabilities.insert( "PresentScaling" );
+    return capabilities;
+}
+
+/*-------------------------------------------------------------------------*/
+
+CORE::CString
+CRmlUIGuiDriver::GetDriverProperty( const CORE::CString& propertyName ) const
+{GUCEF_TRACE;
+
+    if ( "Renderer" == propertyName )
+        return m_glDescription;
+    return guidriverRmlUI::CRmlUIDriver::GetDriverProperty( propertyName );
+}
+
+/*-------------------------------------------------------------------------*/
+
+const CORE::CString&
 CRmlUIGuiDriver::GetClassTypeName( void ) const
 {GUCEF_TRACE;
 
-    static GUI::CString classTypeName = "GUCEF::GUIDRIVERRMLUIGL::CRmlUIGuiDriver";
+    static const CORE::CString classTypeName = "GUCEF::GUIDRIVERRMLUIGL::CRmlUIGuiDriver";
     return classTypeName;
-}
-
-/*-------------------------------------------------------------------------*/
-
-GUI::CString
-CRmlUIGuiDriver::GetDriverProperty( const GUI::CString& propertyName ) const
-{GUCEF_TRACE;
-
-    return GUI::CString();
-}
-
-/*-------------------------------------------------------------------------*/
-
-bool
-CRmlUIGuiDriver::SaveConfig( CORE::CDataNode& tree ) const
-{GUCEF_TRACE;
-
-    return false;
-}
-
-/*-------------------------------------------------------------------------*/
-
-bool
-CRmlUIGuiDriver::LoadConfig( const CORE::CDataNode& treeroot )
-{GUCEF_TRACE;
-
-    return true;
 }
 
 /*-------------------------------------------------------------------------//

@@ -36,6 +36,16 @@
 #define GUCEF_GUIDRIVERRMLUIGL_MACROS_H
 #endif /* GUCEF_GUIDRIVERRMLUIGL_MACROS_H ? */
 
+/*
+ *  On the web there is no loading of modules: the plugin is linked into the application and its entry points get
+ *  unique names (guidriverRmlUIOpenGL_GUCEFPlugin_Load ...), which the application calls itself
+ */
+#if ( GUCEF_PLATFORM == GUCEF_PLATFORM_WASM_EMSCRIPTEN )
+  #define GUIDRIVERRMLUIGL_ENTRY( func ) guidriverRmlUIOpenGL_##func
+#else
+  #define GUIDRIVERRMLUIGL_ENTRY( func ) func
+#endif
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //
@@ -63,27 +73,27 @@ extern "C" {
 /*-------------------------------------------------------------------------*/
 
 GUIDRIVERRMLUIGL_PUBLIC_C CORE::Int32 GUCEF_PLUGIN_CALLSPEC_PREFIX 
-GUCEFPlugin_Load( CORE::UInt32 argc, const char** argv ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
+GUIDRIVERRMLUIGL_ENTRY( GUCEFPlugin_Load )( CORE::UInt32 argc, const char** argv ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
 
 /*-------------------------------------------------------------------------*/
 
 GUIDRIVERRMLUIGL_PUBLIC_C void GUCEF_PLUGIN_CALLSPEC_PREFIX 
-GUCEFPlugin_Unload( void ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
+GUIDRIVERRMLUIGL_ENTRY( GUCEFPlugin_Unload )( void ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
 
 /*-------------------------------------------------------------------------*/
 
 GUIDRIVERRMLUIGL_PUBLIC_C void GUCEF_PLUGIN_CALLSPEC_PREFIX 
-GUCEFPlugin_GetVersion( CORE::TVersion* versionInfo ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
+GUIDRIVERRMLUIGL_ENTRY( GUCEFPlugin_GetVersion )( CORE::TVersion* versionInfo ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
 
 /*-------------------------------------------------------------------------*/
 
 GUIDRIVERRMLUIGL_PUBLIC_C const char* GUCEF_PLUGIN_CALLSPEC_PREFIX 
-GUCEFPlugin_GetCopyright( void ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
+GUIDRIVERRMLUIGL_ENTRY( GUCEFPlugin_GetCopyright )( void ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
 
 /*-------------------------------------------------------------------------*/
 
 GUIDRIVERRMLUIGL_PUBLIC_C const char* GUCEF_PLUGIN_CALLSPEC_PREFIX 
-GUCEFPlugin_GetDescription( void ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
+GUIDRIVERRMLUIGL_ENTRY( GUCEFPlugin_GetDescription )( void ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
 
 /*-------------------------------------------------------------------------*/                 
 

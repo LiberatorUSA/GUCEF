@@ -103,6 +103,7 @@ set( SOURCE_FILES
   src/base/ftbitmap.c
   src/base/ftglyph.c
   src/base/ftinit.c
+  src/base/ftmm.c
   src/base/ftsystem.c
   src/bdf/bdf.c
   src/cache/ftcache.c
@@ -140,6 +141,7 @@ if (ANDROID)
     src/base/ftbitmap.c
     src/base/ftglyph.c
     src/base/ftinit.c
+    src/base/ftmm.c
     src/base/ftsystem.c
     src/bdf/bdf.c
     src/cache/ftcache.c
@@ -177,6 +179,7 @@ elseif (ANDROID32)
     src/base/ftbitmap.c
     src/base/ftglyph.c
     src/base/ftinit.c
+    src/base/ftmm.c
     src/base/ftsystem.c
     src/bdf/bdf.c
     src/cache/ftcache.c
@@ -214,6 +217,7 @@ elseif (ANDROID64)
     src/base/ftbitmap.c
     src/base/ftglyph.c
     src/base/ftinit.c
+    src/base/ftmm.c
     src/base/ftsystem.c
     src/bdf/bdf.c
     src/cache/ftcache.c
@@ -251,6 +255,7 @@ elseif (ARDUINO)
     src/base/ftbitmap.c
     src/base/ftglyph.c
     src/base/ftinit.c
+    src/base/ftmm.c
     src/base/ftsystem.c
     src/bdf/bdf.c
     src/cache/ftcache.c
@@ -288,6 +293,7 @@ elseif (EMSCRIPTEN)
     src/base/ftbitmap.c
     src/base/ftglyph.c
     src/base/ftinit.c
+    src/base/ftmm.c
     src/base/ftsystem.c
     src/bdf/bdf.c
     src/cache/ftcache.c
@@ -325,6 +331,7 @@ elseif (EMSCRIPTEN32)
     src/base/ftbitmap.c
     src/base/ftglyph.c
     src/base/ftinit.c
+    src/base/ftmm.c
     src/base/ftsystem.c
     src/bdf/bdf.c
     src/cache/ftcache.c
@@ -362,6 +369,7 @@ elseif (EMSCRIPTEN64)
     src/base/ftbitmap.c
     src/base/ftglyph.c
     src/base/ftinit.c
+    src/base/ftmm.c
     src/base/ftsystem.c
     src/bdf/bdf.c
     src/cache/ftcache.c
@@ -399,6 +407,7 @@ elseif (GLX)
     src/base/ftbitmap.c
     src/base/ftglyph.c
     src/base/ftinit.c
+    src/base/ftmm.c
     src/base/ftsystem.c
     src/bdf/bdf.c
     src/cache/ftcache.c
@@ -436,6 +445,7 @@ elseif (GTK)
     src/base/ftbitmap.c
     src/base/ftglyph.c
     src/base/ftinit.c
+    src/base/ftmm.c
     src/base/ftsystem.c
     src/bdf/bdf.c
     src/cache/ftcache.c
@@ -473,6 +483,7 @@ elseif (IOS)
     src/base/ftbitmap.c
     src/base/ftglyph.c
     src/base/ftinit.c
+    src/base/ftmm.c
     src/base/ftsystem.c
     src/bdf/bdf.c
     src/cache/ftcache.c
@@ -510,6 +521,7 @@ elseif (IPHONE)
     src/base/ftbitmap.c
     src/base/ftglyph.c
     src/base/ftinit.c
+    src/base/ftmm.c
     src/base/ftsystem.c
     src/bdf/bdf.c
     src/cache/ftcache.c
@@ -547,6 +559,7 @@ elseif (IPHONEOS)
     src/base/ftbitmap.c
     src/base/ftglyph.c
     src/base/ftinit.c
+    src/base/ftmm.c
     src/base/ftsystem.c
     src/bdf/bdf.c
     src/cache/ftcache.c
@@ -584,6 +597,7 @@ elseif (LINUX)
     src/base/ftbitmap.c
     src/base/ftglyph.c
     src/base/ftinit.c
+    src/base/ftmm.c
     src/base/ftsystem.c
     src/bdf/bdf.c
     src/cache/ftcache.c
@@ -621,6 +635,7 @@ elseif (LINUX32)
     src/base/ftbitmap.c
     src/base/ftglyph.c
     src/base/ftinit.c
+    src/base/ftmm.c
     src/base/ftsystem.c
     src/bdf/bdf.c
     src/cache/ftcache.c
@@ -658,6 +673,7 @@ elseif (LINUX64)
     src/base/ftbitmap.c
     src/base/ftglyph.c
     src/base/ftinit.c
+    src/base/ftmm.c
     src/base/ftsystem.c
     src/bdf/bdf.c
     src/cache/ftcache.c
@@ -695,6 +711,7 @@ elseif (MAC)
     src/base/ftbitmap.c
     src/base/ftglyph.c
     src/base/ftinit.c
+    src/base/ftmm.c
     src/base/ftsystem.c
     src/bdf/bdf.c
     src/cache/ftcache.c
@@ -732,6 +749,7 @@ elseif (MACOS)
     src/base/ftbitmap.c
     src/base/ftglyph.c
     src/base/ftinit.c
+    src/base/ftmm.c
     src/base/ftsystem.c
     src/bdf/bdf.c
     src/cache/ftcache.c
@@ -769,6 +787,7 @@ elseif (MACOSX)
     src/base/ftbitmap.c
     src/base/ftglyph.c
     src/base/ftinit.c
+    src/base/ftmm.c
     src/base/ftsystem.c
     src/bdf/bdf.c
     src/cache/ftcache.c
@@ -806,6 +825,7 @@ elseif (MSWIN)
     src/base/ftbitmap.c
     src/base/ftglyph.c
     src/base/ftinit.c
+    src/base/ftmm.c
     src/base/ftsystem.c
     src/bdf/bdf.c
     src/cache/ftcache.c
@@ -843,6 +863,7 @@ elseif (NACL)
     src/base/ftbitmap.c
     src/base/ftglyph.c
     src/base/ftinit.c
+    src/base/ftmm.c
     src/base/ftsystem.c
     src/bdf/bdf.c
     src/cache/ftcache.c
@@ -880,6 +901,7 @@ elseif (OSX)
     src/base/ftbitmap.c
     src/base/ftglyph.c
     src/base/ftinit.c
+    src/base/ftmm.c
     src/base/ftsystem.c
     src/bdf/bdf.c
     src/cache/ftcache.c
@@ -917,6 +939,7 @@ elseif (POSIX)
     src/base/ftbitmap.c
     src/base/ftglyph.c
     src/base/ftinit.c
+    src/base/ftmm.c
     src/base/ftsystem.c
     src/bdf/bdf.c
     src/cache/ftcache.c
@@ -954,6 +977,7 @@ elseif (SDL)
     src/base/ftbitmap.c
     src/base/ftglyph.c
     src/base/ftinit.c
+    src/base/ftmm.c
     src/base/ftsystem.c
     src/bdf/bdf.c
     src/cache/ftcache.c
@@ -991,6 +1015,7 @@ elseif (SYMBIAN)
     src/base/ftbitmap.c
     src/base/ftglyph.c
     src/base/ftinit.c
+    src/base/ftmm.c
     src/base/ftsystem.c
     src/bdf/bdf.c
     src/cache/ftcache.c
@@ -1028,6 +1053,7 @@ elseif (UNIX)
     src/base/ftbitmap.c
     src/base/ftglyph.c
     src/base/ftinit.c
+    src/base/ftmm.c
     src/base/ftsystem.c
     src/bdf/bdf.c
     src/cache/ftcache.c
@@ -1065,6 +1091,7 @@ elseif (WIN32)
     src/base/ftbitmap.c
     src/base/ftglyph.c
     src/base/ftinit.c
+    src/base/ftmm.c
     src/base/ftsystem.c
     src/bdf/bdf.c
     src/cache/ftcache.c
@@ -1102,6 +1129,7 @@ elseif (WIN64)
     src/base/ftbitmap.c
     src/base/ftglyph.c
     src/base/ftinit.c
+    src/base/ftmm.c
     src/base/ftsystem.c
     src/bdf/bdf.c
     src/cache/ftcache.c
@@ -1139,6 +1167,7 @@ elseif (WINDOWS)
     src/base/ftbitmap.c
     src/base/ftglyph.c
     src/base/ftinit.c
+    src/base/ftmm.c
     src/base/ftsystem.c
     src/bdf/bdf.c
     src/cache/ftcache.c
@@ -1189,6 +1218,16 @@ if ( ANDROID64 )
   target_link_libraries( ${MODULE_NAME} PRIVATE z )
 endif( ANDROID64 )
 
+if ( EMSCRIPTEN32 )
+  add_dependencies( ${MODULE_NAME} zlib )
+  target_link_libraries( ${MODULE_NAME} PUBLIC zlib )
+endif( EMSCRIPTEN32 )
+
+if ( EMSCRIPTEN64 )
+  add_dependencies( ${MODULE_NAME} zlib )
+  target_link_libraries( ${MODULE_NAME} PUBLIC zlib )
+endif( EMSCRIPTEN64 )
+
 if ( LINUX32 )
   add_dependencies( ${MODULE_NAME} zlib )
   target_link_libraries( ${MODULE_NAME} PUBLIC zlib )
@@ -1210,6 +1249,14 @@ if ( WIN64 )
 endif( WIN64 )
 
 include_directories( include include/freetype include/freetype/config include/freetype/internal include/freetype/internal/services src src/winfonts )
+
+if ( EMSCRIPTEN32 )
+  include_directories( ../zlib )
+endif( EMSCRIPTEN32 )
+
+if ( EMSCRIPTEN64 )
+  include_directories( ../zlib )
+endif( EMSCRIPTEN64 )
 
 if ( LINUX32 )
   include_directories( ../zlib )

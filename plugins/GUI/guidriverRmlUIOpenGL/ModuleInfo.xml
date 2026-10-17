@@ -5,6 +5,7 @@
             <Dependency Name="RmlUI_Core" />
             <Dependency Name="gucefINPUT" />
             <Dependency Name="gucefGUI" />
+            <Dependency Name="gucefIMAGE" />
             <Dependency Name="gucefCORE" />
             <Dependency Name="gucefMT" />
         </Dependencies>
@@ -13,6 +14,7 @@
             <Dependency Name="RmlUI_Core" />
             <Dependency Name="gucefINPUT" />
             <Dependency Name="gucefGUI" />
+            <Dependency Name="gucefIMAGE" />
             <Dependency Name="gucefCORE" />
             <Dependency Name="gucefMT" />
         </Linker>
@@ -30,10 +32,16 @@
             <Dependency Name="GL" />
         </Linker>
     </Module>
+    <Module Platform="emscripten">
+        <Linker>
+            <Dependency Name="-sMAX_WEBGL_VERSION=2" />
+            <Dependency Name="-sMIN_WEBGL_VERSION=2" />
+        </Linker>
+    </Module>
     <Module Platform="android">
         <Linker>
             <Dependency Name="EGL" />
-            <Dependency Name="GLESv1_CM" />
+            <Dependency Name="GLESv3" />
         </Linker>
     </Module>
 </ModuleInfoEntry>

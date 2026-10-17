@@ -27,7 +27,7 @@
 //-------------------------------------------------------------------------*/
 
 #ifndef GUCEF_GUIDRIVERRMLUIGL_CONFIG_H
-#include "guidriverRmlUIOpenGL_config.h.h"
+#include "guidriverRmlUIOpenGL_config.h"
 #define GUCEF_GUIDRIVERRMLUIGL_CONFIG_H
 #endif /* GUCEF_GUIDRIVERRMLUIGL_CONFIG_H ? */
 
@@ -37,7 +37,7 @@
 #endif /* GUCEF_GUIDRIVERRMLUIGL_MACROS_H ? */
 
 #ifndef GUCEF_GUIDRIVERRMLUIGL_CRMLUIRENDERINTERFACEOPENGL_H
-#include "guidriverRmlUIOpenGL_CRmlUIRenderInterfaceOpenGL.h"
+#include "guidriverRmlUIOpenGL_CRmlUIOpenGLContext.h"
 #define GUCEF_GUIDRIVERRMLUIGL_CRMLUIRENDERINTERFACEOPENGL_H
 #endif /* GUCEF_GUIDRIVERRMLUIGL_CRMLUIRENDERINTERFACEOPENGL_H ? */
 

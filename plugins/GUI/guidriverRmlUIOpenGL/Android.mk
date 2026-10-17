@@ -22,8 +22,9 @@ LOCAL_MODULE_FILENAME := libguidriverRmlUIOpenGL
 @echo Module name: $(LOCAL_MODULE)
 
 LOCAL_SRC_FILES := \
+  src/RmlUi_Renderer_GL3.cpp \
   src/guidriverRmlUIOpenGL_CRmlUIGuiDriver.cpp \
-  src/guidriverRmlUIOpenGL_CRmlUIRenderInterfaceOpenGL.cpp \
+  src/guidriverRmlUIOpenGL_CRmlUIOpenGLContext.cpp \
   src/guidriverRmlUIOpenGL_pluginAPI.cpp
 
 LOCAL_C_INCLUDES := \
@@ -51,6 +52,8 @@ LOCAL_C_INCLUDES := \
   $(MY_MODULE_PATH)/../../../dependencies/freetype/include/freetype/internal/services \
   $(MY_MODULE_PATH)/../../../dependencies/freetype/src \
   $(MY_MODULE_PATH)/../../../dependencies/freetype/src/winfonts \
+  $(MY_MODULE_PATH)/../../../platform/gucefAUDIO/include \
+  $(MY_MODULE_PATH)/../../../platform/gucefAUDIO/include/c_api \
   $(MY_MODULE_PATH)/../../../platform/gucefCORE/include \
   $(MY_MODULE_PATH)/../../../platform/gucefCORE/include/c_api \
   $(MY_MODULE_PATH)/../../../platform/gucefGUI/include \
@@ -58,6 +61,8 @@ LOCAL_C_INCLUDES := \
   $(MY_MODULE_PATH)/../../../platform/gucefINPUT/include \
   $(MY_MODULE_PATH)/../../../platform/gucefMT/include \
   $(MY_MODULE_PATH)/../../../platform/gucefVFS/include \
+  $(MY_MODULE_PATH)/../../../platform/gucefVIDEO/include \
+  $(MY_MODULE_PATH)/../../../platform/gucefVIDEO/include/c_api \
   $(MY_MODULE_PATH)/../guidriverRmlUI/include
 
 LOCAL_CFLAGS := -DGUIDRIVERRMLUIGL_BUILD_MODULE -DMODULE_CONSENSUS_NAME=guidriverRmlUIOpenGL -DMODULE_IS_PLUGIN=1 -DMODULE_NAME=guidriverRmlUIOpenGL
@@ -67,6 +72,7 @@ LOCAL_SHARED_LIBRARIES := \
   RmlUI_Core \
   gucefCORE \
   gucefGUI \
+  gucefIMAGE \
   gucefINPUT \
   gucefMT \
   guidriverRmlUI

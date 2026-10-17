@@ -23,37 +23,13 @@ LOCAL_MODULE_FILENAME := libguidriverRmlUI
 
 LOCAL_SRC_FILES := \
   src/guidriverRmlUI.cpp \
-  src/guidriverRmlUI_CButtonImp.cpp \
-  src/guidriverRmlUI_CCheckboxImp.cpp \
-  src/guidriverRmlUI_CComboboxImp.cpp \
-  src/guidriverRmlUI_CDataManager.cpp \
-  src/guidriverRmlUI_CEditboxImp.cpp \
-  src/guidriverRmlUI_CFileOpenDialogImp.cpp \
-  src/guidriverRmlUI_CFileSaveDialogImp.cpp \
-  src/guidriverRmlUI_CFileSystemDialogImp.cpp \
-  src/guidriverRmlUI_CFormBackendImp.cpp \
-  src/guidriverRmlUI_CGUIContext.cpp \
-  src/guidriverRmlUI_CGridViewImp.cpp \
-  src/guidriverRmlUI_CImageFrameImp.cpp \
-  src/guidriverRmlUI_CInputAdapter.cpp \
-  src/guidriverRmlUI_CLabelImp.cpp \
-  src/guidriverRmlUI_CListboxImp.cpp \
-  src/guidriverRmlUI_CMemoboxImp.cpp \
-  src/guidriverRmlUI_CMenuBarImp.cpp \
-  src/guidriverRmlUI_CPopupMenuImp.cpp \
-  src/guidriverRmlUI_CProgressBarImp.cpp \
-  src/guidriverRmlUI_CPushButtonImp.cpp \
-  src/guidriverRmlUI_CRenderContextImp.cpp \
-  src/guidriverRmlUI_CRmlUIStreamAdapter.cpp \
+  src/guidriverRmlUI_CRmlUIContext.cpp \
+  src/guidriverRmlUI_CRmlUIDriver.cpp \
+  src/guidriverRmlUI_CRmlUIFormBackend.cpp \
   src/guidriverRmlUI_CRmlUISystemInterface.cpp \
   src/guidriverRmlUI_CRmlUIVFSInterface.cpp \
-  src/guidriverRmlUI_CSpinnerImp.cpp \
-  src/guidriverRmlUI_CTabContentPaneImp.cpp \
-  src/guidriverRmlUI_CTabControlImp.cpp \
-  src/guidriverRmlUI_CTreeviewImp.cpp \
-  src/guidriverRmlUI_CVFSInfoProvider.cpp \
-  src/guidriverRmlUI_CWidgetImp.cpp \
-  src/guidriverRmlUI_CWindowImp.cpp \
+  src/guidriverRmlUI_CRmlUIWidgetElement.cpp \
+  src/guidriverRmlUI_CRmlUIWidgetHandler.cpp \
   src/guidriverRmlUI_pluginAPI.cpp
 
 LOCAL_C_INCLUDES := \
@@ -81,13 +57,17 @@ LOCAL_C_INCLUDES := \
   $(MY_MODULE_PATH)/../../../dependencies/freetype/include/freetype/internal/services \
   $(MY_MODULE_PATH)/../../../dependencies/freetype/src \
   $(MY_MODULE_PATH)/../../../dependencies/freetype/src/winfonts \
+  $(MY_MODULE_PATH)/../../../platform/gucefAUDIO/include \
+  $(MY_MODULE_PATH)/../../../platform/gucefAUDIO/include/c_api \
   $(MY_MODULE_PATH)/../../../platform/gucefCORE/include \
   $(MY_MODULE_PATH)/../../../platform/gucefCORE/include/c_api \
   $(MY_MODULE_PATH)/../../../platform/gucefGUI/include \
   $(MY_MODULE_PATH)/../../../platform/gucefIMAGE/include \
   $(MY_MODULE_PATH)/../../../platform/gucefINPUT/include \
   $(MY_MODULE_PATH)/../../../platform/gucefMT/include \
-  $(MY_MODULE_PATH)/../../../platform/gucefVFS/include
+  $(MY_MODULE_PATH)/../../../platform/gucefVFS/include \
+  $(MY_MODULE_PATH)/../../../platform/gucefVIDEO/include \
+  $(MY_MODULE_PATH)/../../../platform/gucefVIDEO/include/c_api
 
 LOCAL_CFLAGS := -DGUCEF_GUIDRIVERRMLUI_BUILD_MODULE -DMODULE_CONSENSUS_NAME=guidriverRmlUI -DMODULE_IS_PLUGIN=1 -DMODULE_NAME=guidriverRmlUI
 
@@ -96,6 +76,7 @@ LOCAL_SHARED_LIBRARIES := \
   RmlUI_Core \
   gucefCORE \
   gucefGUI \
+  gucefIMAGE \
   gucefINPUT \
   gucefMT \
   gucefVFS

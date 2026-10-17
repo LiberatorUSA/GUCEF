@@ -27,6 +27,7 @@ LOCAL_SRC_FILES := \
   src/base/ftbitmap.c \
   src/base/ftglyph.c \
   src/base/ftinit.c \
+  src/base/ftmm.c \
   src/base/ftsystem.c \
   src/bdf/bdf.c \
   src/cache/ftcache.c \

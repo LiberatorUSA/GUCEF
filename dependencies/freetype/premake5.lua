@@ -34,6 +34,14 @@ defines( { "FT2_BUILD_LIBRARY", "FT_CONFIG_OPTION_SYSTEM_ZLIB", "FT_CONFIG_OPTIO
   links( { "z" } )
   links( { "z" } )
   
+configuration( { EMSCRIPTEN32 } )
+links( { "zlib" } )
+  links( { "zlib" } )
+  
+configuration( { EMSCRIPTEN64 } )
+links( { "zlib" } )
+  links( { "zlib" } )
+  
 configuration( { LINUX32 } )
 links( { "zlib" } )
   links( { "zlib" } )
@@ -149,6 +157,7 @@ files( {
   "src/base/ftbitmap.c",
   "src/base/ftglyph.c",
   "src/base/ftinit.c",
+  "src/base/ftmm.c",
   "src/base/ftsystem.c",
   "src/bdf/bdf.c",
   "src/cache/ftcache.c",
@@ -187,6 +196,7 @@ configuration( { "ANDROID" } )
       "src/base/ftbitmap.c",
       "src/base/ftglyph.c",
       "src/base/ftinit.c",
+      "src/base/ftmm.c",
       "src/base/ftsystem.c",
       "src/bdf/bdf.c",
       "src/cache/ftcache.c",
@@ -224,6 +234,7 @@ configuration( { "ANDROID32" } )
       "src/base/ftbitmap.c",
       "src/base/ftglyph.c",
       "src/base/ftinit.c",
+      "src/base/ftmm.c",
       "src/base/ftsystem.c",
       "src/bdf/bdf.c",
       "src/cache/ftcache.c",
@@ -261,6 +272,7 @@ configuration( { "ANDROID64" } )
       "src/base/ftbitmap.c",
       "src/base/ftglyph.c",
       "src/base/ftinit.c",
+      "src/base/ftmm.c",
       "src/base/ftsystem.c",
       "src/bdf/bdf.c",
       "src/cache/ftcache.c",
@@ -298,6 +310,7 @@ configuration( { "ARDUINO" } )
       "src/base/ftbitmap.c",
       "src/base/ftglyph.c",
       "src/base/ftinit.c",
+      "src/base/ftmm.c",
       "src/base/ftsystem.c",
       "src/bdf/bdf.c",
       "src/cache/ftcache.c",
@@ -335,6 +348,7 @@ configuration( { "EMSCRIPTEN" } )
       "src/base/ftbitmap.c",
       "src/base/ftglyph.c",
       "src/base/ftinit.c",
+      "src/base/ftmm.c",
       "src/base/ftsystem.c",
       "src/bdf/bdf.c",
       "src/cache/ftcache.c",
@@ -372,6 +386,7 @@ configuration( { "EMSCRIPTEN32" } )
       "src/base/ftbitmap.c",
       "src/base/ftglyph.c",
       "src/base/ftinit.c",
+      "src/base/ftmm.c",
       "src/base/ftsystem.c",
       "src/bdf/bdf.c",
       "src/cache/ftcache.c",
@@ -409,6 +424,7 @@ configuration( { "EMSCRIPTEN64" } )
       "src/base/ftbitmap.c",
       "src/base/ftglyph.c",
       "src/base/ftinit.c",
+      "src/base/ftmm.c",
       "src/base/ftsystem.c",
       "src/bdf/bdf.c",
       "src/cache/ftcache.c",
@@ -446,6 +462,7 @@ configuration( { "GLX" } )
       "src/base/ftbitmap.c",
       "src/base/ftglyph.c",
       "src/base/ftinit.c",
+      "src/base/ftmm.c",
       "src/base/ftsystem.c",
       "src/bdf/bdf.c",
       "src/cache/ftcache.c",
@@ -483,6 +500,7 @@ configuration( { "GTK" } )
       "src/base/ftbitmap.c",
       "src/base/ftglyph.c",
       "src/base/ftinit.c",
+      "src/base/ftmm.c",
       "src/base/ftsystem.c",
       "src/bdf/bdf.c",
       "src/cache/ftcache.c",
@@ -520,6 +538,7 @@ configuration( { "IOS" } )
       "src/base/ftbitmap.c",
       "src/base/ftglyph.c",
       "src/base/ftinit.c",
+      "src/base/ftmm.c",
       "src/base/ftsystem.c",
       "src/bdf/bdf.c",
       "src/cache/ftcache.c",
@@ -557,6 +576,7 @@ configuration( { "IPHONE" } )
       "src/base/ftbitmap.c",
       "src/base/ftglyph.c",
       "src/base/ftinit.c",
+      "src/base/ftmm.c",
       "src/base/ftsystem.c",
       "src/bdf/bdf.c",
       "src/cache/ftcache.c",
@@ -594,6 +614,7 @@ configuration( { "IPHONEOS" } )
       "src/base/ftbitmap.c",
       "src/base/ftglyph.c",
       "src/base/ftinit.c",
+      "src/base/ftmm.c",
       "src/base/ftsystem.c",
       "src/bdf/bdf.c",
       "src/cache/ftcache.c",
@@ -631,6 +652,7 @@ configuration( { "LINUX" } )
       "src/base/ftbitmap.c",
       "src/base/ftglyph.c",
       "src/base/ftinit.c",
+      "src/base/ftmm.c",
       "src/base/ftsystem.c",
       "src/bdf/bdf.c",
       "src/cache/ftcache.c",
@@ -668,6 +690,7 @@ configuration( { "LINUX32" } )
       "src/base/ftbitmap.c",
       "src/base/ftglyph.c",
       "src/base/ftinit.c",
+      "src/base/ftmm.c",
       "src/base/ftsystem.c",
       "src/bdf/bdf.c",
       "src/cache/ftcache.c",
@@ -705,6 +728,7 @@ configuration( { "LINUX64" } )
       "src/base/ftbitmap.c",
       "src/base/ftglyph.c",
       "src/base/ftinit.c",
+      "src/base/ftmm.c",
       "src/base/ftsystem.c",
       "src/bdf/bdf.c",
       "src/cache/ftcache.c",
@@ -742,6 +766,7 @@ configuration( { "MAC" } )
       "src/base/ftbitmap.c",
       "src/base/ftglyph.c",
       "src/base/ftinit.c",
+      "src/base/ftmm.c",
       "src/base/ftsystem.c",
       "src/bdf/bdf.c",
       "src/cache/ftcache.c",
@@ -779,6 +804,7 @@ configuration( { "MACOS" } )
       "src/base/ftbitmap.c",
       "src/base/ftglyph.c",
       "src/base/ftinit.c",
+      "src/base/ftmm.c",
       "src/base/ftsystem.c",
       "src/bdf/bdf.c",
       "src/cache/ftcache.c",
@@ -816,6 +842,7 @@ configuration( { "MACOSX" } )
       "src/base/ftbitmap.c",
       "src/base/ftglyph.c",
       "src/base/ftinit.c",
+      "src/base/ftmm.c",
       "src/base/ftsystem.c",
       "src/bdf/bdf.c",
       "src/cache/ftcache.c",
@@ -853,6 +880,7 @@ configuration( { "MSWIN" } )
       "src/base/ftbitmap.c",
       "src/base/ftglyph.c",
       "src/base/ftinit.c",
+      "src/base/ftmm.c",
       "src/base/ftsystem.c",
       "src/bdf/bdf.c",
       "src/cache/ftcache.c",
@@ -890,6 +918,7 @@ configuration( { "NACL" } )
       "src/base/ftbitmap.c",
       "src/base/ftglyph.c",
       "src/base/ftinit.c",
+      "src/base/ftmm.c",
       "src/base/ftsystem.c",
       "src/bdf/bdf.c",
       "src/cache/ftcache.c",
@@ -927,6 +956,7 @@ configuration( { "OSX" } )
       "src/base/ftbitmap.c",
       "src/base/ftglyph.c",
       "src/base/ftinit.c",
+      "src/base/ftmm.c",
       "src/base/ftsystem.c",
       "src/bdf/bdf.c",
       "src/cache/ftcache.c",
@@ -964,6 +994,7 @@ configuration( { "POSIX" } )
       "src/base/ftbitmap.c",
       "src/base/ftglyph.c",
       "src/base/ftinit.c",
+      "src/base/ftmm.c",
       "src/base/ftsystem.c",
       "src/bdf/bdf.c",
       "src/cache/ftcache.c",
@@ -1001,6 +1032,7 @@ configuration( { "SDL" } )
       "src/base/ftbitmap.c",
       "src/base/ftglyph.c",
       "src/base/ftinit.c",
+      "src/base/ftmm.c",
       "src/base/ftsystem.c",
       "src/bdf/bdf.c",
       "src/cache/ftcache.c",
@@ -1038,6 +1070,7 @@ configuration( { "SYMBIAN" } )
       "src/base/ftbitmap.c",
       "src/base/ftglyph.c",
       "src/base/ftinit.c",
+      "src/base/ftmm.c",
       "src/base/ftsystem.c",
       "src/bdf/bdf.c",
       "src/cache/ftcache.c",
@@ -1075,6 +1108,7 @@ configuration( { "UNIX" } )
       "src/base/ftbitmap.c",
       "src/base/ftglyph.c",
       "src/base/ftinit.c",
+      "src/base/ftmm.c",
       "src/base/ftsystem.c",
       "src/bdf/bdf.c",
       "src/cache/ftcache.c",
@@ -1112,6 +1146,7 @@ configuration( { "WIN32" } )
       "src/base/ftbitmap.c",
       "src/base/ftglyph.c",
       "src/base/ftinit.c",
+      "src/base/ftmm.c",
       "src/base/ftsystem.c",
       "src/bdf/bdf.c",
       "src/cache/ftcache.c",
@@ -1149,6 +1184,7 @@ configuration( { "WIN64" } )
       "src/base/ftbitmap.c",
       "src/base/ftglyph.c",
       "src/base/ftinit.c",
+      "src/base/ftmm.c",
       "src/base/ftsystem.c",
       "src/bdf/bdf.c",
       "src/cache/ftcache.c",
@@ -1186,6 +1222,7 @@ configuration( { "WINDOWS" } )
       "src/base/ftbitmap.c",
       "src/base/ftglyph.c",
       "src/base/ftinit.c",
+      "src/base/ftmm.c",
       "src/base/ftsystem.c",
       "src/bdf/bdf.c",
       "src/cache/ftcache.c",
@@ -1216,6 +1253,12 @@ configuration( { "WINDOWS" } )
 
 configuration( {} )
 includedirs( { "src", "include", "include/freetype", "include/freetype/config", "include/freetype/internal", "include/freetype/internal/services", "src/winfonts" } )
+
+configuration( { "EMSCRIPTEN32" } )
+includedirs( { "../zlib" } )
+
+configuration( { "EMSCRIPTEN64" } )
+includedirs( { "../zlib" } )
 
 configuration( { "LINUX32" } )
 includedirs( { "../zlib" } )

@@ -26,35 +26,10 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#ifndef GUCEF_CORE_COBSERVINGNOTIFIER_H
-#include "CObservingNotifier.h"
-#define GUCEF_CORE_COBSERVINGNOTIFIER_H
-#endif /* GUCEF_CORE_COBSERVINGNOTIFIER_H ? */
-
-#ifndef GUCEF_CORE_CICONFIGURABLE_H
-#include "CIConfigurable.h"
-#define GUCEF_CORE_CICONFIGURABLE_H
-#endif /* GUCEF_CORE_CICONFIGURABLE_H ? */
-
-#ifndef GUCEF_GUI_CGUIDRIVER_H
-#include "gucefGUI_CGUIDriver.h"
-#define GUCEF_GUI_CGUIDRIVER_H
-#endif /* GUCEF_GUI_CGUIDRIVER_H ? */
-
-#ifndef GUCEF_GUIDRIVERRMLUI_CRMLUISYSTEMINTERFACE_H
-#include "guidriverRmlUI_CRmlUISystemInterface.h"
-#define GUCEF_GUIDRIVERRMLUI_CRMLUISYSTEMINTERFACE_H
-#endif /* GUCEF_GUIDRIVERRMLUI_CRMLUISYSTEMINTERFACE_H ? */
-
-#ifndef GUCEF_GUIDRIVERRMLUI_CRMLUIVFSINTERFACE_H
-#include "guidriverRmlUI_CRmlUIVFSInterface.h"
-#define GUCEF_GUIDRIVERRMLUI_CRMLUIVFSINTERFACE_H
-#endif /* GUCEF_GUIDRIVERRMLUI_CRMLUIVFSINTERFACE_H ? */
-
-#ifndef GUCEF_GUIDRIVERRMLUIGL_CRMLUIRENDERINTERFACEOPENGL_H
-#include "guidriverRmlUIOpenGL_CRmlUIRenderInterfaceOpenGL.h"
-#define GUCEF_GUIDRIVERRMLUIGL_CRMLUIRENDERINTERFACEOPENGL_H
-#endif /* GUCEF_GUIDRIVERRMLUIGL_CRMLUIRENDERINTERFACEOPENGL_H ? */
+#ifndef GUCEF_GUIDRIVERRMLUI_CRMLUIDRIVER_H
+#include "guidriverRmlUI_CRmlUIDriver.h"
+#define GUCEF_GUIDRIVERRMLUI_CRMLUIDRIVER_H
+#endif /* GUCEF_GUIDRIVERRMLUI_CRMLUIDRIVER_H ? */
 
 #ifndef GUCEF_GUIDRIVERRMLUIGL_MACROS_H
 #include "guidriverRmlUIOpenGL_macros.h"
@@ -76,64 +51,38 @@ namespace GUIDRIVERRMLUIGL {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-class GUIDRIVERRMLUIGL_PUBLIC_CPP CRmlUIGuiDriver : public GUI::CGUIDriver
-{    
+/**
+ *  The RmlUi GUI driver that draws with OpenGL 3.3 (desktop), OpenGL ES 3 (Android) or WebGL 2
+ *  (browsers), registered as "RmlUi".
+ *
+ *  A GUI context needs a window whose GL context is current on the calling thread: the window
+ *  drivers XWinGL, Win32GL, AndroidGLES, EGL (offscreen) and the browser canvas. GL functions are
+ *  loaded with the window's GL_GETPROCADDRESS function when it names one.
+ */
+class GUIDRIVERRMLUIGL_PUBLIC_CPP CRmlUIGuiDriver : public guidriverRmlUI::CRmlUIDriver
+{
     public:
 
     CRmlUIGuiDriver( void );
 
     virtual ~CRmlUIGuiDriver();
-    
-    virtual GUI::TGuiContextPtr CreateGUIContext( GUI::TWindowContextPtr windowContext );
-    
-    virtual TGUIContextSet GetContextList( void );
-    
-    virtual GUI::UInt32 GetContextCount( void );
-    
-    virtual GUI::CString GetDriverName( void );
-    
-    virtual TStringSet GetAvailableFormTypes( void );
-    
-    virtual TStringSet GetAvailableWidgetTypes( void );
 
-    virtual TStringSet GetAvailableFonts( void );
+    virtual GUI::TGuiContextPtr CreateGUIContext( GUI::TWindowContextPtr windowContext ) GUCEF_VIRTUAL_OVERRIDE;
 
-    virtual bool LoadFontFromAsset( const GUI::CString& assetPath );
-    
-    virtual const GUI::CString& GetClassTypeName( void ) const;
-    
-    virtual GUI::CString GetDriverProperty( const GUI::CString& propertyName ) const;
+    virtual TStringSet GetCapabilities( void ) GUCEF_VIRTUAL_OVERRIDE;
 
-    /**
-     *      Attempts to store the given tree in the file
-     *      given according to the method of the codec metadata
-     *
-     *      @param tree the data tree you wish to store
-     *      @return wheter storing the tree was successfull
-     */
-    virtual bool SaveConfig( CORE::CDataNode& tree ) const;
+    virtual CORE::CString GetDriverProperty( const CORE::CString& propertyName ) const GUCEF_VIRTUAL_OVERRIDE;
 
-    /**
-     *      Attempts to load data from the given file to the
-     *      root node given. The root data will be replaced
-     *      and any children the node may already have will be deleted.
-     *
-     *      @param treeroot pointer to the node that is to act as root of the data tree
-     *      @return whether building the tree from the given file was successfull.
-     */
-    virtual bool LoadConfig( const CORE::CDataNode& treeroot );    
+    virtual const CORE::CString& GetClassTypeName( void ) const GUCEF_VIRTUAL_OVERRIDE;
+
     private:
-    
+
     CRmlUIGuiDriver( const CRmlUIGuiDriver& src );
+    CRmlUIGuiDriver& operator=( const CRmlUIGuiDriver& src );
 
     private:
 
-    CRmlUIRenderInterfaceOpenGL m_renderer;
-    guidriverRmlUI::CRmlUISystemInterface m_systemInterface;
-    guidriverRmlUI::CRmlUIVFSInterface m_fileInterface;
-    bool m_isRmlUIInitialized;
-    GUI::CGUIDriver::TGUIContextSet m_contextSet;
-    TStringSet m_fontTypes;
+    CORE::CString m_glDescription;
 };
 
 /*-------------------------------------------------------------------------//
@@ -146,16 +95,5 @@ class GUIDRIVERRMLUIGL_PUBLIC_CPP CRmlUIGuiDriver : public GUI::CGUIDriver
 }; /* namespace GUCEF */
 
 /*-------------------------------------------------------------------------*/
-          
+
 #endif /* GUCEF_GUIDRIVERRMLUIGL_CRMLUIGUIDRIVER_H ? */
-
-/*-------------------------------------------------------------------------//
-//                                                                         //
-//      Info & Changes                                                     //
-//                                                                         //
-//-------------------------------------------------------------------------//
-
-- 18-08-2010 :
-        - Dinand: Initial implementation
-
----------------------------------------------------------------------------*/

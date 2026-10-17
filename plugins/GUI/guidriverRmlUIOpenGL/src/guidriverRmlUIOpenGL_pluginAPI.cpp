@@ -64,21 +64,21 @@ static CRmlUIGuiDriver* g_guiDriver = NULL;
 //-------------------------------------------------------------------------*/
 
 CORE::Int32 GUCEF_PLUGIN_CALLSPEC_PREFIX 
-GUCEFPlugin_Load( CORE::UInt32 argc, const char** argv ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
+GUIDRIVERRMLUIGL_ENTRY( GUCEFPlugin_Load )( CORE::UInt32 argc, const char** argv ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
 {GUCEF_TRACE;
 
     g_guiDriver = new CRmlUIGuiDriver();
-    GUI::CGuiGlobal::Instance()->GetGuiManager().RegisterGUIDriver( "RmlUIOpenGL", g_guiDriver );
+    GUI::CGuiGlobal::Instance()->GetGuiManager().RegisterGUIDriver( guidriverRmlUI::CRmlUIDriver::DriverName, g_guiDriver );
     return 1;
 }
 
 /*--------------------------------------------------------------------------*/
 
 void GUCEF_PLUGIN_CALLSPEC_PREFIX 
-GUCEFPlugin_Unload( void ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
+GUIDRIVERRMLUIGL_ENTRY( GUCEFPlugin_Unload )( void ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
 {GUCEF_TRACE;
 
-    GUI::CGuiGlobal::Instance()->GetGuiManager().UnregisterGUIDriverByName( "RmlUIOpenGL" );
+    GUI::CGuiGlobal::Instance()->GetGuiManager().UnregisterGUIDriverByName( guidriverRmlUI::CRmlUIDriver::DriverName );
     delete g_guiDriver;
     g_guiDriver = NULL;
 }
@@ -86,7 +86,7 @@ GUCEFPlugin_Unload( void ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
 /*--------------------------------------------------------------------------*/
 
 void GUCEF_PLUGIN_CALLSPEC_PREFIX 
-GUCEFPlugin_GetVersion( CORE::TVersion* versionInfo ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
+GUIDRIVERRMLUIGL_ENTRY( GUCEFPlugin_GetVersion )( CORE::TVersion* versionInfo ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
 {GUCEF_TRACE;
 
     versionInfo->major = 0; 
@@ -98,7 +98,7 @@ GUCEFPlugin_GetVersion( CORE::TVersion* versionInfo ) GUCEF_PLUGIN_CALLSPEC_SUFF
 /*--------------------------------------------------------------------------*/
 
 const char* GUCEF_PLUGIN_CALLSPEC_PREFIX 
-GUCEFPlugin_GetCopyright( void ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
+GUIDRIVERRMLUIGL_ENTRY( GUCEFPlugin_GetCopyright )( void ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
 {GUCEF_TRACE;
     
     return "Copyright (C) Dinand Vanvelzen, released under LGPLv3";
@@ -107,7 +107,7 @@ GUCEFPlugin_GetCopyright( void ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
 /*--------------------------------------------------------------------------*/
 
 const char* GUCEF_PLUGIN_CALLSPEC_PREFIX 
-GUCEFPlugin_GetDescription( void ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
+GUIDRIVERRMLUIGL_ENTRY( GUCEFPlugin_GetDescription )( void ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
 {GUCEF_TRACE;
 
     return "GUI backend based on RmlUi using OpenGL";
