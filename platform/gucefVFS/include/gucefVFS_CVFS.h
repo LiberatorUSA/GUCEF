@@ -253,6 +253,13 @@ class GUCEF_VFS_PUBLIC_CPP CVFS : public CORE::CTSGNotifier          ,
     void GetListOfSupportedArchiveTypes( TAbstractArchiveFactory::TKeySet& outList ) const;
 
     /**
+     *  Makes an archive of the given type without mounting it, for archives that are built from other archives
+     *  (a CD image archive that reads the file system of its data track through the ISO 9660 archive, for example).
+     *  The caller loads it with LoadArchive() and unloads it when done. NULL when no factory handles the type
+     */
+    TArchivePtr CreateArchive( const CString& archiveType );
+
+    /**
      *  Registers a factory for writers which create archives of the given type, typically done by plugins
      */
     void RegisterArchiveWriterFactory( const CString& archiveType            ,

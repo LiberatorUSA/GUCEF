@@ -23,8 +23,6 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#include <vector>
-
 #ifndef GUCEF_CORE_H
 #include "gucefCORE.h"          /* GUCEF CORE library API */
 #define GUCEF_CORE_H
@@ -88,7 +86,7 @@ PerformVFSFileLoadUnloadTest( void )
 
             // Load a number of files at the same time
             UInt32 maxFiles = (UInt32) fileList.size() > 5 ? 5 : (UInt32) fileList.size();
-            std::vector< VFS::TBasicVfsResourcePtr > fileHandles;
+            GUCEF::vector< VFS::TBasicVfsResourcePtr > fileHandles;
             VFS::CVFS::TStringVector::iterator n = fileList.begin();
             for ( UInt32 i=0; i<maxFiles; ++i, ++n )
             {

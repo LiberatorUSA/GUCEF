@@ -24,7 +24,6 @@
 //-------------------------------------------------------------------------*/
 
 #include <string.h>
-#include <vector>
 
 #ifndef GUCEF_TESTFW_H
 #include "gucef_test_framework.h"
@@ -57,7 +56,7 @@ using namespace GUCEF;
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-typedef std::vector< CORE::UInt8 > TByteVector;
+typedef GUCEF::vector< CORE::UInt8 > TByteVector;
 
 static void
 Append16( TByteVector& data, CORE::UInt16 value )

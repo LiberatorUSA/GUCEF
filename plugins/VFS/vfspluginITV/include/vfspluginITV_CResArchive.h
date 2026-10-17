@@ -26,7 +26,6 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#include <map>
 
 #ifndef GUCEF_VFS_CVFS_H
 #include "gucefVFS_CVFS.h"
@@ -173,8 +172,8 @@ class CResArchive : public VFS::CArchive
         CORE::Int32 offset;     // offset of resource in res file
     };
     typedef struct SIdxRecord IdxRecord;
-    typedef std::vector< IdxRecord > IndexVector;
-    typedef std::map< CORE::Int32, size_t > IndexLookupMap;     // resource id -> position in the IndexVector
+    typedef GUCEF::vector< IdxRecord > IndexVector;
+    typedef GUCEF::map< CORE::Int32, size_t > IndexLookupMap;     // resource id -> position in the IndexVector
 
     struct SIdx
     {

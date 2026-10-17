@@ -2134,6 +2134,16 @@ CVFS::GetListOfSupportedArchiveTypes( TAbstractArchiveFactory::TKeySet& outList 
 
 /*-------------------------------------------------------------------------*/
 
+CVFS::TArchivePtr
+CVFS::CreateArchive( const CString& archiveType )
+{GUCEF_TRACE;
+
+    MT::CScopeReaderLock lock( m_rwdataLock );
+    return m_abstractArchiveFactory.Create( archiveType );
+}
+
+/*-------------------------------------------------------------------------*/
+
 void
 CVFS::SetMemloadSize( UInt32 bytesize )
 {GUCEF_TRACE;

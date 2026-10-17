@@ -26,9 +26,6 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#include <map>
-#include <vector>
-
 #ifndef GUCEF_VFS_CVFS_H
 #include "gucefVFS_CVFS.h"
 #define GUCEF_VFS_CVFS_H
@@ -66,7 +63,8 @@ namespace ISO9660 {
  *  The image is accessed through an IO access object, so it can come from a file, a mounted disc, a block
  *  of memory, a file descriptor or even from a resource inside another archive. Nothing is extracted: files
  *  are served as windows on the image. Only data in 2048 byte "cooked" sectors is supported. Raw 2352 byte
- *  images (.bin) have to be converted to a plain .iso first.
+ *  images (.bin) are mounted through their cue sheet with the "cue" archive type of vfspluginCUEBIN, which reads
+ *  the data track with this archive.
  *
  *  Names: when a Joliet volume descriptor is present those names are used (Unicode, long names), otherwise
  *  Rock Ridge names when present, otherwise the plain ISO 9660 names (upper case, with the ";1" version
@@ -182,9 +180,9 @@ class CISO9660Archive : public VFS::CArchive
         SEntry( void ) : isDir( false ), readable( true ), extent( 0 ), size( 0 ), modifiedTime() {}
     };
     typedef struct SEntry TEntry;
-    typedef std::map< VFS::CString, TEntry >            TEntryMap;      /**< key is the normalized path */
-    typedef std::vector< VFS::CString >                 TKeyVector;
-    typedef std::map< VFS::CString, TKeyVector >        TDirMap;        /**< key is the normalized path of the dir, value the keys of its children */
+    typedef GUCEF::map< VFS::CString, TEntry >          TEntryMap;      /**< key is the normalized path */
+    typedef GUCEF::vector< VFS::CString >               TKeyVector;
+    typedef GUCEF::map< VFS::CString, TKeyVector >      TDirMap;        /**< key is the normalized path of the dir, value the keys of its children */
 
     struct SDirToVisit
     {
@@ -202,7 +200,7 @@ class CISO9660Archive : public VFS::CArchive
 
     bool ReadDirectoryTree( VFS::UInt32 rootExtent, VFS::UInt32 rootSize );
 
-    bool ParseDirectory( const TDirToVisit& dir, std::vector< TDirToVisit >& dirsToVisit );
+    bool ParseDirectory( const TDirToVisit& dir, GUCEF::vector< TDirToVisit >& dirsToVisit );
 
     VFS::CString ReadRockRidgeName( const VFS::UInt8* systemUse, VFS::UInt32 systemUseSize ) const;
 

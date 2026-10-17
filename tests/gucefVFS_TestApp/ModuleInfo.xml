@@ -13,14 +13,15 @@
         <Preprocessor>
             <Define String="GUCEF_VFS_TESTAPP_BUILD_MODULE" />
         </Preprocessor>
-		<RuntimeDependencies>
-			<RuntimeDependency Name="vfspluginDVP" />
-			<RuntimeDependency Name="vfspluginITV" />
-			<RuntimeDependency Name="vfspluginVP" />
-			<RuntimeDependency Name="vfspluginZIP" />
-			<RuntimeDependency Name="vfspluginLIBARCHIVE" />
-			<RuntimeDependency Name="vfspluginISO9660" />
-			<RuntimeDependency Name="vfspluginAWSS3" />
-		</RuntimeDependencies>
+        <RuntimeDependencies>
+            <RuntimeDependency Name="vfspluginDVP" />
+            <RuntimeDependency Name="vfspluginITV" />
+            <RuntimeDependency Name="vfspluginVP" />
+            <RuntimeDependency Name="vfspluginZIP" />
+            <RuntimeDependency Name="vfspluginLIBARCHIVE" />
+            <RuntimeDependency Name="vfspluginISO9660" />
+            <RuntimeDependency Name="vfspluginCUEBIN" />
+            <RuntimeDependency Name="vfspluginAWSS3" />
+        </RuntimeDependencies>
     </Module>
 </ModuleInfoEntry>

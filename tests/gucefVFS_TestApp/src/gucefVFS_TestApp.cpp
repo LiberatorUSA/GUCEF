@@ -65,6 +65,7 @@
 
 #ifndef GUCEF_VFS_TESTAPP_TESTISO9660ARCHIVE_H
 #include "TestIso9660Archive.h"
+#include "TestCueBinArchive.h"
 #define GUCEF_VFS_TESTAPP_TESTISO9660ARCHIVE_H
 #endif /* GUCEF_VFS_TESTAPP_TESTISO9660ARCHIVE_H ? */
 
@@ -370,6 +371,7 @@ GUCEF_OSMAIN_BEGIN
         PerformLibArchiveTests();
         PerformItvArchiveTests();
         PerformIso9660ArchiveTests();
+        PerformCueBinArchiveTests();
 
         CORE::CLogStreamScope::FlushLogs();
 

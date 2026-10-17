@@ -24,7 +24,6 @@
 //-------------------------------------------------------------------------*/
 
 #include <string.h>
-#include <set>
 
 #ifndef GUCEF_CORE_DVMD5UTILS_H
 #include "dvmd5utils.h"
@@ -121,37 +120,6 @@ ReadLE16( const VFS::UInt8* p )
 
 /*-------------------------------------------------------------------------*/
 
-static void
-AppendUtf8( std::string& out, VFS::UInt32 codePoint )
-{
-    if ( codePoint < 0x80 )
-    {
-        out += (char) codePoint;
-    }
-    else
-    if ( codePoint < 0x800 )
-    {
-        out += (char) ( 0xC0 | ( codePoint >> 6 ) );
-        out += (char) ( 0x80 | ( codePoint & 0x3F ) );
-    }
-    else
-    if ( codePoint < 0x10000 )
-    {
-        out += (char) ( 0xE0 | ( codePoint >> 12 ) );
-        out += (char) ( 0x80 | ( ( codePoint >> 6 ) & 0x3F ) );
-        out += (char) ( 0x80 | ( codePoint & 0x3F ) );
-    }
-    else
-    {
-        out += (char) ( 0xF0 | ( codePoint >> 18 ) );
-        out += (char) ( 0x80 | ( ( codePoint >> 12 ) & 0x3F ) );
-        out += (char) ( 0x80 | ( ( codePoint >> 6 ) & 0x3F ) );
-        out += (char) ( 0x80 | ( codePoint & 0x3F ) );
-    }
-}
-
-/*-------------------------------------------------------------------------*/
-
 CISO9660Archive::CISO9660Archive( void )
     : CArchive()
     , m_archiveName()
@@ -205,9 +173,7 @@ CISO9660Archive::ReadBytes( VFS::UInt64 offset, void* dest, VFS::UInt32 byteCoun
     if ( m_image.IsNULL() )
         return false;
 
-    // The value Setpos() returns differs between the kinds of IO access, so we check where it ended up
-    m_image->Setpos( offset );
-    if ( m_image->Tell() != offset )
+    if ( 0 != m_image->Setpos( offset ) )
         return false;
     return 1 == m_image->Read( dest, byteCount, 1 );
 }
@@ -230,7 +196,7 @@ CISO9660Archive::DecodeJolietName( const VFS::UInt8* name, VFS::UInt32 nameLengt
 {GUCEF_TRACE;
 
     // UCS-2 big endian, in practice UTF-16 big endian since surrogate pairs do occur in the wild
-    std::string utf8;
+    CORE::CUtf8String utf8;
     VFS::UInt32 i = 0;
     while ( i + 1 < nameLength )
     {
@@ -245,20 +211,23 @@ CISO9660Archive::DecodeJolietName( const VFS::UInt8* name, VFS::UInt32 nameLengt
                 unit = 0x10000 + ( ( unit - 0xD800 ) << 10 ) + ( low - 0xDC00 );
             }
         }
-        AppendUtf8( utf8, unit );
+        utf8.Append( unit );
     }
 
     // Joliet names can carry the version suffix as well
-    std::string::size_type semicolon = utf8.rfind( ';' );
-    if ( semicolon != std::string::npos && semicolon + 1 < utf8.size() )
+    const Int32 semicolon = utf8.HasChar( ';', false );
+    if ( semicolon >= 0 && (UInt32) semicolon + 1 < utf8.Length() )
     {
         bool allDigits = true;
-        for ( std::string::size_type d = semicolon + 1; d < utf8.size(); ++d )
-            allDigits = allDigits && utf8[ d ] >= '0' && utf8[ d ] <= '9';
+        for ( UInt32 d = (UInt32) semicolon + 1; d < utf8.Length(); ++d )
+        {
+            const UInt32 codePoint = utf8.CodepointAtIndex( d );
+            allDigits = allDigits && codePoint >= '0' && codePoint <= '9';
+        }
         if ( allDigits )
-            utf8.erase( semicolon );
+            utf8 = utf8.SubstrFromRange( 0, (UInt32) semicolon );
     }
-    return VFS::CString( utf8.c_str() );
+    return CORE::ToString( utf8 );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -267,18 +236,18 @@ VFS::CString
 CISO9660Archive::CleanIsoName( const VFS::UInt8* name, VFS::UInt32 nameLength )
 {GUCEF_TRACE;
 
-    std::string result( (const char*) name, nameLength );
+    CORE::CUtf8String result( (const char*) name, nameLength );
 
     // Remove the file version: "NAME.EXT;1" becomes "NAME.EXT"
-    std::string::size_type semicolon = result.rfind( ';' );
-    if ( semicolon != std::string::npos )
-        result.erase( semicolon );
+    const Int32 semicolon = result.HasChar( ';', false );
+    if ( semicolon >= 0 )
+        result = result.SubstrFromRange( 0, (UInt32) semicolon );
 
     // A file without extension is stored as "NAME." in the plain names
-    if ( result.size() > 1 && result[ result.size()-1 ] == '.' )
-        result.erase( result.size()-1 );
+    if ( result.Length() > 1 && result.CodepointAtIndex( result.Length()-1 ) == '.' )
+        result = result.CutChars( 1, false );
 
-    return VFS::CString( result.c_str() );
+    return CORE::ToString( result );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -289,9 +258,10 @@ CISO9660Archive::ReadRockRidgeName( const VFS::UInt8* systemUse, VFS::UInt32 sys
 
     // The system use area is a sequence of entries: two character signature, length, version, data.
     // The "NM" entries hold the real name, in parts when it is long. A "CE" entry continues the area elsewhere.
-    std::string name;
+    // The name is collected as bytes: a multi byte character can be split over two NM entries
+    GUCEF::vector< char > name;
     bool foundName = false;
-    std::vector< VFS::UInt8 > continuation;
+    GUCEF::vector< VFS::UInt8 > continuation;
     const VFS::UInt8* area = systemUse;
     VFS::UInt32 areaSize = systemUseSize;
 
@@ -315,7 +285,7 @@ CISO9660Archive::ReadRockRidgeName( const VFS::UInt8* systemUse, VFS::UInt32 sys
                 // bit 1: current directory, bit 2: parent directory, neither has a name of its own
                 if ( 0 == ( flags & 0x06 ) )
                 {
-                    name.append( (const char*) ( e + 5 ), entryLen - 5 );
+                    name.insert( name.end(), (const char*) ( e + 5 ), (const char*) ( e + entryLen ) );
                     foundName = true;
                 }
             }
@@ -347,7 +317,7 @@ CISO9660Archive::ReadRockRidgeName( const VFS::UInt8* systemUse, VFS::UInt32 sys
     }
 
     if ( foundName )
-        return VFS::CString( name.c_str() );
+        return CORE::ToString( name.empty() ? CORE::CUtf8String() : CORE::CUtf8String( &name[ 0 ], (UInt32) name.size() ) );
     return VFS::CString::Empty;
 }
 
@@ -430,7 +400,7 @@ CISO9660Archive::ReadVolumeDescriptors( void )
     if ( haveJoliet )
         m_volumeId = DecodeJolietName( chosen + 40, 32 );
     else
-        m_volumeId = VFS::CString( std::string( (const char*) ( chosen + 40 ), 32 ).c_str() );
+        m_volumeId = CORE::ToString( CORE::CUtf8String( (const char*) ( chosen + 40 ), 32 ) );
     m_volumeId = m_volumeId.Trim( true ).Trim( false );
 
     const VFS::UInt8* rootRecord = chosen + 156;
@@ -466,14 +436,14 @@ bool
 CISO9660Archive::ReadDirectoryTree( VFS::UInt32 rootExtent, VFS::UInt32 rootSize )
 {GUCEF_TRACE;
 
-    std::vector< TDirToVisit > dirsToVisit;
+    GUCEF::vector< TDirToVisit > dirsToVisit;
     TDirToVisit root;
     root.extent = rootExtent;
     root.size = rootSize;
     dirsToVisit.push_back( root );
     m_dirs[ VFS::CString::Empty ] = TKeyVector();
 
-    std::set< VFS::UInt32 > visited;
+    GUCEF::set< VFS::UInt32 > visited;
 
     while ( !dirsToVisit.empty() )
     {
@@ -500,7 +470,7 @@ CISO9660Archive::ReadDirectoryTree( VFS::UInt32 rootExtent, VFS::UInt32 rootSize
 /*-------------------------------------------------------------------------*/
 
 bool
-CISO9660Archive::ParseDirectory( const TDirToVisit& dir, std::vector< TDirToVisit >& dirsToVisit )
+CISO9660Archive::ParseDirectory( const TDirToVisit& dir, GUCEF::vector< TDirToVisit >& dirsToVisit )
 {GUCEF_TRACE;
 
     if ( dir.size > MaxDirectoryBytes )
@@ -509,7 +479,7 @@ CISO9660Archive::ParseDirectory( const TDirToVisit& dir, std::vector< TDirToVisi
         return false;
     }
 
-    std::vector< VFS::UInt8 > data( dir.size );
+    GUCEF::vector< VFS::UInt8 > data( dir.size );
     if ( dir.size > 0 && !ReadBytes( (VFS::UInt64) dir.extent * m_blockSize, &data[ 0 ], dir.size ) )
     {
         GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "ISO9660Archive: Failed to read directory \"" << dir.path << "\" at block " << dir.extent );

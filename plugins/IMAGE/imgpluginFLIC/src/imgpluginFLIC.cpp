@@ -24,7 +24,6 @@
 
 #include <stdlib.h>             /* for memory utils */
 #include <string.h>
-#include <vector>
 #include "flic.h"
 #include "imgpluginFLIC.h" /* function prototypes for this plugin */
 
@@ -396,7 +395,7 @@ IMGCODECPLUGIN_DecodeImage( void* pluginData       ,
 
     // The decoder patches the previous frame, so the index buffer has to survive across frames
     const UInt32 pixelCount = (UInt32) flicHeader.width * (UInt32) flicHeader.height;
-    std::vector< UInt8 > indices( pixelCount, 0 );
+    GUCEF::vector< UInt8 > indices( pixelCount, 0 );
     flic::Frame flicFrame;
     flicFrame.pixels = &indices[ 0 ];
     flicFrame.rowstride = (uint32_t) flicHeader.width;
