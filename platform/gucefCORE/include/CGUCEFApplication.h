@@ -73,6 +73,11 @@
 #define GUCEF_CORE_CBUSYWAITPULSEGENERATORDRIVER_H
 #endif /* GUCEF_CORE_CBUSYWAITPULSEGENERATORDRIVER_H ? */
 
+#ifndef GUCEF_CORE_CEMSCRIPTENPULSEGENERATORDRIVER_H
+#include "gucefCORE_CEmscriptenPulseGeneratorDriver.h"
+#define GUCEF_CORE_CEMSCRIPTENPULSEGENERATORDRIVER_H
+#endif /* GUCEF_CORE_CEMSCRIPTENPULSEGENERATORDRIVER_H ? */
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //
@@ -205,6 +210,9 @@ class GUCEF_CORE_PUBLIC_CPP CGUCEFApplication : public CTSGNotifier             
     bool m_shutdownRequested;
     CString _appdir;
     CBusyWaitPulseGeneratorDriver m_busyWaitPulseDriver;
+    #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_WASM_EMSCRIPTEN )
+    CEmscriptenPulseGeneratorDriver m_emscriptenPulseDriver;
+    #endif
     UInt32 m_forcedMinimalCycleDeltaInMilliSecs; 
     UInt32 m_desiredMaximumCycleDeltaInMilliSecs;
 };

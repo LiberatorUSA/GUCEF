@@ -83,7 +83,7 @@
   #include <direct.h>             /* dir tools */
   #include "Shlwapi.h"
   #define MAX_DIR_LENGTH MAX_PATH
-#elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
+#elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_WASM_EMSCRIPTEN ) )
   #include <dirent.h>             /* needed for dirent strcture */
   #include <unistd.h>             /* POSIX utilities */
   #include <limits.h>             /* Linux OS limits */
@@ -197,7 +197,7 @@ class GUCEF_HIDDEN CStorageVolumeInfoOSDataImpl
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#if ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX )
+#if ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
 
 bool GUCEF_HIDDEN
 TryToDetermineIfRunningInContainer( void )
@@ -369,7 +369,7 @@ TryResolveSpecialDir( TSpecialDirs dir, CString& resolvedPath )
     ::CoTaskMemFree( path );
     return true;
 
-    #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
+    #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_WASM_EMSCRIPTEN ) )
 
     const char* path = GUCEF_NULL;
     switch ( dir )
@@ -487,7 +487,7 @@ GetFileModificationTime( const CString& path )
     }
     return -1;
 
-    #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
+    #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_WASM_EMSCRIPTEN ) )
 
     struct stat buf;
 
@@ -527,7 +527,7 @@ GetFileCreationTime( const CString& path )
     }
     return -1;
 
-    #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
+    #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_WASM_EMSCRIPTEN ) )
 
     struct stat buf;
 
@@ -632,7 +632,7 @@ SetFileMetaData( const CString& filePath           ,
 
         return totalSuccess;
 
-        #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
+        #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_WASM_EMSCRIPTEN ) )
 
         /*
          *  Unsupported platform  - @TODO
@@ -713,7 +713,7 @@ GetFileMetaData( const CString& filePath     ,
         // the meta data class has its own flags
         return true;
 
-        #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
+        #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_WASM_EMSCRIPTEN ) )
 
         struct stat buf;
 
@@ -752,7 +752,7 @@ GetFileMetaData( const CString& filePath     ,
 
 /*-------------------------------------------------------------------------*/
 
-#if ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
+#if ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_WASM_EMSCRIPTEN ) )
 
 static int
 recursive_mkdir(const char* dir, int accessPerms)
@@ -842,7 +842,7 @@ CreateDirs( const CString& path )
     }
     return true;
 
-    #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
+    #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_WASM_EMSCRIPTEN ) )
 
     int accessPerms = 0777;
 
@@ -1539,7 +1539,7 @@ FileSize( const CString& filename )
         FindClose( hFind );
         return lfilesize;
 
-        #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
+        #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_WASM_EMSCRIPTEN ) )
 
         struct stat statInfo;
         int result;

@@ -101,10 +101,9 @@ if (MSVC)
   add_compile_options(-bigobj)
 endif (MSVC)
 
-if (CMAKE_SYSTEM_NAME STREQUAL "Linux")
-    if (CMAKE_CXX_COMPILER MATCHES "em\\+\\+")
-        message(STATUS "Building with Emscripten")
-        set(CMAKE_CXX_STANDARD 98)  # Explicitly set C++98 compatibility
-        set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -s USE_SDL=2")
-    endif()
+if (EMSCRIPTEN)
+    # The Emscripten toolchain file (Emscripten.toolchain.cmake) sets up everything specific to the platform:
+    # compiler flags, link flags, executable suffix and the optional pthread support.
+    # There is nothing to add here, in particular we do not ask for any ports like SDL, that is up to the application.
+    message(STATUS "Building with Emscripten")
 endif()

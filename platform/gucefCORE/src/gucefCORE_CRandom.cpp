@@ -38,7 +38,7 @@
   #include <windows.h>
   #include <bcrypt.h>
 
-#elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
+#elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_WASM_EMSCRIPTEN ) )
 
   #include <sys/types.h>
   #include <sys/random.h>
@@ -64,7 +64,7 @@ namespace CORE {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#if ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
+#if ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_WASM_EMSCRIPTEN ) )
 
 static bool
 ReadRandomFromUrandom( UInt8* buffer, UInt32 byteCount )
@@ -114,10 +114,18 @@ CRandom::GetRandomBytes( void* buffer, UInt32 byteCount )
 
     return 0 == BCryptGenRandom( NULL, (PUCHAR) buffer, (ULONG) byteCount, BCRYPT_USE_SYSTEM_PREFERRED_RNG );
 
-    #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
+    #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_WASM_EMSCRIPTEN ) )
 
     UInt8* bytes = static_cast< UInt8* >( buffer );
     UInt32 bytesLeft = byteCount;
+
+    #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_WASM_EMSCRIPTEN )
+
+    // Emscripten provides the random device as part of its file system, backed by the entropy of the browser or node
+    return ReadRandomFromUrandom( bytes, bytesLeft );
+
+    #else
+
     while ( bytesLeft > 0 )
     {
         ssize_t bytesRead = ::getrandom( bytes, bytesLeft, 0 );
@@ -133,6 +141,8 @@ CRandom::GetRandomBytes( void* buffer, UInt32 byteCount )
         bytesLeft -= (UInt32) bytesRead;
     }
     return true;
+
+    #endif /* GUCEF_PLATFORM == GUCEF_PLATFORM_WASM_EMSCRIPTEN ? */
 
     #else
 

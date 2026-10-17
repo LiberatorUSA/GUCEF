@@ -1425,13 +1425,9 @@ GUCEFSetEnv( const char* key   ,
     free( envstr );
     return retval == 0;
 
-    #elif ( GUCEF_PLATFORM == GUCEF_PLATFORM_WASM_EMSCRIPTEN )
-
-    // Environment variables are not supported in Emscripten
-    return OSWRAP_FALSE;
-
     #else
 
+    // Emscripten has an environment as well, in node it can be the one of the host
     return setenv( key, value, 1 ) == 0;
 
     #endif
@@ -1443,16 +1439,7 @@ const char*
 GUCEFGetEnv( const char* key )
 {GUCEF_TRACE;
 
-    #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_WASM_EMSCRIPTEN )
-
-    // Environment variables are not supported in Emscripten
-    return GUCEF_NULL;
-
-    #else
-
     return getenv( key );
-
-    #endif
 }
 
 /*--------------------------------------------------------------------------*/

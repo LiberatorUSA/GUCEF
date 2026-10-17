@@ -164,7 +164,11 @@ CGUCEFApplication::~CGUCEFApplication()
     if ( !pulseGenerator.IsNULL() )
     {
         CIPulseGeneratorDriver* pulseDriver = pulseGenerator->GetPulseGeneratorDriver();
-        if ( &m_busyWaitPulseDriver == pulseDriver )
+        if ( &m_busyWaitPulseDriver == pulseDriver
+             #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_WASM_EMSCRIPTEN )
+             || &m_emscriptenPulseDriver == pulseDriver
+             #endif
+           )
         {
             // decouple the pulse driver since we dont want to get tripped up with
             // order of destruction
@@ -187,9 +191,13 @@ CGUCEFApplication::LinkPulseGeneratorDriver( void )
         CIPulseGeneratorDriver* pulseDriver = pulseGenerator->GetPulseGeneratorDriver();
         if ( GUCEF_NULL == pulseDriver )
         {
-            // Set the busy wait pulse driver as the default driver for the
-            // pulse generator
+            // Set the default driver for the pulse generator. A browser cannot be blocked by waiting
+            // in a loop so there we hand the loop to the browser instead of using the busy wait driver.
+            #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_WASM_EMSCRIPTEN )
+            pulseGenerator->SetPulseGeneratorDriver( &m_emscriptenPulseDriver );
+            #else
             pulseGenerator->SetPulseGeneratorDriver( &m_busyWaitPulseDriver );
+            #endif
         }
         pulseGenerator->AllowPeriodicPulses();
         pulseGenerator->RequestPeriodicPulses( this );
@@ -209,6 +217,20 @@ CGUCEFApplication::MainLoop( void )
     if ( !pulseGenerator.IsNULL() )
     {
         LinkPulseGeneratorDriver();
+
+        #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_WASM_EMSCRIPTEN )
+        if ( pulseGenerator->GetPulseGeneratorDriver() == &m_emscriptenPulseDriver )
+        {
+            Unlock();
+
+            // Notify that the first app cycle is starting
+            if ( !NotifyObservers( FirstCycleEvent ) ) return 0;
+
+            // The browser takes over the loop, by default this call does not return
+            m_emscriptenPulseDriver.Run( *pulseGenerator.GetPointerAlways() );
+            return 0;
+        }
+        #endif
 
         // Unless the pulse drive is overridden we will now start the loop
         if ( pulseGenerator->GetPulseGeneratorDriver() == &m_busyWaitPulseDriver )

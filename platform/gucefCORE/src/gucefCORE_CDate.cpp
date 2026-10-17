@@ -129,7 +129,7 @@ CDate::TodaysUTCDate( void )
     ::GetSystemTime( &systemTime );
     return CDate( (UInt16) systemTime.wYear, (UInt8) systemTime.wMonth, (UInt8) systemTime.wDay );
 
-    #elif ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID )
+    #elif ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_WASM_EMSCRIPTEN )
 
     struct timespec time;
     ::memset( &time, 0, sizeof(time) );
@@ -159,7 +159,7 @@ CDate::TodaysLocalDate( void )
     ::GetLocalTime( &systemTime );
     return CDate( (UInt16) systemTime.wYear, (UInt8) systemTime.wMonth, (UInt8) systemTime.wDay );
 
-    #elif ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID )
+    #elif ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_WASM_EMSCRIPTEN )
 
     struct timespec time;
     ::memset( &time, 0, sizeof(time) );

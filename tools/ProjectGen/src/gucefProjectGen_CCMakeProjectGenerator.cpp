@@ -1881,6 +1881,9 @@ struct SCMakePresetGeneratorConfig
     CORE::CString platform;        /**< Value for PLATFORM cache variable (e.g. "wasm"), empty if none */
     CORE::CString androidAbi;      /**< ANDROID_ABI cache variable, e.g. "arm64-v8a", empty if none   */
     CORE::CString androidPlatform; /**< ANDROID_PLATFORM minimum API level, e.g. "android-21"         */
+    bool buildSharedLibs;          /**< Value for BUILD_SHARED_LIBS: modules are shared libraries or static libraries */
+
+    SCMakePresetGeneratorConfig( void ) : buildSharedLibs( true ) {}
 };
 
 /*-------------------------------------------------------------------------*/
@@ -1959,6 +1962,9 @@ GetPresetGeneratorConfig( const CORE::CString& generatorName, const CORE::CStrin
         config.generator     = "Ninja";
         config.toolchainFile = "${sourceDir}/projects/CMake/Emscripten.toolchain.cmake";
         config.platform      = "wasm";
+
+        // WebAssembly has no dynamic loading to speak of, so everything is linked statically into the one module
+        config.buildSharedLibs = false;
     }
     else if ( generatorName == "Android-arm64" )
     {
@@ -2144,7 +2150,7 @@ WriteCMakePresetsFileToDisk( const CProjectTargetInfoBundle& targets     ,
             json += ",\n            \"toolchainFile\": \"" + (*g).toolchainFile + "\"";
         json += ",\n";
         json += "            \"cacheVariables\": {\n";
-        json += "                \"BUILD_SHARED_LIBS\": \"ON\",\n";
+        json += (*g).buildSharedLibs ? "                \"BUILD_SHARED_LIBS\": \"ON\",\n" : "                \"BUILD_SHARED_LIBS\": \"OFF\",\n";
         json += "                \"CMAKE_POLICY_VERSION_MINIMUM\": \"3.5\"";
         if ( !(*g).platform.IsNULLOrEmpty() )
             json += ",\n                \"PLATFORM\": \"" + (*g).platform + "\"";

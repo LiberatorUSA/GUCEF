@@ -25,7 +25,7 @@
 
 #include <malloc.h>             /* memory management */
 #include <stdio.h>              /* standard I/O utils */
-#define __STDC_WANT_LIB_EXT1__
+#define __STDC_WANT_LIB_EXT1__ 1
 #include <string.h>             /* standard string utils */
 #include <assert.h>
 #include <limits.h>
@@ -298,7 +298,7 @@ Get_Current_Dir( char* dest_buffer, UInt32 buf_length )
 
     return _getcwd( dest_buffer, buf_length );
 
-    #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
+    #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_WASM_EMSCRIPTEN ) )
 
     /*
      *	This call can actually fail: if another process has succeeded
@@ -330,7 +330,7 @@ Max_Dir_Length( void )
 
     return MAX_PATH;
 
-    #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
+    #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_WASM_EMSCRIPTEN ) )
 
     return PATH_MAX;
 
@@ -354,7 +354,7 @@ Max_Filename_Length( void )
 
     return _MAX_FNAME;
 
-    #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
+    #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_WASM_EMSCRIPTEN ) )
 
     return NAME_MAX+1;
 
@@ -477,7 +477,7 @@ Remove_Directory( const char *dir  ,
 
     return RemoveDirectory( dir );
 
-    #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
+    #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_WASM_EMSCRIPTEN ) )
 
     return 0 == rmdir( dir ) ? 1 : 0;
 
@@ -547,12 +547,17 @@ Module_Path( char *dest, UInt32 dest_size )
     return (path);
     }
 
-    #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
+    #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_WASM_EMSCRIPTEN ) )
 
     pid_t pid = getpid();
 
     char linkStr[ 24 ];
     sprintf( linkStr, "%s%d%s", "/proc/", pid, "/exe\0" );
+
+    // Without a result the caller must not be left with whatever happened to be in the buffer, for example
+    // on platforms like WebAssembly that have no process image to look up
+    if ( dest_size > 0 )
+        dest[ 0 ] = '\0';
 
     int ch = readlink( linkStr, dest, dest_size );
     if ( -1 != ch )
@@ -583,7 +588,7 @@ Delete_File( const char *filename )
 
     return DeleteFileA( filename );
 
-    #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
+    #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_WASM_EMSCRIPTEN ) )
 
     return 0 == remove( filename ) ? 1 : 0;
 
@@ -1041,7 +1046,7 @@ Get_Modification_Time( const char* path )
     }
     return -1;
 
-    #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
+    #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_WASM_EMSCRIPTEN ) )
 
     struct stat buf;
 
@@ -1078,7 +1083,7 @@ Get_Creation_Time( const char* path )
     }
     return -1;
 
-    #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
+    #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_WASM_EMSCRIPTEN ) )
 
     struct stat buf;
 

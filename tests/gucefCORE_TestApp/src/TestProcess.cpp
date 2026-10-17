@@ -67,7 +67,7 @@
 
 #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
   #include <windows.h>
-#elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
+#elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_WASM_EMSCRIPTEN ) )
   #include <sys/types.h>
   #include <sys/wait.h>
   #include <signal.h>

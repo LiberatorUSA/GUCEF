@@ -100,7 +100,7 @@
   #define GUCEF_CORE_MSWINUTILS_H
   #endif /* GUCEF_CORE_MSWINUTILS_H? */
 
-#elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
+#elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_WASM_EMSCRIPTEN ) )
 
   #include <sys/times.h>
   #include <sys/types.h>
@@ -458,7 +458,7 @@ LoadModuleDynamicly( const CString& filename )
     {
         #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
         fName = filename + ".dll\0";
-        #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
+        #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_WASM_EMSCRIPTEN ) )
         fName = filename + ".so\0";
         #elif ( GUCEF_PLATFORM == GUCEF_PLATFORM_APPLE )
         fName = filename + ".dylib\0";
@@ -467,7 +467,7 @@ LoadModuleDynamicly( const CString& filename )
 
     const CString& theFilename = fName.IsNULLOrEmpty() ? filename : fName; 
 
-    #if ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
+    #if ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_WASM_EMSCRIPTEN ) )
 
     modulePtr = (void*) ::dlopen( theFilename.C_String(), RTLD_NOW );
     if ( GUCEF_NULL == modulePtr )
@@ -564,7 +564,7 @@ GetModulePointer( const CString& moduleName )
 
     // If no module name is passed we get the pointer to the main process module
 
-    #if ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
+    #if ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_WASM_EMSCRIPTEN ) )
 
     // On linux the reference count is always incremented so we must decrement again right away to get
     // the same behaviour as the windows version
@@ -596,7 +596,7 @@ UnloadModuleDynamicly( void *sohandle )
     if ( NULL == sohandle )
         return;
 
-    #if ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
+    #if ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_WASM_EMSCRIPTEN ) )
 
     ::dlclose( sohandle );
 
@@ -640,7 +640,7 @@ GetFunctionAddress( void* sohandle              ,
         return fptr;
     }
 
-    #if ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
+    #if ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_WASM_EMSCRIPTEN ) )
 
     fptr.objPtr = dlsym( sohandle                ,
                          functionname.C_String() );
@@ -759,7 +759,7 @@ CString
 GetHostname( void )
 {GUCEF_TRACE;
 
-#if ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
+#if ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_WASM_EMSCRIPTEN ) )
 
     // Use the POSIX function gethostname()
     char nameBuffer[ 256 ];
@@ -779,7 +779,7 @@ GetHostname( void )
 }
 
 /*-------------------------------------------------------------------------*/
-#if ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
+#if ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_WASM_EMSCRIPTEN ) )
 
 // Helper function to get the parent process ID (PPID) of a given process ID (PID)
 pid_t GUCEF_HIDDEN
@@ -801,7 +801,7 @@ GetParentPID( pid_t pid )
 
 #endif
 /*-------------------------------------------------------------------------*/
-#if ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
+#if ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_WASM_EMSCRIPTEN ) )
 
 // Check if the process is running as a service under SysVinit
 bool GUCEF_HIDDEN
@@ -840,7 +840,7 @@ IsRunningAsSysVinitService( pid_t pid )
 
 #endif
 /*-------------------------------------------------------------------------*/
-#if ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
+#if ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_WASM_EMSCRIPTEN ) )
 
 // Check if the process is running as a service under Upstart
 bool GUCEF_HIDDEN
@@ -879,7 +879,7 @@ IsRunningAsUpstartService( pid_t pid )
 
 #endif
 /*-------------------------------------------------------------------------*/
-#if ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
+#if ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_WASM_EMSCRIPTEN ) )
 
 // Check if the process is running as a service under OpenRC
 bool GUCEF_HIDDEN
@@ -918,7 +918,7 @@ IsRunningAsOpenRCService( pid_t pid )
 
 #endif
 /*-------------------------------------------------------------------------*/
-#if ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
+#if ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_WASM_EMSCRIPTEN ) )
 
 // Check if the process is running as a service under systemd
 bool GUCEF_HIDDEN
@@ -946,7 +946,7 @@ IsRunningAsSystemdService( pid_t pid )
 
 #endif
 /*-------------------------------------------------------------------------*/
-#if ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
+#if ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_WASM_EMSCRIPTEN ) )
 
 // Check if the process is running as a service under supervisord
 bool GUCEF_HIDDEN
@@ -1094,7 +1094,7 @@ IsProcessRunningAsService( TProcessId pid )
     ::CloseServiceHandle( scm );
     return false;
 
-    #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
+    #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_WASM_EMSCRIPTEN ) )
 
     // On Linux there are multiple service managers, so we need to check for each one
     // or at least some popular ones. This code would need updating as new service managers are introduced
@@ -1121,7 +1121,7 @@ IsRunningAsService( void )
 
     #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
     return IsProcessRunningAsService( ::GetCurrentProcessId() );
-    #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
+    #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_WASM_EMSCRIPTEN ) )
     return IsProcessRunningAsService( ::getpid() );
     #else
     GUCEF_WARNING_LOG( LOGLEVEL_NORMAL, "IsRunningAsService: Platform has no supported implementation");
@@ -1167,7 +1167,7 @@ IsRunningAsElevatedAdmin( void )
 
     return 1 == g_isElevatedAdmin;
 
-    #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
+    #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_WASM_EMSCRIPTEN ) )
     GUCEF_WARNING_LOG( LOGLEVEL_NORMAL, "IsRunningAsElevatedAdmin: TODO" );
     return false;
     #else
@@ -1228,7 +1228,7 @@ GetExeImagePathForProcessId( TProcessId pid     ,
     }
     return false;
 
-    #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
+    #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_WASM_EMSCRIPTEN ) )
 
     // The following works on Linux 2.2 and later:
     // Intended to execute in user space
@@ -1299,7 +1299,7 @@ GetExeNameForProcessId( TProcessId pid   ,
 
     return GetExeImagePathForProcessId( pid, exeName );
 
-    #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
+    #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_WASM_EMSCRIPTEN ) )
 
     CString symLinkPath;
     if ( GetExeImagePathForProcessId( pid, symLinkPath ) )
@@ -1489,7 +1489,7 @@ GetProcessList( TProcessIdVector& processList )
 
     return true;
 
-    #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
+    #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_WASM_EMSCRIPTEN ) )
 
     processList.reserve( 1024 );
 
@@ -1573,7 +1573,7 @@ CheckOnProcessAliveStatus( TProcessId pid, bool& status )
     ::CloseHandle( hProcess );
     return true;
 
-    #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
+    #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_WASM_EMSCRIPTEN ) )
 
     // If sig is 0, then no signal is sent, but existence and permission
     // checks are still performed; this can be used to check for the
@@ -1822,7 +1822,7 @@ CProcessInformation::TryGetProcessInformation( TProcessId pid            ,
 
         return totalSuccess;
 
-        #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
+        #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_WASM_EMSCRIPTEN ) )
 
         bool totalSuccess = true;
 

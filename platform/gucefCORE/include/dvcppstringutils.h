@@ -571,14 +571,14 @@ inline CString ToString( const T value,
 /*-------------------------------------------------------------------------*/
 
 // Portable unsigned long routing:
-// Enabled only when unsigned long is not the same type as UInt32/UInt64 or size_t
+// Enabled only when unsigned long is not the same type as UInt32/UInt64. Note that unsigned long can be the same type as size_t, for example on wasm32,
+// in which case the size_t routing above is disabled and this one is the one that handles size_t
 template < typename T >
 inline CString ToString( const T value,
                          typename ::GUCEF::EnableIf<
                              ::GUCEF::TypesAreExactlySame< T, unsigned long >::value &&
                             !::GUCEF::TypesAreExactlySame< unsigned long, ::GUCEF::UInt32 >::value &&
-                            !::GUCEF::TypesAreExactlySame< unsigned long, ::GUCEF::UInt64 >::value &&
-                            !::GUCEF::TypesAreExactlySame< unsigned long, size_t >::value,
+                            !::GUCEF::TypesAreExactlySame< unsigned long, ::GUCEF::UInt64 >::value,
                              long
                          >::type* /*sfinae*/ = 0 )
 {GUCEF_TRACE;

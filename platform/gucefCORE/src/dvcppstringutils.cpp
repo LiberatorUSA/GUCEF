@@ -159,7 +159,7 @@ TempDir( void )
     if ( 0 != ::GetTempPathW( MAX_DIR_LENGTH+1, buffer ) )
         return CString( buffer, MAX_DIR_LENGTH, true );
     #endif
-    #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
+    #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_WASM_EMSCRIPTEN ) )
     // Per POSIX the TMPDIR environment variable takes precedence, /tmp is the standard fallback
     CString tmpDir = GetEnv( "TMPDIR" );
     if ( !tmpDir.IsNULLOrEmpty() )
@@ -1715,7 +1715,7 @@ Utf16toUtf8( const std::wstring& wstr ,
 
     return true;
 
-    #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
+    #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_WASM_EMSCRIPTEN ) )
 
     // Note that wchar_t is 4 bytes on Linux making std::wstring UTF-32 but we also handle a 2 byte wchar_t as UTF-16
     str.clear();
