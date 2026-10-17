@@ -82,6 +82,11 @@ namespace ANCESTRYBACKUP {
  *    recordDna            let discover record the DNA pages as well, to learn how the DNA facility has to talk to the site. Passwords and sign in pages are never recorded. (default: false)
  *    dnaSampleId          for the dna command: the id of your DNA test at Ancestry. Default: found in the earlier discovery of the DNA pages
  *    retryMissing         for the media command: ask again for files the site could not find earlier (default: false)
+ *    grampsFile           for the gramps command: the file to write (default: export/<treeId>.gramps in the data of the tree)
+ *    grampsMediaPath      for the gramps command: the base media path of the Gramps tree. Default: the absolute path of the media directory of the tree
+ *    grampsHomePerson     for the gramps command: the id of the person (I40537067793) who is the home person in Gramps. Default: the first person of the GEDCOM file
+ *    researcherName       for the gramps command: your name as the researcher of the Gramps tree, optional
+ *    researcherEmail      for the gramps command: your e-mail address as the researcher, optional
  *    attachToRunning      use a browser that is already open when it allows remote debugging, see chrome://inspect/#remote-debugging (default: true)
  *    chromeUserDataDir    where to look for that browser's DevToolsActivePort file, separated by ; (default: the usual profile locations)
  */
@@ -96,6 +101,11 @@ class CSettings
     CORE::CString chromePath;
     CORE::CString startUrl;
     CORE::CString cookieDomain;
+    CORE::CString grampsFile;               /**< empty: export/<treeId>.gramps */
+    CORE::CString grampsMediaPath;          /**< empty: the media directory of the tree */
+    CORE::CString grampsHomePerson;
+    CORE::CString researcherName;
+    CORE::CString researcherEmail;
     CORE::CString baselineGedcom;           /**< empty: none given, the one imported earlier is used if there is one */
     std::vector< std::string > exportDirs;  /**< empty: the downloads directory */
     UInt32 exportMaxAgeDays;

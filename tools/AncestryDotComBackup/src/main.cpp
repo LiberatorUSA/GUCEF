@@ -162,7 +162,7 @@ LoadConfig( std::map< std::string, std::string >& iniSettings )
 
     static const char* const names[] = { "dataDir", "treeId", "chromePath", "debugPort", "startUrl", "cookieDomain", "hostFilter",
                                          "discoverSeconds", "maxBodyMegabytes", "headless", "noWait", "chromeArgs", "attachToRunning", "chromeUserDataDir", "recordDna", "retryMissing", "dnaSampleId", "baselineGedcom", "gedcom", "exportDirs", "exportMaxAgeDays", "siteTreeId", "changesSince", "changesMaxPages", "requestDelayMs", "requestJitterPercent",
-                                         "maxRequestsPerRun", "maxRequestsPerDay", GUCEF_NULL };
+                                         "maxRequestsPerRun", "maxRequestsPerDay", "grampsFile", "grampsMediaPath", "grampsHomePerson", "researcherName", "researcherEmail", GUCEF_NULL };
     for ( UInt32 i=0; names[ i ] != GUCEF_NULL; ++i )
     {
         const CORE::CString value = globalCfg.GetValueAlways( names[ i ] );
@@ -268,6 +268,9 @@ GUCEF_OSMAIN_BEGIN
     else
     if ( command == "baseline" )
         result = ANCESTRYBACKUP::CCommands::Baseline( settings );
+    else
+    if ( command == "gramps" )
+        result = ANCESTRYBACKUP::CCommands::Gramps( settings );
     else
     if ( command == "report" )
         result = ANCESTRYBACKUP::CCommands::Report( settings );

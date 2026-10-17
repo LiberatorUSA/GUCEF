@@ -57,6 +57,11 @@ CSettings::CSettings( void )
     , chromePath()
     , startUrl( "https://www.ancestry.com/" )
     , cookieDomain( "ancestry.com" )
+    , grampsFile()
+    , grampsMediaPath()
+    , grampsHomePerson()
+    , researcherName()
+    , researcherEmail()
     , baselineGedcom()
     , exportDirs()
     , exportMaxAgeDays( 7 )
@@ -199,6 +204,17 @@ CSettings::Load( const std::map< std::string, std::string >& options, CORE::CStr
     if ( found && !value.empty() ) baselineGedcom = value.c_str();
     value = Get( options, "baselinegedcom", found );
     if ( found && !value.empty() ) baselineGedcom = value.c_str();
+
+    value = Get( options, "grampsfile", found );
+    if ( found && !value.empty() ) grampsFile = value.c_str();
+    value = Get( options, "grampsmediapath", found );
+    if ( found && !value.empty() ) grampsMediaPath = value.c_str();
+    value = Get( options, "grampshomeperson", found );
+    if ( found && !value.empty() ) grampsHomePerson = value.c_str();
+    value = Get( options, "researchername", found );
+    if ( found && !value.empty() ) researcherName = value.c_str();
+    value = Get( options, "researcheremail", found );
+    if ( found && !value.empty() ) researcherEmail = value.c_str();
 
     value = Get( options, "exportdirs", found );
     if ( found ) exportDirs = SplitList( value );

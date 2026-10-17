@@ -73,6 +73,10 @@
 #include "AncestryBackup_CChromeNetworkRecorder.h"
 #include "AncestryBackup_CGedcomReader.h"
 #include "AncestryBackup_CGedcomSummary.h"
+#include "AncestryBackup_CGedcomFile.h"
+#include "AncestryBackup_CGrampsText.h"
+#include "AncestryBackup_CGrampsDate.h"
+#include "AncestryBackup_CGrampsExporter.h"
 #include "AncestryBackup_CCommands.h"
 #include "AncestryBackup_CExportFinder.h"
 #include "AncestryBackup_CZipExtractor.h"
@@ -1985,6 +1989,296 @@ PerformBrowserTests( void )
     GUCEF_TESTFW_TESTCASE_END
 }
 
+
+/*-------------------------------------------------------------------------*/
+
+static bool
+XmlHas( const std::string& text, const std::string& part )
+{
+    return text.find( part ) != std::string::npos;
+}
+
+/*-------------------------------------------------------------------------*/
+
+static std::string
+DateXmlOf( const char* date )
+{
+    std::string xml;
+    CGrampsDate::ToXml( date, xml );
+    return xml;
+}
+
+/*-------------------------------------------------------------------------*/
+
+static const char* const GrampsSampleGedcom =
+    "0 HEAD\n"
+    "1 SOUR Ancestry.com Family Trees\n"
+    "2 _TREE Test\n"
+    "3 RIN 12345\n"
+    "1 DATE 15 Oct 2026\n"
+    "2 TIME 10:20:30\n"
+    "0 @I1@ INDI\n"
+    "1 NAME Jan Willem /van Test/\n"
+    "2 GIVN Jan Willem\n"
+    "2 SURN van Test\n"
+    "1 SEX M\n"
+    "1 BIRT\n"
+    "2 DATE 1 JAN 1900\n"
+    "2 PLAC Meerssen, Limburg, Nederland\n"
+    "2 SOUR @S1@\n"
+    "3 PAGE Page 1\n"
+    "3 _APID 1,2::3\n"
+    "1 DEAT\n"
+    "2 DATE Abt. 1950\n"
+    "2 SOUR @S1@\n"
+    "3 PAGE Page 1\n"
+    "3 _APID 1,2::3\n"
+    "1 SOUR @S404@\n"
+    "1 EVEN\n"
+    "2 TYPE _NEW\n"
+    "2 DATE 25 Feb 2015\n"
+    "1 NOTE Fish &amp; chips\n"
+    "2 CONT second line\n"
+    "1 OBJE @O1@\n"
+    "2 _PRIM Y\n"
+    "2 _CROP\n"
+    "3 _LEFT 50\n"
+    "3 _TOP 0\n"
+    "3 _WDTH 50\n"
+    "3 _HGHT 100\n"
+    "1 OBJE @O2@\n"
+    "1 FAMS @F1@\n"
+    "0 @I2@ INDI\n"
+    "1 NAME Marie /Test/\n"
+    "1 SEX F\n"
+    "1 FAMC @F2@\n"
+    "1 FAMS @F1@\n"
+    "0 @F1@ FAM\n"
+    "1 HUSB @I1@\n"
+    "1 WIFE @I2@\n"
+    "1 MARR\n"
+    "2 DATE 2 Feb 1925\n"
+    "2 PLAC Meerssen, Limburg, Nederland\n"
+    "0 @S1@ SOUR\n"
+    "1 TITL Census 1900\n"
+    "0 @O1@ OBJE\n"
+    "1 FILE\n"
+    "2 FORM jpg\n"
+    "3 _WDTH 200\n"
+    "3 _HGHT 100\n"
+    "2 TITL A photo\n"
+    "1 _OID abc-123\n"
+    "0 @O2@ OBJE\n"
+    "1 FILE\n"
+    "2 FORM png\n"
+    "2 TITL Not downloaded\n"
+    "1 _OID def-456\n"
+    "0 TRLR\n";
+
+/*-------------------------------------------------------------------------*/
+
+static void
+PerformGrampsTests( void )
+{GUCEF_TRACE;
+
+    GUCEF_TESTFW_TESTCASE( "Test: Text is made safe for XML and the HTML escapes of the export are undone" )
+        try
+        {
+            ASSERT_TRUE( CGrampsText::XmlEscape( "a & b < \"c\"" ) == "a &amp; b &lt; &quot;c&quot;" );
+            // line breaks have to be escaped in an attribute and can stay in element content
+            ASSERT_TRUE( CGrampsText::XmlEscape( "x\ny" ) == "x&#10;y" );
+            ASSERT_TRUE( CGrampsText::XmlEscape( "x\ny", false ) == "x\ny" );
+            // control characters are not XML, a stray byte is not UTF-8, a good multi byte character stays
+            ASSERT_TRUE( CGrampsText::XmlEscape( std::string( "a\x01" "b", 3 ) ) == "ab" );
+            ASSERT_TRUE( CGrampsText::XmlEscape( "a\xFF" "b" ) == "a\xEF\xBF\xBD" "b" );
+            ASSERT_TRUE( CGrampsText::XmlEscape( "\xC3\xBB" ) == "\xC3\xBB" );
+            ASSERT_TRUE( CGrampsText::XmlEscape( "\xC0\x80" ).find( '\0' ) == std::string::npos );    // overlong encoding
+
+            ASSERT_TRUE( CGrampsText::DecodeHtmlEntities( "Fish &amp; chips &lt;b&gt; &#39;x&#39; &quot;" ) == "Fish & chips <b> 'x' \"" );
+            ASSERT_TRUE( CGrampsText::DecodeHtmlEntities( "a&nbsp;b" ) == "a b" );
+            ASSERT_TRUE( CGrampsText::DecodeHtmlEntities( "AT&T and &unknown; and 5 & 6" ) == "AT&T and &unknown; and 5 & 6" );
+            ASSERT_TRUE( CGrampsText::DecodeHtmlEntities( "&#233;" ) == "\xC3\xA9" );
+
+            ASSERT_TRUE( CGrampsText::HtmlToPlainText( "&lt;p&gt;One&lt;/p&gt;&lt;p&gt;Two&lt;/p&gt;" ) == "One\nTwo" );
+            ASSERT_TRUE( CGrampsText::HtmlToPlainText( "a &lt; b" ) == "a < b" );
+            ASSERT_TRUE( CGrampsText::HtmlToPlainText( "<line></line>" ) == "" );
+
+            ASSERT_TRUE( CGrampsText::HashHex( "x" ).size() == 32 );
+            ASSERT_TRUE( CGrampsText::HashHex( "x" ) == CGrampsText::HashHex( "x" ) );
+            ASSERT_TRUE( CGrampsText::HashHex( "x" ) != CGrampsText::HashHex( "y" ) );
+            ASSERT_TRUE( CGrampsText::MakeId( "S_4/3 0" ) == "S_4_3_0" );
+            ASSERT_TRUE( CGrampsText::DaysSinceEpoch( 1970, 1, 1 ) == 0 );
+            ASSERT_TRUE( CGrampsText::DaysSinceEpoch( 2000, 3, 1 ) == 11017 );
+            ASSERT_TRUE( CGrampsText::DaysSinceEpoch( 1969, 12, 31 ) == -1 );
+        }
+        catch ( ... )
+        {
+            ERRORHERE;
+        }
+    GUCEF_TESTFW_TESTCASE_END
+
+    GUCEF_TESTFW_TESTCASE( "Test: GEDCOM dates become the date elements of Gramps" )
+        try
+        {
+            ASSERT_TRUE( DateXmlOf( "20 Sep 1980" ) == "<dateval val=\"1980-09-20\"/>" );
+            ASSERT_TRUE( DateXmlOf( "20 SEPTEMBER 1980" ) == "<dateval val=\"1980-09-20\"/>" );
+            ASSERT_TRUE( DateXmlOf( "Sep 1980" ) == "<dateval val=\"1980-09\"/>" );
+            ASSERT_TRUE( DateXmlOf( "1980" ) == "<dateval val=\"1980\"/>" );
+            ASSERT_TRUE( DateXmlOf( "  1 jan 1900 " ) == "<dateval val=\"1900-01-01\"/>" );
+            ASSERT_TRUE( DateXmlOf( "Abt. 1950" ) == "<dateval val=\"1950\" type=\"about\"/>" );
+            ASSERT_TRUE( DateXmlOf( "ABT 5 Feb 1950" ) == "<dateval val=\"1950-02-05\" type=\"about\"/>" );
+            ASSERT_TRUE( DateXmlOf( "Bef. Nov 1900" ) == "<dateval val=\"1900-11\" type=\"before\"/>" );
+            ASSERT_TRUE( DateXmlOf( "Aft. 1900" ) == "<dateval val=\"1900\" type=\"after\"/>" );
+            ASSERT_TRUE( DateXmlOf( "EST 1900" ) == "<dateval val=\"1900\" type=\"about\" quality=\"estimated\"/>" );
+            ASSERT_TRUE( DateXmlOf( "CAL 1900" ) == "<dateval val=\"1900\" type=\"about\" quality=\"calculated\"/>" );
+            ASSERT_TRUE( DateXmlOf( "Bet. 1921\xE2\x80\x93" "1940" ) == "<daterange start=\"1921\" stop=\"1940\"/>" );
+            ASSERT_TRUE( DateXmlOf( "BET 1 JAN 1900 AND 5 FEB 1901" ) == "<daterange start=\"1900-01-01\" stop=\"1901-02-05\"/>" );
+            ASSERT_TRUE( DateXmlOf( "FROM 1900 TO 1910" ) == "<datespan start=\"1900\" stop=\"1910\"/>" );
+            ASSERT_TRUE( DateXmlOf( "44 BC" ) == "<dateval val=\"-0044\"/>" );
+            ASSERT_TRUE( DateXmlOf( "25-12-1900" ) == "<dateval val=\"1900-12-25\"/>" );
+            ASSERT_TRUE( DateXmlOf( "1900-12-25" ) == "<dateval val=\"1900-12-25\"/>" );
+            ASSERT_TRUE( DateXmlOf( "29 Feb 1904" ) == "<dateval val=\"1904-02-29\"/>" );
+
+            // what is not a date stays what it was, as text, and day and month which can be mixed up are not guessed
+            ASSERT_TRUE( DateXmlOf( "(ja)" ) == "<datestr val=\"(ja)\"/>" );
+            ASSERT_TRUE( DateXmlOf( "30 Feb 1900" ) == "<datestr val=\"30 Feb 1900\"/>" );
+            ASSERT_TRUE( DateXmlOf( "3-4-1900" ) == "<datestr val=\"3-4-1900\"/>" );
+            ASSERT_TRUE( DateXmlOf( "FROM 1932" ) == "<datestr val=\"FROM 1932\"/>" );
+            ASSERT_TRUE( DateXmlOf( "Abt. &amp; x" ) == "<datestr val=\"Abt. &amp; x\"/>" );
+            ASSERT_TRUE( DateXmlOf( "" ).empty() );
+
+            std::string xml;
+            ASSERT_TRUE( CGrampsDate::ToXml( "", xml ) == GRAMPSDATE_NONE );
+            ASSERT_TRUE( CGrampsDate::ToXml( "1900", xml ) == GRAMPSDATE_VALUE );
+            ASSERT_TRUE( CGrampsDate::ToXml( "Bet. 1900-1910", xml ) == GRAMPSDATE_RANGE );
+            ASSERT_TRUE( CGrampsDate::ToXml( "nonsense", xml ) == GRAMPSDATE_TEXT );
+        }
+        catch ( ... )
+        {
+            ERRORHERE;
+        }
+    GUCEF_TESTFW_TESTCASE_END
+
+    GUCEF_TESTFW_TESTCASE( "Test: A GEDCOM file is indexed by record and a record is read as a tree" )
+        try
+        {
+            CGedcomFile file;
+            file.LoadFromText( std::string( "\xEF\xBB\xBF" "0 HEAD\n1 CHAR UTF-8\n0 @I1@ INDI\n1 NAME Jan /Test/\n1 NOTE one\n2 CONC , two\n2 CONT three\n1 EMAIL a@@b.c\n0 @F1@ FAM\r\n1 HUSB @I1@\r\n0 TRLR\n" ) );
+            const std::vector< SGedcomRecordRef >& records = file.GetRecords();
+            ASSERT_TRUE( records.size() == 4 );
+            ASSERT_TRUE( records[ 0 ].type == "HEAD" && records[ 1 ].type == "INDI" && records[ 1 ].xref == "I1" && records[ 2 ].type == "FAM" && records[ 3 ].type == "TRLR" );
+            ASSERT_TRUE( file.FindRecord( "FAM", "F1" ) == &records[ 2 ] );
+            ASSERT_TRUE( file.FindRecord( "FAM", "F9" ) == GUCEF_NULL );
+
+            SGedcomNode node;
+            ASSERT_TRUE( file.ParseRecord( records[ 1 ], node ) );
+            ASSERT_TRUE( node.tag == "INDI" && node.xref == "I1" );
+            ASSERT_TRUE( node.children.size() == 3 );
+            ASSERT_TRUE( node.ChildValue( "NAME" ) == "Jan /Test/" );
+            ASSERT_TRUE( node.ChildValue( "NOTE" ) == "one, two\nthree" );        // CONC joins, CONT breaks
+            ASSERT_TRUE( node.ChildValue( "EMAIL" ) == "a@b.c" );                  // @@ is an @
+            ASSERT_TRUE( node.Child( "BIRT" ) == GUCEF_NULL && node.ChildValue( "BIRT" ).empty() );
+
+            // the record after it is read on its own, the one before does not leak in
+            ASSERT_TRUE( file.ParseRecord( records[ 2 ], node ) );
+            ASSERT_TRUE( node.tag == "FAM" && node.children.size() == 1 && node.ChildValue( "HUSB" ) == "@I1@" );
+            ASSERT_TRUE( file.ParseRecord( records[ 0 ], node ) );
+            ASSERT_TRUE( node.tag == "HEAD" && node.ChildValue( "CHAR" ) == "UTF-8" );
+        }
+        catch ( ... )
+        {
+            ERRORHERE;
+        }
+    GUCEF_TESTFW_TESTCASE_END
+
+    GUCEF_TESTFW_TESTCASE( "Test: The Gramps export holds the people, events, places, citations and media of a GEDCOM file" )
+        try
+        {
+            const CORE::CString dir = CORE::CombinePath( CORE::TempDir(), "AncestryDotComBackup_TestApp_Gramps" );
+            CORE::CreateDirs( CORE::CombinePath( dir, "media" ) );
+            const CORE::CString gedcom = CORE::CombinePath( dir, "tree.ged" );
+            ASSERT_TRUE( CORE::WriteStringAsTextFile( gedcom, GrampsSampleGedcom ) );
+            ASSERT_TRUE( CORE::WriteStringAsTextFile( CORE::CombinePath( CORE::CombinePath( dir, "media" ), "abc-123.jpg" ), "not really a picture" ) );
+            ASSERT_TRUE( CORE::WriteStringAsTextFile( CORE::CombinePath( CORE::CombinePath( dir, "media" ), "abc-123.jpg.json" ), "{}" ) );
+
+            SGrampsExportOptions options;
+            options.gedcomPath = gedcom;
+            options.mediaDir = CORE::CombinePath( dir, "media" );
+            options.outputPath = CORE::CombinePath( dir, "out.gramps" );
+            options.mediaBasePath = "/data/media";
+            options.researcherName = "Jan & Marie";
+            SGrampsExportResult result;
+            ASSERT_TRUE( CGrampsExporter::Export( options, result ) );
+
+            ASSERT_TRUE( result.people == 2 && result.families == 1 && result.sources == 1 && result.mediaObjects == 2 );
+            ASSERT_TRUE( result.mediaFilesPresent == 1 && result.mediaFilesMissing == 1 );
+            ASSERT_TRUE( result.events == 3 );                  // birth, death, marriage. The 'added to the tree' marker is an attribute
+            ASSERT_TRUE( result.citations == 1 );              // the same citation on birth and death is one citation
+            ASSERT_TRUE( result.places == 3 );                 // Nederland, Limburg, Meerssen
+            ASSERT_TRUE( result.notes == 1 );
+            ASSERT_TRUE( result.danglingReferences == 2 );     // the source S404 and the family F2 are not in the file
+            ASSERT_TRUE( result.homePerson == "I1" && result.personIds.size() == 2 && result.gedcomTime == "2026-10-15 10:20:30" );
+
+            std::string xml;
+            CORE::CString xmlText;
+            ASSERT_TRUE( CORE::LoadTextFileAsString( options.outputPath, xmlText ) );
+            xml = xmlText.STL_String();
+            ASSERT_TRUE( XmlHas( xml, "<!DOCTYPE database PUBLIC \"-//GRAMPS//DTD GRAMPS XML V1.7.2//EN\"" ) );
+            ASSERT_TRUE( XmlHas( xml, "<created date=\"2026-10-15\"" ) );
+            ASSERT_TRUE( XmlHas( xml, "<resname>Jan &amp; Marie</resname>" ) );
+            ASSERT_TRUE( XmlHas( xml, "<mediapath>/data/media</mediapath>" ) );
+
+            // the order of the sections is not up to us
+            size_t last = 0;
+            const char* const sections[] = { "<tags>", "<events>", "<people home=", "<families>", "<citations>", "<sources>", "<places>", "<objects>", "<notes>", "</database>" };
+            for ( int i=0; i<10; ++i )
+            {
+                const size_t at = xml.find( sections[ i ] );
+                ASSERT_TRUE( at != std::string::npos && at > last );
+                last = at;
+            }
+            ASSERT_TRUE( XmlHas( xml, "id=\"I1\"" ) && XmlHas( xml, "id=\"F1\"" ) && XmlHas( xml, "id=\"S1\"" ) );
+            ASSERT_TRUE( XmlHas( xml, "<gender>M</gender><name type=\"Birth Name\"><first>Jan Willem</first><surname>van Test</surname></name>" ) );
+            ASSERT_TRUE( XmlHas( xml, "<dateval val=\"1900-01-01\"/>" ) && XmlHas( xml, "<dateval val=\"1950\" type=\"about\"/>" ) && XmlHas( xml, "<dateval val=\"1925-02-02\"/>" ) );
+            ASSERT_TRUE( XmlHas( xml, "<pname value=\"Meerssen\"/><placeref hlink=" ) );
+            ASSERT_TRUE( XmlHas( xml, "type=\"Country\"><pname value=\"Nederland\"/>" ) );
+            ASSERT_TRUE( XmlHas( xml, "<page>Page 1</page>" ) && XmlHas( xml, "<srcattribute type=\"Ancestry record id\" value=\"1,2::3\"/>" ) );
+            ASSERT_TRUE( XmlHas( xml, "<attribute type=\"Ancestry: added to the tree\" value=\"25 Feb 2015\"/>" ) );
+            ASSERT_TRUE( XmlHas( xml, "href=\"https://www.ancestry.com/family-tree/person/tree/12345/person/1/facts\"" ) );
+            ASSERT_TRUE( XmlHas( xml, "<text>Fish &amp; chips\nsecond line</text>" ) );
+            ASSERT_TRUE( XmlHas( xml, "<rel type=\"Married\"/>" ) );
+            ASSERT_TRUE( XmlHas( xml, "<childof" ) == false );        // the only FAMC points to a family which is not there
+
+            // the media: the primary photo is the first, with the cut out as percentages, and the one without a file is tagged
+            ASSERT_TRUE( XmlHas( xml, "<region corner1_x=\"25\" corner1_y=\"0\" corner2_x=\"50\" corner2_y=\"100\"/>" ) );
+            ASSERT_TRUE( XmlHas( xml, "<file src=\"abc-123.jpg\" mime=\"image/jpeg\" description=\"A photo\"/>" ) );
+            ASSERT_TRUE( XmlHas( xml, "<file src=\"def-456.png\" mime=\"image/png\" description=\"Not downloaded\"/>" ) );
+            const size_t missing = xml.find( "def-456.png" );
+            ASSERT_TRUE( xml.find( "<tagref", missing ) != std::string::npos && xml.find( "</object>", missing ) > xml.find( "<tagref", missing ) );
+            ASSERT_TRUE( xml.find( "<tagref" ) > xml.find( "<objects>" ) );        // the photo that is there has no tag
+
+            // the same file again gives the same result, byte for byte, and leaves no working files behind
+            const CORE::CString second = CORE::CombinePath( dir, "out2.gramps" );
+            options.outputPath = second;
+            SGrampsExportResult result2;
+            ASSERT_TRUE( CGrampsExporter::Export( options, result2 ) );
+            CORE::CString xml2Text;
+            ASSERT_TRUE( CORE::LoadTextFileAsString( second, xml2Text ) );
+            const std::string xml2 = xml2Text.STL_String();
+            ASSERT_TRUE( xml == xml2 );
+            ASSERT_TRUE( !CORE::FileExists( second + ".people.part" ) && !CORE::FileExists( second + ".tmp" ) );
+
+            // a file that is not there is a failure, not a crash
+            options.gedcomPath = CORE::CombinePath( dir, "missing.ged" );
+            ASSERT_TRUE( !CGrampsExporter::Export( options, result2 ) );
+        }
+        catch ( ... )
+        {
+            ERRORHERE;
+        }
+    GUCEF_TESTFW_TESTCASE_END
+}
+
 /*-------------------------------------------------------------------------*/
 
 void
@@ -2001,6 +2295,7 @@ PerformToolLogicTests( void )
     PerformCatalogTests();
     PerformJsonTests();
     PerformGedcomTests();
+    PerformGrampsTests();
     PerformExportFinderTests();
     PerformZipTests();
     PerformPolicyTests();

@@ -102,6 +102,11 @@
 #define ANCESTRYBACKUP_CGEDCOMSUMMARY_H
 #endif /* ANCESTRYBACKUP_CGEDCOMSUMMARY_H ? */
 
+#ifndef ANCESTRYBACKUP_CGRAMPSEXPORTER_H
+#include "AncestryBackup_CGrampsExporter.h"
+#define ANCESTRYBACKUP_CGRAMPSEXPORTER_H
+#endif /* ANCESTRYBACKUP_CGRAMPSEXPORTER_H ? */
+
 #ifndef GUCEF_CORE_CFILEACCESS_H
 #include "CFileAccess.h"
 #define GUCEF_CORE_CFILEACCESS_H
@@ -139,6 +144,7 @@
 
 #include <string>
 #include <vector>
+#include <set>
 
 #include "AncestryBackup_CCommands.h"
 
@@ -193,10 +199,11 @@ CCommands::GetUsage( void )
            "  changes    ask the site what changed in the tree since the baseline export or the last run\n"
            "  media      list the media of the tree and download the files that are not here yet\n"
            "  dna        download the DNA matches into dna/matches.csv (the pages of the DNA tests, nothing else)\n"
+           "  gramps     convert the baseline GEDCOM and the downloaded media into a Gramps tree (export/<treeId>.gramps)\n"
            "  report     rebuild the endpoint report from the recorded requests\n"
            "\n"
            "Settings: dataDir, treeId, chromePath, debugPort, startUrl, cookieDomain, hostFilter,\n"
-           "          discoverSeconds, maxBodyMegabytes, headless, noWait, chromeArgs, attachToRunning, chromeUserDataDir, recordDna, gedcom, exportDirs, exportMaxAgeDays,\n          siteTreeId, changesSince, changesMaxPages, requestDelayMs, requestJitterPercent, maxRequestsPerRun, maxRequestsPerDay\n"
+           "          discoverSeconds, maxBodyMegabytes, headless, noWait, chromeArgs, attachToRunning, chromeUserDataDir, recordDna, gedcom, exportDirs, exportMaxAgeDays,\n          siteTreeId, changesSince, changesMaxPages, requestDelayMs, requestJitterPercent, maxRequestsPerRun, maxRequestsPerDay,\n          grampsFile, grampsMediaPath, grampsHomePerson, researcherName, researcherEmail\n"
            "Settings can also be put in AncestryDotComBackup.ini, the command line wins.\n";
 }
 
@@ -1411,6 +1418,121 @@ CCommands::Dna( const CSettings& settings )
     }
     GUCEF_LOG( CORE::LOGLEVEL_IMPORTANT, "AncestryBackup: DNA matches: " + CORE::UInt32ToString( (UInt32) matches.size() ) + " in the list" + ( listComplete ? "" : " so far (not all pages are read yet)" ) +
                                          ", " + CORE::UInt32ToString( (UInt32) done.size() ) + " with details (" + CORE::UInt32ToString( enriched ) + " now). The file is " + csvFile );
+    return EXIT_CODE_OK;
+}
+
+/*-------------------------------------------------------------------------*/
+
+int
+CCommands::Gramps( const CSettings& settings )
+{GUCEF_TRACE;
+
+    const CDataLayout layout = settings.GetLayout();
+    if ( !layout.IsValid() )
+    {
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_CRITICAL, "AncestryBackup: The data directory or tree id is not valid" );
+        return EXIT_CODE_USAGE;
+    }
+
+    const bool given = !settings.baselineGedcom.IsNULLOrEmpty();
+    SGrampsExportOptions options;
+    options.gedcomPath = given ? CORE::RelativePath( settings.baselineGedcom ) : layout.GetBaselineGedcomPath();
+    if ( !CORE::FileExists( options.gedcomPath ) )
+    {
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_CRITICAL, "AncestryBackup: There is no GEDCOM file to convert, take one in with the baseline or export command first (" + options.gedcomPath + ")" );
+        return EXIT_CODE_USAGE;
+    }
+    options.mediaDir = CORE::RelativePath( layout.GetMediaDir() );
+    options.outputPath = settings.grampsFile.IsNULLOrEmpty() ? CORE::CombinePath( layout.GetExportDir(), layout.GetTreeId() + ".gramps" ) : CORE::RelativePath( settings.grampsFile );
+    options.mediaBasePath = settings.grampsMediaPath.IsNULLOrEmpty() ? std::string() : settings.grampsMediaPath.STL_String();
+    options.homePerson = settings.grampsHomePerson.STL_String();
+    options.researcherName = settings.researcherName.STL_String();
+    options.researcherEmail = settings.researcherEmail.STL_String();
+
+    GUCEF_LOG( CORE::LOGLEVEL_IMPORTANT, "AncestryBackup: Converting " + options.gedcomPath + " to " + options.outputPath );
+    SGrampsExportResult result;
+    if ( !CGrampsExporter::Export( options, result ) )
+    {
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_CRITICAL, "AncestryBackup: The conversion to Gramps failed" );
+        return EXIT_CODE_FAILED;
+    }
+
+    // who came and who went since the last time
+    const CORE::CString previousPath = CORE::CombinePath( layout.GetStateDir(), "gramps-individuals.txt" );
+    std::string previousText;
+    const bool hadPrevious = CORE::FileExists( previousPath ) && ReadAll( previousPath, previousText );
+    std::set< std::string > previous;
+    {
+        std::string line;
+        for ( size_t i=0; i<previousText.size(); ++i )
+        {
+            if ( previousText[ i ] == '\n' )
+            {
+                if ( !line.empty() )
+                    previous.insert( line );
+                line.clear();
+            }
+            else
+            if ( previousText[ i ] != '\r' )
+                line += previousText[ i ];
+        }
+    }
+    UInt32 added = 0;
+    std::set< std::string > current;
+    std::string ids;
+    for ( size_t i=0; i<result.personIds.size(); ++i )
+    {
+        current.insert( result.personIds[ i ] );
+        ids += result.personIds[ i ] + "\n";
+        if ( hadPrevious && previous.find( result.personIds[ i ] ) == previous.end() )
+            ++added;
+    }
+    UInt32 removed = 0;
+    if ( hadPrevious )
+        for ( std::set< std::string >::const_iterator i = previous.begin(); i != previous.end(); ++i )
+            if ( current.find( *i ) == current.end() )
+                ++removed;
+
+    std::string report;
+    report += "Gramps conversion of " + std::string( options.gedcomPath.C_String() ) + "\n";
+    report += "  export taken: " + result.gedcomTime + "\n";
+    report += "  written to: " + std::string( options.outputPath.C_String() ) + " (" + CORE::UInt64ToString( result.bytesWritten ).STL_String() + " bytes)\n";
+    report += "  base media path: " + ( options.mediaBasePath.empty() ? std::string( CORE::RelativePath( options.mediaDir ).C_String() ) : options.mediaBasePath ) + "\n";
+    report += "  home person: " + result.homePerson + "\n";
+    report += "Converted\n";
+    report += "  people: " + CORE::UInt32ToString( result.people ).STL_String() + "\n";
+    report += "  families: " + CORE::UInt32ToString( result.families ).STL_String() + "\n";
+    report += "  events: " + CORE::UInt32ToString( result.events ).STL_String() + "\n";
+    report += "  places: " + CORE::UInt32ToString( result.places ).STL_String() + "\n";
+    report += "  sources: " + CORE::UInt32ToString( result.sources ).STL_String() + ", citations: " + CORE::UInt32ToString( result.citations ).STL_String() + ", repositories: " + CORE::UInt32ToString( result.repositories ).STL_String() + "\n";
+    report += "  notes: " + CORE::UInt32ToString( result.notes ).STL_String() + "\n";
+    report += "  media objects: " + CORE::UInt32ToString( result.mediaObjects ).STL_String() + " (" + CORE::UInt32ToString( result.mediaFilesPresent ).STL_String() + " with their file, " +
+              CORE::UInt32ToString( result.mediaFilesMissing ).STL_String() + " without, tagged \"Ancestry: media file not downloaded\")\n";
+    report += "Dates\n";
+    report += "  that Gramps can compute with: " + CORE::UInt32ToString( result.datesExact ).STL_String() + "\n";
+    report += "  kept as text because they are not dates: " + CORE::UInt32ToString( result.datesAsText ).STL_String() + "\n";
+    report += "References to records which are not in the file (left out): " + CORE::UInt32ToString( result.danglingReferences ).STL_String() + "\n";
+    if ( hadPrevious )
+        report += "Since the last conversion: " + CORE::UInt32ToString( added ).STL_String() + " people added, " + CORE::UInt32ToString( removed ).STL_String() + " people gone\n";
+    else
+        report += "This is the first conversion, there is nothing to compare with\n";
+    if ( !result.warnings.empty() )
+    {
+        report += "Warnings\n";
+        for ( size_t i=0; i<result.warnings.size(); ++i )
+            report += "  " + result.warnings[ i ] + "\n";
+    }
+
+    if ( !CORE::CreateDirs( layout.GetStateDir() ) ||
+         !CORE::WriteStringAsTextFile( CORE::CombinePath( layout.GetStateDir(), "gramps-report.txt" ), CORE::CString( report.c_str() ) ) ||
+         !CORE::WriteStringAsTextFile( previousPath, CORE::CString( ids.c_str() ) ) )
+    {
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_CRITICAL, "AncestryBackup: Unable to write the report to " + layout.GetStateDir() );
+        return EXIT_CODE_FAILED;
+    }
+
+    GUCEF_LOG( CORE::LOGLEVEL_IMPORTANT, "AncestryBackup: Wrote " + options.outputPath + " with " + CORE::UInt32ToString( result.people ) + " people, " + CORE::UInt32ToString( result.families ) + " families and " +
+                                         CORE::UInt32ToString( result.mediaObjects ) + " media objects. The report is in " + CORE::CombinePath( layout.GetStateDir(), "gramps-report.txt" ) );
     return EXIT_CODE_OK;
 }
 

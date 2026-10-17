@@ -126,6 +126,16 @@ class CCommands
      */
     static int Dna( const CSettings& settings );
 
+    /**
+     *  Turns the baseline GEDCOM export and the downloaded media into a Gramps XML file (export/<treeId>.gramps) that Gramps takes in as a
+     *  tree of its own: people, families, events, places as a hierarchy, sources, citations, notes, and the media linked to the people and
+     *  events they belong to. Nothing is asked of the site. Run it again after a newer export was taken in (export, baseline) and after more
+     *  media was downloaded, it always converts everything, and the same data gives the same ids and handles. Import it in an empty Gramps tree.
+     *
+     *  Writes the Gramps file and state/gramps-report.txt, which also says who was added to or left the tree since the last conversion.
+     */
+    static int Gramps( const CSettings& settings );
+
     /** Rebuilds the endpoint report from the journal of earlier discovery runs, no browser needed */
     static int Report( const CSettings& settings );
 
