@@ -16,6 +16,7 @@
 if (LINUX32)
   set( PLATFORM_HEADER_FILES 
     include/TestImageAnimation.h
+    include/TestPixelMapConversion.h
   )
 
   set( PLATFORM_HEADER_INSTALL "LINUX32" )
@@ -23,6 +24,7 @@ if (LINUX32)
 
   set( PLATFORM_SOURCE_FILES 
     src/TestImageAnimation.cpp
+    src/TestPixelMapConversion.cpp
     src/gucefIMAGE_TestApp.cpp
   )
 
@@ -32,6 +34,7 @@ if (LINUX32)
 elseif (LINUX64)
   set( PLATFORM_HEADER_FILES 
     include/TestImageAnimation.h
+    include/TestPixelMapConversion.h
   )
 
   set( PLATFORM_HEADER_INSTALL "LINUX64" )
@@ -39,6 +42,7 @@ elseif (LINUX64)
 
   set( PLATFORM_SOURCE_FILES 
     src/TestImageAnimation.cpp
+    src/TestPixelMapConversion.cpp
     src/gucefIMAGE_TestApp.cpp
   )
 
@@ -48,6 +52,7 @@ elseif (LINUX64)
 elseif (WIN32)
   set( PLATFORM_HEADER_FILES 
     include/TestImageAnimation.h
+    include/TestPixelMapConversion.h
   )
 
   set( PLATFORM_HEADER_INSTALL "WIN32" )
@@ -55,6 +60,7 @@ elseif (WIN32)
 
   set( PLATFORM_SOURCE_FILES 
     src/TestImageAnimation.cpp
+    src/TestPixelMapConversion.cpp
     src/gucefIMAGE_TestApp.cpp
   )
 
@@ -64,6 +70,7 @@ elseif (WIN32)
 elseif (WIN64)
   set( PLATFORM_HEADER_FILES 
     include/TestImageAnimation.h
+    include/TestPixelMapConversion.h
   )
 
   set( PLATFORM_HEADER_INSTALL "WIN64" )
@@ -71,6 +78,7 @@ elseif (WIN64)
 
   set( PLATFORM_SOURCE_FILES 
     src/TestImageAnimation.cpp
+    src/TestPixelMapConversion.cpp
     src/gucefIMAGE_TestApp.cpp
   )
 

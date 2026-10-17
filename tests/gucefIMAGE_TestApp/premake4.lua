@@ -102,12 +102,14 @@ defines( { "GUCEF_IMAGE_TESTAPP_BUILD_MODULE", "MODULE_NAME=gucefIMAGE_TestApp" 
 configuration( { "LINUX32" } )
     vpaths { ["Platform Headers"] = { "**.h", "**.hpp", "**.hxx" } }
     files( {
-      "include/TestImageAnimation.h"
+      "include/TestImageAnimation.h",
+      "include/TestPixelMapConversion.h"
     } )
 
     vpaths { ["Platform Source"] = { "**.c", "**.cpp", "**.cs", "**.asm" } }
     files( {
       "src/TestImageAnimation.cpp",
+      "src/TestPixelMapConversion.cpp",
       "src/gucefIMAGE_TestApp.cpp"
     } )
 
@@ -116,12 +118,14 @@ configuration( { "LINUX32" } )
 configuration( { "LINUX64" } )
     vpaths { ["Platform Headers"] = { "**.h", "**.hpp", "**.hxx" } }
     files( {
-      "include/TestImageAnimation.h"
+      "include/TestImageAnimation.h",
+      "include/TestPixelMapConversion.h"
     } )
 
     vpaths { ["Platform Source"] = { "**.c", "**.cpp", "**.cs", "**.asm" } }
     files( {
       "src/TestImageAnimation.cpp",
+      "src/TestPixelMapConversion.cpp",
       "src/gucefIMAGE_TestApp.cpp"
     } )
 
@@ -130,12 +134,14 @@ configuration( { "LINUX64" } )
 configuration( { "WIN32" } )
     vpaths { ["Platform Headers"] = { "**.h", "**.hpp", "**.hxx" } }
     files( {
-      "include/TestImageAnimation.h"
+      "include/TestImageAnimation.h",
+      "include/TestPixelMapConversion.h"
     } )
 
     vpaths { ["Platform Source"] = { "**.c", "**.cpp", "**.cs", "**.asm" } }
     files( {
       "src/TestImageAnimation.cpp",
+      "src/TestPixelMapConversion.cpp",
       "src/gucefIMAGE_TestApp.cpp"
     } )
 
@@ -144,12 +150,14 @@ configuration( { "WIN32" } )
 configuration( { "WIN64" } )
     vpaths { ["Platform Headers"] = { "**.h", "**.hpp", "**.hxx" } }
     files( {
-      "include/TestImageAnimation.h"
+      "include/TestImageAnimation.h",
+      "include/TestPixelMapConversion.h"
     } )
 
     vpaths { ["Platform Source"] = { "**.c", "**.cpp", "**.cs", "**.asm" } }
     files( {
       "src/TestImageAnimation.cpp",
+      "src/TestPixelMapConversion.cpp",
       "src/gucefIMAGE_TestApp.cpp"
     } )
 

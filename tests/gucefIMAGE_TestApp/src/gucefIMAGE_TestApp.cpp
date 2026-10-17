@@ -43,6 +43,7 @@
 #endif /* GUCEF_IMAGE_H ? */
 
 #include "TestImageAnimation.h"
+#include "TestPixelMapConversion.h"
 
 using namespace GUCEF;
 
@@ -213,6 +214,7 @@ GUCEF_OSMAIN_BEGIN
         GUCEF_TESTFW_SET_CALLBACK( CORE::TestFrameworkLogCallback, GUCEF_NULL );
 
         PerformImageAnimationTests();
+        PerformPixelMapConversionTests();
 
         CORE::CLogStreamScope::FlushLogs();
 
