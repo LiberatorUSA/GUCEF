@@ -115,6 +115,7 @@ const CEvent CTaskManager::GlobalTaskDataFactoryUnregisteredEvent = "GUCEF::CORE
 
 const CString CTaskManager::ClassTypeName = "GUCEF::CORE::CTaskManager";
 const CString CTaskManager::DefaultThreadPoolName = "default";
+const CString CTaskManager::ExternalThreadPoolName = "external";
 
 TGenericCallbackTaskConsumerFactory g_genericCallbackTaskConsumerFactory;
 TAsyncUriRetrievalTaskConsumerFactory g_asyncUriRetrievalTaskConsumerFactory;
@@ -380,10 +381,16 @@ CTaskManager::UnregisterThreadPool( const CString& threadPoolName )
     ThreadPoolMap::const_iterator i = m_threadPools.find( threadPoolName );
     if ( i != m_threadPools.end() )
     {
+        ThreadPoolPtr threadPool = (*i).second;
         m_threadPools.erase( i );
         GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "TaskManager:UnregisterThreadPool: Thread pool with name \"" + threadPoolName + "\" has been unregistered" );
 
         lock.EarlyUnlock();
+
+        // Delegators of ended threads reference their pool, the pool cannot release them from within itself
+        // safely once it is no longer registered, so we release them while we still hold a reference
+        if ( !threadPool.IsNULL() )
+            threadPool->ReleaseRetiredDelegators();
         
         ThreadPoolUnregisteredEventData eventData( threadPoolName );
         NotifyObserversFromThread( ThreadPoolUnregisteredEvent, &eventData );
@@ -588,6 +595,76 @@ CTaskManager::StartTaskIfNoneExists( const CString& threadPoolName ,
                                                   taskData );
     }
     return CTask::CreateSharedObjWithParam( TTaskStatus::TASKSTATUS_RESOURCE_NOT_AVAILABLE );
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CTaskManager::RegisterExternalThread( const CString& threadName )
+{GUCEF_TRACE;
+
+    const UInt32 threadId = MT::GetCurrentTaskID();
+    MT::CObjectScopeLock lock( this, GUCEF_MT_LONG_LOCK_TIMEOUT );
+
+    SExternalThread& thread = m_externalThreads[ threadId ];
+    if ( 0 == thread.registrations )
+        thread.name = threadName;
+    ++thread.registrations;
+    return true;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CTaskManager::UnregisterExternalThread( void )
+{GUCEF_TRACE;
+
+    const UInt32 threadId = MT::GetCurrentTaskID();
+    MT::CObjectScopeLock lock( this, GUCEF_MT_LONG_LOCK_TIMEOUT );
+
+    TExternalThreadMap::iterator i = m_externalThreads.find( threadId );
+    if ( i == m_externalThreads.end() )
+        return false;
+
+    if ( (*i).second.registrations > 1 )
+        --(*i).second.registrations;
+    else
+        m_externalThreads.erase( i );
+    return true;
+}
+
+/*-------------------------------------------------------------------------*/
+
+UInt32
+CTaskManager::GetNrOfExternalThreads( void ) const
+{GUCEF_TRACE;
+
+    MT::CObjectScopeReadOnlyLock lock( this, GUCEF_MT_LONG_LOCK_TIMEOUT );
+    return (UInt32) m_externalThreads.size();
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CTaskManager::MakeExternalThreadInfo( UInt32 threadId, const SExternalThread& thread, CThreadInfo& info ) const
+{GUCEF_TRACE;
+
+    info.Clear();
+    info.SetThreadId( threadId );
+    info.SetThreadStatus( MT::THREADSTATUS_RUNNING );
+    info.SetThreadName( thread.name );
+    info.SetIsExternal( true );
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CTaskManager::GetExternalThreadPoolInfo( CThreadPoolInfo& info ) const
+{GUCEF_TRACE;
+
+    info.Clear();
+    info.SetThreadPoolName( ExternalThreadPoolName );
+    info.SetActiveNrOfDedicatedThreads( (UInt32) m_externalThreads.size() );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -927,6 +1004,8 @@ CTaskManager::GetAllThreadPoolNames( CORE::CString::StringSet& poolNames ) const
         poolNames.insert( (*i).first );
         ++i;
     }
+    if ( !m_externalThreads.empty() )
+        poolNames.insert( ExternalThreadPoolName );
 }
 /*-------------------------------------------------------------------------*/
 
@@ -1054,6 +1133,8 @@ CTaskManager::GetAllThreadPoolInfo( TThreadPoolInfoMap& info ) const
         totalSuccess = (*i).second->GetInfo( poolInfo ) && totalSuccess;
         ++i;
     }
+    if ( !m_externalThreads.empty() )
+        GetExternalThreadPoolInfo( info[ ExternalThreadPoolName ] );
     return totalSuccess;
 }
 
@@ -1071,6 +1152,11 @@ CTaskManager::GetThreadPoolInfo( const CString& poolName, CThreadPoolInfo& info 
     {
         if ( (*i).second->GetInfo( info ) )
             return true;
+    }
+    else if ( ExternalThreadPoolName == poolName )
+    {
+        GetExternalThreadPoolInfo( info );
+        return true;
     }
     return false;
 }
@@ -1098,6 +1184,14 @@ CTaskManager::GetThreadInfo( UInt32 threadId         ,
         ++i;
     }
 
+    TExternalThreadMap::const_iterator e = m_externalThreads.find( threadId );
+    if ( e != m_externalThreads.end() )
+    {
+        MakeExternalThreadInfo( (*e).first, (*e).second, info );
+        threadPoolName = ExternalThreadPoolName;
+        return true;
+    }
+
     return false;
 }
 
@@ -1116,6 +1210,13 @@ CTaskManager::GetAllThreadInfo( TThreadInfoMap& info ) const
     {
         totalSuccess = (*i).second->GetAllThreadInfo( info ) && totalSuccess;
         ++i;
+    }
+
+    TExternalThreadMap::const_iterator e = m_externalThreads.begin();
+    while ( e != m_externalThreads.end() )
+    {
+        MakeExternalThreadInfo( (*e).first, (*e).second, info[ (*e).first ] );
+        ++e;
     }
     return totalSuccess;
 }
