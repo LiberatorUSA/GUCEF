@@ -130,7 +130,9 @@ utf8_nonnull utf8_pure utf8_weak size_t utf8len(const void *str);
 // Number of utf8 codepoints in the utf8 string str,
 // excluding the null terminating byte.
 utf8_nonnull utf8_pure utf8_weak size_t utf8len_s(const void *str, size_t bufferSize );
-utf8_nonnull utf8_pure utf8_weak size_t utf8len_s_withaddr(const void *str, size_t bufferSize, const char** nullTermAddress );
+// Note: this one writes through nullTermAddress, so it must not be declared pure. A pure function is assumed to have no
+// side effects which lets an optimizing compiler drop the call or the store, leaving the callers address unset.
+utf8_nonnull utf8_weak size_t utf8len_s_withaddr(const void *str, size_t bufferSize, const char** nullTermAddress );
 
 // Return less than 0, 0, greater than 0 if src1 < src2, src1 == src2, src1 >
 // src2 respectively, case insensitive. Checking at most n bytes of each utf8

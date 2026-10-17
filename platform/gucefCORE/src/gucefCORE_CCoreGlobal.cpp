@@ -354,6 +354,9 @@ CCoreGlobal::Initialize( void )
      *  so that we can use it for the rest of the initialization process and also to make sure it is ready to
      *  receive events from the start of the app lifecycle
      */
+    // The application registers its commands with the system console as part of its construction,
+    // which means the console has to exist before the application does
+    m_sysConsole = GUCEF_NEW CSysConsole();
     m_application = GUCEF_NEW CGUCEFApplication();
     m_application->SetPulseGenerator( m_pulseGenerator );
     m_logManager->SetPulseGenerator( m_pulseGenerator );
@@ -361,7 +364,6 @@ CCoreGlobal::Initialize( void )
     /*
      *  Instantiate the rest of the singletons
      */    
-    m_sysConsole = GUCEF_NEW CSysConsole();
     m_taskManager = GUCEF_NEW CTaskManager();
     m_dstoreCodecRegistry = GUCEF_NEW CDStoreCodecRegistry();
     m_dataDrivenDStoreCodecFactory = GUCEF_NEW CGlobalDataDrivenDStoreCodecFactory();
