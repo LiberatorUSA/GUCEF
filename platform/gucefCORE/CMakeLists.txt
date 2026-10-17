@@ -31,7 +31,6 @@ set( HEADER_FILES
   include/CExclusiveActivationManager.h
   include/CExclusiveActiveObj.h
   include/CFileAccess.h
-  include/CFileURLHandler.h
   include/CGUCEFApplication.h
   include/CGUCEFCOREModule.h
   include/CGenericPlugin.h
@@ -47,7 +46,6 @@ set( HEADER_FILES
   include/CIStreamable.h
   include/CISysConsoleCmdHandler.h
   include/CITypeNamed.h
-  include/CIURLEvents.h
   include/CLLNode.h
   include/CLogManager.h
   include/CMFileAccess.h
@@ -112,10 +110,6 @@ set( HEADER_FILES
   include/CTThreadSafeExpansion.h
   include/CTimer.h
   include/CTransactionEventControl.h
-  include/CURL.h
-  include/CURLDataRetriever.h
-  include/CURLHandler.h
-  include/CURLHandlerRegistry.h
   include/CValueList.h
   include/CodecPluginLink.h
   include/ConfigStoreCodec.h
@@ -141,6 +135,9 @@ set( HEADER_FILES
   include/gucefCORE_CAbstractFactoryBase.h
   include/gucefCORE_CAsciiString.h
   include/gucefCORE_CAsciiStringView.h
+  include/gucefCORE_CAsyncUriResourceRetriever.h
+  include/gucefCORE_CAsyncUriRetrievalTask.h
+  include/gucefCORE_CBackoffPolicy.h
   include/gucefCORE_CBasicBracketLoggingFormatter.h
   include/gucefCORE_CBusyWaitPulseGeneratorDriver.h
   include/gucefCORE_CCharSepLoggingFormatter.h
@@ -155,12 +152,14 @@ set( HEADER_FILES
   include/gucefCORE_CDataNodeDocumentBuilder.h
   include/gucefCORE_CDataNodeSerializableDataNode.h
   include/gucefCORE_CDataNodeSerializableSettings.h
+  include/gucefCORE_CDataNodeSubtreeCollector.h
   include/gucefCORE_CDataUriResourceAccessor.h
   include/gucefCORE_CDate.h
   include/gucefCORE_CDateTime.h
   include/gucefCORE_CDateTimeRange.h
   include/gucefCORE_CDeferredTask.h
   include/gucefCORE_CDirectoryWatcherEvents.h
+  include/gucefCORE_CDocumentStreamWriter.h
   include/gucefCORE_CDynamicBufferStringStream.h
   include/gucefCORE_CDynamicBufferSwap.h
   include/gucefCORE_CDynamicBufferView.h
@@ -193,6 +192,7 @@ set( HEADER_FILES
   include/gucefCORE_CIFunction.h
   include/gucefCORE_CILoggingFormatter.h
   include/gucefCORE_CIMetricsSystemClient.h
+  include/gucefCORE_CIMonotonicClock.h
   include/gucefCORE_CINotifier.h
   include/gucefCORE_CIObserver.h
   include/gucefCORE_CIPluginLoadLogic.h
@@ -219,12 +219,16 @@ set( HEADER_FILES
   include/gucefCORE_CPluginFactoryAdapterForDataDrivenDStoreCodec.h
   include/gucefCORE_CPluginGroup.h
   include/gucefCORE_CPluginMetaData.h
+  include/gucefCORE_CProcess.h
+  include/gucefCORE_CProgressReportingIOAccess.h
   include/gucefCORE_CProperty.h
   include/gucefCORE_CPropertyDefinition.h
   include/gucefCORE_CPropertyDefinitionList.h
   include/gucefCORE_CPropertyList.h
   include/gucefCORE_CPulseData.h
   include/gucefCORE_CPulseGenerator.h
+  include/gucefCORE_CRandom.h
+  include/gucefCORE_CRateLimiter.h
   include/gucefCORE_CResourceMetaData.h
   include/gucefCORE_CRollingFileAccess.h
   include/gucefCORE_CSchedule.h
@@ -346,7 +350,6 @@ set( SOURCE_FILES
   src/CExclusiveActivationManager.cpp
   src/CExclusiveActiveObj.cpp
   src/CFileAccess.cpp
-  src/CFileURLHandler.cpp
   src/CGUCEFApplication.cpp
   src/CGUCEFCOREModule.cpp
   src/CGenericPlugin.cpp
@@ -361,7 +364,6 @@ set( SOURCE_FILES
   src/CIPlugin.cpp
   src/CIStreamable.cpp
   src/CITypeNamed.cpp
-  src/CIURLEvents.cpp
   src/CLLNode.cpp
   src/CLogManager.cpp
   src/CMFileAccess.cpp
@@ -419,10 +421,6 @@ set( SOURCE_FILES
   src/CTSingleton.cpp
   src/CTimer.cpp
   src/CTransactionEventControl.cpp
-  src/CURL.cpp
-  src/CURLDataRetriever.cpp
-  src/CURLHandler.cpp
-  src/CURLHandlerRegistry.cpp
   src/CValueList.cpp
   src/DVCPPOSWRAP.cpp
   src/DVOSWRAP.cpp
@@ -440,6 +438,9 @@ set( SOURCE_FILES
   src/gucefCORE_CAbstractFactoryBase.cpp
   src/gucefCORE_CAsciiString.cpp
   src/gucefCORE_CAsciiStringView.cpp
+  src/gucefCORE_CAsyncUriResourceRetriever.cpp
+  src/gucefCORE_CAsyncUriRetrievalTask.cpp
+  src/gucefCORE_CBackoffPolicy.cpp
   src/gucefCORE_CBasicBracketLoggingFormatter.cpp
   src/gucefCORE_CBusyWaitPulseGeneratorDriver.cpp
   src/gucefCORE_CCharSepLoggingFormatter.cpp
@@ -454,11 +455,13 @@ set( SOURCE_FILES
   src/gucefCORE_CDataNodeDocumentBuilder.cpp
   src/gucefCORE_CDataNodeSerializableDataNode.cpp
   src/gucefCORE_CDataNodeSerializableSettings.cpp
+  src/gucefCORE_CDataNodeSubtreeCollector.cpp
   src/gucefCORE_CDataUriResourceAccessor.cpp
   src/gucefCORE_CDate.cpp
   src/gucefCORE_CDateTime.cpp
   src/gucefCORE_CDateTimeRange.cpp
   src/gucefCORE_CDirectoryWatcherEvents.cpp
+  src/gucefCORE_CDocumentStreamWriter.cpp
   src/gucefCORE_CDynamicBufferStringStream.cpp
   src/gucefCORE_CDynamicBufferSwap.cpp
   src/gucefCORE_CDynamicBufferView.cpp
@@ -489,6 +492,7 @@ set( SOURCE_FILES
   src/gucefCORE_CIFunction.cpp
   src/gucefCORE_CILoggingFormatter.cpp
   src/gucefCORE_CIMetricsSystemClient.cpp
+  src/gucefCORE_CIMonotonicClock.cpp
   src/gucefCORE_CINotifier.cpp
   src/gucefCORE_CIObserver.cpp
   src/gucefCORE_CIPluginLoadLogic.cpp
@@ -515,12 +519,16 @@ set( SOURCE_FILES
   src/gucefCORE_CPluginFactoryAdapterForDataDrivenDStoreCodec.cpp
   src/gucefCORE_CPluginGroup.cpp
   src/gucefCORE_CPluginMetaData.cpp
+  src/gucefCORE_CProcess.cpp
+  src/gucefCORE_CProgressReportingIOAccess.cpp
   src/gucefCORE_CProperty.cpp
   src/gucefCORE_CPropertyDefinition.cpp
   src/gucefCORE_CPropertyDefinitionList.cpp
   src/gucefCORE_CPropertyList.cpp
   src/gucefCORE_CPulseData.cpp
   src/gucefCORE_CPulseGenerator.cpp
+  src/gucefCORE_CRandom.cpp
+  src/gucefCORE_CRateLimiter.cpp
   src/gucefCORE_CResourceMetaData.cpp
   src/gucefCORE_CRollingFileAccess.cpp
   src/gucefCORE_CSchedule.cpp
@@ -618,6 +626,9 @@ elseif (ANDROID64)
 elseif (LINUX32)
   set( PLATFORM_HEADER_FILES 
     include/linux/CXTermConsoleLogger.h
+    include/linux/gucefCORE_CDesktopTerminalConsoleLogger.h
+    include/linux/gucefCORE_CTerminalConsoleLogger.h
+    include/linux/gucefCORE_CTextLineConsoleLogger.h
     include/linux/gucefCORE_CX11EventDispatcher.h
     include/linux/gucefCORE_CX11Window.h
     include/linux/gucefCORE_pty.h
@@ -628,6 +639,9 @@ elseif (LINUX32)
 
   set( PLATFORM_SOURCE_FILES 
     src/linux/CXTermConsoleLogger.cpp
+    src/linux/gucefCORE_CDesktopTerminalConsoleLogger.cpp
+    src/linux/gucefCORE_CTerminalConsoleLogger.cpp
+    src/linux/gucefCORE_CTextLineConsoleLogger.cpp
     src/linux/gucefCORE_CX11EventDispatcher.cpp
     src/linux/gucefCORE_CX11Window.cpp
     src/linux/gucefCORE_pty.c
@@ -639,6 +653,9 @@ elseif (LINUX32)
 elseif (LINUX64)
   set( PLATFORM_HEADER_FILES 
     include/linux/CXTermConsoleLogger.h
+    include/linux/gucefCORE_CDesktopTerminalConsoleLogger.h
+    include/linux/gucefCORE_CTerminalConsoleLogger.h
+    include/linux/gucefCORE_CTextLineConsoleLogger.h
     include/linux/gucefCORE_CX11EventDispatcher.h
     include/linux/gucefCORE_CX11Window.h
     include/linux/gucefCORE_pty.h
@@ -649,6 +666,9 @@ elseif (LINUX64)
 
   set( PLATFORM_SOURCE_FILES 
     src/linux/CXTermConsoleLogger.cpp
+    src/linux/gucefCORE_CDesktopTerminalConsoleLogger.cpp
+    src/linux/gucefCORE_CTerminalConsoleLogger.cpp
+    src/linux/gucefCORE_CTextLineConsoleLogger.cpp
     src/linux/gucefCORE_CX11EventDispatcher.cpp
     src/linux/gucefCORE_CX11Window.cpp
     src/linux/gucefCORE_pty.c
@@ -745,11 +765,11 @@ if ( LINUX64 )
 endif( LINUX64 )
 
 if ( WIN32 )
-  target_link_libraries( ${MODULE_NAME} PRIVATE PowrProf.lib Shlwapi.lib Ws2_32.lib )
+  target_link_libraries( ${MODULE_NAME} PRIVATE Bcrypt.lib PowrProf.lib Shlwapi.lib Ws2_32.lib )
 endif( WIN32 )
 
 if ( WIN64 )
-  target_link_libraries( ${MODULE_NAME} PRIVATE PowrProf.lib Shlwapi.lib Ws2_32.lib )
+  target_link_libraries( ${MODULE_NAME} PRIVATE Bcrypt.lib PowrProf.lib Shlwapi.lib Ws2_32.lib )
 endif( WIN64 )
 
 include_directories( ../../common/include ../gucefMT/include include include/c_api )

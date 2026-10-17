@@ -75,7 +75,6 @@ class CDateTime;
 class CTimestamp;
 class CUriResourceAccessorFactory;
 class CTaskManager;
-class CURLHandlerRegistry;
 class CDStoreCodecRegistry;
 class CDataDrivenDStoreCodecFactory;
 class CExclusiveActivationManager;
@@ -123,7 +122,6 @@ class GUCEF_CORE_PUBLIC_CPP CCoreGlobal
 
     CNotificationIDRegistry& GetNotificationIDRegistry( void );
 
-    CURLHandlerRegistry& GetUrlHandlerRegistry( void );
 
     CUriResourceAccessorFactory& GetUriResourceAccessorFactory( void );
 
@@ -178,7 +176,6 @@ class GUCEF_CORE_PUBLIC_CPP CCoreGlobal
 
     PulseGeneratorPtr m_pulseGenerator;
     CTaskManager* m_taskManager;
-    CURLHandlerRegistry* m_urlHandlerRegistry;
     CDStoreCodecRegistry* m_dstoreCodecRegistry;
     CDataDrivenDStoreCodecFactory* m_dataDrivenDStoreCodecFactory;
     CExclusiveActivationManager* m_exclusiveActivationManager;

@@ -19,10 +19,10 @@ set( HEADER_FILES
   ../pubsubpluginSTORAGE/include/pubsubpluginSTORAGE_CStoragePubSubClientTopicConfig.h
   ../pubsubpluginSTORAGE/include/pubsubpluginSTORAGE_CStoragePubSubClientTopicVfsTask.h
   ../pubsubpluginSTORAGE/include/pubsubpluginSTORAGE_CStoragePubSubIndexDef.h
-  ../pubsubpluginSTORAGE/include/pubsubpluginSTORAGE_CStorageReplayTaskConsumer.h
-  ../pubsubpluginSTORAGE/include/pubsubpluginSTORAGE_CStorageReplayTaskData.h
   ../pubsubpluginSTORAGE/include/pubsubpluginSTORAGE_CStoragePubSubIndexReader.h
   ../pubsubpluginSTORAGE/include/pubsubpluginSTORAGE_CStoragePubSubIndexWriter.h
+  ../pubsubpluginSTORAGE/include/pubsubpluginSTORAGE_CStorageReplayTaskConsumer.h
+  ../pubsubpluginSTORAGE/include/pubsubpluginSTORAGE_CStorageReplayTaskData.h
   ../pubsubpluginSTORAGE/include/pubsubpluginSTORAGE_config.h
   ../pubsubpluginSTORAGE/include/pubsubpluginSTORAGE_macros.h
   include/pubsubpluginTEST.h
@@ -42,10 +42,10 @@ set( SOURCE_FILES
   ../pubsubpluginSTORAGE/src/pubsubpluginSTORAGE_CStoragePubSubClientTopicConfig.cpp
   ../pubsubpluginSTORAGE/src/pubsubpluginSTORAGE_CStoragePubSubClientTopicVfsTask.cpp
   ../pubsubpluginSTORAGE/src/pubsubpluginSTORAGE_CStoragePubSubIndexDef.cpp
-  ../pubsubpluginSTORAGE/src/pubsubpluginSTORAGE_CStorageReplayTaskConsumer.cpp
-  ../pubsubpluginSTORAGE/src/pubsubpluginSTORAGE_CStorageReplayTaskData.cpp
   ../pubsubpluginSTORAGE/src/pubsubpluginSTORAGE_CStoragePubSubIndexReader.cpp
   ../pubsubpluginSTORAGE/src/pubsubpluginSTORAGE_CStoragePubSubIndexWriter.cpp
+  ../pubsubpluginSTORAGE/src/pubsubpluginSTORAGE_CStorageReplayTaskConsumer.cpp
+  ../pubsubpluginSTORAGE/src/pubsubpluginSTORAGE_CStorageReplayTaskData.cpp
   src/pubsubpluginTEST.cpp
   src/pubsubpluginTEST_CTestPubSubClient.cpp
   src/pubsubpluginTEST_CTestPubSubClientConfig.cpp
@@ -87,11 +87,11 @@ if ( LINUX64 )
 endif( LINUX64 )
 
 if ( WIN32 )
-  include_directories( ../../../platform/gucefCOMCORE/include/mswin ../../../platform/gucefCORE/include/mswin ../../../platform/gucefMT/include/mswin )
+  include_directories( ../../../platform/gucefCOMCORE/include/mswin ../../../platform/gucefCORE/include/mswin ../../../platform/gucefMT/include/mswin ../../../platform/gucefWEB/include/mswin )
 endif( WIN32 )
 
 if ( WIN64 )
-  include_directories( ../../../platform/gucefCOMCORE/include/mswin ../../../platform/gucefCORE/include/mswin ../../../platform/gucefMT/include/mswin )
+  include_directories( ../../../platform/gucefCOMCORE/include/mswin ../../../platform/gucefCORE/include/mswin ../../../platform/gucefMT/include/mswin ../../../platform/gucefWEB/include/mswin )
 endif( WIN64 )
 
 

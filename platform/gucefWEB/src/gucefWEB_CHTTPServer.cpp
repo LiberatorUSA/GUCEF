@@ -38,6 +38,11 @@
 #define GUCEF_CORE_CDATANODE_H
 #endif /* GUCEF_CORE_CDATANODE_H ? */
 
+#ifndef GUCEF_WEB_CWEBSOCKETHANDSHAKE_H
+#include "gucefWEB_CWebSocketHandshake.h"
+#define GUCEF_WEB_CWEBSOCKETHANDSHAKE_H
+#endif /* GUCEF_WEB_CWEBSOCKETHANDSHAKE_H ? */
+
 #ifndef GUCEF_CORE_CLOGMANAGER_H
 #include "CLogManager.h"
 #define GUCEF_CORE_CLOGMANAGER_H
@@ -193,7 +198,7 @@ CHTTPServer::CHTTPServer( THttpServerRequestHandlerFactory* requestHandlerFactor
     , m_requestHandler()
     , m_requestHandlerFactory( requestHandlerFactory )
     , m_settings()
-    , m_sha1Codec()
+    , m_webSocketHandler( GUCEF_NULL )
     , m_lock()
 {GUCEF_TRACE;
 
@@ -221,7 +226,7 @@ CHTTPServer::CHTTPServer( const CORE::PulseGeneratorPtr& pulsGenerator          
     , m_requestHandler()
     , m_requestHandlerFactory( requestHandlerFactory )
     , m_settings()
-    , m_sha1Codec()
+    , m_webSocketHandler( GUCEF_NULL )
     , m_lock()
 {GUCEF_TRACE;
 
@@ -253,8 +258,19 @@ CHTTPServer::~CHTTPServer()
 /*-------------------------------------------------------------------------*/
 
 void
+CHTTPServer::RegisterEvents( void )
+{GUCEF_TRACE;
+
+    WebSocketClientConnectedEvent.Initialize();
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
 CHTTPServer::RegisterEventHandlers( void )
 {GUCEF_TRACE;
+
+    RegisterEvents();
 
     // Register event handlers
     TEventCallback callback( this, &CHTTPServer::OnClientConnectedEvent );
@@ -364,6 +380,29 @@ CHTTPServer::OnClientConnectedEvent( CORE::CNotifier* notifier                 ,
     SubscribeTo( storage.connection                               ,
                  COMCORE::CTCPServerConnection::DataRecievedEvent ,
                  callback                                         );
+
+    TEventCallback disconnectCallback( this, &CHTTPServer::OnClientDisconnectedEvent );
+    SubscribeTo( storage.connection                               ,
+                 COMCORE::CTCPServerConnection::DisconnectedEvent ,
+                 disconnectCallback                               );
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CHTTPServer::OnClientDisconnectedEvent( CORE::CNotifier* notifier                 ,
+                                        const CORE::CEvent& eventid               ,
+                                        CORE::CICloneable* eventdata /* = NULL */ )
+{GUCEF_TRACE;
+
+    // Tell the web socket handler of the connection, if it has one, that its connection ended
+    COMCORE::CTCPServerConnection* connection = static_cast< COMCORE::CTCPServerConnection* >( notifier );
+    CIWebSocketConnectionHandler* handler = static_cast< CIWebSocketConnectionHandler* >( connection->GetUserData() );
+    if ( GUCEF_NULL != handler )
+    {
+        connection->SetUserData( GUCEF_NULL );
+        handler->OnWebSocketClosed();
+    }
 }
 
 /*-------------------------------------------------------------------------*/
@@ -380,6 +419,15 @@ CHTTPServer::OnClientDataReceivedEvent( CORE::CNotifier* notifier               
 
     GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "CHTTPServer(" + CORE::PointerToString( this ) + "): " + CORE::UInt32ToString( receivedData.GetDataSize() ) + " Bytes received from client " + connection->GetRemoteHostName() );
 
+    // Connections which were upgraded to the web socket protocol no longer speak HTTP,
+    // the handler they were handed to is linked on the connection itself
+    CIWebSocketConnectionHandler* webSocketHandler = static_cast< CIWebSocketConnectionHandler* >( connection->GetUserData() );
+    if ( GUCEF_NULL != webSocketHandler )
+    {
+        webSocketHandler->OnWebSocketData( receivedData.GetConstBufferPtr(), receivedData.GetDataSize() );
+        return;
+    }
+
     if ( m_settings.processRequestsAsync )
     {
         // Use a worker thread to actually process the request
@@ -389,7 +437,11 @@ CHTTPServer::OnClientDataReceivedEvent( CORE::CNotifier* notifier               
     {
         // Syncronously process the request in a blocking manner
         CORE::CDynamicBuffer responseBuffer;
-        SyncProcessReceivedData( connection, receivedData, responseBuffer );
+        if ( !SyncProcessReceivedData( connection, receivedData, responseBuffer ) )
+        {
+            // A connection which was just upgraded to a web socket has already been answered and must stay open
+            return;
+        }
 
         // Send the reponse back to the client
         connection->Send( responseBuffer );
@@ -442,56 +494,12 @@ CHTTPServer::StripItems( TStringVector& list ,
 
 /*-------------------------------------------------------------------------*/
 
-bool
-CHTTPServer::InitSha1CodecLink( void )
+void
+CHTTPServer::SetWebSocketUpgradeHandler( CIWebSocketUpgradeHandler* handler )
 {GUCEF_TRACE;
 
-    if ( m_sha1Codec.IsNULL() )
-    {
-        CORE::CCodecRegistry& codecRegistry = CORE::CCoreGlobal::Instance()->GetCodecRegistry();
-
-        // First obtain the registery specific to compression codecs
-        CORE::CCodecRegistry::TCodecFamilyRegistryPtr codecFamilyRegistry;
-        if ( codecRegistry.TryLookup( CORE::CoreCodecTypes::CryptographicHashCodec, codecFamilyRegistry, false ) && codecFamilyRegistry )
-        {
-            // Hook up sha1 codec if we have it which per the spec is needed for the web socket handshake
-            CORE::CCodecRegistry::TICodecPtr codec;
-            if ( !codecFamilyRegistry->TryLookup( "sha1", m_sha1Codec, false ) )
-            {
-                GUCEF_WARNING_LOG( CORE::LOGLEVEL_NORMAL, "HttpServer(" + CORE::ToString( this ) + "):OnWebSocketUpgrade: No SHA1 codec is available" );
-            }
-            else
-            {
-                GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "HttpServer(" + CORE::ToString( this ) + "):OnWebSocketUpgrade: Initialized link to SHA1 codec" );
-                return true;
-            }
-        }
-        return false;
-    }
-    return true;
-}
-
-/*-------------------------------------------------------------------------*/
-
-CORE::CString
-CHTTPServer::GenerateWebSocketResponseKey( const CORE::CString& clientKey )
-{GUCEF_TRACE;
-
-    if ( !m_sha1Codec.IsNULL() )
-    {
-        CORE::CString sanityCheckKey = clientKey + "258EAFA5-E914-47DA-95CA-C5AB0DC85B11";
-        CORE::CDynamicBuffer inBuffer; inBuffer.LinkTo( sanityCheckKey );
-        CORE::CDynamicBufferAccess inBufferAccess( inBuffer );
-
-        CORE::CDynamicBuffer outBuffer( true );
-        CORE::CDynamicBufferAccess outBufferAccess( outBuffer );
-
-        if ( m_sha1Codec->Encode( inBufferAccess, outBufferAccess ) )
-        {
-            return CORE::Base64Encode( outBuffer.GetBufferPtr(), outBuffer.GetDataSize() );
-        }
-    }
-    return CORE::CString::Empty;
+    MT::CScopeMutex lock( m_lock );
+    m_webSocketHandler = handler;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -570,7 +578,8 @@ CHTTPServer::OnWebSocketUpgrade( COMCORE::CTCPServerConnection* connection ,
 
     // Since websockets are permitted per settings and SHA1 support is mandatory as such
     // we will consider it a bad server setup if we cannot get the needed codec
-    if ( !InitSha1CodecLink() )
+    CORE::CString acceptKey;
+    if ( !CWebSocketHandshake::ComputeAcceptKey( (*sanityCheckKeyHeader).second, acceptKey ) )
     {
         CHttpResponseData response;
         response.statusCode = 500; // Internal Server Error
@@ -584,19 +593,49 @@ CHTTPServer::OnWebSocketUpgrade( COMCORE::CTCPServerConnection* connection ,
         return;
     }
 
-    // We are accepting the web socket upgrade. Notify as such
+    // We are accepting the web socket upgrade
     CHttpResponseData response;
     response.statusCode = 101; // Switching Protocols
     response.otherHeaders[ "Upgrade" ] = "websocket";
     response.otherHeaders[ "Connection" ] = "Upgrade";
-    response.otherHeaders[ "Sec-WebSocket-Accept" ] = GenerateWebSocketResponseKey( (*sanityCheckKeyHeader).second );
+    response.otherHeaders[ "Sec-WebSocket-Accept" ] = acceptKey;
+
+    CIWebSocketUpgradeHandler* handler = GUCEF_NULL;
+    {
+        MT::CScopeMutex lock( m_lock );
+        handler = m_webSocketHandler;
+    }
+
+    if ( GUCEF_NULL != handler && !handler->OnWebSocketUpgradeRequested( *this, *connection, requestData, response ) )
+    {
+        // The handler refused the upgrade, make sure that is clear to the client
+        if ( response.statusCode < 400 )
+            response.statusCode = 403;
+        response.otherHeaders.erase( "Sec-WebSocket-Accept" );
+
+        CORE::CDynamicBuffer responseBuffer;
+        response.Serialize( responseBuffer );
+        connection->Send( responseBuffer );
+        connection->Close();
+
+        GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "HttpServer(" + CORE::ToString( this ) + "):OnWebSocketUpgrade: The web socket upgrade handler refused the upgrade" );
+        return;
+    }
 
     CORE::CDynamicBuffer responseBuffer;
     response.Serialize( responseBuffer );
     connection->Send( responseBuffer );
 
     TWebSocketClientConnectedEventData eData( &requestData );
-    NotifyObservers( WebSocketClientConnectedEvent, &eData );
+    if ( !NotifyObservers( WebSocketClientConnectedEvent, &eData ) )
+        return;     // we were deleted as a result of the notification
+
+    if ( GUCEF_NULL != handler )
+    {
+        // The handler takes the connection over: it links its CIWebSocketConnectionHandler to the connection
+        // after which we no longer treat data from this connection as HTTP
+        handler->OnWebSocketConnectionEstablished( *this, *connection, requestData );
+    }
 
 }
 
@@ -649,7 +688,7 @@ CHTTPServer::ASyncProcessReceivedData( COMCORE::CTCPServerConnection* connection
 
 /*-------------------------------------------------------------------------*/
 
-void
+bool
 CHTTPServer::SyncProcessReceivedData( COMCORE::CTCPServerConnection* connection ,
                                       const CORE::CDynamicBuffer& inputBuffer   ,
                                       CORE::CDynamicBuffer& outputBuffer        )
@@ -659,12 +698,14 @@ CHTTPServer::SyncProcessReceivedData( COMCORE::CTCPServerConnection* connection 
     {
         CHttpRequestData requestData;
         if ( !ParseRequest( inputBuffer, requestData ) )
-            return;
+            return true;
 
         if ( requestData.isWebSocketUpgrade )
         {
             OnWebSocketUpgrade( connection, requestData );
-            return;
+
+            // whether or not the upgrade was accepted, the answer was already sent and the connection must be left as is
+            return false;
         }
 
         GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "CHTTPServer(" + CORE::PointerToString( this ) + "): About to process request of type: " + requestData.requestType );
@@ -708,6 +749,8 @@ CHTTPServer::SyncProcessReceivedData( COMCORE::CTCPServerConnection* connection 
             GUCEF_EXCEPTION_LOG( CORE::LOGLEVEL_NORMAL, "CHTTPServer(" + CORE::PointerToString( this ) + "): Exception sending internal server error response: " + CORE::CString( e.what() ) );
         }
     }
+
+    return true;
 }
 
 /*-------------------------------------------------------------------------*/

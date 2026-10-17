@@ -75,6 +75,32 @@ const CUtf8String::StringSet CUtf8String::EmptyStringSet;
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+/**
+ *  Decodes the codepoint at cpPos and returns a pointer to the previous codepoint
+ *  Unlike utf8rcodepoint() this never reads before the start of the string:
+ *  utf8rcodepoint() always steps back which for the first codepoint means reading the byte before the buffer
+ *  For the first codepoint the start of the string is returned
+ */
+static const char*
+Utf8ReverseCodepoint( const char* stringStart ,
+                      const void* cpPos       ,
+                      UInt32* codepoint       )
+{GUCEF_TRACE;
+
+    if ( cpPos <= (const void*) stringStart )
+    {
+        utf8codepoint( stringStart, codepoint );
+        return stringStart;
+    }
+    return (const char*) utf8rcodepoint( cpPos, codepoint );
+}
+
+/*-------------------------------------------------------------------------//
+//                                                                         //
+//      UTILITIES                                                          //
+//                                                                         //
+//-------------------------------------------------------------------------*/
+
 CUtf8String::CUtf8String( void )
     : m_string( GUCEF_NULL )
     , m_length( 0 )
@@ -724,7 +750,11 @@ CUtf8String::Set( const char* str           ,
                 const char* ptrAtCodePointIndex = CodepointPtrAtIndex( str, byteSize, lengthInCodePoints, lengthInCodePoints, indexBytesFromStart );
 
                 // Check for a null terminator
-                if ( GUCEF_NULL == ptrAtCodePointIndex || *ptrAtCodePointIndex != '\0' )
+                // The terminator only counts if it is within the byte range we were given. The position right after
+                // the last code point is the end of the range for input without a terminator and reading it would look
+                // at memory which is not ours. That makes the outcome depend on whatever happens to follow the buffer
+                // and wrongly takes the final content byte for the terminator when that memory happens to be a 0 byte.
+                if ( GUCEF_NULL == ptrAtCodePointIndex || ptrAtCodePointIndex >= str+byteSize || *ptrAtCodePointIndex != '\0' )
                 {
                     // did not find the expected null terminator at the end of 'length'
                     hasNullTerminator = false;
@@ -1728,7 +1758,7 @@ CUtf8String::SubstrToChar( UInt32 searchchar              ,
             UInt32 codePoint = 0;
             for ( Int32 i=startIndex; i>=0; --i )
             {
-                cpPos = (const char*) utf8rcodepoint( prevCpPos, &codePoint );
+                cpPos = Utf8ReverseCodepoint( m_string, prevCpPos, &codePoint );
                 if ( codePoint == searchchar )
                 {
                     const char* prevPrevCpPos = (const char*) utf8codepoint( prevCpPos, &codePoint );
@@ -1887,7 +1917,7 @@ CUtf8String::Trim( bool frontToBack ) const
             Int32 i = (Int32) m_length-1;
             do
             {
-                cpPos = utf8rcodepoint( cpPos, &cp );
+                cpPos = (void*) Utf8ReverseCodepoint( m_string, cpPos, &cp );
                 if ( cp == ' ' ||  cp == '\t' )
                 {
                     ++charsToCut;
@@ -2178,7 +2208,7 @@ CUtf8String::HasChar( UInt32 searchchar       ,
         Int32 i = (Int32) max;
         do
         {
-            cpPos = utf8rcodepoint( cpPos, &cp );
+            cpPos = (void*) Utf8ReverseCodepoint( m_string, cpPos, &cp );
             if ( cp == searchchar )
                 return i;
             --i;
@@ -2433,30 +2463,30 @@ CUtf8String::FindMaxSubstrEquality( const CUtf8String& searchStr ,
         }
         else
         {
-            // Loop trough the buffer growing our comparison string
+            // Compare code points back to front, same semantics as the ASCII implementation:
+            // this string from its end minus startOffset code points, the search string from its end
+            if ( 0 == maxMatchLength )
+                return 0;
+
             UInt32 bytesFromStart=0;
-            const char* startPos = thisStr->CodepointPtrAtIndex( thisStr->m_length-1-startOffset, bytesFromStart );
-            const char* cpPos = startPos;
-            const char* otherString = theSearchStr->CodepointPtrAtIndex( theSearchStr->m_length-1-startOffset, bytesFromStart );
+            const char* thisStrCpPos = thisStr->CodepointPtrAtIndex( thisStr->m_length-1-startOffset, bytesFromStart );
+            const char* searchStrCpPos = theSearchStr->CodepointPtrAtIndex( theSearchStr->m_length-1, bytesFromStart );
 
-            UInt32 subLength=1;
-            size_t subByteSize = utf8codepointcalcsize( cpPos );
-            while ( subLength<=maxMatchLength )
-            {                         // @TODO: refactor: compare based on code points not memcmp()
-                if ( memcmp( startPos-subByteSize, otherString-subByteSize, subByteSize ) != 0 )
-                {
-                    // Reached the maximum equality length
-                    return subLength-1;
-                }
+            UInt32 matchingCpCount=0;
+            while ( matchingCpCount<maxMatchLength )
+            {
+                UInt32 thisStrCp = 0;
+                UInt32 searchStrCp = 0;
+                const char* thisStrPrevCpPos = Utf8ReverseCodepoint( thisStr->m_string, thisStrCpPos, &thisStrCp );
+                const char* searchStrPrevCpPos = Utf8ReverseCodepoint( theSearchStr->m_string, searchStrCpPos, &searchStrCp );
+                if ( thisStrCp != searchStrCp )
+                    break;
 
-                // Grow the comparison segment enough bytes to fit 1 extra codepoint
-                UInt32 cp;
-                cpPos = (const char*) utf8rcodepoint( cpPos, &cp );
-                subByteSize = (UInt32)( startPos - cpPos );
-
-                ++subLength;
+                ++matchingCpCount;
+                thisStrCpPos = thisStrPrevCpPos;
+                searchStrCpPos = searchStrPrevCpPos;
             }
-            return subLength-1;
+            return matchingCpCount;
         }
     }
 

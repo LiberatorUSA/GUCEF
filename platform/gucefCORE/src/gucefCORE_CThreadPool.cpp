@@ -1439,9 +1439,17 @@ CThreadPool::StartTaskWithConsumer( CTaskConsumerPtr taskConsumer  ,
     // If it was not explicitly invoked yet we will just incorporate the setup step here
     if ( !taskConsumer->GetIsInPhasedSetup() )
     {
+        // The task is handed back as given by the setup: the consumer only learns about its current task
+        // once the thread of its delegator got to it, which is not necessarily the case yet
         CFutureResult future = SetupSingularTask( taskConsumer, taskData, assumeOwnershipOfTaskData );
         if GUCEF_PREDICT_FALSE( future.HasNoFuture() )
             return future;
+
+        // IMPORTANT: We remove the flag to signal to the delegator it should commence operations
+        taskConsumer->SetIsInPhasedSetup( false );
+        GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "ThreadPool(" + m_poolName + "): Task of task type \"" + taskConsumer->GetType() +
+                "\" with task ID " + ToString( future.GetTaskId() ) + " is instructed to commence work" );
+        return future;
     }
 
     // IMPORTANT: We remove the flag to signal to the delegator it should commence operations
@@ -2015,43 +2023,105 @@ CThreadPool::RequestTaskToStop( CTaskConsumerPtr taskConsumer ,
 /*-------------------------------------------------------------------------*/
 
 bool
-CThreadPool::RequestTaskCancellation( const UInt32 taskId    , 
+CThreadPool::RequestTaskCancellation( const UInt32 taskId    ,
                                       bool callerShouldWait  ,
                                       bool okIfTaskIsUnknown )
 {GUCEF_TRACE;
 
-    MT::CObjectScopeReadOnlyLock readLock( this );
+    CTaskPtr task = GetTaskObjById( taskId );
+    if ( task.IsNULL() )
+    {
+        GUCEF_DEBUG_LOG( LOGLEVEL_NORMAL, "ThreadPool(" + m_poolName + "): Cannot cancel task with ID " + ToString( taskId ) + ", it is not known to this pool" );
+        return okIfTaskIsUnknown;
+    }
 
-    //TTaskId2TaskPtrMap::const_iterator i = m_inUseTaskObjs.find( taskId );
-    //if ( i != m_inUseTaskObjs.end() )
-    //{
-    //    CTaskPtr primaryTask = (*i).second;
-    //    if ( !primaryTask.IsNULL() )
-    //    {
-    //        CTask::TTaskPtrSet upcomingTasks;
-    //        primaryTask->GetAllUpcomingTasksInChain( upcomingTasks );
-    //        m_taskQueue.Delete( upcomingTasks );
+    // A task which has ended can no longer be cancelled, which is not a problem
+    if ( TaskStatusIsAnEndState( task->GetTaskStatus() ) )
+        return true;
 
-    //        m_inUseTaskObjs.erase( i );
-    //        m_taskQueue.Delete( task ); 
-    //    }
+    // The tasks which come after this one in a chain can no longer run if this one does not finish, they are cancelled with it
+    CTask::TTaskPtrSet upcomingTasks;
+    task->GetAllUpcomingTasksInChain( upcomingTasks );
 
+    typedef GUCEF::set< TIntegerTypeUsedForTaskId > TTaskIdSet;
+    TTaskIdSet idsToCancel;
+    idsToCancel.insert( taskId );
+    for ( CTask::TTaskPtrSet::const_iterator u = upcomingTasks.begin(); u != upcomingTasks.end(); ++u )
+        idsToCancel.insert( (*u)->GetTaskId() );
 
-    //    readLock.EarlyReaderUnlock();
+    // Whatever is still waiting in the queue is taken out of it and will never start
+    TTaskIdSet idsRemovedFromQueue;
+    {
+        MT::CScopeMutex mailboxWriter( m_taskQueue.GetLock() );
 
-    //    if ( !task.IsNULL() )
-    //    {
-    //        taskExists = true;
-    //        CTaskConsumerPtr taskConsumer = task->GetTaskConsumer();
-    //        if ( !taskConsumer.IsNULL() )
-    //        {
-    //            TTaskDelegatorBasicPtr delegator = taskConsumer->GetTaskDelegator();
-    //            return delegator;
-    //        }
-    //    }
-    //}
+        TTaskMailbox::iterator i = m_taskQueue.begin( mailboxWriter );
+        while ( i != m_taskQueue.end() )
+        {
+            const CTaskPtr& queuedTask = (*i).eventid;
+            if ( !queuedTask.IsNULL() && idsToCancel.find( queuedTask->GetTaskId() ) != idsToCancel.end() )
+            {
+                idsRemovedFromQueue.insert( queuedTask->GetTaskId() );
+                m_taskQueue.erase( mailboxWriter, i );
+                i = m_taskQueue.begin( mailboxWriter );
+                continue;
+            }
+            ++i;
+        }
+    }
 
-    return false;
+    // A task which is not running does not have a thread which can end it, so we do it here: it is not going to start.
+    // This is the case for the tasks we just took out of the queue and for those waiting for a prerequisite task in a chain.
+    // Anything else is already in the hands of a thread, which will end the task as cancelled when it stops it
+    bool mainTaskEndedHere = false;
+    CTask::TTaskPtrSet endedHere;
+    CTask::TTaskPtrSet toCancel = upcomingTasks;
+    toCancel.insert( task );
+    for ( CTask::TTaskPtrSet::const_iterator t = toCancel.begin(); t != toCancel.end(); ++t )
+    {
+        CTaskPtr candidate = (*t);
+        if ( TaskStatusIsAnEndState( candidate->GetTaskStatus() ) )
+            continue;
+
+        candidate->SetCancellationRequested( true );
+
+        bool wasQueued = idsRemovedFromQueue.find( candidate->GetTaskId() ) != idsRemovedFromQueue.end();
+        if ( wasQueued || TTaskStatus::TASKSTATUS_CHAIN_PREREQ_QUEUED == candidate->GetTaskStatus() )
+        {
+            candidate->SetTaskStatus( TTaskStatus::TASKSTATUS_CANCELLED );
+            endedHere.insert( candidate );
+            if ( candidate->GetTaskId() == taskId )
+                mainTaskEndedHere = true;
+        }
+    }
+
+    for ( CTask::TTaskPtrSet::const_iterator e = endedHere.begin(); e != endedHere.end(); ++e )
+    {
+        GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "ThreadPool(" + m_poolName + "): Task with ID " + ToString( (*e)->GetTaskId() ) + " was cancelled before it started" );
+        OnTaskStopped( (*e) );
+    }
+
+    if ( mainTaskEndedHere )
+    {
+        // The task was never given to a thread so the chain can be released as a whole,
+        // when the chain is still running the tasks which are part of it are released when it is done
+        for ( CTask::TTaskPtrSet::const_iterator e = endedHere.begin(); e != endedHere.end(); ++e )
+            TaskCleanup( (*e) );
+        return true;
+    }
+
+    // The task is with a thread already. Only the task is asked to stop, not the thread: the delegator wraps the task
+    // up, which ends it as cancelled, and the thread is then free to carry out other work.
+    // If there is no delegator yet the thread is about to pick the task up and will see it was cancelled
+    bool taskExists = false;
+    TTaskDelegatorBasicPtr delegator = GetDelegatorForTaskId( taskId, taskExists );
+    if ( !delegator.IsNULL() )
+        delegator->CancelCurrentTask( taskId );
+
+    GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "ThreadPool(" + m_poolName + "): Requested task with ID " + ToString( taskId ) + " to cancel" );
+
+    if ( callerShouldWait )
+        task->WaitForTaskToFinish( GUCEF_MT_DEFAULT_LOCK_TIMEOUT_IN_MS );
+    return true;
 }
 
 /*-------------------------------------------------------------------------*/

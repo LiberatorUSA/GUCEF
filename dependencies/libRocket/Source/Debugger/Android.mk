@@ -47,6 +47,8 @@ LOCAL_C_INCLUDES := \
   $(MY_MODULE_PATH)/../../Include/Rocket/Debugger \
   $(MY_MODULE_PATH)/../Core
 
+LOCAL_CFLAGS := -DMODULE_CONSENSUS_NAME=RocketDebugger -DMODULE_NAME=RocketDebugger
+
 
 LOCAL_SHARED_LIBRARIES := \
   RocketCore \

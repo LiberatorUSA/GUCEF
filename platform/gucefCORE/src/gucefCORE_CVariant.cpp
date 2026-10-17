@@ -83,6 +83,22 @@ const CVariant::VariantVector   CVariant::EmptyVector;
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
+//      UTILITIES                                                          //
+//                                                                         //
+//-------------------------------------------------------------------------*/
+
+/**
+ *  The variant type to use for std::wstring content
+ *  wchar_t is 2 bytes (UTF-16) on Windows but 4 bytes (UTF-32) on Linux and most other platforms
+ */
+static inline UInt8
+WStringVariantType( void )
+{
+    return 2 == sizeof( wchar_t ) ? (UInt8) GUCEF_DATATYPE_UTF16_STRING : (UInt8) GUCEF_DATATYPE_UTF32_STRING;
+}
+
+/*-------------------------------------------------------------------------//
+//                                                                         //
 //      IMPLEMENTATION                                                     //
 //                                                                         //
 //-------------------------------------------------------------------------*/
@@ -2377,7 +2393,7 @@ CVariant&
 CVariant::operator=( const std::wstring& data )
 {GUCEF_TRACE;
 
-    Set( data.c_str(), (UInt32)( (data.size()+1) * sizeof(std::wstring::value_type) ), GUCEF_DATATYPE_UTF16_STRING, false );
+    Set( data.c_str(), (UInt32)( (data.size()+1) * sizeof(std::wstring::value_type) ), WStringVariantType(), false );
     return *this;
 }
 
@@ -2671,9 +2687,23 @@ CVariant::Set( const void* data, UInt32 dataSize, UInt8 varType, bool linkOnlyFo
             return true;
         }
 
+        case GUCEF_DATATYPE_CONST_DATA_MEMORY_ADDRESS:
+        case GUCEF_DATATYPE_DATA_MEMORY_ADDRESS:
+        case GUCEF_DATATYPE_FUNCTION_MEMORY_ADDRESS:
+        {
+            // The data holds the address itself (as written by the binary serializer)
+            UInt32 addressSize = GucefByteSizeOfFixedSizeType( varType );
+            if ( GUCEF_NULL == data || 0 == addressSize || dataSize < addressSize )
+                return false;
+            memcpy( &m_variantData.union_data.memory_address_data, data, addressSize );
+            m_variantData.containedType = varType;
+            return true;
+        }
         case GUCEF_DATATYPE_NULL:
         case GUCEF_DATATYPE_NIL:
+        case GUCEF_DATATYPE_VOID:
         {
+            // These types have no payload, the type itself is the value
             m_variantData.containedType = varType;
             return true;
         }
@@ -2848,7 +2878,7 @@ CVariant&
 CVariant::LinkTo( const std::wstring& src )
 {GUCEF_TRACE;
 
-    Set( src.c_str(), (UInt32)( (src.size()+1) * sizeof(std::wstring::value_type) ), GUCEF_DATATYPE_UTF16_STRING, true );
+    Set( src.c_str(), (UInt32)( (src.size()+1) * sizeof(std::wstring::value_type) ), WStringVariantType(), true );
     return *this;
 }
 

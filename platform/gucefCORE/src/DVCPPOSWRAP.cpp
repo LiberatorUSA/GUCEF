@@ -109,6 +109,8 @@
   #include <dlfcn.h>                  /* dynamic linking utilities */
   #include <dirent.h>
   #include <unistd.h>
+  #include <signal.h>                 /* kill() */
+  #include <errno.h>
   #define MAX_DIR_LENGTH PATH_MAX
 
 #endif
@@ -1579,6 +1581,19 @@ CheckOnProcessAliveStatus( TProcessId pid, bool& status )
     // permitted to signal.
     if ( ::kill( pid, 0 ) == 0 )
     {
+        status = true;
+        return true;
+    }
+    if ( ESRCH == errno )
+    {
+        // No such process: we determined that it is not alive
+        status = false;
+        return true;
+    }
+    if ( EPERM == errno )
+    {
+        // The process exists but we are not permitted to signal it
+        status = true;
         return true;
     }
     return false;

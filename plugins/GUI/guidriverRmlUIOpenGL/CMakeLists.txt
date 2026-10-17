@@ -13,16 +13,16 @@
 
 set( HEADER_FILES 
   include/guidriverRmlUIOpenGL.h
-  include/guidriverRmlUIOpenGL_CRocketGuiDriver.h
-  include/guidriverRmlUIOpenGL_CRocketRenderInterfaceOpenGL.h
+  include/guidriverRmlUIOpenGL_CRmlUIGuiDriver.h
+  include/guidriverRmlUIOpenGL_CRmlUIRenderInterfaceOpenGL.h
   include/guidriverRmlUIOpenGL_config.h
   include/guidriverRmlUIOpenGL_macros.h
   include/guidriverRmlUIOpenGL_pluginAPI.h
 )
 
 set( SOURCE_FILES 
-  src/guidriverRmlUIOpenGL_CRocketGuiDriver.cpp
-  src/guidriverRmlUIOpenGL_CRocketRenderInterfaceOpenGL.cpp
+  src/guidriverRmlUIOpenGL_CRmlUIGuiDriver.cpp
+  src/guidriverRmlUIOpenGL_CRmlUIRenderInterfaceOpenGL.cpp
   src/guidriverRmlUIOpenGL_pluginAPI.cpp
 )
 

@@ -53,6 +53,8 @@
 #define GUCEF_CORE_CGUCEFAPPLICATION_H
 #endif /* GUCEF_CORE_CGUCEFAPPLICATION_H ? */
 
+#include "gucefCORE_CAsyncUriRetrievalTask.h"
+
 #ifndef GUCEF_CORE_CSINGLETASKDELEGATOR_H
 #include "gucefCORE_CSingleTaskDelegator.h"
 #define GUCEF_CORE_CSINGLETASKDELEGATOR_H
@@ -115,6 +117,7 @@ const CString CTaskManager::ClassTypeName = "GUCEF::CORE::CTaskManager";
 const CString CTaskManager::DefaultThreadPoolName = "default";
 
 TGenericCallbackTaskConsumerFactory g_genericCallbackTaskConsumerFactory;
+TAsyncUriRetrievalTaskConsumerFactory g_asyncUriRetrievalTaskConsumerFactory;
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -156,6 +159,7 @@ CTaskManager::CTaskManager( void )
     RegisterThreadPoolEventHandlers( defaultPool.GetPointerAlways() );
 
     RegisterTaskConsumerFactory( CGenericCallbackTaskConsumer::TaskType, &g_genericCallbackTaskConsumerFactory );
+    RegisterTaskConsumerFactory( CAsyncUriRetrievalTaskConsumer::TaskType, &g_asyncUriRetrievalTaskConsumerFactory );
 
     ThreadPoolCreatedEventData eData( DefaultThreadPoolName );
     NotifyObserversFromThread( ThreadPoolCreatedEvent, &eData );

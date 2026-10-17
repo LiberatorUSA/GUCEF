@@ -245,6 +245,63 @@ PerformVariantBinarySerializerTests( void )
     }
     GUCEF_TESTFW_TESTCASE_END
 
+    // Regression: memory address variants were serialized by reading sizeof(void*) bytes at the address
+    // they point to instead of the address itself
+    GUCEF_TESTFW_TESTCASE( "Test: Pointer variant round trip serializes the address itself" )
+    try
+    {
+        Int32 pointee = 42;
+        CORE::CVariant var( static_cast< void* >( &pointee ) );
+        CORE::CDynamicBuffer buffer( true );
+        UInt32 bytesWritten = 0;
+        ASSERT_TRUE( CORE::CVariantBinarySerializer::Serialize( var, 0, buffer, bytesWritten ) );
+
+        CORE::CVariant var2;
+        UInt32 bytesRead = 0;
+        ASSERT_TRUE( CORE::CVariantBinarySerializer::Deserialize( var2, 0, buffer, false, bytesRead ) );
+        ASSERT_TRUE( bytesRead == bytesWritten );
+        ASSERT_TRUE( var2.GetTypeId() == var.GetTypeId() );
+        ASSERT_TRUE( var2.AsVoidPtr() == static_cast< const void* >( &pointee ) );
+    }
+    catch( ... )
+    {
+        ERRORHERE;
+    }
+    GUCEF_TESTFW_TESTCASE_END
+
+    // Regression: VOID variants could be serialized but not deserialized, they are used as stream segment end markers
+    GUCEF_TESTFW_TESTCASE( "Test: VOID variant round trip" )
+    try
+    {
+        CORE::CVariant voidVar;
+        voidVar.SetVoidType();
+        CORE::CVariant afterVoid( (Int32) 7 );
+
+        CORE::CDynamicBuffer buffer( true );
+        UInt32 bytesWritten = 0;
+        ASSERT_TRUE( CORE::CVariantBinarySerializer::Serialize( voidVar, 0, buffer, bytesWritten ) );
+        UInt32 secondOffset = bytesWritten;
+        bytesWritten = 0;
+        ASSERT_TRUE( CORE::CVariantBinarySerializer::Serialize( afterVoid, secondOffset, buffer, bytesWritten ) );
+
+        CORE::CVariant var2;
+        UInt32 bytesRead = 0;
+        ASSERT_TRUE( CORE::CVariantBinarySerializer::Deserialize( var2, 0, buffer, false, bytesRead ) );
+        ASSERT_TRUE( var2.IsVoid() );
+        ASSERT_TRUE( bytesRead == secondOffset );
+
+        // the data after the VOID must be readable as well
+        CORE::CVariant var3;
+        bytesRead = 0;
+        ASSERT_TRUE( CORE::CVariantBinarySerializer::Deserialize( var3, secondOffset, buffer, false, bytesRead ) );
+        ASSERT_TRUE( var3.AsInt32() == 7 );
+    }
+    catch( ... )
+    {
+        ERRORHERE;
+    }
+    GUCEF_TESTFW_TESTCASE_END
+
     CORE::CLogStreamScope::FlushLogs();
     GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "ALL CVariantBinarySerializer TESTS COMPLETED" );
 }

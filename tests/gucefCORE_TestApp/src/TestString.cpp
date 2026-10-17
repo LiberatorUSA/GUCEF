@@ -335,6 +335,18 @@ PerformTypedStringTests( void )
         ASSERT_TRUE( testStr2 != testStr1 );
         CORE::UInt32 equality = testStr1.FindMaxSubstrEquality( testStr2, 0, true, true );
         ASSERT_TRUE( 0 == equality );
+
+        // front to back: counts the matching leading code points
+        StringType testStr3( "abcxyz" );
+        ASSERT_TRUE( 3 == testStr3.FindMaxSubstrEquality( StringType( "abcq" ), 0, true, true ) );
+
+        // back to front: counts the matching trailing code points
+        ASSERT_TRUE( 3 == testStr3.FindMaxSubstrEquality( StringType( "qxyz" ), 0, false, true ) );
+        ASSERT_TRUE( 0 == testStr3.FindMaxSubstrEquality( StringType( "xyq" ), 0, false, true ) );
+
+        // back to front with an offset from the end of this string
+        StringType testStr4( "abcxyzQ" );
+        ASSERT_TRUE( 3 == testStr4.FindMaxSubstrEquality( StringType( "qxyz" ), 1, false, true ) );
     }
     catch( ... ) { ERRORHERE; }
     GUCEF_TESTFW_TESTCASE_END
@@ -725,7 +737,11 @@ PerformTypedStringLinkedModeTests( void )
         ASSERT_FALSE( owned.IsLinked() );
         ASSERT_TRUE(  linked == owned );
         /* Both should point to the same underlying raw buffer */
-        ASSERT_TRUE(  linked.C_String() == owned.C_String() );
+        /* Note: the const overload must be used: the non-const C_String() hands out a writable buffer and thus promotes a linked string to an owned copy */
+        const StringType& constLinked = linked;
+        const StringType& constOwned = owned;
+        ASSERT_TRUE(  constLinked.C_String() == constOwned.C_String() );
+        ASSERT_TRUE(  linked.IsLinked() );
     }
     catch( ... ) { ERRORHERE; }
     GUCEF_TESTFW_TESTCASE_END
@@ -841,7 +857,9 @@ PerformAsciiStringLinkedAndViewTests( void )
         ASSERT_TRUE(  linked.IsLinked() );
         ASSERT_TRUE(  linked == "raw buffer content" );
         ASSERT_TRUE(  linked.Length() == 18 );
-        ASSERT_TRUE(  linked.C_String() == rawBuf );
+        /* Note: the const overload must be used: the non-const C_String() promotes a linked string to an owned copy */
+        const CORE::CAsciiString& constLinked = linked;
+        ASSERT_TRUE(  constLinked.C_String() == rawBuf );
     }
     catch( ... ) { ERRORHERE; }
     GUCEF_TESTFW_TESTCASE_END
@@ -929,7 +947,8 @@ PerformAsciiStringLinkedAndViewTests( void )
         ASSERT_TRUE(  6 == view.HasSubstr( "World" ) );
         ASSERT_TRUE(  view.Lowercase() == "hello world" );
         ASSERT_TRUE(  view.Uppercase() == "HELLO WORLD" );
-        ASSERT_TRUE(  view.SubstrFromRange( 0, 4 ) == "Hello" );
+        /* endIndex is exclusive per the SubstrFromRange() contract */
+        ASSERT_TRUE(  view.SubstrFromRange( 0, 5 ) == "Hello" );
     }
     catch( ... ) { ERRORHERE; }
     GUCEF_TESTFW_TESTCASE_END
@@ -1094,6 +1113,100 @@ PerformUtf32StringViewTests( void )
 
 /*-------------------------------------------------------------------------*/
 
+/**
+ *  Regression: the reverse (back to front) operations of CUtf8String read one byte before the string buffer
+ *  when they reached the first code point. This is only reliably detected with AddressSanitizer enabled
+ */
+void
+PerformUtf8ReverseIterationRegressionTests( void )
+{
+    GUCEF_TESTFW_TESTCASE( "[CUtf8String] Reverse operations reaching the first code point" )
+    try
+    {
+        CORE::CUtf8String str( "abc" );
+        ASSERT_TRUE( 0 == str.HasChar( 'a', false ) );
+        ASSERT_TRUE( -1 == str.HasChar( 'z', false ) );
+        ASSERT_TRUE( 2 == str.HasChar( 'c', false ) );
+
+        CORE::CUtf8String whitespace( "   " );
+        ASSERT_TRUE( whitespace.Trim( false ).IsNULLOrEmpty() );
+
+        CORE::CUtf8String path( "a/bc" );
+        ASSERT_TRUE( path.SubstrToChar( 'a', false ) == "/bc" );
+
+        CORE::CUtf8String noMatch( "xyz" );
+        // back to front comparisons reaching the first code point, also of interest under AddressSanitizer
+        ASSERT_TRUE( 2 == noMatch.FindMaxSubstrEquality( "qyz", 0, false, true ) );
+        ASSERT_TRUE( 3 == noMatch.FindMaxSubstrEquality( "xyz", 0, false, true ) );
+
+        // multi byte code points: U+00E9 is encoded as 2 bytes
+        CORE::CUtf8String multiByte( "a\xC3\xA9z" );
+        ASSERT_TRUE( 2 == multiByte.FindMaxSubstrEquality( CORE::CUtf8String( "b\xC3\xA9z" ), 0, false, true ) );
+        ASSERT_TRUE( 1 == multiByte.FindMaxSubstrEquality( CORE::CUtf8String( "\xC3\xA8z" ), 0, false, true ) );
+    }
+    catch( ... ) { ERRORHERE; }
+    GUCEF_TESTFW_TESTCASE_END
+}
+
+/*-------------------------------------------------------------------------*/
+
+/**
+ *  Regression: constructing a string from a byte range which does not include a null terminator looked at the
+ *  byte just beyond the range to find one. When that byte happened to be 0, as is the case for any string literal,
+ *  the final content byte was mistaken for the terminator: ByteSize() came out one too small and the last
+ *  code point was cut in half
+ */
+static void
+PerformUtf8StringFromByteRangeRegressionTests( void )
+{
+    GUCEF_TESTFW_TESTCASE( "Test: CUtf8String from a byte range without terminator keeps all content" )
+        try
+        {
+            // 'h' + e-acute + 'llo w' + u-circumflex + 'rld ' + euro sign: 17 bytes, 13 code points
+            const char* literal = "h\xC3\xA9llo w\xC3\xBBrld \xE2\x82\xAC";
+            const UInt32 contentBytes = 17;
+
+            // The range excludes the terminator while the byte after it, the literal's own terminator, is 0
+            CORE::CUtf8String exactRange( literal, contentBytes );
+            ASSERT_TRUE( contentBytes + 1 == exactRange.ByteSize() );
+            ASSERT_TRUE( 13 == exactRange.Length() );
+            ASSERT_TRUE( contentBytes == exactRange.STL_String().size() );
+            ASSERT_TRUE( 0 == memcmp( literal, exactRange.C_String(), contentBytes + 1 ) );
+
+            // Same outcome as a string created from the terminated literal
+            CORE::CUtf8String fromLiteral( literal );
+            ASSERT_TRUE( fromLiteral.ByteSize() == exactRange.ByteSize() );
+            ASSERT_TRUE( fromLiteral == exactRange );
+
+            // A range that does include the terminator
+            CORE::CUtf8String withTerminator( literal, contentBytes + 1 );
+            ASSERT_TRUE( contentBytes + 1 == withTerminator.ByteSize() );
+            ASSERT_TRUE( 13 == withTerminator.Length() );
+            ASSERT_TRUE( fromLiteral == withTerminator );
+
+            // A buffer where the byte beyond the range is non zero
+            char buffer[ 18 ];
+            memcpy( buffer, literal, contentBytes );
+            buffer[ contentBytes ] = 'X';
+            CORE::CUtf8String fromBuffer( buffer, contentBytes );
+            ASSERT_TRUE( contentBytes + 1 == fromBuffer.ByteSize() );
+            ASSERT_TRUE( fromLiteral == fromBuffer );
+
+            // ASCII only content, where the cut off was just as wrong
+            CORE::CUtf8String ascii( "plain text", 10 );
+            ASSERT_TRUE( 11 == ascii.ByteSize() );
+            ASSERT_TRUE( 10 == ascii.Length() );
+            ASSERT_TRUE( ascii == "plain text" );
+        }
+        catch( ... )
+        {
+            ERRORHERE;
+        }
+    GUCEF_TESTFW_TESTCASE_END
+}
+
+/*-------------------------------------------------------------------------*/
+
 void
 PerformStringTests( void )
 {
@@ -1116,6 +1229,8 @@ PerformStringTests( void )
     PerformUtf8StringViewTests();
     PerformUtf16StringViewTests();
     PerformUtf32StringViewTests();
+    PerformUtf8ReverseIterationRegressionTests();
+    PerformUtf8StringFromByteRangeRegressionTests();
 
     CORE::CLogStreamScope::FlushLogs();
     GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "ALL CString TESTS COMPLETED" );

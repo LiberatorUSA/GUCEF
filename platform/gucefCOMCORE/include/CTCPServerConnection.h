@@ -153,6 +153,16 @@ class GUCEF_COMCORE_EXPORT_CPP CTCPServerConnection : public CTCPConnection
     UInt32 GetConnectionIndex( void ) const;
 
     /**
+     *  Slot for a pointer owned by whoever is processing this connection, for example a protocol handler which
+     *  took the connection over. It saves such users from having to look up the connection in their own
+     *  administration on every event. It is cleared when the connection object is used for a new client
+     *  and never touched by the connection itself.
+     */
+    void SetUserData( void* userData );
+
+    void* GetUserData( void ) const;
+
+    /**
      *  Allows you to set whether to use data coalescing on sends.
      *  This is commonly refered to as the Nagle algorithm
      */
@@ -179,8 +189,10 @@ class GUCEF_COMCORE_EXPORT_CPP CTCPServerConnection : public CTCPConnection
      *      polls the socket ect. as needed and update stats.
      *
      *      @param maxUpdatesPerCycle Max number of socket operation update cycles per pulse
+     *      @return false if this connection object was deleted as a result of notifying observers, if so
+     *              the object must not be touched anymore
      */
-    virtual void Update( UInt32 maxUpdatesPerCycle );
+    virtual bool Update( UInt32 maxUpdatesPerCycle );
     
     virtual MT::TLockStatus Lock( UInt32 lockWaitTimeoutInMs = GUCEF_MT_DEFAULT_LOCK_TIMEOUT_IN_MS ) const GUCEF_VIRTUAL_OVERRIDE;
     
@@ -188,7 +200,10 @@ class GUCEF_COMCORE_EXPORT_CPP CTCPServerConnection : public CTCPConnection
                          
     private:
     
-    void CheckRecieveBuffer( void );
+    /**
+     *  @return false if this object was deleted as a result of notifying observers, if so it must not be touched anymore
+     */
+    bool CheckRecieveBuffer( void );
 
     void CloseImp( bool byUser, bool lock, bool updateActiveLists, bool notify );
 
@@ -210,7 +225,8 @@ class GUCEF_COMCORE_EXPORT_CPP CTCPServerConnection : public CTCPConnection
     CORE::CDynamicBuffer m_sendOpBuffer;
     MT::CMutex _datalock;
     UInt32 m_maxreadbytes;
-    UInt32 m_connectionidx;      
+    UInt32 m_connectionidx;
+    void* m_userData;      
     CTCPServerSocket* m_parentsock;
     bool m_coaleseDataSends;
     UInt32 m_bytesReceived;

@@ -139,7 +139,8 @@ CMultiLogger::AddLogger( CILogger* loggerImp )
     }
     else
     {
-        GUCEF_ERROR_LOG( LOGLEVEL_NORMAL, "MultiLogger: Null given for logger" );
+        // Not an error: for example there is no console logger when there is no console to log to
+        GUCEF_DEBUG_LOG( LOGLEVEL_NORMAL, "MultiLogger: Null given for logger, nothing to add" );
     }
 }
 

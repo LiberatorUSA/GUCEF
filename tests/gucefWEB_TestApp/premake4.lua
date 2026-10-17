@@ -46,8 +46,13 @@ defines( { "MODULE_CONSENSUS_NAME=gucefWEB_TestApp", "MODULE_NAME=gucefWEB_TestA
 configuration( {} )
 vpaths { ["Headers"] = { "**.h", "**.hpp", "**.hxx" } }
 files( {
+  "include/TestChromeDevTools.h",
   "include/TestCode_CHTTPClient.h",
-  "include/TestCode_CHTTPServer.h"
+  "include/TestCode_CHTTPServer.h",
+  "include/TestHttpClient.h",
+  "include/TestJsonRpc.h",
+  "include/TestWebSocket.h",
+  "include/TestWebSocketCodec.h"
  } )
 
 
@@ -55,8 +60,13 @@ files( {
 configuration( {} )
 vpaths { ["Source"] = { "**.c", "**.cpp", "**.cs", "**.asm" } }
 files( {
+  "src/TestChromeDevTools.cpp",
   "src/TestCode_CHTTPClient.cpp",
   "src/TestCode_CHTTPServer.cpp",
+  "src/TestHttpClient.cpp",
+  "src/TestJsonRpc.cpp",
+  "src/TestWebSocket.cpp",
+  "src/TestWebSocketCodec.cpp",
   "src/gucefWEB_TestApp_main.cpp"
  } )
 

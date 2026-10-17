@@ -12,13 +12,23 @@
 # Configuration for module: gucefWEB_TestApp
 
 set( HEADER_FILES 
+  include/TestChromeDevTools.h
   include/TestCode_CHTTPClient.h
   include/TestCode_CHTTPServer.h
+  include/TestHttpClient.h
+  include/TestJsonRpc.h
+  include/TestWebSocket.h
+  include/TestWebSocketCodec.h
 )
 
 set( SOURCE_FILES 
+  src/TestChromeDevTools.cpp
   src/TestCode_CHTTPClient.cpp
   src/TestCode_CHTTPServer.cpp
+  src/TestHttpClient.cpp
+  src/TestJsonRpc.cpp
+  src/TestWebSocket.cpp
+  src/TestWebSocketCodec.cpp
   src/gucefWEB_TestApp_main.cpp
 )
 
@@ -60,11 +70,11 @@ if ( LINUX64 )
 endif( LINUX64 )
 
 if ( WIN32 )
-  include_directories( ../../platform/gucefCOMCORE/include/mswin ../../platform/gucefCORE/include/mswin ../../platform/gucefMT/include/mswin )
+  include_directories( ../../platform/gucefCOMCORE/include/mswin ../../platform/gucefCORE/include/mswin ../../platform/gucefMT/include/mswin ../../platform/gucefWEB/include/mswin )
 endif( WIN32 )
 
 if ( WIN64 )
-  include_directories( ../../platform/gucefCOMCORE/include/mswin ../../platform/gucefCORE/include/mswin ../../platform/gucefMT/include/mswin )
+  include_directories( ../../platform/gucefCOMCORE/include/mswin ../../platform/gucefCORE/include/mswin ../../platform/gucefMT/include/mswin ../../platform/gucefWEB/include/mswin )
 endif( WIN64 )
 
 

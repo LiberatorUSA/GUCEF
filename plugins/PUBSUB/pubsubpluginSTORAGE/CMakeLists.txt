@@ -11,7 +11,7 @@
 
 # Configuration for module: pubsubpluginSTORAGE
 
-set( HEADER_FILES
+set( HEADER_FILES 
   include/pubsubpluginSTORAGE.h
   include/pubsubpluginSTORAGE_CStoragePubSubClient.h
   include/pubsubpluginSTORAGE_CStoragePubSubClientConfig.h
@@ -27,7 +27,7 @@ set( HEADER_FILES
   include/pubsubpluginSTORAGE_macros.h
 )
 
-set( SOURCE_FILES
+set( SOURCE_FILES 
   src/pubsubpluginSTORAGE.cpp
   src/pubsubpluginSTORAGE_CStoragePubSubClient.cpp
   src/pubsubpluginSTORAGE_CStoragePubSubClientConfig.cpp

@@ -26,7 +26,7 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#include <RmlUI/Core.h>
+#include <RmlUi/Core.h>
 
 #ifndef GUCEF_INPUT_CINPUTCONTEXT_H
 #include "CInputContext.h"
@@ -80,7 +80,7 @@ class GUCEF_guidriverRmlUI_PUBLIC_CPP CGUIContext : public CORE::CObserver   ,
     public:
 
     CGUIContext( GUI::CGUIDriver* guiDriver           ,
-                 RmlUI::Core::Context* context       ,
+                 Rml::Context* context       ,
                  GUI::TWindowContextPtr windowContext ,
                  INPUT::CInputContext* inputContext   );
 
@@ -110,7 +110,7 @@ class GUCEF_guidriverRmlUI_PUBLIC_CPP CGUIContext : public CORE::CObserver   ,
 
     virtual const CORE::CString& GetClassTypeName( void ) const;
 
-    RmlUI::Core::Context* GetRmlUIContext( void );
+    Rml::Context* GetRmlUIContext( void );
 
     GUI::TWindowContextPtr GetWindowContext( void );
 
@@ -130,7 +130,7 @@ class GUCEF_guidriverRmlUI_PUBLIC_CPP CGUIContext : public CORE::CObserver   ,
     private:
 
     GUI::CGUIDriver* m_guiDriver;
-    RmlUI::Core::Context* m_RmlUIContext;
+    Rml::Context* m_RmlUIContext;
     GUI::TWindowContextPtr m_windowContext;
     INPUT::CInputContext* m_inputContext;
     CInputAdapter m_inputAdapter;

@@ -71,6 +71,11 @@
 #define GUCEF_CORE_DVCPPFILEUTILS_H
 #endif /* GUCEF_CORE_DVCPPFILEUTILS_H ? */
 
+#ifndef GUCEF_CORE_CPROCESS_H
+#include "gucefCORE_CProcess.h"
+#define GUCEF_CORE_CPROCESS_H
+#endif /* GUCEF_CORE_CPROCESS_H ? */
+
 #ifndef GUCEF_CORE_GUCEF_ESSENTIALS_H
 #include "gucef_essentials.h"
 #define GUCEF_CORE_GUCEF_ESSENTIALS_H
@@ -723,8 +728,8 @@ Move_File( const char* dst, const char* src, char overwriteFlag )
 
     try
     {
-        // map to C++ version
-        return CORE::MoveFile( CString( dst ), CString( src ), 0 != overwriteFlag ) ? 1 : 0;
+        // map to C++ version, which takes the path to move from first
+        return CORE::MoveFile( CString( src ), CString( dst ), 0 != overwriteFlag ) ? 1 : 0;
     }
     catch ( const std::exception& )
     {
@@ -801,6 +806,13 @@ Execute_Program( const char *filename ,
 
         #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
 
+        // Like on Windows the program is started and left to run on its own, we do not wait for it
+        CORE::CProcess::TStringVector args;
+        if ( NULL != cmdline )
+            args = CORE::CProcess::SplitCommandLine( cmdline );
+
+        CORE::CProcess process;
+        return process.Launch( filename, args, CORE::CString::Empty, CORE::CProcess::TStringMap(), true ) ? 1 : 0;
 
         #endif
     }

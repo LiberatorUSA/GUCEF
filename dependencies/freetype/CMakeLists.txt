@@ -133,7 +133,44 @@ set( SOURCE_FILES
 
 
 
-if (ANDROID32)
+if (ANDROID)
+  set( PLATFORM_SOURCE_FILES 
+    src/autofit/autofit.c
+    src/base/ftbase.c
+    src/base/ftbitmap.c
+    src/base/ftglyph.c
+    src/base/ftinit.c
+    src/base/ftsystem.c
+    src/bdf/bdf.c
+    src/cache/ftcache.c
+    src/cff/cff.c
+    src/cid/cidgload.c
+    src/cid/cidload.c
+    src/cid/cidobjs.c
+    src/cid/cidparse.c
+    src/cid/cidriver.c
+    src/gxvalid/gxvalid.c
+    src/gzip/ftgzip.c
+    src/lzw/ftlzw.c
+    src/otvalid/otvalid.c
+    src/pcf/pcf.c
+    src/pfr/pfr.c
+    src/psaux/psaux.c
+    src/pshinter/pshinter.c
+    src/psnames/psnames.c
+    src/raster/raster.c
+    src/sfnt/sfnt.c
+    src/smooth/ftgrays.c
+    src/smooth/ftsmooth.c
+    src/truetype/truetype.c
+    src/type1/type1.c
+    src/type42/type42.c
+  )
+
+  set( PLATFORM_SOURCE_INSTALL "ANDROID" )
+  source_group( "Platform Source Files" FILES ${PLATFORM_SOURCE_FILES} )
+
+elseif (ANDROID32)
   set( PLATFORM_SOURCE_FILES 
     src/autofit/autofit.c
     src/base/ftbase.c
@@ -242,6 +279,43 @@ elseif (ARDUINO)
   )
 
   set( PLATFORM_SOURCE_INSTALL "ARDUINO" )
+  source_group( "Platform Source Files" FILES ${PLATFORM_SOURCE_FILES} )
+
+elseif (EMSCRIPTEN)
+  set( PLATFORM_SOURCE_FILES 
+    src/autofit/autofit.c
+    src/base/ftbase.c
+    src/base/ftbitmap.c
+    src/base/ftglyph.c
+    src/base/ftinit.c
+    src/base/ftsystem.c
+    src/bdf/bdf.c
+    src/cache/ftcache.c
+    src/cff/cff.c
+    src/cid/cidgload.c
+    src/cid/cidload.c
+    src/cid/cidobjs.c
+    src/cid/cidparse.c
+    src/cid/cidriver.c
+    src/gxvalid/gxvalid.c
+    src/gzip/ftgzip.c
+    src/lzw/ftlzw.c
+    src/otvalid/otvalid.c
+    src/pcf/pcf.c
+    src/pfr/pfr.c
+    src/psaux/psaux.c
+    src/pshinter/pshinter.c
+    src/psnames/psnames.c
+    src/raster/raster.c
+    src/sfnt/sfnt.c
+    src/smooth/ftgrays.c
+    src/smooth/ftsmooth.c
+    src/truetype/truetype.c
+    src/type1/type1.c
+    src/type42/type42.c
+  )
+
+  set( PLATFORM_SOURCE_INSTALL "EMSCRIPTEN" )
   source_group( "Platform Source Files" FILES ${PLATFORM_SOURCE_FILES} )
 
 elseif (EMSCRIPTEN32)
@@ -429,6 +503,117 @@ elseif (IOS)
   set( PLATFORM_SOURCE_INSTALL "IOS" )
   source_group( "Platform Source Files" FILES ${PLATFORM_SOURCE_FILES} )
 
+elseif (IPHONE)
+  set( PLATFORM_SOURCE_FILES 
+    src/autofit/autofit.c
+    src/base/ftbase.c
+    src/base/ftbitmap.c
+    src/base/ftglyph.c
+    src/base/ftinit.c
+    src/base/ftsystem.c
+    src/bdf/bdf.c
+    src/cache/ftcache.c
+    src/cff/cff.c
+    src/cid/cidgload.c
+    src/cid/cidload.c
+    src/cid/cidobjs.c
+    src/cid/cidparse.c
+    src/cid/cidriver.c
+    src/gxvalid/gxvalid.c
+    src/gzip/ftgzip.c
+    src/lzw/ftlzw.c
+    src/otvalid/otvalid.c
+    src/pcf/pcf.c
+    src/pfr/pfr.c
+    src/psaux/psaux.c
+    src/pshinter/pshinter.c
+    src/psnames/psnames.c
+    src/raster/raster.c
+    src/sfnt/sfnt.c
+    src/smooth/ftgrays.c
+    src/smooth/ftsmooth.c
+    src/truetype/truetype.c
+    src/type1/type1.c
+    src/type42/type42.c
+  )
+
+  set( PLATFORM_SOURCE_INSTALL "IPHONE" )
+  source_group( "Platform Source Files" FILES ${PLATFORM_SOURCE_FILES} )
+
+elseif (IPHONEOS)
+  set( PLATFORM_SOURCE_FILES 
+    src/autofit/autofit.c
+    src/base/ftbase.c
+    src/base/ftbitmap.c
+    src/base/ftglyph.c
+    src/base/ftinit.c
+    src/base/ftsystem.c
+    src/bdf/bdf.c
+    src/cache/ftcache.c
+    src/cff/cff.c
+    src/cid/cidgload.c
+    src/cid/cidload.c
+    src/cid/cidobjs.c
+    src/cid/cidparse.c
+    src/cid/cidriver.c
+    src/gxvalid/gxvalid.c
+    src/gzip/ftgzip.c
+    src/lzw/ftlzw.c
+    src/otvalid/otvalid.c
+    src/pcf/pcf.c
+    src/pfr/pfr.c
+    src/psaux/psaux.c
+    src/pshinter/pshinter.c
+    src/psnames/psnames.c
+    src/raster/raster.c
+    src/sfnt/sfnt.c
+    src/smooth/ftgrays.c
+    src/smooth/ftsmooth.c
+    src/truetype/truetype.c
+    src/type1/type1.c
+    src/type42/type42.c
+  )
+
+  set( PLATFORM_SOURCE_INSTALL "IPHONEOS" )
+  source_group( "Platform Source Files" FILES ${PLATFORM_SOURCE_FILES} )
+
+elseif (LINUX)
+  set( PLATFORM_SOURCE_FILES 
+    src/autofit/autofit.c
+    src/base/ftbase.c
+    src/base/ftbitmap.c
+    src/base/ftglyph.c
+    src/base/ftinit.c
+    src/base/ftsystem.c
+    src/bdf/bdf.c
+    src/cache/ftcache.c
+    src/cff/cff.c
+    src/cid/cidgload.c
+    src/cid/cidload.c
+    src/cid/cidobjs.c
+    src/cid/cidparse.c
+    src/cid/cidriver.c
+    src/gxvalid/gxvalid.c
+    src/gzip/ftgzip.c
+    src/lzw/ftlzw.c
+    src/otvalid/otvalid.c
+    src/pcf/pcf.c
+    src/pfr/pfr.c
+    src/psaux/psaux.c
+    src/pshinter/pshinter.c
+    src/psnames/psnames.c
+    src/raster/raster.c
+    src/sfnt/sfnt.c
+    src/smooth/ftgrays.c
+    src/smooth/ftsmooth.c
+    src/truetype/truetype.c
+    src/type1/type1.c
+    src/type42/type42.c
+  )
+
+  set( PLATFORM_SOURCE_INSTALL "LINUX" )
+  source_group( "Platform Source Files" FILES ${PLATFORM_SOURCE_FILES} )
+
 elseif (LINUX32)
   set( PLATFORM_SOURCE_FILES 
     src/autofit/autofit.c
@@ -501,6 +686,154 @@ elseif (LINUX64)
   )
 
   set( PLATFORM_SOURCE_INSTALL "LINUX64" )
+  source_group( "Platform Source Files" FILES ${PLATFORM_SOURCE_FILES} )
+
+elseif (MAC)
+  set( PLATFORM_SOURCE_FILES 
+    src/autofit/autofit.c
+    src/base/ftbase.c
+    src/base/ftbitmap.c
+    src/base/ftglyph.c
+    src/base/ftinit.c
+    src/base/ftsystem.c
+    src/bdf/bdf.c
+    src/cache/ftcache.c
+    src/cff/cff.c
+    src/cid/cidgload.c
+    src/cid/cidload.c
+    src/cid/cidobjs.c
+    src/cid/cidparse.c
+    src/cid/cidriver.c
+    src/gxvalid/gxvalid.c
+    src/gzip/ftgzip.c
+    src/lzw/ftlzw.c
+    src/otvalid/otvalid.c
+    src/pcf/pcf.c
+    src/pfr/pfr.c
+    src/psaux/psaux.c
+    src/pshinter/pshinter.c
+    src/psnames/psnames.c
+    src/raster/raster.c
+    src/sfnt/sfnt.c
+    src/smooth/ftgrays.c
+    src/smooth/ftsmooth.c
+    src/truetype/truetype.c
+    src/type1/type1.c
+    src/type42/type42.c
+  )
+
+  set( PLATFORM_SOURCE_INSTALL "MAC" )
+  source_group( "Platform Source Files" FILES ${PLATFORM_SOURCE_FILES} )
+
+elseif (MACOS)
+  set( PLATFORM_SOURCE_FILES 
+    src/autofit/autofit.c
+    src/base/ftbase.c
+    src/base/ftbitmap.c
+    src/base/ftglyph.c
+    src/base/ftinit.c
+    src/base/ftsystem.c
+    src/bdf/bdf.c
+    src/cache/ftcache.c
+    src/cff/cff.c
+    src/cid/cidgload.c
+    src/cid/cidload.c
+    src/cid/cidobjs.c
+    src/cid/cidparse.c
+    src/cid/cidriver.c
+    src/gxvalid/gxvalid.c
+    src/gzip/ftgzip.c
+    src/lzw/ftlzw.c
+    src/otvalid/otvalid.c
+    src/pcf/pcf.c
+    src/pfr/pfr.c
+    src/psaux/psaux.c
+    src/pshinter/pshinter.c
+    src/psnames/psnames.c
+    src/raster/raster.c
+    src/sfnt/sfnt.c
+    src/smooth/ftgrays.c
+    src/smooth/ftsmooth.c
+    src/truetype/truetype.c
+    src/type1/type1.c
+    src/type42/type42.c
+  )
+
+  set( PLATFORM_SOURCE_INSTALL "MACOS" )
+  source_group( "Platform Source Files" FILES ${PLATFORM_SOURCE_FILES} )
+
+elseif (MACOSX)
+  set( PLATFORM_SOURCE_FILES 
+    src/autofit/autofit.c
+    src/base/ftbase.c
+    src/base/ftbitmap.c
+    src/base/ftglyph.c
+    src/base/ftinit.c
+    src/base/ftsystem.c
+    src/bdf/bdf.c
+    src/cache/ftcache.c
+    src/cff/cff.c
+    src/cid/cidgload.c
+    src/cid/cidload.c
+    src/cid/cidobjs.c
+    src/cid/cidparse.c
+    src/cid/cidriver.c
+    src/gxvalid/gxvalid.c
+    src/gzip/ftgzip.c
+    src/lzw/ftlzw.c
+    src/otvalid/otvalid.c
+    src/pcf/pcf.c
+    src/pfr/pfr.c
+    src/psaux/psaux.c
+    src/pshinter/pshinter.c
+    src/psnames/psnames.c
+    src/raster/raster.c
+    src/sfnt/sfnt.c
+    src/smooth/ftgrays.c
+    src/smooth/ftsmooth.c
+    src/truetype/truetype.c
+    src/type1/type1.c
+    src/type42/type42.c
+  )
+
+  set( PLATFORM_SOURCE_INSTALL "MACOSX" )
+  source_group( "Platform Source Files" FILES ${PLATFORM_SOURCE_FILES} )
+
+elseif (MSWIN)
+  set( PLATFORM_SOURCE_FILES 
+    src/autofit/autofit.c
+    src/base/ftbase.c
+    src/base/ftbitmap.c
+    src/base/ftglyph.c
+    src/base/ftinit.c
+    src/base/ftsystem.c
+    src/bdf/bdf.c
+    src/cache/ftcache.c
+    src/cff/cff.c
+    src/cid/cidgload.c
+    src/cid/cidload.c
+    src/cid/cidobjs.c
+    src/cid/cidparse.c
+    src/cid/cidriver.c
+    src/gxvalid/gxvalid.c
+    src/gzip/ftgzip.c
+    src/lzw/ftlzw.c
+    src/otvalid/otvalid.c
+    src/pcf/pcf.c
+    src/pfr/pfr.c
+    src/psaux/psaux.c
+    src/pshinter/pshinter.c
+    src/psnames/psnames.c
+    src/raster/raster.c
+    src/sfnt/sfnt.c
+    src/smooth/ftgrays.c
+    src/smooth/ftsmooth.c
+    src/truetype/truetype.c
+    src/type1/type1.c
+    src/type42/type42.c
+  )
+
+  set( PLATFORM_SOURCE_INSTALL "MSWIN" )
   source_group( "Platform Source Files" FILES ${PLATFORM_SOURCE_FILES} )
 
 elseif (NACL)
@@ -797,6 +1130,43 @@ elseif (WIN64)
   )
 
   set( PLATFORM_SOURCE_INSTALL "WIN64" )
+  source_group( "Platform Source Files" FILES ${PLATFORM_SOURCE_FILES} )
+
+elseif (WINDOWS)
+  set( PLATFORM_SOURCE_FILES 
+    src/autofit/autofit.c
+    src/base/ftbase.c
+    src/base/ftbitmap.c
+    src/base/ftglyph.c
+    src/base/ftinit.c
+    src/base/ftsystem.c
+    src/bdf/bdf.c
+    src/cache/ftcache.c
+    src/cff/cff.c
+    src/cid/cidgload.c
+    src/cid/cidload.c
+    src/cid/cidobjs.c
+    src/cid/cidparse.c
+    src/cid/cidriver.c
+    src/gxvalid/gxvalid.c
+    src/gzip/ftgzip.c
+    src/lzw/ftlzw.c
+    src/otvalid/otvalid.c
+    src/pcf/pcf.c
+    src/pfr/pfr.c
+    src/psaux/psaux.c
+    src/pshinter/pshinter.c
+    src/psnames/psnames.c
+    src/raster/raster.c
+    src/sfnt/sfnt.c
+    src/smooth/ftgrays.c
+    src/smooth/ftsmooth.c
+    src/truetype/truetype.c
+    src/type1/type1.c
+    src/type42/type42.c
+  )
+
+  set( PLATFORM_SOURCE_INSTALL "WINDOWS" )
   source_group( "Platform Source Files" FILES ${PLATFORM_SOURCE_FILES} )
 
 endif ()

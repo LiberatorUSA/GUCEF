@@ -45,7 +45,6 @@ LOCAL_C_INCLUDES := \
   $(MY_MODULE_PATH)/../../../dependencies/libRocket/Source/Controls \
   $(MY_MODULE_PATH)/../../../dependencies/libRocket/Source/Core \
   $(MY_MODULE_PATH)/../../../platform/gucefCORE/include \
-  $(MY_MODULE_PATH)/../../../platform/gucefCORE/include/android \
   $(MY_MODULE_PATH)/../../../platform/gucefCORE/include/c_api \
   $(MY_MODULE_PATH)/../../../platform/gucefGUI/include \
   $(MY_MODULE_PATH)/../../../platform/gucefIMAGE/include \
@@ -54,7 +53,7 @@ LOCAL_C_INCLUDES := \
   $(MY_MODULE_PATH)/../../../platform/gucefVFS/include \
   $(MY_MODULE_PATH)/../guidriverRocket/include
 
-LOCAL_CFLAGS := -DGUIDRIVERROCKETGL_BUILD_MODULE
+LOCAL_CFLAGS := -DGUIDRIVERROCKETGL_BUILD_MODULE -DMODULE_CONSENSUS_NAME=guidriverRocketOpenGL -DMODULE_IS_PLUGIN=1 -DMODULE_NAME=guidriverRocketOpenGL
 
 
 LOCAL_SHARED_LIBRARIES := \
@@ -65,11 +64,6 @@ LOCAL_SHARED_LIBRARIES := \
   gucefINPUT \
   gucefMT \
   guidriverRocket
-
-
-LOCAL_LDLIBS := \
-  -lEGL \
-  -lGLESv1_CM
 
 include $(BUILD_SHARED_LIBRARY)
 

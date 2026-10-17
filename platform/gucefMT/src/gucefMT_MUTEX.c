@@ -268,9 +268,11 @@ MutexLock( struct SMutex* mutex, UInt32 timeoutInMs )
     if ( 0 != lockResult ) 
         return GUCEF_MUTEX_OPERATION_FAILED;
     
-    mutex->lockedByThread = callerThreadId;
+    /* same semantics as the Windows implementations: the first lock is not a re-entry */
     if ( callerThreadId == mutex->lockedByThread )             
         ++mutex->reentrancyCount;
+    else
+        mutex->lockedByThread = callerThreadId;
     GUCEF_TRACE_EXCLUSIVE_LOCK_OBTAINED( &mutex->id );
     return GUCEF_MUTEX_OPERATION_SUCCESS;
     

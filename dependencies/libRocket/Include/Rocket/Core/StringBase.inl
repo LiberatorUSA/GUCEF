@@ -504,7 +504,7 @@ typename StringBase< T >::size_type StringBase< T >::GetLength(const T* string) 
 template< typename T >
 void StringBase< T >::AddStorage() const
 {	
-	if (string_id > 0 || value == (T*)StringStorage::empty_string)
+	if (string_id != 0  /* DV edit: the id is a pointer, which has no ordering with an integer */ || value == (T*)StringStorage::empty_string)
 		return;
 
 	const char* str = (const char*)value;
@@ -516,7 +516,7 @@ template< typename T >
 void StringBase< T >::Modify(size_type new_size, bool shrink)
 {
 	T* new_value = value;
-	if (string_id > 0)
+	if (string_id != 0  /* DV edit: the id is a pointer, which has no ordering with an integer */)
 	{
 		// If the string is in storage, we have to allocate a new buffer
 		// and copy the string into the new buffer (including NULL)
@@ -569,7 +569,7 @@ void StringBase< T >::Release() const
 {
 	// If theres a valid string id remove the reference
 	// otherwise ask the storage to release our local buffer
-	if (string_id > 0)
+	if (string_id != 0  /* DV edit: the id is a pointer, which has no ordering with an integer */)
 	{
 		StringStorage::RemoveReference(string_id);
 		string_id = 0;

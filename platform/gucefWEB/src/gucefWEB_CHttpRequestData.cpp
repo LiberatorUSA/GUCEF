@@ -118,6 +118,103 @@ CHttpRequestData::ConstructUriWithAuthority( void ) const
     return m_requestUriWithAuthority;
 }
 
+/*-------------------------------------------------------------------------*/
+
+bool
+CHttpRequestData::SetUrl( const CString& url )
+{GUCEF_TRACE;
+
+    Int32 schemeEnd = url.HasSubstr( "://", true );
+    if ( schemeEnd <= 0 )
+        return false;
+
+    CString remainder = url.CutChars( (UInt32) schemeEnd + 3, true );
+
+    // drop the fragment, it is not sent to the server
+    Int32 fragmentStart = remainder.HasChar( '#', true );
+    if ( fragmentStart >= 0 )
+        remainder = remainder.SubstrToIndex( (UInt32) fragmentStart, true );
+
+    Int32 pathStart = remainder.HasChar( '/', true );
+    Int32 queryStart = remainder.HasChar( '?', true );
+    Int32 authorityEnd = pathStart;
+    if ( queryStart >= 0 && ( authorityEnd < 0 || queryStart < authorityEnd ) )
+        authorityEnd = queryStart;
+
+    CString authority = authorityEnd >= 0 ? remainder.SubstrToIndex( (UInt32) authorityEnd, true ) : remainder;
+    if ( authority.IsNULLOrEmpty() )
+        return false;
+
+    CString pathAndQuery = authorityEnd >= 0 ? remainder.CutChars( (UInt32) authorityEnd, true ) : CString();
+    CString path = pathAndQuery;
+    CString query;
+    queryStart = pathAndQuery.HasChar( '?', true );
+    if ( queryStart >= 0 )
+    {
+        path = pathAndQuery.SubstrToIndex( (UInt32) queryStart, true );
+        query = pathAndQuery.CutChars( (UInt32) queryStart + 1, true );
+    }
+    if ( path.IsNULLOrEmpty() )
+        path = "/";
+
+    requestProtocol = url.SubstrToIndex( (UInt32) schemeEnd, true ).Lowercase();
+    requestHost = authority;
+    requestUri = path;
+    requestUriParams = query;
+    m_requestUriWithAuthority.Clear();
+    return true;
+}
+
+/*-------------------------------------------------------------------------*/
+
+CString
+CHttpRequestData::GetUrl( void ) const
+{GUCEF_TRACE;
+
+    CString url = ConstructUriWithAuthority();
+    if ( !requestUriParams.IsNULLOrEmpty() )
+        url += "?" + requestUriParams;
+    return url;
+}
+
+/*-------------------------------------------------------------------------*/
+
+CString
+CHttpRequestData::GetHostName( void ) const
+{GUCEF_TRACE;
+
+    if ( requestHost.Length() > 0 && '[' == requestHost[ 0 ] )
+    {
+        // IPv6 address literal: [address]:port
+        Int32 closingBracket = requestHost.HasChar( ']', true );
+        if ( closingBracket > 0 )
+            return requestHost.SubstrFromRange( 1, (UInt32) closingBracket );
+        return requestHost;
+    }
+
+    Int32 portSeparator = requestHost.HasChar( ':', false );
+    if ( portSeparator >= 0 )
+        return requestHost.SubstrToIndex( (UInt32) portSeparator, true );
+    return requestHost;
+}
+
+/*-------------------------------------------------------------------------*/
+
+UInt16
+CHttpRequestData::GetPort( void ) const
+{GUCEF_TRACE;
+
+    Int32 portSeparator = requestHost.HasChar( ':', false );
+    Int32 closingBracket = requestHost.HasChar( ']', false );
+    if ( portSeparator >= 0 && portSeparator > closingBracket )
+    {
+        UInt16 port = CORE::StringToUInt16( requestHost.CutChars( (UInt32) portSeparator + 1, true ) );
+        if ( 0 != port )
+            return port;
+    }
+    return requestProtocol.Equals( "https", false ) ? 443 : 80;
+}
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //

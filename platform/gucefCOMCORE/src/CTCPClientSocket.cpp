@@ -465,10 +465,10 @@ CTCPClientSocket::Connect( bool blocking )
                            sizeof( struct sockaddr)       ,
                            &errorCode                     ) == SOCKET_ERROR )
     {
-        // It is normal for DVSOCKET_EWOULDBLOCK to be reported as the result from calling
-        // connect on a nonblocking SOCK_STREAM socket, since some time must elapse
+        // It is normal for DVSOCKET_EWOULDBLOCK (Windows) or DVSOCKET_EINPROGRESS (Linux) to be reported
+        // as the result from calling connect on a nonblocking SOCK_STREAM socket, since some time must elapse
         // for the connection to be established.
-        if ( errorCode != DVSOCKET_EWOULDBLOCK )
+        if ( errorCode != DVSOCKET_EWOULDBLOCK && errorCode != DVSOCKET_EINPROGRESS )
         {
             // After a socket error you must always close the connection.
             _active = false;
@@ -554,7 +554,7 @@ CTCPClientSocket::GetRemoteIP( void ) const
 
 /*-------------------------------------------------------------------------*/
 
-void
+bool
 CTCPClientSocket::CheckRecieveBuffer( void )
 {GUCEF_TRACE;
 
@@ -587,6 +587,11 @@ CTCPClientSocket::CheckRecieveBuffer( void )
                                        0                                                                            ,
                                        &errorcode                                                                   );
 
+            // A non-blocking socket which has been read empty reports that nothing more can be read right now,
+            // which is the normal end of a read cycle when the amount of data was an exact multiple of the block size
+            if ( bytesrecv == SOCKET_ERROR && DVSOCKET_EWOULDBLOCK == errorcode )
+                break;
+
             // Check for an error
             if ( ( bytesrecv == SOCKET_ERROR ) || ( errorcode != 0 ) )
             {
@@ -595,13 +600,13 @@ CTCPClientSocket::CheckRecieveBuffer( void )
 
                 // Notify our users of the error
                 TSocketErrorEventData eData( errorcode );
-                if ( !NotifyObservers( SocketErrorEvent, &eData ) ) return;
+                if ( !NotifyObservers( SocketErrorEvent, &eData ) ) return false;
 
                 // After a socket error you must always close the connection.
                 CloseImp();
 
                 Unlock();
-                return;
+                return true;
             }
             else
             if ( bytesrecv == 0 )
@@ -616,7 +621,7 @@ CTCPClientSocket::CheckRecieveBuffer( void )
                 CloseImp();
 
                 Unlock();
-                return;
+                return true;
             }
 
             // Increase the logical data size delimiter by the amount we just copied into the buffer
@@ -644,11 +649,13 @@ CTCPClientSocket::CheckRecieveBuffer( void )
             CORE::CDynamicBuffer linkedBuffer;
             linkedBuffer.LinkTo( m_readbuffer.GetConstBufferPtr(), m_readbuffer.GetDataSize() );
             TDataRecievedEventData cData( &linkedBuffer );
-            if ( !NotifyObservers( DataRecievedEvent, &cData ) ) return;
+            if ( !NotifyObservers( DataRecievedEvent, &cData ) ) return false;
         }
 
         Unlock();
     }
+
+    return true;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -716,7 +723,9 @@ CTCPClientSocket::OnPulse( CORE::CNotifier* notifier                 ,
             if ( FD_ISSET( _data->sockid, &readfds ) )
             {
                 /* data can be read from the socket */
-                CheckRecieveBuffer();
+                // false means this object was deleted by one of the observers, we must not touch it anymore
+                if ( !CheckRecieveBuffer() )
+                    return;
             }
             else
             if ( m_isConnecting )
@@ -982,6 +991,10 @@ CTCPClientSocket::Send( const void* data ,
                 {
                     GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "CTCPClientSocket(" + CORE::PointerToString( this ) + "): Delaying sending of data" );
                     m_sendBuffer.Write( ((Int8*)data)+totalBytesSent, 1, remnant );
+
+                    // The remainder is queued, it will be sent when the socket can take more data.
+                    // Without leaving the loop the same remainder would be queued again on every iteration
+                    break;
                 }
                 else
                 {

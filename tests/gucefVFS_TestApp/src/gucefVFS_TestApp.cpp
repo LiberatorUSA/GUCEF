@@ -23,10 +23,20 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+/* the test framework implementation is compiled as part of this file */
+#define GUCEF_TESTFW_IMPL
+
+#include <string.h>
+
 #ifndef GUCEF_MACROS_H
 #include "gucef_macros.h"
 #define GUCEF_MACROS_H
 #endif /* GUCEF_MACROS_H ? */
+
+#ifndef GUCEF_TEST_FRAMEWORK_H
+#include "gucef_test_framework.h"
+#define GUCEF_TEST_FRAMEWORK_H
+#endif /* GUCEF_TEST_FRAMEWORK_H ? */
 
 #ifndef GUCEF_CORE_H
 #include "gucefCORE.h"
@@ -47,6 +57,16 @@
 #include "TestCode_VFSFileLoadUnloadTest.h"
 #define TESTCODE_VFSFILELOADUNLOADTEST_H
 #endif /* TESTCODE_VFSFILELOADUNLOADTEST_H ? */
+
+#ifndef GUCEF_VFS_TESTAPP_TESTZIPARCHIVEWRITER_H
+#include "TestZipArchiveWriter.h"
+#define GUCEF_VFS_TESTAPP_TESTZIPARCHIVEWRITER_H
+#endif /* GUCEF_VFS_TESTAPP_TESTZIPARCHIVEWRITER_H ? */
+
+#ifndef GUCEF_VFS_TESTAPP_TESTLIBARCHIVE_H
+#include "TestLibArchive.h"
+#define GUCEF_VFS_TESTAPP_TESTLIBARCHIVE_H
+#endif /* GUCEF_VFS_TESTAPP_TESTLIBARCHIVE_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -185,8 +205,9 @@ SetupLogging( const CORE::CString& outputDir ,
     // setup file logger
     logFilename = CORE::CombinePath( outDir, "gucefVFS_TestApp_Log.txt" );
    
-    CORE::CFileAccess logFileAccess( logFilename, "w" );
-    CORE::CStdLogger logger( logFileAccess );
+    // Note: the logger stays registered with the log manager so it has to outlive this function
+    static CORE::CFileAccess logFileAccess( logFilename, "w" );
+    static CORE::CStdLogger logger( logFileAccess );
     CORE::CCoreGlobal::Instance()->GetLogManager().AddLogger( &logger );
 
     // setup console logger
@@ -209,10 +230,11 @@ SetupLogging( void )
 
 /*-------------------------------------------------------------------------*/
 
-/*
- *      Application entry point
+/**
+ *  The original interactive mode of the test app, available via the -manual switch
  */
-GUCEF_OSMAIN_BEGIN
+static int
+RunManualTests( int argc, char** argv )
 {GUCEF_TRACE;
 
     #ifdef GUCEF_VFS_DEBUG_MODE
@@ -286,6 +308,62 @@ GUCEF_OSMAIN_BEGIN
         }
         catch ( ... ) {}
 
+        CORE::ShowErrorMessage( "Unknown exception"                                                                 ,
+                                "Unhandled exception during program execution, the application will now terminate"  );
+    }
+    return 1;
+}
+
+/*-------------------------------------------------------------------------*/
+
+/*
+ *      Application entry point
+ */
+GUCEF_OSMAIN_BEGIN
+{GUCEF_TRACE;
+
+    try
+    {
+        for ( int i=1; i<argc; ++i )
+        {
+            if ( 0 == strcmp( argv[ i ], "-manual" ) )
+                return RunManualTests( argc, argv );
+            if ( 0 == strcmp( argv[ i ], "-large" ) )
+                CORE::GUCEFSetEnv( "GUCEF_TEST_LARGE_FILES", "1" );
+        }
+
+        CORE::CString logFilename = CORE::RelativePath( "$CURWORKDIR$" );
+        CORE::AppendToPath( logFilename, "gucefVFS_TestApp_Log.txt" );
+        CORE::CFileAccess logFileAccess( logFilename, "w" );
+
+        CORE::CStdLogger logger( logFileAccess );
+        CORE::CCoreGlobal::Instance()->GetLogManager().AddLogger( &logger );
+
+        CORE::CPlatformNativeConsoleLogger console;
+        if ( GUCEF_APP_TYPE == GUCEF_APP_TYPE_CONSOLE )
+            CORE::CCoreGlobal::Instance()->GetLogManager().AddLogger( console.GetLogger() );
+
+        // initializes the module, as every application using gucefVFS has to do
+        VFS::CVfsGlobal::Instance();
+
+        GUCEF_TESTFW_INIT( "gucefVFS_TestApp" );
+        GUCEF_TESTFW_SET_CALLBACK( CORE::TestFrameworkLogCallback, GUCEF_NULL );
+
+        PerformVFSFileLoadUnloadTest();
+        PerformZipArchiveWriterTests();
+        PerformLibArchiveTests();
+
+        CORE::CLogStreamScope::FlushLogs();
+
+        CORE::CString xmlPath = CORE::RelativePath( "$CURWORKDIR$" );
+        CORE::AppendToPath( xmlPath, "gucefVFS_TestApp_Results.xml" );
+        GUCEF_TESTFW_WRITE_RESULTS( xmlPath.C_String() );
+
+        CORE::CCoreGlobal::Instance()->GetLogManager().ClearLoggers();
+        return GUCEF_TESTFW_EXITCODE;
+    }
+    catch ( ... )
+    {
         CORE::ShowErrorMessage( "Unknown exception"                                                                 ,
                                 "Unhandled exception during program execution, the application will now terminate"  );
     }

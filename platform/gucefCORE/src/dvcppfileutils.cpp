@@ -118,6 +118,16 @@
 #define GUCEF_CORE_CDYNAMICBUFFER_H
 #endif /* GUCEF_CORE_CDYNAMICBUFFER_H ? */
 
+#ifndef GUCEF_CORE_CRANDOM_H
+#include "gucefCORE_CRandom.h"
+#define GUCEF_CORE_CRANDOM_H
+#endif /* GUCEF_CORE_CRANDOM_H ? */
+
+#ifndef GUCEF_CORE_CFILEACCESS_H
+#include "CFileAccess.h"
+#define GUCEF_CORE_CFILEACCESS_H
+#endif /* GUCEF_CORE_CFILEACCESS_H ? */
+
 #include "dvcppfileutils.h"
 
 /*-------------------------------------------------------------------------//
@@ -839,14 +849,19 @@ CreateDirs( const CString& path )
     Int32 dirSepCharIndex = actualPath.HasChar( GUCEF_DIRSEPCHAR, true );
     while ( dirSepCharIndex >= 0 )
     {
-        CString dirSegment = actualPath.SubstrToIndex( (UInt32) dirSepCharIndex, true );
-        if ( 0 != ::mkdir( dirSegment.C_String(), accessPerms ) && EEXIST != errno )
+        // Note that for an absolute path the first separator is the root dir which always exists
+        if ( dirSepCharIndex > 0 )
         {
-            GUCEF_ERROR_LOG( LOGLEVEL_NORMAL, "CreateDirs: Unable to create dir: \"" + dirSegment + "\" ErrorCode=" + ToString( (UInt32) errno ) );
-            return false;
+            CString dirSegment = actualPath.SubstrToIndex( (UInt32) dirSepCharIndex, true );
+            if ( 0 != ::mkdir( dirSegment.C_String(), accessPerms ) && EEXIST != errno )
+            {
+                GUCEF_ERROR_LOG( LOGLEVEL_NORMAL, "CreateDirs: Unable to create dir: \"" + dirSegment + "\" ErrorCode=" + ToString( (UInt32) errno ) );
+                return false;
+            }
         }
 
-        dirSepCharIndex = actualPath.HasChar( GUCEF_DIRSEPCHAR, dirSepCharIndex, true );
+        // continue the search after the current separator
+        dirSepCharIndex = actualPath.HasChar( GUCEF_DIRSEPCHAR, (UInt32) dirSepCharIndex+1, true );
     }
 
     if ( 0 != ::mkdir( actualPath.C_String(), accessPerms ) && EEXIST != errno )
@@ -863,14 +878,19 @@ CreateDirs( const CString& path )
     Int32 dirSepCharIndex = actualPath.HasChar( GUCEF_DIRSEPCHAR, true );
     while ( dirSepCharIndex >= 0 )
     {
-        CString dirSegment = actualPath.SubstrToIndex( (UInt32) dirSepCharIndex, true );
-        if ( 0 != ::mkdir( dirSegment.C_String(), accessPerms ) && EEXIST != errno )
+        // Note that for an absolute path the first separator is the root dir which always exists
+        if ( dirSepCharIndex > 0 )
         {
-            GUCEF_ERROR_LOG( LOGLEVEL_NORMAL, "CreateDirs: Unable to create dir: \"" + dirSegment + "\" ErrorCode=" + ToString( (UInt32) errno ) );
-            return false;
+            CString dirSegment = actualPath.SubstrToIndex( (UInt32) dirSepCharIndex, true );
+            if ( 0 != ::mkdir( dirSegment.C_String(), accessPerms ) && EEXIST != errno )
+            {
+                GUCEF_ERROR_LOG( LOGLEVEL_NORMAL, "CreateDirs: Unable to create dir: \"" + dirSegment + "\" ErrorCode=" + ToString( (UInt32) errno ) );
+                return false;
+            }
         }
 
-        dirSepCharIndex = actualPath.HasChar( GUCEF_DIRSEPCHAR, dirSepCharIndex, true );
+        // continue the search after the current separator
+        dirSepCharIndex = actualPath.HasChar( GUCEF_DIRSEPCHAR, (UInt32) dirSepCharIndex+1, true );
     }
 
     if ( 0 != ::mkdir( actualPath.C_String(), accessPerms ) && EEXIST != errno )
@@ -947,6 +967,10 @@ MoveFile( const CString& oldPath ,
     if ( 0 != ::stat( actualOldPath.C_String(), &originalPermissions ) )
         return 0;
 
+    // rename() always replaces an existing target, honor the caller's wishes
+    if ( !overwrite && FileExists( actualNewPath ) )
+        return 0;
+
     ::chmod( actualOldPath.C_String(), 0777 );
 
     if ( 0 != ::rename( actualOldPath.C_String(), actualNewPath.C_String() ) )
@@ -967,6 +991,90 @@ MoveFile( const CString& oldPath ,
     return false;
 
     #endif
+}
+
+/*-------------------------------------------------------------------------*/
+
+static bool
+SyncDirectory( const CString& dirPath )
+{GUCEF_TRACE;
+
+    #if ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_WASM_EMSCRIPTEN ) )
+
+    // The rename itself is only durable once the directory entry is on disk
+    int fd = ::open( dirPath.IsNULLOrEmpty() ? "." : dirPath.C_String(), O_RDONLY | O_DIRECTORY );
+    if ( fd < 0 )
+        return false;
+    bool success = 0 == ::fsync( fd );
+    ::close( fd );
+    return success;
+
+    #else
+
+    // MoveFile uses MOVEFILE_WRITE_THROUGH on Windows which covers this
+    return true;
+
+    #endif
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+WriteFileAtomically( const CString& path    ,
+                     const void* data       ,
+                     UInt32 dataSizeInBytes )
+{GUCEF_TRACE;
+
+    if ( path.IsNULLOrEmpty() || ( GUCEF_NULL == data && 0 != dataSizeInBytes ) )
+        return false;
+
+    CString actualPath = RelativePath( path );
+
+    // The temp file must be in the same directory to guarantee the move is a rename on the same file system
+    UInt8 randomBytes[ 4 ];
+    CString tempPath = actualPath + ".tmp";
+    if ( CRandom::GetRandomBytes( randomBytes, sizeof( randomBytes ) ) )
+    {
+        static const char* hexDigits = "0123456789abcdef";
+        for ( UInt32 i=0; i<sizeof( randomBytes ); ++i )
+        {
+            tempPath += CString( hexDigits + ( randomBytes[ i ] >> 4 ), 1 );
+            tempPath += CString( hexDigits + ( randomBytes[ i ] & 0xF ), 1 );
+        }
+    }
+
+    bool success = false;
+    {
+        CFileAccess tempFile( tempPath, "wb" );
+        if ( tempFile.IsValid() )
+        {
+            success = ( 0 == dataSizeInBytes ) || ( dataSizeInBytes == tempFile.Write( data, 1, dataSizeInBytes ) );
+            success = success && tempFile.Sync();
+        }
+    }
+
+    if ( success )
+        success = MoveFile( tempPath, actualPath, true );
+    if ( !success )
+    {
+        GUCEF_ERROR_LOG( LOGLEVEL_NORMAL, "WriteFileAtomically: Failed to replace \"" + actualPath + "\"" );
+        if ( FileExists( tempPath ) )
+            DeleteFile( tempPath );
+        return false;
+    }
+
+    SyncDirectory( StripFilename( actualPath ) );
+    return true;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+WriteFileAtomically( const CString& path          ,
+                     const CDynamicBuffer& buffer )
+{GUCEF_TRACE;
+
+    return WriteFileAtomically( path, buffer.GetConstBufferPtr(), buffer.GetDataSize() );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -995,8 +1103,9 @@ FileExists( const CString& filename )
 
         #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_WASM_EMSCRIPTEN ) )
 
+        /* make sure we found a file not a directory, same as on Windows */
         struct stat buf;
-        return stat( RelativePath( filename ).C_String(), &buf ) == 0;
+        return stat( RelativePath( filename ).C_String(), &buf ) == 0 && !S_ISDIR( buf.st_mode );
 
         #else
 
@@ -2978,9 +3087,12 @@ class CFileSystemIterator::CFileSystemIteratorOsData
         {
             if ( linkedPath.IsNULLOrEmpty() )
             {
-                CString symlinkPath = entry->d_name;
-                if ( TryResolveLinuxSymlinkPath( symlinkPath, linkedPath ) )
+                if ( TryResolveLinuxSymlinkPath( GetEntryPath(), linkedPath ) )
                 {
+                    // Relative link targets are relative to the dir containing the link
+                    if ( !linkedPath.IsNULLOrEmpty() && '/' != linkedPath[ 0 ] )
+                        linkedPath = CombinePath( rootPath, linkedPath );
+
                     // Get info on the entry.
                     if ( stat( linkedPath.C_String(), &linkedStatinfo ) >= 0 )
                     {
@@ -3001,6 +3113,25 @@ class CFileSystemIterator::CFileSystemIteratorOsData
             ClearSymlinkInfo();
         }
         return false;
+    }
+
+    CString
+    GetEntryPath( void ) const
+    {GUCEF_TRACE;
+
+        if ( GUCEF_NULL == entry )
+            return CString::Empty;
+        return CombinePath( rootPath, entry->d_name );
+    }
+
+    void
+    StatEntry( void )
+    {GUCEF_TRACE;
+
+        // Note that we use the full path here on purpose instead of changing the
+        // process wide working dir which would break concurrent iterators on other threads
+        if ( 0 != ::lstat( GetEntryPath().C_String(), &statinfo ) )
+            memset( &statinfo, 0, sizeof statinfo );
     }
 
     #else
@@ -3118,9 +3249,6 @@ CFileSystemIterator::FindFirst( const CString& path )
     }
     m_osData->ClearSymlinkInfo();
 
-    // change working dir to be able to read file information
-    ::chdir( m_osData->rootPath.C_String() );
-
     // Read first entry
     m_osData->entry = ::readdir( m_osData->dir );
     if ( GUCEF_NULL != m_osData->entry )
@@ -3155,7 +3283,7 @@ CFileSystemIterator::FindFirst( const CString& path )
         if ( GUCEF_NULL != m_osData->entry )
         {
             // Get info on the entry.
-            ::lstat( m_osData->entry->d_name, &m_osData->statinfo );
+            m_osData->StatEntry();
 
             m_osData->isActive = true;
             return true;
@@ -3215,7 +3343,7 @@ CFileSystemIterator::FindNext( void )
         if ( GUCEF_NULL != m_osData->entry  )
         {
             // Get info on the entry.
-            ::lstat( m_osData->entry->d_name, &m_osData->statinfo );
+            m_osData->StatEntry();
             return true;
         }
     }
@@ -3478,7 +3606,7 @@ CFileSystemIterator::GetResourcePath( void ) const
 
         #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_WASM_EMSCRIPTEN ) )
 
-        return m_osData->entry->d_name;
+        return m_osData->GetEntryPath();
 
         #else
 

@@ -24,7 +24,7 @@
 //-------------------------------------------------------------------------*/
 
 
-#include <RmlUI/Core.h>
+#include <RmlUi/Core.h>
 
 //
 //#ifndef GUCEF_CORE_DVCPPSTRINGUTILS_H
@@ -337,11 +337,11 @@ CFormBackendImp::LoadLayout( GUCEF::CORE::CIOAccess& layoutStorage )
     CRmlUIStreamAdapter streamAdapter( layoutStorage );
 
     // Load and show the document.
-    RmlUI::Core::ElementDocument* document = m_context->GetRmlUIContext()->LoadDocument( &streamAdapter );
+    Rml::ElementDocument* document = m_context->GetRmlUIContext()->LoadDocument( &streamAdapter );
     if ( NULL != document )
     {
+        // The context owns the document
         document->Show();
-        document->RemoveReference();
         return true;
     }
     return false;

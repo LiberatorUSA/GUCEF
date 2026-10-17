@@ -51,7 +51,7 @@ namespace guidriverRmlUI {
 //-------------------------------------------------------------------------*/
 
 CGUIContext::CGUIContext( GUI::CGUIDriver* guiDriver           ,
-                          RmlUI::Core::Context* RmlUIContext ,
+                          Rml::Context* RmlUIContext ,
                           GUI::TWindowContextPtr windowContext ,
                           INPUT::CInputContext* inputContext   )
     : GUI::CIGUIContext()              ,
@@ -75,7 +75,9 @@ CGUIContext::~CGUIContext()
 
     m_inputAdapter.StopListningForInputEvents();
     m_inputAdapter.SetRmlUIContext( NULL );
-    m_RmlUIContext->RemoveReference();
+    // Contexts are owned by the core, which is also where they are given up
+    if ( NULL != m_RmlUIContext )
+        Rml::RemoveContext( m_RmlUIContext->GetName() );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -192,7 +194,7 @@ CGUIContext::GetOwnedForms( void )
 
 /*-------------------------------------------------------------------------*/
 
-RmlUI::Core::Context*
+Rml::Context*
 CGUIContext::GetRmlUIContext( void )
 {GUCEF_TRACE;
 
@@ -218,7 +220,7 @@ CGUIContext::OnNotify( CORE::CNotifier* notifier   ,
         GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "GUIContext: Resizing RmlUI GUI context to " + CORE::UInt32ToString( m_windowContext->GetWidth() ) + "x" +
                                                                                                 CORE::UInt32ToString( m_windowContext->GetHeight() ) );
 
-        RmlUI::Core::Vector2i newSize( m_windowContext->GetWidth(), m_windowContext->GetHeight() );
+        Rml::Vector2i newSize( m_windowContext->GetWidth(), m_windowContext->GetHeight() );
         m_RmlUIContext->SetDimensions( newSize );
     }
 }

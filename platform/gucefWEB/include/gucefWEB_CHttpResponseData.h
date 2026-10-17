@@ -87,6 +87,12 @@ class GUCEF_WEB_PUBLIC_CPP CHttpResponseData : public CORE::CICloneable
 
     bool Serialize( CORE::CDynamicBuffer& outputBuffer ) const;
 
+    /**
+     *  Resets all fields to their defaults so the object can be reused for another response.
+     *  The content buffer keeps its allocated memory.
+     */
+    void Clear( void );
+
     CHttpResponseData( void );
     CHttpResponseData( const CHttpResponseData& src );
     virtual ~CHttpResponseData();

@@ -1,0 +1,8 @@
+common/include/*
+dependencies/libparsifal/*
+platform/gucefCOM/*
+platform/gucefCORE/*
+platform/gucefMT/*
+platform/gucefMULTIPLAY/*
+plugins/CORE/dstorepluginPARSIFALXML/*
+tests/gucefMULTIPLAY_TestApp/*

@@ -143,7 +143,8 @@ CZipIOAccess::Seek( CORE::Int64 offset ,
                     CORE::Int32 origin )
 {GUCEF_TRACE;
 
-    return zzip_seek( m_zzipFile, static_cast<zzip_off_t>( offset ), origin );
+    // zzip_seek() returns the new offset, CIOAccess::Seek() returns 0 on success like fseek()
+    return zzip_seek( m_zzipFile, static_cast<zzip_off_t>( offset ), origin ) < 0 ? -1 : 0;
 }
 
 /*-------------------------------------------------------------------------*/

@@ -55,6 +55,28 @@ namespace CORE {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+/**
+ *  Returns a pointer to the bytes that make up the variant's payload
+ *  For memory address types AsVoidPtr() returns the address held by the variant, not the storage of said address.
+ *  Since the payload of such types is the address itself we need its storage, which is also where deserialization puts it
+ */
+static const void*
+GetPayloadBytes( const CVariant& var )
+{GUCEF_TRACE;
+
+    switch ( var.GetTypeId() )
+    {
+        case GUCEF_DATATYPE_CONST_DATA_MEMORY_ADDRESS:
+        case GUCEF_DATATYPE_DATA_MEMORY_ADDRESS:
+        case GUCEF_DATATYPE_FUNCTION_MEMORY_ADDRESS:
+            return var.CStyleAccess()->union_data.bsob_data;
+        default:
+            return var.AsVoidPtr();
+    }
+}
+
+/*-------------------------------------------------------------------------*/
+
 bool
 CVariantBinarySerializer::Serialize( const CVariant& var, UInt32 currentTargetOffset, CDynamicBuffer& target, UInt32& bytesWritten )
 {GUCEF_TRACE;
@@ -88,7 +110,7 @@ CVariantBinarySerializer::Serialize( const CVariant& var, UInt32 currentTargetOf
             }
         }
 
-        nrOfBytesWritten = target.CopyFrom( currentTargetOffset, payloadSize, var.AsVoidPtr() );
+        nrOfBytesWritten = target.CopyFrom( currentTargetOffset, payloadSize, GetPayloadBytes( var ) );
         currentTargetOffset += nrOfBytesWritten;
         bytesWritten += nrOfBytesWritten;
 
@@ -137,7 +159,7 @@ CVariantBinarySerializer::Serialize( const CVariant& var, CIOAccess& access, UIn
             bytesWritten += sizeof( payloadSize );
         }
 
-        if ( 1 != access.Write( var.AsVoidPtr(), payloadSize, 1 ) )
+        if ( 1 != access.Write( GetPayloadBytes( var ), payloadSize, 1 ) )
         {
             GUCEF_WARNING_LOG( LOGLEVEL_NORMAL, "VariantBinarySerializer:Serialize: payload of payloadSize " + ToString( payloadSize ) + " bytes was not written correctly" );
             return false;

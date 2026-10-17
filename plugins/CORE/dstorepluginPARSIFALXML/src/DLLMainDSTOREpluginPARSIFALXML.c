@@ -386,7 +386,9 @@ HandleEscapeCharacters( const char* srcStr       ,
 {
     if ( GUCEF_NULL != srcStr )
     {
-        TEscapeEntry entries[ 6 ];
+        /* Note that bytes >= 0x80 are passed through as-is: the data is UTF-8 and escaping */
+        /* individual bytes of multi-byte sequences would corrupt it */
+        TEscapeEntry entries[ 5 ];
         UInt32 srcStrLen = (UInt32) strlen( srcStr );
 
         entries[ 0 ].escapeChar = '<';
@@ -404,16 +406,13 @@ HandleEscapeCharacters( const char* srcStr       ,
         entries[ 4 ].escapeChar = '\"';
         entries[ 4 ].replacementStr = "&quot;";
         entries[ 4 ].replacementStrLen = 6;
-        entries[ 5 ].escapeChar = '»';
-        entries[ 5 ].replacementStr = "&#187;";
-        entries[ 5 ].replacementStrLen = 6;
 
         HandleEscapeCharacterSet( srcStr           ,
                                   srcStrLen        ,
                                   destBuffer       ,
                                   destBufferLength ,
                                   entries          ,
-                                  6                ,
+                                  5                ,
                                   strLen           );
         return;
     }
@@ -554,7 +553,7 @@ MODULE_API_FUNCTION( DSTOREPLUG_Dest_File_Open )( void** plugdata    ,
         /* start with a buffer large enough to hold 64 bit numbers when printed */
         GuaranteeMinBufferSize( &fd->line, &fd->linelen, 21 );
                 
-        sprintf( outBuffer, "<?xml version=\"1.0\" encoding=\"ISO-8859-1\" ?>\r\n" );
+        sprintf( outBuffer, "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\r\n" );
         outFile->write( outFile, outBuffer, (UInt32)strlen( outBuffer ), 1 );
         sprintf( outBuffer, "<!-- Generated using dstorepluginXMLPARSIFAL (v%d.%d.%d.%d) for the GUCEF platform - Copyright (C) Dinand Vanvelzen. LPGLv3 -->\r\n", VERSION_MAJOR_FIELD, VERSION_MINOR_FIELD, VERSION_PATCH_FIELD, VERSION_RELEASE_FIELD );
         outFile->write( outFile, outBuffer, (UInt32)strlen( outBuffer ), 1 );

@@ -60,10 +60,13 @@ files( {
   "include/TestPubSubPlugin_AWSSNS.h",
   "include/TestPubSubPlugin_AWSSQS.h",
   "include/TestPubSubPlugin_FIX.h",
+  "include/TestPubSubPlugin_FIX_Integration.h",
   "include/TestPubSubPlugin_KAFKA.h",
   "include/TestPubSubPlugin_MSMQ.h",
   "include/TestPubSubPlugin_REDISCLUSTER.h",
   "include/TestPubSubPlugin_STORAGE.h",
+  "include/TestPubSubPlugin_STORAGE_Index.h",
+  "include/TestPubSubPlugin_STORAGE_Replay.h",
   "include/TestPubSubPlugin_TEST.h",
   "include/TestPubSubPlugin_UDP.h",
   "include/TestPubSubPlugin_WEB.h"
@@ -88,14 +91,16 @@ files( {
   "src/TestPubSubPlugin_AWSSNS.cpp",
   "src/TestPubSubPlugin_AWSSQS.cpp",
   "src/TestPubSubPlugin_FIX.cpp",
+  "src/TestPubSubPlugin_FIX_Integration.cpp",
   "src/TestPubSubPlugin_KAFKA.cpp",
   "src/TestPubSubPlugin_MSMQ.cpp",
   "src/TestPubSubPlugin_REDISCLUSTER.cpp",
   "src/TestPubSubPlugin_STORAGE.cpp",
+  "src/TestPubSubPlugin_STORAGE_Index.cpp",
+  "src/TestPubSubPlugin_STORAGE_Replay.cpp",
   "src/TestPubSubPlugin_TEST.cpp",
   "src/TestPubSubPlugin_UDP.cpp",
   "src/TestPubSubPlugin_WEB.cpp",
-  "src/gucefPUBSUB_TestApp.cpp",
   "src/gucefPUBSUB_TestApp_main.cpp"
  } )
 

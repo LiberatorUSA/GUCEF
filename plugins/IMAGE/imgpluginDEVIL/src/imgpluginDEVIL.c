@@ -23,6 +23,7 @@
 //-------------------------------------------------------------------------*/
 
 #include <stdlib.h>             /* for memory utils */
+#include <string.h>             /* for strncpy */
 
 #include "imgpluginDEVIL.h"     /* function prototypes for this plugin */
 
@@ -947,7 +948,8 @@ IMGCODECPLUGIN_EncodeImage( void* pluginData      ,
     }
     
     /* Make sure we prefix a dot before the codecType */    
-    strcpy_s( codecTypeExt+1, 255, codecType );
+    strncpy( codecTypeExt+1, codecType, 254 );
+    codecTypeExt[ 255 ] = '\0';
     codecTypeExt[ 0 ] = '.';
 
     /* now we can perform the actual save */

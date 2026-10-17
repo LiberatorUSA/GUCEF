@@ -26,7 +26,7 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#include <RmlUI/Core.h>
+#include <RmlUi/Core.h>
 
 #ifndef GUCEF_INPUT_CINPUTCONTROLLER_H
 #include "CInputController.h"
@@ -64,9 +64,9 @@ class GUCEF_guidriverRmlUI_PUBLIC_CPP CInputAdapter : public CORE::CObserver
 
 	virtual ~CInputAdapter();
 
-    void SetRmlUIContext( RmlUI::Core::Context* RmlUIContext );
+    void SetRmlUIContext( Rml::Context* RmlUIContext );
 
-    RmlUI::Core::Context* GetRmlUIContext( void );
+    Rml::Context* GetRmlUIContext( void );
 
     void StartListningForInputEvents( void );
 
@@ -94,12 +94,12 @@ class GUCEF_guidriverRmlUI_PUBLIC_CPP CInputAdapter : public CORE::CObserver
 
     static int MapKeyModifierState( const INPUT::UInt32 keyModifierState );
 
-    static RmlUI::Core::Input::KeyIdentifier MapKeyIdentifier( const INPUT::KeyCode keyCode );
+    static Rml::Input::KeyIdentifier MapKeyIdentifier( const INPUT::KeyCode keyCode );
                            
     private:
 
     INPUT::CInputContext* m_inputContext;
-    RmlUI::Core::Context* m_RmlUIContext;
+    Rml::Context* m_RmlUIContext;
     int m_lastKeyModifierState;
 };
 

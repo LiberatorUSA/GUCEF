@@ -14,6 +14,7 @@
 set( HEADER_FILES 
   include/vfspluginZIP.h
   include/vfspluginZIP_CZIPArchive.h
+  include/vfspluginZIP_CZipArchiveWriter.h
   include/vfspluginZIP_CZipIOAccess.h
   include/vfspluginZIP_config.h
   include/vfspluginZIP_macros.h
@@ -22,6 +23,7 @@ set( HEADER_FILES
 set( SOURCE_FILES 
   src/vfspluginZIP.cpp
   src/vfspluginZIP_CZIPArchive.cpp
+  src/vfspluginZIP_CZipArchiveWriter.cpp
   src/vfspluginZIP_CZipIOAccess.cpp
 )
 
@@ -42,8 +44,8 @@ elseif( EMSCRIPTEN64 )
 else()
   add_library( ${MODULE_NAME} ${ALL_FILES} )
 endif()
-add_dependencies( ${MODULE_NAME} gucefCORE gucefMT gucefVFS zziplib )
-target_link_libraries( ${MODULE_NAME} PUBLIC gucefCORE gucefMT gucefVFS zziplib )
+add_dependencies( ${MODULE_NAME} gucefCORE gucefMT gucefVFS minizip zziplib )
+target_link_libraries( ${MODULE_NAME} PUBLIC gucefCORE gucefMT gucefVFS minizip zziplib )
 set_property( TARGET ${MODULE_NAME} APPEND_STRING PROPERTY COMPILE_DEFINITIONS "GUCEF_VFSPLUGIN_ZIP_BUILD_MODULE;MODULE_CONSENSUS_NAME=vfspluginZIP;MODULE_IS_PLUGIN=1;MODULE_NAME=vfspluginZIP;ZZIP_HAVE_STDINT_H" )
 
 if ( ANDROID32 )
@@ -82,7 +84,7 @@ if ( WIN64 )
   target_link_libraries( ${MODULE_NAME} PUBLIC zlib )
 endif( WIN64 )
 
-include_directories( ../../../common/include ../../../dependencies/zziplib ../../../dependencies/zziplib/zzip ../../../platform/gucefCORE/include ../../../platform/gucefCORE/include/c_api ../../../platform/gucefMT/include ../../../platform/gucefVFS/include include )
+include_directories( ../../../common/include ../../../dependencies/minizip ../../../dependencies/zziplib ../../../dependencies/zziplib/zzip ../../../platform/gucefCORE/include ../../../platform/gucefCORE/include/c_api ../../../platform/gucefMT/include ../../../platform/gucefVFS/include include )
 
 if ( ANDROID32 )
   include_directories( ../../../platform/gucefCORE/include/android )

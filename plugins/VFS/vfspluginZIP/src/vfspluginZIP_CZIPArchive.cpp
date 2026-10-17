@@ -444,6 +444,9 @@ CZIPArchive::LoadArchive( const VFS::CArchiveSettings& settings )
             return false;
         }
 
+        m_archiveName = settings.GetArchiveName();
+        m_archivePath = settings.GetArchivePath();
+
         // Cache names
         ZZIP_DIRENT zzipEntry;
         while ( zzip_dir_read( m_zipRoot, &zzipEntry ) )

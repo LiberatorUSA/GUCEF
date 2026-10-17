@@ -34,9 +34,9 @@ set( HEADER_FILES
   include/guidriverRmlUI_CProgressBarImp.h
   include/guidriverRmlUI_CPushButtonImp.h
   include/guidriverRmlUI_CRenderContextImp.h
-  include/guidriverRmlUI_CRocketStreamAdapter.h
-  include/guidriverRmlUI_CRocketSystemInterface.h
-  include/guidriverRmlUI_CRocketVFSInterface.h
+  include/guidriverRmlUI_CRmlUIStreamAdapter.h
+  include/guidriverRmlUI_CRmlUISystemInterface.h
+  include/guidriverRmlUI_CRmlUIVFSInterface.h
   include/guidriverRmlUI_CSpinnerImp.h
   include/guidriverRmlUI_CTabContentPaneImp.h
   include/guidriverRmlUI_CTabControlImp.h
@@ -63,7 +63,6 @@ set( SOURCE_FILES
   src/guidriverRmlUI_CFormBackendImp.cpp
   src/guidriverRmlUI_CGUIContext.cpp
   src/guidriverRmlUI_CGridViewImp.cpp
-  src/guidriverRmlUI_CIOAccessToRocketStreamAdapter.cpp
   src/guidriverRmlUI_CImageFrameImp.cpp
   src/guidriverRmlUI_CInputAdapter.cpp
   src/guidriverRmlUI_CLabelImp.cpp
@@ -74,10 +73,9 @@ set( SOURCE_FILES
   src/guidriverRmlUI_CProgressBarImp.cpp
   src/guidriverRmlUI_CPushButtonImp.cpp
   src/guidriverRmlUI_CRenderContextImp.cpp
-  src/guidriverRmlUI_CRocketInputAdapter.cpp
-  src/guidriverRmlUI_CRocketStreamAdapter.cpp
-  src/guidriverRmlUI_CRocketSystemInterface.cpp
-  src/guidriverRmlUI_CRocketVFSInterface.cpp
+  src/guidriverRmlUI_CRmlUIStreamAdapter.cpp
+  src/guidriverRmlUI_CRmlUISystemInterface.cpp
+  src/guidriverRmlUI_CRmlUIVFSInterface.cpp
   src/guidriverRmlUI_CSpinnerImp.cpp
   src/guidriverRmlUI_CTabContentPaneImp.cpp
   src/guidriverRmlUI_CTabControlImp.cpp

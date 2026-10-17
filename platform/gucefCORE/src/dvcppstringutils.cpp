@@ -159,6 +159,12 @@ TempDir( void )
     if ( 0 != ::GetTempPathW( MAX_DIR_LENGTH+1, buffer ) )
         return CString( buffer, MAX_DIR_LENGTH, true );
     #endif
+    #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
+    // Per POSIX the TMPDIR environment variable takes precedence, /tmp is the standard fallback
+    CString tmpDir = GetEnv( "TMPDIR" );
+    if ( !tmpDir.IsNULLOrEmpty() )
+        return tmpDir;
+    return CString( "/tmp" );
     #endif
     return CString::Empty;
 }
@@ -1406,7 +1412,13 @@ StripFilename( const CString& pathPlusFilename )
     {
         return pathPlusFilename.SubstrToIndex( sepCharIndex, true );
     }
-    return pathPlusFilename;
+    if ( 0 == sepCharIndex )
+    {
+        // The file is directly in the root dir, the path is the root dir
+        return pathPlusFilename.SubstrToIndex( 1, true );
+    }
+    // There is no path, only a filename
+    return CString::Empty;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -1705,13 +1717,59 @@ Utf16toUtf8( const std::wstring& wstr ,
 
     #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
 
-    // @TODO
-//    size_t neededBufferSize = CalculateUtf8BufferSizeForUtf16( (const uint16_t*) wstr.c_str(), wstr.size() ) + 1;
-//    str.resize( neededBufferSize, '\0' );
-//    ::utf16_to_utf8( wstr.c_str(), str.c_str(), neededBufferSize );
-//    return true;
+    // Note that wchar_t is 4 bytes on Linux making std::wstring UTF-32 but we also handle a 2 byte wchar_t as UTF-16
+    str.clear();
+    str.reserve( wstr.size() );
+    size_t i = 0;
+    while ( i < wstr.size() )
+    {
+        UInt32 codepoint = static_cast< UInt32 >( wstr[ i ] );
+        ++i;
 
-    return false;
+        if ( 2 == sizeof( wchar_t ) && codepoint >= 0xD800 && codepoint <= 0xDBFF )
+        {
+            // UTF-16 surrogate pair
+            if ( i >= wstr.size() )
+                return false;
+            UInt32 lowSurrogate = static_cast< UInt32 >( wstr[ i ] );
+            if ( lowSurrogate < 0xDC00 || lowSurrogate > 0xDFFF )
+                return false;
+            codepoint = 0x10000 + ( ( codepoint - 0xD800 ) << 10 ) + ( lowSurrogate - 0xDC00 );
+            ++i;
+        }
+
+        if ( codepoint <= 0x7F )
+        {
+            str.push_back( static_cast< char >( codepoint ) );
+        }
+        else
+        if ( codepoint <= 0x7FF )
+        {
+            str.push_back( static_cast< char >( 0xC0 | ( codepoint >> 6 ) ) );
+            str.push_back( static_cast< char >( 0x80 | ( codepoint & 0x3F ) ) );
+        }
+        else
+        if ( codepoint <= 0xFFFF )
+        {
+            str.push_back( static_cast< char >( 0xE0 | ( codepoint >> 12 ) ) );
+            str.push_back( static_cast< char >( 0x80 | ( ( codepoint >> 6 ) & 0x3F ) ) );
+            str.push_back( static_cast< char >( 0x80 | ( codepoint & 0x3F ) ) );
+        }
+        else
+        if ( codepoint <= 0x10FFFF )
+        {
+            str.push_back( static_cast< char >( 0xF0 | ( codepoint >> 18 ) ) );
+            str.push_back( static_cast< char >( 0x80 | ( ( codepoint >> 12 ) & 0x3F ) ) );
+            str.push_back( static_cast< char >( 0x80 | ( ( codepoint >> 6 ) & 0x3F ) ) );
+            str.push_back( static_cast< char >( 0x80 | ( codepoint & 0x3F ) ) );
+        }
+        else
+        {
+            GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "Utf16toUtf8: Invalid code point" );
+            return false;
+        }
+    }
+    return true;
 
     #elif ( GUCEF_PLATFORM == GUCEF_PLATFORM_WASM_EMSCRIPTEN )
 
@@ -1819,6 +1877,12 @@ Utf8toUtf16( const std::string& str ,
             return false;
         }
 
+        if ( 4 == sizeof( wchar_t ) )
+        {
+            // On this platform std::wstring is UTF-32: no surrogate pairs are needed
+            utf16_str.push_back( static_cast< wchar_t >( codepoint ) );
+        }
+        else
         if ( codepoint <= 0xFFFF )
         {
             utf16_str.push_back( static_cast< UInt16 >( codepoint ) );

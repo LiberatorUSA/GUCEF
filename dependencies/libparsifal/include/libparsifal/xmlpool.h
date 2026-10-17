@@ -40,6 +40,10 @@
 #ifdef PARSIFAL_MSWIN_BUILD
     #define PARSIFAL_EXPORT __declspec( dllexport )
     #define PARSIFAL_IMPORT __declspec( dllimport )
+#elif defined( __GNUC__ ) && ( __GNUC__ >= 4 )
+    /* GUCEF builds use -fvisibility=hidden with GCC/Clang, as such exports must be explicitly marked */
+    #define PARSIFAL_EXPORT __attribute__ ((visibility("default")))
+    #define PARSIFAL_IMPORT
 #else
     #define PARSIFAL_EXPORT
     #define PARSIFAL_IMPORT

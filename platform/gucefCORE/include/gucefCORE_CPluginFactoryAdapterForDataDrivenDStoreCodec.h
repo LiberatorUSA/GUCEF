@@ -88,6 +88,8 @@ class GUCEF_HIDDEN CDataDrivenDStoreCodecPluginLink : public CDataDrivenDStoreCo
     virtual bool StoreDataTree( const CDataNode* tree, CIOAccess* file ) GUCEF_VIRTUAL_OVERRIDE;
     virtual bool BuildDataTree( CDataNode* treeroot, const CString& filename ) GUCEF_VIRTUAL_OVERRIDE;
     virtual bool BuildDataTree( CDataNode* treeroot, CIOAccess* file ) GUCEF_VIRTUAL_OVERRIDE;
+    virtual CDocumentStreamWriterPtr CreateDocumentWriter( CIOAccess& output ) GUCEF_VIRTUAL_OVERRIDE;
+    virtual bool ParseDocument( CIOAccess& input, CIDocumentParserCallbacks& callbacks ) GUCEF_VIRTUAL_OVERRIDE;
     virtual CString GetName( void ) const GUCEF_VIRTUAL_OVERRIDE;
     virtual CString GetTypeName( void ) const GUCEF_VIRTUAL_OVERRIDE;
     virtual CString GetCopyright( void ) const GUCEF_VIRTUAL_OVERRIDE;

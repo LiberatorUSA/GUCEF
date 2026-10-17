@@ -85,6 +85,31 @@
 #define GUCEF_CORE_DVCPPSTRINGUTILS_H
 #endif /* GUCEF_CORE_DVCPPSTRINGUTILS_H ? */
 
+#ifndef GUCEF_MT_CMUTEX_H
+#include "gucefMT_CMutex.h"
+#define GUCEF_MT_CMUTEX_H
+#endif /* GUCEF_MT_CMUTEX_H ? */
+
+#ifndef GUCEF_MT_CSCOPEMUTEX_H
+#include "gucefMT_CScopeMutex.h"
+#define GUCEF_MT_CSCOPEMUTEX_H
+#endif /* GUCEF_MT_CSCOPEMUTEX_H ? */
+
+#ifndef GUCEF_CORE_DVCPPFILEUTILS_H
+#include "dvcppfileutils.h"
+#define GUCEF_CORE_DVCPPFILEUTILS_H
+#endif /* GUCEF_CORE_DVCPPFILEUTILS_H ? */
+
+#ifndef GUCEF_MT_CACTIVEOBJECT_H
+#include "gucefMT_CActiveObject.h"
+#define GUCEF_MT_CACTIVEOBJECT_H
+#endif /* GUCEF_MT_CACTIVEOBJECT_H ? */
+
+#ifndef GUCEF_CORE_CFILEACCESS_H
+#include "CFileAccess.h"
+#define GUCEF_CORE_CFILEACCESS_H
+#endif /* GUCEF_CORE_CFILEACCESS_H ? */
+
 #ifndef GUCEF_TEST_FRAMEWORK_H
 #include "gucef_test_framework.h"
 #define GUCEF_TEST_FRAMEWORK_H
@@ -134,6 +159,7 @@ class CTestCaptureLogger : public CORE::CILogger
     };
 
     std::vector< SEntry > m_entries;
+    MT::CMutex m_lock;                  /**< loggers can be invoked from multiple threads */
     Int32 m_minLogLevel;
 
     CTestCaptureLogger( void )
@@ -153,6 +179,7 @@ class CTestCaptureLogger : public CORE::CILogger
     {
         if ( logLevel >= m_minLogLevel )
         {
+            MT::CScopeMutex lock( m_lock );
             SEntry entry;
             entry.logMsgType = logMsgType;
             entry.logLevel = logLevel;
@@ -180,6 +207,7 @@ class CTestCaptureLogger : public CORE::CILogger
     {
         if ( logLevel >= m_minLogLevel )
         {
+            MT::CScopeMutex lock( m_lock );
             SEntry entry;
             entry.logMsgType = logMsgType;
             entry.logLevel = logLevel;
@@ -250,6 +278,112 @@ PreDrainThreadBuffer( void )
 {
     CORE::CLogStreamScope::FlushLogs();
 }
+
+/*-------------------------------------------------------------------------*/
+
+/**
+ *  Counts the captured entries whose message contains the given substring
+ *  and verifies the entries that do are attributed to the expected thread
+ */
+static UInt32
+CountEntriesWith( CTestCaptureLogger& logger         ,
+                  const CORE::CString& substr       ,
+                  UInt32 expectedThreadId           ,
+                  UInt32& entriesWithWrongThreadId  )
+{
+    MT::CScopeMutex lock( logger.m_lock );
+    UInt32 count = 0;
+    entriesWithWrongThreadId = 0;
+    for ( size_t i=0; i<logger.m_entries.size(); ++i )
+    {
+        if ( logger.m_entries[ i ].logMessage.HasSubstr( substr ) >= 0 )
+        {
+            ++count;
+            if ( logger.m_entries[ i ].threadId != expectedThreadId )
+                ++entriesWithWrongThreadId;
+        }
+    }
+    return count;
+}
+
+/*-------------------------------------------------------------------------*/
+
+/**
+ *  Counts the lines in the given text which contain the given substring
+ */
+static UInt32
+CountLinesWith( const CORE::CString& text   ,
+                const CORE::CString& substr )
+{
+    UInt32 count = 0;
+    CORE::CString::StringVector lines = text.ParseElements( '\n', false );
+    for ( size_t i=0; i<lines.size(); ++i )
+    {
+        if ( lines[ i ].HasSubstr( substr ) >= 0 )
+            ++count;
+    }
+    return count;
+}
+
+/*-------------------------------------------------------------------------*/
+
+static const UInt32 LoggingTestNrOfWorkerThreads = 4;
+static const UInt32 LoggingTestNrOfMsgsPerThread = 200;
+
+/**
+ *  Worker thread which logs a fixed set of messages and then finishes
+ */
+class CLoggingTestWorker : public MT::CActiveObject
+{
+    public:
+
+    UInt32 workerIndex;
+    UInt32 threadId;     /**< set by the worker thread itself */
+
+    CLoggingTestWorker( UInt32 index )
+        : MT::CActiveObject()
+        , workerIndex( index )
+        , threadId( 0 )
+    {}
+
+    virtual ~CLoggingTestWorker()
+    {}
+
+    /** blocks until the worker thread finished or the timeout expired, returns whether it finished */
+    bool WaitForCompletion( UInt32 timeoutInMs )
+    {
+        UInt32 waitedInMs = 0;
+        while ( IsActive() && waitedInMs < timeoutInMs )
+        {
+            MT::ThreadDelay( 5 );
+            waitedInMs += 5;
+        }
+        return !IsActive();
+    }
+
+    virtual const MT::CILockable* AsLockable( void ) const GUCEF_VIRTUAL_OVERRIDE
+    {
+        return this;
+    }
+
+    protected:
+
+    virtual bool OnThreadStart( void* taskdata ) GUCEF_VIRTUAL_OVERRIDE
+    {
+        return true;
+    }
+
+    virtual bool OnThreadCycle( void* taskdata ) GUCEF_VIRTUAL_OVERRIDE
+    {
+        threadId = MT::GetCurrentTaskID();
+        CORE::CString prefix = "MTLogTest-Worker" + CORE::ToString( workerIndex ) + "-Msg";
+        for ( UInt32 i=0; i<LoggingTestNrOfMsgsPerThread; ++i )
+        {
+            GUCEF_LOG( CORE::LOGLEVEL_NORMAL, prefix + CORE::ToString( i ) + "-End" );
+        }
+        return true; // done, the thread ends
+    }
+};
 
 /*-------------------------------------------------------------------------*/
 
@@ -711,6 +845,179 @@ PerformLoggingTests( void )
         ASSERT_TRUE( captureLogger.HasEntryWith( "BootstrapQueueMessage" ) );
 
         logMgr.RemoveLogger( &captureLogger );
+    GUCEF_TESTFW_TESTCASE_END
+
+    // Test 21: Single threaded application, all logging from the main thread
+    // Verifies that every message reaches both an in-memory logger and a file based CStdLogger
+    GUCEF_TESTFW_TESTCASE( "Test 21: Single threaded logging from the main thread reaches all loggers" )
+        try
+        {
+            GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Test 21: Single threaded logging from the main thread reaches all loggers" );
+            PreDrainThreadBuffer();
+
+            CORE::CLogManager& logMgr = CORE::CCoreGlobal::Instance()->GetLogManager();
+            CORE::CString logFilePath = CORE::CombinePath( CORE::TempDir(), "gucefCORE_TestApp_LoggingTest21_" + CORE::ToString( MT::GetCurrentTaskID() ) + ".txt" );
+
+            CTestCaptureLogger captureLogger;
+            {
+                CORE::CFileAccess logFile( logFilePath, "w" );
+                ASSERT_TRUE( logFile.IsValid() );
+                CORE::CStdLogger fileLogger( logFile );
+
+                logMgr.AddLogger( &captureLogger );
+                logMgr.AddLogger( &fileLogger );
+
+                for ( UInt32 i=0; i<LoggingTestNrOfMsgsPerThread; ++i )
+                    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "STLogTest-Main-Msg" + CORE::ToString( i ) + "-End" );
+
+                logMgr.FlushLogs();
+                logMgr.RemoveLogger( &fileLogger );
+                logMgr.RemoveLogger( &captureLogger );
+            }
+
+            UInt32 wrongThreadIds = 0;
+            ASSERT_TRUE( LoggingTestNrOfMsgsPerThread == CountEntriesWith( captureLogger, "STLogTest-Main-Msg", MT::GetCurrentTaskID(), wrongThreadIds ) );
+            ASSERT_TRUE( 0 == wrongThreadIds );
+            for ( UInt32 i=0; i<LoggingTestNrOfMsgsPerThread; ++i )
+                ASSERT_TRUE( captureLogger.HasEntryWith( "STLogTest-Main-Msg" + CORE::ToString( i ) + "-End" ) );
+
+            CORE::CString fileContent;
+            ASSERT_TRUE( CORE::LoadTextFileAsString( logFilePath, fileContent ) );
+            UInt32 fileLineCount = CountLinesWith( fileContent, "STLogTest-Main-Msg" );
+            GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Test 21: Found " + CORE::ToString( fileLineCount ) + " of " + CORE::ToString( LoggingTestNrOfMsgsPerThread ) + " expected lines in log file " + logFilePath );
+            ASSERT_TRUE( LoggingTestNrOfMsgsPerThread == fileLineCount );
+            if ( LoggingTestNrOfMsgsPerThread == fileLineCount )
+                CORE::DeleteFile( logFilePath );
+        }
+        catch ( ... )
+        {
+            ERRORHERE;
+        }
+    GUCEF_TESTFW_TESTCASE_END
+
+    // Test 22: Multi threaded application, logging from the main thread and from worker threads concurrently
+    // Verifies that no message is lost or duplicated, that each is attributed to the thread that logged it
+    // and that the file based CStdLogger receives everything as well
+    GUCEF_TESTFW_TESTCASE( "Test 22: Multi threaded logging from main and worker threads reaches all loggers" )
+        try
+        {
+            GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Test 22: Multi threaded logging from main and worker threads reaches all loggers" );
+            PreDrainThreadBuffer();
+
+            CORE::CLogManager& logMgr = CORE::CCoreGlobal::Instance()->GetLogManager();
+            CORE::CString logFilePath = CORE::CombinePath( CORE::TempDir(), "gucefCORE_TestApp_LoggingTest22_" + CORE::ToString( MT::GetCurrentTaskID() ) + ".txt" );
+            UInt32 mainThreadId = MT::GetCurrentTaskID();
+
+            std::vector< CLoggingTestWorker* > workers;
+            for ( UInt32 w=0; w<LoggingTestNrOfWorkerThreads; ++w )
+                workers.push_back( GUCEF_NEW CLoggingTestWorker( w ) );
+
+            CTestCaptureLogger captureLogger;
+            {
+                CORE::CFileAccess logFile( logFilePath, "w" );
+                ASSERT_TRUE( logFile.IsValid() );
+                CORE::CStdLogger fileLogger( logFile );
+
+                logMgr.AddLogger( &captureLogger );
+                logMgr.AddLogger( &fileLogger );
+
+                for ( UInt32 w=0; w<LoggingTestNrOfWorkerThreads; ++w )
+                    ASSERT_TRUE( workers[ w ]->Activate() );
+
+                // The main thread logs concurrently with the workers
+                for ( UInt32 i=0; i<LoggingTestNrOfMsgsPerThread; ++i )
+                    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "MTLogTest-Main-Msg" + CORE::ToString( i ) + "-End" );
+
+                for ( UInt32 w=0; w<LoggingTestNrOfWorkerThreads; ++w )
+                    ASSERT_TRUE( workers[ w ]->WaitForCompletion( 30000 ) );
+
+                // Drain everything that was logged, by all threads, into the loggers
+                logMgr.FlushLogs();
+                logMgr.RemoveLogger( &fileLogger );
+                logMgr.RemoveLogger( &captureLogger );
+            }
+
+            UInt32 wrongThreadIds = 0;
+            UInt32 totalMismatches = 0;
+            UInt32 captured = CountEntriesWith( captureLogger, "MTLogTest-Main-Msg", mainThreadId, wrongThreadIds );
+            CORE::CString fileContent;
+            ASSERT_TRUE( CORE::LoadTextFileAsString( logFilePath, fileContent ) );
+            UInt32 inFile = CountLinesWith( fileContent, "MTLogTest-Main-Msg" );
+            GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Test 22: main thread: captured " + CORE::ToString( captured ) + " (wrong thread id: " + CORE::ToString( wrongThreadIds ) +
+                       "), in file " + CORE::ToString( inFile ) + ", expected " + CORE::ToString( LoggingTestNrOfMsgsPerThread ) );
+            ASSERT_TRUE( LoggingTestNrOfMsgsPerThread == captured );
+            ASSERT_TRUE( 0 == wrongThreadIds );
+            ASSERT_TRUE( LoggingTestNrOfMsgsPerThread == inFile );
+            if ( LoggingTestNrOfMsgsPerThread != captured || 0 != wrongThreadIds || LoggingTestNrOfMsgsPerThread != inFile )
+                ++totalMismatches;
+
+            for ( UInt32 w=0; w<LoggingTestNrOfWorkerThreads; ++w )
+            {
+                CORE::CString prefix = "MTLogTest-Worker" + CORE::ToString( w ) + "-Msg";
+                ASSERT_TRUE( 0 != workers[ w ]->threadId && mainThreadId != workers[ w ]->threadId );
+                captured = CountEntriesWith( captureLogger, prefix, workers[ w ]->threadId, wrongThreadIds );
+                inFile = CountLinesWith( fileContent, prefix );
+                GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Test 22: worker " + CORE::ToString( w ) + ": captured " + CORE::ToString( captured ) + " (wrong thread id: " + CORE::ToString( wrongThreadIds ) +
+                           "), in file " + CORE::ToString( inFile ) + ", expected " + CORE::ToString( LoggingTestNrOfMsgsPerThread ) );
+                ASSERT_TRUE( LoggingTestNrOfMsgsPerThread == captured );
+                ASSERT_TRUE( 0 == wrongThreadIds );
+                ASSERT_TRUE( LoggingTestNrOfMsgsPerThread == inFile );
+                if ( LoggingTestNrOfMsgsPerThread != captured || 0 != wrongThreadIds || LoggingTestNrOfMsgsPerThread != inFile )
+                    ++totalMismatches;
+            }
+            for ( UInt32 w=0; w<LoggingTestNrOfWorkerThreads; ++w )
+                GUCEF_DELETE workers[ w ];
+            if ( 0 == totalMismatches )
+                CORE::DeleteFile( logFilePath );
+            else
+                GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Test 22: kept log file for inspection: " + logFilePath );
+        }
+        catch ( ... )
+        {
+            ERRORHERE;
+        }
+    GUCEF_TESTFW_TESTCASE_END
+
+    // Test 23: Multi threaded application, worker threads log while the main thread keeps pulsing
+    // In a real application nobody calls FlushLogs() explicitly: the main thread pulse drains the per-thread buffers.
+    // Verifies worker output reaches the loggers through that pulse driven path alone.
+    GUCEF_TESTFW_TESTCASE( "Test 23: Worker thread logging reaches loggers via the main thread pulse" )
+        try
+        {
+            GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Test 23: Worker thread logging reaches loggers via the main thread pulse" );
+            PreDrainThreadBuffer();
+
+            CORE::CLogManager& logMgr = CORE::CCoreGlobal::Instance()->GetLogManager();
+            CORE::PulseGeneratorPtr pulseGenerator = CORE::CCoreGlobal::Instance()->GetPulseGenerator();
+            ASSERT_TRUE( !pulseGenerator.IsNULL() );
+
+            CTestCaptureLogger captureLogger;
+            logMgr.AddLogger( &captureLogger );
+
+            CLoggingTestWorker worker( 100 );
+            ASSERT_TRUE( worker.Activate() );
+            ASSERT_TRUE( worker.WaitForCompletion( 30000 ) );
+
+            // Pulse the main thread pulse generator instead of flushing explicitly
+            UInt32 wrongThreadIds = 0;
+            CORE::CString prefix = "MTLogTest-Worker100-Msg";
+            for ( UInt32 p=0; p<100; ++p )
+            {
+                pulseGenerator->ForceDirectPulse();
+                if ( LoggingTestNrOfMsgsPerThread == CountEntriesWith( captureLogger, prefix, worker.threadId, wrongThreadIds ) )
+                    break;
+                MT::ThreadDelay( 10 );
+            }
+
+            ASSERT_TRUE( LoggingTestNrOfMsgsPerThread == CountEntriesWith( captureLogger, prefix, worker.threadId, wrongThreadIds ) );
+            ASSERT_TRUE( 0 == wrongThreadIds );
+
+            logMgr.RemoveLogger( &captureLogger );
+        }
+        catch ( ... )
+        {
+            ERRORHERE;
+        }
     GUCEF_TESTFW_TESTCASE_END
 
     CORE::CLogStreamScope::FlushLogs();

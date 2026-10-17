@@ -26,6 +26,11 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#ifndef _WIN32
+#include <strings.h>
+#define _stricmp strcasecmp   /* the case insensitive compare has another name outside of Windows */
+#endif
+
 #include "imgpluginFreeImage.h" /* function prototypes for this plugin */
 
 #ifndef FREEIMAGE_H

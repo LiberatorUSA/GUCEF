@@ -23,6 +23,7 @@
 //-------------------------------------------------------------------------*/
 
 #include <stdlib.h>               /* for memory utils */
+#include <string.h>               /* for memset */
 
 #include "zlib.h"
 
@@ -81,39 +82,51 @@ static const int WINDOW_BITS_GZIP_OR_ZLIB_AUTO  =   47;
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+/**
+ *  Writes all of the given bytes to the output, also when the output only accepts part of the data per write call
+ *  Returns 1 on success and 0 if the output stops accepting data
+ */
+static int
+WriteAllToOutput( TIOAccess* output    ,
+                  const UInt8* data    ,
+                  UInt32 dataSize      )
+{
+    while ( dataSize > 0 )
+    {
+        UInt32 bytesWritten = output->write( output, data, 1, dataSize );
+        if ( 0 == bytesWritten || bytesWritten > dataSize )
+            return 0;
+        data += bytesWritten;
+        dataSize -= bytesWritten;
+    }
+    return 1;
+}
+
+/*---------------------------------------------------------------------------*/
+
 UInt32
 ZLibCompress( TIOAccess* input  ,
               TIOAccess* output ,
               int windowBits    )
 {
-    int zlibResult = 0;
-    UInt32 inputBytesRead = 0;
-    UInt32 outputBytesWritten = 0;
+    int zlibResult = Z_OK;
+    int flushMode = Z_NO_FLUSH;
+    UInt32 success = 1;
     UInt8* tempInputBuffer = (UInt8*) malloc( TEMP_READ_BUFFER_SIZE );
     UInt8* tempOutputBuffer = (UInt8*) malloc( TEMP_INPROCESS_BUFFER_SIZE );
-    UInt32 tempOutputBufferSize = TEMP_INPROCESS_BUFFER_SIZE;
     z_stream strm;
 
-    if ( GUCEF_NULL == tempInputBuffer )
+    if ( GUCEF_NULL == tempInputBuffer || GUCEF_NULL == tempOutputBuffer )
     {
-        if ( GUCEF_NULL != tempOutputBuffer )
-            free( tempOutputBuffer );
-        return 0;
-    }
-    if ( GUCEF_NULL == tempOutputBuffer )
-    {
-        if ( GUCEF_NULL != tempInputBuffer )
-            free( tempInputBuffer );
+        free( tempInputBuffer );
+        free( tempOutputBuffer );
         return 0;
     }
 
+    memset( &strm, 0, sizeof( strm ) );
     strm.zalloc = Z_NULL;
     strm.zfree = Z_NULL;
     strm.opaque = Z_NULL;
-    strm.next_in = tempInputBuffer;
-    strm.avail_in = TEMP_READ_BUFFER_SIZE;
-    strm.next_out = tempOutputBuffer;
-    strm.avail_out = tempOutputBufferSize;
 
     zlibResult = deflateInit2( &strm, Z_BEST_COMPRESSION, Z_DEFLATED, windowBits, 8, Z_DEFAULT_STRATEGY );
     if ( Z_OK != zlibResult )
@@ -123,73 +136,45 @@ ZLibCompress( TIOAccess* input  ,
         return 0;
     }
 
-    /* read blocks of data from input and encode them and write them to the output */
-    inputBytesRead = input->read( input, tempInputBuffer, 1, TEMP_READ_BUFFER_SIZE );
-    strm.avail_in = inputBytesRead;
-    while ( 0 != inputBytesRead )
+    /* read blocks of data from the input, encode them and write them to the output */
+    /* once the input is exhausted we finish the stream which also writes any trailer info */
+    do
     {
+        strm.avail_in = input->read( input, tempInputBuffer, 1, TEMP_READ_BUFFER_SIZE );
+        strm.next_in = tempInputBuffer;
+        flushMode = ( 0 == strm.avail_in ) ? Z_FINISH : Z_NO_FLUSH;
+
+        /* keep deflating until deflate no longer fills up the entire output buffer */
         do
         {
-            int res = deflate( &strm, Z_NO_FLUSH );
-            if ( Z_OK != res && Z_STREAM_END != res )
-            {
-                free( tempInputBuffer );
-                free( tempOutputBuffer );
-                return 0;
-            }
-
-            if ( 0 == strm.avail_out )
-            {
-                UInt32 bytesLeft = 0;
-                outputBytesWritten = output->write( output, tempOutputBuffer, 1, TEMP_INPROCESS_BUFFER_SIZE );
-                /* if everything went Ok outputBytesWritten should match TEMP_INPROCESS_BUFFER_SIZE */
-                bytesLeft = (TEMP_INPROCESS_BUFFER_SIZE - outputBytesWritten);
-
-                /* make the full output buffer available again as we have written everything to the output */
-                strm.next_out = tempOutputBuffer + bytesLeft;
-                strm.avail_out = TEMP_INPROCESS_BUFFER_SIZE - bytesLeft;
-            }
-        }
-        while ( 0 != strm.avail_in );
-
-        inputBytesRead = input->read( input, tempInputBuffer, 1, TEMP_READ_BUFFER_SIZE );
-
-        /* make the max nr of bytes read available again in the read buffer as we have filled it with new data and moved back the cursor */
-        strm.next_in = tempInputBuffer;
-        strm.avail_in = inputBytesRead;
-    }
-    outputBytesWritten = output->write( output, tempOutputBuffer, 1, ( TEMP_INPROCESS_BUFFER_SIZE - strm.avail_out ) );
-
-    /* make the full output buffer available again as we have written everything to the output */
-    strm.next_out = tempOutputBuffer;
-    strm.avail_out = TEMP_INPROCESS_BUFFER_SIZE;
-
-    /* finish the process by writing any trailer info */
-    outputBytesWritten = 0;
-    zlibResult = Z_OK;
-    while ( Z_OK == zlibResult )
-    {
-        uInt availOutBefore = 0;
-        if ( 0 == strm.avail_out )
-        {
-            output->write( output, tempOutputBuffer, 1, TEMP_INPROCESS_BUFFER_SIZE );
-
             strm.next_out = tempOutputBuffer;
             strm.avail_out = TEMP_INPROCESS_BUFFER_SIZE;
-        }
 
-        availOutBefore = strm.avail_out;
-        zlibResult = deflate( &strm, Z_FINISH );
-        outputBytesWritten += availOutBefore - strm.avail_out;
+            zlibResult = deflate( &strm, flushMode );
+            if ( Z_STREAM_ERROR == zlibResult )
+            {
+                success = 0;
+                break;
+            }
+
+            if ( 0 == WriteAllToOutput( output, tempOutputBuffer, TEMP_INPROCESS_BUFFER_SIZE - strm.avail_out ) )
+            {
+                success = 0;
+                break;
+            }
+        }
+        while ( 0 == strm.avail_out );
     }
-    output->write( output, tempOutputBuffer, 1, outputBytesWritten );
+    while ( 1 == success && Z_FINISH != flushMode );
+
+    if ( 1 == success && Z_STREAM_END != zlibResult )
+        success = 0;
 
     deflateEnd( &strm );
-
     free( tempInputBuffer );
     free( tempOutputBuffer );
 
-    return Z_STREAM_END == zlibResult ? 1 : 0;
+    return success;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -199,34 +184,25 @@ ZLibDecompress( TIOAccess* input  ,
                 TIOAccess* output ,
                 int windowBits    )
 {
-    int zlibResult = 0;
-    UInt32 inputBytesRead = 0;
-    UInt32 outputBytesWritten = 0;
+    int zlibResult = Z_OK;
+    UInt32 success = 1;
     UInt8* tempInputBuffer = (UInt8*) malloc( TEMP_READ_BUFFER_SIZE );
     UInt8* tempOutputBuffer = (UInt8*) malloc( TEMP_INPROCESS_BUFFER_SIZE );
-    UInt32 tempOutputBufferSize = TEMP_INPROCESS_BUFFER_SIZE;
     z_stream strm;
 
-    if ( GUCEF_NULL == tempInputBuffer )
+    if ( GUCEF_NULL == tempInputBuffer || GUCEF_NULL == tempOutputBuffer )
     {
-        if ( GUCEF_NULL != tempOutputBuffer )
-            free( tempOutputBuffer );
-        return 0;
-    }
-    if ( GUCEF_NULL == tempOutputBuffer )
-    {
-        if ( GUCEF_NULL != tempInputBuffer )
-            free( tempInputBuffer );
+        free( tempInputBuffer );
+        free( tempOutputBuffer );
         return 0;
     }
 
+    memset( &strm, 0, sizeof( strm ) );
     strm.zalloc = Z_NULL;
     strm.zfree = Z_NULL;
     strm.opaque = Z_NULL;
-    strm.next_in = tempInputBuffer;
-    strm.avail_in = TEMP_READ_BUFFER_SIZE;
-    strm.next_out = tempOutputBuffer;
-    strm.avail_out = tempOutputBufferSize;
+    strm.next_in = Z_NULL;
+    strm.avail_in = 0;
 
     zlibResult = inflateInit2( &strm, windowBits );
     if ( Z_OK != zlibResult )
@@ -236,72 +212,49 @@ ZLibDecompress( TIOAccess* input  ,
         return 0;
     }
 
-    /* read blocks of data from input and encode them and write them to the output */
-    inputBytesRead = input->read( input, tempInputBuffer, 1, TEMP_READ_BUFFER_SIZE );
-    strm.avail_in = inputBytesRead;
-    while ( 0 != inputBytesRead )
+    /* read blocks of data from the input, decode them and write them to the output until the end of the stream */
+    do
     {
+        strm.avail_in = input->read( input, tempInputBuffer, 1, TEMP_READ_BUFFER_SIZE );
+        strm.next_in = tempInputBuffer;
+        if ( 0 == strm.avail_in )
+        {
+            /* the input ended before the end of the compressed stream */
+            break;
+        }
+
+        /* keep inflating until inflate no longer fills up the entire output buffer */
         do
         {
-            int res = inflate( &strm, Z_NO_FLUSH );
-            if ( Z_OK != res && Z_STREAM_END != res )
-            {
-                free( tempInputBuffer );
-                free( tempOutputBuffer );
-                return 0;
-            }
-
-            if ( 0 == strm.avail_out )
-            {
-                UInt32 bytesLeft = 0;
-                outputBytesWritten = output->write( output, tempOutputBuffer, 1, TEMP_INPROCESS_BUFFER_SIZE );
-                /* if everything went Ok outputBytesWritten should match TEMP_INPROCESS_BUFFER_SIZE */
-                bytesLeft = (TEMP_INPROCESS_BUFFER_SIZE - outputBytesWritten);
-
-                /* make the full output buffer available again as we have written everything to the output */
-                strm.next_out = tempOutputBuffer + bytesLeft;
-                strm.avail_out = TEMP_INPROCESS_BUFFER_SIZE - bytesLeft;
-            }
-        }
-        while ( 0 != strm.avail_in );
-
-        inputBytesRead = input->read( input, tempInputBuffer, 1, TEMP_READ_BUFFER_SIZE );
-
-        /* make the max nr of bytes read available again in the read buffer as we have filled it with new data and moved back the cursor */
-        strm.next_in = tempInputBuffer;
-        strm.avail_in = inputBytesRead;
-    }
-    outputBytesWritten = output->write( output, tempOutputBuffer, 1, ( TEMP_INPROCESS_BUFFER_SIZE - strm.avail_out ) );
-
-    /* make the full output buffer available again as we have written everything to the output */
-    strm.next_out = tempOutputBuffer;
-    strm.avail_out = TEMP_INPROCESS_BUFFER_SIZE;
-
-    outputBytesWritten = 0;
-    zlibResult = Z_OK;
-    while ( Z_OK == zlibResult )
-    {
-        uInt availOutBefore = 0;
-        if ( 0 == strm.avail_out )
-        {
-            output->write( output, tempOutputBuffer, 1, TEMP_INPROCESS_BUFFER_SIZE );
-
             strm.next_out = tempOutputBuffer;
             strm.avail_out = TEMP_INPROCESS_BUFFER_SIZE;
-        }
 
-        availOutBefore = strm.avail_out;
-        zlibResult = inflate( &strm, Z_FINISH );
-        outputBytesWritten += availOutBefore - strm.avail_out;
+            zlibResult = inflate( &strm, Z_NO_FLUSH );
+            if ( Z_STREAM_ERROR == zlibResult || Z_NEED_DICT == zlibResult ||
+                 Z_DATA_ERROR == zlibResult || Z_MEM_ERROR == zlibResult )
+            {
+                success = 0;
+                break;
+            }
+
+            if ( 0 == WriteAllToOutput( output, tempOutputBuffer, TEMP_INPROCESS_BUFFER_SIZE - strm.avail_out ) )
+            {
+                success = 0;
+                break;
+            }
+        }
+        while ( 0 == strm.avail_out );
     }
-    output->write( output, tempOutputBuffer, 1, outputBytesWritten );
+    while ( 1 == success && Z_STREAM_END != zlibResult );
+
+    if ( 1 == success && Z_STREAM_END != zlibResult )
+        success = 0;
 
     inflateEnd( &strm );
-
     free( tempInputBuffer );
     free( tempOutputBuffer );
 
-    return Z_STREAM_END == zlibResult;
+    return success;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -321,12 +274,14 @@ GenerateCRC32Checksum( TIOAccess* input  ,
     while ( 0 == input->eof( input ) )
     {
         inputBytesRead = input->read( input, tempInputBuffer, 1, TEMP_READ_CHECKSUM_BUFFER_SIZE );
+        if ( 0 == inputBytesRead )
+            break;
         checksum = crc32( checksum, tempInputBuffer, inputBytesRead );
     }
 
     /* produce the result checksum */
     finalChecksum = (UInt32) checksum;
-    if ( 1 == output->write( output, &finalChecksum, 1, sizeof(finalChecksum) ) )
+    if ( 1 == output->write( output, &finalChecksum, sizeof(finalChecksum), 1 ) )
         return 1;
     return 0;
 }
@@ -348,12 +303,14 @@ GenerateAdler32Checksum( TIOAccess* input  ,
     while ( 0 == input->eof( input ) )
     {
         inputBytesRead = input->read( input, tempInputBuffer, 1, TEMP_READ_CHECKSUM_BUFFER_SIZE );
+        if ( 0 == inputBytesRead )
+            break;
         checksum = adler32( checksum, tempInputBuffer, inputBytesRead );
     }
 
     /* produce the result checksum */
     finalChecksum = (UInt32) checksum;
-    if ( 1 == output->write( output, &finalChecksum, 1, sizeof(finalChecksum) ) )
+    if ( 1 == output->write( output, &finalChecksum, sizeof(finalChecksum), 1 ) )
         return 1;
     return 0;
 }

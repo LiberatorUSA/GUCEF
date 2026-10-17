@@ -4,8 +4,11 @@ dependencies/json-parser/*
 dependencies/libparsifal/*
 dependencies/libyaml/*
 dependencies/protobuf/src/*
+dependencies/stbrumme-hash-library/*
 platform/gucefCORE/*
 platform/gucefMT/*
+plugins/CORE/codecspluginSTBRUMMEHASH/*
+plugins/CORE/codecspluginZLIB/*
 plugins/CORE/dstorepluginJSONPARSER/*
 plugins/CORE/dstorepluginPARSIFALXML/*
 plugins/CORE/dstorepluginPROTOBUF/*

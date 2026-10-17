@@ -43,10 +43,6 @@
 #define GUCEF_CORE_CNOTIFYINGMAPEVENTS_H
 #endif /* GUCEF_CORE_CNOTIFYINGMAPEVENTS_H ? */
 
-#ifndef GUCEF_CORE_CFILEURLHANDLER_H
-#include "CFileURLHandler.h"
-#define GUCEF_CORE_CFILEURLHANDLER_H
-#endif /* GUCEF_CORE_CFILEURLHANDLER_H ? */
 
 #ifndef GUCEF_CORE_CONFIGSTORE_H
 #include "CConfigStore.h"               /* centralized configuration management */
@@ -113,10 +109,6 @@
 #define GUCEF_CORE_CNOTIFICATIONIDREGISTRY_H
 #endif /* GUCEF_CORE_CNOTIFICATIONIDREGISTRY_H ? */
 
-#ifndef GUCEF_CORE_CURLHANDLERREGISTRY_H
-#include "CURLHandlerRegistry.h"
-#define GUCEF_CORE_CURLHANDLERREGISTRY_H
-#endif /* GUCEF_CORE_CURLHANDLERREGISTRY_H ? */
 
 #ifndef GUCEF_CORE_CDSTORECODECREGISTRY_H
 #include "CDStoreCodecRegistry.h"
@@ -333,7 +325,6 @@ CCoreGlobal::Initialize( void )
     CPluginControl::RegisterEvents();
     CStreamerEvents::RegisterEvents();
     CTimer::RegisterEvents();    
-    CIURLEvents::RegisterEvents();
     CNotifyingMapEvents::RegisterEvents();    
     CTaskDelegator::RegisterEvents();
     CTaskConsumer::RegisterEvents();
@@ -379,14 +370,12 @@ CCoreGlobal::Initialize( void )
     m_dstoreCodecPluginManager = GUCEF_NEW CDStoreCodecPluginManager();
     m_genericPluginManager = GUCEF_NEW CGenericPluginManager();
     m_stdCodecPluginManager = GUCEF_NEW CStdCodecPluginManager();        
-    m_urlHandlerRegistry = GUCEF_NEW CURLHandlerRegistry();
     m_uriResourceAccessorFactory = GUCEF_NEW CUriResourceAccessorFactory();
     m_functionRegistry = GUCEF_NEW CFunctionRegistry();
 
     /*
      *      Register some default URI handlers
      */
-    m_urlHandlerRegistry->Register( "file", CURLHandlerRegistry::TRegisteredObjTypedPtr( GUCEF_NEW CFileURLHandler() ) ); // <- legacy version. @deprecated
     m_uriResourceAccessorFactory->RegisterConcreteFactory( CFileSystemUriResourceAccessor::SchemeName, &g_fileSystemUriResourceAccessorFactory );
     m_uriResourceAccessorFactory->RegisterConcreteFactory( CDataUriResourceAccessor::SchemeName, &g_dataUriResourceAccessorFactory );
 
@@ -405,7 +394,6 @@ CCoreGlobal::Initialize( void )
 CCoreGlobal::CCoreGlobal( void )
     : m_pulseGenerator()
     , m_taskManager( GUCEF_NULL )                
-    , m_urlHandlerRegistry( GUCEF_NULL )         
     , m_dstoreCodecRegistry( GUCEF_NULL )        
     , m_dataDrivenDStoreCodecFactory( GUCEF_NULL )
     , m_exclusiveActivationManager( GUCEF_NULL ) 
@@ -439,7 +427,6 @@ CCoreGlobal::~CCoreGlobal()
     m_taskManager->RequestAllThreadsToStop( true, false, GUCEF_MT_INFINITE_LOCK_TIMEOUT );
    
     m_uriResourceAccessorFactory->UnregisterAllConcreteFactories();
-    m_urlHandlerRegistry->UnregisterAll();
     m_codecRegistry->UnregisterAll();
     m_dstoreCodecRegistry->UnregisterAll();
     m_dataDrivenDStoreCodecFactory->UnregisterAllConcreteFactories();
@@ -455,8 +442,6 @@ CCoreGlobal::~CCoreGlobal()
      */
     GUCEF_DELETE m_taskManager;
     m_taskManager = GUCEF_NULL;
-    GUCEF_DELETE m_urlHandlerRegistry;
-    m_urlHandlerRegistry = GUCEF_NULL;
     GUCEF_DELETE m_uriResourceAccessorFactory;
     m_uriResourceAccessorFactory = GUCEF_NULL;
     GUCEF_DELETE m_dstoreCodecRegistry;
@@ -603,14 +588,6 @@ CCoreGlobal::GetNotificationIDRegistry( void )
 
 /*-------------------------------------------------------------------------*/
 
-CURLHandlerRegistry&
-CCoreGlobal::GetUrlHandlerRegistry( void )
-{GUCEF_TRACE;
-
-    return *m_urlHandlerRegistry;
-}
-
-/*-------------------------------------------------------------------------*/
 
 CUriResourceAccessorFactory& 
 CCoreGlobal::GetUriResourceAccessorFactory( void )

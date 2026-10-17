@@ -188,6 +188,7 @@ CVFS::CVFS( void )
     , m_asyncOpsThreadpool( DefaultASyncOpsThreadPoolName )
     , m_asyncOpsMinWorkerThreads( 0 )
     , m_abstractArchiveFactory()
+    , m_abstractArchiveWriterFactory()
     , m_fileSystemArchiveFactory()
     , m_delayMountedArchiveSettings()
     , m_delayedArchiveMountingIsComplete( false )
@@ -268,6 +269,7 @@ CVFS::UnregisterAllArchiveFactories( void )
 
     MT::CScopeWriterLock lock( m_rwdataLock );
     m_abstractArchiveFactory.UnregisterAllConcreteFactories();
+    m_abstractArchiveWriterFactory.UnregisterAllConcreteFactories();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -3281,6 +3283,52 @@ CVFS::UnregisterArchiveFactory( const CString& archiveType )
     m_abstractArchiveFactory.UnregisterConcreteFactory( archiveType );
 
     GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "Unregistered VFS archive factory for type \"" + archiveType + "\"" );
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CVFS::RegisterArchiveWriterFactory( const CString& archiveType            ,
+                                    TArchiveWriterFactory& writerFactory )
+{GUCEF_TRACE;
+
+    m_abstractArchiveWriterFactory.RegisterConcreteFactory( archiveType, &writerFactory );
+
+    GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "Registered VFS archive writer factory for type \"" + archiveType + "\"" );
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CVFS::UnregisterArchiveWriterFactory( const CString& archiveType )
+{GUCEF_TRACE;
+
+    m_abstractArchiveWriterFactory.UnregisterConcreteFactory( archiveType );
+
+    GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "Unregistered VFS archive writer factory for type \"" + archiveType + "\"" );
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CVFS::GetListOfSupportedArchiveWriterTypes( TAbstractArchiveWriterFactory::TKeySet& outList ) const
+{GUCEF_TRACE;
+
+    m_abstractArchiveWriterFactory.ObtainKeySet( outList );
+}
+
+/*-------------------------------------------------------------------------*/
+
+CVFS::TArchiveWriterPtr
+CVFS::CreateArchiveWriter( const CString& archiveType ) const
+{GUCEF_TRACE;
+
+    TArchiveWriterPtr writer = m_abstractArchiveWriterFactory.Create( archiveType );
+    if ( writer.IsNULL() )
+    {
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "VFS: No archive writer is available for archive type \"" + archiveType + "\", is the plugin providing it loaded?" );
+    }
+    return writer;
 }
 
 /*-------------------------------------------------------------------------*/

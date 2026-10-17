@@ -14,12 +14,16 @@
 set( HEADER_FILES 
   include/TestASync.h
   include/TestAbstractFactory.h
+  include/TestAsyncUriResourceRetriever.h
+  include/TestCodecPlugins.h
   include/TestCronSchedule.h
   include/TestCyclicDynamicBuffer.h
+  include/TestDStoreStreaming.h
   include/TestDataDrivenDStoreCodecs.h
   include/TestDataNodeBinarySerializer.h
   include/TestDateTime.h
   include/TestDateTimeRange.h
+  include/TestDesktopTerminalConsoleLogger.h
   include/TestDynamicBufferStringStream.h
   include/TestDynamicBufferSwap.h
   include/TestFileUtils.h
@@ -27,10 +31,14 @@ set( HEADER_FILES
   include/TestIniParser.h
   include/TestLogging.h
   include/TestNotifierObserver.h
+  include/TestProcess.h
+  include/TestRandom.h
+  include/TestRateLimiting.h
   include/TestSchedule.h
   include/TestSharedPtr.h
   include/TestStopwatch.h
   include/TestString.h
+  include/TestThreadPoolCancellation.h
   include/TestTimestamp.h
   include/TestTokenizer.h
   include/TestUri.h
@@ -39,18 +47,23 @@ set( HEADER_FILES
   include/TestVariantStream.h
   include/TestVars.h
   include/TestVersion.h
+  include/TestXmlDStoreCodec.h
   src/TestFreeList.h
 )
 
 set( SOURCE_FILES 
   src/TestASync.cpp
   src/TestAbstractFactory.cpp
+  src/TestAsyncUriResourceRetriever.cpp
+  src/TestCodecPlugins.cpp
   src/TestCronSchedule.cpp
   src/TestCyclicDynamicBuffer.cpp
+  src/TestDStoreStreaming.cpp
   src/TestDataDrivenDStoreCodecs.cpp
   src/TestDataNodeBinarySerializer.cpp
   src/TestDateTime.cpp
   src/TestDateTimeRange.cpp
+  src/TestDesktopTerminalConsoleLogger.cpp
   src/TestDynamicBufferStringStream.cpp
   src/TestDynamicBufferSwap.cpp
   src/TestFileUtils.cpp
@@ -59,10 +72,14 @@ set( SOURCE_FILES
   src/TestIniParser.cpp
   src/TestLogging.cpp
   src/TestNotifierObserver.cpp
+  src/TestProcess.cpp
+  src/TestRandom.cpp
+  src/TestRateLimiting.cpp
   src/TestSchedule.cpp
   src/TestSharedPtr.cpp
   src/TestStopwatch.cpp
   src/TestString.cpp
+  src/TestThreadPoolCancellation.cpp
   src/TestTimestamp.cpp
   src/TestTokenizer.cpp
   src/TestUri.cpp
@@ -71,6 +88,7 @@ set( SOURCE_FILES
   src/TestVariantStream.cpp
   src/TestVars.cpp
   src/TestVersion.cpp
+  src/TestXmlDStoreCodec.cpp
   src/gucefCORE_TestApp_main.cpp
 )
 

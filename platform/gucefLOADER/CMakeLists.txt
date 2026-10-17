@@ -33,6 +33,8 @@ set( HEADER_FILES
   ../gucefCORE/include/gucefCORE_CDateTime.h
   ../gucefCORE/include/gucefCORE_CIDate.h
   ../gucefCORE/include/gucefCORE_CITime.h
+  ../gucefCORE/include/gucefCORE_CProcess.h
+  ../gucefCORE/include/gucefCORE_CRandom.h
   ../gucefCORE/include/gucefCORE_CResourceMetaData.h
   ../gucefCORE/include/gucefCORE_CString.h
   ../gucefCORE/include/gucefCORE_CTime.h
@@ -84,6 +86,8 @@ set( SOURCE_FILES
   ../gucefCORE/src/gucefCORE_CDateTime.cpp
   ../gucefCORE/src/gucefCORE_CIDate.cpp
   ../gucefCORE/src/gucefCORE_CITime.cpp
+  ../gucefCORE/src/gucefCORE_CProcess.cpp
+  ../gucefCORE/src/gucefCORE_CRandom.cpp
   ../gucefCORE/src/gucefCORE_CResourceMetaData.cpp
   ../gucefCORE/src/gucefCORE_CTime.cpp
   ../gucefCORE/src/gucefCORE_CTimestamp.cpp
@@ -101,15 +105,15 @@ set( SOURCE_FILES
   ../gucefMT/src/gucefMT_CObjectScopeReadOnlyLock.cpp
   ../gucefMT/src/gucefMT_CScopeMutex.cpp
   ../gucefMT/src/gucefMT_LockStatus.cpp
+  ../gucefMT/src/gucefMT_MUTEX.c
   ../gucefMT/src/gucefMT_ThreadStatus.cpp
   ../gucefMT/src/gucefMT_dvmtoswrap.c
-  ../gucefMT/src/gucefMT_mutex.c
   src/gucefLOADER.cpp
 )
 
 
 
-if (ANDROID32)
+if (ANDROID)
   set( PLATFORM_HEADER_FILES 
     ../gucefCORE/include/CDynamicBuffer.h
     ../gucefCORE/include/CDynamicBufferAccess.h
@@ -132,6 +136,110 @@ if (ANDROID32)
     ../gucefCORE/include/gucefCORE_CDateTime.h
     ../gucefCORE/include/gucefCORE_CIDate.h
     ../gucefCORE/include/gucefCORE_CITime.h
+    ../gucefCORE/include/gucefCORE_CProcess.h
+    ../gucefCORE/include/gucefCORE_CRandom.h
+    ../gucefCORE/include/gucefCORE_CResourceMetaData.h
+    ../gucefCORE/include/gucefCORE_CString.h
+    ../gucefCORE/include/gucefCORE_CTime.h
+    ../gucefCORE/include/gucefCORE_CTimestamp.h
+    ../gucefCORE/include/gucefCORE_CUtf16String.h
+    ../gucefCORE/include/gucefCORE_CUtf32String.h
+    ../gucefCORE/include/gucefCORE_CUtf8String.h
+    ../gucefCORE/include/gucefCORE_CVariant.h
+    ../gucefCORE/include/md5.h
+    ../gucefCORE/include/c_api/gucefCORE_c_ioaccess.h
+    ../gucefCORE/include/c_api/gucefCORE_c_variantdata.h
+    ../gucefMT/include/gucefMT_CICloneable.h
+    ../gucefMT/include/gucefMT_CILockable.h
+    ../gucefMT/include/gucefMT_CMutex.h
+    ../gucefMT/include/gucefMT_CNoLock.h
+    ../gucefMT/include/gucefMT_CObjectScopeLock.h
+    ../gucefMT/include/gucefMT_CObjectScopeReadOnlyLock.h
+    ../gucefMT/include/gucefMT_CScopeMutex.h
+    ../gucefMT/include/gucefMT_LockStatus.h
+    ../gucefMT/include/gucefMT_ThreadStatus.h
+    ../gucefMT/include/gucefMT_dvmtoswrap.h
+    ../gucefMT/include/gucefMT_mutex.h
+  )
+
+  set( PLATFORM_HEADER_INSTALL "ANDROID" )
+  source_group( "Platform Header Files" FILES ${PLATFORM_HEADER_FILES} )
+
+  set( PLATFORM_SOURCE_FILES 
+    ../gucefCORE/src/CDynamicBuffer.cpp
+    ../gucefCORE/src/CDynamicBufferAccess.cpp
+    ../gucefCORE/src/CException.cpp
+    ../gucefCORE/src/CFileAccess.cpp
+    ../gucefCORE/src/CICloneable.cpp
+    ../gucefCORE/src/CIOAccess.cpp
+    ../gucefCORE/src/CMsgException.cpp
+    ../gucefCORE/src/DVCPPOSWRAP.cpp
+    ../gucefCORE/src/DVOSWRAP.cpp
+    ../gucefCORE/src/IOACCESS.c
+    ../gucefCORE/src/MFILE.c
+    ../gucefCORE/src/PAFILE.c
+    ../gucefCORE/src/dvcppfileutils.cpp
+    ../gucefCORE/src/dvcppstringutils.cpp
+    ../gucefCORE/src/dvfileutils.cpp
+    ../gucefCORE/src/dvmd5utils.c
+    ../gucefCORE/src/dvstrutils.cpp
+    ../gucefCORE/src/gucefCORE_CAsciiString.cpp
+    ../gucefCORE/src/gucefCORE_CDate.cpp
+    ../gucefCORE/src/gucefCORE_CDateTime.cpp
+    ../gucefCORE/src/gucefCORE_CIDate.cpp
+    ../gucefCORE/src/gucefCORE_CITime.cpp
+    ../gucefCORE/src/gucefCORE_CProcess.cpp
+    ../gucefCORE/src/gucefCORE_CRandom.cpp
+    ../gucefCORE/src/gucefCORE_CResourceMetaData.cpp
+    ../gucefCORE/src/gucefCORE_CTime.cpp
+    ../gucefCORE/src/gucefCORE_CTimestamp.cpp
+    ../gucefCORE/src/gucefCORE_CUtf16String.cpp
+    ../gucefCORE/src/gucefCORE_CUtf32String.cpp
+    ../gucefCORE/src/gucefCORE_CUtf8String.cpp
+    ../gucefCORE/src/gucefCORE_CVariant.cpp
+    ../gucefCORE/src/md5.c
+    ../gucefCORE/src/c_api/gucefCORE_c_variantdata.c
+    ../gucefMT/src/gucefMT_CICloneable.cpp
+    ../gucefMT/src/gucefMT_CILockable.cpp
+    ../gucefMT/src/gucefMT_CMutex.cpp
+    ../gucefMT/src/gucefMT_CNoLock.cpp
+    ../gucefMT/src/gucefMT_CObjectScopeLock.cpp
+    ../gucefMT/src/gucefMT_CObjectScopeReadOnlyLock.cpp
+    ../gucefMT/src/gucefMT_CScopeMutex.cpp
+    ../gucefMT/src/gucefMT_LockStatus.cpp
+    ../gucefMT/src/gucefMT_MUTEX.c
+    ../gucefMT/src/gucefMT_ThreadStatus.cpp
+    ../gucefMT/src/gucefMT_dvmtoswrap.c
+  )
+
+  set( PLATFORM_SOURCE_INSTALL "ANDROID" )
+  source_group( "Platform Source Files" FILES ${PLATFORM_SOURCE_FILES} )
+
+elseif (ANDROID32)
+  set( PLATFORM_HEADER_FILES 
+    ../gucefCORE/include/CDynamicBuffer.h
+    ../gucefCORE/include/CDynamicBufferAccess.h
+    ../gucefCORE/include/CException.h
+    ../gucefCORE/include/CFileAccess.h
+    ../gucefCORE/include/CICloneable.h
+    ../gucefCORE/include/CIOAccess.h
+    ../gucefCORE/include/CMsgException.h
+    ../gucefCORE/include/DVCPPOSWRAP.h
+    ../gucefCORE/include/DVOSWRAP.h
+    ../gucefCORE/include/MFILE.h
+    ../gucefCORE/include/PAFILE.h
+    ../gucefCORE/include/dvcppfileutils.h
+    ../gucefCORE/include/dvcppstringutils.h
+    ../gucefCORE/include/dvfileutils.h
+    ../gucefCORE/include/dvmd5utils.h
+    ../gucefCORE/include/dvstrutils.h
+    ../gucefCORE/include/gucefCORE_CAsciiString.h
+    ../gucefCORE/include/gucefCORE_CDate.h
+    ../gucefCORE/include/gucefCORE_CDateTime.h
+    ../gucefCORE/include/gucefCORE_CIDate.h
+    ../gucefCORE/include/gucefCORE_CITime.h
+    ../gucefCORE/include/gucefCORE_CProcess.h
+    ../gucefCORE/include/gucefCORE_CRandom.h
     ../gucefCORE/include/gucefCORE_CResourceMetaData.h
     ../gucefCORE/include/gucefCORE_CString.h
     ../gucefCORE/include/gucefCORE_CTime.h
@@ -183,6 +291,8 @@ if (ANDROID32)
     ../gucefCORE/src/gucefCORE_CDateTime.cpp
     ../gucefCORE/src/gucefCORE_CIDate.cpp
     ../gucefCORE/src/gucefCORE_CITime.cpp
+    ../gucefCORE/src/gucefCORE_CProcess.cpp
+    ../gucefCORE/src/gucefCORE_CRandom.cpp
     ../gucefCORE/src/gucefCORE_CResourceMetaData.cpp
     ../gucefCORE/src/gucefCORE_CTime.cpp
     ../gucefCORE/src/gucefCORE_CTimestamp.cpp
@@ -201,9 +311,9 @@ if (ANDROID32)
     ../gucefMT/src/gucefMT_CObjectScopeReadOnlyLock.cpp
     ../gucefMT/src/gucefMT_CScopeMutex.cpp
     ../gucefMT/src/gucefMT_LockStatus.cpp
+    ../gucefMT/src/gucefMT_MUTEX.c
     ../gucefMT/src/gucefMT_ThreadStatus.cpp
     ../gucefMT/src/gucefMT_dvmtoswrap.c
-    ../gucefMT/src/gucefMT_mutex.c
   )
 
   set( PLATFORM_SOURCE_INSTALL "ANDROID32" )
@@ -232,6 +342,8 @@ elseif (ANDROID64)
     ../gucefCORE/include/gucefCORE_CDateTime.h
     ../gucefCORE/include/gucefCORE_CIDate.h
     ../gucefCORE/include/gucefCORE_CITime.h
+    ../gucefCORE/include/gucefCORE_CProcess.h
+    ../gucefCORE/include/gucefCORE_CRandom.h
     ../gucefCORE/include/gucefCORE_CResourceMetaData.h
     ../gucefCORE/include/gucefCORE_CString.h
     ../gucefCORE/include/gucefCORE_CTime.h
@@ -283,6 +395,8 @@ elseif (ANDROID64)
     ../gucefCORE/src/gucefCORE_CDateTime.cpp
     ../gucefCORE/src/gucefCORE_CIDate.cpp
     ../gucefCORE/src/gucefCORE_CITime.cpp
+    ../gucefCORE/src/gucefCORE_CProcess.cpp
+    ../gucefCORE/src/gucefCORE_CRandom.cpp
     ../gucefCORE/src/gucefCORE_CResourceMetaData.cpp
     ../gucefCORE/src/gucefCORE_CTime.cpp
     ../gucefCORE/src/gucefCORE_CTimestamp.cpp
@@ -301,9 +415,9 @@ elseif (ANDROID64)
     ../gucefMT/src/gucefMT_CObjectScopeReadOnlyLock.cpp
     ../gucefMT/src/gucefMT_CScopeMutex.cpp
     ../gucefMT/src/gucefMT_LockStatus.cpp
+    ../gucefMT/src/gucefMT_MUTEX.c
     ../gucefMT/src/gucefMT_ThreadStatus.cpp
     ../gucefMT/src/gucefMT_dvmtoswrap.c
-    ../gucefMT/src/gucefMT_mutex.c
   )
 
   set( PLATFORM_SOURCE_INSTALL "ANDROID64" )
@@ -332,6 +446,8 @@ elseif (ARDUINO)
     ../gucefCORE/include/gucefCORE_CDateTime.h
     ../gucefCORE/include/gucefCORE_CIDate.h
     ../gucefCORE/include/gucefCORE_CITime.h
+    ../gucefCORE/include/gucefCORE_CProcess.h
+    ../gucefCORE/include/gucefCORE_CRandom.h
     ../gucefCORE/include/gucefCORE_CResourceMetaData.h
     ../gucefCORE/include/gucefCORE_CString.h
     ../gucefCORE/include/gucefCORE_CTime.h
@@ -382,6 +498,8 @@ elseif (ARDUINO)
     ../gucefCORE/src/gucefCORE_CDateTime.cpp
     ../gucefCORE/src/gucefCORE_CIDate.cpp
     ../gucefCORE/src/gucefCORE_CITime.cpp
+    ../gucefCORE/src/gucefCORE_CProcess.cpp
+    ../gucefCORE/src/gucefCORE_CRandom.cpp
     ../gucefCORE/src/gucefCORE_CResourceMetaData.cpp
     ../gucefCORE/src/gucefCORE_CTime.cpp
     ../gucefCORE/src/gucefCORE_CTimestamp.cpp
@@ -399,12 +517,114 @@ elseif (ARDUINO)
     ../gucefMT/src/gucefMT_CObjectScopeReadOnlyLock.cpp
     ../gucefMT/src/gucefMT_CScopeMutex.cpp
     ../gucefMT/src/gucefMT_LockStatus.cpp
+    ../gucefMT/src/gucefMT_MUTEX.c
     ../gucefMT/src/gucefMT_ThreadStatus.cpp
     ../gucefMT/src/gucefMT_dvmtoswrap.c
-    ../gucefMT/src/gucefMT_mutex.c
   )
 
   set( PLATFORM_SOURCE_INSTALL "ARDUINO" )
+  source_group( "Platform Source Files" FILES ${PLATFORM_SOURCE_FILES} )
+
+elseif (EMSCRIPTEN)
+  set( PLATFORM_HEADER_FILES 
+    ../gucefCORE/include/CDynamicBuffer.h
+    ../gucefCORE/include/CDynamicBufferAccess.h
+    ../gucefCORE/include/CException.h
+    ../gucefCORE/include/CFileAccess.h
+    ../gucefCORE/include/CICloneable.h
+    ../gucefCORE/include/CIOAccess.h
+    ../gucefCORE/include/CMsgException.h
+    ../gucefCORE/include/DVCPPOSWRAP.h
+    ../gucefCORE/include/DVOSWRAP.h
+    ../gucefCORE/include/MFILE.h
+    ../gucefCORE/include/PAFILE.h
+    ../gucefCORE/include/dvcppfileutils.h
+    ../gucefCORE/include/dvcppstringutils.h
+    ../gucefCORE/include/dvfileutils.h
+    ../gucefCORE/include/dvmd5utils.h
+    ../gucefCORE/include/dvstrutils.h
+    ../gucefCORE/include/gucefCORE_CAsciiString.h
+    ../gucefCORE/include/gucefCORE_CDate.h
+    ../gucefCORE/include/gucefCORE_CDateTime.h
+    ../gucefCORE/include/gucefCORE_CIDate.h
+    ../gucefCORE/include/gucefCORE_CITime.h
+    ../gucefCORE/include/gucefCORE_CProcess.h
+    ../gucefCORE/include/gucefCORE_CRandom.h
+    ../gucefCORE/include/gucefCORE_CResourceMetaData.h
+    ../gucefCORE/include/gucefCORE_CString.h
+    ../gucefCORE/include/gucefCORE_CTime.h
+    ../gucefCORE/include/gucefCORE_CTimestamp.h
+    ../gucefCORE/include/gucefCORE_CUtf16String.h
+    ../gucefCORE/include/gucefCORE_CUtf32String.h
+    ../gucefCORE/include/gucefCORE_CUtf8String.h
+    ../gucefCORE/include/gucefCORE_CVariant.h
+    ../gucefCORE/include/md5.h
+    ../gucefCORE/include/c_api/gucefCORE_c_ioaccess.h
+    ../gucefCORE/include/c_api/gucefCORE_c_variantdata.h
+    ../gucefMT/include/gucefMT_CICloneable.h
+    ../gucefMT/include/gucefMT_CILockable.h
+    ../gucefMT/include/gucefMT_CMutex.h
+    ../gucefMT/include/gucefMT_CNoLock.h
+    ../gucefMT/include/gucefMT_CObjectScopeLock.h
+    ../gucefMT/include/gucefMT_CObjectScopeReadOnlyLock.h
+    ../gucefMT/include/gucefMT_CScopeMutex.h
+    ../gucefMT/include/gucefMT_LockStatus.h
+    ../gucefMT/include/gucefMT_ThreadStatus.h
+    ../gucefMT/include/gucefMT_dvmtoswrap.h
+    ../gucefMT/include/gucefMT_mutex.h
+  )
+
+  set( PLATFORM_HEADER_INSTALL "EMSCRIPTEN" )
+  source_group( "Platform Header Files" FILES ${PLATFORM_HEADER_FILES} )
+
+  set( PLATFORM_SOURCE_FILES 
+    ../gucefCORE/src/CDynamicBuffer.cpp
+    ../gucefCORE/src/CDynamicBufferAccess.cpp
+    ../gucefCORE/src/CException.cpp
+    ../gucefCORE/src/CFileAccess.cpp
+    ../gucefCORE/src/CICloneable.cpp
+    ../gucefCORE/src/CIOAccess.cpp
+    ../gucefCORE/src/CMsgException.cpp
+    ../gucefCORE/src/DVCPPOSWRAP.cpp
+    ../gucefCORE/src/DVOSWRAP.cpp
+    ../gucefCORE/src/IOACCESS.c
+    ../gucefCORE/src/MFILE.c
+    ../gucefCORE/src/PAFILE.c
+    ../gucefCORE/src/dvcppfileutils.cpp
+    ../gucefCORE/src/dvcppstringutils.cpp
+    ../gucefCORE/src/dvfileutils.cpp
+    ../gucefCORE/src/dvmd5utils.c
+    ../gucefCORE/src/dvstrutils.cpp
+    ../gucefCORE/src/gucefCORE_CAsciiString.cpp
+    ../gucefCORE/src/gucefCORE_CDate.cpp
+    ../gucefCORE/src/gucefCORE_CDateTime.cpp
+    ../gucefCORE/src/gucefCORE_CIDate.cpp
+    ../gucefCORE/src/gucefCORE_CITime.cpp
+    ../gucefCORE/src/gucefCORE_CProcess.cpp
+    ../gucefCORE/src/gucefCORE_CRandom.cpp
+    ../gucefCORE/src/gucefCORE_CResourceMetaData.cpp
+    ../gucefCORE/src/gucefCORE_CTime.cpp
+    ../gucefCORE/src/gucefCORE_CTimestamp.cpp
+    ../gucefCORE/src/gucefCORE_CUtf16String.cpp
+    ../gucefCORE/src/gucefCORE_CUtf32String.cpp
+    ../gucefCORE/src/gucefCORE_CUtf8String.cpp
+    ../gucefCORE/src/gucefCORE_CVariant.cpp
+    ../gucefCORE/src/md5.c
+    ../gucefCORE/src/c_api/gucefCORE_c_variantdata.c
+    ../gucefMT/src/gucefMT_CICloneable.cpp
+    ../gucefMT/src/gucefMT_CILockable.cpp
+    ../gucefMT/src/gucefMT_CMutex.cpp
+    ../gucefMT/src/gucefMT_CNoLock.cpp
+    ../gucefMT/src/gucefMT_CObjectScopeLock.cpp
+    ../gucefMT/src/gucefMT_CObjectScopeReadOnlyLock.cpp
+    ../gucefMT/src/gucefMT_CScopeMutex.cpp
+    ../gucefMT/src/gucefMT_LockStatus.cpp
+    ../gucefMT/src/gucefMT_MUTEX.c
+    ../gucefMT/src/gucefMT_ThreadStatus.cpp
+    ../gucefMT/src/gucefMT_dvmtoswrap.c
+  )
+
+  set( PLATFORM_SOURCE_INSTALL "EMSCRIPTEN" )
   source_group( "Platform Source Files" FILES ${PLATFORM_SOURCE_FILES} )
 
 elseif (EMSCRIPTEN32)
@@ -430,6 +650,8 @@ elseif (EMSCRIPTEN32)
     ../gucefCORE/include/gucefCORE_CDateTime.h
     ../gucefCORE/include/gucefCORE_CIDate.h
     ../gucefCORE/include/gucefCORE_CITime.h
+    ../gucefCORE/include/gucefCORE_CProcess.h
+    ../gucefCORE/include/gucefCORE_CRandom.h
     ../gucefCORE/include/gucefCORE_CResourceMetaData.h
     ../gucefCORE/include/gucefCORE_CString.h
     ../gucefCORE/include/gucefCORE_CTime.h
@@ -480,6 +702,8 @@ elseif (EMSCRIPTEN32)
     ../gucefCORE/src/gucefCORE_CDateTime.cpp
     ../gucefCORE/src/gucefCORE_CIDate.cpp
     ../gucefCORE/src/gucefCORE_CITime.cpp
+    ../gucefCORE/src/gucefCORE_CProcess.cpp
+    ../gucefCORE/src/gucefCORE_CRandom.cpp
     ../gucefCORE/src/gucefCORE_CResourceMetaData.cpp
     ../gucefCORE/src/gucefCORE_CTime.cpp
     ../gucefCORE/src/gucefCORE_CTimestamp.cpp
@@ -497,9 +721,9 @@ elseif (EMSCRIPTEN32)
     ../gucefMT/src/gucefMT_CObjectScopeReadOnlyLock.cpp
     ../gucefMT/src/gucefMT_CScopeMutex.cpp
     ../gucefMT/src/gucefMT_LockStatus.cpp
+    ../gucefMT/src/gucefMT_MUTEX.c
     ../gucefMT/src/gucefMT_ThreadStatus.cpp
     ../gucefMT/src/gucefMT_dvmtoswrap.c
-    ../gucefMT/src/gucefMT_mutex.c
   )
 
   set( PLATFORM_SOURCE_INSTALL "EMSCRIPTEN32" )
@@ -528,6 +752,8 @@ elseif (EMSCRIPTEN64)
     ../gucefCORE/include/gucefCORE_CDateTime.h
     ../gucefCORE/include/gucefCORE_CIDate.h
     ../gucefCORE/include/gucefCORE_CITime.h
+    ../gucefCORE/include/gucefCORE_CProcess.h
+    ../gucefCORE/include/gucefCORE_CRandom.h
     ../gucefCORE/include/gucefCORE_CResourceMetaData.h
     ../gucefCORE/include/gucefCORE_CString.h
     ../gucefCORE/include/gucefCORE_CTime.h
@@ -578,6 +804,8 @@ elseif (EMSCRIPTEN64)
     ../gucefCORE/src/gucefCORE_CDateTime.cpp
     ../gucefCORE/src/gucefCORE_CIDate.cpp
     ../gucefCORE/src/gucefCORE_CITime.cpp
+    ../gucefCORE/src/gucefCORE_CProcess.cpp
+    ../gucefCORE/src/gucefCORE_CRandom.cpp
     ../gucefCORE/src/gucefCORE_CResourceMetaData.cpp
     ../gucefCORE/src/gucefCORE_CTime.cpp
     ../gucefCORE/src/gucefCORE_CTimestamp.cpp
@@ -595,9 +823,9 @@ elseif (EMSCRIPTEN64)
     ../gucefMT/src/gucefMT_CObjectScopeReadOnlyLock.cpp
     ../gucefMT/src/gucefMT_CScopeMutex.cpp
     ../gucefMT/src/gucefMT_LockStatus.cpp
+    ../gucefMT/src/gucefMT_MUTEX.c
     ../gucefMT/src/gucefMT_ThreadStatus.cpp
     ../gucefMT/src/gucefMT_dvmtoswrap.c
-    ../gucefMT/src/gucefMT_mutex.c
   )
 
   set( PLATFORM_SOURCE_INSTALL "EMSCRIPTEN64" )
@@ -626,6 +854,8 @@ elseif (GLX)
     ../gucefCORE/include/gucefCORE_CDateTime.h
     ../gucefCORE/include/gucefCORE_CIDate.h
     ../gucefCORE/include/gucefCORE_CITime.h
+    ../gucefCORE/include/gucefCORE_CProcess.h
+    ../gucefCORE/include/gucefCORE_CRandom.h
     ../gucefCORE/include/gucefCORE_CResourceMetaData.h
     ../gucefCORE/include/gucefCORE_CString.h
     ../gucefCORE/include/gucefCORE_CTime.h
@@ -676,6 +906,8 @@ elseif (GLX)
     ../gucefCORE/src/gucefCORE_CDateTime.cpp
     ../gucefCORE/src/gucefCORE_CIDate.cpp
     ../gucefCORE/src/gucefCORE_CITime.cpp
+    ../gucefCORE/src/gucefCORE_CProcess.cpp
+    ../gucefCORE/src/gucefCORE_CRandom.cpp
     ../gucefCORE/src/gucefCORE_CResourceMetaData.cpp
     ../gucefCORE/src/gucefCORE_CTime.cpp
     ../gucefCORE/src/gucefCORE_CTimestamp.cpp
@@ -693,9 +925,9 @@ elseif (GLX)
     ../gucefMT/src/gucefMT_CObjectScopeReadOnlyLock.cpp
     ../gucefMT/src/gucefMT_CScopeMutex.cpp
     ../gucefMT/src/gucefMT_LockStatus.cpp
+    ../gucefMT/src/gucefMT_MUTEX.c
     ../gucefMT/src/gucefMT_ThreadStatus.cpp
     ../gucefMT/src/gucefMT_dvmtoswrap.c
-    ../gucefMT/src/gucefMT_mutex.c
   )
 
   set( PLATFORM_SOURCE_INSTALL "GLX" )
@@ -724,6 +956,8 @@ elseif (GTK)
     ../gucefCORE/include/gucefCORE_CDateTime.h
     ../gucefCORE/include/gucefCORE_CIDate.h
     ../gucefCORE/include/gucefCORE_CITime.h
+    ../gucefCORE/include/gucefCORE_CProcess.h
+    ../gucefCORE/include/gucefCORE_CRandom.h
     ../gucefCORE/include/gucefCORE_CResourceMetaData.h
     ../gucefCORE/include/gucefCORE_CString.h
     ../gucefCORE/include/gucefCORE_CTime.h
@@ -774,6 +1008,8 @@ elseif (GTK)
     ../gucefCORE/src/gucefCORE_CDateTime.cpp
     ../gucefCORE/src/gucefCORE_CIDate.cpp
     ../gucefCORE/src/gucefCORE_CITime.cpp
+    ../gucefCORE/src/gucefCORE_CProcess.cpp
+    ../gucefCORE/src/gucefCORE_CRandom.cpp
     ../gucefCORE/src/gucefCORE_CResourceMetaData.cpp
     ../gucefCORE/src/gucefCORE_CTime.cpp
     ../gucefCORE/src/gucefCORE_CTimestamp.cpp
@@ -791,9 +1027,9 @@ elseif (GTK)
     ../gucefMT/src/gucefMT_CObjectScopeReadOnlyLock.cpp
     ../gucefMT/src/gucefMT_CScopeMutex.cpp
     ../gucefMT/src/gucefMT_LockStatus.cpp
+    ../gucefMT/src/gucefMT_MUTEX.c
     ../gucefMT/src/gucefMT_ThreadStatus.cpp
     ../gucefMT/src/gucefMT_dvmtoswrap.c
-    ../gucefMT/src/gucefMT_mutex.c
   )
 
   set( PLATFORM_SOURCE_INSTALL "GTK" )
@@ -822,6 +1058,8 @@ elseif (IOS)
     ../gucefCORE/include/gucefCORE_CDateTime.h
     ../gucefCORE/include/gucefCORE_CIDate.h
     ../gucefCORE/include/gucefCORE_CITime.h
+    ../gucefCORE/include/gucefCORE_CProcess.h
+    ../gucefCORE/include/gucefCORE_CRandom.h
     ../gucefCORE/include/gucefCORE_CResourceMetaData.h
     ../gucefCORE/include/gucefCORE_CString.h
     ../gucefCORE/include/gucefCORE_CTime.h
@@ -872,6 +1110,8 @@ elseif (IOS)
     ../gucefCORE/src/gucefCORE_CDateTime.cpp
     ../gucefCORE/src/gucefCORE_CIDate.cpp
     ../gucefCORE/src/gucefCORE_CITime.cpp
+    ../gucefCORE/src/gucefCORE_CProcess.cpp
+    ../gucefCORE/src/gucefCORE_CRandom.cpp
     ../gucefCORE/src/gucefCORE_CResourceMetaData.cpp
     ../gucefCORE/src/gucefCORE_CTime.cpp
     ../gucefCORE/src/gucefCORE_CTimestamp.cpp
@@ -889,12 +1129,318 @@ elseif (IOS)
     ../gucefMT/src/gucefMT_CObjectScopeReadOnlyLock.cpp
     ../gucefMT/src/gucefMT_CScopeMutex.cpp
     ../gucefMT/src/gucefMT_LockStatus.cpp
+    ../gucefMT/src/gucefMT_MUTEX.c
     ../gucefMT/src/gucefMT_ThreadStatus.cpp
     ../gucefMT/src/gucefMT_dvmtoswrap.c
-    ../gucefMT/src/gucefMT_mutex.c
   )
 
   set( PLATFORM_SOURCE_INSTALL "IOS" )
+  source_group( "Platform Source Files" FILES ${PLATFORM_SOURCE_FILES} )
+
+elseif (IPHONE)
+  set( PLATFORM_HEADER_FILES 
+    ../gucefCORE/include/CDynamicBuffer.h
+    ../gucefCORE/include/CDynamicBufferAccess.h
+    ../gucefCORE/include/CException.h
+    ../gucefCORE/include/CFileAccess.h
+    ../gucefCORE/include/CICloneable.h
+    ../gucefCORE/include/CIOAccess.h
+    ../gucefCORE/include/CMsgException.h
+    ../gucefCORE/include/DVCPPOSWRAP.h
+    ../gucefCORE/include/DVOSWRAP.h
+    ../gucefCORE/include/MFILE.h
+    ../gucefCORE/include/PAFILE.h
+    ../gucefCORE/include/dvcppfileutils.h
+    ../gucefCORE/include/dvcppstringutils.h
+    ../gucefCORE/include/dvfileutils.h
+    ../gucefCORE/include/dvmd5utils.h
+    ../gucefCORE/include/dvstrutils.h
+    ../gucefCORE/include/gucefCORE_CAsciiString.h
+    ../gucefCORE/include/gucefCORE_CDate.h
+    ../gucefCORE/include/gucefCORE_CDateTime.h
+    ../gucefCORE/include/gucefCORE_CIDate.h
+    ../gucefCORE/include/gucefCORE_CITime.h
+    ../gucefCORE/include/gucefCORE_CProcess.h
+    ../gucefCORE/include/gucefCORE_CRandom.h
+    ../gucefCORE/include/gucefCORE_CResourceMetaData.h
+    ../gucefCORE/include/gucefCORE_CString.h
+    ../gucefCORE/include/gucefCORE_CTime.h
+    ../gucefCORE/include/gucefCORE_CTimestamp.h
+    ../gucefCORE/include/gucefCORE_CUtf16String.h
+    ../gucefCORE/include/gucefCORE_CUtf32String.h
+    ../gucefCORE/include/gucefCORE_CUtf8String.h
+    ../gucefCORE/include/gucefCORE_CVariant.h
+    ../gucefCORE/include/md5.h
+    ../gucefCORE/include/c_api/gucefCORE_c_ioaccess.h
+    ../gucefCORE/include/c_api/gucefCORE_c_variantdata.h
+    ../gucefMT/include/gucefMT_CICloneable.h
+    ../gucefMT/include/gucefMT_CILockable.h
+    ../gucefMT/include/gucefMT_CMutex.h
+    ../gucefMT/include/gucefMT_CNoLock.h
+    ../gucefMT/include/gucefMT_CObjectScopeLock.h
+    ../gucefMT/include/gucefMT_CObjectScopeReadOnlyLock.h
+    ../gucefMT/include/gucefMT_CScopeMutex.h
+    ../gucefMT/include/gucefMT_LockStatus.h
+    ../gucefMT/include/gucefMT_ThreadStatus.h
+    ../gucefMT/include/gucefMT_dvmtoswrap.h
+    ../gucefMT/include/gucefMT_mutex.h
+  )
+
+  set( PLATFORM_HEADER_INSTALL "IPHONE" )
+  source_group( "Platform Header Files" FILES ${PLATFORM_HEADER_FILES} )
+
+  set( PLATFORM_SOURCE_FILES 
+    ../gucefCORE/src/CDynamicBuffer.cpp
+    ../gucefCORE/src/CDynamicBufferAccess.cpp
+    ../gucefCORE/src/CException.cpp
+    ../gucefCORE/src/CFileAccess.cpp
+    ../gucefCORE/src/CICloneable.cpp
+    ../gucefCORE/src/CIOAccess.cpp
+    ../gucefCORE/src/CMsgException.cpp
+    ../gucefCORE/src/DVCPPOSWRAP.cpp
+    ../gucefCORE/src/DVOSWRAP.cpp
+    ../gucefCORE/src/IOACCESS.c
+    ../gucefCORE/src/MFILE.c
+    ../gucefCORE/src/PAFILE.c
+    ../gucefCORE/src/dvcppfileutils.cpp
+    ../gucefCORE/src/dvcppstringutils.cpp
+    ../gucefCORE/src/dvfileutils.cpp
+    ../gucefCORE/src/dvmd5utils.c
+    ../gucefCORE/src/dvstrutils.cpp
+    ../gucefCORE/src/gucefCORE_CAsciiString.cpp
+    ../gucefCORE/src/gucefCORE_CDate.cpp
+    ../gucefCORE/src/gucefCORE_CDateTime.cpp
+    ../gucefCORE/src/gucefCORE_CIDate.cpp
+    ../gucefCORE/src/gucefCORE_CITime.cpp
+    ../gucefCORE/src/gucefCORE_CProcess.cpp
+    ../gucefCORE/src/gucefCORE_CRandom.cpp
+    ../gucefCORE/src/gucefCORE_CResourceMetaData.cpp
+    ../gucefCORE/src/gucefCORE_CTime.cpp
+    ../gucefCORE/src/gucefCORE_CTimestamp.cpp
+    ../gucefCORE/src/gucefCORE_CUtf16String.cpp
+    ../gucefCORE/src/gucefCORE_CUtf32String.cpp
+    ../gucefCORE/src/gucefCORE_CUtf8String.cpp
+    ../gucefCORE/src/gucefCORE_CVariant.cpp
+    ../gucefCORE/src/md5.c
+    ../gucefCORE/src/c_api/gucefCORE_c_variantdata.c
+    ../gucefMT/src/gucefMT_CICloneable.cpp
+    ../gucefMT/src/gucefMT_CILockable.cpp
+    ../gucefMT/src/gucefMT_CMutex.cpp
+    ../gucefMT/src/gucefMT_CNoLock.cpp
+    ../gucefMT/src/gucefMT_CObjectScopeLock.cpp
+    ../gucefMT/src/gucefMT_CObjectScopeReadOnlyLock.cpp
+    ../gucefMT/src/gucefMT_CScopeMutex.cpp
+    ../gucefMT/src/gucefMT_LockStatus.cpp
+    ../gucefMT/src/gucefMT_MUTEX.c
+    ../gucefMT/src/gucefMT_ThreadStatus.cpp
+    ../gucefMT/src/gucefMT_dvmtoswrap.c
+  )
+
+  set( PLATFORM_SOURCE_INSTALL "IPHONE" )
+  source_group( "Platform Source Files" FILES ${PLATFORM_SOURCE_FILES} )
+
+elseif (IPHONEOS)
+  set( PLATFORM_HEADER_FILES 
+    ../gucefCORE/include/CDynamicBuffer.h
+    ../gucefCORE/include/CDynamicBufferAccess.h
+    ../gucefCORE/include/CException.h
+    ../gucefCORE/include/CFileAccess.h
+    ../gucefCORE/include/CICloneable.h
+    ../gucefCORE/include/CIOAccess.h
+    ../gucefCORE/include/CMsgException.h
+    ../gucefCORE/include/DVCPPOSWRAP.h
+    ../gucefCORE/include/DVOSWRAP.h
+    ../gucefCORE/include/MFILE.h
+    ../gucefCORE/include/PAFILE.h
+    ../gucefCORE/include/dvcppfileutils.h
+    ../gucefCORE/include/dvcppstringutils.h
+    ../gucefCORE/include/dvfileutils.h
+    ../gucefCORE/include/dvmd5utils.h
+    ../gucefCORE/include/dvstrutils.h
+    ../gucefCORE/include/gucefCORE_CAsciiString.h
+    ../gucefCORE/include/gucefCORE_CDate.h
+    ../gucefCORE/include/gucefCORE_CDateTime.h
+    ../gucefCORE/include/gucefCORE_CIDate.h
+    ../gucefCORE/include/gucefCORE_CITime.h
+    ../gucefCORE/include/gucefCORE_CProcess.h
+    ../gucefCORE/include/gucefCORE_CRandom.h
+    ../gucefCORE/include/gucefCORE_CResourceMetaData.h
+    ../gucefCORE/include/gucefCORE_CString.h
+    ../gucefCORE/include/gucefCORE_CTime.h
+    ../gucefCORE/include/gucefCORE_CTimestamp.h
+    ../gucefCORE/include/gucefCORE_CUtf16String.h
+    ../gucefCORE/include/gucefCORE_CUtf32String.h
+    ../gucefCORE/include/gucefCORE_CUtf8String.h
+    ../gucefCORE/include/gucefCORE_CVariant.h
+    ../gucefCORE/include/md5.h
+    ../gucefCORE/include/c_api/gucefCORE_c_ioaccess.h
+    ../gucefCORE/include/c_api/gucefCORE_c_variantdata.h
+    ../gucefMT/include/gucefMT_CICloneable.h
+    ../gucefMT/include/gucefMT_CILockable.h
+    ../gucefMT/include/gucefMT_CMutex.h
+    ../gucefMT/include/gucefMT_CNoLock.h
+    ../gucefMT/include/gucefMT_CObjectScopeLock.h
+    ../gucefMT/include/gucefMT_CObjectScopeReadOnlyLock.h
+    ../gucefMT/include/gucefMT_CScopeMutex.h
+    ../gucefMT/include/gucefMT_LockStatus.h
+    ../gucefMT/include/gucefMT_ThreadStatus.h
+    ../gucefMT/include/gucefMT_dvmtoswrap.h
+    ../gucefMT/include/gucefMT_mutex.h
+  )
+
+  set( PLATFORM_HEADER_INSTALL "IPHONEOS" )
+  source_group( "Platform Header Files" FILES ${PLATFORM_HEADER_FILES} )
+
+  set( PLATFORM_SOURCE_FILES 
+    ../gucefCORE/src/CDynamicBuffer.cpp
+    ../gucefCORE/src/CDynamicBufferAccess.cpp
+    ../gucefCORE/src/CException.cpp
+    ../gucefCORE/src/CFileAccess.cpp
+    ../gucefCORE/src/CICloneable.cpp
+    ../gucefCORE/src/CIOAccess.cpp
+    ../gucefCORE/src/CMsgException.cpp
+    ../gucefCORE/src/DVCPPOSWRAP.cpp
+    ../gucefCORE/src/DVOSWRAP.cpp
+    ../gucefCORE/src/IOACCESS.c
+    ../gucefCORE/src/MFILE.c
+    ../gucefCORE/src/PAFILE.c
+    ../gucefCORE/src/dvcppfileutils.cpp
+    ../gucefCORE/src/dvcppstringutils.cpp
+    ../gucefCORE/src/dvfileutils.cpp
+    ../gucefCORE/src/dvmd5utils.c
+    ../gucefCORE/src/dvstrutils.cpp
+    ../gucefCORE/src/gucefCORE_CAsciiString.cpp
+    ../gucefCORE/src/gucefCORE_CDate.cpp
+    ../gucefCORE/src/gucefCORE_CDateTime.cpp
+    ../gucefCORE/src/gucefCORE_CIDate.cpp
+    ../gucefCORE/src/gucefCORE_CITime.cpp
+    ../gucefCORE/src/gucefCORE_CProcess.cpp
+    ../gucefCORE/src/gucefCORE_CRandom.cpp
+    ../gucefCORE/src/gucefCORE_CResourceMetaData.cpp
+    ../gucefCORE/src/gucefCORE_CTime.cpp
+    ../gucefCORE/src/gucefCORE_CTimestamp.cpp
+    ../gucefCORE/src/gucefCORE_CUtf16String.cpp
+    ../gucefCORE/src/gucefCORE_CUtf32String.cpp
+    ../gucefCORE/src/gucefCORE_CUtf8String.cpp
+    ../gucefCORE/src/gucefCORE_CVariant.cpp
+    ../gucefCORE/src/md5.c
+    ../gucefCORE/src/c_api/gucefCORE_c_variantdata.c
+    ../gucefMT/src/gucefMT_CICloneable.cpp
+    ../gucefMT/src/gucefMT_CILockable.cpp
+    ../gucefMT/src/gucefMT_CMutex.cpp
+    ../gucefMT/src/gucefMT_CNoLock.cpp
+    ../gucefMT/src/gucefMT_CObjectScopeLock.cpp
+    ../gucefMT/src/gucefMT_CObjectScopeReadOnlyLock.cpp
+    ../gucefMT/src/gucefMT_CScopeMutex.cpp
+    ../gucefMT/src/gucefMT_LockStatus.cpp
+    ../gucefMT/src/gucefMT_MUTEX.c
+    ../gucefMT/src/gucefMT_ThreadStatus.cpp
+    ../gucefMT/src/gucefMT_dvmtoswrap.c
+  )
+
+  set( PLATFORM_SOURCE_INSTALL "IPHONEOS" )
+  source_group( "Platform Source Files" FILES ${PLATFORM_SOURCE_FILES} )
+
+elseif (LINUX)
+  set( PLATFORM_HEADER_FILES 
+    ../gucefCORE/include/CDynamicBuffer.h
+    ../gucefCORE/include/CDynamicBufferAccess.h
+    ../gucefCORE/include/CException.h
+    ../gucefCORE/include/CFileAccess.h
+    ../gucefCORE/include/CICloneable.h
+    ../gucefCORE/include/CIOAccess.h
+    ../gucefCORE/include/CMsgException.h
+    ../gucefCORE/include/DVCPPOSWRAP.h
+    ../gucefCORE/include/DVOSWRAP.h
+    ../gucefCORE/include/MFILE.h
+    ../gucefCORE/include/PAFILE.h
+    ../gucefCORE/include/dvcppfileutils.h
+    ../gucefCORE/include/dvcppstringutils.h
+    ../gucefCORE/include/dvfileutils.h
+    ../gucefCORE/include/dvmd5utils.h
+    ../gucefCORE/include/dvstrutils.h
+    ../gucefCORE/include/gucefCORE_CAsciiString.h
+    ../gucefCORE/include/gucefCORE_CDate.h
+    ../gucefCORE/include/gucefCORE_CDateTime.h
+    ../gucefCORE/include/gucefCORE_CIDate.h
+    ../gucefCORE/include/gucefCORE_CITime.h
+    ../gucefCORE/include/gucefCORE_CProcess.h
+    ../gucefCORE/include/gucefCORE_CRandom.h
+    ../gucefCORE/include/gucefCORE_CResourceMetaData.h
+    ../gucefCORE/include/gucefCORE_CString.h
+    ../gucefCORE/include/gucefCORE_CTime.h
+    ../gucefCORE/include/gucefCORE_CTimestamp.h
+    ../gucefCORE/include/gucefCORE_CUtf16String.h
+    ../gucefCORE/include/gucefCORE_CUtf32String.h
+    ../gucefCORE/include/gucefCORE_CUtf8String.h
+    ../gucefCORE/include/gucefCORE_CVariant.h
+    ../gucefCORE/include/md5.h
+    ../gucefCORE/include/c_api/gucefCORE_c_ioaccess.h
+    ../gucefCORE/include/c_api/gucefCORE_c_variantdata.h
+    ../gucefMT/include/gucefMT_CICloneable.h
+    ../gucefMT/include/gucefMT_CILockable.h
+    ../gucefMT/include/gucefMT_CMutex.h
+    ../gucefMT/include/gucefMT_CNoLock.h
+    ../gucefMT/include/gucefMT_CObjectScopeLock.h
+    ../gucefMT/include/gucefMT_CObjectScopeReadOnlyLock.h
+    ../gucefMT/include/gucefMT_CScopeMutex.h
+    ../gucefMT/include/gucefMT_LockStatus.h
+    ../gucefMT/include/gucefMT_ThreadStatus.h
+    ../gucefMT/include/gucefMT_dvmtoswrap.h
+    ../gucefMT/include/gucefMT_mutex.h
+  )
+
+  set( PLATFORM_HEADER_INSTALL "LINUX" )
+  source_group( "Platform Header Files" FILES ${PLATFORM_HEADER_FILES} )
+
+  set( PLATFORM_SOURCE_FILES 
+    ../gucefCORE/src/CDynamicBuffer.cpp
+    ../gucefCORE/src/CDynamicBufferAccess.cpp
+    ../gucefCORE/src/CException.cpp
+    ../gucefCORE/src/CFileAccess.cpp
+    ../gucefCORE/src/CICloneable.cpp
+    ../gucefCORE/src/CIOAccess.cpp
+    ../gucefCORE/src/CMsgException.cpp
+    ../gucefCORE/src/DVCPPOSWRAP.cpp
+    ../gucefCORE/src/DVOSWRAP.cpp
+    ../gucefCORE/src/IOACCESS.c
+    ../gucefCORE/src/MFILE.c
+    ../gucefCORE/src/PAFILE.c
+    ../gucefCORE/src/dvcppfileutils.cpp
+    ../gucefCORE/src/dvcppstringutils.cpp
+    ../gucefCORE/src/dvfileutils.cpp
+    ../gucefCORE/src/dvmd5utils.c
+    ../gucefCORE/src/dvstrutils.cpp
+    ../gucefCORE/src/gucefCORE_CAsciiString.cpp
+    ../gucefCORE/src/gucefCORE_CDate.cpp
+    ../gucefCORE/src/gucefCORE_CDateTime.cpp
+    ../gucefCORE/src/gucefCORE_CIDate.cpp
+    ../gucefCORE/src/gucefCORE_CITime.cpp
+    ../gucefCORE/src/gucefCORE_CProcess.cpp
+    ../gucefCORE/src/gucefCORE_CRandom.cpp
+    ../gucefCORE/src/gucefCORE_CResourceMetaData.cpp
+    ../gucefCORE/src/gucefCORE_CTime.cpp
+    ../gucefCORE/src/gucefCORE_CTimestamp.cpp
+    ../gucefCORE/src/gucefCORE_CUtf16String.cpp
+    ../gucefCORE/src/gucefCORE_CUtf32String.cpp
+    ../gucefCORE/src/gucefCORE_CUtf8String.cpp
+    ../gucefCORE/src/gucefCORE_CVariant.cpp
+    ../gucefCORE/src/md5.c
+    ../gucefCORE/src/c_api/gucefCORE_c_variantdata.c
+    ../gucefMT/src/gucefMT_CICloneable.cpp
+    ../gucefMT/src/gucefMT_CILockable.cpp
+    ../gucefMT/src/gucefMT_CMutex.cpp
+    ../gucefMT/src/gucefMT_CNoLock.cpp
+    ../gucefMT/src/gucefMT_CObjectScopeLock.cpp
+    ../gucefMT/src/gucefMT_CObjectScopeReadOnlyLock.cpp
+    ../gucefMT/src/gucefMT_CScopeMutex.cpp
+    ../gucefMT/src/gucefMT_LockStatus.cpp
+    ../gucefMT/src/gucefMT_MUTEX.c
+    ../gucefMT/src/gucefMT_ThreadStatus.cpp
+    ../gucefMT/src/gucefMT_dvmtoswrap.c
+  )
+
+  set( PLATFORM_SOURCE_INSTALL "LINUX" )
   source_group( "Platform Source Files" FILES ${PLATFORM_SOURCE_FILES} )
 
 elseif (LINUX32)
@@ -920,6 +1466,8 @@ elseif (LINUX32)
     ../gucefCORE/include/gucefCORE_CDateTime.h
     ../gucefCORE/include/gucefCORE_CIDate.h
     ../gucefCORE/include/gucefCORE_CITime.h
+    ../gucefCORE/include/gucefCORE_CProcess.h
+    ../gucefCORE/include/gucefCORE_CRandom.h
     ../gucefCORE/include/gucefCORE_CResourceMetaData.h
     ../gucefCORE/include/gucefCORE_CString.h
     ../gucefCORE/include/gucefCORE_CTime.h
@@ -970,6 +1518,8 @@ elseif (LINUX32)
     ../gucefCORE/src/gucefCORE_CDateTime.cpp
     ../gucefCORE/src/gucefCORE_CIDate.cpp
     ../gucefCORE/src/gucefCORE_CITime.cpp
+    ../gucefCORE/src/gucefCORE_CProcess.cpp
+    ../gucefCORE/src/gucefCORE_CRandom.cpp
     ../gucefCORE/src/gucefCORE_CResourceMetaData.cpp
     ../gucefCORE/src/gucefCORE_CTime.cpp
     ../gucefCORE/src/gucefCORE_CTimestamp.cpp
@@ -987,9 +1537,9 @@ elseif (LINUX32)
     ../gucefMT/src/gucefMT_CObjectScopeReadOnlyLock.cpp
     ../gucefMT/src/gucefMT_CScopeMutex.cpp
     ../gucefMT/src/gucefMT_LockStatus.cpp
+    ../gucefMT/src/gucefMT_MUTEX.c
     ../gucefMT/src/gucefMT_ThreadStatus.cpp
     ../gucefMT/src/gucefMT_dvmtoswrap.c
-    ../gucefMT/src/gucefMT_mutex.c
   )
 
   set( PLATFORM_SOURCE_INSTALL "LINUX32" )
@@ -1018,6 +1568,8 @@ elseif (LINUX64)
     ../gucefCORE/include/gucefCORE_CDateTime.h
     ../gucefCORE/include/gucefCORE_CIDate.h
     ../gucefCORE/include/gucefCORE_CITime.h
+    ../gucefCORE/include/gucefCORE_CProcess.h
+    ../gucefCORE/include/gucefCORE_CRandom.h
     ../gucefCORE/include/gucefCORE_CResourceMetaData.h
     ../gucefCORE/include/gucefCORE_CString.h
     ../gucefCORE/include/gucefCORE_CTime.h
@@ -1068,6 +1620,8 @@ elseif (LINUX64)
     ../gucefCORE/src/gucefCORE_CDateTime.cpp
     ../gucefCORE/src/gucefCORE_CIDate.cpp
     ../gucefCORE/src/gucefCORE_CITime.cpp
+    ../gucefCORE/src/gucefCORE_CProcess.cpp
+    ../gucefCORE/src/gucefCORE_CRandom.cpp
     ../gucefCORE/src/gucefCORE_CResourceMetaData.cpp
     ../gucefCORE/src/gucefCORE_CTime.cpp
     ../gucefCORE/src/gucefCORE_CTimestamp.cpp
@@ -1085,12 +1639,420 @@ elseif (LINUX64)
     ../gucefMT/src/gucefMT_CObjectScopeReadOnlyLock.cpp
     ../gucefMT/src/gucefMT_CScopeMutex.cpp
     ../gucefMT/src/gucefMT_LockStatus.cpp
+    ../gucefMT/src/gucefMT_MUTEX.c
     ../gucefMT/src/gucefMT_ThreadStatus.cpp
     ../gucefMT/src/gucefMT_dvmtoswrap.c
-    ../gucefMT/src/gucefMT_mutex.c
   )
 
   set( PLATFORM_SOURCE_INSTALL "LINUX64" )
+  source_group( "Platform Source Files" FILES ${PLATFORM_SOURCE_FILES} )
+
+elseif (MAC)
+  set( PLATFORM_HEADER_FILES 
+    ../gucefCORE/include/CDynamicBuffer.h
+    ../gucefCORE/include/CDynamicBufferAccess.h
+    ../gucefCORE/include/CException.h
+    ../gucefCORE/include/CFileAccess.h
+    ../gucefCORE/include/CICloneable.h
+    ../gucefCORE/include/CIOAccess.h
+    ../gucefCORE/include/CMsgException.h
+    ../gucefCORE/include/DVCPPOSWRAP.h
+    ../gucefCORE/include/DVOSWRAP.h
+    ../gucefCORE/include/MFILE.h
+    ../gucefCORE/include/PAFILE.h
+    ../gucefCORE/include/dvcppfileutils.h
+    ../gucefCORE/include/dvcppstringutils.h
+    ../gucefCORE/include/dvfileutils.h
+    ../gucefCORE/include/dvmd5utils.h
+    ../gucefCORE/include/dvstrutils.h
+    ../gucefCORE/include/gucefCORE_CAsciiString.h
+    ../gucefCORE/include/gucefCORE_CDate.h
+    ../gucefCORE/include/gucefCORE_CDateTime.h
+    ../gucefCORE/include/gucefCORE_CIDate.h
+    ../gucefCORE/include/gucefCORE_CITime.h
+    ../gucefCORE/include/gucefCORE_CProcess.h
+    ../gucefCORE/include/gucefCORE_CRandom.h
+    ../gucefCORE/include/gucefCORE_CResourceMetaData.h
+    ../gucefCORE/include/gucefCORE_CString.h
+    ../gucefCORE/include/gucefCORE_CTime.h
+    ../gucefCORE/include/gucefCORE_CTimestamp.h
+    ../gucefCORE/include/gucefCORE_CUtf16String.h
+    ../gucefCORE/include/gucefCORE_CUtf32String.h
+    ../gucefCORE/include/gucefCORE_CUtf8String.h
+    ../gucefCORE/include/gucefCORE_CVariant.h
+    ../gucefCORE/include/md5.h
+    ../gucefCORE/include/c_api/gucefCORE_c_ioaccess.h
+    ../gucefCORE/include/c_api/gucefCORE_c_variantdata.h
+    ../gucefMT/include/gucefMT_CICloneable.h
+    ../gucefMT/include/gucefMT_CILockable.h
+    ../gucefMT/include/gucefMT_CMutex.h
+    ../gucefMT/include/gucefMT_CNoLock.h
+    ../gucefMT/include/gucefMT_CObjectScopeLock.h
+    ../gucefMT/include/gucefMT_CObjectScopeReadOnlyLock.h
+    ../gucefMT/include/gucefMT_CScopeMutex.h
+    ../gucefMT/include/gucefMT_LockStatus.h
+    ../gucefMT/include/gucefMT_ThreadStatus.h
+    ../gucefMT/include/gucefMT_dvmtoswrap.h
+    ../gucefMT/include/gucefMT_mutex.h
+  )
+
+  set( PLATFORM_HEADER_INSTALL "MAC" )
+  source_group( "Platform Header Files" FILES ${PLATFORM_HEADER_FILES} )
+
+  set( PLATFORM_SOURCE_FILES 
+    ../gucefCORE/src/CDynamicBuffer.cpp
+    ../gucefCORE/src/CDynamicBufferAccess.cpp
+    ../gucefCORE/src/CException.cpp
+    ../gucefCORE/src/CFileAccess.cpp
+    ../gucefCORE/src/CICloneable.cpp
+    ../gucefCORE/src/CIOAccess.cpp
+    ../gucefCORE/src/CMsgException.cpp
+    ../gucefCORE/src/DVCPPOSWRAP.cpp
+    ../gucefCORE/src/DVOSWRAP.cpp
+    ../gucefCORE/src/IOACCESS.c
+    ../gucefCORE/src/MFILE.c
+    ../gucefCORE/src/PAFILE.c
+    ../gucefCORE/src/dvcppfileutils.cpp
+    ../gucefCORE/src/dvcppstringutils.cpp
+    ../gucefCORE/src/dvfileutils.cpp
+    ../gucefCORE/src/dvmd5utils.c
+    ../gucefCORE/src/dvstrutils.cpp
+    ../gucefCORE/src/gucefCORE_CAsciiString.cpp
+    ../gucefCORE/src/gucefCORE_CDate.cpp
+    ../gucefCORE/src/gucefCORE_CDateTime.cpp
+    ../gucefCORE/src/gucefCORE_CIDate.cpp
+    ../gucefCORE/src/gucefCORE_CITime.cpp
+    ../gucefCORE/src/gucefCORE_CProcess.cpp
+    ../gucefCORE/src/gucefCORE_CRandom.cpp
+    ../gucefCORE/src/gucefCORE_CResourceMetaData.cpp
+    ../gucefCORE/src/gucefCORE_CTime.cpp
+    ../gucefCORE/src/gucefCORE_CTimestamp.cpp
+    ../gucefCORE/src/gucefCORE_CUtf16String.cpp
+    ../gucefCORE/src/gucefCORE_CUtf32String.cpp
+    ../gucefCORE/src/gucefCORE_CUtf8String.cpp
+    ../gucefCORE/src/gucefCORE_CVariant.cpp
+    ../gucefCORE/src/md5.c
+    ../gucefCORE/src/c_api/gucefCORE_c_variantdata.c
+    ../gucefMT/src/gucefMT_CICloneable.cpp
+    ../gucefMT/src/gucefMT_CILockable.cpp
+    ../gucefMT/src/gucefMT_CMutex.cpp
+    ../gucefMT/src/gucefMT_CNoLock.cpp
+    ../gucefMT/src/gucefMT_CObjectScopeLock.cpp
+    ../gucefMT/src/gucefMT_CObjectScopeReadOnlyLock.cpp
+    ../gucefMT/src/gucefMT_CScopeMutex.cpp
+    ../gucefMT/src/gucefMT_LockStatus.cpp
+    ../gucefMT/src/gucefMT_MUTEX.c
+    ../gucefMT/src/gucefMT_ThreadStatus.cpp
+    ../gucefMT/src/gucefMT_dvmtoswrap.c
+  )
+
+  set( PLATFORM_SOURCE_INSTALL "MAC" )
+  source_group( "Platform Source Files" FILES ${PLATFORM_SOURCE_FILES} )
+
+elseif (MACOS)
+  set( PLATFORM_HEADER_FILES 
+    ../gucefCORE/include/CDynamicBuffer.h
+    ../gucefCORE/include/CDynamicBufferAccess.h
+    ../gucefCORE/include/CException.h
+    ../gucefCORE/include/CFileAccess.h
+    ../gucefCORE/include/CICloneable.h
+    ../gucefCORE/include/CIOAccess.h
+    ../gucefCORE/include/CMsgException.h
+    ../gucefCORE/include/DVCPPOSWRAP.h
+    ../gucefCORE/include/DVOSWRAP.h
+    ../gucefCORE/include/MFILE.h
+    ../gucefCORE/include/PAFILE.h
+    ../gucefCORE/include/dvcppfileutils.h
+    ../gucefCORE/include/dvcppstringutils.h
+    ../gucefCORE/include/dvfileutils.h
+    ../gucefCORE/include/dvmd5utils.h
+    ../gucefCORE/include/dvstrutils.h
+    ../gucefCORE/include/gucefCORE_CAsciiString.h
+    ../gucefCORE/include/gucefCORE_CDate.h
+    ../gucefCORE/include/gucefCORE_CDateTime.h
+    ../gucefCORE/include/gucefCORE_CIDate.h
+    ../gucefCORE/include/gucefCORE_CITime.h
+    ../gucefCORE/include/gucefCORE_CProcess.h
+    ../gucefCORE/include/gucefCORE_CRandom.h
+    ../gucefCORE/include/gucefCORE_CResourceMetaData.h
+    ../gucefCORE/include/gucefCORE_CString.h
+    ../gucefCORE/include/gucefCORE_CTime.h
+    ../gucefCORE/include/gucefCORE_CTimestamp.h
+    ../gucefCORE/include/gucefCORE_CUtf16String.h
+    ../gucefCORE/include/gucefCORE_CUtf32String.h
+    ../gucefCORE/include/gucefCORE_CUtf8String.h
+    ../gucefCORE/include/gucefCORE_CVariant.h
+    ../gucefCORE/include/md5.h
+    ../gucefCORE/include/c_api/gucefCORE_c_ioaccess.h
+    ../gucefCORE/include/c_api/gucefCORE_c_variantdata.h
+    ../gucefMT/include/gucefMT_CICloneable.h
+    ../gucefMT/include/gucefMT_CILockable.h
+    ../gucefMT/include/gucefMT_CMutex.h
+    ../gucefMT/include/gucefMT_CNoLock.h
+    ../gucefMT/include/gucefMT_CObjectScopeLock.h
+    ../gucefMT/include/gucefMT_CObjectScopeReadOnlyLock.h
+    ../gucefMT/include/gucefMT_CScopeMutex.h
+    ../gucefMT/include/gucefMT_LockStatus.h
+    ../gucefMT/include/gucefMT_ThreadStatus.h
+    ../gucefMT/include/gucefMT_dvmtoswrap.h
+    ../gucefMT/include/gucefMT_mutex.h
+  )
+
+  set( PLATFORM_HEADER_INSTALL "MACOS" )
+  source_group( "Platform Header Files" FILES ${PLATFORM_HEADER_FILES} )
+
+  set( PLATFORM_SOURCE_FILES 
+    ../gucefCORE/src/CDynamicBuffer.cpp
+    ../gucefCORE/src/CDynamicBufferAccess.cpp
+    ../gucefCORE/src/CException.cpp
+    ../gucefCORE/src/CFileAccess.cpp
+    ../gucefCORE/src/CICloneable.cpp
+    ../gucefCORE/src/CIOAccess.cpp
+    ../gucefCORE/src/CMsgException.cpp
+    ../gucefCORE/src/DVCPPOSWRAP.cpp
+    ../gucefCORE/src/DVOSWRAP.cpp
+    ../gucefCORE/src/IOACCESS.c
+    ../gucefCORE/src/MFILE.c
+    ../gucefCORE/src/PAFILE.c
+    ../gucefCORE/src/dvcppfileutils.cpp
+    ../gucefCORE/src/dvcppstringutils.cpp
+    ../gucefCORE/src/dvfileutils.cpp
+    ../gucefCORE/src/dvmd5utils.c
+    ../gucefCORE/src/dvstrutils.cpp
+    ../gucefCORE/src/gucefCORE_CAsciiString.cpp
+    ../gucefCORE/src/gucefCORE_CDate.cpp
+    ../gucefCORE/src/gucefCORE_CDateTime.cpp
+    ../gucefCORE/src/gucefCORE_CIDate.cpp
+    ../gucefCORE/src/gucefCORE_CITime.cpp
+    ../gucefCORE/src/gucefCORE_CProcess.cpp
+    ../gucefCORE/src/gucefCORE_CRandom.cpp
+    ../gucefCORE/src/gucefCORE_CResourceMetaData.cpp
+    ../gucefCORE/src/gucefCORE_CTime.cpp
+    ../gucefCORE/src/gucefCORE_CTimestamp.cpp
+    ../gucefCORE/src/gucefCORE_CUtf16String.cpp
+    ../gucefCORE/src/gucefCORE_CUtf32String.cpp
+    ../gucefCORE/src/gucefCORE_CUtf8String.cpp
+    ../gucefCORE/src/gucefCORE_CVariant.cpp
+    ../gucefCORE/src/md5.c
+    ../gucefCORE/src/c_api/gucefCORE_c_variantdata.c
+    ../gucefMT/src/gucefMT_CICloneable.cpp
+    ../gucefMT/src/gucefMT_CILockable.cpp
+    ../gucefMT/src/gucefMT_CMutex.cpp
+    ../gucefMT/src/gucefMT_CNoLock.cpp
+    ../gucefMT/src/gucefMT_CObjectScopeLock.cpp
+    ../gucefMT/src/gucefMT_CObjectScopeReadOnlyLock.cpp
+    ../gucefMT/src/gucefMT_CScopeMutex.cpp
+    ../gucefMT/src/gucefMT_LockStatus.cpp
+    ../gucefMT/src/gucefMT_MUTEX.c
+    ../gucefMT/src/gucefMT_ThreadStatus.cpp
+    ../gucefMT/src/gucefMT_dvmtoswrap.c
+  )
+
+  set( PLATFORM_SOURCE_INSTALL "MACOS" )
+  source_group( "Platform Source Files" FILES ${PLATFORM_SOURCE_FILES} )
+
+elseif (MACOSX)
+  set( PLATFORM_HEADER_FILES 
+    ../gucefCORE/include/CDynamicBuffer.h
+    ../gucefCORE/include/CDynamicBufferAccess.h
+    ../gucefCORE/include/CException.h
+    ../gucefCORE/include/CFileAccess.h
+    ../gucefCORE/include/CICloneable.h
+    ../gucefCORE/include/CIOAccess.h
+    ../gucefCORE/include/CMsgException.h
+    ../gucefCORE/include/DVCPPOSWRAP.h
+    ../gucefCORE/include/DVOSWRAP.h
+    ../gucefCORE/include/MFILE.h
+    ../gucefCORE/include/PAFILE.h
+    ../gucefCORE/include/dvcppfileutils.h
+    ../gucefCORE/include/dvcppstringutils.h
+    ../gucefCORE/include/dvfileutils.h
+    ../gucefCORE/include/dvmd5utils.h
+    ../gucefCORE/include/dvstrutils.h
+    ../gucefCORE/include/gucefCORE_CAsciiString.h
+    ../gucefCORE/include/gucefCORE_CDate.h
+    ../gucefCORE/include/gucefCORE_CDateTime.h
+    ../gucefCORE/include/gucefCORE_CIDate.h
+    ../gucefCORE/include/gucefCORE_CITime.h
+    ../gucefCORE/include/gucefCORE_CProcess.h
+    ../gucefCORE/include/gucefCORE_CRandom.h
+    ../gucefCORE/include/gucefCORE_CResourceMetaData.h
+    ../gucefCORE/include/gucefCORE_CString.h
+    ../gucefCORE/include/gucefCORE_CTime.h
+    ../gucefCORE/include/gucefCORE_CTimestamp.h
+    ../gucefCORE/include/gucefCORE_CUtf16String.h
+    ../gucefCORE/include/gucefCORE_CUtf32String.h
+    ../gucefCORE/include/gucefCORE_CUtf8String.h
+    ../gucefCORE/include/gucefCORE_CVariant.h
+    ../gucefCORE/include/md5.h
+    ../gucefCORE/include/c_api/gucefCORE_c_ioaccess.h
+    ../gucefCORE/include/c_api/gucefCORE_c_variantdata.h
+    ../gucefMT/include/gucefMT_CICloneable.h
+    ../gucefMT/include/gucefMT_CILockable.h
+    ../gucefMT/include/gucefMT_CMutex.h
+    ../gucefMT/include/gucefMT_CNoLock.h
+    ../gucefMT/include/gucefMT_CObjectScopeLock.h
+    ../gucefMT/include/gucefMT_CObjectScopeReadOnlyLock.h
+    ../gucefMT/include/gucefMT_CScopeMutex.h
+    ../gucefMT/include/gucefMT_LockStatus.h
+    ../gucefMT/include/gucefMT_ThreadStatus.h
+    ../gucefMT/include/gucefMT_dvmtoswrap.h
+    ../gucefMT/include/gucefMT_mutex.h
+  )
+
+  set( PLATFORM_HEADER_INSTALL "MACOSX" )
+  source_group( "Platform Header Files" FILES ${PLATFORM_HEADER_FILES} )
+
+  set( PLATFORM_SOURCE_FILES 
+    ../gucefCORE/src/CDynamicBuffer.cpp
+    ../gucefCORE/src/CDynamicBufferAccess.cpp
+    ../gucefCORE/src/CException.cpp
+    ../gucefCORE/src/CFileAccess.cpp
+    ../gucefCORE/src/CICloneable.cpp
+    ../gucefCORE/src/CIOAccess.cpp
+    ../gucefCORE/src/CMsgException.cpp
+    ../gucefCORE/src/DVCPPOSWRAP.cpp
+    ../gucefCORE/src/DVOSWRAP.cpp
+    ../gucefCORE/src/IOACCESS.c
+    ../gucefCORE/src/MFILE.c
+    ../gucefCORE/src/PAFILE.c
+    ../gucefCORE/src/dvcppfileutils.cpp
+    ../gucefCORE/src/dvcppstringutils.cpp
+    ../gucefCORE/src/dvfileutils.cpp
+    ../gucefCORE/src/dvmd5utils.c
+    ../gucefCORE/src/dvstrutils.cpp
+    ../gucefCORE/src/gucefCORE_CAsciiString.cpp
+    ../gucefCORE/src/gucefCORE_CDate.cpp
+    ../gucefCORE/src/gucefCORE_CDateTime.cpp
+    ../gucefCORE/src/gucefCORE_CIDate.cpp
+    ../gucefCORE/src/gucefCORE_CITime.cpp
+    ../gucefCORE/src/gucefCORE_CProcess.cpp
+    ../gucefCORE/src/gucefCORE_CRandom.cpp
+    ../gucefCORE/src/gucefCORE_CResourceMetaData.cpp
+    ../gucefCORE/src/gucefCORE_CTime.cpp
+    ../gucefCORE/src/gucefCORE_CTimestamp.cpp
+    ../gucefCORE/src/gucefCORE_CUtf16String.cpp
+    ../gucefCORE/src/gucefCORE_CUtf32String.cpp
+    ../gucefCORE/src/gucefCORE_CUtf8String.cpp
+    ../gucefCORE/src/gucefCORE_CVariant.cpp
+    ../gucefCORE/src/md5.c
+    ../gucefCORE/src/c_api/gucefCORE_c_variantdata.c
+    ../gucefMT/src/gucefMT_CICloneable.cpp
+    ../gucefMT/src/gucefMT_CILockable.cpp
+    ../gucefMT/src/gucefMT_CMutex.cpp
+    ../gucefMT/src/gucefMT_CNoLock.cpp
+    ../gucefMT/src/gucefMT_CObjectScopeLock.cpp
+    ../gucefMT/src/gucefMT_CObjectScopeReadOnlyLock.cpp
+    ../gucefMT/src/gucefMT_CScopeMutex.cpp
+    ../gucefMT/src/gucefMT_LockStatus.cpp
+    ../gucefMT/src/gucefMT_MUTEX.c
+    ../gucefMT/src/gucefMT_ThreadStatus.cpp
+    ../gucefMT/src/gucefMT_dvmtoswrap.c
+  )
+
+  set( PLATFORM_SOURCE_INSTALL "MACOSX" )
+  source_group( "Platform Source Files" FILES ${PLATFORM_SOURCE_FILES} )
+
+elseif (MSWIN)
+  set( PLATFORM_HEADER_FILES 
+    ../gucefCORE/include/CDynamicBuffer.h
+    ../gucefCORE/include/CDynamicBufferAccess.h
+    ../gucefCORE/include/CException.h
+    ../gucefCORE/include/CFileAccess.h
+    ../gucefCORE/include/CICloneable.h
+    ../gucefCORE/include/CIOAccess.h
+    ../gucefCORE/include/CMsgException.h
+    ../gucefCORE/include/DVCPPOSWRAP.h
+    ../gucefCORE/include/DVOSWRAP.h
+    ../gucefCORE/include/MFILE.h
+    ../gucefCORE/include/PAFILE.h
+    ../gucefCORE/include/dvcppfileutils.h
+    ../gucefCORE/include/dvcppstringutils.h
+    ../gucefCORE/include/dvfileutils.h
+    ../gucefCORE/include/dvmd5utils.h
+    ../gucefCORE/include/dvstrutils.h
+    ../gucefCORE/include/gucefCORE_CAsciiString.h
+    ../gucefCORE/include/gucefCORE_CDate.h
+    ../gucefCORE/include/gucefCORE_CDateTime.h
+    ../gucefCORE/include/gucefCORE_CIDate.h
+    ../gucefCORE/include/gucefCORE_CITime.h
+    ../gucefCORE/include/gucefCORE_CProcess.h
+    ../gucefCORE/include/gucefCORE_CRandom.h
+    ../gucefCORE/include/gucefCORE_CResourceMetaData.h
+    ../gucefCORE/include/gucefCORE_CString.h
+    ../gucefCORE/include/gucefCORE_CTime.h
+    ../gucefCORE/include/gucefCORE_CTimestamp.h
+    ../gucefCORE/include/gucefCORE_CUtf16String.h
+    ../gucefCORE/include/gucefCORE_CUtf32String.h
+    ../gucefCORE/include/gucefCORE_CUtf8String.h
+    ../gucefCORE/include/gucefCORE_CVariant.h
+    ../gucefCORE/include/md5.h
+    ../gucefCORE/include/c_api/gucefCORE_c_ioaccess.h
+    ../gucefCORE/include/c_api/gucefCORE_c_variantdata.h
+    ../gucefMT/include/gucefMT_CICloneable.h
+    ../gucefMT/include/gucefMT_CILockable.h
+    ../gucefMT/include/gucefMT_CMutex.h
+    ../gucefMT/include/gucefMT_CNoLock.h
+    ../gucefMT/include/gucefMT_CObjectScopeLock.h
+    ../gucefMT/include/gucefMT_CObjectScopeReadOnlyLock.h
+    ../gucefMT/include/gucefMT_CScopeMutex.h
+    ../gucefMT/include/gucefMT_LockStatus.h
+    ../gucefMT/include/gucefMT_ThreadStatus.h
+    ../gucefMT/include/gucefMT_dvmtoswrap.h
+    ../gucefMT/include/gucefMT_mutex.h
+  )
+
+  set( PLATFORM_HEADER_INSTALL "MSWIN" )
+  source_group( "Platform Header Files" FILES ${PLATFORM_HEADER_FILES} )
+
+  set( PLATFORM_SOURCE_FILES 
+    ../gucefCORE/src/CDynamicBuffer.cpp
+    ../gucefCORE/src/CDynamicBufferAccess.cpp
+    ../gucefCORE/src/CException.cpp
+    ../gucefCORE/src/CFileAccess.cpp
+    ../gucefCORE/src/CICloneable.cpp
+    ../gucefCORE/src/CIOAccess.cpp
+    ../gucefCORE/src/CMsgException.cpp
+    ../gucefCORE/src/DVCPPOSWRAP.cpp
+    ../gucefCORE/src/DVOSWRAP.cpp
+    ../gucefCORE/src/IOACCESS.c
+    ../gucefCORE/src/MFILE.c
+    ../gucefCORE/src/PAFILE.c
+    ../gucefCORE/src/dvcppfileutils.cpp
+    ../gucefCORE/src/dvcppstringutils.cpp
+    ../gucefCORE/src/dvfileutils.cpp
+    ../gucefCORE/src/dvmd5utils.c
+    ../gucefCORE/src/dvstrutils.cpp
+    ../gucefCORE/src/gucefCORE_CAsciiString.cpp
+    ../gucefCORE/src/gucefCORE_CDate.cpp
+    ../gucefCORE/src/gucefCORE_CDateTime.cpp
+    ../gucefCORE/src/gucefCORE_CIDate.cpp
+    ../gucefCORE/src/gucefCORE_CITime.cpp
+    ../gucefCORE/src/gucefCORE_CProcess.cpp
+    ../gucefCORE/src/gucefCORE_CRandom.cpp
+    ../gucefCORE/src/gucefCORE_CResourceMetaData.cpp
+    ../gucefCORE/src/gucefCORE_CTime.cpp
+    ../gucefCORE/src/gucefCORE_CTimestamp.cpp
+    ../gucefCORE/src/gucefCORE_CUtf16String.cpp
+    ../gucefCORE/src/gucefCORE_CUtf32String.cpp
+    ../gucefCORE/src/gucefCORE_CUtf8String.cpp
+    ../gucefCORE/src/gucefCORE_CVariant.cpp
+    ../gucefCORE/src/md5.c
+    ../gucefCORE/src/c_api/gucefCORE_c_variantdata.c
+    ../gucefMT/src/gucefMT_CICloneable.cpp
+    ../gucefMT/src/gucefMT_CILockable.cpp
+    ../gucefMT/src/gucefMT_CMutex.cpp
+    ../gucefMT/src/gucefMT_CNoLock.cpp
+    ../gucefMT/src/gucefMT_CObjectScopeLock.cpp
+    ../gucefMT/src/gucefMT_CObjectScopeReadOnlyLock.cpp
+    ../gucefMT/src/gucefMT_CScopeMutex.cpp
+    ../gucefMT/src/gucefMT_LockStatus.cpp
+    ../gucefMT/src/gucefMT_MUTEX.c
+    ../gucefMT/src/gucefMT_ThreadStatus.cpp
+    ../gucefMT/src/gucefMT_dvmtoswrap.c
+  )
+
+  set( PLATFORM_SOURCE_INSTALL "MSWIN" )
   source_group( "Platform Source Files" FILES ${PLATFORM_SOURCE_FILES} )
 
 elseif (NACL)
@@ -1116,6 +2078,8 @@ elseif (NACL)
     ../gucefCORE/include/gucefCORE_CDateTime.h
     ../gucefCORE/include/gucefCORE_CIDate.h
     ../gucefCORE/include/gucefCORE_CITime.h
+    ../gucefCORE/include/gucefCORE_CProcess.h
+    ../gucefCORE/include/gucefCORE_CRandom.h
     ../gucefCORE/include/gucefCORE_CResourceMetaData.h
     ../gucefCORE/include/gucefCORE_CString.h
     ../gucefCORE/include/gucefCORE_CTime.h
@@ -1166,6 +2130,8 @@ elseif (NACL)
     ../gucefCORE/src/gucefCORE_CDateTime.cpp
     ../gucefCORE/src/gucefCORE_CIDate.cpp
     ../gucefCORE/src/gucefCORE_CITime.cpp
+    ../gucefCORE/src/gucefCORE_CProcess.cpp
+    ../gucefCORE/src/gucefCORE_CRandom.cpp
     ../gucefCORE/src/gucefCORE_CResourceMetaData.cpp
     ../gucefCORE/src/gucefCORE_CTime.cpp
     ../gucefCORE/src/gucefCORE_CTimestamp.cpp
@@ -1183,9 +2149,9 @@ elseif (NACL)
     ../gucefMT/src/gucefMT_CObjectScopeReadOnlyLock.cpp
     ../gucefMT/src/gucefMT_CScopeMutex.cpp
     ../gucefMT/src/gucefMT_LockStatus.cpp
+    ../gucefMT/src/gucefMT_MUTEX.c
     ../gucefMT/src/gucefMT_ThreadStatus.cpp
     ../gucefMT/src/gucefMT_dvmtoswrap.c
-    ../gucefMT/src/gucefMT_mutex.c
   )
 
   set( PLATFORM_SOURCE_INSTALL "NACL" )
@@ -1214,6 +2180,8 @@ elseif (OSX)
     ../gucefCORE/include/gucefCORE_CDateTime.h
     ../gucefCORE/include/gucefCORE_CIDate.h
     ../gucefCORE/include/gucefCORE_CITime.h
+    ../gucefCORE/include/gucefCORE_CProcess.h
+    ../gucefCORE/include/gucefCORE_CRandom.h
     ../gucefCORE/include/gucefCORE_CResourceMetaData.h
     ../gucefCORE/include/gucefCORE_CString.h
     ../gucefCORE/include/gucefCORE_CTime.h
@@ -1264,6 +2232,8 @@ elseif (OSX)
     ../gucefCORE/src/gucefCORE_CDateTime.cpp
     ../gucefCORE/src/gucefCORE_CIDate.cpp
     ../gucefCORE/src/gucefCORE_CITime.cpp
+    ../gucefCORE/src/gucefCORE_CProcess.cpp
+    ../gucefCORE/src/gucefCORE_CRandom.cpp
     ../gucefCORE/src/gucefCORE_CResourceMetaData.cpp
     ../gucefCORE/src/gucefCORE_CTime.cpp
     ../gucefCORE/src/gucefCORE_CTimestamp.cpp
@@ -1281,9 +2251,9 @@ elseif (OSX)
     ../gucefMT/src/gucefMT_CObjectScopeReadOnlyLock.cpp
     ../gucefMT/src/gucefMT_CScopeMutex.cpp
     ../gucefMT/src/gucefMT_LockStatus.cpp
+    ../gucefMT/src/gucefMT_MUTEX.c
     ../gucefMT/src/gucefMT_ThreadStatus.cpp
     ../gucefMT/src/gucefMT_dvmtoswrap.c
-    ../gucefMT/src/gucefMT_mutex.c
   )
 
   set( PLATFORM_SOURCE_INSTALL "OSX" )
@@ -1312,6 +2282,8 @@ elseif (POSIX)
     ../gucefCORE/include/gucefCORE_CDateTime.h
     ../gucefCORE/include/gucefCORE_CIDate.h
     ../gucefCORE/include/gucefCORE_CITime.h
+    ../gucefCORE/include/gucefCORE_CProcess.h
+    ../gucefCORE/include/gucefCORE_CRandom.h
     ../gucefCORE/include/gucefCORE_CResourceMetaData.h
     ../gucefCORE/include/gucefCORE_CString.h
     ../gucefCORE/include/gucefCORE_CTime.h
@@ -1362,6 +2334,8 @@ elseif (POSIX)
     ../gucefCORE/src/gucefCORE_CDateTime.cpp
     ../gucefCORE/src/gucefCORE_CIDate.cpp
     ../gucefCORE/src/gucefCORE_CITime.cpp
+    ../gucefCORE/src/gucefCORE_CProcess.cpp
+    ../gucefCORE/src/gucefCORE_CRandom.cpp
     ../gucefCORE/src/gucefCORE_CResourceMetaData.cpp
     ../gucefCORE/src/gucefCORE_CTime.cpp
     ../gucefCORE/src/gucefCORE_CTimestamp.cpp
@@ -1379,9 +2353,9 @@ elseif (POSIX)
     ../gucefMT/src/gucefMT_CObjectScopeReadOnlyLock.cpp
     ../gucefMT/src/gucefMT_CScopeMutex.cpp
     ../gucefMT/src/gucefMT_LockStatus.cpp
+    ../gucefMT/src/gucefMT_MUTEX.c
     ../gucefMT/src/gucefMT_ThreadStatus.cpp
     ../gucefMT/src/gucefMT_dvmtoswrap.c
-    ../gucefMT/src/gucefMT_mutex.c
   )
 
   set( PLATFORM_SOURCE_INSTALL "POSIX" )
@@ -1410,6 +2384,8 @@ elseif (SDL)
     ../gucefCORE/include/gucefCORE_CDateTime.h
     ../gucefCORE/include/gucefCORE_CIDate.h
     ../gucefCORE/include/gucefCORE_CITime.h
+    ../gucefCORE/include/gucefCORE_CProcess.h
+    ../gucefCORE/include/gucefCORE_CRandom.h
     ../gucefCORE/include/gucefCORE_CResourceMetaData.h
     ../gucefCORE/include/gucefCORE_CString.h
     ../gucefCORE/include/gucefCORE_CTime.h
@@ -1460,6 +2436,8 @@ elseif (SDL)
     ../gucefCORE/src/gucefCORE_CDateTime.cpp
     ../gucefCORE/src/gucefCORE_CIDate.cpp
     ../gucefCORE/src/gucefCORE_CITime.cpp
+    ../gucefCORE/src/gucefCORE_CProcess.cpp
+    ../gucefCORE/src/gucefCORE_CRandom.cpp
     ../gucefCORE/src/gucefCORE_CResourceMetaData.cpp
     ../gucefCORE/src/gucefCORE_CTime.cpp
     ../gucefCORE/src/gucefCORE_CTimestamp.cpp
@@ -1477,9 +2455,9 @@ elseif (SDL)
     ../gucefMT/src/gucefMT_CObjectScopeReadOnlyLock.cpp
     ../gucefMT/src/gucefMT_CScopeMutex.cpp
     ../gucefMT/src/gucefMT_LockStatus.cpp
+    ../gucefMT/src/gucefMT_MUTEX.c
     ../gucefMT/src/gucefMT_ThreadStatus.cpp
     ../gucefMT/src/gucefMT_dvmtoswrap.c
-    ../gucefMT/src/gucefMT_mutex.c
   )
 
   set( PLATFORM_SOURCE_INSTALL "SDL" )
@@ -1508,6 +2486,8 @@ elseif (SYMBIAN)
     ../gucefCORE/include/gucefCORE_CDateTime.h
     ../gucefCORE/include/gucefCORE_CIDate.h
     ../gucefCORE/include/gucefCORE_CITime.h
+    ../gucefCORE/include/gucefCORE_CProcess.h
+    ../gucefCORE/include/gucefCORE_CRandom.h
     ../gucefCORE/include/gucefCORE_CResourceMetaData.h
     ../gucefCORE/include/gucefCORE_CString.h
     ../gucefCORE/include/gucefCORE_CTime.h
@@ -1558,6 +2538,8 @@ elseif (SYMBIAN)
     ../gucefCORE/src/gucefCORE_CDateTime.cpp
     ../gucefCORE/src/gucefCORE_CIDate.cpp
     ../gucefCORE/src/gucefCORE_CITime.cpp
+    ../gucefCORE/src/gucefCORE_CProcess.cpp
+    ../gucefCORE/src/gucefCORE_CRandom.cpp
     ../gucefCORE/src/gucefCORE_CResourceMetaData.cpp
     ../gucefCORE/src/gucefCORE_CTime.cpp
     ../gucefCORE/src/gucefCORE_CTimestamp.cpp
@@ -1575,9 +2557,9 @@ elseif (SYMBIAN)
     ../gucefMT/src/gucefMT_CObjectScopeReadOnlyLock.cpp
     ../gucefMT/src/gucefMT_CScopeMutex.cpp
     ../gucefMT/src/gucefMT_LockStatus.cpp
+    ../gucefMT/src/gucefMT_MUTEX.c
     ../gucefMT/src/gucefMT_ThreadStatus.cpp
     ../gucefMT/src/gucefMT_dvmtoswrap.c
-    ../gucefMT/src/gucefMT_mutex.c
   )
 
   set( PLATFORM_SOURCE_INSTALL "SYMBIAN" )
@@ -1606,6 +2588,8 @@ elseif (UNIX)
     ../gucefCORE/include/gucefCORE_CDateTime.h
     ../gucefCORE/include/gucefCORE_CIDate.h
     ../gucefCORE/include/gucefCORE_CITime.h
+    ../gucefCORE/include/gucefCORE_CProcess.h
+    ../gucefCORE/include/gucefCORE_CRandom.h
     ../gucefCORE/include/gucefCORE_CResourceMetaData.h
     ../gucefCORE/include/gucefCORE_CString.h
     ../gucefCORE/include/gucefCORE_CTime.h
@@ -1656,6 +2640,8 @@ elseif (UNIX)
     ../gucefCORE/src/gucefCORE_CDateTime.cpp
     ../gucefCORE/src/gucefCORE_CIDate.cpp
     ../gucefCORE/src/gucefCORE_CITime.cpp
+    ../gucefCORE/src/gucefCORE_CProcess.cpp
+    ../gucefCORE/src/gucefCORE_CRandom.cpp
     ../gucefCORE/src/gucefCORE_CResourceMetaData.cpp
     ../gucefCORE/src/gucefCORE_CTime.cpp
     ../gucefCORE/src/gucefCORE_CTimestamp.cpp
@@ -1673,9 +2659,9 @@ elseif (UNIX)
     ../gucefMT/src/gucefMT_CObjectScopeReadOnlyLock.cpp
     ../gucefMT/src/gucefMT_CScopeMutex.cpp
     ../gucefMT/src/gucefMT_LockStatus.cpp
+    ../gucefMT/src/gucefMT_MUTEX.c
     ../gucefMT/src/gucefMT_ThreadStatus.cpp
     ../gucefMT/src/gucefMT_dvmtoswrap.c
-    ../gucefMT/src/gucefMT_mutex.c
   )
 
   set( PLATFORM_SOURCE_INSTALL "UNIX" )
@@ -1704,6 +2690,8 @@ elseif (WIN32)
     ../gucefCORE/include/gucefCORE_CDateTime.h
     ../gucefCORE/include/gucefCORE_CIDate.h
     ../gucefCORE/include/gucefCORE_CITime.h
+    ../gucefCORE/include/gucefCORE_CProcess.h
+    ../gucefCORE/include/gucefCORE_CRandom.h
     ../gucefCORE/include/gucefCORE_CResourceMetaData.h
     ../gucefCORE/include/gucefCORE_CString.h
     ../gucefCORE/include/gucefCORE_CTime.h
@@ -1757,6 +2745,8 @@ elseif (WIN32)
     ../gucefCORE/src/gucefCORE_CDateTime.cpp
     ../gucefCORE/src/gucefCORE_CIDate.cpp
     ../gucefCORE/src/gucefCORE_CITime.cpp
+    ../gucefCORE/src/gucefCORE_CProcess.cpp
+    ../gucefCORE/src/gucefCORE_CRandom.cpp
     ../gucefCORE/src/gucefCORE_CResourceMetaData.cpp
     ../gucefCORE/src/gucefCORE_CTime.cpp
     ../gucefCORE/src/gucefCORE_CTimestamp.cpp
@@ -1776,9 +2766,9 @@ elseif (WIN32)
     ../gucefMT/src/gucefMT_CObjectScopeReadOnlyLock.cpp
     ../gucefMT/src/gucefMT_CScopeMutex.cpp
     ../gucefMT/src/gucefMT_LockStatus.cpp
+    ../gucefMT/src/gucefMT_MUTEX.c
     ../gucefMT/src/gucefMT_ThreadStatus.cpp
     ../gucefMT/src/gucefMT_dvmtoswrap.c
-    ../gucefMT/src/gucefMT_mutex.c
     ../gucefMT/src/mswin/gucefMT_mswinutils.cpp
   )
 
@@ -1808,6 +2798,8 @@ elseif (WIN64)
     ../gucefCORE/include/gucefCORE_CDateTime.h
     ../gucefCORE/include/gucefCORE_CIDate.h
     ../gucefCORE/include/gucefCORE_CITime.h
+    ../gucefCORE/include/gucefCORE_CProcess.h
+    ../gucefCORE/include/gucefCORE_CRandom.h
     ../gucefCORE/include/gucefCORE_CResourceMetaData.h
     ../gucefCORE/include/gucefCORE_CString.h
     ../gucefCORE/include/gucefCORE_CTime.h
@@ -1861,6 +2853,8 @@ elseif (WIN64)
     ../gucefCORE/src/gucefCORE_CDateTime.cpp
     ../gucefCORE/src/gucefCORE_CIDate.cpp
     ../gucefCORE/src/gucefCORE_CITime.cpp
+    ../gucefCORE/src/gucefCORE_CProcess.cpp
+    ../gucefCORE/src/gucefCORE_CRandom.cpp
     ../gucefCORE/src/gucefCORE_CResourceMetaData.cpp
     ../gucefCORE/src/gucefCORE_CTime.cpp
     ../gucefCORE/src/gucefCORE_CTimestamp.cpp
@@ -1880,13 +2874,115 @@ elseif (WIN64)
     ../gucefMT/src/gucefMT_CObjectScopeReadOnlyLock.cpp
     ../gucefMT/src/gucefMT_CScopeMutex.cpp
     ../gucefMT/src/gucefMT_LockStatus.cpp
+    ../gucefMT/src/gucefMT_MUTEX.c
     ../gucefMT/src/gucefMT_ThreadStatus.cpp
     ../gucefMT/src/gucefMT_dvmtoswrap.c
-    ../gucefMT/src/gucefMT_mutex.c
     ../gucefMT/src/mswin/gucefMT_mswinutils.cpp
   )
 
   set( PLATFORM_SOURCE_INSTALL "WIN64" )
+  source_group( "Platform Source Files" FILES ${PLATFORM_SOURCE_FILES} )
+
+elseif (WINDOWS)
+  set( PLATFORM_HEADER_FILES 
+    ../gucefCORE/include/CDynamicBuffer.h
+    ../gucefCORE/include/CDynamicBufferAccess.h
+    ../gucefCORE/include/CException.h
+    ../gucefCORE/include/CFileAccess.h
+    ../gucefCORE/include/CICloneable.h
+    ../gucefCORE/include/CIOAccess.h
+    ../gucefCORE/include/CMsgException.h
+    ../gucefCORE/include/DVCPPOSWRAP.h
+    ../gucefCORE/include/DVOSWRAP.h
+    ../gucefCORE/include/MFILE.h
+    ../gucefCORE/include/PAFILE.h
+    ../gucefCORE/include/dvcppfileutils.h
+    ../gucefCORE/include/dvcppstringutils.h
+    ../gucefCORE/include/dvfileutils.h
+    ../gucefCORE/include/dvmd5utils.h
+    ../gucefCORE/include/dvstrutils.h
+    ../gucefCORE/include/gucefCORE_CAsciiString.h
+    ../gucefCORE/include/gucefCORE_CDate.h
+    ../gucefCORE/include/gucefCORE_CDateTime.h
+    ../gucefCORE/include/gucefCORE_CIDate.h
+    ../gucefCORE/include/gucefCORE_CITime.h
+    ../gucefCORE/include/gucefCORE_CProcess.h
+    ../gucefCORE/include/gucefCORE_CRandom.h
+    ../gucefCORE/include/gucefCORE_CResourceMetaData.h
+    ../gucefCORE/include/gucefCORE_CString.h
+    ../gucefCORE/include/gucefCORE_CTime.h
+    ../gucefCORE/include/gucefCORE_CTimestamp.h
+    ../gucefCORE/include/gucefCORE_CUtf16String.h
+    ../gucefCORE/include/gucefCORE_CUtf32String.h
+    ../gucefCORE/include/gucefCORE_CUtf8String.h
+    ../gucefCORE/include/gucefCORE_CVariant.h
+    ../gucefCORE/include/md5.h
+    ../gucefCORE/include/c_api/gucefCORE_c_ioaccess.h
+    ../gucefCORE/include/c_api/gucefCORE_c_variantdata.h
+    ../gucefMT/include/gucefMT_CICloneable.h
+    ../gucefMT/include/gucefMT_CILockable.h
+    ../gucefMT/include/gucefMT_CMutex.h
+    ../gucefMT/include/gucefMT_CNoLock.h
+    ../gucefMT/include/gucefMT_CObjectScopeLock.h
+    ../gucefMT/include/gucefMT_CObjectScopeReadOnlyLock.h
+    ../gucefMT/include/gucefMT_CScopeMutex.h
+    ../gucefMT/include/gucefMT_LockStatus.h
+    ../gucefMT/include/gucefMT_ThreadStatus.h
+    ../gucefMT/include/gucefMT_dvmtoswrap.h
+    ../gucefMT/include/gucefMT_mutex.h
+  )
+
+  set( PLATFORM_HEADER_INSTALL "WINDOWS" )
+  source_group( "Platform Header Files" FILES ${PLATFORM_HEADER_FILES} )
+
+  set( PLATFORM_SOURCE_FILES 
+    ../gucefCORE/src/CDynamicBuffer.cpp
+    ../gucefCORE/src/CDynamicBufferAccess.cpp
+    ../gucefCORE/src/CException.cpp
+    ../gucefCORE/src/CFileAccess.cpp
+    ../gucefCORE/src/CICloneable.cpp
+    ../gucefCORE/src/CIOAccess.cpp
+    ../gucefCORE/src/CMsgException.cpp
+    ../gucefCORE/src/DVCPPOSWRAP.cpp
+    ../gucefCORE/src/DVOSWRAP.cpp
+    ../gucefCORE/src/IOACCESS.c
+    ../gucefCORE/src/MFILE.c
+    ../gucefCORE/src/PAFILE.c
+    ../gucefCORE/src/dvcppfileutils.cpp
+    ../gucefCORE/src/dvcppstringutils.cpp
+    ../gucefCORE/src/dvfileutils.cpp
+    ../gucefCORE/src/dvmd5utils.c
+    ../gucefCORE/src/dvstrutils.cpp
+    ../gucefCORE/src/gucefCORE_CAsciiString.cpp
+    ../gucefCORE/src/gucefCORE_CDate.cpp
+    ../gucefCORE/src/gucefCORE_CDateTime.cpp
+    ../gucefCORE/src/gucefCORE_CIDate.cpp
+    ../gucefCORE/src/gucefCORE_CITime.cpp
+    ../gucefCORE/src/gucefCORE_CProcess.cpp
+    ../gucefCORE/src/gucefCORE_CRandom.cpp
+    ../gucefCORE/src/gucefCORE_CResourceMetaData.cpp
+    ../gucefCORE/src/gucefCORE_CTime.cpp
+    ../gucefCORE/src/gucefCORE_CTimestamp.cpp
+    ../gucefCORE/src/gucefCORE_CUtf16String.cpp
+    ../gucefCORE/src/gucefCORE_CUtf32String.cpp
+    ../gucefCORE/src/gucefCORE_CUtf8String.cpp
+    ../gucefCORE/src/gucefCORE_CVariant.cpp
+    ../gucefCORE/src/md5.c
+    ../gucefCORE/src/c_api/gucefCORE_c_variantdata.c
+    ../gucefMT/src/gucefMT_CICloneable.cpp
+    ../gucefMT/src/gucefMT_CILockable.cpp
+    ../gucefMT/src/gucefMT_CMutex.cpp
+    ../gucefMT/src/gucefMT_CNoLock.cpp
+    ../gucefMT/src/gucefMT_CObjectScopeLock.cpp
+    ../gucefMT/src/gucefMT_CObjectScopeReadOnlyLock.cpp
+    ../gucefMT/src/gucefMT_CScopeMutex.cpp
+    ../gucefMT/src/gucefMT_LockStatus.cpp
+    ../gucefMT/src/gucefMT_MUTEX.c
+    ../gucefMT/src/gucefMT_ThreadStatus.cpp
+    ../gucefMT/src/gucefMT_dvmtoswrap.c
+  )
+
+  set( PLATFORM_SOURCE_INSTALL "WINDOWS" )
   source_group( "Platform Source Files" FILES ${PLATFORM_SOURCE_FILES} )
 
 endif ()
@@ -1927,6 +3023,10 @@ endif( WIN64 )
 
 include_directories( .. ../../common/include ../gucefCORE ../gucefCORE/include ../gucefCORE/include/c_api ../gucefMT ../gucefMT/include include )
 
+if ( ANDROID )
+  include_directories( ../gucefCORE/include/ ../gucefCORE/include/c_api/ ../gucefMT/include/ )
+endif( ANDROID )
+
 if ( ANDROID32 )
   include_directories( ../gucefCORE/include/ ../gucefCORE/include/android ../gucefCORE/include/c_api/ ../gucefMT/include/ )
 endif( ANDROID32 )
@@ -1938,6 +3038,10 @@ endif( ANDROID64 )
 if ( ARDUINO )
   include_directories( ../gucefCORE/include/ ../gucefCORE/include/c_api/ ../gucefMT/include/ )
 endif( ARDUINO )
+
+if ( EMSCRIPTEN )
+  include_directories( ../gucefCORE/include/ ../gucefCORE/include/c_api/ ../gucefMT/include/ )
+endif( EMSCRIPTEN )
 
 if ( EMSCRIPTEN32 )
   include_directories( ../gucefCORE/include/ ../gucefCORE/include/c_api/ ../gucefMT/include/ )
@@ -1959,6 +3063,18 @@ if ( IOS )
   include_directories( ../gucefCORE/include/ ../gucefCORE/include/c_api/ ../gucefMT/include/ )
 endif( IOS )
 
+if ( IPHONE )
+  include_directories( ../gucefCORE/include/ ../gucefCORE/include/c_api/ ../gucefMT/include/ )
+endif( IPHONE )
+
+if ( IPHONEOS )
+  include_directories( ../gucefCORE/include/ ../gucefCORE/include/c_api/ ../gucefMT/include/ )
+endif( IPHONEOS )
+
+if ( LINUX )
+  include_directories( ../gucefCORE/include/ ../gucefCORE/include/c_api/ ../gucefMT/include/ )
+endif( LINUX )
+
 if ( LINUX32 )
   include_directories( ../gucefCORE/include/ ../gucefCORE/include/c_api/ ../gucefCORE/include/linux ../gucefMT/include/ )
 endif( LINUX32 )
@@ -1966,6 +3082,22 @@ endif( LINUX32 )
 if ( LINUX64 )
   include_directories( ../gucefCORE/include/ ../gucefCORE/include/c_api/ ../gucefCORE/include/linux ../gucefMT/include/ )
 endif( LINUX64 )
+
+if ( MAC )
+  include_directories( ../gucefCORE/include/ ../gucefCORE/include/c_api/ ../gucefMT/include/ )
+endif( MAC )
+
+if ( MACOS )
+  include_directories( ../gucefCORE/include/ ../gucefCORE/include/c_api/ ../gucefMT/include/ )
+endif( MACOS )
+
+if ( MACOSX )
+  include_directories( ../gucefCORE/include/ ../gucefCORE/include/c_api/ ../gucefMT/include/ )
+endif( MACOSX )
+
+if ( MSWIN )
+  include_directories( ../gucefCORE/include/ ../gucefCORE/include/c_api/ ../gucefMT/include/ )
+endif( MSWIN )
 
 if ( NACL )
   include_directories( ../gucefCORE/include/ ../gucefCORE/include/c_api/ ../gucefMT/include/ )
@@ -1998,6 +3130,10 @@ endif( WIN32 )
 if ( WIN64 )
   include_directories( ../gucefCORE/include/ ../gucefCORE/include/c_api/ ../gucefCORE/include/mswin ../gucefMT/include/ ../gucefMT/include/mswin )
 endif( WIN64 )
+
+if ( WINDOWS )
+  include_directories( ../gucefCORE/include/ ../gucefCORE/include/c_api/ ../gucefMT/include/ )
+endif( WINDOWS )
 
 
 

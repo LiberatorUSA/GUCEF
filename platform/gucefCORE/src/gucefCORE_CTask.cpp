@@ -60,6 +60,7 @@ CTask::CTask( TTaskStatus taskStatus )
     , m_threadPool()
     , m_taskConsumer()
     , m_assumedOwnershipOfTaskData( false )
+    , m_cancellationRequested( false )
     , m_taskId()
     , m_taskStatus( taskStatus )
     , m_taskStatusExtraInfo()
@@ -91,6 +92,7 @@ CTask::CTask( const CTask& src )
     , m_threadPool( src.m_threadPool )
     , m_taskConsumer( src.m_taskConsumer )
     , m_assumedOwnershipOfTaskData( false )
+    , m_cancellationRequested( false )
     , m_taskId()
     , m_taskStatus( src.m_taskStatus )
     , m_taskStatusExtraInfo( src.m_taskStatusExtraInfo )
@@ -114,6 +116,7 @@ CTask::CTask( CTask&& src ) GUCEF_NOEXCEPT
     , m_threadPool( GUCEF_MOVE( src.m_threadPool ) )
     , m_taskConsumer( GUCEF_MOVE( src.m_taskConsumer ) )
     , m_assumedOwnershipOfTaskData( src.m_assumedOwnershipOfTaskData )
+    , m_cancellationRequested( src.m_cancellationRequested )
     , m_taskId( GUCEF_MOVE( src.m_taskId ) )
     , m_taskStatus( src.m_taskStatus )
     , m_taskStatusExtraInfo( GUCEF_MOVE( src.m_taskStatusExtraInfo ) )
@@ -347,7 +350,7 @@ CTask::GetAllUpcomingTasksInChain( TTaskPtrSet& taskSet ) const
             {
                 for ( UInt32 n=i+1; n<m_chainTasks.size(); ++n )
                 {
-                    CTaskPtr task = threadPool->GetTaskObjById( m_chainTasks[ i ] );
+                    CTaskPtr task = threadPool.IsNULL() ? CTaskPtr() : threadPool->GetTaskObjById( m_chainTasks[ n ] );
                     if ( !task.IsNULL() )
                     {
                         taskSet.insert( task );
@@ -355,7 +358,7 @@ CTask::GetAllUpcomingTasksInChain( TTaskPtrSet& taskSet ) const
                     else
                     {
                         totalSuccess = false;
-                        GUCEF_WARNING_LOG( CORE::LOGLEVEL_NORMAL, "Task:GetAllUpcomingTasksInChain: Failed to resolve chain task obj from id " + ToString( m_chainTasks[i] ) + " in chain for task with id " + ToString( m_taskId ) );
+                        GUCEF_WARNING_LOG( CORE::LOGLEVEL_NORMAL, "Task:GetAllUpcomingTasksInChain: Failed to resolve chain task obj from id " + ToString( m_chainTasks[ n ] ) + " in chain for task with id " + ToString( m_taskId ) );
                     }
                 }
                 break;
@@ -399,6 +402,7 @@ CTask::SetTaskStatus( TTaskStatus newStatus )
             }
             case TTaskStatus::TASKSTATUS_STOPPED:
             case TTaskStatus::TASKSTATUS_KILLED:
+            case TTaskStatus::TASKSTATUS_CANCELLED:
             {
                 if ( !nextTask->IsTaskInErrorState() )
                     nextTask->SetTaskStatus( newStatus );
@@ -511,6 +515,7 @@ CTask::Init( const CString& taskType         ,
     m_taskConsumer = taskConsumer;
     SetTaskData( taskData, assumedOwnershipOfTaskData );
     m_taskStatus = taskStatus;
+    m_cancellationRequested = false;
     m_threadPool = threadPool; 
 
     if ( GUCEF_NULL != serializedTaskData )
@@ -533,6 +538,7 @@ CTask::Clear( void )
 
     SetTaskData( GUCEF_NULL, false );
     m_taskStatus = TTaskStatus::TASKSTATUS_UNDEFINED;
+    m_cancellationRequested = false;
     m_taskStatusExtraInfo.Clear();
     m_serializedTaskData.Clear();
     m_serializedTaskData.SetNodeType( GUCEF_DATATYPE_UNKNOWN );
@@ -826,6 +832,26 @@ CTask::GetThreadPool( void ) const
     }
 
     return CThreadPoolPtr();
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CTask::SetCancellationRequested( bool cancellationRequested )
+{GUCEF_TRACE;
+
+    MT::CScopeMutex lock( m_lock );
+    m_cancellationRequested = cancellationRequested;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CTask::IsCancellationRequested( void ) const
+{GUCEF_TRACE;
+
+    MT::CScopeMutex lock( m_lock );
+    return m_cancellationRequested;
 }
 
 /*-------------------------------------------------------------------------*/

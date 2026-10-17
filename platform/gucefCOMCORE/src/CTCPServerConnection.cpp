@@ -93,7 +93,8 @@ CTCPServerConnection::CTCPServerConnection( CTCPServerSocket *tcp_serversock ,
     , m_sendOpBuffer()                    
     , _datalock()                         
     , m_maxreadbytes( 0 )                 
-    , m_connectionidx( connection_idx )   
+    , m_connectionidx( connection_idx )
+    , m_userData( GUCEF_NULL )   
     , m_parentsock( tcp_serversock )      
     , m_coaleseDataSends( true )          
     , m_bytesReceived( 0 )
@@ -305,8 +306,12 @@ CTCPServerConnection::Send( const void* dataSource ,
                 // Check if we have to delay sending the data
                 if ( DVSOCKET_EWOULDBLOCK == error && !_blocking )
                 {
-                    GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "CTCPClientSocket(" + CORE::PointerToString( this ) + "): Delaying sending of data" );
+                    GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "CTCPServerConnection(" + CORE::PointerToString( this ) + "): Delaying sending of data" );
                     m_sendBuffer.Write( ((Int8*)dataSource)+totalBytesSent, 1, remnant );
+
+                    // The remainder is queued, it will be sent when the socket can take more data.
+                    // Without leaving the loop the same remainder would be queued again on every iteration
+                    break;
                 }
                 else
                 {
@@ -384,7 +389,7 @@ CTCPServerConnection::Read( char *dest     ,
 
 /*-------------------------------------------------------------------------*/
 
-void
+bool
 CTCPServerConnection::CheckRecieveBuffer( void )
 {GUCEF_TRACE;
 
@@ -394,7 +399,7 @@ CTCPServerConnection::CheckRecieveBuffer( void )
      *      Since this is a non-blocking socket we need to poll for received data
      */
     int bytesrecv;
-    UInt16 totalrecieved( 0 );
+    UInt32 totalrecieved( 0 );
     int errorcode;
     UInt32 readblocksize;
     m_maxreadbytes ? readblocksize = m_maxreadbytes : readblocksize = 1024;
@@ -407,6 +412,15 @@ CTCPServerConnection::CheckRecieveBuffer( void )
                                    0                                                             ,
                                    &errorcode                                                    );
 
+        // A non-blocking socket which has been read empty reports that nothing more can be read right now,
+        // which is the normal end of a read cycle when the amount of data was an exact multiple of the block size
+        if ( bytesrecv == SOCKET_ERROR && DVSOCKET_EWOULDBLOCK == errorcode && !_blocking )
+        {
+            // the buffer was grown to receive more, only what we actually got is valid
+            m_readbuffer.SetDataSize( totalrecieved );
+            break;
+        }
+
         // Check for an error
         if ( ( bytesrecv == SOCKET_ERROR ) || ( errorcode != 0 ) )
         {
@@ -414,10 +428,11 @@ CTCPServerConnection::CheckRecieveBuffer( void )
 
             // Notify our users of the error
             TSocketErrorEventData eData( errorcode );
-            NotifyObservers( SocketErrorEvent, &eData );
+            if ( !NotifyObservers( SocketErrorEvent, &eData ) )
+                return false;
 
             CloseImp( true, false, true, false );
-            return;
+            return true;
         }
 
         if ( (  0 == totalrecieved ) &&
@@ -430,7 +445,7 @@ CTCPServerConnection::CheckRecieveBuffer( void )
              *      This means that the client closed the connection
              */
             CloseImp( true, false, true, true );
-            return;
+            return true;
         }
         totalrecieved += bytesrecv;
         m_readbuffer.SetDataSize( totalrecieved );
@@ -454,8 +469,11 @@ CTCPServerConnection::CheckRecieveBuffer( void )
 
         GUCEF_DEBUG_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "CTCPServerConnection(" + CORE::PointerToString( this ) + "): Received " + CORE::UInt32ToString( totalrecieved ) + " bytes of data" );
         TDataRecievedEventData eData( &m_readbuffer );
-        NotifyObservers( DataRecievedEvent, &eData );
+
+        // false means this object was deleted by one of the observers, we must not touch it anymore
+        return NotifyObservers( DataRecievedEvent, &eData );
     }
+    return true;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -521,7 +539,7 @@ CTCPServerConnection::GetMaxIdleDurationInMs( void ) const
 
 /*-------------------------------------------------------------------------*/
 
-void
+bool
 CTCPServerConnection::Update( UInt32 maxUpdatesPerCycle )
 {GUCEF_TRACE;
 
@@ -553,18 +571,20 @@ CTCPServerConnection::Update( UInt32 maxUpdatesPerCycle )
                 GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "CTCPServerConnection(" + CORE::PointerToString( this ) + "): Socket error occured: " + CORE::Int32ToString( errorCode ) );
 
                 TSocketErrorEventData eData( errorCode );
-                if ( !NotifyObservers( SocketErrorEvent, &eData ) ) return;
+                if ( !NotifyObservers( SocketErrorEvent, &eData ) ) return false;
 
                 CloseImp( true, false, true, false );
                 
                 Unlock();
-                return;
+                return true;
             }
             else
             if ( FD_ISSET( _data->sockid, &readfds ) )
             {
                 /* data can be read from the socket */
-                CheckRecieveBuffer();
+                // false means this object was deleted by one of the observers, we must not touch it anymore
+                if ( !CheckRecieveBuffer() )
+                    return false;
             }
         }
         else
@@ -620,7 +640,7 @@ CTCPServerConnection::Update( UInt32 maxUpdatesPerCycle )
                             GUCEF_DEBUG_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "CTCPServerConnection(" + CORE::PointerToString( this ) + "): Unable to delayed send queued data at this time" );
 
                             Unlock();
-                            return;
+                            return true;
                         }
                         else
                         {
@@ -630,7 +650,7 @@ CTCPServerConnection::Update( UInt32 maxUpdatesPerCycle )
 
                             TSocketErrorEventData eData( error );
                             NotifyObservers( SocketErrorEvent, &eData );
-                            return;
+                            return true;
                         }
                     }
                 }
@@ -639,6 +659,26 @@ CTCPServerConnection::Update( UInt32 maxUpdatesPerCycle )
 
         Unlock();
     }
+
+    return true;
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CTCPServerConnection::SetUserData( void* userData )
+{GUCEF_TRACE;
+
+    m_userData = userData;
+}
+
+/*-------------------------------------------------------------------------*/
+
+void*
+CTCPServerConnection::GetUserData( void ) const
+{GUCEF_TRACE;
+
+    return m_userData;
 }
 
 /*-------------------------------------------------------------------------*/

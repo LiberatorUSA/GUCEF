@@ -96,13 +96,13 @@ configuration( { "ANDROID64" } )
 includedirs( { "../../../dependencies/MyGui/Common/FileSystemInfo", "../../../platform/gucefCORE/include/android", "OpenGLESPlatform/include" } )
 
 configuration( { "LINUX32" } )
-includedirs( { "../../../platform/gucefCORE/include/linux" } )
+includedirs( { "../../../dependencies/MyGui/Common/FileSystemInfo", "../../../dependencies/MyGui/MyGUIEngine/include", "../../../dependencies/MyGui/Platforms/OpenGL/OpenGLPlatform/include", "../../../dependencies/MyGui/Platforms/OpenGL/OpenGLPlatform/include/GL", "../../../dependencies/freetype/include", "../../../dependencies/freetype/include/freetype", "../../../dependencies/freetype/include/freetype/config", "../../../dependencies/freetype/include/freetype/internal", "../../../dependencies/freetype/include/freetype/internal/services", "../../../dependencies/freetype/src", "../../../dependencies/freetype/src/winfonts", "../../../platform/gucefCORE/include/linux" } )
 
 configuration( { "LINUX64" } )
-includedirs( { "../../../platform/gucefCORE/include/linux" } )
+includedirs( { "../../../dependencies/MyGui/Common/FileSystemInfo", "../../../dependencies/MyGui/MyGUIEngine/include", "../../../dependencies/MyGui/Platforms/OpenGL/OpenGLPlatform/include", "../../../dependencies/MyGui/Platforms/OpenGL/OpenGLPlatform/include/GL", "../../../dependencies/freetype/include", "../../../dependencies/freetype/include/freetype", "../../../dependencies/freetype/include/freetype/config", "../../../dependencies/freetype/include/freetype/internal", "../../../dependencies/freetype/include/freetype/internal/services", "../../../dependencies/freetype/src", "../../../dependencies/freetype/src/winfonts", "../../../platform/gucefCORE/include/linux" } )
 
 configuration( { "WIN32" } )
-includedirs( { "../../../platform/gucefCORE/include/mswin", "../../../platform/gucefMT/include/mswin" } )
+includedirs( { "../../../dependencies/MyGui/Common/FileSystemInfo", "../../../dependencies/MyGui/MyGUIEngine/include", "../../../dependencies/MyGui/Platforms/OpenGL/OpenGLPlatform/include", "../../../dependencies/MyGui/Platforms/OpenGL/OpenGLPlatform/include/GL", "../../../dependencies/freetype/include", "../../../dependencies/freetype/include/freetype", "../../../dependencies/freetype/include/freetype/config", "../../../dependencies/freetype/include/freetype/internal", "../../../dependencies/freetype/include/freetype/internal/services", "../../../dependencies/freetype/src", "../../../dependencies/freetype/src/winfonts", "../../../platform/gucefCORE/include/mswin", "../../../platform/gucefMT/include/mswin" } )
 
 configuration( { "WIN64" } )
-includedirs( { "../../../platform/gucefCORE/include/mswin", "../../../platform/gucefMT/include/mswin" } )
+includedirs( { "../../../dependencies/MyGui/Common/FileSystemInfo", "../../../dependencies/MyGui/MyGUIEngine/include", "../../../dependencies/MyGui/Platforms/OpenGL/OpenGLPlatform/include", "../../../dependencies/MyGui/Platforms/OpenGL/OpenGLPlatform/include/GL", "../../../dependencies/freetype/include", "../../../dependencies/freetype/include/freetype", "../../../dependencies/freetype/include/freetype/config", "../../../dependencies/freetype/include/freetype/internal", "../../../dependencies/freetype/include/freetype/internal/services", "../../../dependencies/freetype/src", "../../../dependencies/freetype/src/winfonts", "../../../platform/gucefCORE/include/mswin", "../../../platform/gucefMT/include/mswin" } )
