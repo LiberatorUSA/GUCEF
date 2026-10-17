@@ -85,6 +85,8 @@ class GUCEF_INPUT_PLUGIN_PRIVATE_CPP CEventListner : public CORE::CObserver
 
     void OnX11Event( ::XEvent& eventData );
 
+    void SendText( ::XKeyEvent& keyEvent );
+
     INPUT::KeyCode MapKeyCode( int x11KeyCode );
 
     private:
@@ -93,6 +95,10 @@ class GUCEF_INPUT_PLUGIN_PRIVATE_CPP CEventListner : public CORE::CObserver
     TInputCallbacks m_callbacks;
     Int32 m_mouseX;
     Int32 m_mouseY;
+    Int32 m_wheel;
+    Int32 m_horizontalWheel;
+    ::XIM m_inputMethod;
+    ::XIC m_inputContext;
 };
 
 /*-------------------------------------------------------------------------//

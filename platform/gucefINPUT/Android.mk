@@ -37,9 +37,11 @@ LOCAL_SRC_FILES := \
   src/gucefINPUT_CKeyModStateChangedEventData.cpp \
   src/gucefINPUT_CKeyStateChangedEventData.cpp \
   src/gucefINPUT_CKeyboard.cpp \
+  src/gucefINPUT_CKeyboardTextEventData.cpp \
   src/gucefINPUT_CMouse.cpp \
   src/gucefINPUT_CMouseButtonEventData.cpp \
   src/gucefINPUT_CMouseMovedEventData.cpp \
+  src/gucefINPUT_CMouseVariableChangedEventData.cpp \
   src/gucefINPUT_keyboard.cpp
 
 LOCAL_C_INCLUDES := \

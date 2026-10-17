@@ -106,48 +106,84 @@ defines( { "GUCEF_INPUT_TESTAPP_BUILD_MODULE", "MODULE_NAME=gucefINPUT_TestApp" 
 
 
 configuration( { "ANDROID32" } )
+    vpaths { ["Platform Headers"] = { "**.h", "**.hpp", "**.hxx" } }
+    files( {
+      "include/TestInputDevices.h"
+    } )
+
     vpaths { ["Platform Source"] = { "**.c", "**.cpp", "**.cs", "**.asm" } }
     files( {
+      "src/TestInputDevices.cpp",
       "src/gucefINPUT_TestApp.cpp"
     } )
 
 
 
 configuration( { "ANDROID64" } )
+    vpaths { ["Platform Headers"] = { "**.h", "**.hpp", "**.hxx" } }
+    files( {
+      "include/TestInputDevices.h"
+    } )
+
     vpaths { ["Platform Source"] = { "**.c", "**.cpp", "**.cs", "**.asm" } }
     files( {
+      "src/TestInputDevices.cpp",
       "src/gucefINPUT_TestApp.cpp"
     } )
 
 
 
 configuration( { "LINUX32" } )
+    vpaths { ["Platform Headers"] = { "**.h", "**.hpp", "**.hxx" } }
+    files( {
+      "include/TestInputDevices.h"
+    } )
+
     vpaths { ["Platform Source"] = { "**.c", "**.cpp", "**.cs", "**.asm" } }
     files( {
+      "src/TestInputDevices.cpp",
       "src/gucefINPUT_TestApp.cpp"
     } )
 
 
 
 configuration( { "LINUX64" } )
+    vpaths { ["Platform Headers"] = { "**.h", "**.hpp", "**.hxx" } }
+    files( {
+      "include/TestInputDevices.h"
+    } )
+
     vpaths { ["Platform Source"] = { "**.c", "**.cpp", "**.cs", "**.asm" } }
     files( {
+      "src/TestInputDevices.cpp",
       "src/gucefINPUT_TestApp.cpp"
     } )
 
 
 
 configuration( { "WIN32" } )
+    vpaths { ["Platform Headers"] = { "**.h", "**.hpp", "**.hxx" } }
+    files( {
+      "include/TestInputDevices.h"
+    } )
+
     vpaths { ["Platform Source"] = { "**.c", "**.cpp", "**.cs", "**.asm" } }
     files( {
+      "src/TestInputDevices.cpp",
       "src/gucefINPUT_TestApp.cpp"
     } )
 
 
 
 configuration( { "WIN64" } )
+    vpaths { ["Platform Headers"] = { "**.h", "**.hpp", "**.hxx" } }
+    files( {
+      "include/TestInputDevices.h"
+    } )
+
     vpaths { ["Platform Source"] = { "**.c", "**.cpp", "**.cs", "**.asm" } }
     files( {
+      "src/TestInputDevices.cpp",
       "src/gucefINPUT_TestApp.cpp"
     } )
 
@@ -155,14 +191,20 @@ configuration( { "WIN64" } )
 configuration( {} )
 includedirs( { "../../common/include", "../../platform/gucefCORE/include", "../../platform/gucefCORE/include/c_api", "../../platform/gucefINPUT/include", "../../platform/gucefMT/include" } )
 
+configuration( { "ANDROID32" } )
+includedirs( { "include" } )
+
+configuration( { "ANDROID64" } )
+includedirs( { "include" } )
+
 configuration( { "LINUX32" } )
-includedirs( { "../../platform/gucefCORE/include/linux" } )
+includedirs( { "../../platform/gucefCORE/include/linux", "include" } )
 
 configuration( { "LINUX64" } )
-includedirs( { "../../platform/gucefCORE/include/linux" } )
+includedirs( { "../../platform/gucefCORE/include/linux", "include" } )
 
 configuration( { "WIN32" } )
-includedirs( { "../../platform/gucefCORE/include/mswin", "../../platform/gucefMT/include/mswin" } )
+includedirs( { "../../platform/gucefCORE/include/mswin", "../../platform/gucefMT/include/mswin", "include" } )
 
 configuration( { "WIN64" } )
-includedirs( { "../../platform/gucefCORE/include/mswin", "../../platform/gucefMT/include/mswin" } )
+includedirs( { "../../platform/gucefCORE/include/mswin", "../../platform/gucefMT/include/mswin", "include" } )
