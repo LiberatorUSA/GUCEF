@@ -39,6 +39,8 @@ plugins/VFS/vfspluginDVP/*
 plugins/VFS/vfspluginITV/*
 plugins/VFS/vfspluginVP/*
 plugins/VFS/vfspluginZIP/*
+plugins/WEB/httpclientpluginCURL/*
+tools/AncestryDotComBackup/*
 tools/ArchiveDiff/*
 tools/DCSBruteInstaller/*
 tools/GucefArchiver/*

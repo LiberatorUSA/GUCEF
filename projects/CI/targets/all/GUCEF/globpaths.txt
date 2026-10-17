@@ -5,6 +5,7 @@ common/include/*
 dependencies/*
 platform/*
 plugins/*
+tests/AncestryDotComBackup_TestApp/*
 tests/MemoryLeakFinder_TestApp/*
 tests/ProjectGen_TestApp/*
 tests/gucefCOMCORE_TestApp/*

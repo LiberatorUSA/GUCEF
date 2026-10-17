@@ -3,6 +3,7 @@ common/include/*
 dependencies//*
 platform/*
 plugins/*
+tests/AncestryDotComBackup_TestApp/*
 tests/ProjectGen_TestApp/*
 tests/gucefCOMCORE_TestApp/*
 tests/gucefCOM_TestApp/*

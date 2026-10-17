@@ -43,6 +43,7 @@ filter "ALL"
   include( "dependencies/libparsifal" )
   include( "dependencies/librdkafka" )
   include( "dependencies/libyaml" )
+  include( "dependencies/minizip" )
   include( "dependencies/protobuf/src" )
   include( "dependencies/redis-plus-plus/src/sw/redis++" )
   include( "dependencies/stbrumme-hash-library" )
@@ -76,6 +77,8 @@ filter "ALL"
   include( "plugins/VFS/vfspluginITV" )
   include( "plugins/VFS/vfspluginVP" )
   include( "plugins/VFS/vfspluginZIP" )
+  include( "plugins/WEB/httpclientpluginCURL" )
+  include( "tests/AncestryDotComBackup_TestApp" )
   include( "tests/gucefCOMCORE_TestApp" )
   include( "tests/gucefCOM_TestApp" )
   include( "tests/gucefCORE_TestApp" )
@@ -314,6 +317,7 @@ filter "WIN32"
   include( "tests/gucefGUI_TestApp" )
   include( "tests/gucefIMAGE_TestApp" )
   include( "tests/gucefINPUT_TestApp" )
+  include( "tools/AncestryDotComBackupLib" )
   include( "tools/MemoryLeakFinder" )
 
 filter "WIN64"
