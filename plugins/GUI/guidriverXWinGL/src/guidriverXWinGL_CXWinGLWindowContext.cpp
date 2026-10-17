@@ -72,14 +72,28 @@ namespace GUIDRIVERXWINGL {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+/** glXGetProcAddressARB as the GL_GETPROCADDRESS property hands it out */
+static void*
+GetGlProcAddress( const char* name )
+{
+    return (void*) glXGetProcAddressARB( (const GLubyte*) name );
+}
+
+/*-------------------------------------------------------------------------//
+//                                                                         //
+//      UTILITIES                                                          //
+//                                                                         //
+//-------------------------------------------------------------------------*/
+
 CXWinGLWindowContext::CXWinGLWindowContext( void )
     : CWindowContext()         ,
       m_guiContext()           ,
       m_id()                   ,
       m_name()                 ,
-      m_window()              // ,
-      //m_renderContext( NULL )  ,
-      //m_deviceContext( NULL )
+      m_window()               ,
+      m_renderContext( NULL )  ,
+      m_isCoreProfile( false ) ,
+      m_shown( false )
 {GUCEF_TRACE;
 
     SubscribeTo( &m_window );
@@ -148,6 +162,16 @@ CXWinGLWindowContext::Shutdown( void )
     pulseGenerator->RequestStopOfPeriodicUpdates( this );
     UnsubscribeFrom( pulseGenerator.GetPointerAlways() );
 
+    if ( NULL != m_renderContext )
+    {
+        ::Display* display = CORE::CX11EventDispatcher::Instance()->GetDisplay();
+        if ( NULL != display )
+        {
+            glXMakeCurrent( display, None, NULL );
+            glXDestroyContext( display, (GLXContext) m_renderContext );
+        }
+        m_renderContext = NULL;
+    }
     if ( 0 != m_window.GetWindow() )
     {
         m_window.WindowDestroy();
@@ -198,6 +222,22 @@ CXWinGLWindowContext::GetProperty( const GUI::CString& propertyName ) const
     {
         return CORE::PointerToString( m_window.GetDisplay() );
     }
+    if ( propertyName == "GL_GETPROCADDRESS" )
+    {
+        return CORE::PointerToString( (const void*) &GetGlProcAddress );
+    }
+    if ( propertyName == "GL_FRAMEBUFFER" )
+    {
+        return "0";
+    }
+    if ( propertyName == "GL_API" )
+    {
+        return "GL";
+    }
+    if ( propertyName == "GL_VERSION" )
+    {
+        return m_isCoreProfile ? "3.3" : "1.x";
+    }
     return GUI::CString();
 }
 
@@ -228,19 +268,47 @@ CXWinGLWindowContext::Initialize( const GUI::CString& title                ,
         return false;
     }
 
-    // find an OpenGL-capable Color Index visual with depth buffer
-    static int attributes[] = {GLX_RGBA, GLX_DOUBLEBUFFER, None};
-    //static int attributes[] = {GLX_DEPTH_SIZE, 16, GLX_DOUBLEBUFFER, None};
-    XVisualInfo* vi = glXChooseVisual( display, DefaultScreen( display ), attributes );
-    if ( NULL == vi )
+    // a double buffered RGBA configuration with a stencil buffer (the GUI renderers clip with it)
+    static const int frameBufferAttributes[] = { GLX_X_RENDERABLE, True, GLX_DRAWABLE_TYPE, GLX_WINDOW_BIT, GLX_RENDER_TYPE, GLX_RGBA_BIT,
+                                                 GLX_RED_SIZE, 8, GLX_GREEN_SIZE, 8, GLX_BLUE_SIZE, 8, GLX_ALPHA_SIZE, 8,
+                                                 GLX_STENCIL_SIZE, 8, GLX_DOUBLEBUFFER, True, None };
+    XVisualInfo* vi = NULL;
+    GLXContext cx = NULL;
+    int configCount = 0;
+    GLXFBConfig* configs = glXChooseFBConfig( display, DefaultScreen( display ), frameBufferAttributes, &configCount );
+    if ( NULL != configs && configCount > 0 )
     {
-        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "CXWinGLWindowContext: Could not get visual info for display" );
-        Shutdown();
-        return false;
-    }
+        vi = glXGetVisualFromFBConfig( display, configs[ 0 ] );
 
-    // create an OpenGL rendering context
-    GLXContext cx = glXCreateContext( display, vi,  None, GL_TRUE );
+        // OpenGL 3.3 core, what the renderers of the GUI drivers draw with
+        typedef GLXContext ( *TCreateContextAttribs )( ::Display*, GLXFBConfig, GLXContext, Bool, const int* );
+        TCreateContextAttribs createContextAttribs = (TCreateContextAttribs) glXGetProcAddressARB( (const GLubyte*) "glXCreateContextAttribsARB" );
+        if ( NULL != createContextAttribs && NULL != vi )
+        {
+            static const int contextAttributes[] = { GLX_CONTEXT_MAJOR_VERSION_ARB, 3, GLX_CONTEXT_MINOR_VERSION_ARB, 3,
+                                                     GLX_CONTEXT_PROFILE_MASK_ARB, GLX_CONTEXT_CORE_PROFILE_BIT_ARB, None };
+            cx = createContextAttribs( display, configs[ 0 ], NULL, True, contextAttributes );
+        }
+        ::XFree( configs );
+    }
+    m_isCoreProfile = NULL != cx;
+
+    if ( NULL == cx )
+    {
+        // an older driver: a legacy context on any double buffered RGBA visual
+        if ( NULL == vi )
+        {
+            static int attributes[] = { GLX_RGBA, GLX_DOUBLEBUFFER, None };
+            vi = glXChooseVisual( display, DefaultScreen( display ), attributes );
+        }
+        if ( NULL == vi )
+        {
+            GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "CXWinGLWindowContext: Could not get visual info for display" );
+            Shutdown();
+            return false;
+        }
+        cx = glXCreateContext( display, vi, None, GL_TRUE );
+    }
     if ( NULL == cx )
     {
         GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "CXWinGLWindowContext: Could not create rendering context" );
@@ -248,20 +316,21 @@ CXWinGLWindowContext::Initialize( const GUI::CString& title                ,
         Shutdown();
         return false;
     }
-    GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "CXWinGLWindowContext: Created GL context using GLX" );
+    m_renderContext = cx;
+
+    GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, CORE::CString( "CXWinGLWindowContext: Created " ) + ( m_isCoreProfile ? "an OpenGL 3.3 core" : "a legacy OpenGL" ) + " context using GLX" );
 
     // create an X colormap since probably not using default visual
     ::Colormap cmap = ::XCreateColormap( display, RootWindow( display, vi->screen),
                                 vi->visual, AllocNone);
-
     ::XSetWindowAttributes swa;
     swa.colormap = cmap;
     swa.border_pixel = 0;
     swa.event_mask = ExposureMask | EnterWindowMask | StructureNotifyMask | SubstructureNotifyMask;
-
     ::Window glwin = ::XCreateWindow(display, RootWindow(display, vi->screen), 0, 0, videoSettings.GetResolutionWidthInPixels(),
                         videoSettings.GetResolutionHeightInPixels(), 0, vi->depth, InputOutput, vi->visual,
                         CWBorderPixel | CWColormap | CWEventMask, &swa);
+
     if ( 0 == glwin )
     {
         GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "CXWinGLWindowContext: Failed to create X11 window" );
@@ -269,27 +338,40 @@ CXWinGLWindowContext::Initialize( const GUI::CString& title                ,
         Shutdown();
         return false;
     }
-    GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "CXWinGLWindowContext: Created X11 Window" );
 
-//    ::XSetStandardProperties(display, glwin, "xogl", "xogl", None, 0,
-//                                0, NULL);
+    GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "CXWinGLWindowContext: Created X11 Window" );
 
     glXMakeCurrent( display, glwin, cx );
 
+    // frames are paced by the pulse generator; waiting for the vertical blank is what the settings ask.
+    // (A window the compositor does not show never gets its vertical blank under XWayland: the swap would wait forever)
+    const int swapInterval = videoSettings.GetVSyncState() ? 1 : 0;
+    typedef void ( *TSwapIntervalEXT )( ::Display*, GLXDrawable, int );
+    typedef int ( *TSwapInterval )( int );
+    TSwapIntervalEXT swapIntervalEXT = (TSwapIntervalEXT) glXGetProcAddressARB( (const GLubyte*) "glXSwapIntervalEXT" );
+    TSwapInterval swapIntervalMESA = (TSwapInterval) glXGetProcAddressARB( (const GLubyte*) "glXSwapIntervalMESA" );
+    TSwapInterval swapIntervalSGI = (TSwapInterval) glXGetProcAddressARB( (const GLubyte*) "glXSwapIntervalSGI" );
+    if ( NULL != swapIntervalEXT )
+        swapIntervalEXT( display, glwin, swapInterval );
+    else
+    if ( NULL != swapIntervalMESA )
+        swapIntervalMESA( swapInterval );
+    else
+    if ( NULL != swapIntervalSGI && swapInterval > 0 )
+        swapIntervalSGI( swapInterval );
+
     // Set up the default GL state.
+    glViewport( 0, 0, (GLsizei) videoSettings.GetResolutionWidthInPixels(), (GLsizei) videoSettings.GetResolutionHeightInPixels() );
     glClearColor(0, 0, 0, 1);
-    //glEnableClientState( GL_VERTEX_ARRAY );
-    //glEnableClientState( GL_COLOR_ARRAY );
-
-    //glEnable( GL_BLEND );
-    //glBlendFunc( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA );
-
-    glMatrixMode( GL_PROJECTION );
-    glLoadIdentity();
-    glOrtho( 0, GetWidth(), GetHeight(), 0, -1, 1 );
-
-    glMatrixMode( GL_MODELVIEW );
-    glLoadIdentity();
+    if ( !m_isCoreProfile )
+    {
+        // the fixed function pipeline draws in window pixels
+        glMatrixMode( GL_PROJECTION );
+        glLoadIdentity();
+        glOrtho( 0, videoSettings.GetResolutionWidthInPixels(), videoSettings.GetResolutionHeightInPixels(), 0, -1, 1 );
+        glMatrixMode( GL_MODELVIEW );
+        glLoadIdentity();
+    }
 
     // Hook up our window object to re-use its eventing capabilities
     m_window.SetDisplay( display );
@@ -303,6 +385,9 @@ CXWinGLWindowContext::Initialize( const GUI::CString& title                ,
     // Display the new window
     m_window.Show();
     m_window.SendToForegound();
+    ::XFlush( display );
+    if ( videoSettings.GetFullscreenState() )
+        m_window.SetFullscreenStatus( true );
     //m_window.GrabFocus();
 
     // Grab the main app pulse generator and set the update interval for the context to the desired refresh rate
@@ -312,6 +397,32 @@ CXWinGLWindowContext::Initialize( const GUI::CString& title                ,
 
     GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "CXWinGLWindowContext: Succesfully created OpenGL rendering context" );
 
+    return true;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CXWinGLWindowContext::SetSystemCursorVisible( bool visible )
+{GUCEF_TRACE;
+
+    if ( 0 == m_window.GetWindow() )
+        return false;
+    m_window.SetCursorVisible( visible );
+    return true;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CXWinGLWindowContext::ApplyVideoSettings( const GUI::CVideoSettings& videoSettings )
+{GUCEF_TRACE;
+
+    if ( 0 == m_window.GetWindow() )
+        return false;
+    m_window.SetFullscreenStatus( videoSettings.GetFullscreenState() );
+    if ( !videoSettings.GetFullscreenState() && videoSettings.GetResolutionWidthInPixels() > 0 && videoSettings.GetResolutionHeightInPixels() > 0 )
+        m_window.ClientAreaResize( (int) videoSettings.GetResolutionWidthInPixels(), (int) videoSettings.GetResolutionHeightInPixels() );
     return true;
 }
 
@@ -333,7 +444,10 @@ CXWinGLWindowContext::OnNotify( CORE::CNotifier* notifier   ,
                                 CORE::CICloneable* evenData )
 {GUCEF_TRACE;
 
-    if ( ( eventID == CORE::CPulseGenerator::PulseEvent )  ||
+    if ( eventID == CORE::CX11Window::WindowPaintEvent )
+        m_shown = true;
+
+    if ( ( eventID == CORE::CPulseGenerator::PulseEvent && m_shown ) ||
          ( eventID == CORE::CX11Window::WindowPaintEvent ) )
     {
         // Clear the screen in preparation for the redraw
@@ -352,12 +466,25 @@ CXWinGLWindowContext::OnNotify( CORE::CNotifier* notifier   ,
         if ( m_window.GetClientArea( dummy, dummy, width, height ) )
         {
             glViewport( 0, 0, width, height );
+            if ( !m_isCoreProfile )
+            {
+                glMatrixMode( GL_PROJECTION );
+                glLoadIdentity();
+                glOrtho( 0, width, height, 0, -1, 1 );
+                glMatrixMode( GL_MODELVIEW );
+            }
         }
         NotifyObservers( WindowContextSizeEvent );
     }
     else
+    if ( eventID == CORE::CX11Window::WindowCloseEvent )
+    {
+        NotifyObservers( WindowContextCloseRequestEvent );
+    }
+    else
     if ( eventID == CORE::CX11Window::WindowActivationEvent )
     {
+        m_shown = true;
         NotifyObservers( WindowContextActivateEvent );
     }
 }

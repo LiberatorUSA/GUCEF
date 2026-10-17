@@ -131,7 +131,10 @@ CXWinGLWindowManagerImp::ApplyVideoSettings( GUI::TWindowContextPtr& windowConte
                                              const GUI::CVideoSettings& settings   )
 {GUCEF_TRACE;
 
-    return false;
+    CXWinGLWindowContext* glContext = static_cast< CXWinGLWindowContext* >( windowContext.GetPointerAlways() );
+    if ( NULL == glContext )
+        return false;
+    return glContext->ApplyVideoSettings( settings );
 }
 
 /*-------------------------------------------------------------------------//

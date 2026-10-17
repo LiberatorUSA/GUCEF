@@ -90,6 +90,11 @@ class GUIDRIVERXWINGL_PUBLIC_CPP CXWinGLWindowContext : public GUI::CWindowConte
 
     virtual GUI::CString GetProperty( const GUI::CString& propertyName ) const;
 
+    virtual bool SetSystemCursorVisible( bool visible ) GUCEF_VIRTUAL_OVERRIDE;
+
+    /** Full screen or a window of the size of the settings */
+    bool ApplyVideoSettings( const GUI::CVideoSettings& videoSettings );
+
     bool Initialize( const GUI::CString& title                ,
                      const GUI::CVideoSettings& videoSettings );
 
@@ -114,8 +119,9 @@ class GUIDRIVERXWINGL_PUBLIC_CPP CXWinGLWindowContext : public GUI::CWindowConte
     GUI::UInt32 m_id;
     GUI::CString m_name;
     CORE::CX11Window m_window;
-    //HGLRC m_renderContext;
-    //HDC m_deviceContext;
+    void* m_renderContext;          /**< GLXContext */
+    bool m_isCoreProfile;
+    bool m_shown;                   /**< mapped or exposed: before that a swap can wait for a window that is not shown (XWayland) */
 };
 
 /*-------------------------------------------------------------------------*/
