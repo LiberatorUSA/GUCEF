@@ -64,6 +64,7 @@ CActiveObject::CActiveObject( void )
     , m_isDeactivationRequested( false )   
     , _suspend( false )                    
     , _active( false )                     
+    , m_threadEndedNotified( false )
     , _td( ThreadDataReserve() )                          
     , m_minimalCycleDeltaInMilliSecs( 10 )
     , m_datalock()
@@ -80,6 +81,7 @@ CActiveObject::CActiveObject( const CActiveObject& src )
     , m_isDeactivationRequested( false ) 
     , _suspend( false )                  
     , _active( false )                      
+    , m_threadEndedNotified( false )
     , _td( ThreadDataReserve() )                           
     , m_minimalCycleDeltaInMilliSecs( 10 )
     , m_datalock()
@@ -263,6 +265,11 @@ CActiveObject::OnActivate( void* thisObject )
         }
 
         tao->CallOnThreadEndingWithTimeout( maxRetries, taskData, false );    
+
+        // Per the OnThreadEnded() contract a thread which ends gracefully delivers that notification from within itself
+        // This includes threads whose work simply finished, not just those asked to stop via Deactivate()
+        if ( tao->ClaimThreadEndedNotification() )
+            tao->OnThreadEnded( taskData, false );
         tao->_active = false;
         return 1;
     }
@@ -299,6 +306,7 @@ CActiveObject::Activate( void* threadData /* = NULL */                 ,
     m_isDeactivationRequested = false;
     _suspend = false;
     _active = true;
+    m_threadEndedNotified = false;
     
     bool createSuccesss = 0 != ThreadCreate( _td                      ,
                                              (TThreadFunc) OnActivate ,
@@ -383,7 +391,8 @@ CActiveObject::Deactivate( bool force, bool callerShouldWait )
                  */
                 ThreadKill( _td );
             }
-            OnThreadEnded( m_threadData, true );
+            if ( ClaimThreadEndedNotification() )
+                OnThreadEnded( m_threadData, true );
             Unlock();
         }
         else
@@ -401,9 +410,23 @@ CActiveObject::Deactivate( bool force, bool callerShouldWait )
 
             lock.EarlyUnlock();
             UInt32 waitResult = ThreadWait( _td, 15000 );
-            OnThreadEnded( m_threadData, false );
+            if ( ClaimThreadEndedNotification() )
+                OnThreadEnded( m_threadData, false );
         }
     }
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CActiveObject::ClaimThreadEndedNotification( void )
+{GUCEF_TRACE;
+
+    CObjectScopeLock lock( this );
+    if ( m_threadEndedNotified )
+        return false;
+    m_threadEndedNotified = true;
+    return true;
 }
 
 /*-------------------------------------------------------------------------*/
