@@ -92,6 +92,9 @@ inline void TestFrameworkLogCallback(
         case GUCEF::TESTFW::GUCEF_TESTFW_EVENT_EXCEPTION:
             GUCEF_ERROR_LOG( GUCEF::CORE::LOGLEVEL_NORMAL, "    EXCEPTION: " << ( message ? message : "" ) << " at " << ( file ? file : "" ) << ":" << line );
             break;
+        case GUCEF::TESTFW::GUCEF_TESTFW_EVENT_SKIPPED:
+            GUCEF_WARNING_LOG( GUCEF::CORE::LOGLEVEL_NORMAL, "    SKIPPED: " << ( message ? message : "" ) );
+            break;
         case GUCEF::TESTFW::GUCEF_TESTFW_EVENT_RESULTS_WRITTEN:
             GUCEF_LOG( GUCEF::CORE::LOGLEVEL_NORMAL, "Test results written to: " << ( message ? message : "" ) << " (" << failureCount << " total failures)" );
             break;

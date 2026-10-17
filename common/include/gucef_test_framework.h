@@ -74,6 +74,7 @@
 #include <string>
 #include <vector>
 #include <ctime>    /* clock(), clock_t, CLOCKS_PER_SEC */
+#include <cstdlib>  /* getenv() */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -103,7 +104,8 @@ enum ETestEvent
     GUCEF_TESTFW_EVENT_CASE_END,        /**< Test case ended (check failureCount) */
     GUCEF_TESTFW_EVENT_FAILURE,         /**< Assertion failure recorded */
     GUCEF_TESTFW_EVENT_EXCEPTION,       /**< Exception caught in test case */
-    GUCEF_TESTFW_EVENT_RESULTS_WRITTEN  /**< Results XML file written */
+    GUCEF_TESTFW_EVENT_RESULTS_WRITTEN, /**< Results XML file written */
+    GUCEF_TESTFW_EVENT_SKIPPED          /**< Test case skipped, message holds the reason */
 };
 
 /*-------------------------------------------------------------------------*/
@@ -153,9 +155,33 @@ struct STestCase
     std::string           name;
     std::vector<SFailure> failures;
     double                durationSec;
+    bool                  skipped;      /**< true when the case opted out via GUCEF_TESTFW_SKIP */
+    std::string           skipReason;   /**< why the case was skipped */
 
-    STestCase() : durationSec( 0.0 ) {}
+    STestCase() : durationSec( 0.0 ), skipped( false ) {}
 };
+
+/*-------------------------------------------------------------------------*/
+
+/**
+ *  Thrown by GUCEF_TESTFW_SKIP to abandon the body of a test case without
+ *  counting it as a failure. Caught by GUCEF_TESTFW_TESTCASE_END.
+ */
+struct STestSkipRequest
+{
+    std::string reason;
+
+    explicit STestSkipRequest( const char* why ) : reason( why != GUCEF_NULL ? why : "" ) {}
+};
+
+/*-------------------------------------------------------------------------*/
+
+/**
+ *  Read an environment variable, for tests that are gated on external data
+ *  (for example an installation or disc image the repository cannot ship).
+ *  @return the value, or an empty string when the variable is not set.
+ */
+std::string GetEnvVar( const char* name );
 
 /*-------------------------------------------------------------------------*/
 
@@ -220,6 +246,15 @@ public:
      *  Similar to RecordFailure but fires EXCEPTION event instead of FAILURE.
      */
     void RecordException( const char* message, const char* file, Int32 line );
+
+    /**
+     *  Mark the current test case as skipped. A skipped case is not a failure
+     *  and does not influence the exit code, it is reported as <skipped> in the XML.
+     */
+    void RecordSkip( const char* reason, const char* file, Int32 line );
+
+    /** @return the number of test cases that were skipped so far. */
+    UInt32 GetSkippedCount() const;
 
     /**
      *  Write a JUnit-compatible XML results file.
@@ -340,6 +375,9 @@ private:
     try {
 
 #define GUCEF_TESTFW_TESTCASE_END \
+    } catch ( const ::GUCEF::TESTFW::STestSkipRequest& gucef_skip_ ) { \
+        ::GUCEF::TESTFW::CTestContext::Instance().RecordSkip( \
+            gucef_skip_.reason.c_str(), __FILE__, __LINE__ ); \
     } catch ( const std::exception& gucef_ex_ ) { \
         ::GUCEF::TESTFW::CTestContext::Instance().RecordException( \
             gucef_ex_.what(), __FILE__, __LINE__ ); \
@@ -369,6 +407,42 @@ private:
             ::GUCEF::TESTFW::CTestContext::Instance().RecordFailure( \
                 "!(" #expr ")", __FILE__, __LINE__ ); \
     } while (0)
+
+/*
+ *  GUCEF_TESTFW_SKIP( reason )
+ *    Abandons the rest of the enclosing GUCEF_TESTFW_TESTCASE and reports it
+ *    as skipped (not failed). Use for tests that need data or hardware that
+ *    is not present, e.g. a disc image pointed to by an environment variable.
+ *    Only valid inside GUCEF_TESTFW_TESTCASE ... GUCEF_TESTFW_TESTCASE_END.
+ *    Skipping works by throwing, so put it before any try { } catch ( ... ) { } of your own in the test case,
+ *    otherwise that catch takes the skip request for an error.
+ */
+#define GUCEF_TESTFW_SKIP( reason ) \
+    throw ::GUCEF::TESTFW::STestSkipRequest( reason )
+
+/*
+ *  GUCEF_TESTFW_SKIP_IF( cond, reason )
+ *    Skips the enclosing test case when cond is true.
+ */
+#define GUCEF_TESTFW_SKIP_IF( cond, reason ) \
+    do { if ( (cond) ) GUCEF_TESTFW_SKIP( reason ); } while (0)
+
+/*
+ *  GUCEF_TESTFW_GETENV( name )
+ *    Evaluates to the value of the environment variable as std::string,
+ *    empty when it is not set.
+ */
+#define GUCEF_TESTFW_GETENV( name ) \
+    ::GUCEF::TESTFW::GetEnvVar( name )
+
+/*
+ *  GUCEF_TESTFW_REQUIRE_ENV( var, name )
+ *    Declares std::string var holding the environment variable and skips the
+ *    enclosing test case when it is not set or empty.
+ */
+#define GUCEF_TESTFW_REQUIRE_ENV( var, name ) \
+    const ::std::string var = ::GUCEF::TESTFW::GetEnvVar( name ); \
+    GUCEF_TESTFW_SKIP_IF( var.empty(), "environment variable " name " is not set" )
 
 /*
  *  GUCEF_TESTFW_ERRORHERE
@@ -469,6 +543,31 @@ static std::string UInt32ToStr( UInt32 v )
     std::ostringstream oss;
     oss << v;
     return oss.str();
+}
+
+/*-------------------------------------------------------------------------*/
+
+std::string GetEnvVar( const char* name )
+{
+    if ( name == GUCEF_NULL )
+        return std::string();
+
+    #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
+
+    char* buffer = GUCEF_NULL;
+    size_t length = 0;
+    if ( 0 != _dupenv_s( &buffer, &length, name ) || buffer == GUCEF_NULL )
+        return std::string();
+    std::string value( buffer );
+    free( buffer );
+    return value;
+
+    #else
+
+    const char* value = getenv( name );
+    return value != GUCEF_NULL ? std::string( value ) : std::string();
+
+    #endif
 }
 
 /*-------------------------------------------------------------------------*/
@@ -623,6 +722,37 @@ void CTestContext::RecordException( const char* message, const char* file, Int32
 
 /*-------------------------------------------------------------------------*/
 
+void CTestContext::RecordSkip( const char* reason, const char* file, Int32 line )
+{
+    if ( m_currentCase == GUCEF_NULL )
+        return;
+
+    m_currentCase->skipped = true;
+    m_currentCase->skipReason = ( reason != GUCEF_NULL ) ? reason : "";
+
+    FireEvent( GUCEF_TESTFW_EVENT_SKIPPED, reason, file, line, 0 );
+}
+
+/*-------------------------------------------------------------------------*/
+
+UInt32 CTestContext::GetSkippedCount() const
+{
+    UInt32 count = 0;
+    for ( std::vector<STestSuite>::const_iterator si = m_suites.begin();
+          si != m_suites.end(); ++si )
+    {
+        for ( std::vector<STestCase>::const_iterator ci = si->cases.begin();
+              ci != si->cases.end(); ++ci )
+        {
+            if ( ci->skipped )
+                ++count;
+        }
+    }
+    return count;
+}
+
+/*-------------------------------------------------------------------------*/
+
 bool CTestContext::WriteJUnitXml( const char* filepath ) const
 {
     if ( filepath == GUCEF_NULL )
@@ -635,6 +765,7 @@ bool CTestContext::WriteJUnitXml( const char* filepath ) const
     /* Compute overall totals across all suites */
     UInt32 totalTests    = 0;
     UInt32 totalFailures = 0;
+    UInt32 totalSkipped  = 0;
     double totalTime     = 0.0;
 
     for ( std::vector<STestSuite>::const_iterator si = m_suites.begin();
@@ -647,6 +778,8 @@ bool CTestContext::WriteJUnitXml( const char* filepath ) const
         {
             if ( !ci->failures.empty() )
                 ++totalFailures;
+            if ( ci->skipped )
+                ++totalSkipped;
         }
     }
 
@@ -655,6 +788,7 @@ bool CTestContext::WriteJUnitXml( const char* filepath ) const
         << " name=\""     << XmlEscape( m_appName )        << "\""
         << " tests=\""    << UInt32ToStr( totalTests )      << "\""
         << " failures=\"" << UInt32ToStr( totalFailures )   << "\""
+        << " skipped=\""  << UInt32ToStr( totalSkipped )    << "\""
         << " errors=\"0\""
         << " time=\""     << DoubleToStr( totalTime )       << "\""
         << ">\n";
@@ -663,17 +797,21 @@ bool CTestContext::WriteJUnitXml( const char* filepath ) const
           si != m_suites.end(); ++si )
     {
         UInt32 suiteFailures = 0;
+        UInt32 suiteSkipped = 0;
         for ( std::vector<STestCase>::const_iterator ci = si->cases.begin();
               ci != si->cases.end(); ++ci )
         {
             if ( !ci->failures.empty() )
                 ++suiteFailures;
+            if ( ci->skipped )
+                ++suiteSkipped;
         }
 
         out << "  <testsuite"
             << " name=\""     << XmlEscape( si->name ) << "\""
             << " tests=\""    << UInt32ToStr( static_cast<UInt32>( si->cases.size() ) ) << "\""
             << " failures=\"" << UInt32ToStr( suiteFailures ) << "\""
+            << " skipped=\""  << UInt32ToStr( suiteSkipped ) << "\""
             << " errors=\"0\""
             << " time=\""     << DoubleToStr( si->durationSec ) << "\""
             << ">\n";
@@ -686,7 +824,13 @@ bool CTestContext::WriteJUnitXml( const char* filepath ) const
                 << " classname=\"" << XmlEscape( si->name )          << "\""
                 << " time=\""      << DoubleToStr( ci->durationSec ) << "\"";
 
-            if ( ci->failures.empty() )
+            if ( ci->skipped && ci->failures.empty() )
+            {
+                out << ">\n";
+                out << "      <skipped message=\"" << XmlEscape( ci->skipReason ) << "\"/>\n";
+                out << "    </testcase>\n";
+            }
+            else if ( ci->failures.empty() )
             {
                 out << "/>\n";
             }
