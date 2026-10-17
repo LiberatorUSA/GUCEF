@@ -24,6 +24,7 @@
 //-------------------------------------------------------------------------*/
 
 #include <stdlib.h>             /* for memory utils */
+#include <string.h>             /* for strcmp() */
 
 #include "imgpluginITV.h" /* function prototypes for this plugin */
 
@@ -329,10 +330,12 @@ IMGCODECPLUGIN_DecodeImage( void* pluginData      ,
         TImage* image = malloc( sizeof(TImage) );
         image->imageInfo.version = GUCEF_IMAGE_TIMAGEINFO_VERSION;
         image->imageInfo.nrOfFramesInImage = 1;
+        image->imageInfo.loopCount = 0;
         image->frames = malloc( sizeof(TImageFrame) );
         image->frames[ 0 ].version = GUCEF_IMAGE_TIMAGEFRAME_VERSION;        
         image->frames[ 0 ].frameInfo.version = GUCEF_IMAGE_TIMAGEFRAMEINFO_VERSION;
         image->frames[ 0 ].frameInfo.nrOfMipmapLevels = 1;
+        image->frames[ 0 ].frameInfo.frameDurationInMs = 0;
         image->frames[ 0 ].mipmapLevel = malloc( sizeof(TImageMipMapLevel) );
         image->frames[ 0 ].mipmapLevel[ 0 ].version = GUCEF_IMAGE_TIMAGEMIPMAPLEVEL_VERSION;
         image->frames[ 0 ].mipmapLevel[ 0 ].mipLevelInfo.version = GUCEF_IMAGE_TIMAGEMIPMAPLEVELINFO_VERSION;
@@ -374,12 +377,14 @@ IMGCODECPLUGIN_DecodeImage( void* pluginData      ,
         {
             image->imageInfo.version = GUCEF_IMAGE_TIMAGEINFO_VERSION;
             image->imageInfo.nrOfFramesInImage = 1;
+        image->imageInfo.loopCount = 0;
             image->frames = malloc( sizeof(TImageFrame) );
             if ( GUCEF_NULL != image->frames )
             {
                 image->frames[ 0 ].version = GUCEF_IMAGE_TIMAGEFRAME_VERSION;        
                 image->frames[ 0 ].frameInfo.version = GUCEF_IMAGE_TIMAGEFRAMEINFO_VERSION;
                 image->frames[ 0 ].frameInfo.nrOfMipmapLevels = 1;
+        image->frames[ 0 ].frameInfo.frameDurationInMs = 0;
                 image->frames[ 0 ].mipmapLevel = malloc( sizeof(TImageMipMapLevel) );
                 if ( GUCEF_NULL != image->frames[ 0 ].mipmapLevel )
                 {

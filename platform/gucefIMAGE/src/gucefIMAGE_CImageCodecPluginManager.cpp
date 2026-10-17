@@ -147,7 +147,10 @@ CImageCodecPluginManager::UnregisterPlugin( CORE::TPluginPtr plugin )
         CORE::CStdCodecPlugin::CCodecFamilyList::iterator n = imageCodecList.begin();
         while ( n != imageCodecList.end() )
         {
-            registry.Unregister( (*n) );
+            // Codecs of this plugin may have been unregistered already, for example because
+            // another plugin overrode them or because this plugin never registered them
+            if ( registry.IsRegistered( (*n) ) )
+                registry.Unregister( (*n) );
             ++n;
         }        
     }

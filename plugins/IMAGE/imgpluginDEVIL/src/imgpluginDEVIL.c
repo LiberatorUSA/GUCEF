@@ -804,6 +804,7 @@ IMGCODECPLUGIN_DecodeImage( void* pluginData      ,
         image = malloc( sizeof(TImage) );
         image->version = GUCEF_IMAGE_TIMAGE_VERSION;
         image->imageInfo.version = GUCEF_IMAGE_TIMAGEINFO_VERSION;
+        image->imageInfo.loopCount = 0;
         frameCount = image->imageInfo.nrOfFramesInImage = (UInt32) ilGetInteger( IL_NUM_IMAGES );
         if ( frameCount == 0 )
         {
@@ -825,6 +826,7 @@ IMGCODECPLUGIN_DecodeImage( void* pluginData      ,
             
             /* init the TImageFrameInfo section */
             imageFrame->frameInfo.version = GUCEF_IMAGE_TIMAGEFRAMEINFO_VERSION;
+            imageFrame->frameInfo.frameDurationInMs = 0; /* @TODO: frame timing is not supported atm */
             mipmapCount = imageFrame->frameInfo.nrOfMipmapLevels = (UInt32) ilGetInteger( IL_NUM_MIPMAPS );
             if ( mipmapCount == 0 )
             {

@@ -862,6 +862,7 @@ IMGCODECPLUGIN_DecodeImage( void* pluginData      ,
             /* build the TImageInfo section */
             image->version = GUCEF_IMAGE_TIMAGE_VERSION;
             image->imageInfo.version = GUCEF_IMAGE_TIMAGEINFO_VERSION;
+            image->imageInfo.loopCount = 0;
             image->imageInfo.nrOfFramesInImage = frameCount = (UInt32) 1; /* @TODO: multiple frames are not supported atm */
 
             /* Build the TImageFrameInfo sections */
@@ -871,6 +872,7 @@ IMGCODECPLUGIN_DecodeImage( void* pluginData      ,
                 TImageFrame* frame = &image->frames[ i ];
                 frame->version = GUCEF_IMAGE_TIMAGEFRAME_VERSION;
                 frame->frameInfo.version = GUCEF_IMAGE_TIMAGEFRAMEINFO_VERSION;
+                frame->frameInfo.frameDurationInMs = 0;
                 frame->frameInfo.nrOfMipmapLevels = mipmapCount = (UInt32) 1; /* @TODO: mip-mapping is not supported atm */
 
                 /* Build the TImageMipMapLevelInfo sections */
