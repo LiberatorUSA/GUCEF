@@ -19,6 +19,7 @@
 			<RuntimeDependency Name="vfspluginVP" />
 			<RuntimeDependency Name="vfspluginZIP" />
 			<RuntimeDependency Name="vfspluginLIBARCHIVE" />
+			<RuntimeDependency Name="vfspluginISO9660" />
 			<RuntimeDependency Name="vfspluginAWSS3" />
 		</RuntimeDependencies>
     </Module>

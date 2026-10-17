@@ -63,6 +63,21 @@
 #define GUCEF_VFS_TESTAPP_TESTZIPARCHIVEWRITER_H
 #endif /* GUCEF_VFS_TESTAPP_TESTZIPARCHIVEWRITER_H ? */
 
+#ifndef GUCEF_VFS_TESTAPP_TESTISO9660ARCHIVE_H
+#include "TestIso9660Archive.h"
+#define GUCEF_VFS_TESTAPP_TESTISO9660ARCHIVE_H
+#endif /* GUCEF_VFS_TESTAPP_TESTISO9660ARCHIVE_H ? */
+
+#ifndef GUCEF_VFS_TESTAPP_TESTITVARCHIVE_H
+#include "TestItvArchive.h"
+#define GUCEF_VFS_TESTAPP_TESTITVARCHIVE_H
+#endif /* GUCEF_VFS_TESTAPP_TESTITVARCHIVE_H ? */
+
+#ifndef GUCEF_VFS_TESTAPP_TESTMOUNTFROMRESOURCE_H
+#include "TestMountFromResource.h"
+#define GUCEF_VFS_TESTAPP_TESTMOUNTFROMRESOURCE_H
+#endif /* GUCEF_VFS_TESTAPP_TESTMOUNTFROMRESOURCE_H ? */
+
 #ifndef GUCEF_VFS_TESTAPP_TESTLIBARCHIVE_H
 #include "TestLibArchive.h"
 #define GUCEF_VFS_TESTAPP_TESTLIBARCHIVE_H
@@ -351,7 +366,10 @@ GUCEF_OSMAIN_BEGIN
 
         PerformVFSFileLoadUnloadTest();
         PerformZipArchiveWriterTests();
+        PerformMountFromResourceTests();
         PerformLibArchiveTests();
+        PerformItvArchiveTests();
+        PerformIso9660ArchiveTests();
 
         CORE::CLogStreamScope::FlushLogs();
 
