@@ -48,11 +48,11 @@ if ( ANDROID )
 endif( ANDROID )
 
 if ( ANDROID32 )
-  include_directories( ../../dependencies/hiredis ../../platform/gucefCORE/include/android )
+  include_directories( ../../dependencies/hiredis ../../platform/gucefCOMCORE/include/android ../../platform/gucefCORE/include/android )
 endif( ANDROID32 )
 
 if ( ANDROID64 )
-  include_directories( ../../dependencies/hiredis ../../platform/gucefCORE/include/android )
+  include_directories( ../../dependencies/hiredis ../../platform/gucefCOMCORE/include/android ../../platform/gucefCORE/include/android )
 endif( ANDROID64 )
 
 if ( ARDUINO )

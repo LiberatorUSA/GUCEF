@@ -141,6 +141,32 @@ files( {
 
 
 
+configuration( { "ANDROID32" } )
+    vpaths { ["Platform Headers"] = { "**.h", "**.hpp", "**.hxx" } }
+    files( {
+      "include/android/gucefCOMCORE_CLinuxNetworkInterface.h"
+    } )
+
+    vpaths { ["Platform Source"] = { "**.c", "**.cpp", "**.cs", "**.asm" } }
+    files( {
+      "src/android/gucefCOMCORE_CLinuxNetworkInterface.cpp"
+    } )
+
+
+
+configuration( { "ANDROID64" } )
+    vpaths { ["Platform Headers"] = { "**.h", "**.hpp", "**.hxx" } }
+    files( {
+      "include/android/gucefCOMCORE_CLinuxNetworkInterface.h"
+    } )
+
+    vpaths { ["Platform Source"] = { "**.c", "**.cpp", "**.cs", "**.asm" } }
+    files( {
+      "src/android/gucefCOMCORE_CLinuxNetworkInterface.cpp"
+    } )
+
+
+
 configuration( { "LINUX32" } )
     vpaths { ["Platform Headers"] = { "**.h", "**.hpp", "**.hxx" } }
     files( {
@@ -208,10 +234,10 @@ configuration( {} )
 includedirs( { "../../common/include", "../gucefCORE/include", "../gucefCORE/include/c_api", "../gucefMT/include", "include" } )
 
 configuration( { "ANDROID32" } )
-includedirs( { "../gucefCORE/include/android" } )
+includedirs( { "../gucefCORE/include/android", "include/android" } )
 
 configuration( { "ANDROID64" } )
-includedirs( { "../gucefCORE/include/android" } )
+includedirs( { "../gucefCORE/include/android", "include/android" } )
 
 configuration( { "LINUX32" } )
 includedirs( { "../gucefCORE/include/linux", "include/linux" } )

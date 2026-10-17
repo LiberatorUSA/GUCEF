@@ -14,3 +14,4 @@ plugins/CORE/dstorepluginPARSIFALXML/*
 plugins/CORE/dstorepluginPROTOBUF/*
 plugins/CORE/dstorepluginYAML/*
 tests/gucefCORE_TestApp/*
+tests/gucefCORE_TestPlugin/*

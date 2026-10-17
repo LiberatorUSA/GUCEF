@@ -12,9 +12,9 @@
 
 workspace( "GUCEF_exe_AncestryDotComBackup" )
 
-  platforms( { "ALL", "ANDROID32", "ANDROID64", "ARDUINO", "EMSCRIPTEN32", "EMSCRIPTEN64", "IOS", "LINUX32", "LINUX64", "OSX", "WIN32", "WIN64" } )
+  platforms( { "ALL", "ANDROID", "ANDROID32", "ANDROID64", "ARDUINO", "EMSCRIPTEN", "EMSCRIPTEN32", "EMSCRIPTEN64", "IOS", "IPHONE", "IPHONEOS", "LINUX", "LINUX32", "LINUX64", "MAC", "MACOS", "MACOSX", "MSWIN", "OSX", "WIN32", "WIN64", "WINDOWS" } )
 
-  location( "projects\premake5\targets" )
+  location( "projects/premake5/targets" )
 
   --
   -- Includes for all modules in the solution:
@@ -40,6 +40,7 @@ filter "ALL"
   include( "tools/AncestryDotComBackup" )
   include( "tools/AncestryDotComBackupLib" )
 
+filter "ANDROID"
   include( "dependencies/curl" )
   include( "dependencies/json-builder" )
   include( "dependencies/json-parser" )
@@ -119,6 +120,7 @@ filter "ARDUINO"
   include( "tools/AncestryDotComBackup" )
   include( "tools/AncestryDotComBackupLib" )
 
+filter "EMSCRIPTEN"
   include( "dependencies/curl" )
   include( "dependencies/json-builder" )
   include( "dependencies/json-parser" )
@@ -200,6 +202,7 @@ filter "IOS"
   include( "tools/AncestryDotComBackup" )
   include( "tools/AncestryDotComBackupLib" )
 
+filter "IPHONE"
   include( "dependencies/curl" )
   include( "dependencies/json-builder" )
   include( "dependencies/json-parser" )
@@ -219,6 +222,7 @@ filter "IOS"
   include( "tools/AncestryDotComBackup" )
   include( "tools/AncestryDotComBackupLib" )
 
+filter "IPHONEOS"
   include( "dependencies/curl" )
   include( "dependencies/json-builder" )
   include( "dependencies/json-parser" )
@@ -238,6 +242,7 @@ filter "IOS"
   include( "tools/AncestryDotComBackup" )
   include( "tools/AncestryDotComBackupLib" )
 
+filter "LINUX"
   include( "dependencies/curl" )
   include( "dependencies/json-builder" )
   include( "dependencies/json-parser" )
@@ -299,6 +304,7 @@ filter "LINUX64"
   include( "tools/AncestryDotComBackup" )
   include( "tools/AncestryDotComBackupLib" )
 
+filter "MAC"
   include( "dependencies/curl" )
   include( "dependencies/json-builder" )
   include( "dependencies/json-parser" )
@@ -318,6 +324,7 @@ filter "LINUX64"
   include( "tools/AncestryDotComBackup" )
   include( "tools/AncestryDotComBackupLib" )
 
+filter "MACOS"
   include( "dependencies/curl" )
   include( "dependencies/json-builder" )
   include( "dependencies/json-parser" )
@@ -337,6 +344,7 @@ filter "LINUX64"
   include( "tools/AncestryDotComBackup" )
   include( "tools/AncestryDotComBackupLib" )
 
+filter "MACOSX"
   include( "dependencies/curl" )
   include( "dependencies/json-builder" )
   include( "dependencies/json-parser" )
@@ -356,6 +364,7 @@ filter "LINUX64"
   include( "tools/AncestryDotComBackup" )
   include( "tools/AncestryDotComBackupLib" )
 
+filter "MSWIN"
   include( "dependencies/curl" )
   include( "dependencies/json-builder" )
   include( "dependencies/json-parser" )
@@ -437,6 +446,7 @@ filter "WIN64"
   include( "tools/AncestryDotComBackup" )
   include( "tools/AncestryDotComBackupLib" )
 
+filter "WINDOWS"
   include( "dependencies/curl" )
   include( "dependencies/json-builder" )
   include( "dependencies/json-parser" )

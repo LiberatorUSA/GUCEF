@@ -3316,51 +3316,51 @@ CProjectInfo::SetKnownPlatformsToHardcodedDefaults( void )
     // Start from a clean slate
     m_knownPlatforms.clear();
 
-    // Set hardcoded default platforms
+    // Set hardcoded default platforms, each through a pointer to its own entry
 
-    TPlatformDefinition& platform = m_knownPlatforms[ KnownPlatforms::Android32 ];
-    platform.name = KnownPlatforms::Android32;
-    platform.aliases = { KnownMultiPlatforms::Android, KnownMultiPlatforms::LinuxLike };
-    platform.platformDirs = { KnownMultiPlatforms::Android, KnownPlatforms::Android32 };
+    TPlatformDefinition* platform = &m_knownPlatforms[ KnownPlatforms::Android32 ];
+    platform->name = KnownPlatforms::Android32;
+    platform->aliases = { KnownMultiPlatforms::Android, KnownMultiPlatforms::LinuxLike };
+    platform->platformDirs = { KnownMultiPlatforms::Android, KnownPlatforms::Android32 };
 
-    platform = m_knownPlatforms[ KnownPlatforms::Android64 ];
-    platform.name = KnownPlatforms::Android64;
-    platform.aliases = { KnownMultiPlatforms::Android, KnownMultiPlatforms::LinuxLike };
-    platform.platformDirs = { KnownMultiPlatforms::Android, KnownPlatforms::Android64 };
+    platform = &m_knownPlatforms[ KnownPlatforms::Android64 ];
+    platform->name = KnownPlatforms::Android64;
+    platform->aliases = { KnownMultiPlatforms::Android, KnownMultiPlatforms::LinuxLike };
+    platform->platformDirs = { KnownMultiPlatforms::Android, KnownPlatforms::Android64 };
 
-    platform = m_knownPlatforms[ KnownPlatforms::Linux32 ];
-    platform.name = KnownPlatforms::Linux32;
-    platform.aliases = { KnownMultiPlatforms::Linux, KnownMultiPlatforms::LinuxLike };
-    platform.platformDirs = { KnownMultiPlatforms::Linux, KnownPlatforms::Linux32 };
+    platform = &m_knownPlatforms[ KnownPlatforms::Linux32 ];
+    platform->name = KnownPlatforms::Linux32;
+    platform->aliases = { KnownMultiPlatforms::Linux, KnownMultiPlatforms::LinuxLike };
+    platform->platformDirs = { KnownMultiPlatforms::Linux, KnownPlatforms::Linux32 };
 
-    platform = m_knownPlatforms[ KnownPlatforms::Linux64 ];
-    platform.name = KnownPlatforms::Linux64;
-    platform.aliases = { KnownMultiPlatforms::Linux, KnownMultiPlatforms::LinuxLike };
-    platform.platformDirs = { KnownMultiPlatforms::Linux, KnownPlatforms::Linux64 };
+    platform = &m_knownPlatforms[ KnownPlatforms::Linux64 ];
+    platform->name = KnownPlatforms::Linux64;
+    platform->aliases = { KnownMultiPlatforms::Linux, KnownMultiPlatforms::LinuxLike };
+    platform->platformDirs = { KnownMultiPlatforms::Linux, KnownPlatforms::Linux64 };
 
-    platform = m_knownPlatforms[ KnownPlatforms::Win32 ];
-    platform.name = KnownPlatforms::Win32;
-    platform.aliases = { KnownMultiPlatforms::MsWin };
-    platform.platformDirs = { KnownMultiPlatforms::MsWin, KnownPlatforms::Win32 };
+    platform = &m_knownPlatforms[ KnownPlatforms::Win32 ];
+    platform->name = KnownPlatforms::Win32;
+    platform->aliases = { KnownMultiPlatforms::MsWin };
+    platform->platformDirs = { KnownMultiPlatforms::MsWin, KnownPlatforms::Win32 };
 
-    platform = m_knownPlatforms[ KnownPlatforms::Win64 ];
-    platform.name = KnownPlatforms::Win64;
-    platform.aliases = { KnownMultiPlatforms::MsWin };
-    platform.platformDirs = { KnownMultiPlatforms::MsWin, KnownPlatforms::Win64 };
+    platform = &m_knownPlatforms[ KnownPlatforms::Win64 ];
+    platform->name = KnownPlatforms::Win64;
+    platform->aliases = { KnownMultiPlatforms::MsWin };
+    platform->platformDirs = { KnownMultiPlatforms::MsWin, KnownPlatforms::Win64 };
 
-    platform = m_knownPlatforms[ KnownPlatforms::Emscripten32 ];
-    platform.name = KnownPlatforms::Emscripten32;
-    platform.aliases = { KnownMultiPlatforms::Emscripten };
-    platform.platformDirs = { KnownMultiPlatforms::Emscripten, KnownPlatforms::Emscripten32 };
+    platform = &m_knownPlatforms[ KnownPlatforms::Emscripten32 ];
+    platform->name = KnownPlatforms::Emscripten32;
+    platform->aliases = { KnownMultiPlatforms::Emscripten };
+    platform->platformDirs = { KnownMultiPlatforms::Emscripten, KnownPlatforms::Emscripten32 };
 
-    platform = m_knownPlatforms[ KnownPlatforms::Emscripten64 ];
-    platform.name = KnownPlatforms::Emscripten64;
-    platform.aliases = { KnownMultiPlatforms::Emscripten };
-    platform.platformDirs = { KnownMultiPlatforms::Emscripten, KnownPlatforms::Emscripten64 };
+    platform = &m_knownPlatforms[ KnownPlatforms::Emscripten64 ];
+    platform->name = KnownPlatforms::Emscripten64;
+    platform->aliases = { KnownMultiPlatforms::Emscripten };
+    platform->platformDirs = { KnownMultiPlatforms::Emscripten, KnownPlatforms::Emscripten64 };
 
-    platform = m_knownPlatforms[ KnownPlatforms::Arduino ];
-    platform.name = KnownPlatforms::Arduino;
-    platform.platformDirs = { KnownPlatforms::Arduino };
+    platform = &m_knownPlatforms[ KnownPlatforms::Arduino ];
+    platform->name = KnownPlatforms::Arduino;
+    platform->platformDirs = { KnownPlatforms::Arduino };
 }
 
 /*---------------------------------------------------------------------------*/

@@ -12,15 +12,25 @@
 
 workspace( "GUCEF_exe_gucefMULTIPLAY_TestApp" )
 
-  platforms( { "ALL", "ANDROID32", "ANDROID64", "ARDUINO", "EMSCRIPTEN32", "EMSCRIPTEN64", "IOS", "LINUX32", "LINUX64", "OSX", "WIN32", "WIN64" } )
+  platforms( { "ALL", "ANDROID", "ANDROID32", "ANDROID64", "ARDUINO", "EMSCRIPTEN", "EMSCRIPTEN32", "EMSCRIPTEN64", "IOS", "IPHONE", "IPHONEOS", "LINUX", "LINUX32", "LINUX64", "MAC", "MACOS", "MACOSX", "MSWIN", "OSX", "WIN32", "WIN64", "WINDOWS" } )
 
-  location( "projects\premake5\targets" )
+  location( "projects/premake5/targets" )
 
   --
   -- Includes for all modules in the solution:
   --
 
 filter "ALL"
+  include( "dependencies/libparsifal" )
+  include( "platform/gucefCOM" )
+  include( "platform/gucefCOMCORE" )
+  include( "platform/gucefCORE" )
+  include( "platform/gucefMT" )
+  include( "platform/gucefMULTIPLAY" )
+  include( "plugins/CORE/dstorepluginPARSIFALXML" )
+  include( "tests/gucefMULTIPLAY_TestApp" )
+
+filter "ANDROID"
   include( "dependencies/libparsifal" )
   include( "platform/gucefCOM" )
   include( "platform/gucefCOMCORE" )
@@ -60,6 +70,16 @@ filter "ARDUINO"
   include( "plugins/CORE/dstorepluginPARSIFALXML" )
   include( "tests/gucefMULTIPLAY_TestApp" )
 
+filter "EMSCRIPTEN"
+  include( "dependencies/libparsifal" )
+  include( "platform/gucefCOM" )
+  include( "platform/gucefCOMCORE" )
+  include( "platform/gucefCORE" )
+  include( "platform/gucefMT" )
+  include( "platform/gucefMULTIPLAY" )
+  include( "plugins/CORE/dstorepluginPARSIFALXML" )
+  include( "tests/gucefMULTIPLAY_TestApp" )
+
 filter "EMSCRIPTEN32"
   include( "dependencies/libparsifal" )
   include( "platform/gucefCOM" )
@@ -90,6 +110,36 @@ filter "IOS"
   include( "plugins/CORE/dstorepluginPARSIFALXML" )
   include( "tests/gucefMULTIPLAY_TestApp" )
 
+filter "IPHONE"
+  include( "dependencies/libparsifal" )
+  include( "platform/gucefCOM" )
+  include( "platform/gucefCOMCORE" )
+  include( "platform/gucefCORE" )
+  include( "platform/gucefMT" )
+  include( "platform/gucefMULTIPLAY" )
+  include( "plugins/CORE/dstorepluginPARSIFALXML" )
+  include( "tests/gucefMULTIPLAY_TestApp" )
+
+filter "IPHONEOS"
+  include( "dependencies/libparsifal" )
+  include( "platform/gucefCOM" )
+  include( "platform/gucefCOMCORE" )
+  include( "platform/gucefCORE" )
+  include( "platform/gucefMT" )
+  include( "platform/gucefMULTIPLAY" )
+  include( "plugins/CORE/dstorepluginPARSIFALXML" )
+  include( "tests/gucefMULTIPLAY_TestApp" )
+
+filter "LINUX"
+  include( "dependencies/libparsifal" )
+  include( "platform/gucefCOM" )
+  include( "platform/gucefCOMCORE" )
+  include( "platform/gucefCORE" )
+  include( "platform/gucefMT" )
+  include( "platform/gucefMULTIPLAY" )
+  include( "plugins/CORE/dstorepluginPARSIFALXML" )
+  include( "tests/gucefMULTIPLAY_TestApp" )
+
 filter "LINUX32"
   include( "dependencies/libparsifal" )
   include( "platform/gucefCOM" )
@@ -101,6 +151,46 @@ filter "LINUX32"
   include( "tests/gucefMULTIPLAY_TestApp" )
 
 filter "LINUX64"
+  include( "dependencies/libparsifal" )
+  include( "platform/gucefCOM" )
+  include( "platform/gucefCOMCORE" )
+  include( "platform/gucefCORE" )
+  include( "platform/gucefMT" )
+  include( "platform/gucefMULTIPLAY" )
+  include( "plugins/CORE/dstorepluginPARSIFALXML" )
+  include( "tests/gucefMULTIPLAY_TestApp" )
+
+filter "MAC"
+  include( "dependencies/libparsifal" )
+  include( "platform/gucefCOM" )
+  include( "platform/gucefCOMCORE" )
+  include( "platform/gucefCORE" )
+  include( "platform/gucefMT" )
+  include( "platform/gucefMULTIPLAY" )
+  include( "plugins/CORE/dstorepluginPARSIFALXML" )
+  include( "tests/gucefMULTIPLAY_TestApp" )
+
+filter "MACOS"
+  include( "dependencies/libparsifal" )
+  include( "platform/gucefCOM" )
+  include( "platform/gucefCOMCORE" )
+  include( "platform/gucefCORE" )
+  include( "platform/gucefMT" )
+  include( "platform/gucefMULTIPLAY" )
+  include( "plugins/CORE/dstorepluginPARSIFALXML" )
+  include( "tests/gucefMULTIPLAY_TestApp" )
+
+filter "MACOSX"
+  include( "dependencies/libparsifal" )
+  include( "platform/gucefCOM" )
+  include( "platform/gucefCOMCORE" )
+  include( "platform/gucefCORE" )
+  include( "platform/gucefMT" )
+  include( "platform/gucefMULTIPLAY" )
+  include( "plugins/CORE/dstorepluginPARSIFALXML" )
+  include( "tests/gucefMULTIPLAY_TestApp" )
+
+filter "MSWIN"
   include( "dependencies/libparsifal" )
   include( "platform/gucefCOM" )
   include( "platform/gucefCOMCORE" )
@@ -140,3 +230,12 @@ filter "WIN64"
   include( "plugins/CORE/dstorepluginPARSIFALXML" )
   include( "tests/gucefMULTIPLAY_TestApp" )
 
+filter "WINDOWS"
+  include( "dependencies/libparsifal" )
+  include( "platform/gucefCOM" )
+  include( "platform/gucefCOMCORE" )
+  include( "platform/gucefCORE" )
+  include( "platform/gucefMT" )
+  include( "platform/gucefMULTIPLAY" )
+  include( "plugins/CORE/dstorepluginPARSIFALXML" )
+  include( "tests/gucefMULTIPLAY_TestApp" )

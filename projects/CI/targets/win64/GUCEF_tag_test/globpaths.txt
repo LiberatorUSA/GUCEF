@@ -46,7 +46,7 @@ platform/gucefCOM/include/*
 platform/gucefCORE/include/*
 platform/gucefDRN/*
 platform/gucefGUI/*
-platform/gucefIMAGE/*
+platform/gucefIMAGE/include/*
 platform/gucefINPUT/*
 platform/gucefMT/include/*
 platform/gucefMT/src//*

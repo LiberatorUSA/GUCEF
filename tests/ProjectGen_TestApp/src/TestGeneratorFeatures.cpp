@@ -157,6 +157,37 @@ PerformGeneratorFeatureTests( void )
 
     GUCEF_TESTFW_SUITE_SCOPE( "GeneratorFeatures" );
 
+    // Without platform definitions in the config the hardcoded ones are used: each platform under its own name with
+    // its own directories. They were written through one reference that was assigned again for every platform, which
+    // copied each platform over the first one and left the others empty
+    GUCEF_TESTFW_TESTCASE( "Generator: the hardcoded platform definitions define each platform under its own name" )
+    try
+    {
+        PROJECTGEN::CProjectInfoPtr projectInfo = PROJECTGEN::CProjectInfo::CreateSharedObj();
+        const PROJECTGEN::TPlatformDefinitionMap& platforms = projectInfo->GetPlatformDefinitions();
+        const char* names[] = { "android32", "android64", "linux32", "linux64", "win32", "win64", "emscripten32", "emscripten64", "arduino" };
+        for ( size_t i=0; i<sizeof( names ) / sizeof( names[ 0 ] ); ++i )
+        {
+            PROJECTGEN::TPlatformDefinitionMap::const_iterator p = platforms.find( names[ i ] );
+            ASSERT_TRUE( p != platforms.end() );
+            if ( p == platforms.end() )
+                continue;
+            ASSERT_TRUE( (*p).second.name == names[ i ] );
+            ASSERT_TRUE( (*p).second.platformDirs.find( names[ i ] ) != (*p).second.platformDirs.end() );
+        }
+        const PROJECTGEN::TPlatformDefinition& android64 = (*platforms.find( "android64" )).second;
+        ASSERT_TRUE( android64.platformDirs.find( "android" ) != android64.platformDirs.end() );
+        ASSERT_TRUE( android64.aliases.find( "linuxlike" ) != android64.aliases.end() );
+        const PROJECTGEN::TPlatformDefinition& linux64 = (*platforms.find( "linux64" )).second;
+        ASSERT_TRUE( linux64.platformDirs.find( "linux" ) != linux64.platformDirs.end() );
+        ASSERT_TRUE( linux64.platformDirs.find( "android" ) == linux64.platformDirs.end() );
+    }
+    catch( ... )
+    {
+        ERRORHERE;
+    }
+    GUCEF_TESTFW_TESTCASE_END
+
     GUCEF_TESTFW_TESTCASE( "Generator: compiler flags, wildcard file excludes and platform specific dependency includes" )
     try
     {

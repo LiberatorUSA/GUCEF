@@ -28,6 +28,15 @@ endif ()
 
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
+# The native activity glue of the Android NDK, as the static library that ndk-build's "import-module" provides,
+# for modules that link 'android_native_app_glue'
+if ( ( ANDROID32 OR ANDROID64 ) AND NOT TARGET android_native_app_glue )
+  if ( DEFINED ANDROID_NDK_ROOT AND EXISTS "${ANDROID_NDK_ROOT}/sources/android/native_app_glue/android_native_app_glue.c" )
+    add_library( android_native_app_glue STATIC "${ANDROID_NDK_ROOT}/sources/android/native_app_glue/android_native_app_glue.c" )
+    target_include_directories( android_native_app_glue PUBLIC "${ANDROID_NDK_ROOT}/sources/android/native_app_glue" )
+  endif ()
+endif ()
+
 # determine config values depending on build options 
 set(GUCEF_SET_MEMTRACK_DEBUG 0)
 set(GUCEF_SET_MEMTRACK_RELEASE 0)

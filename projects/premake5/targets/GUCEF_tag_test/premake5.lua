@@ -12,9 +12,9 @@
 
 workspace( "GUCEF_tag_test" )
 
-  platforms( { "ALL", "ANDROID32", "ANDROID64", "ARDUINO", "EMSCRIPTEN32", "EMSCRIPTEN64", "IOS", "LINUX32", "LINUX64", "OSX", "WIN32", "WIN64" } )
+  platforms( { "ALL", "ANDROID", "ANDROID32", "ANDROID64", "ARDUINO", "EMSCRIPTEN", "EMSCRIPTEN32", "EMSCRIPTEN64", "IOS", "IPHONE", "IPHONEOS", "LINUX", "LINUX32", "LINUX64", "MAC", "MACOS", "MACOSX", "MSWIN", "OSX", "WIN32", "WIN64", "WINDOWS" } )
 
-  location( "projects\premake5\targets" )
+  location( "projects/premake5/targets" )
 
   --
   -- Includes for all modules in the solution:
@@ -40,6 +40,7 @@ filter "ALL"
   include( "dependencies/hiredis" )
   include( "dependencies/json-builder" )
   include( "dependencies/json-parser" )
+  include( "dependencies/libarchive" )
   include( "dependencies/libparsifal" )
   include( "dependencies/librdkafka" )
   include( "dependencies/libyaml" )
@@ -48,23 +49,29 @@ filter "ALL"
   include( "dependencies/redis-plus-plus/src/sw/redis++" )
   include( "dependencies/stbrumme-hash-library" )
   include( "dependencies/zziplib" )
+  include( "platform/gucefAUDIO" )
   include( "platform/gucefCOM" )
   include( "platform/gucefCOMCORE" )
   include( "platform/gucefCORE" )
+  include( "platform/gucefIMAGE" )
   include( "platform/gucefKAITAI" )
   include( "platform/gucefLOADER" )
   include( "platform/gucefMT" )
+  include( "platform/gucefMULTIPLAY" )
   include( "platform/gucefPATCHER" )
   include( "platform/gucefPRODMAN" )
   include( "platform/gucefPUBSUB" )
   include( "platform/gucefVFS" )
+  include( "platform/gucefVIDEO" )
   include( "platform/gucefWEB" )
+  include( "plugins/AUDIO/audiocodecpluginAU" )
   include( "plugins/CORE/codecspluginSTBRUMMEHASH" )
   include( "plugins/CORE/codecspluginZLIB" )
   include( "plugins/CORE/dstorepluginJSONPARSER" )
   include( "plugins/CORE/dstorepluginPARSIFALXML" )
   include( "plugins/CORE/dstorepluginPROTOBUF" )
   include( "plugins/CORE/dstorepluginYAML" )
+  include( "plugins/PUBSUB/pubsubpluginFIX" )
   include( "plugins/PUBSUB/pubsubpluginKAFKA" )
   include( "plugins/PUBSUB/pubsubpluginREDISCLUSTER" )
   include( "plugins/PUBSUB/pubsubpluginSTORAGE" )
@@ -73,23 +80,36 @@ filter "ALL"
   include( "plugins/PUBSUB/pubsubpluginWEB" )
   include( "plugins/SHARED/pluginglueAWSSDK" )
   include( "plugins/VFS/vfspluginAWSS3" )
+  include( "plugins/VFS/vfspluginCUEBIN" )
   include( "plugins/VFS/vfspluginDVP" )
+  include( "plugins/VFS/vfspluginISO9660" )
   include( "plugins/VFS/vfspluginITV" )
+  include( "plugins/VFS/vfspluginLIBARCHIVE" )
   include( "plugins/VFS/vfspluginVP" )
   include( "plugins/VFS/vfspluginZIP" )
+  include( "plugins/VIDEO/videocodecpluginSMK" )
   include( "plugins/WEB/httpclientpluginCURL" )
   include( "tests/AncestryDotComBackup_TestApp" )
+  include( "tests/ProjectGen_TestApp" )
+  include( "tests/gucefAUDIO_TestApp" )
   include( "tests/gucefCOMCORE_TestApp" )
   include( "tests/gucefCOM_TestApp" )
   include( "tests/gucefCORE_TestApp" )
+  include( "tests/gucefCORE_TestPlugin" )
   include( "tests/gucefKAITAI_TestApp" )
   include( "tests/gucefLOADER_TestApp" )
   include( "tests/gucefMT_TestApp" )
+  include( "tests/gucefMULTIPLAY_TestApp" )
   include( "tests/gucefPATCHERAPP_TestApp" )
   include( "tests/gucefPRODMAN_TestApp" )
   include( "tests/gucefPUBSUB_TestApp" )
   include( "tests/gucefVFS_TestApp" )
+  include( "tests/gucefVIDEO_TestApp" )
   include( "tests/gucefWEB_TestApp" )
+  include( "tools/AncestryDotComBackupLib" )
+  include( "tools/ProjectGen" )
+
+filter "ANDROID"
 
 filter "ANDROID32"
   include( "dependencies/MyGui/MyGUIEngine" )
@@ -102,7 +122,6 @@ filter "ANDROID32"
   include( "dependencies/freetype" )
   include( "dependencies/pcre" )
   include( "platform/gucefGUI" )
-  include( "platform/gucefIMAGE" )
   include( "platform/gucefINPUT" )
   include( "plugins/GUI/guidriverAndroidGLES" )
   include( "plugins/GUI/guidriverCEGUI" )
@@ -131,7 +150,6 @@ filter "ANDROID64"
   include( "dependencies/freetype" )
   include( "dependencies/pcre" )
   include( "platform/gucefGUI" )
-  include( "platform/gucefIMAGE" )
   include( "platform/gucefINPUT" )
   include( "plugins/GUI/guidriverAndroidGLES" )
   include( "plugins/GUI/guidriverCEGUI" )
@@ -151,13 +169,23 @@ filter "ANDROID64"
 
 filter "ARDUINO"
 
+filter "EMSCRIPTEN"
+
 filter "EMSCRIPTEN32"
   include( "dependencies/zlib" )
+  include( "plugins/AUDIO/audiodriverWEBAUDIO" )
 
 filter "EMSCRIPTEN64"
   include( "dependencies/zlib" )
+  include( "plugins/AUDIO/audiodriverWEBAUDIO" )
 
 filter "IOS"
+
+filter "IPHONE"
+
+filter "IPHONEOS"
+
+filter "LINUX"
 
 filter "LINUX32"
   include( "dependencies/DevIL/DevIL" )
@@ -169,6 +197,8 @@ filter "LINUX32"
   include( "dependencies/OIS" )
   include( "dependencies/Ogre/OgreMain" )
   include( "dependencies/RmlUi/Source/Core" )
+  include( "dependencies/aws-cpp-sdk-sns" )
+  include( "dependencies/aws-cpp-sdk-sqs" )
   include( "dependencies/cegui/cegui" )
   include( "dependencies/cegui/cegui/src/RendererModules/Ogre" )
   include( "dependencies/cegui/cegui/src/RendererModules/OpenGL" )
@@ -186,8 +216,8 @@ filter "LINUX32"
   include( "dependencies/zlib" )
   include( "platform/gucefDRN" )
   include( "platform/gucefGUI" )
-  include( "platform/gucefIMAGE" )
   include( "platform/gucefINPUT" )
+  include( "plugins/AUDIO/audiodriverALSA" )
   include( "plugins/GUI/guidriverCEGUI" )
   include( "plugins/GUI/guidriverCEGUIOgre" )
   include( "plugins/GUI/guidriverCEGUIOpenGL" )
@@ -204,6 +234,8 @@ filter "LINUX32"
   include( "plugins/IMAGE/imgpluginITV" )
   include( "plugins/INPUT/inputdriverOIS" )
   include( "plugins/INPUT/inputdriverXWINMSG" )
+  include( "plugins/PUBSUB/pubsubpluginAWSSNS" )
+  include( "plugins/PUBSUB/pubsubpluginAWSSQS" )
   include( "tests/gucefDRN_TestApp" )
   include( "tests/gucefGUI_TestApp" )
   include( "tests/gucefIMAGE_TestApp" )
@@ -219,6 +251,8 @@ filter "LINUX64"
   include( "dependencies/OIS" )
   include( "dependencies/Ogre/OgreMain" )
   include( "dependencies/RmlUi/Source/Core" )
+  include( "dependencies/aws-cpp-sdk-sns" )
+  include( "dependencies/aws-cpp-sdk-sqs" )
   include( "dependencies/cegui/cegui" )
   include( "dependencies/cegui/cegui/src/RendererModules/Ogre" )
   include( "dependencies/cegui/cegui/src/RendererModules/OpenGL" )
@@ -236,8 +270,8 @@ filter "LINUX64"
   include( "dependencies/zlib" )
   include( "platform/gucefDRN" )
   include( "platform/gucefGUI" )
-  include( "platform/gucefIMAGE" )
   include( "platform/gucefINPUT" )
+  include( "plugins/AUDIO/audiodriverALSA" )
   include( "plugins/GUI/guidriverCEGUI" )
   include( "plugins/GUI/guidriverCEGUIOgre" )
   include( "plugins/GUI/guidriverCEGUIOpenGL" )
@@ -254,10 +288,20 @@ filter "LINUX64"
   include( "plugins/IMAGE/imgpluginITV" )
   include( "plugins/INPUT/inputdriverOIS" )
   include( "plugins/INPUT/inputdriverXWINMSG" )
+  include( "plugins/PUBSUB/pubsubpluginAWSSNS" )
+  include( "plugins/PUBSUB/pubsubpluginAWSSQS" )
   include( "tests/gucefDRN_TestApp" )
   include( "tests/gucefGUI_TestApp" )
   include( "tests/gucefIMAGE_TestApp" )
   include( "tests/gucefINPUT_TestApp" )
+
+filter "MAC"
+
+filter "MACOS"
+
+filter "MACOSX"
+
+filter "MSWIN"
 
 filter "OSX"
 
@@ -271,6 +315,7 @@ filter "WIN32"
   include( "dependencies/OIS" )
   include( "dependencies/Ogre/OgreMain" )
   include( "dependencies/RmlUi/Source/Core" )
+  include( "dependencies/aws-cpp-sdk-sns" )
   include( "dependencies/aws-cpp-sdk-sqs" )
   include( "dependencies/cegui/cegui" )
   include( "dependencies/cegui/cegui/src/RendererModules/Ogre" )
@@ -289,7 +334,6 @@ filter "WIN32"
   include( "dependencies/zlib" )
   include( "platform/gucefDRN" )
   include( "platform/gucefGUI" )
-  include( "platform/gucefIMAGE" )
   include( "platform/gucefINPUT" )
   include( "plugins/GUI/guidriverCEGUI" )
   include( "plugins/GUI/guidriverCEGUIOgre" )
@@ -310,6 +354,7 @@ filter "WIN32"
   include( "plugins/INPUT/inputdriverDIRECTINPUT8" )
   include( "plugins/INPUT/inputdriverMSWINMSG" )
   include( "plugins/INPUT/inputdriverOIS" )
+  include( "plugins/PUBSUB/pubsubpluginAWSSNS" )
   include( "plugins/PUBSUB/pubsubpluginAWSSQS" )
   include( "plugins/PUBSUB/pubsubpluginMSMQ" )
   include( "tests/MemoryLeakFinder_TestApp" )
@@ -317,7 +362,6 @@ filter "WIN32"
   include( "tests/gucefGUI_TestApp" )
   include( "tests/gucefIMAGE_TestApp" )
   include( "tests/gucefINPUT_TestApp" )
-  include( "tools/AncestryDotComBackupLib" )
   include( "tools/MemoryLeakFinder" )
 
 filter "WIN64"
@@ -329,6 +373,7 @@ filter "WIN64"
   include( "dependencies/OIS" )
   include( "dependencies/Ogre/OgreMain" )
   include( "dependencies/RmlUi/Source/Core" )
+  include( "dependencies/aws-cpp-sdk-sns" )
   include( "dependencies/aws-cpp-sdk-sqs" )
   include( "dependencies/cegui/cegui" )
   include( "dependencies/cegui/cegui/src/RendererModules/Ogre" )
@@ -347,7 +392,6 @@ filter "WIN64"
   include( "dependencies/zlib" )
   include( "platform/gucefDRN" )
   include( "platform/gucefGUI" )
-  include( "platform/gucefIMAGE" )
   include( "platform/gucefINPUT" )
   include( "plugins/GUI/guidriverCEGUI" )
   include( "plugins/GUI/guidriverCEGUIOgre" )
@@ -368,6 +412,7 @@ filter "WIN64"
   include( "plugins/INPUT/inputdriverDIRECTINPUT8" )
   include( "plugins/INPUT/inputdriverMSWINMSG" )
   include( "plugins/INPUT/inputdriverOIS" )
+  include( "plugins/PUBSUB/pubsubpluginAWSSNS" )
   include( "plugins/PUBSUB/pubsubpluginAWSSQS" )
   include( "plugins/PUBSUB/pubsubpluginMSMQ" )
   include( "tests/MemoryLeakFinder_TestApp" )
@@ -376,3 +421,5 @@ filter "WIN64"
   include( "tests/gucefIMAGE_TestApp" )
   include( "tests/gucefINPUT_TestApp" )
   include( "tools/MemoryLeakFinder" )
+
+filter "WINDOWS"

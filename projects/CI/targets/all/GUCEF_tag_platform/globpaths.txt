@@ -16,4 +16,5 @@ platform/gucefPRODMAN/*
 platform/gucefPUBSUB/*
 platform/gucefSMDRN/*
 platform/gucefVFS/*
+platform/gucefVIDEO/*
 platform/gucefWEB/*

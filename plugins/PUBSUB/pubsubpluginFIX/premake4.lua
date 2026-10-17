@@ -41,11 +41,16 @@ configuration( {} )
 vpaths { ["Headers"] = { "**.h", "**.hpp", "**.hxx" } }
 files( {
   "include/pubsubpluginFIX.h",
-  "include/pubsubpluginFIX_CFIXMessage.h",
-  "include/pubsubpluginFIX_CFIXPubSubClient.h",
-  "include/pubsubpluginFIX_CFIXPubSubClientConfig.h",
-  "include/pubsubpluginFIX_CFIXPubSubClientTopic.h",
-  "include/pubsubpluginFIX_CFIXPubSubClientTopicConfig.h",
+  "include/pubsubpluginFIX_CFIXClientMessage.h",
+  "include/pubsubpluginFIX_CFIXClientPubSubClient.h",
+  "include/pubsubpluginFIX_CFIXClientPubSubClientConfig.h",
+  "include/pubsubpluginFIX_CFIXClientPubSubClientTopic.h",
+  "include/pubsubpluginFIX_CFIXClientPubSubClientTopicConfig.h",
+  "include/pubsubpluginFIX_CFIXClientSessionFields.h",
+  "include/pubsubpluginFIX_CFIXServerPubSubClient.h",
+  "include/pubsubpluginFIX_CFIXServerPubSubClientConfig.h",
+  "include/pubsubpluginFIX_CFIXServerPubSubClientTopic.h",
+  "include/pubsubpluginFIX_CFIXServerPubSubClientTopicConfig.h",
   "include/pubsubpluginFIX_config.h",
   "include/pubsubpluginFIX_macros.h"
  } )
@@ -56,11 +61,15 @@ configuration( {} )
 vpaths { ["Source"] = { "**.c", "**.cpp", "**.cs", "**.asm" } }
 files( {
   "src/pubsubpluginFIX.cpp",
-  "src/pubsubpluginFIX_CFIXMessage.cpp",
-  "src/pubsubpluginFIX_CFIXPubSubClient.cpp",
-  "src/pubsubpluginFIX_CFIXPubSubClientConfig.cpp",
-  "src/pubsubpluginFIX_CFIXPubSubClientTopic.cpp",
-  "src/pubsubpluginFIX_CFIXPubSubClientTopicConfig.cpp"
+  "src/pubsubpluginFIX_CFIXClientMessage.cpp",
+  "src/pubsubpluginFIX_CFIXClientPubSubClient.cpp",
+  "src/pubsubpluginFIX_CFIXClientPubSubClientConfig.cpp",
+  "src/pubsubpluginFIX_CFIXClientPubSubClientTopic.cpp",
+  "src/pubsubpluginFIX_CFIXClientPubSubClientTopicConfig.cpp",
+  "src/pubsubpluginFIX_CFIXServerPubSubClient.cpp",
+  "src/pubsubpluginFIX_CFIXServerPubSubClientConfig.cpp",
+  "src/pubsubpluginFIX_CFIXServerPubSubClientTopic.cpp",
+  "src/pubsubpluginFIX_CFIXServerPubSubClientTopicConfig.cpp"
  } )
 
 
@@ -68,10 +77,10 @@ configuration( {} )
 includedirs( { "../../../common/include", "../../../platform/gucefCOM/include", "../../../platform/gucefCOMCORE/include", "../../../platform/gucefCORE/include", "../../../platform/gucefCORE/include/c_api", "../../../platform/gucefMT/include", "../../../platform/gucefPUBSUB/include", "../../../platform/gucefVFS/include", "../../../platform/gucefWEB/include", "include" } )
 
 configuration( { "ANDROID32" } )
-includedirs( { "../../../platform/gucefCORE/include/android" } )
+includedirs( { "../../../platform/gucefCOMCORE/include/android", "../../../platform/gucefCORE/include/android" } )
 
 configuration( { "ANDROID64" } )
-includedirs( { "../../../platform/gucefCORE/include/android" } )
+includedirs( { "../../../platform/gucefCOMCORE/include/android", "../../../platform/gucefCORE/include/android" } )
 
 configuration( { "LINUX32" } )
 includedirs( { "../../../platform/gucefCOMCORE/include/linux", "../../../platform/gucefCORE/include/linux" } )

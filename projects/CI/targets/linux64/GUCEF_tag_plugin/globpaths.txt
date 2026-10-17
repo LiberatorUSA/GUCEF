@@ -24,12 +24,14 @@ dependencies/libsquish/*
 dependencies/openexr/*
 dependencies/tiff/libtiff/*
 dependencies/zlib/*
+platform/gucefAUDIO/include/*
 platform/gucefCORE/include/*
 platform/gucefGUI/include/*
 platform/gucefIMAGE/include/*
 platform/gucefINPUT/include/*
 platform/gucefMT/include/*
 platform/gucefVFS/include/*
+plugins/AUDIO/audiodriverALSA/*
 plugins/GUI/guidriverXWinGL/*
 plugins/IMAGE/imgpluginDEVIL/*
 plugins/IMAGE/imgpluginFreeImage/*

@@ -14,7 +14,7 @@ workspace( "GUCEF_exe_gucefGUI_TestApp" )
 
   platforms( { "ANDROID32", "ANDROID64", "LINUX32", "LINUX64", "WIN32", "WIN64" } )
 
-  location( "projects\premake5\targets" )
+  location( "projects/premake5/targets" )
 
   --
   -- Includes for all modules in the solution:
@@ -48,6 +48,7 @@ filter "ANDROID32"
   include( "dependencies/json-builder" )
   include( "dependencies/json-parser" )
   include( "dependencies/libparsifal" )
+  include( "dependencies/minizip" )
   include( "dependencies/pcre" )
   include( "dependencies/zziplib" )
   include( "platform/gucefCORE" )
@@ -108,6 +109,7 @@ filter "ANDROID64"
   include( "dependencies/json-builder" )
   include( "dependencies/json-parser" )
   include( "dependencies/libparsifal" )
+  include( "dependencies/minizip" )
   include( "dependencies/pcre" )
   include( "dependencies/zziplib" )
   include( "platform/gucefCORE" )
@@ -180,6 +182,7 @@ filter "LINUX32"
   include( "dependencies/libparsifal" )
   include( "dependencies/libpng" )
   include( "dependencies/libsquish" )
+  include( "dependencies/minizip" )
   include( "dependencies/openexr" )
   include( "dependencies/pcre" )
   include( "dependencies/tiff/libtiff" )
@@ -257,6 +260,7 @@ filter "LINUX64"
   include( "dependencies/libparsifal" )
   include( "dependencies/libpng" )
   include( "dependencies/libsquish" )
+  include( "dependencies/minizip" )
   include( "dependencies/openexr" )
   include( "dependencies/pcre" )
   include( "dependencies/tiff/libtiff" )
@@ -334,6 +338,7 @@ filter "WIN32"
   include( "dependencies/libparsifal" )
   include( "dependencies/libpng" )
   include( "dependencies/libsquish" )
+  include( "dependencies/minizip" )
   include( "dependencies/openexr" )
   include( "dependencies/pcre" )
   include( "dependencies/tiff/libtiff" )
@@ -413,6 +418,7 @@ filter "WIN64"
   include( "dependencies/libparsifal" )
   include( "dependencies/libpng" )
   include( "dependencies/libsquish" )
+  include( "dependencies/minizip" )
   include( "dependencies/openexr" )
   include( "dependencies/pcre" )
   include( "dependencies/tiff/libtiff" )

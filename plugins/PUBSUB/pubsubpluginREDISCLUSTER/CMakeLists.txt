@@ -593,11 +593,11 @@ if ( ANDROID )
 endif( ANDROID )
 
 if ( ANDROID32 )
-  include_directories( ../../../dependencies/hiredis ../../../platform/gucefCORE/include/android ../../../tools/redisinfo/include/ )
+  include_directories( ../../../dependencies/hiredis ../../../platform/gucefCOMCORE/include/android ../../../platform/gucefCORE/include/android ../../../tools/redisinfo/include/ )
 endif( ANDROID32 )
 
 if ( ANDROID64 )
-  include_directories( ../../../dependencies/hiredis ../../../platform/gucefCORE/include/android ../../../tools/redisinfo/include/ )
+  include_directories( ../../../dependencies/hiredis ../../../platform/gucefCOMCORE/include/android ../../../platform/gucefCORE/include/android ../../../tools/redisinfo/include/ )
 endif( ANDROID64 )
 
 if ( ARDUINO )

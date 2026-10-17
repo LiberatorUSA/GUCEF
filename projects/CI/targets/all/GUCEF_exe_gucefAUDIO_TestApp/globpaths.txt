@@ -2,4 +2,5 @@ common/include/*
 platform/gucefAUDIO/*
 platform/gucefCORE/*
 platform/gucefMT/*
+plugins/AUDIO/audiocodecpluginAU/*
 tests/gucefAUDIO_TestApp/*

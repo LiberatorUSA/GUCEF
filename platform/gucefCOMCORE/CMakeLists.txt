@@ -99,7 +99,37 @@ set( SOURCE_FILES
 
 
 
-if (LINUX32)
+if (ANDROID32)
+  set( PLATFORM_HEADER_FILES 
+    include/android/gucefCOMCORE_CLinuxNetworkInterface.h
+  )
+
+  set( PLATFORM_HEADER_INSTALL "ANDROID32" )
+  source_group( "Platform Header Files" FILES ${PLATFORM_HEADER_FILES} )
+
+  set( PLATFORM_SOURCE_FILES 
+    src/android/gucefCOMCORE_CLinuxNetworkInterface.cpp
+  )
+
+  set( PLATFORM_SOURCE_INSTALL "ANDROID32" )
+  source_group( "Platform Source Files" FILES ${PLATFORM_SOURCE_FILES} )
+
+elseif (ANDROID64)
+  set( PLATFORM_HEADER_FILES 
+    include/android/gucefCOMCORE_CLinuxNetworkInterface.h
+  )
+
+  set( PLATFORM_HEADER_INSTALL "ANDROID64" )
+  source_group( "Platform Header Files" FILES ${PLATFORM_HEADER_FILES} )
+
+  set( PLATFORM_SOURCE_FILES 
+    src/android/gucefCOMCORE_CLinuxNetworkInterface.cpp
+  )
+
+  set( PLATFORM_SOURCE_INSTALL "ANDROID64" )
+  source_group( "Platform Source Files" FILES ${PLATFORM_SOURCE_FILES} )
+
+elseif (LINUX32)
   set( PLATFORM_HEADER_FILES 
     include/linux/gucefCOMCORE_CLinuxNetworkInterface.h
   )
@@ -197,11 +227,11 @@ endif( WIN64 )
 include_directories( ../../common/include ../gucefCORE/include ../gucefCORE/include/c_api ../gucefMT/include include )
 
 if ( ANDROID32 )
-  include_directories( ../gucefCORE/include/android )
+  include_directories( ../gucefCORE/include/android include/android )
 endif( ANDROID32 )
 
 if ( ANDROID64 )
-  include_directories( ../gucefCORE/include/android )
+  include_directories( ../gucefCORE/include/android include/android )
 endif( ANDROID64 )
 
 if ( LINUX32 )

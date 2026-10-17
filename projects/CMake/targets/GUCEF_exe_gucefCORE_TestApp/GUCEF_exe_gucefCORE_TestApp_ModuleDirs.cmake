@@ -23,6 +23,7 @@ add_subdirectory( ${CMAKE_CURRENT_SOURCE_DIR}/../../../../plugins/CORE/dstoreplu
 add_subdirectory( ${CMAKE_CURRENT_SOURCE_DIR}/../../../../plugins/CORE/dstorepluginPROTOBUF ${CMAKE_BINARY_DIR}/dstorepluginPROTOBUF )
 add_subdirectory( ${CMAKE_CURRENT_SOURCE_DIR}/../../../../plugins/CORE/dstorepluginYAML ${CMAKE_BINARY_DIR}/dstorepluginYAML )
 add_subdirectory( ${CMAKE_CURRENT_SOURCE_DIR}/../../../../tests/gucefCORE_TestApp ${CMAKE_BINARY_DIR}/gucefCORE_TestApp )
+add_subdirectory( ${CMAKE_CURRENT_SOURCE_DIR}/../../../../tests/gucefCORE_TestPlugin ${CMAKE_BINARY_DIR}/gucefCORE_TestPlugin )
 
 
 if (EMSCRIPTEN32)

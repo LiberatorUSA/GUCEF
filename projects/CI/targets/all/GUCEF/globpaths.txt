@@ -12,6 +12,7 @@ tests/gucefAUDIO_TestApp/*
 tests/gucefCOMCORE_TestApp/*
 tests/gucefCOM_TestApp/*
 tests/gucefCORE_TestApp/*
+tests/gucefCORE_TestPlugin/*
 tests/gucefDRN_TestApp/*
 tests/gucefGUI_TestApp/*
 tests/gucefIMAGE_TestApp/*
@@ -24,5 +25,6 @@ tests/gucefPATCHERAPP_TestApp/*
 tests/gucefPRODMAN_TestApp/*
 tests/gucefPUBSUB_TestApp/*
 tests/gucefVFS_TestApp/*
+tests/gucefVIDEO_TestApp/*
 tests/gucefWEB_TestApp/*
 tools/*

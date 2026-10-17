@@ -12,9 +12,9 @@
 
 workspace( "GUCEF_tag_plugin" )
 
-  platforms( { "ALL", "ANDROID32", "ANDROID64", "ARDUINO", "EMSCRIPTEN32", "EMSCRIPTEN64", "IOS", "LINUX32", "LINUX64", "OSX", "WIN32", "WIN64" } )
+  platforms( { "ALL", "ANDROID", "ANDROID32", "ANDROID64", "ARDUINO", "EMSCRIPTEN", "EMSCRIPTEN32", "EMSCRIPTEN64", "IOS", "IPHONE", "IPHONEOS", "LINUX", "LINUX32", "LINUX64", "MAC", "MACOS", "MACOSX", "MSWIN", "OSX", "WIN32", "WIN64", "WINDOWS" } )
 
-  location( "projects\premake5\targets" )
+  location( "projects/premake5/targets" )
 
   --
   -- Includes for all modules in the solution:
@@ -51,14 +51,17 @@ filter "ALL"
   include( "dependencies/json-parser" )
   include( "dependencies/libRocket/Source/Controls" )
   include( "dependencies/libRocket/Source/Core" )
+  include( "dependencies/libarchive" )
   include( "dependencies/libparsifal" )
   include( "dependencies/librdkafka" )
   include( "dependencies/libyaml" )
+  include( "dependencies/minizip" )
   include( "dependencies/pcre" )
   include( "dependencies/protobuf/src" )
   include( "dependencies/redis-plus-plus/src/sw/redis++" )
   include( "dependencies/stbrumme-hash-library" )
   include( "dependencies/zziplib" )
+  include( "platform/gucefAUDIO" )
   include( "platform/gucefCOM" )
   include( "platform/gucefCOMCORE" )
   include( "platform/gucefCORE" )
@@ -68,7 +71,9 @@ filter "ALL"
   include( "platform/gucefMT" )
   include( "platform/gucefPUBSUB" )
   include( "platform/gucefVFS" )
+  include( "platform/gucefVIDEO" )
   include( "platform/gucefWEB" )
+  include( "plugins/AUDIO/audiocodecpluginAU" )
   include( "plugins/COMCORE/comcorepluginDBL" )
   include( "plugins/COMCORE/comcorepluginGEOOSM" )
   include( "plugins/CORE/codecspluginSTBRUMMEHASH" )
@@ -94,6 +99,7 @@ filter "ALL"
   include( "plugins/PROJECTGEN/ProjectGenVSImporter" )
   include( "plugins/PUBSUB/pubsubpluginAWSSNS" )
   include( "plugins/PUBSUB/pubsubpluginAWSSQS" )
+  include( "plugins/PUBSUB/pubsubpluginFIX" )
   include( "plugins/PUBSUB/pubsubpluginKAFKA" )
   include( "plugins/PUBSUB/pubsubpluginREDISCLUSTER" )
   include( "plugins/PUBSUB/pubsubpluginSTORAGE" )
@@ -102,33 +108,52 @@ filter "ALL"
   include( "plugins/PUBSUB/pubsubpluginWEB" )
   include( "plugins/SHARED/pluginglueAWSSDK" )
   include( "plugins/VFS/vfspluginAWSS3" )
+  include( "plugins/VFS/vfspluginCUEBIN" )
   include( "plugins/VFS/vfspluginDVP" )
+  include( "plugins/VFS/vfspluginISO9660" )
   include( "plugins/VFS/vfspluginITV" )
+  include( "plugins/VFS/vfspluginLIBARCHIVE" )
   include( "plugins/VFS/vfspluginVP" )
   include( "plugins/VFS/vfspluginZIP" )
+  include( "plugins/VIDEO/videocodecpluginSMK" )
+  include( "plugins/WEB/httpclientpluginCURL" )
   include( "tools/ProjectGen" )
+
+filter "ANDROID"
 
 filter "ANDROID32"
   include( "dependencies/cegui/cegui/src/RendererModules/OpenGLES" )
+  include( "plugins/AUDIO/audiodriverAAUDIO" )
   include( "plugins/GUI/guidriverAndroidGLES" )
   include( "plugins/GUI/guidriverMyGUIOpenGL/OpenGLESPlatform" )
   include( "plugins/INPUT/inputdriverNANDROID" )
 
 filter "ANDROID64"
   include( "dependencies/cegui/cegui/src/RendererModules/OpenGLES" )
+  include( "plugins/AUDIO/audiodriverAAUDIO" )
   include( "plugins/GUI/guidriverAndroidGLES" )
   include( "plugins/GUI/guidriverMyGUIOpenGL/OpenGLESPlatform" )
   include( "plugins/INPUT/inputdriverNANDROID" )
 
 filter "ARDUINO"
 
+filter "EMSCRIPTEN"
+
 filter "EMSCRIPTEN32"
   include( "dependencies/zlib" )
+  include( "plugins/AUDIO/audiodriverWEBAUDIO" )
 
 filter "EMSCRIPTEN64"
   include( "dependencies/zlib" )
+  include( "plugins/AUDIO/audiodriverWEBAUDIO" )
 
 filter "IOS"
+
+filter "IPHONE"
+
+filter "IPHONEOS"
+
+filter "LINUX"
 
 filter "LINUX32"
   include( "dependencies/DevIL/DevIL" )
@@ -147,6 +172,7 @@ filter "LINUX32"
   include( "dependencies/openexr" )
   include( "dependencies/tiff/libtiff" )
   include( "dependencies/zlib" )
+  include( "plugins/AUDIO/audiodriverALSA" )
   include( "plugins/GUI/guidriverXWinGL" )
   include( "plugins/IMAGE/imgpluginDEVIL" )
   include( "plugins/IMAGE/imgpluginFreeImage" )
@@ -170,11 +196,20 @@ filter "LINUX64"
   include( "dependencies/openexr" )
   include( "dependencies/tiff/libtiff" )
   include( "dependencies/zlib" )
+  include( "plugins/AUDIO/audiodriverALSA" )
   include( "plugins/GUI/guidriverXWinGL" )
   include( "plugins/IMAGE/imgpluginDEVIL" )
   include( "plugins/IMAGE/imgpluginFreeImage" )
   include( "plugins/INPUT/inputdriverOIS" )
   include( "plugins/INPUT/inputdriverXWINMSG" )
+
+filter "MAC"
+
+filter "MACOS"
+
+filter "MACOSX"
+
+filter "MSWIN"
 
 filter "OSX"
 
@@ -195,6 +230,7 @@ filter "WIN32"
   include( "dependencies/openexr" )
   include( "dependencies/tiff/libtiff" )
   include( "dependencies/zlib" )
+  include( "plugins/AUDIO/audiodriverWASAPI" )
   include( "plugins/GUI/guidriverWin32" )
   include( "plugins/GUI/guidriverWin32D3D9" )
   include( "plugins/GUI/guidriverWin32GL" )
@@ -221,6 +257,7 @@ filter "WIN64"
   include( "dependencies/openexr" )
   include( "dependencies/tiff/libtiff" )
   include( "dependencies/zlib" )
+  include( "plugins/AUDIO/audiodriverWASAPI" )
   include( "plugins/GUI/guidriverWin32" )
   include( "plugins/GUI/guidriverWin32D3D9" )
   include( "plugins/GUI/guidriverWin32GL" )
@@ -230,3 +267,5 @@ filter "WIN64"
   include( "plugins/INPUT/inputdriverMSWINMSG" )
   include( "plugins/INPUT/inputdriverOIS" )
   include( "plugins/PUBSUB/pubsubpluginMSMQ" )
+
+filter "WINDOWS"

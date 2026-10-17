@@ -11,4 +11,16 @@
 add_subdirectory( ${CMAKE_CURRENT_SOURCE_DIR}/../../../../platform/gucefAUDIO ${CMAKE_BINARY_DIR}/gucefAUDIO )
 add_subdirectory( ${CMAKE_CURRENT_SOURCE_DIR}/../../../../platform/gucefCORE ${CMAKE_BINARY_DIR}/gucefCORE )
 add_subdirectory( ${CMAKE_CURRENT_SOURCE_DIR}/../../../../platform/gucefMT ${CMAKE_BINARY_DIR}/gucefMT )
+add_subdirectory( ${CMAKE_CURRENT_SOURCE_DIR}/../../../../plugins/AUDIO/audiocodecpluginAU ${CMAKE_BINARY_DIR}/audiocodecpluginAU )
 add_subdirectory( ${CMAKE_CURRENT_SOURCE_DIR}/../../../../tests/gucefAUDIO_TestApp ${CMAKE_BINARY_DIR}/gucefAUDIO_TestApp )
+
+
+if (EMSCRIPTEN32)
+add_subdirectory( ${CMAKE_CURRENT_SOURCE_DIR}/../../../../plugins/AUDIO/audiodriverWEBAUDIO ${CMAKE_BINARY_DIR}/audiodriverWEBAUDIO )
+elseif (EMSCRIPTEN64)
+add_subdirectory( ${CMAKE_CURRENT_SOURCE_DIR}/../../../../plugins/AUDIO/audiodriverWEBAUDIO ${CMAKE_BINARY_DIR}/audiodriverWEBAUDIO )
+elseif (LINUX32)
+add_subdirectory( ${CMAKE_CURRENT_SOURCE_DIR}/../../../../plugins/AUDIO/audiodriverALSA ${CMAKE_BINARY_DIR}/audiodriverALSA )
+elseif (LINUX64)
+add_subdirectory( ${CMAKE_CURRENT_SOURCE_DIR}/../../../../plugins/AUDIO/audiodriverALSA ${CMAKE_BINARY_DIR}/audiodriverALSA )
+endif()

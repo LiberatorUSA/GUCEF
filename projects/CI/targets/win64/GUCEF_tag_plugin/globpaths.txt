@@ -20,6 +20,7 @@ dependencies/libsquish/*
 dependencies/openexr/*
 dependencies/tiff/libtiff/*
 dependencies/zlib/*
+platform/gucefAUDIO/include/*
 platform/gucefCOMCORE/include/*
 platform/gucefCOM/include/*
 platform/gucefCORE/include/*
@@ -30,6 +31,7 @@ platform/gucefMT/include/*
 platform/gucefPUBSUB/include/*
 platform/gucefVFS/include/*
 platform/gucefWEB/include/*
+plugins/AUDIO/audiodriverWASAPI/*
 plugins/GUI/guidriverWin32/*
 plugins/IMAGE/imgpluginDEVIL/*
 plugins/IMAGE/imgpluginFreeImage/*

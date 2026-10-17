@@ -1,0 +1,5 @@
+common/include/*
+platform/gucefAUDIO/include/*
+platform/gucefCORE/include/*
+platform/gucefMT/include/*
+plugins/AUDIO/audiodriverALSA/*
