@@ -248,16 +248,18 @@ CVFS::UnmountAllArchives( void )
 
     MT::CScopeWriterLock lock( m_rwdataLock );
 
+    // the newest first: an archive can be mounted from a file of an archive mounted before it, and keeps that file
     while ( !m_mountList.empty() )
     {
-        TMountEntryPtr mountEntry = (*m_mountList.begin());
+        TMountEntryPtr mountEntry = m_mountList.back();
         TArchiveUnmountedEventData eData( mountEntry->mountPath );
-        if ( mountEntry->archive->UnloadArchive() )
+        if ( !mountEntry->archive->UnloadArchive() )
         {
-            m_archivePtrToMountEntryLookup.erase( mountEntry->archive.GetPointerAlways() );
-            m_mountList.erase( m_mountList.begin() );
-            NotifyObservers( ArchiveUnmountedEvent, &eData );
+            GUCEF_WARNING_LOG( CORE::LOGLEVEL_NORMAL, "VFS: The archive mounted at \"" << mountEntry->mountPath << "\" did not unload cleanly, it is unmounted anyway" );
         }
+        m_archivePtrToMountEntryLookup.erase( mountEntry->archive.GetPointerAlways() );
+        m_mountList.pop_back();
+        NotifyObservers( ArchiveUnmountedEvent, &eData );
     }
 }
 

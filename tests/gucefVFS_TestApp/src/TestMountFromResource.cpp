@@ -143,7 +143,7 @@ class CTestResourceArchive : public VFS::CArchive
 
     virtual void DestroyObject( VFS::CVFSHandle* objectToBeDestroyed ) const GUCEF_VIRTUAL_OVERRIDE { delete objectToBeDestroyed; }
 
-    private:
+    protected:
 
     VFS::CString m_archiveName;
     CORE::CDynamicBuffer m_content;
@@ -153,6 +153,79 @@ class CTestResourceArchive : public VFS::CArchive
 const VFS::CString CTestResourceArchive::TypeName = "testresourcearchive";
 
 typedef CORE::CTFactory< VFS::CArchive, CTestResourceArchive, MT::CMutex > TTestResourceArchiveFactory;
+
+/*-------------------------------------------------------------------------*/
+
+/**
+ *  As the archive above, but like archives of real formats it keeps the resource it was loaded from while it
+ *  is mounted, and the files it hands out are destroyed by the archive itself. It notes when it is destroyed
+ *  while files it handed out still exist: their destruction would then call a destroyed archive.
+ */
+class CTestKeepingArchive : public CTestResourceArchive
+{
+    public:
+
+    static const VFS::CString TypeName;
+    static bool destroyedWhileFilesExist;
+
+    CTestKeepingArchive( void ) : CTestResourceArchive(), m_source(), m_filesOut( 0 ) {}
+
+    virtual ~CTestKeepingArchive() GUCEF_VIRTUAL_OVERRIDE
+    {
+        if ( m_filesOut > 0 )
+            destroyedWhileFilesExist = true;
+    }
+
+    virtual bool LoadArchive( const VFS::CString& archiveName       ,
+                              VFS::TBasicVfsResourcePtr vfsResource ,
+                              const bool writeableRequest           ) GUCEF_VIRTUAL_OVERRIDE
+    {GUCEF_TRACE;
+
+        if ( !CTestResourceArchive::LoadArchive( archiveName, vfsResource, writeableRequest ) )
+            return false;
+        m_source = vfsResource;
+        return true;
+    }
+
+    virtual bool UnloadArchive( void ) GUCEF_VIRTUAL_OVERRIDE
+    {
+        m_source.Unlink();
+        return CTestResourceArchive::UnloadArchive();
+    }
+
+    virtual VFS::TBasicVfsResourcePtr GetFile( const VFS::CString& file ,
+                                               const char* mode         ,
+                                               const VFS::UInt32 memLoadSize ,
+                                               const bool overwrite     ) GUCEF_VIRTUAL_OVERRIDE
+    {GUCEF_TRACE;
+
+        if ( !FileExists( file ) )
+            return VFS::TBasicVfsResourcePtr();
+        CORE::IOAccessPtr access( GUCEF_NEW CORE::CDynamicBufferAccess( m_content ) );
+        ++m_filesOut;
+        return VFS::TBasicVfsResourcePtr( VFS::TVfsResourcePtr( GUCEF_NEW VFS::CVFSHandle( access, "content.txt", file ), this ) );
+    }
+
+    virtual const VFS::CString& GetType( void ) const GUCEF_VIRTUAL_OVERRIDE { return TypeName; }
+
+    virtual void DestroyObject( VFS::CVFSHandle* objectToBeDestroyed ) const GUCEF_VIRTUAL_OVERRIDE
+    {
+        if ( GUCEF_NULL == objectToBeDestroyed )
+            return;
+        --m_filesOut;
+        delete objectToBeDestroyed;
+    }
+
+    private:
+
+    VFS::TBasicVfsResourcePtr m_source;
+    mutable Int32 m_filesOut;
+};
+
+const VFS::CString CTestKeepingArchive::TypeName = "testkeepingarchive";
+bool CTestKeepingArchive::destroyedWhileFilesExist = false;
+
+typedef CORE::CTFactory< VFS::CArchive, CTestKeepingArchive, MT::CMutex > TTestKeepingArchiveFactory;
 
 /*-------------------------------------------------------------------------*/
 
@@ -167,6 +240,8 @@ PerformMountFromResourceTests( void )
     VFS::CVFS& vfs = VFS::CVfsGlobal::Instance()->GetVfs();
     TTestResourceArchiveFactory factory;
     vfs.RegisterArchiveFactory( CTestResourceArchive::TypeName, factory );
+    TTestKeepingArchiveFactory keepingFactory;
+    vfs.RegisterArchiveFactory( CTestKeepingArchive::TypeName, keepingFactory );
 
     const char* payload = "archive payload that came from a resource";
     CORE::CDynamicBuffer payloadBuffer;
@@ -227,7 +302,33 @@ PerformMountFromResourceTests( void )
         }
     GUCEF_TESTFW_TESTCASE_END
 
+    GUCEF_TESTFW_TESTCASE( "Test: Unmounting everything lets an archive mounted from a file of another archive go first" )
+        try
+        {
+            // the outer archive from memory, the inner one from the file of the outer one, as a disc image holds the archives of a game
+            CORE::IOAccessPtr access( GUCEF_NEW CORE::CDynamicBufferAccess( payloadBuffer ) );
+            VFS::TBasicVfsResourcePtr resource( VFS::TVfsResourcePtr( GUCEF_NEW VFS::CVFSHandle( access, "payload.bin", "payload.bin" ) ) );
+            ASSERT_TRUE( vfs.MountArchive( "outerArchive", resource, CTestKeepingArchive::TypeName, "/outer", false ) );
+            resource.Unlink();
+            VFS::TBasicVfsResourcePtr inner = vfs.GetFile( "/outer/content.txt", "rb", false );
+            ASSERT_FALSE( inner.IsNULL() );
+            ASSERT_TRUE( vfs.MountArchive( "innerArchive", inner, CTestKeepingArchive::TypeName, "/inner", false ) );
+            inner.Unlink();
+            ASSERT_TRUE( vfs.FileExists( "/inner/content.txt" ) );
+
+            CTestKeepingArchive::destroyedWhileFilesExist = false;
+            vfs.UnmountAllArchives();
+            ASSERT_FALSE( vfs.IsMountedArchive( "/outer" ) || vfs.IsMountedArchive( "/inner" ) );
+            ASSERT_FALSE( CTestKeepingArchive::destroyedWhileFilesExist );
+        }
+        catch ( ... )
+        {
+            ERRORHERE;
+        }
+    GUCEF_TESTFW_TESTCASE_END
+
     vfs.UnregisterArchiveFactory( CTestResourceArchive::TypeName );
+    vfs.UnregisterArchiveFactory( CTestKeepingArchive::TypeName );
 }
 
 /*-------------------------------------------------------------------------*/
