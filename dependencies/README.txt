@@ -2,7 +2,6 @@
 ***Versions used***
 
 miniupnpc: is release version 1.4
-libRocket: is version 1.2.1
 MyGui: is version 3.2.0
 zzlib version is: 0.13.49
 zlib version is: 1.3.2 from https://zlib.net (local edits marked "DV edit" in zconf.h)
@@ -50,7 +49,6 @@ openexr: local edits marked "DV edit" in IlmBase/config.windows/IlmBaseConfig.h 
 FreeImage: local edits marked "DV edit": LibJXR/image/sys/ansi.h (byteswap declaration and wchar.h for ANSI platforms), LibRawLite/internal/dcraw_common.cpp (powf64 renamed dcraw_powf64 since glibc has a function by that name), LibJXR/jxrgluelib/JXRGlueJxr.c (wchar.h). The processor specific WebP code for other architectures is excluded in LibWebP/src/dsp/ProjectGenInstructions.xml
 DevIL: the Linux config include/IL/linux/config.h was renamed DevILconfig.h like the Windows one and had its Windows specifics removed (marked "DV edit"). The older il_exr.c and il_utx.c, which are duplicates of the .cpp versions, are excluded in src-IL/src/ProjectGenExcludeList.txt
 Ogre: local edit marked "DV edit" in OgreMain/include/OgrePlatform.h, [[deprecated]] without the empty parentheses newer compilers refuse
-libRocket: local edits marked "DV edit" or returning NULL instead of false in Include/Rocket/Core/StringBase.inl and Source/Core/FontDatabase.cpp, fixes for compilers that are stricter about pointers
 RmlUi: local edits marked "DV edit" in Include/RmlUi/Core/RmlUiMath.h (the types header is included last, since the templates of the vector and matrix types use what the math header declares), Matrix4.h/Vector2.h/Vector4.h (include the renamed RmlUiMath.h) and Source/Core/FontEngineDefault/FreeTypeInterface.cpp (compatibility with the older FreeType which is part of this code base)
 MyGui: local edit marked "DV edit" in MyGUIEngine/include/MyGUI_Prerequest.h, nullptr is only emulated for compilers from before C++11
 cegui: local edit marked "DV edit" in cegui/include/CEGUI/Config.h, glibc iconv takes a non-const input buffer
