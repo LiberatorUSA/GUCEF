@@ -639,6 +639,18 @@ GetModuleInfoWithUniqueModuleNames( const CModuleInfoEntryPtr& moduleInfoEntry ,
 
 /*-------------------------------------------------------------------------*/
 
+/**
+ *  Whether the module makes a binary (library or executable) for the platform. For all platforms that is the case
+ *  when it does so for any platform, also when the kind of binary differs per platform (a shared library here, a
+ *  static library there)
+ */
+GUCEF_PROJECTGEN_PUBLIC_CPP
+bool
+IsModuleBuiltForPlatform( const CModuleInfoEntryPtr& moduleInfoEntry ,
+                          const CORE::CString& targetPlatform        );
+
+/*-------------------------------------------------------------------------*/
+
 GUCEF_PROJECTGEN_PUBLIC_CPP
 const CModuleInfoEntryPtr
 GetModuleInfoEntry( const TModuleInfoEntryPtrVector& moduleInfoEntries ,

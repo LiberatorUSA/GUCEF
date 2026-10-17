@@ -13,10 +13,10 @@
 
 
 configuration( { "EMSCRIPTEN32" } )
-  project( "" )
+  project( "zlib" )
 
 configuration( { "EMSCRIPTEN64" } )
-  project( "" )
+  project( "zlib" )
 
 configuration( { "LINUX32" } )
   project( "zlib" )

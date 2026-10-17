@@ -1658,12 +1658,7 @@ WriteCMakeTargetsToDisk( const CProjectInfo& projectInfo              ,
         {
             const CModuleInfoEntryPtr& moduleInfoEntry = (*i);
 
-            TModuleType moduleType = moduleInfoEntry->GetModuleType( targetPlatform );
-            if ( ( MODULETYPE_HEADER_INCLUDE_LOCATION != moduleType )   &&
-                 ( MODULETYPE_HEADER_INTEGRATE_LOCATION != moduleType ) &&
-                 ( MODULETYPE_CODE_INTEGRATE_LOCATION != moduleType )   &&
-                 ( MODULETYPE_BINARY_PACKAGE != moduleType )            &&
-                 ( MODULETYPE_UNDEFINED != moduleType )                  )
+            if ( IsModuleBuiltForPlatform( moduleInfoEntry, targetPlatform ) )
             {
                 CORE::CString pathToModuleDir = CORE::GetRelativePathToOtherPathRoot( targetOutputDir, moduleInfoEntry->GetAbsolutePathToModuleRootDir() );
                     

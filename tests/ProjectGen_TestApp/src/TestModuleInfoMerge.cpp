@@ -171,6 +171,69 @@ PerformModuleInfoMergeTests( void )
         }
     GUCEF_TESTFW_TESTCASE_END
 
+    GUCEF_TESTFW_TESTCASE( "Test: A platform definition without a name takes the name of the module's named definition" )
+        try
+        {
+            // like a library defined as a shared library for linux and windows, and as a static library for the web
+            // without repeating its name there
+            CModuleInfoEntryPtr entry = CModuleInfoEntry::CreateSharedObj();
+            entry->SetModuleInfo( CreateModuleInfo( "NamedLib", MODULETYPE_SHARED_LIBRARY, 5 ), "linux" );
+            entry->SetModuleInfo( CreateModuleInfo( "NamedLib", MODULETYPE_SHARED_LIBRARY, 5 ), "mswin" );
+            entry->SetModuleInfo( CreateModuleInfo( CORE::CString::Empty, MODULETYPE_STATIC_LIBRARY, 5 ), "emscripten" );
+
+            CModuleInfoPtr merged;
+            ASSERT_TRUE( MergeModuleInfo( entry, "emscripten", merged ) );
+            ASSERT_FALSE( merged.IsNULL() );
+            if ( !merged.IsNULL() )
+            {
+                ASSERT_TRUE( merged->name == "NamedLib" );
+                ASSERT_TRUE( MODULETYPE_STATIC_LIBRARY == merged->moduleType );
+            }
+
+            // the names per platform, from which the build files name the module, have it for every platform
+            TModuleInfoPtrMap names;
+            GetModuleInfoWithUniqueModuleNames( entry, names );
+            ASSERT_TRUE( 3 == names.size() );
+            for ( TModuleInfoPtrMap::iterator i=names.begin(); i!=names.end(); ++i )
+                ASSERT_TRUE( (*i).second->name == "NamedLib" );
+
+            // the definition itself is not altered
+            ASSERT_TRUE( entry->FindModuleInfoForPlatform( "emscripten" )->name.IsNULLOrEmpty() );
+        }
+        catch ( ... )
+        {
+            ERRORHERE;
+        }
+    GUCEF_TESTFW_TESTCASE_END
+
+    GUCEF_TESTFW_TESTCASE( "Test: A module built on some platforms, as different kinds of library, is built for the target of all platforms" )
+        try
+        {
+            // like zlib: a shared library on linux and windows, a static library on the web, nothing on android
+            CModuleInfoEntryPtr entry = CModuleInfoEntry::CreateSharedObj();
+            entry->SetModuleInfo( CreateModuleInfo( "MixedLib", MODULETYPE_SHARED_LIBRARY, 5 ), "linux" );
+            entry->SetModuleInfo( CreateModuleInfo( "MixedLib", MODULETYPE_SHARED_LIBRARY, 5 ), "mswin" );
+            entry->SetModuleInfo( CreateModuleInfo( CORE::CString::Empty, MODULETYPE_STATIC_LIBRARY, 5 ), "emscripten" );
+
+            // the kinds differ, so there is no single kind for all platforms
+            ASSERT_TRUE( MODULETYPE_UNDEFINED == entry->GetModuleType( KnownPlatforms::AllPlatforms ) );
+
+            // but it is built: a target for all platforms has to include it
+            ASSERT_TRUE( IsModuleBuiltForPlatform( entry, KnownPlatforms::AllPlatforms ) );
+            ASSERT_TRUE( IsModuleBuiltForPlatform( entry, "emscripten" ) );
+            ASSERT_FALSE( IsModuleBuiltForPlatform( entry, "android" ) );
+
+            // headers only are not built
+            CModuleInfoEntryPtr headers = CModuleInfoEntry::CreateSharedObj();
+            headers->SetModuleInfo( CreateModuleInfo( "Headers", MODULETYPE_HEADER_INCLUDE_LOCATION, 1 ), KnownPlatforms::AllPlatforms );
+            ASSERT_FALSE( IsModuleBuiltForPlatform( headers, KnownPlatforms::AllPlatforms ) );
+        }
+        catch ( ... )
+        {
+            ERRORHERE;
+        }
+    GUCEF_TESTFW_TESTCASE_END
+
     GUCEF_TESTFW_TESTCASE( "Test: A module without a definition or without a build order is not merged" )
         try
         {

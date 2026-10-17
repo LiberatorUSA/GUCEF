@@ -1013,8 +1013,10 @@ MergeModuleInfo( const CModuleInfoEntryPtr& moduleInfoEntry ,
         if ( !targetPlatformInfo.IsNULL() && targetPlatformInfo->buildOrder > -1 )
         {
             // Only the target platform is defined, the module is not available for all platforms
-            // but it is for this one
+            // but it is for this one. Without a name of its own it has that of the module's named definition
             mergedModuleInfo = CModuleInfo::CreateSharedObjWithParam( *targetPlatformInfo );
+            if ( mergedModuleInfo->name.IsNULLOrEmpty() )
+                mergedModuleInfo->name = moduleInfoEntry->GetConsensusName();
             return true;
         }
     }
@@ -1310,11 +1312,63 @@ GetModuleInfoWithUniqueModuleNames( const CModuleInfoEntryPtr& moduleInfoEntry ,
 
             if ( MODULETYPE_UNDEFINED != platformModuleInfo->moduleType )
             {
-                moduleMap[ platformName ] = ((*i).second);
+                if ( platformModuleInfo->name.IsNULLOrEmpty() )
+                {
+                    // a platform definition without a name of its own has that of the module's named definition
+                    CModuleInfoPtr namedModuleInfo = CModuleInfo::CreateSharedObjWithParam( *platformModuleInfo );
+                    namedModuleInfo->name = moduleInfoEntry->GetConsensusName();
+                    moduleMap[ platformName ] = namedModuleInfo;
+                }
+                else
+                {
+                    moduleMap[ platformName ] = platformModuleInfo;
+                }
             }
             ++i;
         }
     }
+}
+
+/*---------------------------------------------------------------------------*/
+
+namespace {
+
+bool
+IsBuiltModuleType( const TModuleType moduleType )
+{GUCEF_TRACE;
+
+    return ( MODULETYPE_HEADER_INCLUDE_LOCATION != moduleType )   &&
+           ( MODULETYPE_HEADER_INTEGRATE_LOCATION != moduleType ) &&
+           ( MODULETYPE_CODE_INTEGRATE_LOCATION != moduleType )   &&
+           ( MODULETYPE_BINARY_PACKAGE != moduleType )            &&
+           ( MODULETYPE_UNDEFINED != moduleType );
+}
+
+}
+
+/*---------------------------------------------------------------------------*/
+
+bool
+IsModuleBuiltForPlatform( const CModuleInfoEntryPtr& moduleInfoEntry ,
+                          const CORE::CString& targetPlatform        )
+{GUCEF_TRACE;
+
+    if ( moduleInfoEntry.IsNULL() )
+        return false;
+    if ( IsBuiltModuleType( moduleInfoEntry->GetModuleType( targetPlatform ) ) )
+        return true;
+    if ( KnownPlatforms::AllPlatforms != targetPlatform )
+        return false;
+
+    // for all platforms: built for any of them
+    TModuleInfoPtrMap::const_iterator i = moduleInfoEntry->GetModulesPerPlatform().begin();
+    while ( i != moduleInfoEntry->GetModulesPerPlatform().end() )
+    {
+        if ( IsBuiltModuleType( (*i).second->moduleType ) )
+            return true;
+        ++i;
+    }
+    return false;
 }
 
 /*---------------------------------------------------------------------------*/
