@@ -13,6 +13,7 @@ platform/gucefVFS/*
 plugins/SHARED/pluginglueAWSSDK/*
 plugins/VFS/vfspluginAWSS3/*
 plugins/VFS/vfspluginDVP/*
+plugins/VFS/vfspluginISO9660/*
 plugins/VFS/vfspluginITV/*
 plugins/VFS/vfspluginLIBARCHIVE/*
 plugins/VFS/vfspluginVP/*

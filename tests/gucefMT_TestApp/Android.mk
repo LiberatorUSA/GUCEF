@@ -21,8 +21,10 @@ LOCAL_MODULE := gucefMT_TestApp
 @echo Module name: $(LOCAL_MODULE)
 
 LOCAL_SRC_FILES := \
+  src/TestAtomic.cpp \
   src/TestMutex.cpp \
   src/TestReaderWriterLock.cpp \
+  src/TestSpscQueue.cpp \
   src/gucefMT_TestApp.cpp
 
 LOCAL_C_INCLUDES := \

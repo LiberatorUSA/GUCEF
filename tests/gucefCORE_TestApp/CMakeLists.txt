@@ -23,11 +23,17 @@ set( HEADER_FILES
   include/TestDataNodeBinarySerializer.h
   include/TestDateTime.h
   include/TestDateTimeRange.h
+  include/TestDedicatedTasks.h
   include/TestDesktopTerminalConsoleLogger.h
+  include/TestDynamicBuffer.h
   include/TestDynamicBufferStringStream.h
   include/TestDynamicBufferSwap.h
+  include/TestExternalThreads.h
+  include/TestFileAccess.h
   include/TestFileUtils.h
   include/TestFraction.h
+  include/TestFrameworkSkip.h
+  include/TestFutureResultSource.h
   include/TestIniParser.h
   include/TestLogging.h
   include/TestNotifierObserver.h
@@ -63,12 +69,18 @@ set( SOURCE_FILES
   src/TestDataNodeBinarySerializer.cpp
   src/TestDateTime.cpp
   src/TestDateTimeRange.cpp
+  src/TestDedicatedTasks.cpp
   src/TestDesktopTerminalConsoleLogger.cpp
+  src/TestDynamicBuffer.cpp
   src/TestDynamicBufferStringStream.cpp
   src/TestDynamicBufferSwap.cpp
+  src/TestExternalThreads.cpp
+  src/TestFileAccess.cpp
   src/TestFileUtils.cpp
   src/TestFraction.cpp
+  src/TestFrameworkSkip.cpp
   src/TestFreeList.cpp
+  src/TestFutureResultSource.cpp
   src/TestIniParser.cpp
   src/TestLogging.cpp
   src/TestNotifierObserver.cpp

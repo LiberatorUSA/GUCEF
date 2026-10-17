@@ -156,8 +156,10 @@ LOCAL_SRC_FILES := \
   src/gucefCORE_CDynamicBufferStringStream.cpp \
   src/gucefCORE_CDynamicBufferSwap.cpp \
   src/gucefCORE_CDynamicBufferView.cpp \
+  src/gucefCORE_CEmscriptenPulseGeneratorDriver.cpp \
   src/gucefCORE_CEnumerator.cpp \
   src/gucefCORE_CEventAggregateTrigger.cpp \
+  src/gucefCORE_CExternalThreadScope.cpp \
   src/gucefCORE_CFileSystemDirectoryWatcher.cpp \
   src/gucefCORE_CFileSystemUriResourceAccessor.cpp \
   src/gucefCORE_CForwardingNotifier.cpp \
@@ -165,6 +167,7 @@ LOCAL_SRC_FILES := \
   src/gucefCORE_CFunctionParamMeta.cpp \
   src/gucefCORE_CFunctionRegistry.cpp \
   src/gucefCORE_CFutureResult.cpp \
+  src/gucefCORE_CFutureResultSource.cpp \
   src/gucefCORE_CGenericCallbackTaskConsumer.cpp \
   src/gucefCORE_CGenericValueToDataNodeSerializer.cpp \
   src/gucefCORE_CGeoLocation.cpp \
@@ -229,6 +232,7 @@ LOCAL_SRC_FILES := \
   src/gucefCORE_CStopwatch.cpp \
   src/gucefCORE_CStringLogHelper.cpp \
   src/gucefCORE_CSubFileAccess.cpp \
+  src/gucefCORE_CSubIOAccess.cpp \
   src/gucefCORE_CTEventHandlerFunctor.cpp \
   src/gucefCORE_CTEventHandlerFunctorProxy.cpp \
   src/gucefCORE_CTFraction.cpp \

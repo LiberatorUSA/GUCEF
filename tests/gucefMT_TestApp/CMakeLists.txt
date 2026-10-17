@@ -12,13 +12,17 @@
 # Configuration for module: gucefMT_TestApp
 
 set( HEADER_FILES 
+  include/TestAtomic.h
   include/TestMutex.h
   include/TestReaderWriterLock.h
+  include/TestSpscQueue.h
 )
 
 set( SOURCE_FILES 
+  src/TestAtomic.cpp
   src/TestMutex.cpp
   src/TestReaderWriterLock.cpp
+  src/TestSpscQueue.cpp
   src/gucefMT_TestApp.cpp
 )
 

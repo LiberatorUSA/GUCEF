@@ -1,0 +1,5 @@
+common/include/*
+platform/gucefAUDIO/*
+platform/gucefCORE/*
+platform/gucefMT/*
+tests/gucefAUDIO_TestApp/*

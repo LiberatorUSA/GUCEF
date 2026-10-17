@@ -14,14 +14,20 @@
 set( HEADER_FILES 
   include/TestArchiveUtils.h
   include/TestCode_VFSFileLoadUnloadTest.h
+  include/TestIso9660Archive.h
+  include/TestItvArchive.h
   include/TestLibArchive.h
+  include/TestMountFromResource.h
   include/TestZipArchiveWriter.h
 )
 
 set( SOURCE_FILES 
   src/TestArchiveUtils.cpp
   src/TestCode_VFSFileLoadUnloadTest.cpp
+  src/TestIso9660Archive.cpp
+  src/TestItvArchive.cpp
   src/TestLibArchive.cpp
+  src/TestMountFromResource.cpp
   src/TestZipArchiveWriter.cpp
   src/gucefVFS_TestApp.cpp
 )

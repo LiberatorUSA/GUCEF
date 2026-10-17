@@ -23,7 +23,10 @@ LOCAL_MODULE := gucefVFS_TestApp
 LOCAL_SRC_FILES := \
   src/TestArchiveUtils.cpp \
   src/TestCode_VFSFileLoadUnloadTest.cpp \
+  src/TestIso9660Archive.cpp \
+  src/TestItvArchive.cpp \
   src/TestLibArchive.cpp \
+  src/TestMountFromResource.cpp \
   src/TestZipArchiveWriter.cpp \
   src/gucefVFS_TestApp.cpp
 

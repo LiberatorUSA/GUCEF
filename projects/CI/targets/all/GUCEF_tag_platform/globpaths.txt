@@ -1,4 +1,5 @@
 common/include/*
+platform/gucefAUDIO/*
 platform/gucefCOM/*
 platform/gucefCORE/*
 platform/gucefDRN/*

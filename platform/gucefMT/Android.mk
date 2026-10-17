@@ -24,6 +24,7 @@ LOCAL_MODULE_FILENAME := libgucefMT
 LOCAL_SRC_FILES := \
   src/gucefMT.cpp \
   src/gucefMT_CActiveObject.cpp \
+  src/gucefMT_CAtomicLockPool.cpp \
   src/gucefMT_CCondition.cpp \
   src/gucefMT_CGUCEFMTModule.cpp \
   src/gucefMT_CICloneable.cpp \

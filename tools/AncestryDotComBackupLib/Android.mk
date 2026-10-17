@@ -33,8 +33,12 @@ LOCAL_SRC_FILES := \
   src/AncestryBackup_CDnaMatches.cpp \
   src/AncestryBackup_CEndpointCatalog.cpp \
   src/AncestryBackup_CExportFinder.cpp \
+  src/AncestryBackup_CGedcomFile.cpp \
   src/AncestryBackup_CGedcomReader.cpp \
   src/AncestryBackup_CGedcomSummary.cpp \
+  src/AncestryBackup_CGrampsDate.cpp \
+  src/AncestryBackup_CGrampsExporter.cpp \
+  src/AncestryBackup_CGrampsText.cpp \
   src/AncestryBackup_CJsonShape.cpp \
   src/AncestryBackup_CMediaInventory.cpp \
   src/AncestryBackup_CRequestBudget.cpp \

@@ -48,7 +48,10 @@ vpaths { ["Headers"] = { "**.h", "**.hpp", "**.hxx" } }
 files( {
   "include/TestArchiveUtils.h",
   "include/TestCode_VFSFileLoadUnloadTest.h",
+  "include/TestIso9660Archive.h",
+  "include/TestItvArchive.h",
   "include/TestLibArchive.h",
+  "include/TestMountFromResource.h",
   "include/TestZipArchiveWriter.h"
  } )
 
@@ -59,7 +62,10 @@ vpaths { ["Source"] = { "**.c", "**.cpp", "**.cs", "**.asm" } }
 files( {
   "src/TestArchiveUtils.cpp",
   "src/TestCode_VFSFileLoadUnloadTest.cpp",
+  "src/TestIso9660Archive.cpp",
+  "src/TestItvArchive.cpp",
   "src/TestLibArchive.cpp",
+  "src/TestMountFromResource.cpp",
   "src/TestZipArchiveWriter.cpp",
   "src/gucefVFS_TestApp.cpp"
  } )

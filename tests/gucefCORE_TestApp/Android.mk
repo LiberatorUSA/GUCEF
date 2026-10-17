@@ -32,12 +32,18 @@ LOCAL_SRC_FILES := \
   src/TestDataNodeBinarySerializer.cpp \
   src/TestDateTime.cpp \
   src/TestDateTimeRange.cpp \
+  src/TestDedicatedTasks.cpp \
   src/TestDesktopTerminalConsoleLogger.cpp \
+  src/TestDynamicBuffer.cpp \
   src/TestDynamicBufferStringStream.cpp \
   src/TestDynamicBufferSwap.cpp \
+  src/TestExternalThreads.cpp \
+  src/TestFileAccess.cpp \
   src/TestFileUtils.cpp \
   src/TestFraction.cpp \
+  src/TestFrameworkSkip.cpp \
   src/TestFreeList.cpp \
+  src/TestFutureResultSource.cpp \
   src/TestIniParser.cpp \
   src/TestLogging.cpp \
   src/TestNotifierObserver.cpp \

@@ -23,8 +23,12 @@ set( HEADER_FILES
   include/AncestryBackup_CDnaMatches.h
   include/AncestryBackup_CEndpointCatalog.h
   include/AncestryBackup_CExportFinder.h
+  include/AncestryBackup_CGedcomFile.h
   include/AncestryBackup_CGedcomReader.h
   include/AncestryBackup_CGedcomSummary.h
+  include/AncestryBackup_CGrampsDate.h
+  include/AncestryBackup_CGrampsExporter.h
+  include/AncestryBackup_CGrampsText.h
   include/AncestryBackup_CJsonShape.h
   include/AncestryBackup_CMediaInventory.h
   include/AncestryBackup_CRequestBudget.h
@@ -46,8 +50,12 @@ set( SOURCE_FILES
   src/AncestryBackup_CDnaMatches.cpp
   src/AncestryBackup_CEndpointCatalog.cpp
   src/AncestryBackup_CExportFinder.cpp
+  src/AncestryBackup_CGedcomFile.cpp
   src/AncestryBackup_CGedcomReader.cpp
   src/AncestryBackup_CGedcomSummary.cpp
+  src/AncestryBackup_CGrampsDate.cpp
+  src/AncestryBackup_CGrampsExporter.cpp
+  src/AncestryBackup_CGrampsText.cpp
   src/AncestryBackup_CJsonShape.cpp
   src/AncestryBackup_CMediaInventory.cpp
   src/AncestryBackup_CRequestBudget.cpp
