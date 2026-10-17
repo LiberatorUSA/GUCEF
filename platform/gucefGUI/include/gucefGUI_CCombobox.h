@@ -46,38 +46,70 @@ namespace GUI {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+class CListbox;
+
+/**
+ *  A box showing one choice; a click opens the list of Items below it (as a popup of the context),
+ *  a click on a row picks it. Properties: Items, SelectedIndex, Text, Font, TextColour, BackgroundColour,
+ *  DropDownRows. Runtime: Expanded.
+ */
 class GUCEF_GUI_PUBLIC_CPP CCombobox : public CWidget
 {
     public:
 
     static const CORE::CEvent TextChangedEvent;
-    
+
     static void RegisterEvents( void );
-    
+
     public:
 
-    typedef std::vector< CString >  TStringVector;
-    
+    typedef GUCEF::vector< CString > TStringVector;
+
     CCombobox( void );
-    
+
     virtual ~CCombobox();
-    
+
     virtual bool SetText( const CString& text );
-    
+
     virtual CString GetText( void ) const;
-    
+
     virtual bool SetListItems( const TStringVector& items );
-    
+
     virtual bool GetListItems( TStringVector& items ) const;
-    
-    virtual bool ClearList( void ) const;
-    
-    virtual const CString& GetClassTypeName( void ) const;
-    
+
+    virtual bool ClearList( void );
+
+    Int32 GetSelectedIndex( void ) const;
+
+    bool SetSelectedIndex( Int32 index );
+
+    /** Opens or closes the list */
+    bool SetExpanded( bool expanded );
+
+    virtual bool GetNaturalSize( Int32& width, Int32& height ) const GUCEF_VIRTUAL_OVERRIDE;
+
+    virtual const CString& GetClassTypeName( void ) const GUCEF_VIRTUAL_OVERRIDE;
+
+    static CWidget* Create( void );
+
+    protected:
+
+    virtual bool OnDefaultAction( const CORE::CEvent& eventId, CRoutedEventData& eventData ) GUCEF_VIRTUAL_OVERRIDE;
+
+    virtual void OnPropertyChanged( const CString& name, const CString& oldValue, const CString& newValue ) GUCEF_VIRTUAL_OVERRIDE;
+
+    virtual void OnNotify( CORE::CNotifier* notifier                 ,
+                           const CORE::CEvent& eventId               ,
+                           CORE::CICloneable* eventData = GUCEF_NULL ) GUCEF_VIRTUAL_OVERRIDE;
+
     private:
-    
+
     CCombobox( const CCombobox& src );
     CCombobox& operator=( const CCombobox& src );
+
+    private:
+
+    CListbox* m_list;
 };
 
 /*-------------------------------------------------------------------------//
@@ -90,16 +122,5 @@ class GUCEF_GUI_PUBLIC_CPP CCombobox : public CWidget
 }; /* namespace GUCEF */
 
 /*-------------------------------------------------------------------------*/
-          
+
 #endif /* GUCEF_GUI_CCOMBOBOX_H ? */
-
-/*-------------------------------------------------------------------------//
-//                                                                         //
-//      Info & Changes                                                     //
-//                                                                         //
-//-------------------------------------------------------------------------//
-
-- 18-08-2007 :
-        - Dinand: Initial implementation
-
------------------------------------------------------------------------------*/

@@ -26,10 +26,10 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#ifndef GUCEF_GUI_CWIDGET_H
-#include "gucefGUI_CWidget.h"
-#define GUCEF_GUI_CWIDGET_H
-#endif /* GUCEF_GUI_CWIDGET_H ? */
+#ifndef GUCEF_GUI_CPANEL_H
+#include "gucefGUI_CPanel.h"
+#define GUCEF_GUI_CPANEL_H
+#endif /* GUCEF_GUI_CPANEL_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -46,26 +46,31 @@ namespace GUI {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-class GUCEF_GUI_PUBLIC_CPP CWindow : public CWidget
+/** A panel with a title bar. Properties: Title, TitleVisible, TitleHeight, TitleBarColour, TitleColour */
+class GUCEF_GUI_PUBLIC_CPP CWindow : public CPanel
 {
     public:
 
     CWindow( void );
-    
+
     virtual ~CWindow();
-    
+
     virtual bool SetTitleBarText( const CString& title );
-    
+
     virtual bool GetTitleBarText( CString& title ) const;
-    
+
     virtual bool SetTitleBarVisible( const bool isVisible );
-    
-    virtual bool GetTitleBarVisible( bool& isVisible );
-    
+
+    virtual bool GetTitleBarVisible( bool& isVisible ) const;
+
+    virtual const CString& GetClassTypeName( void ) const GUCEF_VIRTUAL_OVERRIDE;
+
+    static CWidget* Create( void );
+
     private:
-    
+
     CWindow( const CWindow& src );
-    CWindow& operator=( const CWindow& src );    
+    CWindow& operator=( const CWindow& src );
 };
 
 /*-------------------------------------------------------------------------//
@@ -78,16 +83,5 @@ class GUCEF_GUI_PUBLIC_CPP CWindow : public CWidget
 }; /* namespace GUCEF */
 
 /*-------------------------------------------------------------------------*/
-          
+
 #endif /* GUCEF_GUI_CWINDOW_H ? */
-
-/*-------------------------------------------------------------------------//
-//                                                                         //
-//      Info & Changes                                                     //
-//                                                                         //
-//-------------------------------------------------------------------------//
-
-- 18-08-2007 :
-        - Dinand: Initial implementation
-
------------------------------------------------------------------------------*/

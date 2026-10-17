@@ -23,16 +23,22 @@ LOCAL_MODULE_FILENAME := libgucefGUI
 
 LOCAL_SRC_FILES := \
   src/gucefGUI.cpp \
+  src/gucefGUI_CAudioPlayer.cpp \
+  src/gucefGUI_CBitmapFont.cpp \
   src/gucefGUI_CButton.cpp \
   src/gucefGUI_CCheckbox.cpp \
   src/gucefGUI_CCombobox.cpp \
+  src/gucefGUI_CDrawSurface.cpp \
   src/gucefGUI_CEditbox.cpp \
   src/gucefGUI_CFileSystemDialog.cpp \
   src/gucefGUI_CForm.cpp \
   src/gucefGUI_CFormBackend.cpp \
   src/gucefGUI_CFormEx.cpp \
   src/gucefGUI_CFormFactory.cpp \
+  src/gucefGUI_CFormLayout.cpp \
+  src/gucefGUI_CGUIContext.cpp \
   src/gucefGUI_CGUIDriver.cpp \
+  src/gucefGUI_CGUIInputAdapter.cpp \
   src/gucefGUI_CGUIManager.cpp \
   src/gucefGUI_CGridView.cpp \
   src/gucefGUI_CGuiGlobal.cpp \
@@ -43,10 +49,14 @@ LOCAL_SRC_FILES := \
   src/gucefGUI_CListbox.cpp \
   src/gucefGUI_CMenuBar.cpp \
   src/gucefGUI_CModule.cpp \
+  src/gucefGUI_CPanel.cpp \
   src/gucefGUI_CPopupMenu.cpp \
   src/gucefGUI_CProgressBar.cpp \
   src/gucefGUI_CPushButton.cpp \
   src/gucefGUI_CRenderContext.cpp \
+  src/gucefGUI_CRoutedEventData.cpp \
+  src/gucefGUI_CSlider.cpp \
+  src/gucefGUI_CSoftwareRenderer.cpp \
   src/gucefGUI_CSpinner.cpp \
   src/gucefGUI_CTabContentPane.cpp \
   src/gucefGUI_CTabControl.cpp \
@@ -56,30 +66,45 @@ LOCAL_SRC_FILES := \
   src/gucefGUI_CUVector.cpp \
   src/gucefGUI_CVideoOptions.cpp \
   src/gucefGUI_CVideoSettings.cpp \
+  src/gucefGUI_CVideoView.cpp \
   src/gucefGUI_CWidget.cpp \
   src/gucefGUI_CWidgetFactory.cpp \
+  src/gucefGUI_CWidgetHandler.cpp \
+  src/gucefGUI_CWidgetPainter.cpp \
+  src/gucefGUI_CWidgetTypeRegistry.cpp \
   src/gucefGUI_CWindow.cpp \
   src/gucefGUI_CWindowContext.cpp \
   src/gucefGUI_CWindowManager.cpp \
-  src/gucefGUI_CWindowManagerBackend.cpp
+  src/gucefGUI_CWindowManagerBackend.cpp \
+  src/gucefGUI_StandardWidgetTypes.cpp \
+  src/gucefGUI_Types.cpp \
+  src/gucefGUI_Utils.cpp
 
 LOCAL_C_INCLUDES := \
   $(MY_MODULE_PATH)/include \
   $(MY_MODULE_PATH)/../../common/include \
+  $(MY_MODULE_PATH)/../gucefAUDIO/include \
+  $(MY_MODULE_PATH)/../gucefAUDIO/include/c_api \
   $(MY_MODULE_PATH)/../gucefCORE/include \
   $(MY_MODULE_PATH)/../gucefCORE/include/c_api \
   $(MY_MODULE_PATH)/../gucefIMAGE/include \
+  $(MY_MODULE_PATH)/../gucefINPUT/include \
   $(MY_MODULE_PATH)/../gucefMT/include \
-  $(MY_MODULE_PATH)/../gucefVFS/include
+  $(MY_MODULE_PATH)/../gucefVFS/include \
+  $(MY_MODULE_PATH)/../gucefVIDEO/include \
+  $(MY_MODULE_PATH)/../gucefVIDEO/include/c_api
 
 LOCAL_CFLAGS := -DGUCEF_GUI_BUILD_MODULE -DMODULE_CONSENSUS_NAME=gucefGUI -DMODULE_NAME=gucefGUI -DMODULE_SEMVER=0_1_0_0
 
 
 LOCAL_SHARED_LIBRARIES := \
+  gucefAUDIO \
   gucefCORE \
   gucefIMAGE \
+  gucefINPUT \
   gucefMT \
-  gucefVFS
+  gucefVFS \
+  gucefVIDEO
 
 include $(BUILD_SHARED_LIBRARY)
 

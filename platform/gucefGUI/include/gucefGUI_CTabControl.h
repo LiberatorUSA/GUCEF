@@ -31,10 +31,10 @@
 #define GUCEF_CORE_CLONEABLES_H
 #endif /* GUCEF_CORE_CLONEABLES_H ? */
 
-#ifndef GUCEF_GUI_CTABCONTENTPANE_H
-#include "gucefGUI_CTabContentPane.h"
-#define GUCEF_GUI_CTABCONTENTPANE_H
-#endif /* GUCEF_GUI_CTABCONTENTPANE_H ? */
+#ifndef GUCEF_GUI_CWIDGET_H
+#include "gucefGUI_CWidget.h"
+#define GUCEF_GUI_CWIDGET_H
+#endif /* GUCEF_GUI_CWIDGET_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -51,32 +51,54 @@ namespace GUI {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+class CTabContentPane;
+
+/**
+ *  Tabs along the top (the Tabs property, one entry per tab) above pages: the children of type
+ *  TabContentPane, in order. The page of ActiveTab is shown. Properties: Tabs, ActiveTab, TabHeight,
+ *  Font, TextColour, TabColour, ActiveTabColour, BackgroundColour. A click on a tab or Left / Right
+ *  while focused switches the tab (ValueChangedEvent and ActiveTabChangedEvent).
+ */
 class GUCEF_GUI_PUBLIC_CPP CTabControl : public CWidget
 {
     public:
 
     static const CORE::CEvent ActiveTabChangedEvent;
-    
     typedef CORE::TCloneableUInt32 TActiveTabChangedEventData;
-    
+
     static void RegisterEvents( void );
-    
+
     public:
-    
+
     CTabControl( void );
-    
+
     virtual ~CTabControl();
-    
+
     virtual bool SetActiveTab( const UInt32 tabIndex );
-    
+
     virtual Int32 GetActiveTab( void ) const;
-    
+
     virtual CTabContentPane* GetTabContentPane( const UInt32 tabIndex );
-    
-    virtual const CString& GetClassTypeName( void ) const;
-    
+
+    UInt32 GetTabCount( void ) const;
+
+    /** Where the header of a tab is, relative to the control; tabs share the width equally */
+    CRect GetTabRect( UInt32 tabIndex ) const;
+
+    virtual const CString& GetClassTypeName( void ) const GUCEF_VIRTUAL_OVERRIDE;
+
+    static CWidget* Create( void );
+
+    protected:
+
+    virtual bool OnDefaultAction( const CORE::CEvent& eventId, CRoutedEventData& eventData ) GUCEF_VIRTUAL_OVERRIDE;
+
+    virtual void OnPropertyChanged( const CString& name, const CString& oldValue, const CString& newValue ) GUCEF_VIRTUAL_OVERRIDE;
+
     private:
-    
+
+    void ShowActivePane( void );
+
     CTabControl( const CTabControl& src );
     CTabControl& operator=( const CTabControl& src );
 };
@@ -91,16 +113,5 @@ class GUCEF_GUI_PUBLIC_CPP CTabControl : public CWidget
 }; /* namespace GUCEF */
 
 /*-------------------------------------------------------------------------*/
-          
+
 #endif /* GUCEF_GUI_CTABCONTROL_H ? */
-
-/*-------------------------------------------------------------------------//
-//                                                                         //
-//      Info & Changes                                                     //
-//                                                                         //
-//-------------------------------------------------------------------------//
-
-- 18-08-2007 :
-        - Dinand: Initial implementation
-
------------------------------------------------------------------------------*/

@@ -53,6 +53,7 @@ namespace GUI {
 
 class CWindowManager;
 class CGUIManager;
+class CWidgetTypeRegistry;
 
 /*-------------------------------------------------------------------------*/
 
@@ -68,6 +69,9 @@ class GUCEF_GUI_PUBLIC_CPP CGuiGlobal
     CWindowManager& GetWindowManager( void );
 
     CGUIManager& GetGuiManager( void );
+
+    /** The widget types gucefGUI knows, with their properties */
+    CWidgetTypeRegistry& GetWidgetTypeRegistry( void );
 
     private:
     friend class CModule;
@@ -86,6 +90,7 @@ class GUCEF_GUI_PUBLIC_CPP CGuiGlobal
 
     CWindowManager* m_windowManager;
     CGUIManager* m_guiManager;
+    CWidgetTypeRegistry* m_widgetTypeRegistry;
 
     static CGuiGlobal* g_instance;
     static MT::CMutex g_datalock;

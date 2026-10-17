@@ -23,6 +23,16 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+#ifndef GUCEF_GUI_CGUICONTEXT_H
+#include "gucefGUI_CGUIContext.h"
+#define GUCEF_GUI_CGUICONTEXT_H
+#endif /* GUCEF_GUI_CGUICONTEXT_H ? */
+
+#ifndef GUCEF_GUI_UTILS_H
+#include "gucefGUI_Utils.h"
+#define GUCEF_GUI_UTILS_H
+#endif /* GUCEF_GUI_UTILS_H ? */
+
 #include "gucefGUI_CEditbox.h"
 
 /*-------------------------------------------------------------------------//
@@ -47,10 +57,10 @@ const CORE::CEvent CEditbox::TextEnteredEvent = "GUCEF::GUI::CEditbox::TextEnter
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
-//      UTILITIES                                                          //
+//      IMPLEMENTATION                                                     //
 //                                                                         //
 //-------------------------------------------------------------------------*/
-    
+
 void
 CEditbox::RegisterEvents( void )
 {GUCEF_TRACE;
@@ -65,8 +75,10 @@ CEditbox::RegisterEvents( void )
 
 CEditbox::CEditbox( void )
     : CWidget( "Editbox" )
+    , m_blinkTime( 0 )
 {GUCEF_TRACE;
 
+    RegisterEvents();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -74,42 +86,63 @@ CEditbox::CEditbox( void )
 CEditbox::~CEditbox()
 {GUCEF_TRACE;
 
+
 }
 
 /*-------------------------------------------------------------------------*/
-    
+
+CWidget*
+CEditbox::Create( void )
+{GUCEF_TRACE;
+
+    return GUCEF_NEW CEditbox();
+}
+
+/*-------------------------------------------------------------------------*/
+
 bool
 CEditbox::SetText( const CString& text )
 {GUCEF_TRACE;
 
-    return false;
+    return SetProperty( "Text", LimitText( text ) );
 }
 
 /*-------------------------------------------------------------------------*/
-    
+
 CString
-CEditbox::GetText( void )
+CEditbox::GetText( void ) const
 {GUCEF_TRACE;
 
-    return CString::Empty;
+    return GetProperty( "Text" );
 }
 
 /*-------------------------------------------------------------------------*/
-    
+
 bool
 CEditbox::SetSelectedText( const CString& text )
 {GUCEF_TRACE;
 
-    return false;
+    if ( GetBoolProperty( "Selected" ) )
+    {
+        SetBoolProperty( "Selected", false );
+        return SetText( text );
+    }
+    return SetText( GetText() + text );
 }
 
 /*-------------------------------------------------------------------------*/
 
 bool
-CEditbox::GetSelectedText( CString& text )
+CEditbox::GetSelectedText( CString& text ) const
 {GUCEF_TRACE;
 
-    return false;
+    if ( !GetBoolProperty( "Selected" ) )
+    {
+        text.Clear();
+        return false;
+    }
+    text = GetText();
+    return true;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -118,7 +151,175 @@ void
 CEditbox::Clear( void )
 {GUCEF_TRACE;
 
+    SetBoolProperty( "Selected", false );
+    SetText( CString::Empty );
 }
+
+/*-------------------------------------------------------------------------*/
+
+CString
+CEditbox::LimitText( const CString& text ) const
+{GUCEF_TRACE;
+
+    Int32 maxLength = GetIntProperty( "MaxLength" );
+    if ( maxLength <= 0 )
+        return text;
+    TCodePointVector codePoints;
+    DecodeUtf8( text, codePoints );
+    if ( (Int32) codePoints.size() <= maxLength )
+        return text;
+    CString limited;
+    for ( Int32 i=0; i<maxLength; ++i )
+        limited.Append( codePoints[ i ] );
+    return limited;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CEditbox::GetNaturalSize( Int32& width, Int32& height ) const
+{GUCEF_TRACE;
+
+    width = height = 0;
+    if ( GUCEF_NULL == GetContext() )
+        return false;
+    Int32 w = 0;
+    if ( !GetContext()->MeasureText( GetProperty( "Font" ), "M", 0, w, height ) )
+        return false;
+    width = w * 16;
+    height += 4;
+    return true;
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CEditbox::OnPropertyChanged( const CString& name, const CString& oldValue, const CString& newValue )
+{GUCEF_TRACE;
+
+    if ( name == "Text" )
+        NotifyObservers( TextChangedEvent );
+    else
+    if ( name == "Selected" )
+        NotifyObservers( SelectionChangedEvent );
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CEditbox::NeedsUpdate( void ) const
+{GUCEF_TRACE;
+
+    return HasFocus() || GetBoolProperty( "CaretVisible" );
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CEditbox::OnUpdate( UInt32 deltaInMs )
+{GUCEF_TRACE;
+
+    if ( !HasFocus() )
+    {
+        SetBoolProperty( "CaretVisible", false );
+        return;
+    }
+    // the caret blinks twice a second
+    m_blinkTime += deltaInMs;
+    if ( m_blinkTime >= 500 )
+    {
+        m_blinkTime %= 500;
+        SetBoolProperty( "CaretVisible", !GetBoolProperty( "CaretVisible" ) );
+    }
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CEditbox::OnDefaultAction( const CORE::CEvent& eventId, CRoutedEventData& eventData )
+{GUCEF_TRACE;
+
+    if ( KeyboardFocusReceivedEvent == eventId )
+    {
+        if ( GetBoolProperty( "SelectAllOnFocus" ) && !GetText().IsNULLOrEmpty() )
+            SetBoolProperty( "Selected", true );
+        m_blinkTime = 0;
+        SetBoolProperty( "CaretVisible", true );
+        return true;
+    }
+    if ( KeyboardFocusLostEvent == eventId )
+    {
+        SetBoolProperty( "Selected", false );
+        SetBoolProperty( "CaretVisible", false );
+        return true;
+    }
+    if ( TextInputEvent == eventId )
+    {
+        if ( GetBoolProperty( "ReadOnly" ) )
+            return false;
+        CTextEventData* textData = static_cast< CTextEventData* >( &eventData );
+        TCodePointVector codePoints;
+        DecodeUtf8( textData->text, codePoints );
+        CString typed;
+        for ( UInt32 i=0; i<(UInt32)codePoints.size(); ++i )
+            if ( codePoints[ i ] >= 32 && 127 != codePoints[ i ] )
+                typed.Append( codePoints[ i ] );
+        if ( typed.IsNULLOrEmpty() )
+            return false;
+        CString text = GetBoolProperty( "Selected" ) ? CString::Empty : GetText();
+        SetBoolProperty( "Selected", false );
+        ChangeValueByUser( "Text", LimitText( text + typed ) );
+        m_blinkTime = 0;
+        SetBoolProperty( "CaretVisible", true );
+        return true;
+    }
+    if ( KeyDownEvent == eventId )
+    {
+        CKeyEventData* key = static_cast< CKeyEventData* >( &eventData );
+        if ( INPUT::KEYCODE_BACK == key->keyCode )
+        {
+            if ( GetBoolProperty( "ReadOnly" ) )
+                return true;
+            CString text;
+            if ( !GetBoolProperty( "Selected" ) )
+            {
+                TCodePointVector codePoints;
+                DecodeUtf8( GetText(), codePoints );
+                for ( UInt32 i=0; i+1<(UInt32)codePoints.size(); ++i )
+                    text.Append( codePoints[ i ] );
+            }
+            SetBoolProperty( "Selected", false );
+            ChangeValueByUser( "Text", text );
+            return true;
+        }
+        if ( INPUT::KEYCODE_RETURN == key->keyCode || INPUT::KEYCODE_NUMPADENTER == key->keyCode )
+        {
+            NotifyObservers( TextEnteredEvent );
+            return true;
+        }
+        if ( INPUT::KEYCODE_LEFT == key->keyCode || INPUT::KEYCODE_RIGHT == key->keyCode ||
+             INPUT::KEYCODE_HOME == key->keyCode || INPUT::KEYCODE_END == key->keyCode )
+        {
+            // the caret stays at the end; moving it only drops the selection
+            SetBoolProperty( "Selected", false );
+            return true;
+        }
+    }
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
+const CString&
+CEditbox::GetClassTypeName( void ) const
+{GUCEF_TRACE;
+
+    static const CString classTypeName = "GUCEF::GUI::CEditbox";
+    return classTypeName;
+}
+
+/*-------------------------------------------------------------------------*/
+
 
 /*-------------------------------------------------------------------------//
 //                                                                         //

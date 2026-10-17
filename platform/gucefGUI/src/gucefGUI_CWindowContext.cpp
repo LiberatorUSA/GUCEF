@@ -43,6 +43,7 @@ namespace GUI {
 const CORE::CEvent CWindowContext::WindowContextRedrawEvent = "GUCEF::GUI::CWindowContext::WindowContextRedrawEvent";
 const CORE::CEvent CWindowContext::WindowContextSizeEvent = "GUCEF::GUI::CWindowContext::WindowContextSizeEvent";
 const CORE::CEvent CWindowContext::WindowContextActivateEvent = "GUCEF::GUI::CWindowContext::WindowContextActivateEvent";
+const CORE::CEvent CWindowContext::WindowContextCloseRequestEvent = "GUCEF::GUI::CWindowContext::WindowContextCloseRequestEvent";
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -72,6 +73,16 @@ CWindowContext::RegisterEvents( void )
     WindowContextRedrawEvent.Initialize();
     WindowContextSizeEvent.Initialize();
     WindowContextActivateEvent.Initialize();
+    WindowContextCloseRequestEvent.Initialize();
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CWindowContext::SetSystemCursorVisible( bool visible )
+{GUCEF_TRACE;
+
+    return false;
 }
 
 /*-------------------------------------------------------------------------//

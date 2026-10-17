@@ -46,10 +46,17 @@ namespace GUI {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+/**
+ *  A list of text rows. Properties: Items, SelectedIndex, MultiSelect, SelectedIndices, DisabledItems,
+ *  RowHeight, Font, TextColour, DisabledTextColour, SelectionColour, HoverColour, BackgroundColour,
+ *  ScrollPosition (the first row shown). Runtime: HoverIndex.
+ *  A click selects a row (not a disabled one), a double click or Enter activates it (ItemActivatedEvent),
+ *  the wheel and Up / Down scroll and move the selection.
+ */
 class GUCEF_GUI_PUBLIC_CPP CListbox : public CWidget
 {
     public:
-        
+
     static const CORE::CEvent SelectionChangedEvent;
     static const CORE::CEvent ItemAddedEvent;
     static const CORE::CEvent ItemRemovedEvent;
@@ -58,53 +65,86 @@ class GUCEF_GUI_PUBLIC_CPP CListbox : public CWidget
     static const CORE::CEvent ItemClickedEvent;
     static const CORE::CEvent ItemDoubleClickedEvent;
     static const CORE::CEvent ItemTripleClickedEvent;
-    
+
     static void RegisterEvents( void );
-    
+
     public:
-    
-    typedef std::vector< CString > TStringVector;
+
+    typedef GUCEF::vector< CString > TStringVector;
 
     CListbox( void );
-    
+
     virtual ~CListbox();
-    
-    virtual const CString& GetClassTypeName( void ) const;
-    
+
     virtual bool SetAllowMultiSelect( bool allowMultiselect );
-    
-    virtual bool GetAllowMultiSelect( bool allowMultiselect );
-    
+
+    virtual bool GetAllowMultiSelect( void ) const;
+
     virtual UInt32 GetLineCount( void );
-    
+
     virtual bool Clear( void );
-    
+
     virtual bool GetLineAtIndex( const UInt32 lineIndex ,
                                  CString& lineText      ) const;
-    
+
     virtual bool InsertLineAtIndex( const UInt32 lineIndex ,
                                     const CString& text    );
-    
+
     virtual bool AppendLine( const CString& text );
-    
+
+    /** All rows joined with '\n' */
     virtual bool GetText( CString& text ) const;
-    
+
     virtual bool SetLineSelection( const UInt32 lineIndex ,
                                    const bool isSelected  );
 
     virtual bool GetLineSelection( const UInt32 lineIndex ,
                                    bool& isSelected       ) const;
-                                       
+
     virtual bool GetFirstSelectedLine( CString& text ) const;
 
-    virtual bool GetLastSelectedLine( CString& text ) const;    
-    
+    virtual bool GetLastSelectedLine( CString& text ) const;
+
     virtual bool GetSelectedLines( TStringVector& selectedLines ) const;
-    
+
+    TStringVector GetItems( void ) const;
+
+    bool SetItems( const TStringVector& items );
+
+    Int32 GetSelectedIndex( void ) const;
+
+    bool SetSelectedIndex( Int32 index );
+
+    bool IsItemDisabled( Int32 index ) const;
+
+    bool IsItemSelected( Int32 index ) const;
+
+    Int32 GetRowHeight( void ) const;
+
+    Int32 GetVisibleRowCount( void ) const;
+
+    /** The row at a position relative to the list, -1 when none */
+    Int32 GetRowAt( Int32 localY ) const;
+
+    /** Scrolls so the row is visible */
+    void ScrollToRow( Int32 index );
+
+    virtual const CString& GetClassTypeName( void ) const GUCEF_VIRTUAL_OVERRIDE;
+
+    static CWidget* Create( void );
+
+    protected:
+
+    virtual bool OnDefaultAction( const CORE::CEvent& eventId, CRoutedEventData& eventData ) GUCEF_VIRTUAL_OVERRIDE;
+
+    virtual void OnPropertyChanged( const CString& name, const CString& oldValue, const CString& newValue ) GUCEF_VIRTUAL_OVERRIDE;
+
     private:
-    
+
+    void SelectByUser( Int32 index );
+
     CListbox( const CListbox& src );
-    CListbox& operator=( const CListbox& src );    
+    CListbox& operator=( const CListbox& src );
 };
 
 /*-------------------------------------------------------------------------//
@@ -117,16 +157,5 @@ class GUCEF_GUI_PUBLIC_CPP CListbox : public CWidget
 }; /* namespace GUCEF */
 
 /*-------------------------------------------------------------------------*/
-          
+
 #endif /* GUCEF_GUI_CLISTBOX_H ? */
-
-/*-------------------------------------------------------------------------//
-//                                                                         //
-//      Info & Changes                                                     //
-//                                                                         //
-//-------------------------------------------------------------------------//
-
-- 10-02-2008 :
-        - Dinand: Initial implementation
-
------------------------------------------------------------------------------*/

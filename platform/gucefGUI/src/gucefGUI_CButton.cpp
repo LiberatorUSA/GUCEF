@@ -23,6 +23,11 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+#ifndef GUCEF_GUI_CGUICONTEXT_H
+#include "gucefGUI_CGUIContext.h"
+#define GUCEF_GUI_CGUICONTEXT_H
+#endif /* GUCEF_GUI_CGUICONTEXT_H ? */
+
 #include "gucefGUI_CButton.h"
 
 /*-------------------------------------------------------------------------//
@@ -46,10 +51,10 @@ const CORE::CEvent CButton::ButtonClickedEvent = "GUCEF::GUI::CButton::ButtonCli
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
-//      UTILITIES                                                          //
+//      IMPLEMENTATION                                                     //
 //                                                                         //
 //-------------------------------------------------------------------------*/
-    
+
 void
 CButton::RegisterEvents( void )
 {GUCEF_TRACE;
@@ -62,7 +67,16 @@ CButton::RegisterEvents( void )
 /*-------------------------------------------------------------------------*/
 
 CButton::CButton( void )
-    : CWidget( "CButton" )
+    : CWidget( "Button" )
+{GUCEF_TRACE;
+
+    RegisterEvents();
+}
+
+/*-------------------------------------------------------------------------*/
+
+CButton::CButton( const CString& widgetTypeName )
+    : CWidget( widgetTypeName )
 {GUCEF_TRACE;
 
     RegisterEvents();
@@ -76,19 +90,128 @@ CButton::~CButton()
 }
 
 /*-------------------------------------------------------------------------*/
-    
+
+CWidget*
+CButton::Create( void )
+{GUCEF_TRACE;
+
+    return GUCEF_NEW CButton();
+}
+
+/*-------------------------------------------------------------------------*/
+
 bool
 CButton::SetButtonText( const CString& newText )
-{
+{GUCEF_TRACE;
+
+    return SetProperty( "Text", newText );
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CButton::GetButtonText( CString& text ) const
+{GUCEF_TRACE;
+
+    text = GetProperty( "Text" );
+    return true;
+}
+
+/*-------------------------------------------------------------------------*/
+
+CString
+CButton::GetCurrentImage( void ) const
+{GUCEF_TRACE;
+
+    CString normal = GetProperty( "NormalImage" );
+    CString image;
+    UInt32 state = GetState();
+    if ( 0 != ( state & STATE_DISABLED ) )
+        image = GetProperty( "DisabledImage" );
+    else
+    if ( 0 != ( state & STATE_PRESSED ) && 0 != ( state & STATE_HOVERED ) )
+        image = GetProperty( "PushedImage" );
+    else
+    if ( 0 != ( state & STATE_HOVERED ) )
+        image = GetProperty( "HoverImage" );
+    else
+    if ( 0 != ( state & STATE_CHECKED ) )
+        image = GetProperty( "CheckedImage" );
+    return image.IsNULLOrEmpty() ? normal : image;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CButton::GetNaturalSize( Int32& width, Int32& height ) const
+{GUCEF_TRACE;
+
+    width = height = 0;
+    CGUIContext* context = GetContext();
+    if ( GUCEF_NULL == context )
+        return false;
+
+    // the picture decides the size, else the text with a small margin
+    CString normal = GetProperty( "NormalImage" );
+    IMAGE::TPixelMapPtr pixels;
+    UInt32 revision = 0;
+    if ( !normal.IsNULLOrEmpty() && context->ResolveImage( normal, pixels, revision ) )
+    {
+        width = (Int32) pixels->GetWidthInPixels();
+        height = (Int32) pixels->GetHeightInPixels();
+        return true;
+    }
+    CString text = GetProperty( "Text" );
+    if ( !text.IsNULLOrEmpty() && context->MeasureText( GetProperty( "Font" ), text, 0, width, height ) )
+    {
+        width += 8;
+        height += 4;
+        return true;
+    }
     return false;
 }
 
 /*-------------------------------------------------------------------------*/
-    
+
 bool
-CButton::GetButtonText( CString& text ) const
-{
+CButton::IsActivatable( void ) const
+{GUCEF_TRACE;
+
+    return true;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CButton::OnDefaultAction( const CORE::CEvent& eventId, CRoutedEventData& eventData )
+{GUCEF_TRACE;
+
+    if ( MouseDownEvent == eventId )
+    {
+        NotifyObservers( ButtonDownEvent );
+        return true;
+    }
+    if ( MouseUpEvent == eventId )
+    {
+        NotifyObservers( ButtonUpEvent );
+        return true;
+    }
+    if ( ActivatedEvent == eventId )
+    {
+        NotifyObservers( ButtonClickedEvent );
+        return true;
+    }
     return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
+const CString&
+CButton::GetClassTypeName( void ) const
+{GUCEF_TRACE;
+
+    static const CString classTypeName = "GUCEF::GUI::CButton";
+    return classTypeName;
 }
 
 /*-------------------------------------------------------------------------//

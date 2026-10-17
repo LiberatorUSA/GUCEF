@@ -26,15 +26,15 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#ifndef GUCEF_GUI_CWIDGET_H
-#include "gucefGUI_CWidget.h"
-#define GUCEF_GUI_CWIDGET_H
-#endif /* GUCEF_GUI_CWIDGET_H ? */
-
 #ifndef GUCEF_CORE_CTCLONEABLEOBJ_H
 #include "CTCloneableObj.h"
 #define GUCEF_CORE_CTCLONEABLEOBJ_H
 #endif /* GUCEF_CORE_CTCLONEABLEOBJ_H ? */
+
+#ifndef GUCEF_GUI_CWIDGET_H
+#include "gucefGUI_CWidget.h"
+#define GUCEF_GUI_CWIDGET_H
+#endif /* GUCEF_GUI_CWIDGET_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -51,10 +51,17 @@ namespace GUI {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+/**
+ *  A table: a header row (Columns) above rows of cells. Rows holds one entry per row with the cells
+ *  separated by a tab character. A click selects a row (SelectedRow) and raises GridItemClickedEvent with
+ *  the cell; a double click activates the row. Properties: Columns, ColumnWidths (empty: equal), Rows,
+ *  SelectedRow, RowHeight, Font, TextColour, HeaderColour, SelectionColour, HoverColour, BackgroundColour,
+ *  ScrollPosition. Runtime: HoverIndex.
+ */
 class GUCEF_GUI_PUBLIC_CPP CGridView : public CWidget
-{    
+{
     public:
-    
+
     static const CORE::CEvent GridItemClickedEvent;
     static const CORE::CEvent GridItemAddedEvent;
     static const CORE::CEvent GridItemDeletedEvent;
@@ -62,15 +69,15 @@ class GUCEF_GUI_PUBLIC_CPP CGridView : public CWidget
     static const CORE::CEvent GridRowDeletedEvent;
     static const CORE::CEvent GridColumnAddedEvent;
     static const CORE::CEvent GridColumnDeletedEvent;
-    
+
     struct SGridIndex
     {
         UInt32 column;
         UInt32 row;
     };
-    typedef struct SGridIndex TGridIndex;    
-    
+    typedef struct SGridIndex TGridIndex;
     typedef CORE::CTCloneableObj< TGridIndex > TCloneableGridIndex;
+
     typedef TCloneableGridIndex TGridItemClickedEventData;
     typedef TCloneableGridIndex TGridItemAddedEventData;
     typedef TCloneableGridIndex TGridItemDeletedEventData;
@@ -78,17 +85,18 @@ class GUCEF_GUI_PUBLIC_CPP CGridView : public CWidget
     typedef TCloneableGridIndex TGridRowDeletedEventData;
     typedef TCloneableGridIndex TGridColumnAddedEventData;
     typedef TCloneableGridIndex TGridColumnDeletedEventData;
-    
+
     static void RegisterEvents( void );
-    
+
     public:
-    
-    typedef std::vector< TGridIndex >   TGridIndexVector;
-    
+
+    typedef GUCEF::vector< TGridIndex > TGridIndexVector;
+    typedef GUCEF::vector< CString > TStringVector;
+
     CGridView( void );
-    
+
     virtual ~CGridView();
-    
+
     virtual void SetText( const UInt32 columnIndex ,
                           const UInt32 rowIndex    ,
                           const CString& text      );
@@ -96,19 +104,44 @@ class GUCEF_GUI_PUBLIC_CPP CGridView : public CWidget
     virtual CString GetText( const UInt32 columnIndex ,
                              const UInt32 rowIndex    ) const;
 
+    /** Adds a row with the text in the given column */
     virtual void AppendText( const UInt32 columnIndex ,
                              const CString& text      );
 
-    virtual void AppendText( const CString& text );    
-    
+    /** Adds a row with the text in the first column */
+    virtual void AppendText( const CString& text );
+
     virtual void Clear( void );
-    
+
+    /** Every cell of the selected row */
     virtual void GetSelectedItems( TGridIndexVector& gridIndexList );
-    
-    virtual const CString& GetClassTypeName( void ) const;
-    
+
+    UInt32 GetRowCount( void ) const;
+
+    UInt32 GetColumnCount( void ) const;
+
+    TStringVector GetRowCells( UInt32 rowIndex ) const;
+
+    /** Widths of the columns in pixels */
+    GUCEF::vector< Int32 > GetColumnWidths( void ) const;
+
+    Int32 GetRowHeight( void ) const;
+
+    /** The data row at a position relative to the grid (below the header), -1 when none */
+    Int32 GetRowAt( Int32 localY ) const;
+
+    Int32 GetColumnAt( Int32 localX ) const;
+
+    virtual const CString& GetClassTypeName( void ) const GUCEF_VIRTUAL_OVERRIDE;
+
+    static CWidget* Create( void );
+
+    protected:
+
+    virtual bool OnDefaultAction( const CORE::CEvent& eventId, CRoutedEventData& eventData ) GUCEF_VIRTUAL_OVERRIDE;
+
     private:
-    
+
     CGridView( const CGridView& src );
     CGridView& operator=( const CGridView& src );
 };
@@ -123,16 +156,5 @@ class GUCEF_GUI_PUBLIC_CPP CGridView : public CWidget
 }; /* namespace GUCEF */
 
 /*-------------------------------------------------------------------------*/
-          
+
 #endif /* GUCEF_GUI_CGRIDVIEW_H ? */
-
-/*-------------------------------------------------------------------------//
-//                                                                         //
-//      Info & Changes                                                     //
-//                                                                         //
-//-------------------------------------------------------------------------//
-
-- 18-08-2007 :
-        - Dinand: Initial implementation
-
------------------------------------------------------------------------------*/

@@ -36,58 +36,84 @@ namespace GUI {
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
-//      UTILITIES                                                          //
+//      IMPLEMENTATION                                                     //
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
 CWindow::CWindow( void )
-    : CWidget( "Window" )
+    : CPanel( "Window" )
 {GUCEF_TRACE;
 
-}
-    
-/*-------------------------------------------------------------------------*/    
-    
-CWindow::~CWindow()
-{GUCEF_TRACE;
 
 }
 
 /*-------------------------------------------------------------------------*/
-    
+
+CWindow::~CWindow()
+{GUCEF_TRACE;
+
+
+}
+
+/*-------------------------------------------------------------------------*/
+
+CWidget*
+CWindow::Create( void )
+{GUCEF_TRACE;
+
+    return GUCEF_NEW CWindow();
+}
+
+/*-------------------------------------------------------------------------*/
+
 bool
 CWindow::SetTitleBarText( const CString& title )
 {GUCEF_TRACE;
 
-    return false;
+    return SetProperty( "Title", title );
 }
 
-/*-------------------------------------------------------------------------*/    
+/*-------------------------------------------------------------------------*/
 
 bool
 CWindow::GetTitleBarText( CString& title ) const
 {GUCEF_TRACE;
 
-    return false;
+    title = GetProperty( "Title" );
+    return true;
 }
-    
+
 /*-------------------------------------------------------------------------*/
 
 bool
 CWindow::SetTitleBarVisible( const bool isVisible )
 {GUCEF_TRACE;
 
-    return false;
+    return SetBoolProperty( "TitleVisible", isVisible );
 }
 
 /*-------------------------------------------------------------------------*/
 
 bool
-CWindow::GetTitleBarVisible( bool& isVisible )
+CWindow::GetTitleBarVisible( bool& isVisible ) const
 {GUCEF_TRACE;
 
-    return false;
+    isVisible = GetBoolProperty( "TitleVisible" );
+    return true;
 }
+
+/*-------------------------------------------------------------------------*/
+
+const CString&
+CWindow::GetClassTypeName( void ) const
+{GUCEF_TRACE;
+
+    static const CString classTypeName = "GUCEF::GUI::CWindow";
+    return classTypeName;
+}
+
+/*-------------------------------------------------------------------------*/
+
 
 /*-------------------------------------------------------------------------//
 //                                                                         //

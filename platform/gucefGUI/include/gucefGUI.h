@@ -199,6 +199,136 @@
 #define GUCEF_GUI_CVIDEOOPTIONS_H
 #endif /* GUCEF_GUI_CVIDEOOPTIONS_H ? */
 
+#ifndef GUCEF_GUI_TYPES_H
+#include "gucefGUI_Types.h"
+#define GUCEF_GUI_TYPES_H
+#endif /* GUCEF_GUI_TYPES_H ? */
+
+#ifndef GUCEF_GUI_UTILS_H
+#include "gucefGUI_Utils.h"
+#define GUCEF_GUI_UTILS_H
+#endif /* GUCEF_GUI_UTILS_H ? */
+
+#ifndef GUCEF_GUI_CROUTEDEVENTDATA_H
+#include "gucefGUI_CRoutedEventData.h"
+#define GUCEF_GUI_CROUTEDEVENTDATA_H
+#endif /* GUCEF_GUI_CROUTEDEVENTDATA_H ? */
+
+#ifndef GUCEF_GUI_CWIDGETTYPEREGISTRY_H
+#include "gucefGUI_CWidgetTypeRegistry.h"
+#define GUCEF_GUI_CWIDGETTYPEREGISTRY_H
+#endif /* GUCEF_GUI_CWIDGETTYPEREGISTRY_H ? */
+
+#ifndef GUCEF_GUI_CWIDGETHANDLER_H
+#include "gucefGUI_CWidgetHandler.h"
+#define GUCEF_GUI_CWIDGETHANDLER_H
+#endif /* GUCEF_GUI_CWIDGETHANDLER_H ? */
+
+#ifndef GUCEF_GUI_CBITMAPFONT_H
+#include "gucefGUI_CBitmapFont.h"
+#define GUCEF_GUI_CBITMAPFONT_H
+#endif /* GUCEF_GUI_CBITMAPFONT_H ? */
+
+#ifndef GUCEF_GUI_CIGUICONTEXT_H
+#include "gucefGUI_CIGUIContext.h"
+#define GUCEF_GUI_CIGUICONTEXT_H
+#endif /* GUCEF_GUI_CIGUICONTEXT_H ? */
+
+#ifndef GUCEF_GUI_CGUICONTEXT_H
+#include "gucefGUI_CGUIContext.h"
+#define GUCEF_GUI_CGUICONTEXT_H
+#endif /* GUCEF_GUI_CGUICONTEXT_H ? */
+
+#ifndef GUCEF_GUI_CGUIINPUTADAPTER_H
+#include "gucefGUI_CGUIInputAdapter.h"
+#define GUCEF_GUI_CGUIINPUTADAPTER_H
+#endif /* GUCEF_GUI_CGUIINPUTADAPTER_H ? */
+
+#ifndef GUCEF_GUI_CGUIDRIVER_H
+#include "gucefGUI_CGUIDriver.h"
+#define GUCEF_GUI_CGUIDRIVER_H
+#endif /* GUCEF_GUI_CGUIDRIVER_H ? */
+
+#ifndef GUCEF_GUI_CFORMLAYOUT_H
+#include "gucefGUI_CFormLayout.h"
+#define GUCEF_GUI_CFORMLAYOUT_H
+#endif /* GUCEF_GUI_CFORMLAYOUT_H ? */
+
+#ifndef GUCEF_GUI_CWINDOW_H
+#include "gucefGUI_CWindow.h"
+#define GUCEF_GUI_CWINDOW_H
+#endif /* GUCEF_GUI_CWINDOW_H ? */
+
+#ifndef GUCEF_GUI_CPANEL_H
+#include "gucefGUI_CPanel.h"
+#define GUCEF_GUI_CPANEL_H
+#endif /* GUCEF_GUI_CPANEL_H ? */
+
+#ifndef GUCEF_GUI_CIMAGEFRAME_H
+#include "gucefGUI_CImageFrame.h"
+#define GUCEF_GUI_CIMAGEFRAME_H
+#endif /* GUCEF_GUI_CIMAGEFRAME_H ? */
+
+#ifndef GUCEF_GUI_CGRIDVIEW_H
+#include "gucefGUI_CGridView.h"
+#define GUCEF_GUI_CGRIDVIEW_H
+#endif /* GUCEF_GUI_CGRIDVIEW_H ? */
+
+#ifndef GUCEF_GUI_CSLIDER_H
+#include "gucefGUI_CSlider.h"
+#define GUCEF_GUI_CSLIDER_H
+#endif /* GUCEF_GUI_CSLIDER_H ? */
+
+#ifndef GUCEF_GUI_CPROGRESSBAR_H
+#include "gucefGUI_CProgressBar.h"
+#define GUCEF_GUI_CPROGRESSBAR_H
+#endif /* GUCEF_GUI_CPROGRESSBAR_H ? */
+
+#ifndef GUCEF_GUI_CDRAWSURFACE_H
+#include "gucefGUI_CDrawSurface.h"
+#define GUCEF_GUI_CDRAWSURFACE_H
+#endif /* GUCEF_GUI_CDRAWSURFACE_H ? */
+
+#ifndef GUCEF_GUI_CVIDEOVIEW_H
+#include "gucefGUI_CVideoView.h"
+#define GUCEF_GUI_CVIDEOVIEW_H
+#endif /* GUCEF_GUI_CVIDEOVIEW_H ? */
+
+#ifndef GUCEF_GUI_CAUDIOPLAYER_H
+#include "gucefGUI_CAudioPlayer.h"
+#define GUCEF_GUI_CAUDIOPLAYER_H
+#endif /* GUCEF_GUI_CAUDIOPLAYER_H ? */
+
+#ifndef GUCEF_GUI_CTREEVIEW_H
+#include "gucefGUI_CTreeview.h"
+#define GUCEF_GUI_CTREEVIEW_H
+#endif /* GUCEF_GUI_CTREEVIEW_H ? */
+
+#ifndef GUCEF_GUI_CMENUBAR_H
+#include "gucefGUI_CMenuBar.h"
+#define GUCEF_GUI_CMENUBAR_H
+#endif /* GUCEF_GUI_CMENUBAR_H ? */
+
+#ifndef GUCEF_GUI_CPOPUPMENU_H
+#include "gucefGUI_CPopupMenu.h"
+#define GUCEF_GUI_CPOPUPMENU_H
+#endif /* GUCEF_GUI_CPOPUPMENU_H ? */
+
+#ifndef GUCEF_GUI_STANDARDWIDGETTYPES_H
+#include "gucefGUI_StandardWidgetTypes.h"
+#define GUCEF_GUI_STANDARDWIDGETTYPES_H
+#endif /* GUCEF_GUI_STANDARDWIDGETTYPES_H ? */
+
+#ifndef GUCEF_GUI_CWIDGETPAINTER_H
+#include "gucefGUI_CWidgetPainter.h"
+#define GUCEF_GUI_CWIDGETPAINTER_H
+#endif /* GUCEF_GUI_CWIDGETPAINTER_H ? */
+
+#ifndef GUCEF_GUI_CSOFTWARERENDERER_H
+#include "gucefGUI_CSoftwareRenderer.h"
+#define GUCEF_GUI_CSOFTWARERENDERER_H
+#endif /* GUCEF_GUI_CSOFTWARERENDERER_H ? */
+
 #ifndef GUCEF_GUI_CGUIGLOBAL_H
 #include "gucefGUI_CGuiGlobal.h"
 #define GUCEF_GUI_CGUIGLOBAL_H

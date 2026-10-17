@@ -13,16 +13,22 @@
 
 set( HEADER_FILES 
   include/gucefGUI.h
+  include/gucefGUI_CAudioPlayer.h
+  include/gucefGUI_CBitmapFont.h
   include/gucefGUI_CButton.h
   include/gucefGUI_CCheckbox.h
   include/gucefGUI_CCombobox.h
+  include/gucefGUI_CDrawSurface.h
   include/gucefGUI_CEditbox.h
   include/gucefGUI_CFileSystemDialog.h
   include/gucefGUI_CForm.h
   include/gucefGUI_CFormBackend.h
   include/gucefGUI_CFormEx.h
   include/gucefGUI_CFormFactory.h
+  include/gucefGUI_CFormLayout.h
+  include/gucefGUI_CGUIContext.h
   include/gucefGUI_CGUIDriver.h
+  include/gucefGUI_CGUIInputAdapter.h
   include/gucefGUI_CGUIManager.h
   include/gucefGUI_CGridView.h
   include/gucefGUI_CGuiGlobal.h
@@ -33,10 +39,14 @@ set( HEADER_FILES
   include/gucefGUI_CListBox.h
   include/gucefGUI_CMenuBar.h
   include/gucefGUI_CModule.h
+  include/gucefGUI_CPanel.h
   include/gucefGUI_CPopupMenu.h
   include/gucefGUI_CProgressBar.h
   include/gucefGUI_CPushButton.h
   include/gucefGUI_CRenderContext.h
+  include/gucefGUI_CRoutedEventData.h
+  include/gucefGUI_CSlider.h
+  include/gucefGUI_CSoftwareRenderer.h
   include/gucefGUI_CSpinner.h
   include/gucefGUI_CTabContentPane.h
   include/gucefGUI_CTabControl.h
@@ -46,29 +56,42 @@ set( HEADER_FILES
   include/gucefGUI_CUVector.h
   include/gucefGUI_CVideoOptions.h
   include/gucefGUI_CVideoSettings.h
+  include/gucefGUI_CVideoView.h
   include/gucefGUI_CWidget.h
   include/gucefGUI_CWidgetFactory.h
+  include/gucefGUI_CWidgetHandler.h
+  include/gucefGUI_CWidgetPainter.h
+  include/gucefGUI_CWidgetTypeRegistry.h
   include/gucefGUI_CWindow.h
   include/gucefGUI_CWindowContext.h
   include/gucefGUI_CWindowManager.h
   include/gucefGUI_CWindowManagerBackend.h
   include/gucefGUI_ETypes.h
+  include/gucefGUI_StandardWidgetTypes.h
+  include/gucefGUI_Types.h
+  include/gucefGUI_Utils.h
   include/gucefGUI_config.h
   include/gucefGUI_macros.h
 )
 
 set( SOURCE_FILES 
   src/gucefGUI.cpp
+  src/gucefGUI_CAudioPlayer.cpp
+  src/gucefGUI_CBitmapFont.cpp
   src/gucefGUI_CButton.cpp
   src/gucefGUI_CCheckbox.cpp
   src/gucefGUI_CCombobox.cpp
+  src/gucefGUI_CDrawSurface.cpp
   src/gucefGUI_CEditbox.cpp
   src/gucefGUI_CFileSystemDialog.cpp
   src/gucefGUI_CForm.cpp
   src/gucefGUI_CFormBackend.cpp
   src/gucefGUI_CFormEx.cpp
   src/gucefGUI_CFormFactory.cpp
+  src/gucefGUI_CFormLayout.cpp
+  src/gucefGUI_CGUIContext.cpp
   src/gucefGUI_CGUIDriver.cpp
+  src/gucefGUI_CGUIInputAdapter.cpp
   src/gucefGUI_CGUIManager.cpp
   src/gucefGUI_CGridView.cpp
   src/gucefGUI_CGuiGlobal.cpp
@@ -79,10 +102,14 @@ set( SOURCE_FILES
   src/gucefGUI_CListbox.cpp
   src/gucefGUI_CMenuBar.cpp
   src/gucefGUI_CModule.cpp
+  src/gucefGUI_CPanel.cpp
   src/gucefGUI_CPopupMenu.cpp
   src/gucefGUI_CProgressBar.cpp
   src/gucefGUI_CPushButton.cpp
   src/gucefGUI_CRenderContext.cpp
+  src/gucefGUI_CRoutedEventData.cpp
+  src/gucefGUI_CSlider.cpp
+  src/gucefGUI_CSoftwareRenderer.cpp
   src/gucefGUI_CSpinner.cpp
   src/gucefGUI_CTabContentPane.cpp
   src/gucefGUI_CTabControl.cpp
@@ -92,12 +119,19 @@ set( SOURCE_FILES
   src/gucefGUI_CUVector.cpp
   src/gucefGUI_CVideoOptions.cpp
   src/gucefGUI_CVideoSettings.cpp
+  src/gucefGUI_CVideoView.cpp
   src/gucefGUI_CWidget.cpp
   src/gucefGUI_CWidgetFactory.cpp
+  src/gucefGUI_CWidgetHandler.cpp
+  src/gucefGUI_CWidgetPainter.cpp
+  src/gucefGUI_CWidgetTypeRegistry.cpp
   src/gucefGUI_CWindow.cpp
   src/gucefGUI_CWindowContext.cpp
   src/gucefGUI_CWindowManager.cpp
   src/gucefGUI_CWindowManagerBackend.cpp
+  src/gucefGUI_StandardWidgetTypes.cpp
+  src/gucefGUI_Types.cpp
+  src/gucefGUI_Utils.cpp
 )
 
 # Make sure the PLATFORM_HEADER_FILES variable is always defined
@@ -111,13 +145,13 @@ set( ALL_FILES ${HEADER_FILES} ${SOURCE_FILES} ${PLATFORM_HEADER_FILES} ${PLATFO
 
 set( MODULE_NAME "gucefGUI" )
 add_library( ${MODULE_NAME} ${ALL_FILES} )
-add_dependencies( ${MODULE_NAME} gucefCORE gucefIMAGE gucefMT gucefVFS )
-target_link_libraries( ${MODULE_NAME} PUBLIC gucefCORE gucefIMAGE gucefMT gucefVFS )
+add_dependencies( ${MODULE_NAME} gucefAUDIO gucefCORE gucefIMAGE gucefINPUT gucefMT gucefVFS gucefVIDEO )
+target_link_libraries( ${MODULE_NAME} PUBLIC gucefAUDIO gucefCORE gucefIMAGE gucefINPUT gucefMT gucefVFS gucefVIDEO )
 set_property( TARGET ${MODULE_NAME} APPEND_STRING PROPERTY COMPILE_DEFINITIONS "GUCEF_GUI_BUILD_MODULE;MODULE_CONSENSUS_NAME=gucefGUI;MODULE_NAME=gucefGUI;MODULE_SEMVER=0_1_0_0" )
 set_property( TARGET ${MODULE_NAME} APPEND_STRING PROPERTY VERSION 0.1.0.0 )
 set_property( TARGET ${MODULE_NAME} APPEND_STRING PROPERTY SOVERSION 0.1.0.0 )
 
-include_directories( ../../common/include ../gucefCORE/include ../gucefCORE/include/c_api ../gucefIMAGE/include ../gucefMT/include ../gucefVFS/include include )
+include_directories( ../../common/include ../gucefAUDIO/include ../gucefAUDIO/include/c_api ../gucefCORE/include ../gucefCORE/include/c_api ../gucefIMAGE/include ../gucefINPUT/include ../gucefMT/include ../gucefVFS/include ../gucefVIDEO/include ../gucefVIDEO/include/c_api include )
 
 if ( ANDROID32 )
   include_directories( ../gucefCORE/include/android )

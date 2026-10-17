@@ -23,6 +23,11 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+#ifndef GUCEF_GUI_CGUICONTEXT_H
+#include "gucefGUI_CGUIContext.h"
+#define GUCEF_GUI_CGUICONTEXT_H
+#endif /* GUCEF_GUI_CGUICONTEXT_H ? */
+
 #include "gucefGUI_CLabel.h"
 
 /*-------------------------------------------------------------------------//
@@ -44,7 +49,7 @@ const CORE::CEvent CLabel::TextChangedEvent = "GUCEF::GUI::CLabel::TextChangedEv
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
-//      UTILITIES                                                          //
+//      IMPLEMENTATION                                                     //
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
@@ -69,16 +74,16 @@ CLabel::CLabel( void )
 CLabel::~CLabel()
 {GUCEF_TRACE;
 
+
 }
 
 /*-------------------------------------------------------------------------*/
 
-const CString&
-CLabel::GetClassTypeName( void ) const
+CWidget*
+CLabel::Create( void )
 {GUCEF_TRACE;
 
-    static CString typeName = "GUCEF::GUI::CLabel";
-    return typeName;
+    return GUCEF_NEW CLabel();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -87,17 +92,66 @@ bool
 CLabel::SetText( const CString& text )
 {GUCEF_TRACE;
 
-    return false;
+    return SetProperty( "Text", text );
 }
 
 /*-------------------------------------------------------------------------*/
-    
+
 bool
 CLabel::GetText( CString& text ) const
 {GUCEF_TRACE;
 
-    return false;
+    text = GetProperty( "Text" );
+    return true;
 }
+
+/*-------------------------------------------------------------------------*/
+
+CString
+CLabel::GetText( void ) const
+{GUCEF_TRACE;
+
+    return GetProperty( "Text" );
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CLabel::GetNaturalSize( Int32& width, Int32& height ) const
+{GUCEF_TRACE;
+
+    width = height = 0;
+    if ( GUCEF_NULL == GetContext() )
+        return false;
+    return GetContext()->MeasureText( GetProperty( "Font" ), GetProperty( "Text" ), 0, width, height );
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CLabel::OnPropertyChanged( const CString& name, const CString& oldValue, const CString& newValue )
+{GUCEF_TRACE;
+
+    if ( name == "Text" )
+    {
+        NotifyObservers( TextChangedEvent );
+        if ( !IsPropertySet( "Size" ) && GUCEF_NULL != GetContext() )
+            GetContext()->InvalidateLayout();
+    }
+}
+
+/*-------------------------------------------------------------------------*/
+
+const CString&
+CLabel::GetClassTypeName( void ) const
+{GUCEF_TRACE;
+
+    static const CString classTypeName = "GUCEF::GUI::CLabel";
+    return classTypeName;
+}
+
+/*-------------------------------------------------------------------------*/
+
 
 /*-------------------------------------------------------------------------//
 //                                                                         //

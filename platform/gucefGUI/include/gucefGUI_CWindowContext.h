@@ -68,6 +68,7 @@ class GUCEF_GUI_PUBLIC_CPP CWindowContext : public CORE::CObservingNotifier
     static const GUCEF::CORE::CEvent WindowContextRedrawEvent;
     static const GUCEF::CORE::CEvent WindowContextSizeEvent;
     static const GUCEF::CORE::CEvent WindowContextActivateEvent;
+    static const GUCEF::CORE::CEvent WindowContextCloseRequestEvent;    /**< the user asked to close the window (its close button); the application decides */
 
     typedef GUCEF::CORE::TCloneableBool WindowContextActivateEventData;
     
@@ -94,6 +95,9 @@ class GUCEF_GUI_PUBLIC_CPP CWindowContext : public CORE::CObservingNotifier
     virtual TGuiContextPtr GetGuiContext( void ) = 0;
 
     virtual CString GetProperty( const CString& propertyName ) const = 0;
+
+    /** Shows or hides the pointer of the system over the window, for GUIs that draw their own; false when the window cannot */
+    virtual bool SetSystemCursorVisible( bool visible );
     
     private:
     

@@ -55,6 +55,9 @@
 
 #include "gucefGUI_CGuiGlobal.h"
 
+#include "gucefGUI_CWidgetTypeRegistry.h"
+#include "gucefGUI_StandardWidgetTypes.h"
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //
@@ -144,6 +147,9 @@ CGuiGlobal::Initialize( void )
     /*
      *      Instantiate all singletons
      */
+    m_widgetTypeRegistry = new CWidgetTypeRegistry();
+    RegisterStandardWidgetTypes( *m_widgetTypeRegistry );
+
     m_windowManager = new CWindowManager();
     m_guiManager = new CGUIManager();
 
@@ -155,7 +161,8 @@ CGuiGlobal::Initialize( void )
 
 CGuiGlobal::CGuiGlobal( void )
     : m_windowManager( NULL ) ,
-      m_guiManager( NULL )
+      m_guiManager( NULL )    ,
+      m_widgetTypeRegistry( NULL )
 {GUCEF_TRACE;
 
 }
@@ -176,6 +183,8 @@ CGuiGlobal::~CGuiGlobal()
     m_guiManager = NULL;
     delete m_windowManager;
     m_windowManager = NULL;
+    delete m_widgetTypeRegistry;
+    m_widgetTypeRegistry = NULL;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -194,6 +203,15 @@ CGuiGlobal::GetGuiManager( void )
 {GUCEF_TRACE;
 
     return *m_guiManager;
+}
+
+/*-------------------------------------------------------------------------*/
+
+CWidgetTypeRegistry&
+CGuiGlobal::GetWidgetTypeRegistry( void )
+{GUCEF_TRACE;
+
+    return *m_widgetTypeRegistry;
 }
 
 /*-------------------------------------------------------------------------//

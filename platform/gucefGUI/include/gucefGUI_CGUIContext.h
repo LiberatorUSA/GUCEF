@@ -1,0 +1,436 @@
+/*
+ *  gucefGUI: GUCEF module providing a uniform interface towards GUI backends
+ *
+ *  Copyright (C) 1998 - 2026.  Dinand Vanvelzen
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *    http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ */
+
+#ifndef GUCEF_GUI_CGUICONTEXT_H
+#define GUCEF_GUI_CGUICONTEXT_H
+
+/*-------------------------------------------------------------------------//
+//                                                                         //
+//      INCLUDES                                                           //
+//                                                                         //
+//-------------------------------------------------------------------------*/
+
+#ifndef GUCEF_CORE_CDATANODE_H
+#include "CDataNode.h"
+#define GUCEF_CORE_CDATANODE_H
+#endif /* GUCEF_CORE_CDATANODE_H ? */
+
+#ifndef GUCEF_IMAGE_CPIXELMAP_H
+#include "gucefIMAGE_CPixelMap.h"
+#define GUCEF_IMAGE_CPIXELMAP_H
+#endif /* GUCEF_IMAGE_CPIXELMAP_H ? */
+
+#ifndef GUCEF_GUI_CIGUICONTEXT_H
+#include "gucefGUI_CIGUIContext.h"
+#define GUCEF_GUI_CIGUICONTEXT_H
+#endif /* GUCEF_GUI_CIGUICONTEXT_H ? */
+
+#ifndef GUCEF_GUI_CWIDGET_H
+#include "gucefGUI_CWidget.h"
+#define GUCEF_GUI_CWIDGET_H
+#endif /* GUCEF_GUI_CWIDGET_H ? */
+
+#ifndef GUCEF_GUI_CBITMAPFONT_H
+#include "gucefGUI_CBitmapFont.h"
+#define GUCEF_GUI_CBITMAPFONT_H
+#endif /* GUCEF_GUI_CBITMAPFONT_H ? */
+
+#ifndef GUCEF_GUI_CWINDOWCONTEXT_H
+#include "gucefGUI_CWindowContext.h"
+#define GUCEF_GUI_CWINDOWCONTEXT_H
+#endif /* GUCEF_GUI_CWINDOWCONTEXT_H ? */
+
+/*-------------------------------------------------------------------------//
+//                                                                         //
+//      NAMESPACE                                                          //
+//                                                                         //
+//-------------------------------------------------------------------------*/
+
+namespace GUCEF {
+namespace GUI {
+
+/*-------------------------------------------------------------------------//
+//                                                                         //
+//      CLASSES                                                            //
+//                                                                         //
+//-------------------------------------------------------------------------*/
+
+class CGUIDriver;
+class CForm;
+
+/**
+ *  The part of a GUI context that is the same for every backend. A driver derives its context from
+ *  this class and adds rendering, frame capture and, if it wants, its own text measuring.
+ *
+ *  It owns the widgets, lays them out (UDim positions and sizes, alignment and the container widgets),
+ *  keeps the shown forms in order (the last one on top, modal ones keep the input), turns raw input
+ *  into routed widget events (hit testing, hover, press and click, double clicks, keyboard focus,
+ *  navigation), holds the named images and fonts, applies the theme, and passes changes to the
+ *  driver's widget handlers once per frame.
+ *
+ *  Input is given in logical pixels with the Inject*() methods (tests, scripts and replays use the
+ *  same path), or in window pixels with the ProcessWindow*() methods, which map through the present
+ *  rectangle first.
+ */
+class GUCEF_GUI_PUBLIC_CPP CGUIContext : public CIGUIContext                ,
+                                         public CORE::CObservingNotifier
+{
+    public:
+
+    static const CORE::CEvent FrameStartedEvent;        /**< before a frame is updated and drawn; TCloneableUInt32 with the frame time in milliseconds */
+    static const CORE::CEvent FrameRenderedEvent;       /**< after a frame was drawn */
+    static const CORE::CEvent FormShownEvent;           /**< TCloneableString: the name of the root widget of the form */
+    static const CORE::CEvent FormHiddenEvent;
+
+    static void RegisterEvents( void );
+
+    public:
+
+    struct SImageEntry
+    {
+        IMAGE::TPixelMapPtr pixels;     /**< RGBA, 8 bits per channel */
+        UInt32 revision;                /**< goes up whenever the pixels change */
+
+        SImageEntry( void );
+    };
+    typedef struct SImageEntry TImageEntry;
+
+    typedef GUCEF::vector< CWidget* > TWidgetVector;
+
+    CGUIContext( CGUIDriver* driver, TWindowContextPtr windowContext );
+
+    virtual ~CGUIContext();
+
+    /*
+     *  Widgets and forms
+     */
+
+    /** Makes a widget of a registered type, below the given parent (NULL: a root, hidden until shown as a form) */
+    CWidget* CreateWidget( const CString& widgetType, const CString& widgetName, CWidget* parent );
+
+    /** CIGUIContext: makes a widget of the given type without a name or parent */
+    virtual CWidget* CreateWidget( const CString& widgetType ) GUCEF_VIRTUAL_OVERRIDE;
+
+    /** Destroys the widget and every widget below it */
+    virtual void DestroyWidget( CWidget* widget ) GUCEF_VIRTUAL_OVERRIDE;
+
+    /** Makes a form of a type registered with the GUI manager ("Form", "FormEx" or an application type) */
+    virtual CForm* CreateForm( const CString& formType ) GUCEF_VIRTUAL_OVERRIDE;
+
+    virtual void DestroyForm( CForm* form ) GUCEF_VIRTUAL_OVERRIDE;
+
+    virtual TStringSet GetAvailableFormTypes( void ) GUCEF_VIRTUAL_OVERRIDE;
+
+    /** The registered widget types the driver has a handler for */
+    virtual TStringSet GetAvailableWidgetTypes( void ) GUCEF_VIRTUAL_OVERRIDE;
+
+    /** A backend native layout loader, for layouts that are not gucefGUI layouts; NULL when the driver has none */
+    virtual CFormBackend* CreateFormBackend( void ) GUCEF_VIRTUAL_OVERRIDE;
+
+    virtual void DestroyFormBackend( CFormBackend* formBackend ) GUCEF_VIRTUAL_OVERRIDE;
+
+    virtual CGUIDriver* GetDriver( void ) GUCEF_VIRTUAL_OVERRIDE;
+
+    virtual TWidgetSet GetOwnedWidgets( void ) GUCEF_VIRTUAL_OVERRIDE;
+
+    virtual TFormSet GetOwnedForms( void ) GUCEF_VIRTUAL_OVERRIDE;
+
+    TWindowContextPtr GetWindowContext( void ) const;
+
+    /** Every root widget (the roots of the forms), in drawing order: the last is on top */
+    const TWidgetVector& GetRootWidgets( void ) const;
+
+    /** Shows a root widget on top of the others; with 'modal' input outside of it is ignored until it is hidden */
+    bool ShowRoot( CWidget* root, bool modal );
+
+    bool HideRoot( CWidget* root );
+
+    bool IsModalRoot( const CWidget* root ) const;
+
+    /** Whether the root is shown (one of GetRootWidgets()) */
+    bool IsRootShown( const CWidget* root ) const;
+
+    /** The topmost visible modal root, NULL when none */
+    CWidget* GetModalRoot( void ) const;
+
+    /** Opens a popup widget (a menu, the list of a combo box) at the given place on top of everything; it closes on a click outside */
+    bool ShowPopup( CWidget* popup, Int32 x, Int32 y );
+
+    bool ClosePopup( void );
+
+    CWidget* GetPopup( void ) const;
+
+    /*
+     *  Images and fonts
+     */
+
+    /** Makes pixels available under a name; widgets refer to images by these names. RGBA pixels are expected; other formats are converted */
+    bool RegisterImage( const CString& alias, const IMAGE::TPixelMapPtr& pixels );
+
+    /** Tells the context and the driver that the pixels of a registered image changed */
+    bool UpdateImage( const CString& alias );
+
+    bool UnregisterImage( const CString& alias );
+
+    bool HasImage( const CString& alias ) const;
+
+    /**
+     *  The pixels for an image reference: a registered alias, else a file in the VFS (loaded with the
+     *  gucefIMAGE codecs and remembered under its path)
+     */
+    bool ResolveImage( const CString& reference, IMAGE::TPixelMapPtr& pixels, UInt32& revision );
+
+    /** A name that is not used for an image yet, for images widgets register for themselves */
+    CString MakeUniqueImageAlias( const CString& prefix );
+
+    bool RegisterFont( const CString& name, const TBitmapFontPtr& font );
+
+    bool UnregisterFont( const CString& name );
+
+    TBitmapFontPtr GetBitmapFont( const CString& name ) const;
+
+    /** The height of a line of text in a font: the bitmap font's line height, else what MeasureText() says, else 16 */
+    Int32 GetLineHeight( const CString& fontName );
+
+    /** The size of text in a font; the default handles the registered bitmap fonts, a driver adds its own fonts */
+    virtual bool MeasureText( const CString& fontName, const CString& text, Int32 maxWidth, Int32& width, Int32& height );
+
+    /*
+     *  Theme
+     */
+
+    /**
+     *  Sets the theme: a DataNode "GUITheme" with "Style" children. A style has optional "type", "class",
+     *  "name" and "state" attributes (state: hover, pressed, focused, disabled, checked; several joined with ',')
+     *  and "Property" children with "name" and "value". The most specific matching style wins
+     *  (name before class before type, more states before fewer). Visible, Enabled and Checked are the
+     *  state styles select on and are never taken from the theme.
+     */
+    bool SetTheme( const CORE::CDataNode& theme );
+
+    const CORE::CDataNode& GetTheme( void ) const;
+
+    /** The value the theme gives the property of the widget in its current state */
+    bool GetThemeProperty( const CWidget& widget, const CString& name, CString& value ) const;
+
+    /*
+     *  Presentation
+     */
+
+    /** The size of the picture everything is laid out in; 0 x 0 means the size of the window */
+    void SetLogicalResolution( UInt32 width, UInt32 height );
+
+    UInt32 GetLogicalWidth( void ) const;
+
+    UInt32 GetLogicalHeight( void ) const;
+
+    void SetPresentMode( TPresentMode mode );
+
+    TPresentMode GetPresentMode( void ) const;
+
+    /** Where the logical picture lands in the window */
+    CRect GetPresentRect( void ) const;
+
+    /** Window pixels to logical pixels; false when the point is outside the picture */
+    bool WindowToLogical( Int32 windowX, Int32 windowY, Int32& x, Int32& y ) const;
+
+    /** A picture drawn at the pointer instead of the system cursor (hidden over the window); an empty alias goes back to the system cursor */
+    void SetCursor( const CString& imageAlias, Int32 hotspotX, Int32 hotspotY );
+
+    void SetCursorVisible( bool visible );
+
+    bool IsCursorVisible( void ) const;
+
+    const CString& GetCursorImage( void ) const;
+
+    Int32 GetCursorHotspotX( void ) const;
+
+    Int32 GetCursorHotspotY( void ) const;
+
+    /** Where the pointer is, in logical pixels */
+    Int32 GetPointerX( void ) const;
+
+    Int32 GetPointerY( void ) const;
+
+    /*
+     *  Input
+     */
+
+    void InjectMouseMove( Int32 x, Int32 y );
+
+    void InjectMouseButton( TMouseButton button, bool down );
+
+    void InjectMouseWheel( Int32 delta );
+
+    void InjectKey( INPUT::KeyCode keyCode, bool down, UInt32 modifiers );
+
+    /** UTF-8 text typed by the user */
+    void InjectText( const CString& text );
+
+    void InjectNavigation( TNavigation direction );
+
+    void ProcessWindowMouseMove( Int32 windowX, Int32 windowY );
+
+    /** The topmost widget at a point that takes input (visible, not input transparent), respecting modal roots and the popup */
+    CWidget* HitTest( Int32 x, Int32 y ) const;
+
+    CWidget* GetFocus( void ) const;
+
+    bool SetFocus( CWidget* widget );
+
+    CWidget* GetHovered( void ) const;
+
+    /** How long the pointer has been on the widget it is on now, in context time */
+    UInt64 GetHoverDurationInMs( void ) const;
+
+    /** Moves the focus like the navigation keys do; false when there is nowhere to go */
+    bool Navigate( TNavigation direction );
+
+    /*
+     *  Frames
+     */
+
+    /** Milliseconds the context has run, the sum of the frame times */
+    UInt64 GetTimeInMs( void ) const;
+
+    /** Updates (animations, video, caret), lays out, passes changes to the handlers, then draws; for a frame of the given duration */
+    void RenderFrame( UInt32 deltaInMs );
+
+    /** Lays out and passes changes to the handlers without drawing */
+    void FlushChanges( void );
+
+    /** Asks for a new layout pass at the next flush */
+    void InvalidateLayout( void );
+
+    /** The last frame as RGBA pixels at the logical resolution; false when the driver cannot */
+    virtual bool CaptureFrame( IMAGE::TPixelMapPtr& pixels );
+
+    protected:
+
+    /** The driver draws the context */
+    virtual void OnRender( void );
+
+    /** Destroys every form and widget; a driver context calls it in its destructor while its backend still exists */
+    void DestroyAllWidgets( void );
+
+    /** The order of the roots changed (shown, hidden, brought to front) */
+    virtual void OnRootOrderChanged( void );
+
+    /** A registered image was added or changed or removed */
+    virtual void OnImageChanged( const CString& alias );
+
+    /** The driver's handler for a widget type, the type chain is searched by the context */
+    virtual CWidgetHandler* GetWidgetHandler( const CString& widgetType );
+
+    virtual void OnNotify( CORE::CNotifier* notifier                 ,
+                           const CORE::CEvent& eventId               ,
+                           CORE::CICloneable* eventData = GUCEF_NULL ) GUCEF_VIRTUAL_OVERRIDE;
+
+    private:
+
+    friend class CWidget;
+
+    void OnWidgetDirty( CWidget* widget );
+    void OnWidgetDestroyed( CWidget* widget );
+    void OnWidgetParentChanged( CWidget* widget, CWidget* oldParent );
+    void OnWidgetVisibilityChanged( CWidget* widget );
+    void UpdateLayout( void );
+    void FlushLayoutIfNeeded( void );
+    void ResolveSize( const CWidget& widget, const CRect& area, Int32& width, Int32& height ) const;
+    void LayoutChildren( CWidget& widget );
+    void PlaceWidget( CWidget& widget, const CRect& area, bool sizeFromArea );
+    void ApplyLayoutResult( CWidget& widget, const CRect& rect );
+    void UpdatePointerTarget( void );
+    void ForgetInteraction( CWidget* widget );
+    void ProcessPendingDestroys( void );
+    CWidget* GetKeyboardTarget( void ) const;
+    bool StyleMatches( const CORE::CDataNode& style, const CWidget& widget, bool ignoreState, Int32& score ) const;
+    void SetHovered( CWidget* widget );
+    void DispatchPointer( CWidget* target, const CORE::CEvent& eventId, TMouseButton button, UInt32 clickCount );
+    bool AcceptsInput( const CWidget* widget ) const;
+    CWidget* HitTestWidget( CWidget* widget, Int32 x, Int32 y ) const;
+    CWidget* GetRootOf( CWidget* widget ) const;
+    void CollectFocusable( CWidget* widget, TWidgetVector& focusable ) const;
+    void FlushWidget( CWidget& widget );
+    void MarkThemeDependentDirty( CWidget& widget );
+
+    private:
+
+    CGUIContext( const CGUIContext& src );
+    CGUIContext& operator=( const CGUIContext& src );
+
+    typedef GUCEF::map< CString, TImageEntry > TImageMap;
+    typedef GUCEF::map< CString, TBitmapFontPtr > TFontMap;
+    typedef GUCEF::map< CString, CWidgetHandler* > THandlerCache;
+
+    CGUIDriver* m_driver;
+    TWindowContextPtr m_windowContext;
+    TWidgetSet m_widgets;
+    TFormSet m_forms;
+    TWidgetVector m_roots;
+    TWidgetSet m_modalRoots;
+    TWidgetSet m_dirtyWidgets;
+    TWidgetSet m_updateWidgets;
+    TImageMap m_images;
+    TFontMap m_fonts;
+    THandlerCache m_handlerCache;
+    CORE::CDataNode m_theme;
+    UInt32 m_logicalWidth;
+    UInt32 m_logicalHeight;
+    TPresentMode m_presentMode;
+    CString m_cursorImage;
+    Int32 m_cursorHotspotX;
+    Int32 m_cursorHotspotY;
+    bool m_cursorVisible;
+    Int32 m_pointerX;
+    Int32 m_pointerY;
+    UInt32 m_buttonStates;
+    UInt32 m_modifiers;
+    CWidget* m_hovered;
+    CWidget* m_pressed;
+    TMouseButton m_pressedButton;
+    CWidget* m_focus;
+    CWidget* m_popup;
+    CWidget* m_lastClickTarget;
+    UInt64 m_lastClickTime;
+    Int32 m_lastClickX;
+    Int32 m_lastClickY;
+    UInt32 m_clickCount;
+    UInt64 m_timeInMs;
+    UInt64 m_hoverStartTime;
+    UInt64 m_lastRealTick;
+    UInt32 m_uniqueCounter;
+    bool m_layoutDirty;
+    bool m_rootOrderDirty;
+    bool m_inFlush;
+    UInt32 m_dispatchDepth;
+    TWidgetVector m_pendingDestroy;
+};
+
+/*-------------------------------------------------------------------------//
+//                                                                         //
+//      NAMESPACE                                                          //
+//                                                                         //
+//-------------------------------------------------------------------------*/
+
+}; /* namespace GUI */
+}; /* namespace GUCEF */
+
+/*-------------------------------------------------------------------------*/
+
+#endif /* GUCEF_GUI_CGUICONTEXT_H ? */
