@@ -29,6 +29,7 @@ LOCAL_SRC_FILES := \
   src/TestCyclicDynamicBuffer.cpp \
   src/TestDStoreStreaming.cpp \
   src/TestDataDrivenDStoreCodecs.cpp \
+  src/TestDataNode.cpp \
   src/TestDataNodeBinarySerializer.cpp \
   src/TestDateTime.cpp \
   src/TestDateTimeRange.cpp \
@@ -66,6 +67,7 @@ LOCAL_SRC_FILES := \
   src/TestVariantStream.cpp \
   src/TestVars.cpp \
   src/TestVersion.cpp \
+  src/TestWeakPtr.cpp \
   src/TestXmlDStoreCodec.cpp \
   src/gucefCORE_TestApp_main.cpp
 

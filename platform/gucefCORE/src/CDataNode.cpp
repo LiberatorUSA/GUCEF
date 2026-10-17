@@ -2341,9 +2341,11 @@ CDataNode::iterator
 CDataNode::End( void )
 {GUCEF_TRACE;
 
+    // the same end state operator++ reaches: no position, at the end, not at the start
     iterator i( this );
     i._pos = NULL;
-    i._atend = true;      
+    i._atend = true;
+    i._atstart = false;
     return i;
 }
 

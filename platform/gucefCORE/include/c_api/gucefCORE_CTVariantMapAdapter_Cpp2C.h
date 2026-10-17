@@ -109,6 +109,12 @@ class CTVariantMapAdapterCpp2C
      *  The following set works with non-const maps only
      */
 
+    /*
+     *  'linkIfPossible': the map entry may refer to the data of the value instead of copying it, when the value type of
+     *  the map can (CVariant, CDynamicBuffer) and the value is held in memory of the caller. The caller then keeps that
+     *  memory valid for as long as the entry refers to it. Other value types are converted, which for types that hold
+     *  their own memory (strings) is a copy.
+     */
     static UInt8 insert( void* privdata, TVariantData* key, TVariantData* value, UInt8 linkIfPossible );    /**< attempts to insert a key-value pair into the map. It does not overwrite thus will fail if the key exists */
     static UInt8 set( void* privdata, TVariantData* key, TVariantData* value, UInt8 linkIfPossible );       /**< sets a key-value pair into the map: the value of an existing key is overwritten, a missing key is added */
     static void clear( void* privdata );                                                                    /**< clears the map */
@@ -130,6 +136,14 @@ class CTVariantMapAdapterCpp2C
 
     const TVariantMapApi* GetCStyleAccess( void ) const;
     
+    private:
+
+    /** Puts a value handed over through the C interface into a map entry, see 'linkIfPossible' above */
+    static void StoreValue( CVariant& entry, const TVariantData* value, bool linkIfPossible );
+    static void StoreValue( CDynamicBuffer& entry, const TVariantData* value, bool linkIfPossible );
+    template < typename T >
+    static void StoreValue( T& entry, const TVariantData* value, bool linkIfPossible );
+
     private:
     
     TLinkedMapType* m_map;
@@ -233,16 +247,12 @@ CTVariantMapAdapterCpp2C< TK, TV, TKC, AllocType >::insert( void* privdata, TVar
             searchKeyVar.LinkTo( key );
             TK nativeSearchKey = searchKeyVar.AsTValue< TK >();
 
-            // For an insert we need to check if the key already exists
-            // We specifically do NOT want to overwrite existing keys
-            typename TLinkedMapType::iterator i = api->m_map->find( nativeSearchKey );
-            if ( i == api->m_map->end() )
+            // An insert does NOT overwrite an existing key. One lookup: the entry is made empty and only then filled,
+            // so the value is not built twice
+            std::pair< typename TLinkedMapType::iterator, bool > entry = api->m_map->insert( TLinkedMapEntryPairType( nativeSearchKey, TV() ) );
+            if ( entry.second )
             {
-                CVariant valueToInsertVar;
-                valueToInsertVar.LinkTo( value );
-
-                // The value is converted to the value type of the map, which always makes a copy
-                (*api->m_map)[ nativeSearchKey ] = valueToInsertVar.AsTValue< TV >();
+                StoreValue( (*entry.first).second, value, 0 != linkIfPossible );
                 return 1; // success
             }
         }
@@ -268,15 +278,69 @@ CTVariantMapAdapterCpp2C< TK, TV, TKC, AllocType >::set( void* privdata, TVarian
             searchKeyVar.LinkTo( key );
             TK nativeSearchKey = searchKeyVar.AsTValue< TK >();
 
-            // A set overwrites the value of an existing key and adds a missing one.
-            // The value is converted to the value type of the map, which always makes a copy
-            CVariant valueToSetVar;
-            valueToSetVar.LinkTo( value );
-            (*api->m_map)[ nativeSearchKey ] = valueToSetVar.AsTValue< TV >();
+            // A set overwrites the value of an existing key and adds a missing one
+            StoreValue( (*api->m_map)[ nativeSearchKey ], value, 0 != linkIfPossible );
             return 1; // success
         }
     }
     return 0; // failure to insert
+}
+
+/*-------------------------------------------------------------------------*/
+
+template < typename TK, typename TV, typename TKC, class AllocType >
+void
+CTVariantMapAdapterCpp2C< TK, TV, TKC, AllocType >::StoreValue( CVariant& entry, const TVariantData* value, bool linkIfPossible )
+{GUCEF_TRACE;
+
+    // links the heap data of the value when asked, values without heap data are held in the variant itself anyway
+    entry.Set( value, linkIfPossible );
+}
+
+/*-------------------------------------------------------------------------*/
+
+template < typename TK, typename TV, typename TKC, class AllocType >
+void
+CTVariantMapAdapterCpp2C< TK, TV, TKC, AllocType >::StoreValue( CDynamicBuffer& entry, const TVariantData* value, bool linkIfPossible )
+{GUCEF_TRACE;
+
+    if ( CVariant::UsesDynamicMemory( value->containedType ) )
+    {
+        const void* data = value->union_data.heap_data.union_data.void_heap_data;
+        const UInt32 dataSize = value->union_data.heap_data.heap_data_size;
+        if ( linkIfPossible )
+        {
+            entry.LinkTo( data, dataSize );
+        }
+        else
+        {
+            // a logical clear keeps the memory the entry owns, so an overwrite of a similar size does not allocate
+            entry.Clear( true );
+            entry.Append( data, dataSize );
+        }
+    }
+    else
+    {
+        // a fixed size value lives in the variant data that is handed over, which does not outlive the call: copy it
+        CVariant source;
+        source.LinkTo( value );
+        entry.Clear( true );
+        entry.Append( source.AsVoidPtr(), source.ByteSize() );
+    }
+}
+
+/*-------------------------------------------------------------------------*/
+
+template < typename TK, typename TV, typename TKC, class AllocType >
+template < typename T >
+void
+CTVariantMapAdapterCpp2C< TK, TV, TKC, AllocType >::StoreValue( T& entry, const TVariantData* value, bool linkIfPossible )
+{GUCEF_TRACE;
+
+    // a type that cannot refer to the data of another: converted to the value type
+    CVariant source;
+    source.LinkTo( value );
+    entry = source.AsTValue< T >();
 }
 
 /*-------------------------------------------------------------------------*/

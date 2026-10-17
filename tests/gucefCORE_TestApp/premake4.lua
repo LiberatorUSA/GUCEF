@@ -54,6 +54,7 @@ files( {
   "include/TestCyclicDynamicBuffer.h",
   "include/TestDStoreStreaming.h",
   "include/TestDataDrivenDStoreCodecs.h",
+  "include/TestDataNode.h",
   "include/TestDataNodeBinarySerializer.h",
   "include/TestDateTime.h",
   "include/TestDateTimeRange.h",
@@ -90,6 +91,7 @@ files( {
   "include/TestVariantStream.h",
   "include/TestVars.h",
   "include/TestVersion.h",
+  "include/TestWeakPtr.h",
   "include/TestXmlDStoreCodec.h",
   "src/TestFreeList.h"
  } )
@@ -107,6 +109,7 @@ files( {
   "src/TestCyclicDynamicBuffer.cpp",
   "src/TestDStoreStreaming.cpp",
   "src/TestDataDrivenDStoreCodecs.cpp",
+  "src/TestDataNode.cpp",
   "src/TestDataNodeBinarySerializer.cpp",
   "src/TestDateTime.cpp",
   "src/TestDateTimeRange.cpp",
@@ -144,6 +147,7 @@ files( {
   "src/TestVariantStream.cpp",
   "src/TestVars.cpp",
   "src/TestVersion.cpp",
+  "src/TestWeakPtr.cpp",
   "src/TestXmlDStoreCodec.cpp",
   "src/gucefCORE_TestApp_main.cpp"
  } )

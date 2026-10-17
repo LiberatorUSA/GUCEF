@@ -388,7 +388,8 @@ HandleEscapeCharacters( const char* srcStr       ,
     {
         /* Note that bytes >= 0x80 are passed through as-is: the data is UTF-8 and escaping */
         /* individual bytes of multi-byte sequences would corrupt it */
-        TEscapeEntry entries[ 5 ];
+        /* line breaks and tabs as character references: an XML reader turns them into spaces otherwise (attribute value normalization) */
+        TEscapeEntry entries[ 8 ];
         UInt32 srcStrLen = (UInt32) strlen( srcStr );
 
         entries[ 0 ].escapeChar = '<';
@@ -406,13 +407,22 @@ HandleEscapeCharacters( const char* srcStr       ,
         entries[ 4 ].escapeChar = '\"';
         entries[ 4 ].replacementStr = "&quot;";
         entries[ 4 ].replacementStrLen = 6;
+        entries[ 5 ].escapeChar = '\n';
+        entries[ 5 ].replacementStr = "&#10;";
+        entries[ 5 ].replacementStrLen = 5;
+        entries[ 6 ].escapeChar = '\r';
+        entries[ 6 ].replacementStr = "&#13;";
+        entries[ 6 ].replacementStrLen = 5;
+        entries[ 7 ].escapeChar = '\t';
+        entries[ 7 ].replacementStr = "&#9;";
+        entries[ 7 ].replacementStrLen = 4;
 
         HandleEscapeCharacterSet( srcStr           ,
                                   srcStrLen        ,
                                   destBuffer       ,
                                   destBufferLength ,
                                   entries          ,
-                                  5                ,
+                                  8                ,
                                   strLen           );
         return;
     }

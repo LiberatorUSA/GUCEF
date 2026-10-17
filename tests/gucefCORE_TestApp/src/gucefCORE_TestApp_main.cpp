@@ -119,6 +119,12 @@
 #define GUCEF_CORE_TESTAPP_TESTDATANODEBINARYSERIALIZER_H
 #endif /* GUCEF_CORE_TESTAPP_TESTDATANODEBINARYSERIALIZER_H ? */
 
+#ifndef GUCEF_CORE_TESTAPP_TESTDATANODE_H
+#include "TestDataNode.h"
+#include "TestWeakPtr.h"
+#define GUCEF_CORE_TESTAPP_TESTDATANODE_H
+#endif /* GUCEF_CORE_TESTAPP_TESTDATANODE_H ? */
+
 #ifndef GUCEF_CORE_TESTAPP_TESTDATETIME_H
 #include "TestDateTime.h"
 #define GUCEF_CORE_TESTAPP_TESTDATETIME_H
@@ -290,6 +296,8 @@ GUCEF_OSMAIN_BEGIN
         PerformVariantViewTests();
         PerformVariantBinarySerializerTests();
         PerformDataNodeBinarySerializerTests();
+        PerformDataNodeTests();
+        PerformWeakPtrTests();
         PerformIniParserTests();        
         PerformSharedPtrTests();
         PerformTokenizerTests();

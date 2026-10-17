@@ -209,6 +209,35 @@ PerformXmlDStoreCodecTests( void )
         }
     GUCEF_TESTFW_TESTCASE_END
 
+    // An XML reader turns line breaks and tabs in attribute values into spaces unless they are character references
+    GUCEF_TESTFW_TESTCASE( "Test: Line breaks and tabs in attribute values are written as character references and round trip" )
+        try
+        {
+            const CORE::CString multiLine( "first\nsecond\r\nthird\tcolumn" );
+
+            CORE::CDataNode sourceNode( "TestNode" );
+            ASSERT_TRUE( sourceNode.SetAttribute( "text", multiLine ) );
+
+            CORE::CDynamicBuffer xmlData;
+            CORE::CDynamicBufferAccess xmlDataAccess( xmlData );
+            ASSERT_TRUE( xmlCodec->StoreDataTree( &sourceNode, &xmlDataAccess ) );
+
+            ASSERT_TRUE( BufferContains( xmlData, "first&#10;second&#13;&#10;third&#9;column" ) );
+
+            xmlDataAccess.Setpos( 0 );
+            CORE::CDataNode roundTripRoot;
+            ASSERT_TRUE( xmlCodec->BuildDataTree( &roundTripRoot, &xmlDataAccess ) );
+            const CORE::CDataNode* roundTripNode = roundTripRoot.Find( "TestNode" );
+            ASSERT_TRUE( GUCEF_NULL != roundTripNode );
+            if ( GUCEF_NULL != roundTripNode )
+                ASSERT_TRUE( roundTripNode->GetAttributeValue( "text" ).AsString() == multiLine );
+        }
+        catch( ... )
+        {
+            ERRORHERE;
+        }
+    GUCEF_TESTFW_TESTCASE_END
+
     // A C plugin found by trial and error (no plugin type given) must still be unloaded through its plugin manager,
     // which takes its codec out of the registry, and it must load again afterwards
     if ( g_loadedXmlPluginHere )

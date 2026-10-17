@@ -20,6 +20,7 @@ set( HEADER_FILES
   include/TestCyclicDynamicBuffer.h
   include/TestDStoreStreaming.h
   include/TestDataDrivenDStoreCodecs.h
+  include/TestDataNode.h
   include/TestDataNodeBinarySerializer.h
   include/TestDateTime.h
   include/TestDateTimeRange.h
@@ -56,6 +57,7 @@ set( HEADER_FILES
   include/TestVariantStream.h
   include/TestVars.h
   include/TestVersion.h
+  include/TestWeakPtr.h
   include/TestXmlDStoreCodec.h
   src/TestFreeList.h
 )
@@ -69,6 +71,7 @@ set( SOURCE_FILES
   src/TestCyclicDynamicBuffer.cpp
   src/TestDStoreStreaming.cpp
   src/TestDataDrivenDStoreCodecs.cpp
+  src/TestDataNode.cpp
   src/TestDataNodeBinarySerializer.cpp
   src/TestDateTime.cpp
   src/TestDateTimeRange.cpp
@@ -106,6 +109,7 @@ set( SOURCE_FILES
   src/TestVariantStream.cpp
   src/TestVars.cpp
   src/TestVersion.cpp
+  src/TestWeakPtr.cpp
   src/TestXmlDStoreCodec.cpp
   src/gucefCORE_TestApp_main.cpp
 )

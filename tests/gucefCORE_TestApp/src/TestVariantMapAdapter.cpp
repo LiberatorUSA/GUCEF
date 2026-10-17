@@ -77,6 +77,21 @@ CSet( CORE::TVariantMapApi* api, const char* key, const CORE::CVariant& value )
     return api->set( api->privateData, const_cast< CORE::TVariantData* >( keyVar.CStyleAccess() ), const_cast< CORE::TVariantData* >( valueVar.CStyleAccess() ), 0 );
 }
 
+/** Hands the value over as it is, the caller keeps it alive: a linked map entry refers to its memory */
+UInt8
+CInsertInPlace( CORE::TVariantMapApi* api, const char* key, const CORE::CVariant& value, bool linkIfPossible )
+{
+    CORE::CVariant keyVar( key );
+    return api->insert( api->privateData, const_cast< CORE::TVariantData* >( keyVar.CStyleAccess() ), const_cast< CORE::TVariantData* >( value.CStyleAccess() ), linkIfPossible ? 1 : 0 );
+}
+
+UInt8
+CSetInPlace( CORE::TVariantMapApi* api, const char* key, const CORE::CVariant& value, bool linkIfPossible )
+{
+    CORE::CVariant keyVar( key );
+    return api->set( api->privateData, const_cast< CORE::TVariantData* >( keyVar.CStyleAccess() ), const_cast< CORE::TVariantData* >( value.CStyleAccess() ), linkIfPossible ? 1 : 0 );
+}
+
 CORE::CVariant
 CAtKey( const CORE::TVariantMapApi* api, const char* key )
 {
@@ -156,6 +171,90 @@ PerformVariantMapAdapterTests( void )
         ASSERT_TRUE( 0 == CSet( readApi, "title", CORE::CVariant( "changed" ) ) );
         ASSERT_TRUE( 0 == CInsert( readApi, "other", CORE::CVariant( "x" ) ) );
         ASSERT_TRUE( "new" == map[ "title" ] && 2 == map.size() );
+    }
+    catch ( ... )
+    {
+        ERRORHERE;
+    }
+    GUCEF_TESTFW_TESTCASE_END
+
+    GUCEF_TESTFW_TESTCASE( "VariantMapAdapter: A buffer entry links to the data of the caller when asked, else holds a copy" )
+    try
+    {
+        typedef CORE::CTVariantMapAdapterCpp2C< CORE::CString, CORE::CDynamicBuffer > TAdapter;
+        TAdapter::TLinkedMapType map;
+        TAdapter adapter;
+        adapter.SetMapAccessPtr( &map );
+        CORE::TVariantMapApi* api = adapter.GetCStyleAccess();
+
+        const char blob[] = { 1, 2, 3, 4, 5 };
+        CORE::CVariant blobVar;
+        blobVar.LinkTo( (const void*) blob, (UInt32) sizeof( blob ) );
+
+        // linked: the entry is the memory of the caller, nothing is copied
+        ASSERT_TRUE( 1 == CInsertInPlace( api, "linked", blobVar, true ) );
+        ASSERT_TRUE( map[ "linked" ].IsLinked() );
+        ASSERT_TRUE( blob == map[ "linked" ].GetConstBufferPtr() );
+        ASSERT_TRUE( sizeof( blob ) == map[ "linked" ].GetDataSize() );
+
+        // not linked: a copy of its own with the same content
+        ASSERT_TRUE( 1 == CInsertInPlace( api, "copied", blobVar, false ) );
+        ASSERT_FALSE( map[ "copied" ].IsLinked() );
+        ASSERT_TRUE( blob != map[ "copied" ].GetConstBufferPtr() );
+        ASSERT_TRUE( sizeof( blob ) == map[ "copied" ].GetDataSize() );
+        ASSERT_TRUE( 0 == memcmp( blob, map[ "copied" ].GetConstBufferPtr(), sizeof( blob ) ) );
+
+        // a set without linking over a linked entry: the entry lets go of the memory of the caller and copies
+        const char other[] = { 9, 8, 7 };
+        CORE::CVariant otherVar;
+        otherVar.LinkTo( (const void*) other, (UInt32) sizeof( other ) );
+        ASSERT_TRUE( 1 == CSetInPlace( api, "linked", otherVar, false ) );
+        ASSERT_FALSE( map[ "linked" ].IsLinked() );
+        ASSERT_TRUE( sizeof( other ) == map[ "linked" ].GetDataSize() );
+        ASSERT_TRUE( 0 == memcmp( other, map[ "linked" ].GetConstBufferPtr(), sizeof( other ) ) );
+
+        // a set with linking over a copy: the entry now refers to the memory of the caller
+        ASSERT_TRUE( 1 == CSetInPlace( api, "copied", otherVar, true ) );
+        ASSERT_TRUE( map[ "copied" ].IsLinked() );
+        ASSERT_TRUE( other == map[ "copied" ].GetConstBufferPtr() );
+
+        // a fixed size value lives in the variant handed over, so it is always copied
+        CORE::CVariant number( (UInt32) 0x01020304 );
+        ASSERT_TRUE( 1 == CInsertInPlace( api, "number", number, true ) );
+        ASSERT_FALSE( map[ "number" ].IsLinked() );
+        ASSERT_TRUE( sizeof( UInt32 ) == map[ "number" ].GetDataSize() );
+        ASSERT_TRUE( 0x01020304 == map[ "number" ].AsConstType< UInt32 >() );
+    }
+    catch ( ... )
+    {
+        ERRORHERE;
+    }
+    GUCEF_TESTFW_TESTCASE_END
+
+    GUCEF_TESTFW_TESTCASE( "VariantMapAdapter: A variant entry links to the heap data of the caller when asked, else holds a copy" )
+    try
+    {
+        typedef CORE::CTVariantMapAdapterCpp2C< CORE::CString, CORE::CVariant > TAdapter;
+        TAdapter::TLinkedMapType map;
+        TAdapter adapter;
+        adapter.SetMapAccessPtr( &map );
+        CORE::TVariantMapApi* api = adapter.GetCStyleAccess();
+
+        CORE::CVariant text( "some text that lives on the heap" );
+        ASSERT_TRUE( 1 == CInsertInPlace( api, "linked", text, true ) );
+        ASSERT_TRUE( map[ "linked" ].IsDynamicMemoryLinked() );
+        ASSERT_TRUE( text.AsVoidPtr() == map[ "linked" ].AsVoidPtr() );
+        ASSERT_TRUE( "some text that lives on the heap" == map[ "linked" ].AsString() );
+
+        ASSERT_TRUE( 1 == CInsertInPlace( api, "copied", text, false ) );
+        ASSERT_FALSE( map[ "copied" ].IsDynamicMemoryLinked() );
+        ASSERT_TRUE( text.AsVoidPtr() != map[ "copied" ].AsVoidPtr() );
+        ASSERT_TRUE( "some text that lives on the heap" == map[ "copied" ].AsString() );
+
+        // a value without heap data is held in the entry itself
+        ASSERT_TRUE( 1 == CSetInPlace( api, "linked", CORE::CVariant( (Int32) 5 ), true ) );
+        ASSERT_FALSE( map[ "linked" ].IsDynamicMemoryLinked() );
+        ASSERT_TRUE( 5 == map[ "linked" ].AsInt32() );
     }
     catch ( ... )
     {
