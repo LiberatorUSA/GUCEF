@@ -68,6 +68,22 @@ class GUCEF_CORE_PUBLIC_CPP CFileAccess : public CIOAccess
 
     CFileAccess( void );
 
+    /**
+     *  Opens access to an already open file descriptor instead of a path.
+     *  This is for platforms that hand out descriptors instead of paths, like Android's storage access framework,
+     *  or for descriptors that were opened by other code.
+     *
+     *  @param fd               the open file descriptor
+     *  @param mode             fopen style mode that matches how the descriptor was opened
+     *  @param takeOwnership    if true the descriptor is closed when this object closes, even when this call fails
+     *                          to open the descriptor the caller must no longer use it. If false a duplicate
+     *                          of the descriptor is used, note that duplicates share the file offset.
+     *  @return success: if false nothing is opened
+     */
+    virtual bool OpenFromFileDescriptor( int fd                    ,
+                                         const char* mode = "rb"   ,
+                                         bool takeOwnership = true );
+
     virtual ~CFileAccess() GUCEF_VIRTUAL_OVERRIDE;
 
     /**

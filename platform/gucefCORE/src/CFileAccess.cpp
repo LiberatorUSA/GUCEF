@@ -59,6 +59,21 @@
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
+//      MACROS                                                             //
+//                                                                         //
+//-------------------------------------------------------------------------*/
+
+// Offset capable (64 bit where the platform allows) stdio positioning
+#if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
+    #define GUCEF_FILEACCESS_FSEEK( file, offset, origin )  _fseeki64( (file), (__int64) (offset), (origin) )
+    #define GUCEF_FILEACCESS_FTELL( file )                  _ftelli64( (file) )
+#else
+    #define GUCEF_FILEACCESS_FSEEK( file, offset, origin )  fseeko( (file), (off_t) (offset), (origin) )
+    #define GUCEF_FILEACCESS_FTELL( file )                  ftello( (file) )
+#endif
+
+/*-------------------------------------------------------------------------//
+//                                                                         //
 //      NAMESPACE                                                          //
 //                                                                         //
 //-------------------------------------------------------------------------*/
@@ -71,6 +86,28 @@ namespace CORE {
 //      UTILITIES                                                          //
 //                                                                         //
 //-------------------------------------------------------------------------*/
+
+/**
+ *  Determines the size of an open file by seeking to its end, the position is restored
+ */
+static UInt64
+GetSizeOfOpenFile( FILE* file )
+{GUCEF_TRACE;
+
+    if ( GUCEF_NULL == file )
+        return 0;
+
+    fflush( file );
+    const Int64 originalPos = (Int64) GUCEF_FILEACCESS_FTELL( file );
+    if ( originalPos < 0 || 0 != GUCEF_FILEACCESS_FSEEK( file, 0, SEEK_END ) )
+        return 0;
+
+    const Int64 size = (Int64) GUCEF_FILEACCESS_FTELL( file );
+    GUCEF_FILEACCESS_FSEEK( file, originalPos, SEEK_SET );
+    return size > 0 ? (UInt64) size : 0;
+}
+
+/*-------------------------------------------------------------------------*/
 
 CFileAccess::CFileAccess( void )
     : CIOAccess()    
@@ -359,6 +396,69 @@ CFileAccess::Open( const CString& file               ,
 
 /*-------------------------------------------------------------------------*/
 
+bool
+CFileAccess::OpenFromFileDescriptor( int fd             ,
+                                     const char* mode   ,
+                                     bool takeOwnership )
+{GUCEF_TRACE;
+
+    Close();
+
+    m_filename.Clear();
+    m_mode = mode;
+    _readable = ( strchr( mode, 'r' ) != GUCEF_NULL ) || ( strchr( mode, 'a' ) != GUCEF_NULL );
+    _writeable = ( strchr( mode, 'w' ) != GUCEF_NULL ) || ( strchr( mode, 'a' ) != GUCEF_NULL );
+    _size = 0;
+
+    if ( fd < 0 )
+        return false;
+
+    int useFd = fd;
+    if ( !takeOwnership )
+    {
+        #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
+        useFd = _dup( fd );
+        #else
+        useFd = dup( fd );
+        #endif
+
+        if ( useFd < 0 )
+        {
+            GUCEF_DEBUG_LOG( LOGLEVEL_NORMAL, "FileAccess:OpenFromFileDescriptor: Failed to duplicate file descriptor " << fd );
+            return false;
+        }
+    }
+
+    errno = 0;
+    #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
+    m_file = _fdopen( useFd, mode );
+    #else
+    m_file = fdopen( useFd, mode );
+    #endif
+
+    if ( GUCEF_NULL == m_file )
+    {
+        GUCEF_DEBUG_LOG( LOGLEVEL_NORMAL, "FileAccess:OpenFromFileDescriptor: Failed to open file descriptor " << fd << " using mode=" << mode << " error=" << GetErrorString( errno ) );
+
+        // Only the duplicate is ours to clean up, the original is the caller's
+        if ( !takeOwnership )
+        {
+            #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
+            _close( useFd );
+            #else
+            close( useFd );
+            #endif
+        }
+        return false;
+    }
+
+    if ( _readable )
+        _size = GetSizeOfOpenFile( m_file );
+    return true;
+}
+
+/*-------------------------------------------------------------------------*/
+
 void 
 CFileAccess::Close( void )
 {GUCEF_TRACE;
@@ -405,7 +505,8 @@ CFileAccess::Tell( void ) const
 
     if ( GUCEF_NULL != m_file )
     {
-        return ftell( m_file );
+        const Int64 pos = (Int64) GUCEF_FILEACCESS_FTELL( m_file );
+        return pos < 0 ? 0 : (UInt64) pos;
     }
     return 0;
 }
@@ -419,9 +520,9 @@ CFileAccess::Seek( Int64 offset ,
 
     if ( GUCEF_NULL != m_file )
     {
-        return fseek( m_file ,
-                      (long)offset ,
-                      origin );
+        return GUCEF_FILEACCESS_FSEEK( m_file   ,
+                                       offset   ,
+                                       origin   );
     }
     return 0;
 }
@@ -434,9 +535,9 @@ CFileAccess::Setpos( UInt64 position )
 
     if ( GUCEF_NULL != m_file )
     {
-        return fseek( m_file    ,
-                      (long)position  ,
-                      SEEK_SET  );
+        return GUCEF_FILEACCESS_FSEEK( m_file    ,
+                                       position  ,
+                                       SEEK_SET  );
     }
     return 0;
 }
@@ -529,6 +630,10 @@ bool
 CFileAccess::IsValid( void )
 {GUCEF_TRACE;
     
+    // A file opened from a descriptor has no name to check, the open stream is the proof
+    if ( m_filename.IsNULLOrEmpty() )
+        return GUCEF_NULL != m_file;
+
     return FileExists( m_filename );
 }
 
@@ -544,6 +649,11 @@ CFileAccess::GetSize( void ) const
         {
             fflush( m_file );       
         }
+
+        // A file opened from a descriptor has no path to ask
+        if ( m_filename.IsNULLOrEmpty() )
+            return GetSizeOfOpenFile( m_file );
+
         return FileSize( m_filename );
     }
     return 0;
@@ -595,7 +705,8 @@ CICloneable*
 CFileAccess::Clone( void ) const
 {GUCEF_TRACE;
 
-    if ( IsReadable() )
+    // Without a path (opened from a descriptor) we cannot open a separate access with its own file offset
+    if ( IsReadable() && !m_filename.IsNULLOrEmpty() )
     {
         return GUCEF_NEW CFileAccess( m_filename, "rb" );
     }
