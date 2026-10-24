@@ -182,9 +182,17 @@ DrawImage( IMAGE::CPixelMap& target, const IMAGE::CPixelMap& image, const CRect&
     }
 }
 
+/** A rectangle in logical pixels in the pixels of a frame drawn at a render scale */
+CRect
+Scaled( const CRect& rect, Int32 scale )
+{
+    return CRect( rect.left * scale, rect.top * scale, rect.width * scale, rect.height * scale );
+}
+
+/** Text at a logical position; the glyphs cover their source size divided by the density of the font */
 void
 DrawGlyphs( CGUIContext& context, IMAGE::CPixelMap& target, const CString& font, const CString& text, Int32 x, Int32 y,
-          const CRect& clip, const CColour& colour, Float32 opacity )
+          const CRect& clip, const CColour& colour, Float32 opacity, Int32 scale )
 {
     TBitmapFontPtr bitmapFont = context.GetBitmapFont( font );
     if ( bitmapFont.IsNULL() || bitmapFont->GetAtlas().IsNULL() )
@@ -203,7 +211,9 @@ DrawGlyphs( CGUIContext& context, IMAGE::CPixelMap& target, const CString& font,
         if ( !first )
             pen += bitmapFont->GetSpacing();
         first = false;
-        CRect destination( pen + glyph->offsetX, y + glyph->offsetY, glyph->source.width, glyph->source.height );
+        const Int32 density = (Int32) bitmapFont->GetDensity();
+        CRect destination( ( pen + glyph->offsetX ) * scale, ( y + glyph->offsetY ) * scale,
+                           glyph->source.width * scale / density, glyph->source.height * scale / density );
         DrawImage( target, atlas, destination, glyph->source, clip, colour, opacity );
         pen += glyph->advance;
     }
@@ -221,8 +231,10 @@ CSoftwareRenderer::Execute( CGUIContext& context          ,
                             IMAGE::CPixelMap& target       )
 {GUCEF_TRACE;
 
+    // the commands are in logical pixels, the frame is drawn at the render scale
+    const Int32 k = (Int32) context.GetRenderScale();
     GUCEF::vector< CRect > clips;
-    clips.push_back( clip );
+    clips.push_back( Scaled( clip, k ) );
 
     for ( UInt32 i=0; i<(UInt32)commands.size(); ++i )
     {
@@ -233,46 +245,54 @@ CSoftwareRenderer::Execute( CGUIContext& context          ,
         {
             case CDrawSurface::COMMAND_FILLRECT:
             {
-                FillRect( target, rect, current, command.colour, opacity );
+                FillRect( target, Scaled( rect, k ), current, command.colour, opacity );
                 break;
             }
             case CDrawSurface::COMMAND_STROKERECT:
             {
                 Int32 t = command.thickness < 1 ? 1 : command.thickness;
-                FillRect( target, CRect( rect.left, rect.top, rect.width, t ), current, command.colour, opacity );
-                FillRect( target, CRect( rect.left, rect.Bottom() - t, rect.width, t ), current, command.colour, opacity );
-                FillRect( target, CRect( rect.left, rect.top + t, t, rect.height - 2*t ), current, command.colour, opacity );
-                FillRect( target, CRect( rect.Right() - t, rect.top + t, t, rect.height - 2*t ), current, command.colour, opacity );
+                FillRect( target, Scaled( CRect( rect.left, rect.top, rect.width, t ), k ), current, command.colour, opacity );
+                FillRect( target, Scaled( CRect( rect.left, rect.Bottom() - t, rect.width, t ), k ), current, command.colour, opacity );
+                FillRect( target, Scaled( CRect( rect.left, rect.top + t, t, rect.height - 2*t ), k ), current, command.colour, opacity );
+                FillRect( target, Scaled( CRect( rect.Right() - t, rect.top + t, t, rect.height - 2*t ), k ), current, command.colour, opacity );
                 break;
             }
             case CDrawSurface::COMMAND_LINE:
             {
-                DrawLine( target, command.x0 + offsetX, command.y0 + offsetY, command.x1 + offsetX, command.y1 + offsetY, command.thickness, current, command.colour, opacity );
+                DrawLine( target, ( command.x0 + offsetX ) * k, ( command.y0 + offsetY ) * k, ( command.x1 + offsetX ) * k, ( command.y1 + offsetY ) * k,
+                          command.thickness * k, current, command.colour, opacity );
                 break;
             }
             case CDrawSurface::COMMAND_POINTS:
             {
                 UInt32 alpha = Scaled( command.colour.a, opacity );
                 for ( UInt32 p=0; p<(UInt32)command.points.size(); ++p )
-                    PutPoint( target, command.points[ p ].x + offsetX, command.points[ p ].y + offsetY, current, command.colour, alpha );
+                    for ( Int32 py=0; py<k; ++py )
+                        for ( Int32 px=0; px<k; ++px )
+                            PutPoint( target, ( command.points[ p ].x + offsetX ) * k + px, ( command.points[ p ].y + offsetY ) * k + py, current, command.colour, alpha );
                 break;
             }
             case CDrawSurface::COMMAND_IMAGE:
             {
+                // the source is in logical pixels of the image: its pixels divided by its density
                 IMAGE::TPixelMapPtr pixels;
                 UInt32 revision = 0;
                 if ( context.ResolveImage( command.image, pixels, revision ) )
-                    DrawImage( target, *pixels, rect, command.source, current, command.colour, opacity );
+                {
+                    Int32 density = (Int32) context.GetImageDensity( command.image );
+                    CRect source = command.source.IsEmpty() ? command.source : Scaled( command.source, density );
+                    DrawImage( target, *pixels, Scaled( rect, k ), source, current, command.colour, opacity );
+                }
                 break;
             }
             case CDrawSurface::COMMAND_TEXT:
             {
-                DrawGlyphs( context, target, command.font, command.text, command.x0 + offsetX, command.y0 + offsetY, current, command.colour, opacity );
+                DrawGlyphs( context, target, command.font, command.text, command.x0 + offsetX, command.y0 + offsetY, current, command.colour, opacity, k );
                 break;
             }
             case CDrawSurface::COMMAND_PUSHCLIP:
             {
-                clips.push_back( current.Intersection( rect ) );
+                clips.push_back( current.Intersection( Scaled( rect, k ) ) );
                 break;
             }
             case CDrawSurface::COMMAND_POPCLIP:
@@ -313,8 +333,8 @@ bool
 CSoftwareRenderer::RenderContext( CGUIContext& context, IMAGE::TPixelMapPtr& target )
 {GUCEF_TRACE;
 
-    UInt32 width = context.GetLogicalWidth();
-    UInt32 height = context.GetLogicalHeight();
+    UInt32 width = context.GetRenderWidth();
+    UInt32 height = context.GetRenderHeight();
     if ( 0 == width || 0 == height )
         return false;
     if ( target.IsNULL() || target->GetWidthInPixels() != width || target->GetHeightInPixels() != height ||
@@ -332,7 +352,7 @@ CSoftwareRenderer::RenderContext( CGUIContext& context, IMAGE::TPixelMapPtr& tar
     }
 
     context.FlushChanges();
-    CRect screen( 0, 0, (Int32) width, (Int32) height );
+    CRect screen( 0, 0, (Int32) context.GetLogicalWidth(), (Int32) context.GetLogicalHeight() );
     const CGUIContext::TWidgetVector& roots = context.GetRootWidgets();
     for ( UInt32 i=0; i<(UInt32)roots.size(); ++i )
         RenderWidget( context, *roots[ i ], screen, 1.0f, *target );

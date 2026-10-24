@@ -51,12 +51,20 @@ namespace CORE {
 CLogStreamScope::CLogStreamScope( const TLogMsgType logMsgType ,
                                   const Int32 logLevel         )
     : m_stream()
+    , m_discard( false )
 {GUCEF_TRACE;
 
     CLoggingGlobal* loggingGlobal = CLoggingGlobal::Instance();
     if ( GUCEF_NULL != loggingGlobal )
     {
         m_stream = loggingGlobal->Log( logMsgType, logLevel );
+    }
+    if ( m_stream.IsNULL() )
+    {
+        // the log manager is gone or going: what is written goes nowhere instead of throwing at the writer
+        CLogStreamTypedPtr discardStream = CLogStream::CreateSharedObj();
+        m_stream = discardStream;
+        m_discard = true;
     }
 }
 
@@ -65,7 +73,7 @@ CLogStreamScope::CLogStreamScope( const TLogMsgType logMsgType ,
 CLogStreamScope::~CLogStreamScope()
 {GUCEF_TRACE;
 
-    if ( !m_stream.IsNULL() )
+    if ( !m_discard && !m_stream.IsNULL() )
     {
         m_stream->WriteSegmentEnd();
     }

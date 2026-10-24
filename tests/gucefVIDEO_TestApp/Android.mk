@@ -24,6 +24,7 @@ LOCAL_SRC_FILES := \
   src/TestVideoFormat.cpp \
   src/TestVideoPlayback.cpp \
   src/TestVideoSmacker.cpp \
+  src/TestVideoWebm.cpp \
   src/gucefVIDEO_TestApp.cpp
 
 LOCAL_C_INCLUDES := \

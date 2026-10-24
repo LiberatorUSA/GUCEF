@@ -95,6 +95,7 @@ GUCEFPlugin_Load( CORE::UInt32 argc, const char** argv ) GUCEF_PLUGIN_CALLSPEC_S
     // This plugin only registers "iso9660", the "iso" type name is left to the plugins that wrap other libraries.
     archiveFactory = GUCEF_NEW TISO9660ArchiveFactory();
     VFS::CVfsGlobal::Instance()->GetVfs().RegisterArchiveFactory( "iso9660", *archiveFactory );
+    VFS::CVfsGlobal::Instance()->GetVfs().SetArchiveTypeFileExtensions( "iso9660", CORE::CString( "iso" ).ParseUniqueElements( ';', false ) );
 
     return 1;
 }

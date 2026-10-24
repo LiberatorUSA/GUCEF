@@ -5,6 +5,7 @@
             <Dependency Name="RmlUI_Core" />
             <Dependency Name="gucefINPUT" />
             <Dependency Name="gucefGUI" />
+            <Dependency Name="gucefVFS" />
             <Dependency Name="gucefIMAGE" />
             <Dependency Name="gucefCORE" />
             <Dependency Name="gucefMT" />
@@ -14,6 +15,7 @@
             <Dependency Name="RmlUI_Core" />
             <Dependency Name="gucefINPUT" />
             <Dependency Name="gucefGUI" />
+            <Dependency Name="gucefVFS" />
             <Dependency Name="gucefIMAGE" />
             <Dependency Name="gucefCORE" />
             <Dependency Name="gucefMT" />

@@ -63,6 +63,16 @@
 #define GUCEF_TEST_FRAMEWORK_H
 #endif /* GUCEF_TEST_FRAMEWORK_H ? */
 
+#ifndef GUCEF_MT_CACTIVEOBJECT_H
+#include "gucefMT_CActiveObject.h"
+#define GUCEF_MT_CACTIVEOBJECT_H
+#endif /* GUCEF_MT_CACTIVEOBJECT_H ? */
+
+#ifndef GUCEF_MT_DVMTOSWRAP_H
+#include "gucefMT_dvmtoswrap.h"
+#define GUCEF_MT_DVMTOSWRAP_H
+#endif /* GUCEF_MT_DVMTOSWRAP_H ? */
+
 #include "TestThreadPoolCancellation.h"
 
 using namespace GUCEF;
@@ -268,6 +278,62 @@ CreateSingleThreadPool( const CORE::CString& name )
 
 /*-------------------------------------------------------------------------*/
 
+/** Gets (or makes) a thread pool on a thread of its own and notes when that returned */
+class CPoolCreatorThread : public MT::CActiveObject
+{
+    public:
+
+    explicit CPoolCreatorThread( const CORE::CString& poolName )
+        : MT::CActiveObject()
+        , m_poolName( poolName )
+        , m_doneLock()
+        , m_done( false )
+    {GUCEF_TRACE;
+    }
+
+    bool IsDone( void ) const
+    {GUCEF_TRACE;
+
+        MT::CScopeMutex lock( m_doneLock );
+        return m_done;
+    }
+
+    virtual const MT::CILockable* AsLockable( void ) const GUCEF_VIRTUAL_OVERRIDE { return GUCEF_NULL; }
+
+    protected:
+
+    virtual bool OnThreadStart( void* taskdata ) GUCEF_VIRTUAL_OVERRIDE { return true; }
+
+    virtual bool OnThreadCycle( void* taskdata ) GUCEF_VIRTUAL_OVERRIDE
+    {GUCEF_TRACE;
+
+        CORE::CCoreGlobal::Instance()->GetTaskManager().GetOrCreateThreadPool( m_poolName );
+        MT::CScopeMutex lock( m_doneLock );
+        m_done = true;
+        return true;
+    }
+
+    private:
+
+    CORE::CString m_poolName;
+    MT::CMutex m_doneLock;
+    bool m_done;
+};
+
+/*-------------------------------------------------------------------------*/
+
+/** Waits until the thread is done, up to the time; whether it was */
+static bool
+WaitUntilDone( const CPoolCreatorThread& thread, UInt32 timeoutInMs )
+{GUCEF_TRACE;
+
+    for ( UInt32 waited=0; !thread.IsDone() && waited<timeoutInMs; waited+=10 )
+        MT::PrecisionDelay( 10 );
+    return thread.IsDone();
+}
+
+/*-------------------------------------------------------------------------*/
+
 void
 PerformThreadPoolCancellationTests( void )
 {GUCEF_TRACE;
@@ -435,6 +501,35 @@ PerformThreadPoolCancellationTests( void )
             ASSERT_TRUE( CORE::TASKSTATUS_CANCELLED == CORE::TaskStatusStringToTaskStatus( "CANCELLED" ) );
             ASSERT_TRUE( CORE::TaskStatusIsAnEndState( CORE::TASKSTATUS_CANCELLED ) );
             ASSERT_FALSE( CORE::TaskStatusIsAnError( CORE::TASKSTATUS_CANCELLED ) );
+        }
+        catch ( ... )
+        {
+            ERRORHERE;
+        }
+    GUCEF_TESTFW_TESTCASE_END
+
+    GUCEF_TESTFW_TESTCASE( "Test: A thread pool made on a worker thread while the main thread pulses does not block the other users of the task manager" )
+        try
+        {
+            // the main thread notifies the observers of the pulse generator (it holds its notification lock) when a task makes a
+            // new pool, which subscribes to that pulse generator: the task manager must not be locked while the pool is made,
+            // or the main thread blocks on it as soon as it asks the task manager for a pool
+            taskManager.GetOrCreateThreadPool( "PoolCreationTestExisting" );
+            CORE::PulseGeneratorPtr pulseGenerator = CORE::CCoreGlobal::Instance()->GetPulseGenerator();
+            CORE::CNotifierScopeLock* pulseLock = GUCEF_NEW CORE::CNotifierScopeLock( pulseGenerator.GetPointerAlways() );
+            CPoolCreatorThread creator( "PoolCreationTestNew" );
+            ASSERT_TRUE( creator.Activate( GUCEF_NULL, 0, 0 ) );
+            MT::PrecisionDelay( 300 );
+            CPoolCreatorThread finder( "PoolCreationTestExisting" );
+            ASSERT_TRUE( finder.Activate( GUCEF_NULL, 0, 0 ) );
+            const bool notBlocked = WaitUntilDone( finder, 3000 );
+            GUCEF_DELETE pulseLock;
+
+            ASSERT_TRUE( notBlocked );
+            ASSERT_TRUE( WaitUntilDone( creator, 70000 ) && WaitUntilDone( finder, 70000 ) );
+            ASSERT_FALSE( taskManager.GetThreadPool( "PoolCreationTestNew" ).IsNULL() );
+            taskManager.UnregisterThreadPool( "PoolCreationTestNew" );
+            taskManager.UnregisterThreadPool( "PoolCreationTestExisting" );
         }
         catch ( ... )
         {

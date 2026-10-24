@@ -36,6 +36,11 @@
 #define GUCEF_CORE_CPROCESS_H
 #endif /* GUCEF_CORE_CPROCESS_H ? */
 
+#ifndef GUCEF_MT_CACTIVEOBJECT_H
+#include "gucefMT_CActiveObject.h"
+#define GUCEF_MT_CACTIVEOBJECT_H
+#endif /* GUCEF_MT_CACTIVEOBJECT_H ? */
+
 #ifndef GUCEF_VFS_H
 #include "gucefVFS.h"
 #define GUCEF_VFS_H
@@ -77,6 +82,20 @@ LoadZipPlugin( void )
     if ( vfs.CreateArchiveWriter( "zip" ).IsNULL() )
         TestArchiveUtils::LoadVfsPlugin( "vfspluginZIP" );
     return !vfs.CreateArchiveWriter( "zip" ).IsNULL();
+}
+
+/*-------------------------------------------------------------------------*/
+
+/** How many of the listed names end with the given text */
+static UInt32
+CountEndingWith( const CORE::CString::StringVector& listed, const CORE::CString& ending )
+{GUCEF_TRACE;
+
+    UInt32 count = 0;
+    for ( UInt32 i=0; i<(UInt32)listed.size(); ++i )
+        if ( listed[ i ].EndsWith( ending ) )
+            ++count;
+    return count;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -143,6 +162,46 @@ CheckWithUnzip( const CORE::CString& zipPath )
     args.push_back( zipPath );
     return 0 == TestArchiveUtils::RunExternalProgram( "unzip", args );
 }
+
+/*-------------------------------------------------------------------------*/
+
+/** Reads one file of a mounted archive over and over on a thread of its own and counts the reads that differ from what it should be */
+class CZipReaderThread : public MT::CActiveObject
+{
+    public:
+
+    CZipReaderThread( const CORE::CString& path, const CORE::CDynamicBuffer& expected, UInt32 reads )
+        : MT::CActiveObject(), m_path( path ), m_expected( expected ), m_readsLeft( reads ), m_failures( 0 )
+    {GUCEF_TRACE;
+    }
+
+    UInt32 GetFailures( void ) const { return m_failures; }
+
+    virtual const MT::CILockable* AsLockable( void ) const GUCEF_VIRTUAL_OVERRIDE { return GUCEF_NULL; }
+
+    protected:
+
+    virtual bool OnThreadStart( void* taskdata ) GUCEF_VIRTUAL_OVERRIDE { return true; }
+
+    virtual bool OnThreadCycle( void* taskdata ) GUCEF_VIRTUAL_OVERRIDE
+    {GUCEF_TRACE;
+
+        if ( 0 == m_readsLeft )
+            return true;
+        --m_readsLeft;
+        CORE::CDynamicBuffer content;
+        if ( !TestArchiveUtils::ReadVfsFile( VFS::CVfsGlobal::Instance()->GetVfs(), m_path, content ) || !( content == m_expected ) )
+            ++m_failures;
+        return 0 == m_readsLeft;
+    }
+
+    private:
+
+    CORE::CString m_path;
+    CORE::CDynamicBuffer m_expected;
+    UInt32 m_readsLeft;
+    UInt32 m_failures;
+};
 
 /*-------------------------------------------------------------------------*/
 
@@ -265,6 +324,56 @@ PerformZipArchiveWriterTests( void )
             ASSERT_TRUE( TestArchiveUtils::ReadVfsFile( vfs, "zipwriterbasic/disk/ondisk.txt", readBack ) );
             ASSERT_TRUE( readBack.GetDataSize() == 9 && 0 == memcmp( readBack.GetConstBufferPtr(), "from disk", 9 ) );
 
+            // the mounted archive is listed as a folder is: its files and folders, also the folders without an entry of their own
+            CORE::CString::StringVector listed;
+            vfs.GetFileList( listed, "zipwriterbasic", false, false, CORE::CString::EmptyStringSet );
+            ASSERT_TRUE( 1 == listed.size() && 1 == CountEndingWith( listed, "readme.txt" ) );
+            listed.clear();
+            vfs.GetFileList( listed, "zipwriterbasic", true, true, CORE::CString::EmptyStringSet );
+            ASSERT_TRUE( 4 == listed.size() && 1 == CountEndingWith( listed, "zipwriterbasic/data/numbers.bin" ) && 1 == CountEndingWith( listed, "zipwriterbasic/" + utf8Name ) );
+            listed.clear();
+            vfs.GetFileList( listed, "zipwriterbasic/data", false, false, CORE::CString::EmptyStringSet );
+            ASSERT_TRUE( 1 == listed.size() && "numbers.bin" == listed[ 0 ] );
+            listed.clear();
+            vfs.GetDirList( listed, "zipwriterbasic", false, false, CORE::CString::EmptyStringSet );
+            ASSERT_TRUE( 4 == listed.size() && 1 == CountEndingWith( listed, "data/" ) && 1 == CountEndingWith( listed, "disk/" ) && 1 == CountEndingWith( listed, "empty/" ) );
+            ASSERT_TRUE( vfs.DirExists( "zipwriterbasic/data" ) );
+
+            // reading counts elements as fread does: one element of 5 bytes, then 5 of 1 byte
+            {
+                VFS::TBasicVfsResourcePtr file = vfs.GetFile( "zipwriterbasic/readme.txt", "rb", false );
+                ASSERT_TRUE( !file.IsNULL() && !file->GetAccess().IsNULL() );
+                if ( !file.IsNULL() && !file->GetAccess().IsNULL() )
+                {
+                    char bytes[ 8 ];
+                    CORE::IOAccessPtr access = file->GetAccess();
+                    ASSERT_TRUE( 1 == access->Read( bytes, 5, 1 ) && 0 == memcmp( bytes, "Hello", 5 ) );
+                    ASSERT_TRUE( 0 == access->Setpos( 0 ) && 5 == access->Read( bytes, 1, 5 ) && 0 == memcmp( bytes, "Hello", 5 ) );
+                    ASSERT_TRUE( 0 == access->Setpos( 10 ) && 0 == access->Read( bytes, 4, 1 ) );    // 3 bytes left: no whole element
+                }
+            }
+
+            // two files of the archive open: after the one read last is closed, the other still seeks and reads
+            {
+                VFS::TBasicVfsResourcePtr first = vfs.GetFile( "zipwriterbasic/data/numbers.bin", "rb", false );
+                VFS::TBasicVfsResourcePtr second = vfs.GetFile( "zipwriterbasic/readme.txt", "rb", false );
+                ASSERT_TRUE( !first.IsNULL() && !second.IsNULL() );
+                if ( !first.IsNULL() && !second.IsNULL() )
+                {
+                    UInt8 value = 0;
+                    ASSERT_TRUE( 1 == first->GetAccess()->Read( &value, 1, 1 ) );
+                    first.Unlink();
+                    char bytes[ 4 ];
+                    CORE::IOAccessPtr access = second->GetAccess();
+                    ASSERT_TRUE( 0 == access->Setpos( 1 ) && 4 == access->Read( bytes, 1, 4 ) && 0 == memcmp( bytes, "ello", 4 ) );
+                }
+            }
+
+            // a file that is not there has no metadata
+            CORE::CResourceMetaData metaData;
+            ASSERT_TRUE( !vfs.GetFileMetaData( "zipwriterbasic/nothing.txt", metaData ) || !metaData.resourceExists );
+            ASSERT_TRUE( vfs.GetFileMetaData( "zipwriterbasic/readme.txt", metaData ) && metaData.resourceExists && metaData.resourceSizeInBytes == textContent.GetDataSize() );
+
             ASSERT_TRUE( vfs.UnmountArchiveByName( "ZipWriterBasic" ) );
             ASSERT_TRUE( vfs.UnmountArchiveByName( "ZipWriterTempDir" ) );
 
@@ -282,6 +391,62 @@ PerformZipArchiveWriterTests( void )
 
             // the archive is kept for inspection, it is overwritten by the next run
             CORE::DeleteFile( onDiskPath );
+        }
+        catch ( ... )
+        {
+            ERRORHERE;
+        }
+    GUCEF_TESTFW_TESTCASE_END
+
+    GUCEF_TESTFW_TESTCASE( "Test: Files of one archive read on several threads at once read back identically" )
+        try
+        {
+            // the files of an archive share its file handle, as music streamed on one thread while pictures load on another
+            CORE::CString zipPath = CORE::CombinePath( dir, "threads.zip" );
+            const UInt32 fileCount = 4;
+            CORE::CDynamicBuffer contents[ fileCount ];
+            for ( UInt32 f=0; f<fileCount; ++f )
+                for ( UInt32 i=0; i<256*1024; ++i )
+                {
+                    UInt8 value = (UInt8) ( ( i * ( f + 3 ) + i / 997 ) % 241 );
+                    contents[ f ].Append( &value, 1 );
+                }
+            {
+                CORE::CFileAccess output( zipPath, "wb" );
+                VFS::CVFS::TArchiveWriterPtr writer = vfs.CreateArchiveWriter( "zip" );
+                ASSERT_TRUE( output.IsValid() && !writer.IsNULL() );
+                if ( !writer.IsNULL() && output.IsValid() )
+                {
+                    ASSERT_TRUE( writer->Open( output ) );
+                    VFS::CArchiveWriterEntrySettings deflated;
+                    deflated.compression = VFS::CArchiveWriterEntrySettings::COMPRESSION_DEFLATE;
+                    for ( UInt32 f=0; f<fileCount; ++f )
+                    {
+                        CORE::CDynamicBufferAccess access( contents[ f ] );
+                        ASSERT_TRUE( writer->AddFile( "file" + CORE::ToString( f ) + ".bin", access, deflated ) );
+                    }
+                    ASSERT_TRUE( writer->Close() );
+                }
+            }
+            ASSERT_TRUE( vfs.AddRoot( dir, "ZipThreadsTempDir", false, false, "zipthreadstemp" ) );
+            ASSERT_TRUE( vfs.MountArchive( "ZipThreads", "zipthreadstemp/threads.zip", "zip", "zipthreads", false, false ) );
+
+            CZipReaderThread* readers[ fileCount ];
+            for ( UInt32 f=0; f<fileCount; ++f )
+                readers[ f ] = GUCEF_NEW CZipReaderThread( "zipthreads/file" + CORE::ToString( f ) + ".bin", contents[ f ], 25 );
+            for ( UInt32 f=0; f<fileCount; ++f )
+                ASSERT_TRUE( readers[ f ]->Activate( GUCEF_NULL, 0, 0 ) );
+            UInt32 failures = 0;
+            for ( UInt32 f=0; f<fileCount; ++f )
+            {
+                readers[ f ]->WaitForThreadToFinish( 120000 );
+                failures += readers[ f ]->GetFailures();
+                GUCEF_DELETE readers[ f ];
+            }
+            ASSERT_TRUE( 0 == failures );
+
+            ASSERT_TRUE( vfs.UnmountArchiveByName( "ZipThreads" ) );
+            ASSERT_TRUE( vfs.UnmountArchiveByName( "ZipThreadsTempDir" ) );
         }
         catch ( ... )
         {

@@ -58,7 +58,8 @@ class CGUIContext;
  *  buttons, the wheel, keys with their modifiers and typed text.
  *
  *  Mice and keyboards attached later are picked up as well. With an input context id only input of
- *  that gucefINPUT context (the window the GUI context draws in) is passed on.
+ *  that gucefINPUT context (the window the GUI context draws in) is passed on. While a GUI context on a
+ *  higher layer of the same window shows something, the input is not passed on: that layer takes it.
  */
 class GUCEF_GUI_PUBLIC_CPP CGUIInputAdapter : public CORE::CObserver
 {

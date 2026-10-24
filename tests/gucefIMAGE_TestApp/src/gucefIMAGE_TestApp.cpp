@@ -44,6 +44,7 @@
 
 #include "TestImageAnimation.h"
 #include "TestPixelMapConversion.h"
+#include "TestImageUpscaler.h"
 
 using namespace GUCEF;
 
@@ -215,6 +216,7 @@ GUCEF_OSMAIN_BEGIN
 
         PerformImageAnimationTests();
         PerformPixelMapConversionTests();
+        PerformImageUpscalerTests();
 
         CORE::CLogStreamScope::FlushLogs();
 

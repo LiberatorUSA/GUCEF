@@ -47,6 +47,8 @@ namespace IMAGE {
 
 class CImageCodecPluginManager;
 class CImageCodecRegistry;
+class CImageUpscalerRegistry;
+class CMmpxImageUpscaler;
 
 /*-------------------------------------------------------------------------*/
 
@@ -62,6 +64,9 @@ class GUCEF_IMAGE_EXPORT_CPP CImageGlobal
     CImageCodecPluginManager& GetImageCodecPluginManager( void );
 
     CImageCodecRegistry& GetImageCodecRegistry( void );
+
+    /** The image upscalers: "mmpx" built in, others from plugins */
+    CImageUpscalerRegistry& GetImageUpscalerRegistry( void );
 
     private:
     friend class CModule;
@@ -80,6 +85,8 @@ class GUCEF_IMAGE_EXPORT_CPP CImageGlobal
 
     CImageCodecPluginManager* m_imageCodecPluginManager;
     CImageCodecRegistry* m_imageCodecRegistry;
+    CImageUpscalerRegistry* m_imageUpscalerRegistry;
+    CMmpxImageUpscaler* m_mmpxUpscaler;
     
     static CImageGlobal* g_instance;
 };

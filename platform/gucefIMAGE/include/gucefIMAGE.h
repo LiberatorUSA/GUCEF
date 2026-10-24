@@ -117,6 +117,16 @@ namespace GUCEF
 #define GUCEF_IMAGE_CIMAGEGLOBAL_H
 #endif /* GUCEF_IMAGE_CIMAGEGLOBAL_H ? */
 
+#ifndef GUCEF_IMAGE_CIMAGEUPSCALERREGISTRY_H
+#include "gucefIMAGE_CImageUpscalerRegistry.h"
+#define GUCEF_IMAGE_CIMAGEUPSCALERREGISTRY_H
+#endif /* GUCEF_IMAGE_CIMAGEUPSCALERREGISTRY_H ? */
+
+#ifndef GUCEF_IMAGE_CMMPXIMAGEUPSCALER_H
+#include "gucefIMAGE_CMmpxImageUpscaler.h"
+#define GUCEF_IMAGE_CMMPXIMAGEUPSCALER_H
+#endif /* GUCEF_IMAGE_CMMPXIMAGEUPSCALER_H ? */
+
 #endif /* __cplusplus ? */
 /*--------------------------------------------------------------------------*/
 

@@ -171,6 +171,24 @@ typedef UInt32 ( GUCEF_PLUGIN_CALLSPEC_PREFIX *TVIDEOCODECPLUGFPTR_Decode_Meta_D
 
 /*-------------------------------------------------------------------------*/
 
+/*
+ *  Encoding, all optional: a plugin without them only decodes.
+ *
+ *  Snk_Open: 'format' has the wanted width, height and frame rate; the plugin writes the pixel format it takes
+ *  into format->pixelFormat. 'audioTrackFormats' has 'audioTrackCount' entries with the format of the sound the
+ *  host has; the plugin writes over each the format it takes, the host converts to it. 'output' is writable
+ *  and seekable. Returns 0 on failure.
+ *  Snk_Write_Frame: the next picture, in the pixel format the plugin asked for (palette is NULL). 0 on failure.
+ *  Snk_Write_Audio: interleaved frames of a track in the format the plugin asked for. 0 on failure.
+ *  Snk_Close: with 'finish' 1 completes the output first and returns 0 when that failed; with 0 only frees.
+ */
+typedef UInt32 ( GUCEF_PLUGIN_CALLSPEC_PREFIX *TVIDEOCODECPLUGFPTR_Snk_Open )          ( void** plugdata, void** codecdata, void** sinkdata, TIOAccess* output, const TVariantMapApi* options, TVideoFormatInfo* format, UInt32 audioTrackCount, TAudioFormatInfo* audioTrackFormats ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
+typedef UInt32 ( GUCEF_PLUGIN_CALLSPEC_PREFIX *TVIDEOCODECPLUGFPTR_Snk_Write_Frame )   ( void** plugdata, void** codecdata, void** sinkdata, const TVideoPictureBuffer* picture ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
+typedef UInt32 ( GUCEF_PLUGIN_CALLSPEC_PREFIX *TVIDEOCODECPLUGFPTR_Snk_Write_Audio )   ( void** plugdata, void** codecdata, void** sinkdata, UInt32 track, const void* frames, UInt32 frameCount ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
+typedef UInt32 ( GUCEF_PLUGIN_CALLSPEC_PREFIX *TVIDEOCODECPLUGFPTR_Snk_Close )         ( void** plugdata, void** codecdata, void** sinkdata, UInt32 finish ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
+
+/*-------------------------------------------------------------------------*/
+
 /**
  *  All the functions of a video codec plugin, as the host found them. Optional ones are NULL when absent.
  */
@@ -191,6 +209,10 @@ struct SGucefVideoCodecPluginApi
     TVIDEOCODECPLUGFPTR_Src_Seek_Frame Src_Seek_Frame;              /**< optional */
     TVIDEOCODECPLUGFPTR_Src_Close Src_Close;
     TVIDEOCODECPLUGFPTR_Decode_Meta_Data Decode_Meta_Data;          /**< optional */
+    TVIDEOCODECPLUGFPTR_Snk_Open Snk_Open;                          /**< optional, with the other Snk_ functions */
+    TVIDEOCODECPLUGFPTR_Snk_Write_Frame Snk_Write_Frame;
+    TVIDEOCODECPLUGFPTR_Snk_Write_Audio Snk_Write_Audio;
+    TVIDEOCODECPLUGFPTR_Snk_Close Snk_Close;
 };
 typedef struct SGucefVideoCodecPluginApi TGucefVideoCodecPluginApi;
 

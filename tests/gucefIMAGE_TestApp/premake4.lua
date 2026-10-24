@@ -103,12 +103,14 @@ configuration( { "LINUX32" } )
     vpaths { ["Platform Headers"] = { "**.h", "**.hpp", "**.hxx" } }
     files( {
       "include/TestImageAnimation.h",
+      "include/TestImageUpscaler.h",
       "include/TestPixelMapConversion.h"
     } )
 
     vpaths { ["Platform Source"] = { "**.c", "**.cpp", "**.cs", "**.asm" } }
     files( {
       "src/TestImageAnimation.cpp",
+      "src/TestImageUpscaler.cpp",
       "src/TestPixelMapConversion.cpp",
       "src/gucefIMAGE_TestApp.cpp"
     } )
@@ -119,12 +121,14 @@ configuration( { "LINUX64" } )
     vpaths { ["Platform Headers"] = { "**.h", "**.hpp", "**.hxx" } }
     files( {
       "include/TestImageAnimation.h",
+      "include/TestImageUpscaler.h",
       "include/TestPixelMapConversion.h"
     } )
 
     vpaths { ["Platform Source"] = { "**.c", "**.cpp", "**.cs", "**.asm" } }
     files( {
       "src/TestImageAnimation.cpp",
+      "src/TestImageUpscaler.cpp",
       "src/TestPixelMapConversion.cpp",
       "src/gucefIMAGE_TestApp.cpp"
     } )
@@ -135,12 +139,14 @@ configuration( { "WIN32" } )
     vpaths { ["Platform Headers"] = { "**.h", "**.hpp", "**.hxx" } }
     files( {
       "include/TestImageAnimation.h",
+      "include/TestImageUpscaler.h",
       "include/TestPixelMapConversion.h"
     } )
 
     vpaths { ["Platform Source"] = { "**.c", "**.cpp", "**.cs", "**.asm" } }
     files( {
       "src/TestImageAnimation.cpp",
+      "src/TestImageUpscaler.cpp",
       "src/TestPixelMapConversion.cpp",
       "src/gucefIMAGE_TestApp.cpp"
     } )
@@ -151,12 +157,14 @@ configuration( { "WIN64" } )
     vpaths { ["Platform Headers"] = { "**.h", "**.hpp", "**.hxx" } }
     files( {
       "include/TestImageAnimation.h",
+      "include/TestImageUpscaler.h",
       "include/TestPixelMapConversion.h"
     } )
 
     vpaths { ["Platform Source"] = { "**.c", "**.cpp", "**.cs", "**.asm" } }
     files( {
       "src/TestImageAnimation.cpp",
+      "src/TestImageUpscaler.cpp",
       "src/TestPixelMapConversion.cpp",
       "src/gucefIMAGE_TestApp.cpp"
     } )

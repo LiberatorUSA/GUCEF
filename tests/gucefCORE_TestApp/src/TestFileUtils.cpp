@@ -142,6 +142,12 @@ TestRelativePathFunction( void )
         ASSERT_TRUE( relPath == CORE::CString( "root/test.txt" ).ReplaceChar( GUCEF_DIRSEPCHAROPPOSITE, GUCEF_DIRSEPCHAR ) );
         elements = relPath.ParseElements( GUCEF_DIRSEPCHAR );
         ASSERT_TRUE( elements.size() == 2 );
+
+        // an absolute path stays absolute when its up dir segments are simplified
+        relPath = CORE::RelativePath( "/root/dir1/../test.txt", true );
+        ASSERT_TRUE( relPath == CORE::CString( "/root/test.txt" ).ReplaceChar( GUCEF_DIRSEPCHAROPPOSITE, GUCEF_DIRSEPCHAR ) );
+        relPath = CORE::RelativePath( "$MODULEDIR$/../test.txt", true );
+        ASSERT_TRUE( relPath.StartsWith( CORE::RelativePath( "$MODULEDIR$", true ).SubstrToIndex( 1, true ) ) );
     }
     catch (...)
     {
@@ -163,6 +169,44 @@ PerformFileUtilsTests( void )
 
     // Regression: StripFilename() returned the input as-is when there was no directory part
     // which caused CFileAccess to create a directory named after the file
+    // the per user directories for data and caches follow the XDG base directories on Linux
+    #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX )
+    GUCEF_TESTFW_TESTCASE( "Test: The cache and app data dirs follow XDG with its defaults" )
+        try
+        {
+            const char* savedCache = getenv( "XDG_CACHE_HOME" );
+            const char* savedData = getenv( "XDG_DATA_HOME" );
+            const CORE::CString cacheBackup = GUCEF_NULL != savedCache ? CORE::CString( savedCache ) : CORE::CString();
+            const CORE::CString dataBackup = GUCEF_NULL != savedData ? CORE::CString( savedData ) : CORE::CString();
+            const CORE::CString home = getenv( "HOME" );
+
+            unsetenv( "XDG_CACHE_HOME" );
+            unsetenv( "XDG_DATA_HOME" );
+            CORE::CString dir;
+            ASSERT_TRUE( CORE::TryResolveSpecialDir( CORE::SPECIALDIR_CACHE_DIR, dir ) && CORE::CombinePath( home, ".cache" ) == dir );
+            ASSERT_TRUE( CORE::TryResolveSpecialDir( CORE::SPECIALDIR_INTERNET_CACHE_DIR, dir ) && CORE::CombinePath( home, ".cache" ) == dir );
+            ASSERT_TRUE( CORE::TryResolveSpecialDir( CORE::SPECIALDIR_APPDATA_DIR, dir ) && CORE::CombinePath( home, ".local/share" ) == dir );
+            ASSERT_TRUE( CORE::TryResolveSpecialDir( CORE::SPECIALDIR_LOCAL_APPDATA_DIR, dir ) && CORE::CombinePath( home, ".local/share" ) == dir );
+            ASSERT_TRUE( CORE::ResolveVars( "$CACHEDIR$/game" ) == CORE::CombinePath( home, ".cache" ) + "/game" );
+            ASSERT_TRUE( CORE::ResolveVars( "$APPDATADIR$/game" ) == CORE::CombinePath( home, ".local/share" ) + "/game" );
+
+            setenv( "XDG_CACHE_HOME", "/tmp/xdgcache", 1 );
+            setenv( "XDG_DATA_HOME", "/tmp/xdgdata", 1 );
+            ASSERT_TRUE( CORE::TryResolveSpecialDir( CORE::SPECIALDIR_CACHE_DIR, dir ) && "/tmp/xdgcache" == dir );
+            ASSERT_TRUE( CORE::TryResolveSpecialDir( CORE::SPECIALDIR_APPDATA_DIR, dir ) && "/tmp/xdgdata" == dir );
+            ASSERT_TRUE( CORE::ResolveVars( "$CACHEDIR$" ) == "/tmp/xdgcache" );
+            ASSERT_TRUE( CORE::ResolveVars( "$APPDATADIR$" ) == "/tmp/xdgdata" );
+
+            if ( GUCEF_NULL != savedCache ) setenv( "XDG_CACHE_HOME", cacheBackup.C_String(), 1 ); else unsetenv( "XDG_CACHE_HOME" );
+            if ( GUCEF_NULL != savedData ) setenv( "XDG_DATA_HOME", dataBackup.C_String(), 1 ); else unsetenv( "XDG_DATA_HOME" );
+        }
+        catch( ... )
+        {
+            ERRORHERE;
+        }
+    GUCEF_TESTFW_TESTCASE_END
+    #endif
+
     GUCEF_TESTFW_TESTCASE( "Test: StripFilename edge cases" )
         try
         {

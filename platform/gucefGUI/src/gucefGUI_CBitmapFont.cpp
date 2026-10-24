@@ -61,6 +61,7 @@ CBitmapFont::CBitmapFont( void )
     , m_lineHeight( 0 )
     , m_spacing( 0 )
     , m_baseline( 0 )
+    , m_density( 1 )
 {
 }
 
@@ -175,6 +176,22 @@ Int32
 CBitmapFont::GetBaseline( void ) const
 {
     return m_baseline;
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CBitmapFont::SetDensity( UInt32 density )
+{
+    m_density = density > 0 ? density : 1;
+}
+
+/*-------------------------------------------------------------------------*/
+
+UInt32
+CBitmapFont::GetDensity( void ) const
+{
+    return m_density;
 }
 
 /*-------------------------------------------------------------------------*/

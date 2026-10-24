@@ -344,6 +344,9 @@ class GUCEF_GUI_PUBLIC_CPP CWidget : public CORE::CObservingNotifier
 
     virtual const CString& GetClassTypeName( void ) const;
 
+    /** Sets a property because of the user and routes a ValueChangedEvent when the value changed (also for a form that acts for the user) */
+    bool ChangeValueByUser( const CString& name, const CString& value );
+
     protected:
 
     friend class CGUIContext;
@@ -354,6 +357,9 @@ class GUCEF_GUI_PUBLIC_CPP CWidget : public CORE::CObservingNotifier
     /** Called every frame for widgets that return true from NeedsUpdate() */
     virtual void OnUpdate( UInt32 deltaInMs );
 
+    /** A child was added or taken away (not when a child is destroyed) */
+    virtual void OnChildrenChanged( void );
+
     virtual bool NeedsUpdate( void ) const;
 
     /**
@@ -361,9 +367,6 @@ class GUCEF_GUI_PUBLIC_CPP CWidget : public CORE::CObservingNotifier
      *  for example a list box selects the row that was clicked. Return true when it did something.
      */
     virtual bool OnDefaultAction( const CORE::CEvent& eventId, CRoutedEventData& eventData );
-
-    /** Sets a property because of the user and routes a ValueChangedEvent when the value changed */
-    bool ChangeValueByUser( const CString& name, const CString& value );
 
     /** Routes an ItemActivatedEvent */
     void ActivateItem( Int32 index, const CString& item );
@@ -373,8 +376,16 @@ class GUCEF_GUI_PUBLIC_CPP CWidget : public CORE::CObservingNotifier
 
     private:
 
-    void MarkDirty( const CString& name );
-    void SetStateFlag( UInt32 flag, bool on );
+    void MarkDirty( const CString& name );
+    void SetStateFlag( UInt32 flag, bool on );
+
+    /** The widget with the given name (or path from the root) in the tree this widget is in, NULL when there is none */
+    CWidget* FindInTree( const CString& widgetName ) const;
+
+    /** EnabledBy: this widget follows its check box, the widgets that name this one follow its Checked */
+    void ApplyEnabledBy( void );
+    void UpdateEnabledByDependents( void );
+    void ApplyEnabledByLinksOfSubtree( void );
     void DetachFromParent( void );
     bool NotifyRouted( const CORE::CEvent& eventId, CRoutedEventData& eventData );
 

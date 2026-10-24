@@ -22,6 +22,8 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+#include <string.h>
+
 #ifndef GUCEF_CORE_H
 #include "gucefCORE.h"
 #define GUCEF_CORE_H
@@ -33,6 +35,11 @@
 #endif /* GUCEF_TEST_FRAMEWORK_H ? */
 
 #include "gucefGUI_TestCommon.h"
+
+#ifndef GUCEF_CORE_CNATIVEFILESYSTEMACCESS_H
+#include "gucefCORE_CNativeFileSystemAccess.h"
+#define GUCEF_CORE_CNATIVEFILESYSTEMACCESS_H
+#endif /* GUCEF_CORE_CNATIVEFILESYSTEMACCESS_H ? */
 
 #ifndef GUCEF_GUIDRIVERRMLUI_CRMLUICONTEXT_H
 #include "guidriverRmlUI_CRmlUIContext.h"
@@ -102,12 +109,112 @@ Capture( GUI::CGUIContext* context, IMAGE::TPixelMapPtr& pixels )
     return context->CaptureFrame( pixels ) && !pixels.IsNULL() && 640 == pixels->GetWidthInPixels() && 480 == pixels->GetHeightInPixels();
 }
 
+GUI::CVideoOptions::TDisplayMode
+TestDisplayMode( UInt32 width, UInt32 height )
+{
+    GUI::CVideoOptions::TDisplayMode mode;
+    mode.widthInPixels = width;
+    mode.heightInPixels = height;
+    mode.depthInBits = 32;
+    mode.frequency = 60;
+    return mode;
+}
+
 const GUI::CColour Black( 0, 0, 0, 255 );
 const GUI::CColour Red( 255, 0, 0, 255 );
 const GUI::CColour Green( 0, 255, 0, 255 );
 const GUI::CColour Blue( 0, 0, 255, 255 );
 const GUI::CColour White( 255, 255, 255, 255 );
 const GUI::CColour Yellow( 255, 255, 0, 255 );
+
+/** A picture with a different colour for every pixel */
+IMAGE::TPixelMapPtr
+MakeGradientImage( UInt32 width, UInt32 height )
+{
+    IMAGE::TPixelMapPtr pixels = MakeSolidImage( width, height, 0, 0, 0, 255 );
+    UInt8* data = static_cast< UInt8* >( pixels->GetDataPtr() );
+    for ( UInt32 y=0; y<height; ++y )
+        for ( UInt32 x=0; x<width; ++x )
+        {
+            UInt8* p = data + ( (size_t) y * width + x ) * 4;
+            p[ 0 ] = (UInt8) ( 20 + x * 25 );
+            p[ 1 ] = (UInt8) ( 20 + y * 25 );
+            p[ 2 ] = (UInt8) ( 200 - ( x + y ) * 10 );
+        }
+    return pixels;
+}
+
+/** The picture blown up 'factor' times with every pixel a block */
+IMAGE::TPixelMapPtr
+Blocks( const IMAGE::CPixelMap& source, UInt32 factor )
+{
+    UInt32 width = source.GetWidthInPixels(), height = source.GetHeightInPixels();
+    IMAGE::TPixelMapPtr result = MakeSolidImage( width * factor, height * factor, 0, 0, 0, 0 );
+    const UInt8* in = static_cast< const UInt8* >( source.GetDataPtr() );
+    UInt8* out = static_cast< UInt8* >( result->GetDataPtr() );
+    for ( UInt32 y=0; y<height*factor; ++y )
+        for ( UInt32 x=0; x<width*factor; ++x )
+            memcpy( out + ( (size_t) y * width * factor + x ) * 4, in + ( (size_t) ( y / factor ) * width + x / factor ) * 4, 4 );
+    return result;
+}
+
+/** At a render scale of 2: pictures and a font of density 2 next to ones of density 1, a fill, a line and text */
+void
+BuildDensityScene( GUI::CGUIContext* context )
+{
+    context->SetRenderScale( 2 );
+
+    IMAGE::TPixelMapPtr fine = MakeGradientImage( 8, 8 );
+    IMAGE::TPixelMapPtr coarse = MakeGradientImage( 4, 4 );
+    context->RegisterImage( "Fine", fine, 2 );
+    context->RegisterImage( "Coarse", coarse );
+
+    // the same font as a density 2 copy with its atlas blown up
+    GUI::TBitmapFontPtr font = MakeTestFont( 6, 9 );
+    GUI::TBitmapFontPtr font2( GUCEF_NEW GUI::CBitmapFont( *font ) );
+    font2->SetAtlas( Blocks( *font->GetAtlas(), 2 ) );
+    font2->SetDensity( 2 );
+    GUI::CBitmapFont::TGlyphMap glyphs = font->GetGlyphs();
+    for ( GUI::CBitmapFont::TGlyphMap::iterator g=glyphs.begin(); g!=glyphs.end(); ++g )
+    {
+        GUI::CBitmapFont::TGlyph glyph = (*g).second;
+        glyph.source = GUI::CRect( glyph.source.left * 2, glyph.source.top * 2, glyph.source.width * 2, glyph.source.height * 2 );
+        font2->SetGlyph( (*g).first, glyph );
+    }
+    context->RegisterFont( "Block", font );
+    context->RegisterFont( "Block2", font2 );
+
+    GUI::CWidget* screen = Screen( context );
+    screen->SetColourProperty( "BackgroundColour", GUI::CColour( 30, 30, 30, 255 ) );
+    const char* names[] = { "Fine", "Coarse" };
+    for ( UInt32 i=0; i<2; ++i )
+    {
+        GUI::CWidget* frame = context->CreateWidget( "ImageFrame", names[ i ], screen );
+        frame->SetProperty( "Position", "0," + CORE::Int32ToString( 10 + (Int32) i * 20 ) + " 0,10" );
+        frame->SetProperty( "Size", "0,4 0,4" );
+        frame->SetProperty( "Image", names[ i ] );
+        frame->SetProperty( "ScaleMode", "None" );
+    }
+    GUI::CWidget* panel = context->CreateWidget( "Panel", "Fill", screen );
+    panel->SetProperty( "Position", "0,60 0,10" );
+    panel->SetProperty( "Size", "0,5 0,5" );
+    panel->SetColourProperty( "BackgroundColour", GUI::CColour( 250, 100, 0, 255 ) );
+    const char* fonts[] = { "Block", "Block2" };
+    for ( UInt32 i=0; i<2; ++i )
+    {
+        GUI::CWidget* label = context->CreateWidget( "Label", CORE::CString( "Text" ) + fonts[ i ], screen );
+        label->SetProperty( "Position", "0,10 0," + CORE::Int32ToString( 40 + (Int32) i * 20 ) );
+        label->SetProperty( "Size", "0,100 0,15" );
+        label->SetProperty( "Font", fonts[ i ] );
+        label->SetProperty( "Text", "AbCd" );
+        label->SetColourProperty( "TextColour", GUI::CColour( 255, 255, 255, 255 ) );
+    }
+    GUI::CDrawSurface* surface = static_cast< GUI::CDrawSurface* >( context->CreateWidget( "DrawSurface", "Surface", screen ) );
+    surface->SetProperty( "Position", "0,120 0,10" );
+    surface->SetProperty( "Size", "0,40 0,40" );
+    surface->DrawLine( 0, 0, 30, 20, GUI::CColour( 0, 255, 0, 255 ) );
+    surface->Commit();
+}
 
 /** Panels, borders, clipping, opacity, scaled and tinted pictures, text, lines and points in one picture */
 void
@@ -225,6 +332,41 @@ RunRenderTests( const char* driverName, GUI::TGuiContextPtr ( *createContext )( 
         ASSERT_TRUE( Capture( context, pixels ) );
         ASSERT_TRUE( Near( PixelAt( pixels, 50, 30 ), Black ) );
         context->DestroyWidget( screen );
+    }
+    catch ( ... )
+    {
+        ERRORHERE;
+    }
+    GUCEF_TESTFW_TESTCASE_END
+
+    GUCEF_TESTFW_TESTCASE( ( prefix + "A group box draws a frame whose top line has a gap for the caption" ).C_String() )
+    try
+    {
+        GUI::TGuiContextPtr contextPtr = createContext();
+        GUI::CGUIContext* context = dynamic_cast< GUI::CGUIContext* >( contextPtr.GetPointerAlways() );
+        ASSERT_TRUE( GUCEF_NULL != context );
+        GUI::CWidget* screen = Screen( context );
+        GUI::CGroupBox* group = dynamic_cast< GUI::CGroupBox* >( context->CreateWidget( "GroupBox", "Group", screen ) );
+        ASSERT_TRUE( GUCEF_NULL != group );
+        if ( GUCEF_NULL == group )
+            return;
+        group->SetProperty( "Position", "0,20 0,20" );
+        group->SetProperty( "Size", "0,200 0,0" );
+        group->SetProperty( "AutoHeight", "false" );
+        group->SetProperty( "Size", "0,200 0,100" );
+        group->SetColourProperty( "FrameColour", White );
+        group->SetCaption( "Group" );
+
+        IMAGE::TPixelMapPtr pixels;
+        ASSERT_TRUE( Capture( context, pixels ) );
+        const Int32 lineY = 20 + group->GetCaptionHeight() / 2;
+        // the sides and the bottom
+        ASSERT_TRUE( Near( PixelAt( pixels, 20, 80 ), White ) && Near( PixelAt( pixels, 219, 80 ), White ) && Near( PixelAt( pixels, 100, 119 ), White ) );
+        // the top line left of the caption and right of it, and the gap before the caption
+        ASSERT_TRUE( Near( PixelAt( pixels, 24, lineY ), White ) && Near( PixelAt( pixels, 210, lineY ), White ) );
+        ASSERT_TRUE( Near( PixelAt( pixels, 30, lineY ), Black ) );
+        // nothing above the line
+        ASSERT_TRUE( Near( PixelAt( pixels, 20, 20 ), Black ) || 0 == group->GetCaptionHeight() );
     }
     catch ( ... )
     {
@@ -527,6 +669,435 @@ PerformGuiRenderTests( void )
         UInt32 textures = static_cast< guidriverRmlUI::CRmlUIContext* >( rml )->GetTextureCreationCount();
         ASSERT_TRUE( Capture( rml, actual ) );
         ASSERT_TRUE( textures == static_cast< guidriverRmlUI::CRmlUIContext* >( rml )->GetTextureCreationCount() );
+    }
+    catch ( ... )
+    {
+        ERRORHERE;
+    }
+    GUCEF_TESTFW_TESTCASE_END
+
+    GUCEF_TESTFW_TESTCASE( "Render (RmlUi): The file open dialog in the dark theme with a TrueType font has the same pixels as the software reference" )
+    if ( !LoadFreeTypeFontPlugin() )
+        GUCEF_TESTFW_SKIP( "the FreeType font plugin is not there" );
+    try
+    {
+        const CORE::CString dir = CORE::CombinePath( CORE::TempDir(), "gucefGUI_TestApp_DialogRender" );
+        CORE::DeleteDir( dir, true );
+        ASSERT_TRUE( CORE::CreateDirs( CORE::CombinePath( dir, "Saves" ) ) );
+        ASSERT_TRUE( CORE::WriteStringAsTextFile( CORE::CombinePath( dir, "disc.cue" ), "FILE disc.bin BINARY" ) );
+        ASSERT_TRUE( CORE::WriteStringAsTextFile( CORE::CombinePath( dir, "notes.txt" ), "notes" ) );
+        CORE::TFileSystemAccessPtr native = ( GUCEF_NEW CORE::CNativeFileSystemAccess( "This computer" ) )->CreateSharedPtr();
+
+        GUI::TGuiContextPtr referencePtr = CreateNullContext();
+        GUI::TGuiContextPtr rmlPtr = CreateRmlUiContextInWindow( 1280, 960 );
+        GUI::CGUIContext* contexts[ 2 ] = { static_cast< GUI::CGUIContext* >( referencePtr.GetPointerAlways() ), static_cast< GUI::CGUIContext* >( rmlPtr.GetPointerAlways() ) };
+        ASSERT_TRUE( GUCEF_NULL != contexts[ 0 ] && GUCEF_NULL != contexts[ 1 ] && GUI::CGuiGlobal::Instance()->MountData() );
+
+        GUI::CFileOpenDialogForm* dialogs[ 2 ] = { GUCEF_NULL, GUCEF_NULL };
+        IMAGE::TPixelMapPtr frames[ 2 ];
+        for ( UInt32 c=0; c<2 && GUCEF_NULL != contexts[ 1 ]; ++c )
+        {
+            GUI::CGUIContext* context = contexts[ c ];
+            context->SetLogicalResolution( 1280, 960 );
+            ASSERT_TRUE( context->RegisterFont( "UI", GUI::CGuiGlobal::DefaultUiFontPath, 18 ) );
+            CORE::CDataNode theme;
+            GUI::BuildDarkTheme( theme, "UI" );
+            context->SetTheme( theme );
+            Screen( context )->SetColourProperty( "BackgroundColour", GUI::CColour( 60, 70, 40, 255 ) );
+
+            dialogs[ c ] = GUCEF_NEW GUI::CFileOpenDialogForm( context );
+            dialogs[ c ]->GetOptions().acceptDirectoriesToo = true;
+            dialogs[ c ]->AddRoot( "This computer", native, dir );
+            CORE::CString::StringVector disc;
+            disc.push_back( "*.cue" );
+            disc.push_back( "*.iso" );
+            dialogs[ c ]->AddFileType( "Game disc", disc );
+            ASSERT_TRUE( dialogs[ c ]->Open() );
+            context->RenderFrame( 16 );
+            CORE::CString::StringVector pick;
+            pick.push_back( "disc.cue" );
+            ASSERT_TRUE( dialogs[ c ]->SelectNames( pick ) );
+
+            context->RenderFrame( 16 );
+            ASSERT_TRUE( context->CaptureFrame( frames[ c ] ) && !frames[ c ].IsNULL() && 1280 == frames[ c ]->GetWidthInPixels() );
+        }
+        if ( !frames[ 0 ].IsNULL() && !frames[ 1 ].IsNULL() )
+        {
+            UInt32 different = 0;
+            for ( Int32 y=0; y<960; ++y )
+                for ( Int32 x=0; x<1280; ++x )
+                    if ( !Near( PixelAt( frames[ 0 ], x, y ), PixelAt( frames[ 1 ], x, y ) ) )
+                        ++different;
+            if ( 0 != different )
+                GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "RmlUi differs from the reference in " << different << " pixels" );
+            ASSERT_TRUE( 0 == different );
+        }
+        for ( UInt32 c=0; c<2; ++c )
+            GUCEF_DELETE dialogs[ c ];
+        CORE::DeleteDir( dir, true );
+    }
+    catch ( ... )
+    {
+        ERRORHERE;
+    }
+    GUCEF_TESTFW_TESTCASE_END
+
+    GUCEF_TESTFW_TESTCASE( "Render (RmlUi): The settings form in the dark theme with a TrueType font has the same pixels as the software reference" )
+    if ( !LoadFreeTypeFontPlugin() )
+        GUCEF_TESTFW_SKIP( "the FreeType font plugin is not there" );
+    try
+    {
+        GUI::TGuiContextPtr referencePtr = CreateNullContext();
+        GUI::TGuiContextPtr rmlPtr = CreateRmlUiContextInWindow( 1280, 960 );
+        GUI::CGUIContext* contexts[ 2 ] = { static_cast< GUI::CGUIContext* >( referencePtr.GetPointerAlways() ), static_cast< GUI::CGUIContext* >( rmlPtr.GetPointerAlways() ) };
+        ASSERT_TRUE( GUCEF_NULL != contexts[ 0 ] && GUCEF_NULL != contexts[ 1 ] && GUI::CGuiGlobal::Instance()->MountData() );
+
+        GUI::CSettingsForm* forms[ 2 ] = { GUCEF_NULL, GUCEF_NULL };
+        IMAGE::TPixelMapPtr frames[ 2 ];
+        for ( UInt32 c=0; c<2 && GUCEF_NULL != contexts[ 1 ]; ++c )
+        {
+            GUI::CGUIContext* context = contexts[ c ];
+            context->SetLogicalResolution( 1280, 960 );
+            ASSERT_TRUE( context->RegisterFont( "UI", GUI::CGuiGlobal::DefaultUiFontPath, 18 ) );
+            CORE::CDataNode theme;
+            GUI::BuildDarkTheme( theme, "UI" );
+            context->SetTheme( theme );
+            Screen( context )->SetColourProperty( "BackgroundColour", GUI::CColour( 60, 70, 40, 255 ) );
+
+            forms[ c ] = GUCEF_NEW GUI::CSettingsForm( context );
+            GUI::CVideoSettingsForm* video = static_cast< GUI::CVideoSettingsForm* >( forms[ c ]->AddPage( "Video" ) );
+            forms[ c ]->AddPage( "General" );
+            GUI::CVideoOptions options;
+            options.AddDisplayMode( TestDisplayMode( 1920, 1080 ) );
+            video->SetVideoOptions( options );
+            GUI::CVideoSettingsForm::TStringVector filters;
+            filters.push_back( "fsr1" );
+            video->SetAvailablePresentFilters( filters );
+            ASSERT_TRUE( forms[ c ]->Open() );
+            video->ShowProgress( "Upscaling the pictures for 1920 x 1080", 0.4f );
+
+            context->RenderFrame( 16 );
+            ASSERT_TRUE( context->CaptureFrame( frames[ c ] ) && !frames[ c ].IsNULL() && 1280 == frames[ c ]->GetWidthInPixels() );
+        }
+        if ( !frames[ 0 ].IsNULL() && !frames[ 1 ].IsNULL() )
+        {
+            UInt32 different = 0;
+            for ( Int32 y=0; y<960; ++y )
+                for ( Int32 x=0; x<1280; ++x )
+                    if ( !Near( PixelAt( frames[ 0 ], x, y ), PixelAt( frames[ 1 ], x, y ) ) )
+                        ++different;
+            if ( 0 != different )
+                GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "RmlUi differs from the reference in " << different << " pixels" );
+            ASSERT_TRUE( 0 == different );
+        }
+        for ( UInt32 c=0; c<2; ++c )
+            GUCEF_DELETE forms[ c ];
+    }
+    catch ( ... )
+    {
+        ERRORHERE;
+    }
+    GUCEF_TESTFW_TESTCASE_END
+
+    GUCEF_TESTFW_TESTCASE( "Render (RmlUi): At a render scale of 2 pictures and fonts of density 2 are drawn pixel for pixel, the same as the reference" )
+    try
+    {
+        GUI::TGuiContextPtr referencePtr = CreateNullContext();
+        GUI::TGuiContextPtr rmlPtr = CreateRmlUiContextInWindow( 1280, 960 );
+        GUI::CGUIContext* contexts[ 2 ] = { static_cast< GUI::CGUIContext* >( referencePtr.GetPointerAlways() ), static_cast< GUI::CGUIContext* >( rmlPtr.GetPointerAlways() ) };
+        ASSERT_TRUE( GUCEF_NULL != contexts[ 0 ] && GUCEF_NULL != contexts[ 1 ] );
+        IMAGE::TPixelMapPtr frames[ 2 ];
+        for ( UInt32 c=0; c<2 && GUCEF_NULL != contexts[ 1 ]; ++c )
+        {
+            BuildDensityScene( contexts[ c ] );
+            ASSERT_TRUE( 1280 == contexts[ c ]->GetRenderWidth() && 960 == contexts[ c ]->GetRenderHeight() );
+            Int32 w = 0, h = 0;
+            ASSERT_TRUE( contexts[ c ]->GetImageLogicalSize( "Fine", w, h ) && 4 == w && 4 == h && 2 == contexts[ c ]->GetImageDensity( "Fine" ) );
+            contexts[ c ]->RenderFrame( 16 );
+            ASSERT_TRUE( contexts[ c ]->CaptureFrame( frames[ c ] ) && !frames[ c ].IsNULL() && 1280 == frames[ c ]->GetWidthInPixels() && 960 == frames[ c ]->GetHeightInPixels() );
+        }
+
+        if ( !frames[ 0 ].IsNULL() && !frames[ 1 ].IsNULL() )
+        {
+            // the density 2 picture pixel for pixel, the density 1 picture in blocks of 2 x 2
+            IMAGE::TPixelMapPtr fine = MakeGradientImage( 8, 8 ), coarse = MakeGradientImage( 4, 4 );
+            UInt32 wrong = 0;
+            for ( Int32 y=0; y<8; ++y )
+                for ( Int32 x=0; x<8; ++x )
+                {
+                    if ( !Near( PixelAt( frames[ 0 ], 20 + x, 20 + y ), PixelAt( fine, x, y ), 0 ) )
+                        ++wrong;
+                    if ( !Near( PixelAt( frames[ 0 ], 60 + x, 20 + y ), PixelAt( coarse, x / 2, y / 2 ), 0 ) )
+                        ++wrong;
+                }
+            ASSERT_TRUE( 0 == wrong );
+
+            // the fill covers 2 x 2 pixels for every logical pixel
+            ASSERT_TRUE( Near( PixelAt( frames[ 0 ], 120, 20 ), GUI::CColour( 250, 100, 0, 255 ) ) && Near( PixelAt( frames[ 0 ], 129, 29 ), GUI::CColour( 250, 100, 0, 255 ) ) );
+            ASSERT_FALSE( Near( PixelAt( frames[ 0 ], 130, 30 ), GUI::CColour( 250, 100, 0, 255 ) ) );
+
+            // the font of density 2 draws what the scaled up font of density 1 draws, and both draw something
+            UInt32 textDiffers = 0, inked = 0;
+            for ( Int32 y=0; y<30; ++y )
+                for ( Int32 x=0; x<200; ++x )
+                {
+                    GUI::CColour a = PixelAt( frames[ 0 ], 20 + x, 80 + y ), b = PixelAt( frames[ 0 ], 20 + x, 120 + y );
+                    if ( !Near( a, b, 0 ) )
+                        ++textDiffers;
+                    if ( Near( a, GUI::CColour( 255, 255, 255, 255 ) ) )
+                        ++inked;
+                }
+            ASSERT_TRUE( 0 == textDiffers && inked > 50 );
+
+            // RmlUi draws the same pixels
+            UInt32 different = 0;
+            for ( Int32 y=0; y<960; ++y )
+                for ( Int32 x=0; x<1280; ++x )
+                    if ( !Near( PixelAt( frames[ 0 ], x, y ), PixelAt( frames[ 1 ], x, y ) ) )
+                        ++different;
+            if ( 0 != different )
+                GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "At render scale 2 RmlUi differs from the reference in " << different << " pixels" );
+            ASSERT_TRUE( 0 == different );
+        }
+
+        // back at render scale 1 the frame is the logical resolution again
+        for ( UInt32 c=0; c<2 && GUCEF_NULL != contexts[ 1 ]; ++c )
+        {
+            contexts[ c ]->SetRenderScale( 1 );
+            contexts[ c ]->RenderFrame( 16 );
+            ASSERT_TRUE( contexts[ c ]->CaptureFrame( frames[ c ] ) && 640 == frames[ c ]->GetWidthInPixels() );
+        }
+    }
+    catch ( ... )
+    {
+        ERRORHERE;
+    }
+    GUCEF_TESTFW_TESTCASE_END
+
+    GUCEF_TESTFW_TESTCASE( "Render (RmlUi): The present filters the driver offers upscale the picture as each of them should" )
+    try
+    {
+        GUI::TGuiContextPtr rmlPtr = CreateRmlUiContextInWindow( 1280, 960 );
+        GUI::CGUIContext* rml = static_cast< GUI::CGUIContext* >( rmlPtr.GetPointerAlways() );
+        ASSERT_TRUE( GUCEF_NULL != rml && rml->GetDriver()->HasCapability( "PresentFilters" ) );
+        if ( GUCEF_NULL != rml )
+        {
+            GUI::CGUIContext::TPresentFilterNames filters = rml->GetAvailablePresentFilters();
+            bool hasMmpx = false, hasFsr = false, hasAnime4k = false;
+            for ( UInt32 i=0; i<(UInt32)filters.size(); ++i )
+            {
+                hasMmpx = hasMmpx || "mmpx" == filters[ i ];
+                hasFsr = hasFsr || "fsr" == filters[ i ];
+                hasAnime4k = hasAnime4k || "anime4k" == filters[ i ];
+            }
+            ASSERT_TRUE( hasMmpx && hasFsr );
+            GUI::CGUIContext::TPresentFilterParameters noParameters;
+            ASSERT_FALSE( rml->SetPresentFilter( "no such filter", noParameters ) );
+            ASSERT_TRUE( rml->GetPresentFilter().IsNULLOrEmpty() );
+
+            // pixel art: lines of 1:1 and 2:1 slopes, a thick diagonal, a flat block, on a flat background
+            const GUI::CColour background( 20, 30, 60, 255 ), white( 255, 255, 255, 255 ), red( 220, 40, 40, 255 ), yellow( 240, 200, 40, 255 );
+            IMAGE::TPixelMapPtr pattern = MakeSolidImage( 640, 480, background.r, background.g, background.b, 255 );
+            UInt8* data = static_cast< UInt8* >( pattern->GetDataPtr() );
+            struct SPut { static void At( UInt8* d, Int32 x, Int32 y, const GUI::CColour& c ) { UInt8* p = d + ( (size_t) y * 640 + x ) * 4; p[ 0 ] = c.r; p[ 1 ] = c.g; p[ 2 ] = c.b; p[ 3 ] = 255; } };
+            for ( Int32 i=0; i<200; ++i )
+            {
+                SPut::At( data, 100 + i, 100 + i, white );
+                SPut::At( data, 100 + i, 300 + i / 2, white );
+                for ( Int32 t=0; t<4; ++t )
+                    SPut::At( data, 360 + i + t, 60 + i, red );
+            }
+            for ( Int32 y=320; y<420; ++y )
+                for ( Int32 x=400; x<560; ++x )
+                    SPut::At( data, x, y, yellow );
+            rml->RegisterImage( "Pattern", pattern );
+            GUI::CWidget* frame = rml->CreateWidget( "ImageFrame", "Pattern", GUCEF_NULL );
+            frame->SetProperty( "Size", "1,0 1,0" );
+            frame->SetProperty( "Image", "Pattern" );
+            frame->SetProperty( "ScaleMode", "Stretch" );
+            rml->ShowRoot( frame, false );
+
+            IMAGE::TPixelMapPtr nearest, filtered;
+            rml->RenderFrame( 16 );
+            ASSERT_TRUE( rml->CapturePresentedFrame( nearest ) && 1280 == nearest->GetWidthInPixels() );
+            ASSERT_TRUE( Near( PixelAt( nearest, 1000, 700 ), yellow ) && Near( PixelAt( nearest, 201, 201 ), white ) );
+
+            struct SFilterCheck { const char* name; bool available; };
+            const SFilterCheck checks[] = { { "mmpx", hasMmpx }, { "fsr", hasFsr }, { "anime4k", hasAnime4k } };
+            for ( UInt32 c=0; c<3 && !nearest.IsNULL(); ++c )
+            {
+                if ( !checks[ c ].available )
+                    continue;
+                GUI::CGUIContext::TPresentFilterParameters parameters;
+                parameters[ "sharpness" ] = "0.5";
+                ASSERT_TRUE( rml->SetPresentFilter( checks[ c ].name, parameters ) );
+                rml->RenderFrame( 16 );
+                ASSERT_TRUE( rml->CapturePresentedFrame( filtered ) && !filtered.IsNULL() );
+                if ( filtered.IsNULL() )
+                    continue;
+
+                UInt32 differ = 0, notInPalette = 0, farOff = 0;
+                UInt64 totalDifference = 0;
+                for ( Int32 y=0; y<960; ++y )
+                {
+                    for ( Int32 x=0; x<1280; ++x )
+                    {
+                        GUI::CColour a = PixelAt( filtered, x, y ), n = PixelAt( nearest, x, y );
+                        Int32 d = abs( (Int32) a.r - n.r ) + abs( (Int32) a.g - n.g ) + abs( (Int32) a.b - n.b );
+                        totalDifference += (UInt64) d;
+                        if ( d > 3 )
+                            ++differ;
+                        if ( d > 96 )
+                            ++farOff;
+                        if ( !Near( a, background, 1 ) && !Near( a, white, 1 ) && !Near( a, red, 1 ) && !Near( a, yellow, 1 ) )
+                            ++notInPalette;
+                    }
+                }
+                Float64 meanDifference = (Float64) totalDifference / ( 1280.0 * 960.0 );
+                GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Present filter " << checks[ c ].name << ": " << differ << " pixels differ from nearest, " << notInPalette << " are not in the palette, mean difference " << meanDifference );
+
+                // every filter keeps a flat area flat and only changes the picture near edges
+                ASSERT_TRUE( Near( PixelAt( filtered, 960, 760 ), yellow, 6 ) && Near( PixelAt( filtered, 40, 900 ), background, 6 ) );
+                ASSERT_TRUE( differ > 200 && meanDifference < 8.0 );
+                if ( 0 == c )
+                {
+                    // pixel art stays pixel art: only colours of the picture
+                    ASSERT_TRUE( 0 == notInPalette );
+                }
+                else
+                {
+                    // the smooth upscalers blend edges
+                    ASSERT_TRUE( notInPalette > 200 && farOff < 20000 );
+                }
+            }
+
+            // without a filter it is the picture scaled as the present mode says again
+            ASSERT_TRUE( rml->SetPresentFilter( "", GUI::CGUIContext::TPresentFilterParameters() ) );
+            rml->RenderFrame( 16 );
+            ASSERT_TRUE( rml->CapturePresentedFrame( filtered ) && !filtered.IsNULL() && !nearest.IsNULL() );
+            UInt32 changed = 0;
+            for ( Int32 y=0; y<960 && !filtered.IsNULL(); y+=3 )
+                for ( Int32 x=0; x<1280; x+=3 )
+                    if ( !Near( PixelAt( filtered, x, y ), PixelAt( nearest, x, y ) ) )
+                        ++changed;
+            ASSERT_TRUE( 0 == changed );
+            rml->DestroyWidget( frame );
+        }
+    }
+    catch ( ... )
+    {
+        ERRORHERE;
+    }
+    GUCEF_TESTFW_TESTCASE_END
+
+    GUCEF_TESTFW_TESTCASE( "Render (RmlUi): The present pass shows the picture in the window as the present mode says" )
+    try
+    {
+        // each window pixel shows the picture pixel at its centre: blocks when scaled up, black around the picture
+        struct SCase { UInt32 windowWidth; UInt32 windowHeight; GUI::TPresentMode mode; };
+        const SCase cases[] = { { 1280, 960, GUI::PRESENTMODE_NEAREST }, { 1000, 600, GUI::PRESENTMODE_NEAREST }, { 1000, 600, GUI::PRESENTMODE_INTEGER } };
+        for ( size_t c=0; c<sizeof( cases ) / sizeof( cases[ 0 ] ); ++c )
+        {
+            GUI::TGuiContextPtr rmlPtr = CreateRmlUiContextInWindow( cases[ c ].windowWidth, cases[ c ].windowHeight );
+            GUI::CGUIContext* rml = static_cast< GUI::CGUIContext* >( rmlPtr.GetPointerAlways() );
+            ASSERT_TRUE( GUCEF_NULL != rml );
+            if ( GUCEF_NULL == rml )
+                continue;
+            rml->SetPresentMode( cases[ c ].mode );
+            BuildMixedScene( rml );
+            rml->RenderFrame( 16 );
+
+            IMAGE::TPixelMapPtr picture, presented;
+            ASSERT_TRUE( rml->CaptureFrame( picture ) );
+            ASSERT_TRUE( rml->CapturePresentedFrame( presented ) );
+            ASSERT_TRUE( !presented.IsNULL() && cases[ c ].windowWidth == presented->GetWidthInPixels() && cases[ c ].windowHeight == presented->GetHeightInPixels() );
+            if ( picture.IsNULL() || presented.IsNULL() )
+                continue;
+
+            const GUI::CRect area = rml->GetPresentRect();
+            UInt32 wrong = 0;
+            for ( Int32 y=0; y<(Int32) cases[ c ].windowHeight; ++y )
+            {
+                for ( Int32 x=0; x<(Int32) cases[ c ].windowWidth; ++x )
+                {
+                    const GUI::CColour actual = PixelAt( presented, x, y );
+                    if ( x < area.left || x >= area.Right() || y < area.top || y >= area.Bottom() )
+                    {
+                        if ( !Near( actual, Black ) )
+                            ++wrong;
+                        continue;
+                    }
+
+                    // a pixel centre exactly on the edge of two picture pixels may show either of them
+                    const double fx = ( ( x - area.left ) + 0.5 ) * 640.0 / area.width;
+                    const double fy = ( ( y - area.top ) + 0.5 ) * 480.0 / area.height;
+                    const Int32 px = (Int32) fx;
+                    const Int32 py = (Int32) fy;
+                    const bool edgeX = px > 0 && fx - px < 1e-6;
+                    const bool edgeY = py > 0 && fy - py < 1e-6;
+                    bool match = Near( actual, PixelAt( picture, px, py ) );
+                    if ( !match && edgeX )
+                        match = Near( actual, PixelAt( picture, px - 1, py ) );
+                    if ( !match && edgeY )
+                        match = Near( actual, PixelAt( picture, px, py - 1 ) );
+                    if ( !match && edgeX && edgeY )
+                        match = Near( actual, PixelAt( picture, px - 1, py - 1 ) );
+                    if ( !match )
+                        ++wrong;
+                }
+            }
+            if ( 0 != wrong )
+                GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "Present case " << (UInt32) c << ": " << wrong << " pixels differ" );
+            ASSERT_TRUE( 0 == wrong );
+        }
+    }
+    catch ( ... )
+    {
+        ERRORHERE;
+    }
+    GUCEF_TESTFW_TESTCASE_END
+
+    GUCEF_TESTFW_TESTCASE( "Render (RmlUi): A higher layer is drawn over the lower one in the same window, at its own resolution" )
+    try
+    {
+        GUI::TGuiContextPtr bottomPtr = CreateRmlUiContext();
+        GUI::CGUIContext* bottom = static_cast< GUI::CGUIContext* >( bottomPtr.GetPointerAlways() );
+        ASSERT_TRUE( GUCEF_NULL != bottom );
+        if ( GUCEF_NULL != bottom )
+        {
+            GUI::TGuiContextPtr topPtr = GUI::CGuiGlobal::Instance()->GetGuiManager().CreateGUIContext( "RmlUi", bottom->GetWindowContext() );
+            GUI::CGUIContext* top = static_cast< GUI::CGUIContext* >( topPtr.GetPointerAlways() );
+            ASSERT_TRUE( GUCEF_NULL != top );
+            top->SetLogicalResolution( 0, 0 );
+
+            // the layer numbers decide the order, not the order of making
+            bottom->SetLayer( 1 );
+            ASSERT_TRUE( top->IsBottomLayer() && !bottom->IsBottomLayer() );
+            top->SetLayer( 2 );
+            ASSERT_TRUE( bottom->IsBottomLayer() && !top->IsBottomLayer() );
+
+            GUI::CWidget* red = Screen( bottom );
+            red->SetColourProperty( "BackgroundColour", Red );
+            GUI::CWidget* overlay = top->CreateWidget( "Panel", "Overlay", GUCEF_NULL );
+            overlay->SetProperty( "Position", "0,100 0,100" );
+            overlay->SetProperty( "Size", "0,50 0,50" );
+            overlay->SetColourProperty( "BackgroundColour", Green );
+            top->ShowRoot( overlay, false );
+
+            bottom->RenderWindowLayers( 16 );
+            IMAGE::TPixelMapPtr presented;
+            ASSERT_TRUE( top->CapturePresentedFrame( presented ) );
+            ASSERT_TRUE( Near( PixelAt( presented, 10, 10 ), Red ) );
+            ASSERT_TRUE( Near( PixelAt( presented, 120, 120 ), Green ) );
+            ASSERT_TRUE( Near( PixelAt( presented, 160, 160 ), Red ) );
+
+            // without the higher layer the lower one is all there is
+            topPtr.Unlink();
+            ASSERT_TRUE( 1 == bottom->GetWindowContext()->GetGuiLayers().size() );
+            bottom->RenderWindowLayers( 16 );
+            ASSERT_TRUE( bottom->CapturePresentedFrame( presented ) );
+            ASSERT_TRUE( Near( PixelAt( presented, 120, 120 ), Red ) );
+        }
     }
     catch ( ... )
     {

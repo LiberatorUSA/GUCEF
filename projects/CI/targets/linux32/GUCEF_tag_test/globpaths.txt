@@ -38,7 +38,11 @@ dependencies/libjpeg/*
 dependencies/libmng/*
 dependencies/libpng/*
 dependencies/libsquish/*
+dependencies/libvpx/*
+dependencies/libwebm/*
+dependencies/ncnn/*
 dependencies/openexr/*
+dependencies/opus/*
 dependencies/pcre/*
 dependencies/tiff/libtiff/*
 dependencies/zlib/*
@@ -56,6 +60,7 @@ platform/gucefVFS/include/*
 platform/gucefVIDEO/include/*
 platform/gucefWEB/include/*
 plugins/AUDIO/audiodriverALSA/*
+plugins/GUI/fontpluginFREETYPE/*
 plugins/GUI/guidriverCEGUI/*
 plugins/GUI/guidriverEGL/*
 plugins/GUI/guidriverMyGUI/*
@@ -67,11 +72,13 @@ plugins/IMAGE/imgpluginDEVIL/*
 plugins/IMAGE/imgpluginFLIC/*
 plugins/IMAGE/imgpluginFreeImage/*
 plugins/IMAGE/imgpluginITV/*
+plugins/IMAGE/imgupscalepluginNCNN/*
 plugins/INPUT/inputdriverOIS/*
 plugins/INPUT/inputdriverXWINMSG/*
 plugins/PUBSUB/pubsubpluginAWSSNS/*
 plugins/PUBSUB/pubsubpluginAWSSQS/*
 plugins/SHARED/pluginglueAWSSDK/include/*
+plugins/VIDEO/videocodecpluginWEBM/*
 tests/gucefDRN_TestApp/*
 tests/gucefGUI_TestApp/*
 tests/gucefIMAGE_TestApp/*

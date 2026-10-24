@@ -25,7 +25,8 @@
 #include "gucefGUI_CWidgetTypeRegistry.h"
 #include "gucefGUI_CWidget.h"
 #include "gucefGUI_CPanel.h"
-#include "gucefGUI_CWindow.h"
+#include "gucefGUI_CWindow.h"
+#include "gucefGUI_CGroupBox.h"
 #include "gucefGUI_CLabel.h"
 #include "gucefGUI_CButton.h"
 #include "gucefGUI_CPushButton.h"
@@ -134,7 +135,8 @@ RegisterStandardWidgetTypes( CWidgetTypeRegistry& registry )
 
     CWidgetTypeInfo widget = Type( "Widget", "", "Base", GUCEF_NULL, "What every widget has" );
     widget.AddProperty( Prop( "Visible", PD::VALUETYPE_BOOL, "true", LAYOUTFLAGS, "Common", "Whether the widget and its children are shown" ) );
-    widget.AddProperty( Prop( "Enabled", PD::VALUETYPE_BOOL, "true", DEFAULTFLAGS, "Common", "Whether the widget reacts to input" ) );
+    widget.AddProperty( Prop( "Enabled", PD::VALUETYPE_BOOL, "true", DEFAULTFLAGS, "Common", "Whether the widget reacts to input" ) );
+    widget.AddProperty( Prop( "EnabledBy", PD::VALUETYPE_STRING, "", DEFAULTFLAGS, "Common", "The name of a check box in the same tree: the widget is enabled while it is checked, as an option that depends on another" ) );
     widget.AddProperty( Prop( "Position", PD::VALUETYPE_UVECTOR, "0,0 0,0", LAYOUTFLAGS, "Layout", "Position in the parent: per axis a part of the parent's size plus pixels" ) );
     widget.AddProperty( Prop( "Size", PD::VALUETYPE_UVECTOR, "", LAYOUTFLAGS, "Layout", "Size: per axis a part of the parent's size plus pixels; empty for the natural size" ) );
     widget.AddProperty( EnumProp( "HAlign", "Left", "Left,Center,Right", LAYOUTFLAGS, "Layout", "Which part of the widget is at the horizontal position" ) );
@@ -182,7 +184,16 @@ RegisterStandardWidgetTypes( CWidgetTypeRegistry& registry )
     margin.description = "Gives every child its area less the padding";
     registry.RegisterType( margin );
 
-    CWidgetTypeInfo window = Type( "Window", "Panel", "Containers", &CWindow::Create, "A panel with a title bar" );
+    CWidgetTypeInfo groupBox = Type( "GroupBox", "VBox", "Containers", &CGroupBox::Create, "A frame around related widgets, its caption in a gap of the top line; the children are placed below each other in it" );
+    groupBox.AddProperty( Prop( "Caption", PD::VALUETYPE_STRING, "", LAYOUTFLAGS, "Text", "What the group is about, in a gap of the top line" ) );
+    AddTextProperties( groupBox, "255,255,255,255" );
+    groupBox.AddProperty( Prop( "FrameColour", PD::VALUETYPE_COLOUR, "120,120,130,255", DEFAULTFLAGS, "Look", "The colour of the frame" ) );
+    groupBox.AddProperty( Prop( "AutoHeight", PD::VALUETYPE_BOOL, "true", LAYOUTFLAGS, "Layout", "The height is what the caption and the children need, the width comes from Size" ) );
+    groupBox.AddProperty( Prop( "Padding", PD::VALUETYPE_INT, "10", LAYOUTFLAGS, "Layout", "Pixels between the frame and the children (the caption adds its height at the top)" ) );
+    groupBox.AddProperty( Prop( "Spacing", PD::VALUETYPE_INT, "4", LAYOUTFLAGS, "Layout", "Pixels between two children" ) );
+    registry.RegisterType( groupBox );
+
+    CWidgetTypeInfo window = Type( "Window", "Panel", "Containers", &CWindow::Create, "A panel with a title bar" );
     window.AddProperty( Prop( "Title", PD::VALUETYPE_STRING, "", DEFAULTFLAGS, "Window", "The text in the title bar" ) );
     window.AddProperty( Prop( "TitleVisible", PD::VALUETYPE_BOOL, "true", DEFAULTFLAGS, "Window", "Whether the title bar is shown" ) );
     window.AddProperty( Prop( "TitleHeight", PD::VALUETYPE_INT, "20", DEFAULTFLAGS, "Window", "Height of the title bar" ) );
@@ -296,7 +307,7 @@ RegisterStandardWidgetTypes( CWidgetTypeRegistry& registry )
 
     CWidgetTypeInfo image = Type( "ImageFrame", "Widget", "Media", &CImageFrame::Create, "A picture, still or animated" );
     image.AddProperty( Prop( "Image", PD::VALUETYPE_IMAGE, "", LAYOUTFLAGS, "Look", "The picture: a name registered with the context or a VFS path" ) );
-    image.AddProperty( Prop( "SubRect", PD::VALUETYPE_RECT, "", LAYOUTFLAGS, "Look", "The part of the picture shown; empty for all of it" ) );
+    image.AddProperty( Prop( "SubRect", PD::VALUETYPE_RECT, "", LAYOUTFLAGS, "Look", "The part of the picture shown, in logical pixels of the picture; empty for all of it" ) );
     image.AddProperty( EnumProp( "ScaleMode", "Stretch", "Stretch,None,Fit,Integer,Center", DEFAULTFLAGS, "Look", "How the picture fills the frame" ) );
     image.AddProperty( Prop( "Tint", PD::VALUETYPE_COLOUR, "255,255,255,255", DEFAULTFLAGS, "Look", "Multiplies the colours of the picture" ) );
     image.AddProperty( Prop( "Smooth", PD::VALUETYPE_BOOL, "false", DEFAULTFLAGS, "Look", "Bilinear filtering when scaled; off keeps pixels sharp" ) );
@@ -375,7 +386,13 @@ RegisterStandardWidgetTypes( CWidgetTypeRegistry& registry )
     gridview.AddProperty( Prop( "Columns", PD::VALUETYPE_STRINGLIST, "", DEFAULTFLAGS, "Items", "The column titles" ) );
     gridview.AddProperty( Prop( "ColumnWidths", PD::VALUETYPE_INTLIST, "", DEFAULTFLAGS, "Items", "Widths of the columns in pixels; empty for equal widths" ) );
     gridview.AddProperty( Prop( "Rows", PD::VALUETYPE_STRINGLIST, "", DEFAULTFLAGS, "Items", "One entry per row, the cells separated by a tab" ) );
-    gridview.AddProperty( Prop( "SelectedRow", PD::VALUETYPE_INT, "-1", DEFAULTFLAGS, "Items", "The selected row, -1 for none" ) );
+    gridview.AddProperty( Prop( "SelectedRow", PD::VALUETYPE_INT, "-1", DEFAULTFLAGS, "Items", "The selected row (the cursor of a multiple selection), -1 for none" ) );
+    gridview.AddProperty( Prop( "MultiSelect", PD::VALUETYPE_BOOL, "false", DEFAULTFLAGS, "Items", "Whether several rows can be selected (Ctrl and Shift with clicks and keys)" ) );
+    gridview.AddProperty( Prop( "SelectedRows", PD::VALUETYPE_INTLIST, "", DEFAULTFLAGS, "Items", "The selected rows when MultiSelect is on" ) );
+    gridview.AddProperty( Prop( "AnchorRow", PD::VALUETYPE_INT, "-1", RUNTIMEFLAGS, "State", "Where a Shift selection starts" ) );
+    gridview.AddProperty( Prop( "Sortable", PD::VALUETYPE_BOOL, "false", DEFAULTFLAGS, "Items", "Whether a click on a column title sorts the rows by that column" ) );
+    gridview.AddProperty( Prop( "SortColumn", PD::VALUETYPE_INT, "-1", DEFAULTFLAGS, "Items", "The column the rows are sorted by, -1 for none (shows the arrow in the header)" ) );
+    gridview.AddProperty( Prop( "SortAscending", PD::VALUETYPE_BOOL, "true", DEFAULTFLAGS, "Items", "Whether the sort goes up" ) );
     gridview.AddProperty( Prop( "HeaderColour", PD::VALUETYPE_COLOUR, "50,50,50,255", DEFAULTFLAGS, "Look", "Background of the header row" ) );
     AddTextProperties( gridview, "255,255,255,255" );
     gridview.AddProperty( Prop( "Focusable", PD::VALUETYPE_BOOL, "true", DEFAULTFLAGS, "Input", "Whether the widget can get the keyboard focus" ) );

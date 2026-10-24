@@ -173,6 +173,15 @@ CTabControl::ShowActivePane( void )
 /*-------------------------------------------------------------------------*/
 
 void
+CTabControl::OnChildrenChanged( void )
+{GUCEF_TRACE;
+
+    ShowActivePane();
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
 CTabControl::OnPropertyChanged( const CString& name, const CString& oldValue, const CString& newValue )
 {GUCEF_TRACE;
 

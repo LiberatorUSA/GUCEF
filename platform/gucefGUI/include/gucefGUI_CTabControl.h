@@ -95,6 +95,9 @@ class GUCEF_GUI_PUBLIC_CPP CTabControl : public CWidget
 
     virtual void OnPropertyChanged( const CString& name, const CString& oldValue, const CString& newValue ) GUCEF_VIRTUAL_OVERRIDE;
 
+    /** A page added or taken away: the active one is shown, the others not */
+    virtual void OnChildrenChanged( void ) GUCEF_VIRTUAL_OVERRIDE;
+
     private:
 
     void ShowActivePane( void );

@@ -53,6 +53,11 @@
 #define GUCEF_CORE_CPLATFORMNATIVECONSOLELOGGER_H
 #endif /* GUCEF_CORE_CPLATFORMNATIVECONSOLELOGGER_H ? */
 
+#ifndef GUCEF_CORE_CLOGMANAGER_H
+#include "CLogManager.h"
+#define GUCEF_CORE_CLOGMANAGER_H
+#endif /* GUCEF_CORE_CLOGMANAGER_H ? */
+
 #ifndef GUCEF_MT_DVMTOSWRAP_H
 #include "gucefMT_dvmtoswrap.h"
 #define GUCEF_MT_DVMTOSWRAP_H
@@ -537,6 +542,127 @@ PerformDesktopTerminalConsoleLoggerTests( void )
         }
     GUCEF_TESTFW_TESTCASE_END
 
+    GUCEF_TESTFW_TESTCASE( "Test: The log manager switches its console log window on and off while the application runs" )
+        try
+        {
+            // the window is a fake terminal that writes what it shows to a file
+            ASSERT_TRUE( WriteExecutable( CORE::CombinePath( binDir, "xterm" ), fakeXterm ) );
+            CORE::DeleteFile( outPath );
+            CEnvironmentScope environment;
+            environment.Set( "PATH", searchPathWithFakes.C_String() );
+            environment.Set( "GUCEF_FAKE_TERMINAL_OUT", outPath.C_String() );
+            environment.Set( "TERMINAL", "xterm" );
+            environment.Set( "GUCEF_CONSOLE_LOGGER", "desktop" );
+
+            CORE::CLogManager& logManager = CORE::CCoreGlobal::Instance()->GetLogManager();
+            ASSERT_FALSE( logManager.IsNativeConsoleLoggerEnabled() );
+            logManager.SetNativeConsoleLoggerEnabled( true );
+            logManager.SetNativeConsoleLoggerEnabled( true );
+            ASSERT_TRUE( logManager.IsNativeConsoleLoggerEnabled() );
+            logManager.Log( CORE::LOG_STANDARD, CORE::LOGLEVEL_CRITICAL, "console log window: switched on" );
+            bool shown = false;
+            for ( UInt32 waited=0; !shown && waited<10000; waited+=10 )
+            {
+                logManager.FlushLogs();
+                CORE::CString content;
+                shown = CORE::LoadTextFileAsString( outPath, content, false ) && content.HasSubstr( "console log window: switched on", true ) >= 0;
+                if ( !shown )
+                    MT::ThreadDelay( 10 );
+            }
+            ASSERT_TRUE( shown );
+
+            // switched off it is no logger anymore: what is logged after that does not reach the window
+            logManager.SetNativeConsoleLoggerEnabled( false );
+            ASSERT_FALSE( logManager.IsNativeConsoleLoggerEnabled() );
+            logManager.Log( CORE::LOG_STANDARD, CORE::LOGLEVEL_CRITICAL, "console log window: switched off" );
+            logManager.FlushLogs();
+            MT::ThreadDelay( 200 );
+            CORE::CString content;
+            CORE::LoadTextFileAsString( outPath, content, false );
+            ASSERT_TRUE( content.HasSubstr( "console log window: switched off", true ) < 0 );
+            logManager.SetNativeConsoleLoggerEnabled( false );
+        }
+        catch ( ... )
+        {
+            ERRORHERE;
+        }
+    GUCEF_TESTFW_TESTCASE_END
+
+    GUCEF_TESTFW_TESTCASE( "Test: The log goes to a console window of its own when asked for, also from a terminal; the environment variable goes over it" )
+        try
+        {
+            typedef CORE::CPlatformNativeConsoleLogger L;
+
+            // without a wish for a window: the terminal first, a window of its own when there is no terminal
+            ASSERT_TRUE( L::CONSOLEKIND_TERMINAL == L::ChooseConsoleKind( GUCEF_NULL, true, true, false ) );
+            ASSERT_TRUE( L::CONSOLEKIND_DESKTOP_TERMINAL == L::ChooseConsoleKind( "", false, true, false ) );
+            ASSERT_TRUE( L::CONSOLEKIND_NONE == L::ChooseConsoleKind( "auto", false, false, false ) );
+
+            // a window of its own: also when started from a terminal, the terminal only when the desktop has no window to give
+            ASSERT_TRUE( L::CONSOLEKIND_DESKTOP_TERMINAL == L::ChooseConsoleKind( GUCEF_NULL, true, true, true ) );
+            ASSERT_TRUE( L::CONSOLEKIND_TERMINAL == L::ChooseConsoleKind( GUCEF_NULL, true, false, true ) );
+            ASSERT_TRUE( L::CONSOLEKIND_NONE == L::ChooseConsoleKind( GUCEF_NULL, false, false, true ) );
+
+            // GUCEF_CONSOLE_LOGGER decides when it is set
+            ASSERT_TRUE( L::CONSOLEKIND_TERMINAL == L::ChooseConsoleKind( "terminal", true, true, true ) );
+            ASSERT_TRUE( L::CONSOLEKIND_NONE == L::ChooseConsoleKind( "terminal", false, true, true ) );
+            ASSERT_TRUE( L::CONSOLEKIND_DESKTOP_TERMINAL == L::ChooseConsoleKind( "desktop", true, false, false ) );
+            ASSERT_TRUE( L::CONSOLEKIND_XTERM == L::ChooseConsoleKind( "xterm", true, true, false ) );
+            ASSERT_TRUE( L::CONSOLEKIND_NONE == L::ChooseConsoleKind( "none", true, true, true ) );
+
+            // the log manager keeps the choice; with the logger off it only remembers it
+            CORE::CLogManager& logManager = CORE::CCoreGlobal::Instance()->GetLogManager();
+            const bool wasEnabled = logManager.IsNativeConsoleLoggerEnabled();
+            const bool wasOwnWindow = logManager.IsNativeConsoleLoggerInOwnWindow();
+            logManager.SetNativeConsoleLoggerEnabled( false );
+            logManager.SetNativeConsoleLoggerInOwnWindow( !wasOwnWindow );
+            ASSERT_TRUE( !wasOwnWindow == logManager.IsNativeConsoleLoggerInOwnWindow() && !logManager.IsNativeConsoleLoggerEnabled() );
+            ASSERT_TRUE( GUCEF_NULL == logManager.GetNativeConsoleLogger() );
+            logManager.SetNativeConsoleLoggerFormatAsConsoleUI( true );
+            ASSERT_TRUE( logManager.IsNativeConsoleLoggerFormatAsConsoleUI() );
+            logManager.SetNativeConsoleLoggerFormatAsConsoleUI( false );
+            logManager.SetNativeConsoleLoggerInOwnWindow( wasOwnWindow );
+            logManager.SetNativeConsoleLoggerEnabled( wasEnabled );
+        }
+        catch ( ... )
+        {
+            ERRORHERE;
+        }
+    GUCEF_TESTFW_TESTCASE_END
+
+    GUCEF_TESTFW_TESTCASE( "Test: An application that ends with its console log window still on exits normally" )
+        try
+        {
+            // the window is a fake terminal again, the test app itself is the application
+            ASSERT_TRUE( WriteExecutable( CORE::CombinePath( binDir, "xterm" ), fakeXterm ) );
+            CORE::DeleteFile( outPath );
+            CEnvironmentScope environment;
+            environment.Set( "PATH", searchPathWithFakes.C_String() );
+            environment.Set( "GUCEF_FAKE_TERMINAL_OUT", outPath.C_String() );
+            environment.Set( "TERMINAL", "xterm" );
+            environment.Set( "GUCEF_CONSOLE_LOGGER", "desktop" );
+
+            char exePath[ 4096 ];
+            ssize_t exePathLength = readlink( "/proc/self/exe", exePath, sizeof( exePath ) - 1 );
+            ASSERT_TRUE( exePathLength > 0 );
+            exePath[ exePathLength ] = '\0';
+
+            CORE::CProcess::TStringVector args;
+            args.push_back( GUCEF_CORE_TESTAPP_EXIT_WITH_CONSOLE_LOG_WINDOW_ARG );
+            CORE::CProcess application;
+            ASSERT_TRUE( application.Launch( exePath, args, workDir ) );
+            Int32 exitCode = -1;
+            ASSERT_TRUE( application.WaitForExit( 60000, exitCode ) );
+
+            // the window was on (else 2) and the exit went without an abort (128 + SIGABRT) or a crash
+            ASSERT_TRUE( 0 == exitCode );
+        }
+        catch ( ... )
+        {
+            ERRORHERE;
+        }
+    GUCEF_TESTFW_TESTCASE_END
+
     CORE::Remove_Directory( workDir.C_String(), 1 );
 
     #else
@@ -544,6 +670,23 @@ PerformDesktopTerminalConsoleLoggerTests( void )
     GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Desktop terminal console logger TESTS skipped: they are for Linux" );
 
     #endif /* GUCEF_LINUX_BUILD ? */
+}
+
+/*-------------------------------------------------------------------------*/
+
+int
+RunExitWithConsoleLogWindow( void )
+{GUCEF_TRACE;
+
+    // as an application with the console log window switched on in its settings, which it leaves on at the exit
+    CORE::CLogManager& logManager = CORE::CCoreGlobal::Instance()->GetLogManager();
+    logManager.SetNativeConsoleLoggerInOwnWindow( true );
+    logManager.SetNativeConsoleLoggerEnabled( true );
+    if ( !logManager.IsNativeConsoleLoggerEnabled() )
+        return 2;
+    logManager.Log( CORE::LOG_STANDARD, CORE::LOGLEVEL_CRITICAL, "console log window: on until the exit" );
+    logManager.FlushLogs();
+    return 0;
 }
 
 /*-------------------------------------------------------------------------*/

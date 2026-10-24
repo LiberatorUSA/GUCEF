@@ -85,11 +85,11 @@ CDataNode::CDataNode( const CDataNode& src )
     , m_nodeType( src.m_nodeType )
     , _name( src._name )       
     , m_value( src.m_value ) 
-    , _atts( src._atts )       
-    , _pparent( src._pparent ) 
-    , _pnext( src._pnext )     
-    , _pprev( src._pprev )     
-    , m_children()
+    , _atts( src._atts )       
+    , _pparent( GUCEF_NULL )    // a copy is a node of its own: it is not in the tree of the original (AddChild() links it)
+    , _pnext( GUCEF_NULL )     
+    , _pprev( GUCEF_NULL )     
+    , m_children()
     , m_associatedData( GUCEF_NULL )
 {GUCEF_TRACE;
     
@@ -121,8 +121,16 @@ CDataNode::CDataNode( CDataNode&& src ) GUCEF_NOEXCEPT
     , m_associatedData( src.m_associatedData )
 {GUCEF_TRACE;
 
-    // reset source to default constructor values
-    src.m_nodeType = GUCEF_DATATYPE_OBJECT;
+    // the children came along: they are the children of this node now
+    TDataNodeList::iterator child = m_children.begin();
+    while ( child != m_children.end() )
+    {
+        (*child)->_pparent = this;
+        ++child;
+    }
+
+    // reset source to default constructor values
+    src.m_nodeType = GUCEF_DATATYPE_OBJECT;
     src._pparent = GUCEF_NULL;
     src._pnext = GUCEF_NULL;
     src._pprev = GUCEF_NULL;    

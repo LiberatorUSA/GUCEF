@@ -518,6 +518,49 @@ PerformDStoreStreamingTests( void )
         }
     GUCEF_TESTFW_TESTCASE_END
 
+    GUCEF_TESTFW_TESTCASE( "Test: JSON objects with a single member keep their name and level when written back" )
+        try
+        {
+            TCodecPtr codec;
+            ASSERT_TRUE( GetCodec( "json", "dstorepluginJSONPARSER", codec ) );
+            if ( !codec.IsNULL() )
+            {
+                // read, write, read again: the objects with one member stay objects at their level
+                const char* text = "{ \"Other\": { \"keep\": \"yes\" }, \"Outer\": { \"Inner\": { \"value\": 7 } } }";
+                CORE::CDynamicBuffer input;
+                input.CopyFrom( (UInt32) strlen( text ), text );
+                CORE::CDynamicBufferAccess inputAccess( input );
+                CORE::CDataNode tree;
+                ASSERT_TRUE( codec->BuildDataTree( &tree, &inputAccess ) );
+
+                // and a node holding a value, made in code, stays a value of its parent
+                CORE::CDataNode* main = tree.Structure( "Main", '/' );
+                main->AddValueAsChild( CORE::CVariant( (Int32) 5 ), false, "count" );
+
+                CORE::CDynamicBuffer output;
+                {
+                    CORE::CDynamicBufferAccess outputAccess( &output, false );
+                    ASSERT_TRUE( codec->StoreDataTree( &tree, &outputAccess ) );
+                }
+                CORE::CDynamicBufferAccess rereadAccess( output );
+                CORE::CDataNode reread;
+                ASSERT_TRUE( codec->BuildDataTree( &reread, &rereadAccess ) );
+
+                const CORE::CDataNode* other = reread.Search( "Other", '/', true, true );
+                ASSERT_TRUE( GUCEF_NULL != other && "yes" == other->GetAttributeValueOrChildValueByName( "keep" ).AsString() );
+                const CORE::CDataNode* inner = reread.Search( "Outer/Inner", '/', true, true );
+                ASSERT_TRUE( GUCEF_NULL != inner && 7 == inner->GetAttributeValueOrChildValueByName( "value" ).AsInt32() );
+                const CORE::CDataNode* readMain = reread.Search( "Main", '/', true, true );
+                ASSERT_TRUE( GUCEF_NULL != readMain && 5 == readMain->GetAttributeValueOrChildValueByName( "count" ).AsInt32() );
+                ASSERT_TRUE( GUCEF_NULL == reread.Search( "keep", '/', true, true ) && GUCEF_NULL == reread.GetAttribute( "keep" ) );
+            }
+        }
+        catch ( ... )
+        {
+            ERRORHERE;
+        }
+    GUCEF_TESTFW_TESTCASE_END
+
     GUCEF_TESTFW_TESTCASE( "Test: A large document is written and read one record at a time" )
         try
         {

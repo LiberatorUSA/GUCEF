@@ -216,6 +216,16 @@ DownArrow( CWidgetPainter::TCommandVector& commands, const CRect& box, const CCo
         Line( commands, cx - 3 + i, cy - 1 + i, cx + 3 - i, cy - 1 + i, colour );
 }
 
+/** A small arrow pointing up, for an ascending sort in a header */
+void
+UpArrow( CWidgetPainter::TCommandVector& commands, const CRect& box, const CColour& colour )
+{
+    Int32 cx = box.left + box.width / 2;
+    Int32 cy = box.top + box.height / 2;
+    for ( Int32 i=0; i<4; ++i )
+        Line( commands, cx - 3 + i, cy + 2 - i, cx + 3 - i, cy + 2 - i, colour );
+}
+
 }
 
 /*-------------------------------------------------------------------------//
@@ -330,14 +340,13 @@ CWidgetPainter::PaintImage( const CWidget& widget, CGUIContext& context, const C
 
     Fill( commands, area, ColourOr( widget, "BackgroundColour", CColour( 0, 0, 0, 0 ) ) );
     CString image = widget.GetProperty( "Image" );
-    IMAGE::TPixelMapPtr pixels;
-    UInt32 revision = 0;
-    if ( image.IsNULLOrEmpty() || !context.ResolveImage( image, pixels, revision ) )
+    Int32 imageWidth = 0, imageHeight = 0;
+    if ( image.IsNULLOrEmpty() || !context.GetImageLogicalSize( image, imageWidth, imageHeight ) )
         return;
 
     CRect source = widget.GetRectProperty( "SubRect" );
-    Int32 w = source.IsEmpty() ? (Int32) pixels->GetWidthInPixels() : source.width;
-    Int32 h = source.IsEmpty() ? (Int32) pixels->GetHeightInPixels() : source.height;
+    Int32 w = source.IsEmpty() ? imageWidth : source.width;
+    Int32 h = source.IsEmpty() ? imageHeight : source.height;
     CRect target = FitImage( w, h, area, widget.GetProperty( "ScaleMode" ) );
     Image( commands, image, target, source, ColourOr( widget, "Tint", CColour( 255, 255, 255, 255 ) ) );
 }
@@ -502,18 +511,27 @@ CWidgetPainter::PaintRows( const CWidget& widget, CGUIContext& context, const CR
         CGridView::TStringVector columns = widget.GetStringListProperty( "Columns" );
         Fill( commands, CRect( area.left, area.top, area.width, rowHeight ), ColourOr( widget, "HeaderColour", CColour( 50, 50, 50, 255 ) ) );
         Int32 x = area.left;
+        Int32 sortColumn = widget.GetIntProperty( "SortColumn" );
         for ( UInt32 c=0; c<(UInt32)widths.size(); ++c )
         {
             if ( c < (UInt32) columns.size() )
                 Text( commands, font, columns[ c ], x + 2, area.top, textColour );
+            if ( (Int32) c == sortColumn && widths[ c ] > 16 )
+            {
+                // the arrow of the sort, at the right of the title
+                CRect arrowBox( x + widths[ c ] - 14, area.top, 12, rowHeight );
+                if ( widget.GetBoolProperty( "SortAscending" ) )
+                    UpArrow( commands, arrowBox, textColour );
+                else
+                    DownArrow( commands, arrowBox, textColour );
+            }
             x += widths[ c ];
         }
-        Int32 selectedRow = widget.GetIntProperty( "SelectedRow" );
         Int32 y = area.top + rowHeight;
         for ( Int32 row = scroll; row < (Int32) grid->GetRowCount() && y < area.Bottom(); ++row, y += rowHeight )
         {
             CRect rowRect( area.left, y, area.width, rowHeight );
-            if ( row == selectedRow )
+            if ( grid->IsRowSelected( row ) )
                 Fill( commands, rowRect, selectionColour );
             CGridView::TStringVector cells = grid->GetRowCells( (UInt32) row );
             x = area.left;
@@ -711,8 +729,37 @@ CWidgetPainter::Paint( const CWidget& widget, CGUIContext& context, TCommandVect
         return;
     }
 
-    // panels, forms, the containers, windows and plain widgets
-    PaintBox( widget, area, commands );
+    // panels, forms, the containers, windows and plain widgets
+    PaintBox( widget, area, commands );
+    if ( IsA( widget, "GroupBox" ) )
+    {
+        // the frame; its top line goes through the middle of the caption, with a gap where the caption is
+        CString caption = widget.GetProperty( "Caption" );
+        CString font = widget.GetProperty( "Font" );
+        Int32 captionHeight = caption.IsNULLOrEmpty() ? 0 : context.GetLineHeight( font );
+        Int32 lineY = captionHeight / 2;
+        Int32 right = area.width - 1;
+        Int32 bottom = area.height - 1;
+        CColour frame = ColourOr( widget, "FrameColour", CColour( 120, 120, 130, 255 ) );
+        Line( commands, 0, lineY, 0, bottom, frame );
+        Line( commands, right, lineY, right, bottom, frame );
+        Line( commands, 0, bottom, right, bottom, frame );
+        if ( captionHeight > 0 )
+        {
+            Int32 textWidth = 0, textHeight = 0;
+            context.MeasureText( font, caption, 0, textWidth, textHeight );
+            const Int32 gapLeft = 8;
+            const Int32 gapRight = gapLeft + 4 + textWidth + 4;
+            Line( commands, 0, lineY, gapLeft, lineY, frame );
+            if ( gapRight < right )
+                Line( commands, gapRight, lineY, right, lineY, frame );
+            PaintText( context, font, caption, CRect( gapLeft + 4, 0, textWidth + 1, captionHeight ), "Left", "Center", false, TextColourOf( widget ), commands );
+        }
+        else
+        {
+            Line( commands, 0, 0, right, 0, frame );
+        }
+    }
     if ( IsA( widget, "Window" ) && widget.GetBoolProperty( "TitleVisible" ) )
     {
         Int32 titleHeight = widget.GetIntProperty( "TitleHeight" );
@@ -755,15 +802,14 @@ CWidgetPainter::PaintOverlay( CGUIContext& context, TCommandVector& commands )
         }
     }
 
-    // the cursor picture
-    if ( context.IsCursorVisible() && !context.GetCursorImage().IsNULLOrEmpty() )
+    // the cursor picture, not while a layer above takes the input (it has the pointer then)
+    if ( context.IsCursorVisible() && !context.GetCursorImage().IsNULLOrEmpty() && !context.HasHigherLayerTakingInput() )
     {
-        IMAGE::TPixelMapPtr pixels;
-        UInt32 revision = 0;
-        if ( context.ResolveImage( context.GetCursorImage(), pixels, revision ) )
+        Int32 cursorWidth = 0, cursorHeight = 0;
+        if ( context.GetImageLogicalSize( context.GetCursorImage(), cursorWidth, cursorHeight ) )
         {
             CRect target( context.GetPointerX() - context.GetCursorHotspotX(), context.GetPointerY() - context.GetCursorHotspotY(),
-                          (Int32) pixels->GetWidthInPixels(), (Int32) pixels->GetHeightInPixels() );
+                          cursorWidth, cursorHeight );
             Image( commands, context.GetCursorImage(), target, CRect(), CColour( 255, 255, 255, 255 ) );
         }
     }

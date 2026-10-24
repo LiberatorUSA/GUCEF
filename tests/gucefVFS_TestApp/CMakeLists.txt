@@ -15,10 +15,12 @@ set( HEADER_FILES
   include/TestArchiveUtils.h
   include/TestCode_VFSFileLoadUnloadTest.h
   include/TestCueBinArchive.h
+  include/TestFileSystemAccess.h
   include/TestIso9660Archive.h
   include/TestItvArchive.h
   include/TestLibArchive.h
   include/TestMountFromResource.h
+  include/TestVfsConfig.h
   include/TestZipArchiveWriter.h
 )
 
@@ -26,10 +28,12 @@ set( SOURCE_FILES
   src/TestArchiveUtils.cpp
   src/TestCode_VFSFileLoadUnloadTest.cpp
   src/TestCueBinArchive.cpp
+  src/TestFileSystemAccess.cpp
   src/TestIso9660Archive.cpp
   src/TestItvArchive.cpp
   src/TestLibArchive.cpp
   src/TestMountFromResource.cpp
+  src/TestVfsConfig.cpp
   src/TestZipArchiveWriter.cpp
   src/gucefVFS_TestApp.cpp
 )

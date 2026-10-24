@@ -90,52 +90,54 @@ CPanel::GetNaturalSize( Int32& width, Int32& height ) const
 
     const CString& type = GetType();
     if ( type == "HBox" || type == "VBox" )
-    {
-        Int32 padding = GetIntProperty( "Padding" );
-        Int32 spacing = GetIntProperty( "Spacing" );
-        bool horizontal = type == "HBox";
-        Int32 count = 0;
-        const TWidgetVector& children = GetChildren();
-        for ( UInt32 i=0; i<(UInt32)children.size(); ++i )
-        {
-            if ( !children[ i ]->IsVisible() )
-                continue;
-            CUVector size;
-            children[ i ]->GetSize( size );
-            Int32 w = size.GetX().GetPixelValue();
-            Int32 h = size.GetY().GetPixelValue();
-            if ( horizontal )
-            {
-                width += w;
-                if ( h > height ) height = h;
-            }
-            else
-            {
-                height += h;
-                if ( w > width ) width = w;
-            }
-            ++count;
-        }
-        if ( count > 1 )
-        {
-            if ( horizontal ) width += ( count - 1 ) * spacing;
-            else height += ( count - 1 ) * spacing;
-        }
-        width += 2 * padding;
-        height += 2 * padding;
-        return true;
-    }
+        return GetStackNaturalSize( type == "HBox", width, height );
 
     CString image = GetProperty( "BackgroundImage" );
-    IMAGE::TPixelMapPtr pixels;
-    UInt32 revision = 0;
-    if ( !image.IsNULLOrEmpty() && context->ResolveImage( image, pixels, revision ) )
+    return !image.IsNULLOrEmpty() && context->GetImageLogicalSize( image, width, height );
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CPanel::GetStackNaturalSize( bool horizontal, Int32& width, Int32& height ) const
+{GUCEF_TRACE;
+
+    width = height = 0;
+    if ( GUCEF_NULL == GetContext() )
+        return false;
+
+    Int32 padding = GetIntProperty( "Padding" );
+    Int32 spacing = GetIntProperty( "Spacing" );
+    Int32 count = 0;
+    const TWidgetVector& children = GetChildren();
+    for ( UInt32 i=0; i<(UInt32)children.size(); ++i )
     {
-        width = (Int32) pixels->GetWidthInPixels();
-        height = (Int32) pixels->GetHeightInPixels();
-        return true;
+        if ( !children[ i ]->IsVisible() )
+            continue;
+        CUVector size;
+        children[ i ]->GetSize( size );
+        Int32 w = size.GetX().GetPixelValue();
+        Int32 h = size.GetY().GetPixelValue();
+        if ( horizontal )
+        {
+            width += w;
+            if ( h > height ) height = h;
+        }
+        else
+        {
+            height += h;
+            if ( w > width ) width = w;
+        }
+        ++count;
     }
-    return false;
+    if ( count > 1 )
+    {
+        if ( horizontal ) width += ( count - 1 ) * spacing;
+        else height += ( count - 1 ) * spacing;
+    }
+    width += 2 * padding;
+    height += 2 * padding;
+    return true;
 }
 
 /*-------------------------------------------------------------------------*/

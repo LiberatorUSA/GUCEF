@@ -57,10 +57,12 @@ if ( ANDROID64 )
 endif( ANDROID64 )
 
 if ( EMSCRIPTEN32 )
+  add_dependencies( ${MODULE_NAME} zlib )
   set_property( TARGET ${MODULE_NAME} APPEND_STRING PROPERTY COMPILE_DEFINITIONS "MODULE_API_PREFIX=vfspluginZIP" )
 endif( EMSCRIPTEN32 )
 
 if ( EMSCRIPTEN64 )
+  add_dependencies( ${MODULE_NAME} zlib )
   set_property( TARGET ${MODULE_NAME} APPEND_STRING PROPERTY COMPILE_DEFINITIONS "MODULE_API_PREFIX=vfspluginZIP" )
 endif( EMSCRIPTEN64 )
 
@@ -93,6 +95,14 @@ endif( ANDROID32 )
 if ( ANDROID64 )
   include_directories( ../../../platform/gucefCORE/include/android )
 endif( ANDROID64 )
+
+if ( EMSCRIPTEN32 )
+  include_directories( ../../../dependencies/zlib )
+endif( EMSCRIPTEN32 )
+
+if ( EMSCRIPTEN64 )
+  include_directories( ../../../dependencies/zlib )
+endif( EMSCRIPTEN64 )
 
 if ( LINUX32 )
   include_directories( ../../../dependencies/zlib ../../../platform/gucefCORE/include/linux )

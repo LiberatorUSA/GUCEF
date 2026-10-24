@@ -133,24 +133,33 @@ class CRmlUIQuadBuilder
         , m_isFont( false )
         , m_textureWidth( 0 )
         , m_textureHeight( 0 )
+        , m_density( 1 )
+        , m_scale( (Int32) context.GetRenderScale() )
     {
     }
 
     void UseColour( void )
     {
-        Use( CString::Empty, false, 0, 0 );
+        Use( CString::Empty, false, 0, 0, 1 );
     }
 
-    void Use( const CString& texture, bool isFont, Int32 width, Int32 height )
+    void Use( const CString& texture, bool isFont, Int32 width, Int32 height, UInt32 density )
     {
-        if ( texture != m_texture || isFont != m_isFont || width != m_textureWidth || height != m_textureHeight )
+        if ( texture != m_texture || isFont != m_isFont || width != m_textureWidth || height != m_textureHeight || density != m_density )
         {
             Flush();
             m_texture = texture;
             m_isFont = isFont;
             m_textureWidth = width;
             m_textureHeight = height;
+            m_density = density;
         }
+    }
+
+    /** A rectangle in logical pixels in the pixels of the frame, which is drawn at the render scale */
+    GUI::CRect ToFrame( const GUI::CRect& rect ) const
+    {
+        return GUI::CRect( rect.left * m_scale, rect.top * m_scale, rect.width * m_scale, rect.height * m_scale );
     }
 
     /** A rectangle of one colour */
@@ -190,6 +199,7 @@ class CRmlUIQuadBuilder
         batch.isFont = m_isFont;
         batch.textureWidth = m_textureWidth;
         batch.textureHeight = m_textureHeight;
+        batch.density = m_density;
         m_batches.push_back( std::move( batch ) );
         m_mesh = Rml::Mesh();
     }
@@ -229,6 +239,8 @@ class CRmlUIQuadBuilder
     bool m_isFont;
     Int32 m_textureWidth;
     Int32 m_textureHeight;
+    UInt32 m_density;
+    Int32 m_scale;
 };
 
 /*-------------------------------------------------------------------------*/
@@ -296,7 +308,8 @@ CRmlUIQuadBuilder::Glyphs( const CString& font, const CString& text, Int32 x, In
     Int32 width = 0, height = 0;
     if ( !m_context.HasFontTexture( font, width, height ) )
         return;
-    Use( font, true, width, height );
+    const Int32 density = (Int32) bitmapFont->GetDensity();
+    Use( font, true, width, height, (UInt32) density );
 
     Rml::ColourbPremultiplied tint = Premultiplied( colour, Scaled( colour.a, opacity ) );
     GUI::TCodePointVector codePoints;
@@ -311,7 +324,9 @@ CRmlUIQuadBuilder::Glyphs( const CString& font, const CString& text, Int32 x, In
         if ( !first )
             pen += bitmapFont->GetSpacing();
         first = false;
-        GUI::CRect destination( pen + glyph->offsetX, y + glyph->offsetY, glyph->source.width, glyph->source.height );
+        // the glyph covers its source size divided by the density of the font, drawn at the render scale
+        GUI::CRect destination( ( pen + glyph->offsetX ) * m_scale, ( y + glyph->offsetY ) * m_scale,
+                                glyph->source.width * m_scale / density, glyph->source.height * m_scale / density );
         Image( destination, glyph->source, clip, tint );
         pen += glyph->advance;
     }
@@ -322,8 +337,9 @@ CRmlUIQuadBuilder::Glyphs( const CString& font, const CString& text, Int32 x, In
 void
 CRmlUIQuadBuilder::Execute( const GUI::CDrawSurface::TCommandVector& commands, const GUI::CRect& clip, Float32 opacity, Int32 offsetX, Int32 offsetY )
 {
+    // the commands are in logical pixels, the frame is drawn at the render scale (as the software renderer does)
     GUCEF::vector< GUI::CRect > clips;
-    clips.push_back( clip );
+    clips.push_back( ToFrame( clip ) );
     for ( UInt32 i=0; i<(UInt32)commands.size(); ++i )
     {
         const GUI::CDrawSurface::TCommand& command = commands[ i ];
@@ -334,37 +350,42 @@ CRmlUIQuadBuilder::Execute( const GUI::CDrawSurface::TCommandVector& commands, c
         {
             case GUI::CDrawSurface::COMMAND_FILLRECT:
             {
-                Fill( rect, current, colour );
+                Fill( ToFrame( rect ), current, colour );
                 break;
             }
             case GUI::CDrawSurface::COMMAND_STROKERECT:
             {
                 Int32 t = command.thickness < 1 ? 1 : command.thickness;
-                Fill( GUI::CRect( rect.left, rect.top, rect.width, t ), current, colour );
-                Fill( GUI::CRect( rect.left, rect.Bottom() - t, rect.width, t ), current, colour );
-                Fill( GUI::CRect( rect.left, rect.top + t, t, rect.height - 2*t ), current, colour );
-                Fill( GUI::CRect( rect.Right() - t, rect.top + t, t, rect.height - 2*t ), current, colour );
+                Fill( ToFrame( GUI::CRect( rect.left, rect.top, rect.width, t ) ), current, colour );
+                Fill( ToFrame( GUI::CRect( rect.left, rect.Bottom() - t, rect.width, t ) ), current, colour );
+                Fill( ToFrame( GUI::CRect( rect.left, rect.top + t, t, rect.height - 2*t ) ), current, colour );
+                Fill( ToFrame( GUI::CRect( rect.Right() - t, rect.top + t, t, rect.height - 2*t ) ), current, colour );
                 break;
             }
             case GUI::CDrawSurface::COMMAND_LINE:
             {
-                Line( command.x0 + offsetX, command.y0 + offsetY, command.x1 + offsetX, command.y1 + offsetY, command.thickness, current, colour );
+                Line( ( command.x0 + offsetX ) * m_scale, ( command.y0 + offsetY ) * m_scale, ( command.x1 + offsetX ) * m_scale, ( command.y1 + offsetY ) * m_scale,
+                      command.thickness * m_scale, current, colour );
                 break;
             }
             case GUI::CDrawSurface::COMMAND_POINTS:
             {
                 for ( UInt32 p=0; p<(UInt32)command.points.size(); ++p )
-                    Fill( GUI::CRect( command.points[ p ].x + offsetX, command.points[ p ].y + offsetY, 1, 1 ), current, colour );
+                    Fill( ToFrame( GUI::CRect( command.points[ p ].x + offsetX, command.points[ p ].y + offsetY, 1, 1 ) ), current, colour );
                 break;
             }
             case GUI::CDrawSurface::COMMAND_IMAGE:
             {
+                // the source is in logical pixels of the image: its pixels divided by its density
                 Int32 width = 0, height = 0;
                 if ( m_context.HasImageTexture( command.image, width, height ) )
                 {
-                    Use( command.image, false, width, height );
-                    GUI::CRect source = command.source.IsEmpty() ? GUI::CRect( 0, 0, width, height ) : command.source;
-                    Image( rect, source, current, colour );
+                    const UInt32 density = m_context.GetImageDensity( command.image );
+                    Use( command.image, false, width, height, density );
+                    GUI::CRect source = command.source.IsEmpty() ? GUI::CRect( 0, 0, width, height ) :
+                        GUI::CRect( command.source.left * (Int32) density, command.source.top * (Int32) density,
+                                    command.source.width * (Int32) density, command.source.height * (Int32) density );
+                    Image( ToFrame( rect ), source, current, colour );
                 }
                 break;
             }
@@ -375,7 +396,7 @@ CRmlUIQuadBuilder::Execute( const GUI::CDrawSurface::TCommandVector& commands, c
             }
             case GUI::CDrawSurface::COMMAND_PUSHCLIP:
             {
-                clips.push_back( current.Intersection( rect ) );
+                clips.push_back( current.Intersection( ToFrame( rect ) ) );
                 break;
             }
             case GUI::CDrawSurface::COMMAND_POPCLIP:
@@ -412,6 +433,7 @@ CRmlUIWidgetElement::CRmlUIWidgetElement( const Rml::String& tag )
     , m_commands()
     , m_clip()
     , m_opacity( 1.0f )
+    , m_renderScale( 1 )
     , m_batches()
     , m_buildCount( 0 )
 {GUCEF_TRACE;
@@ -472,7 +494,7 @@ bool
 CRmlUIWidgetElement::IsUpToDate( const GUI::CDrawSurface::TCommandVector& commands, const GUI::CRect& clip, Float32 opacity ) const
 {GUCEF_TRACE;
 
-    if ( !m_valid || !( clip == m_clip ) || opacity != m_opacity || commands.size() != m_commands.size() )
+    if ( !m_valid || !( clip == m_clip ) || opacity != m_opacity || commands.size() != m_commands.size() || m_context->GetRenderScale() != m_renderScale )
         return false;
     for ( size_t i=0; i<commands.size(); ++i )
         if ( !SameCommand( commands[ i ], m_commands[ i ] ) )
@@ -487,6 +509,19 @@ CRmlUIWidgetElement::IsUpToDate( const GUI::CDrawSurface::TCommandVector& comman
         Int32 width = 0, height = 0;
         bool known = batch.isFont ? m_context->HasFontTexture( batch.texture, width, height ) : m_context->HasImageTexture( batch.texture, width, height );
         if ( !known || width != batch.textureWidth || height != batch.textureHeight )
+            return false;
+        // a density that changed moves the texture coordinates too
+        UInt32 density = 1;
+        if ( batch.isFont )
+        {
+            GUI::TBitmapFontPtr font = m_context->GetBitmapFont( batch.texture );
+            density = font.IsNULL() ? 1 : font->GetDensity();
+        }
+        else
+        {
+            density = m_context->GetImageDensity( batch.texture );
+        }
+        if ( density != batch.density )
             return false;
     }
     return true;
@@ -516,6 +551,7 @@ CRmlUIWidgetElement::Build( const GUI::CDrawSurface::TCommandVector& commands, c
     m_commands = commands;
     m_clip = clip;
     m_opacity = opacity;
+    m_renderScale = m_context->GetRenderScale();
     m_valid = true;
     ++m_buildCount;
 }

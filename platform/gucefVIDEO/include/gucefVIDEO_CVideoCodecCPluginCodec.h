@@ -56,8 +56,8 @@ class CVideoCodecCPluginInstance;
 
 /**
  *  One codec type of a C codec plugin, as a CIVideoCodec. The plugin manager makes one per type the plugin
- *  offers and registers it in the codec registry. Sources it opens keep the plugin codec instance alive, and
- *  end (instead of failing badly) when the plugin is unloaded while they are open.
+ *  offers and registers it in the codec registry. Sources and sinks it opens keep the plugin codec instance
+ *  alive, and end (instead of failing badly) when the plugin is unloaded while they are open.
  */
 class GUCEF_VIDEO_PUBLIC_CPP CVideoCodecCPluginCodec : public CIVideoCodec
 {
@@ -76,6 +76,9 @@ class GUCEF_VIDEO_PUBLIC_CPP CVideoCodecCPluginCodec : public CIVideoCodec
     /** The format, length and audio tracks, from opening the video, plus whatever the plugin reads as tags */
     virtual bool DecodeMetaData( CORE::CIOAccess& encodedInput, CORE::CValueList& metaData ) GUCEF_VIRTUAL_OVERRIDE;
 
+    /** True when the plugin has the sink functions */
+    virtual bool CanEncode( void ) const GUCEF_VIRTUAL_OVERRIDE;
+
     virtual CString GetType( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
     virtual const CString& GetClassTypeName( void ) const GUCEF_VIRTUAL_OVERRIDE;
@@ -87,6 +90,8 @@ class GUCEF_VIDEO_PUBLIC_CPP CVideoCodecCPluginCodec : public CIVideoCodec
     protected:
 
     virtual bool OpenSourceImpl( CORE::CIOAccess* input, const TIOAccessPtr& owner, const CORE::CValueList& options, TVideoSourcePtr& source ) GUCEF_VIRTUAL_OVERRIDE;
+
+    virtual bool OpenSinkImpl( CORE::CIOAccess* output, const TIOAccessPtr& owner, const CVideoFormat& format, const TAudioFormatVector& audioTrackFormats, const CORE::CValueList& options, TVideoSinkPtr& sink ) GUCEF_VIRTUAL_OVERRIDE;
 
     private:
 

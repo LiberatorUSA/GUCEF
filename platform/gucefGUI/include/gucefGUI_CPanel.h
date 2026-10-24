@@ -65,10 +65,15 @@ class GUCEF_GUI_PUBLIC_CPP CPanel : public CWidget
 
     virtual const CString& GetClassTypeName( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
-    static CWidget* Create( void );
-
-    private:
-
+    static CWidget* Create( void );
+
+    protected:
+
+    /** The natural size of the children side by side or below each other, with the padding and spacing */
+    bool GetStackNaturalSize( bool horizontal, Int32& width, Int32& height ) const;
+
+    private:
+
     CPanel( const CPanel& src );
     CPanel& operator=( const CPanel& src );
 };

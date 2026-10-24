@@ -46,6 +46,7 @@
 			<RuntimeDependency Name="guidriverRmlUI" />
 			<RuntimeDependency Name="guidriverRmlUIOpenGL" />
 			<RuntimeDependency Name="guidriverNull" />
+			<RuntimeDependency Name="fontpluginFREETYPE" />
 			<RuntimeDependency Name="inputdriverOIS" />
 			<RuntimeDependency Name="imgpluginITV" />
 			<RuntimeDependency Name="imgpluginFreeImage" />
@@ -76,11 +77,13 @@
             <Dependency Name="guidriverRmlUIOpenGL" />
             <Dependency Name="guidriverEmscripten" />
             <Dependency Name="inputdriverEMSCRIPTEN" />
+            <Dependency Name="fontpluginFREETYPE" />
         </Dependencies>
         <Linker>
             <Dependency Name="guidriverRmlUIOpenGL" />
             <Dependency Name="guidriverEmscripten" />
             <Dependency Name="inputdriverEMSCRIPTEN" />
+            <Dependency Name="fontpluginFREETYPE" />
             <Dependency Name="RmlUI_Core" />
         </Linker>
     </Module>

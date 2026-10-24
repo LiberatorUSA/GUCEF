@@ -47,6 +47,14 @@ if ( ANDROID64 )
   target_link_libraries( ${MODULE_NAME} PRIVATE z )
 endif( ANDROID64 )
 
+if ( EMSCRIPTEN32 )
+  add_dependencies( ${MODULE_NAME} zlib )
+endif( EMSCRIPTEN32 )
+
+if ( EMSCRIPTEN64 )
+  add_dependencies( ${MODULE_NAME} zlib )
+endif( EMSCRIPTEN64 )
+
 if ( LINUX32 )
   add_dependencies( ${MODULE_NAME} zlib )
   target_link_libraries( ${MODULE_NAME} PUBLIC zlib )
@@ -67,6 +75,14 @@ if ( WIN64 )
   target_link_libraries( ${MODULE_NAME} PUBLIC zlib )
 endif( WIN64 )
 
+
+if ( EMSCRIPTEN32 )
+  include_directories( ../zlib )
+endif( EMSCRIPTEN32 )
+
+if ( EMSCRIPTEN64 )
+  include_directories( ../zlib )
+endif( EMSCRIPTEN64 )
 
 if ( LINUX32 )
   include_directories( ../zlib )

@@ -207,8 +207,8 @@ CRmlUIContext::CRmlUIContext( GUI::CGUIDriver* driver                 ,
     , m_rmlHeight( 0 )
 {GUCEF_TRACE;
 
-    m_rmlWidth = GetLogicalWidth() > 0 ? GetLogicalWidth() : 1;
-    m_rmlHeight = GetLogicalHeight() > 0 ? GetLogicalHeight() : 1;
+    m_rmlWidth = GetRenderWidth() > 0 ? GetRenderWidth() : 1;
+    m_rmlHeight = GetRenderHeight() > 0 ? GetRenderHeight() : 1;
     m_rmlContext = Rml::CreateContext( m_rmlContextName.C_String(), Rml::Vector2i( (int) m_rmlWidth, (int) m_rmlHeight ), renderInterface );
     if ( GUCEF_NULL == m_rmlContext )
     {
@@ -719,8 +719,9 @@ CRmlUIContext::PrepareRml( void )
     if ( GUCEF_NULL == m_rmlContext )
         return;
 
-    UInt32 width = GetLogicalWidth() > 0 ? GetLogicalWidth() : 1;
-    UInt32 height = GetLogicalHeight() > 0 ? GetLogicalHeight() : 1;
+    // RmlUi works in the pixels of the frame: the logical resolution times the render scale
+    UInt32 width = GetRenderWidth() > 0 ? GetRenderWidth() : 1;
+    UInt32 height = GetRenderHeight() > 0 ? GetRenderHeight() : 1;
     if ( width != m_rmlWidth || height != m_rmlHeight )
     {
         m_rmlWidth = width;

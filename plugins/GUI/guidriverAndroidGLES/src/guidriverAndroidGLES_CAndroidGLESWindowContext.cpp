@@ -308,6 +308,17 @@ CAndroidGLESWindowContext::Initialize( const GUI::CString& title, const GUI::CVi
 
 /*-------------------------------------------------------------------------*/
 
+bool
+CAndroidGLESWindowContext::ApplyVideoSettings( const GUI::CVideoSettings& videoSettings )
+{GUCEF_TRACE;
+
+    if ( EGL_NO_DISPLAY == m_display || EGL_NO_SURFACE == m_surface )
+        return false;
+    return EGL_TRUE == eglSwapInterval( m_display, videoSettings.GetVSyncState() ? 1 : 0 );
+}
+
+/*-------------------------------------------------------------------------*/
+
 void
 CAndroidGLESWindowContext::OnNotify( CORE::CNotifier* notifier    ,
                                      const CORE::CEvent& eventId  ,

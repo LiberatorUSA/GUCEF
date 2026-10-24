@@ -18,6 +18,7 @@
 			<RuntimeDependency Name="imgpluginFreeImage" />
 			<RuntimeDependency Name="imgpluginFLIC" />
 			<RuntimeDependency Name="imgpluginDEVIL" />
+			<RuntimeDependency Name="imgupscalepluginNCNN" />
 			<RuntimeDependency Name="dstorepluginJSONPARSER" />
 			<RuntimeDependency Name="dstorepluginPARSIFALXML" />
 		</RuntimeDependencies>

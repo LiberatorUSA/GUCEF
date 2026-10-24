@@ -52,11 +52,28 @@ namespace CORE {
  *  Note that it does not automatically register the logger with the 
  *  log manager.
  */
-class GUCEF_CORE_PUBLIC_CPP CPlatformNativeConsoleLogger
-{
-    public:
-    
-    CPlatformNativeConsoleLogger( void );
+class GUCEF_CORE_PUBLIC_CPP CPlatformNativeConsoleLogger
+{
+    public:
+
+    /** The consoles a Linux application can log to */
+    enum EConsoleKind
+    {
+        CONSOLEKIND_NONE = 0,               /**< no console: headless, or switched off */
+        CONSOLEKIND_TERMINAL,               /**< the terminal the application was started from */
+        CONSOLEKIND_DESKTOP_TERMINAL,       /**< a terminal window of its own in the desktop session */
+        CONSOLEKIND_XTERM                   /**< an xterm of its own */
+    };
+
+    /**
+     *  Which console a Linux application logs to. 'forced' is the environment variable GUCEF_CONSOLE_LOGGER (terminal,
+     *  desktop, xterm, none or auto / empty) and goes over the rest. Otherwise a window of its own when 'ownWindow' asks for it
+     *  and the desktop has one to give, else the terminal it was started from; without 'ownWindow' the terminal first
+     */
+    static EConsoleKind ChooseConsoleKind( const char* forced, bool runningInTerminal, bool desktopSessionAvailable, bool ownWindow );
+
+    /** @param ownWindow  log in a console window of its own, also when the application was started from a console */
+    explicit CPlatformNativeConsoleLogger( bool ownWindow = false );
 
     ~CPlatformNativeConsoleLogger();
 
@@ -69,7 +86,8 @@ class GUCEF_CORE_PUBLIC_CPP CPlatformNativeConsoleLogger
 
     private:
 
-    CIConsoleLogger* m_nativeConsoleLogger;
+    CIConsoleLogger* m_nativeConsoleLogger;
+    bool m_ownWindow;
 };
 
 /*-------------------------------------------------------------------------//

@@ -271,6 +271,14 @@ CWidget::~CWidget()
 /*-------------------------------------------------------------------------*/
 
 void
+CWidget::OnChildrenChanged( void )
+{GUCEF_TRACE;
+
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
 CWidget::DetachFromParent( void )
 {GUCEF_TRACE;
 
@@ -458,14 +466,96 @@ CWidget::SetParentWidget( CWidget* parentWidget )
         parentWidget->m_children.push_back( this );
         m_parent = parentWidget;
     }
+    if ( GUCEF_NULL != oldParent )
+        oldParent->OnChildrenChanged();
+    if ( GUCEF_NULL != parentWidget )
+        parentWidget->OnChildrenChanged();
     m_parentDirty = true;
-    if ( GUCEF_NULL != m_context )
-    {
-        m_context->OnWidgetParentChanged( this, oldParent );
-        m_context->OnWidgetDirty( this );
-    }
-    return true;
-}
+    if ( GUCEF_NULL != m_context )
+    {
+        m_context->OnWidgetParentChanged( this, oldParent );
+        m_context->OnWidgetDirty( this );
+    }
+
+    // in its new tree an option finds its check box, a check box the options that depend on it
+    if ( GUCEF_NULL != parentWidget )
+        ApplyEnabledByLinksOfSubtree();
+    return true;
+}
+
+/*-------------------------------------------------------------------------*/
+
+CWidget*
+CWidget::FindInTree( const CString& widgetName ) const
+{GUCEF_TRACE;
+
+    if ( widgetName.IsNULLOrEmpty() )
+        return GUCEF_NULL;
+    const CWidget* root = this;
+    while ( GUCEF_NULL != root->m_parent )
+        root = root->m_parent;
+    if ( root->m_name == widgetName )
+        return const_cast< CWidget* >( root );
+    return root->FindWidget( widgetName );
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CWidget::ApplyEnabledBy( void )
+{GUCEF_TRACE;
+
+    CString source = GetProperty( "EnabledBy" );
+    if ( source.IsNULLOrEmpty() )
+        return;
+    CWidget* checkbox = FindInTree( source );
+    if ( GUCEF_NULL != checkbox )
+        SetEnabled( checkbox->GetBoolProperty( "Checked" ) );
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CWidget::UpdateEnabledByDependents( void )
+{GUCEF_TRACE;
+
+    if ( m_name.IsNULLOrEmpty() )
+        return;
+    const CWidget* root = this;
+    while ( GUCEF_NULL != root->m_parent )
+        root = root->m_parent;
+
+    const bool checked = GetBoolProperty( "Checked" );
+    TWidgetVector pending;
+    pending.push_back( const_cast< CWidget* >( root ) );
+    for ( UInt32 i=0; i<(UInt32)pending.size(); ++i )
+    {
+        CWidget* candidate = pending[ i ];
+        if ( candidate != this && candidate->GetProperty( "EnabledBy" ) == m_name )
+            candidate->SetEnabled( checked );
+        pending.insert( pending.end(), candidate->m_children.begin(), candidate->m_children.end() );
+    }
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CWidget::ApplyEnabledByLinksOfSubtree( void )
+{GUCEF_TRACE;
+
+    // only widgets with EnabledBy or a Checked look further, the rest of the tree is not walked for them
+    TWidgetVector pending;
+    pending.push_back( this );
+    for ( UInt32 i=0; i<(UInt32)pending.size(); ++i )
+    {
+        CWidget* widget = pending[ i ];
+        if ( !widget->GetProperty( "EnabledBy" ).IsNULLOrEmpty() )
+            widget->ApplyEnabledBy();
+        if ( GUCEF_NULL != widget->GetPropertyDescriptor( "Checked" ) )
+            widget->UpdateEnabledByDependents();
+        pending.insert( pending.end(), widget->m_children.begin(), widget->m_children.end() );
+    }
+}
 
 /*-------------------------------------------------------------------------*/
 
@@ -616,13 +706,20 @@ CWidget::SetProperty( const CString& name, const CString& value )
                 m_context->MarkThemeDependentDirty( *this );
         }
 
-        OnPropertyChanged( name, oldValue, newValue );
-
-        CORE::TCloneableString eventData( name );
-        NotifyObservers( PropertyChangedEvent, &eventData );
-    }
-    return true;
-}
+        OnPropertyChanged( name, oldValue, newValue );
+
+        // options that depend on a check box follow it
+        if ( name == "Checked" )
+            UpdateEnabledByDependents();
+        else
+        if ( name == "EnabledBy" )
+            ApplyEnabledBy();
+
+        CORE::TCloneableString eventData( name );
+        NotifyObservers( PropertyChangedEvent, &eventData );
+    }
+    return true;
+}
 
 /*-------------------------------------------------------------------------*/
 

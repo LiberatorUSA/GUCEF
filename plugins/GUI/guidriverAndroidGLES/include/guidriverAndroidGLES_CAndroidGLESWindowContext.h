@@ -102,6 +102,12 @@ class GUIDRIVERANDROIDGLES_PUBLIC_CPP CAndroidGLESWindowContext : public GUI::CW
 
     bool Initialize( const GUI::CString& title, const GUI::CVideoSettings& videoSettings, const CORE::CValueList* params );
 
+    /**
+     *  Waiting for the vertical blank or not. The window always covers the screen: the system decides its size,
+     *  resolution and full screen in the settings are not used
+     */
+    bool ApplyVideoSettings( const GUI::CVideoSettings& videoSettings );
+
     void Shutdown( void );
 
     protected:

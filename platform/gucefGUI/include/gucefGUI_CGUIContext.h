@@ -105,6 +105,7 @@ class GUCEF_GUI_PUBLIC_CPP CGUIContext : public CIGUIContext                ,
     {
         IMAGE::TPixelMapPtr pixels;     /**< RGBA, 8 bits per channel */
         UInt32 revision;                /**< goes up whenever the pixels change */
+        UInt32 density;                 /**< pixels per logical pixel in each direction */
 
         SImageEntry( void );
     };
@@ -182,6 +183,19 @@ class GUCEF_GUI_PUBLIC_CPP CGUIContext : public CIGUIContext                ,
     /** Makes pixels available under a name; widgets refer to images by these names. RGBA pixels are expected; other formats are converted */
     bool RegisterImage( const CString& alias, const IMAGE::TPixelMapPtr& pixels );
 
+    /**
+     *  As RegisterImage() for a picture with 'density' pixels per logical pixel in each direction: one that
+     *  was made for a render scale (see SetRenderScale()). Its logical size is its size in pixels divided by
+     *  the density and source rectangles of it (SubRect, CDrawSurface::DrawImage()) are in logical pixels.
+     */
+    bool RegisterImage( const CString& alias, const IMAGE::TPixelMapPtr& pixels, UInt32 density );
+
+    /** The density of an image, 1 for images that are not registered */
+    UInt32 GetImageDensity( const CString& alias ) const;
+
+    /** The size of an image in logical pixels; false when the reference does not resolve */
+    bool GetImageLogicalSize( const CString& reference, Int32& width, Int32& height );
+
     /** Tells the context and the driver that the pixels of a registered image changed */
     bool UpdateImage( const CString& alias );
 
@@ -199,6 +213,12 @@ class GUCEF_GUI_PUBLIC_CPP CGUIContext : public CIGUIContext                ,
     CString MakeUniqueImageAlias( const CString& prefix );
 
     bool RegisterFont( const CString& name, const TBitmapFontPtr& font );
+
+    /**
+     *  Rasterizes an outline font (TrueType, OpenType: a VFS path) at a pixel size, Latin-1, with the font
+     *  rasterizers of the loaded plugins and registers it; false when no rasterizer reads it
+     */
+    bool RegisterFont( const CString& name, const CString& fontPath, UInt32 pixelSize );
 
     bool UnregisterFont( const CString& name );
 
@@ -242,6 +262,37 @@ class GUCEF_GUI_PUBLIC_CPP CGUIContext : public CIGUIContext                ,
     void SetPresentMode( TPresentMode mode );
 
     TPresentMode GetPresentMode( void ) const;
+
+    /**
+     *  How many pixels a logical pixel has in each direction when the context draws: the frame is the logical
+     *  resolution times the scale, layout and drawing stay in logical pixels. Images and fonts with that
+     *  density (pictures made for the scale, upscaled art) are drawn pixel for pixel, others are scaled up.
+     *  1 by default.
+     */
+    void SetRenderScale( UInt32 scale );
+
+    UInt32 GetRenderScale( void ) const;
+
+    /** The size of the frame: the logical resolution times the render scale */
+    UInt32 GetRenderWidth( void ) const;
+
+    UInt32 GetRenderHeight( void ) const;
+
+    typedef GUCEF::map< CString, CString > TPresentFilterParameters;
+    typedef GUCEF::vector< CString > TPresentFilterNames;
+
+    /**
+     *  The present filters the driver offers for this context: upscalers that work on the logical picture as it
+     *  is presented in the window (drivers with them report the capability "PresentFilters"). None by default.
+     */
+    virtual TPresentFilterNames GetAvailablePresentFilters( void ) const;
+
+    /** Picks the present filter, empty for none; false (and nothing changes) when the driver does not offer it */
+    bool SetPresentFilter( const CString& filterName, const TPresentFilterParameters& parameters );
+
+    const CString& GetPresentFilter( void ) const;
+
+    const TPresentFilterParameters& GetPresentFilterParameters( void ) const;
 
     /** Where the logical picture lands in the window */
     CRect GetPresentRect( void ) const;
@@ -317,8 +368,37 @@ class GUCEF_GUI_PUBLIC_CPP CGUIContext : public CIGUIContext                ,
     /** Asks for a new layout pass at the next flush */
     void InvalidateLayout( void );
 
-    /** The last frame as RGBA pixels at the logical resolution; false when the driver cannot */
+    /** The last frame as RGBA pixels at the render size (the logical resolution times the render scale); false when the driver cannot */
     virtual bool CaptureFrame( IMAGE::TPixelMapPtr& pixels );
+
+    /**
+     *  The picture of the window as the last frame left it, RGBA pixels at the size of the window: what the present
+     *  pass made of the logical picture (scaled, filtered, other layers). False when the driver cannot
+     */
+    virtual bool CapturePresentedFrame( IMAGE::TPixelMapPtr& pixels );
+
+    /*
+     *  Layers: several contexts can draw in one window. The lowest layer is drawn first and fills the window, the
+     *  layers above are drawn over it with their transparency (each at its own logical resolution). Input goes to
+     *  the highest layer that shows something (has a visible root); the layers below get none while it does.
+     */
+
+    /** The layer of the context in its window; contexts with the same number keep the order they were made in */
+    void SetLayer( Int32 layer );
+
+    Int32 GetLayer( void ) const;
+
+    /** Whether the context is the lowest layer of its window (also without a window) */
+    bool IsBottomLayer( void ) const;
+
+    /** Whether a root is shown */
+    bool HasVisibleRoots( void ) const;
+
+    /** Whether a higher layer of the window shows something and so takes the input */
+    bool HasHigherLayerTakingInput( void ) const;
+
+    /** Draws a frame of every layer of the window from the bottom up, or of this context when it has no window */
+    void RenderWindowLayers( UInt32 deltaInMs );
 
     protected:
 
@@ -392,7 +472,11 @@ class GUCEF_GUI_PUBLIC_CPP CGUIContext : public CIGUIContext                ,
     CORE::CDataNode m_theme;
     UInt32 m_logicalWidth;
     UInt32 m_logicalHeight;
+    UInt32 m_renderScale;
+    Int32 m_layer;
     TPresentMode m_presentMode;
+    CString m_presentFilter;
+    TPresentFilterParameters m_presentFilterParameters;
     CString m_cursorImage;
     Int32 m_cursorHotspotX;
     Int32 m_cursorHotspotY;

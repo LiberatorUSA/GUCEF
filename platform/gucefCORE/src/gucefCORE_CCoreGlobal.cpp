@@ -170,6 +170,11 @@
 #define GUCEF_CORE_CDATAURIRESOURCEACCESSOR_H
 #endif /* GUCEF_CORE_CDATAURIRESOURCEACCESSOR_H ? */
 
+#ifndef GUCEF_CORE_CASYNCFILESYSTEMACCESSOPERATION_H
+#include "gucefCORE_CAsyncFileSystemAccessOperation.h"
+#define GUCEF_CORE_CASYNCFILESYSTEMACCESSOPERATION_H
+#endif /* GUCEF_CORE_CASYNCFILESYSTEMACCESSOPERATION_H ? */
+
 #ifndef GUCEF_CORE_CGLOBALDATADRIVENDSTORECODECFACTORY_H
 #include "gucefCORE_CGlobalDataDrivenDStoreCodecFactory.h"
 #define GUCEF_CORE_CGLOBALDATADRIVENDSTORECODECFACTORY_H
@@ -229,6 +234,7 @@ CCoreGlobal* CCoreGlobal::g_instance = NULL;
 
 TFileSystemUriResourceAccessorFactory g_fileSystemUriResourceAccessorFactory;
 TDataUriResourceAccessorFactory g_dataUriResourceAccessorFactory;
+TAsyncFileSystemAccessOperationTaskFactory g_asyncFileSystemAccessOperationTaskFactory;
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -382,6 +388,11 @@ CCoreGlobal::Initialize( void )
     m_uriResourceAccessorFactory->RegisterConcreteFactory( CDataUriResourceAccessor::SchemeName, &g_dataUriResourceAccessorFactory );
 
     /*
+     *      The task of the async operations of IFileSystemAccess
+     */
+    m_taskManager->RegisterTaskConsumerFactory( CAsyncFileSystemAccessOperation::TaskType, &g_asyncFileSystemAccessOperationTaskFactory );
+
+    /*
      *      Register some default codecs
      */    
     m_dstoreCodecRegistry->Register( "ini", CDStoreCodecRegistry::TRegisteredObjTypedPtr( GUCEF_NEW CIniDataStoreCodec() ) );
@@ -427,6 +438,7 @@ CCoreGlobal::~CCoreGlobal()
 
     m_application->Stop( true );
     m_taskManager->RequestAllThreadsToStop( true, false, GUCEF_MT_INFINITE_LOCK_TIMEOUT );
+    m_taskManager->UnregisterTaskConsumerFactory( CAsyncFileSystemAccessOperation::TaskType );
    
     m_uriResourceAccessorFactory->UnregisterAllConcreteFactories();
     m_codecRegistry->UnregisterAll();

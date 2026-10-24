@@ -120,6 +120,9 @@ class CMultiLogger;
 class CLoggingTask;
 class CLogStreamScope;
 class CThreadLogBuffers;
+class CPlatformNativeConsoleLogger;
+class CIConsoleLogger;
+class CUserActionLogger;
 
 /*-------------------------------------------------------------------------*/
 
@@ -132,6 +135,47 @@ class GUCEF_CORE_PUBLIC_CPP CLogManager : public CORE::CObserver
     void RemoveLogger( CILogger* loggerImp );
 
     void ClearLoggers( void );
+
+    /**
+     *  A log window of the platform (a terminal, a console window) showing the log, switched on and off
+     *  while the application runs. The log manager owns it. The environment variable GUCEF_CONSOLE_LOGGER
+     *  picks the kind of window, see CPlatformNativeConsoleLogger.
+     */
+    void SetNativeConsoleLoggerEnabled( bool enabled );
+
+    bool IsNativeConsoleLoggerEnabled( void ) const;
+
+    /**
+     *  Whether the native console logger logs in a console window of its own, also when the application was started from a
+     *  console (see CPlatformNativeConsoleLogger). A logger that is enabled is made again when this changes
+     */
+    void SetNativeConsoleLoggerInOwnWindow( bool ownWindow );
+
+    bool IsNativeConsoleLoggerInOwnWindow( void ) const;
+
+    /** The native console logger while it is enabled and the platform has a console, else NULL, to set its level or format */
+    CIConsoleLogger* GetNativeConsoleLogger( void ) const;
+
+    /**
+     *  Whether the native console logger only shows what is said to the user of the console (LOG_CONSOLE, as it is written)
+     *  instead of the formatted log; applied when the logger is made, before it gets anything, and to one that is enabled
+     */
+    void SetNativeConsoleLoggerFormatAsConsoleUI( bool formatAsConsoleUI );
+
+    bool IsNativeConsoleLoggerFormatAsConsoleUI( void ) const;
+
+    /**
+     *  A log of what the user did (LOG_USER messages) in a file of its own, see CUserActionLogger, switched on and
+     *  off while the application runs. The log manager owns it. Switched on with another file, it moves to that file
+     *
+     *  @return whether it is as asked: false when the file cannot be written
+     */
+    bool SetUserActionLogEnabled( bool enabled, const CString& filePath );
+
+    bool IsUserActionLogEnabled( void ) const;
+
+    /** The file of the user action log, empty when it is off */
+    CString GetUserActionLogFile( void ) const;
 
     bool AddLoggingFormatterFactory( const CString& name                        ,
                                      TLoggingFormatterFactory* formatterFactory ,
@@ -274,6 +318,10 @@ class GUCEF_CORE_PUBLIC_CPP CLogManager : public CORE::CObserver
     CThreadLogBuffers* GetOrCreateThreadBuffers( UInt32 threadId );
 
     CMultiLogger* m_loggers;
+    CPlatformNativeConsoleLogger* m_nativeConsoleLogger;
+    bool m_nativeConsoleLoggerInOwnWindow;
+    bool m_nativeConsoleLoggerFormatAsConsoleUI;
+    CUserActionLogger* m_userActionLogger;
     CLoggingTaskBasePtr m_loggingTask;
     bool m_useLogThread;
     TBootstrapLogVector m_bootstrapLog;

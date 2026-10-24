@@ -33,6 +33,9 @@
 #define GUCEF_CORE_CCOREGLOBAL_H
 #endif /* GUCEF_CORE_CCOREGLOBAL_H ? */
 
+#include <stdlib.h>
+#include <string.h>
+
 #include "gucefCORE_CPlatformNativeConsoleLogger.h"
 
 #if GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN
@@ -43,9 +46,6 @@
 #endif /* GUCEF_CORE_CMSWINCONSOLELOGGER_H ? */
 
 #elif GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX
-
-#include <stdlib.h>
-#include <string.h>
 
 #ifndef GUCEF_CORE_CXTERMCONSOLELOGGER_H
 #include "CXTermConsoleLogger.h"
@@ -79,11 +79,42 @@ namespace CORE {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-CPlatformNativeConsoleLogger::CPlatformNativeConsoleLogger( void )
-    : m_nativeConsoleLogger( GUCEF_NULL )
-{GUCEF_TRACE;
-
-}
+CPlatformNativeConsoleLogger::CPlatformNativeConsoleLogger( bool ownWindow )
+    : m_nativeConsoleLogger( GUCEF_NULL )
+    , m_ownWindow( ownWindow )
+{GUCEF_TRACE;
+
+}
+
+/*-------------------------------------------------------------------------*/
+
+CPlatformNativeConsoleLogger::EConsoleKind
+CPlatformNativeConsoleLogger::ChooseConsoleKind( const char* forced, bool runningInTerminal, bool desktopSessionAvailable, bool ownWindow )
+{GUCEF_TRACE;
+
+    if ( GUCEF_NULL != forced && '\0' != forced[ 0 ] && 0 != strcmp( forced, "auto" ) )
+    {
+        if ( 0 == strcmp( forced, "terminal" ) )
+            return runningInTerminal ? CONSOLEKIND_TERMINAL : CONSOLEKIND_NONE;
+        if ( 0 == strcmp( forced, "desktop" ) )
+            return CONSOLEKIND_DESKTOP_TERMINAL;
+        if ( 0 == strcmp( forced, "xterm" ) )
+            return CONSOLEKIND_XTERM;
+        return CONSOLEKIND_NONE;        // "none" or anything we do not know
+    }
+    if ( ownWindow )
+    {
+        // a window of its own; the terminal only when the desktop cannot give one
+        if ( desktopSessionAvailable )
+            return CONSOLEKIND_DESKTOP_TERMINAL;
+        return runningInTerminal ? CONSOLEKIND_TERMINAL : CONSOLEKIND_NONE;
+    }
+    if ( runningInTerminal )
+        return CONSOLEKIND_TERMINAL;
+    if ( desktopSessionAvailable )
+        return CONSOLEKIND_DESKTOP_TERMINAL;
+    return CONSOLEKIND_NONE;            // headless, file and other loggers are not affected
+}
 
 /*-------------------------------------------------------------------------*/
 
@@ -102,61 +133,31 @@ CPlatformNativeConsoleLogger::~CPlatformNativeConsoleLogger()
 #if GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX
 
 /**
- *  Linux has no console that every application gets, so what is best depends on how the application was started:
- *  from a terminal the log goes to that terminal, from a desktop session a terminal window is opened for it
- *  and in a headless environment there is no console to log to at all.
- *  The environment variable GUCEF_CONSOLE_LOGGER can force a choice: terminal, desktop, xterm or none.
+ *  Linux has no console that every application gets, so what is best depends on how the application was started and on
+ *  what it asks for: the terminal it was started from, or a terminal window of its own in the desktop session; in a
+ *  headless environment there is no console to log to at all. See ChooseConsoleKind()
  */
 static CIConsoleLogger*
-CreateLinuxConsoleLogger( void )
+CreateLinuxConsoleLogger( bool ownWindow )
 {GUCEF_TRACE;
 
-    const char* forced = getenv( "GUCEF_CONSOLE_LOGGER" );
-    bool useTerminal = false;
-    bool useDesktop = false;
-    bool useXTerm = false;
-    if ( GUCEF_NULL != forced && '\0' != forced[ 0 ] && 0 != strcmp( forced, "auto" ) )
-    {
-        if ( 0 == strcmp( forced, "terminal" ) )
-            useTerminal = true;
-        else
-        if ( 0 == strcmp( forced, "desktop" ) )
-            useDesktop = true;
-        else
-        if ( 0 == strcmp( forced, "xterm" ) )
-            useXTerm = true;
-        else
-            return GUCEF_NULL;      // "none" or anything we do not know
-    }
-    else
-    {
-        if ( CTerminalConsoleLogger::IsRunningInTerminal() )
-            useTerminal = true;
-        else
-        if ( CDesktopTerminalConsoleLogger::IsDesktopSessionAvailable() )
-            useDesktop = true;
-        else
-            return GUCEF_NULL;      // headless, file and other loggers are not affected
-    }
+    const bool runningInTerminal = CTerminalConsoleLogger::IsRunningInTerminal();
+    CPlatformNativeConsoleLogger::EConsoleKind kind =
+        CPlatformNativeConsoleLogger::ChooseConsoleKind( getenv( "GUCEF_CONSOLE_LOGGER" ), runningInTerminal, CDesktopTerminalConsoleLogger::IsDesktopSessionAvailable(), ownWindow );
 
-    if ( useTerminal )
-    {
-        if ( !CTerminalConsoleLogger::IsRunningInTerminal() )
-            return GUCEF_NULL;
-        return GUCEF_NEW CTerminalConsoleLogger();
-    }
-    if ( useDesktop )
+    if ( CPlatformNativeConsoleLogger::CONSOLEKIND_DESKTOP_TERMINAL == kind )
     {
         CDesktopTerminalConsoleLogger* logger = GUCEF_NEW CDesktopTerminalConsoleLogger();
-        if ( !logger->IsActive() )
-        {
-            // no terminal emulator to be had or it is switched off
-            GUCEF_DELETE logger;
-            return GUCEF_NULL;
-        }
-        return logger;
+        if ( logger->IsActive() )
+            return logger;
+
+        // no terminal emulator to be had or it is switched off: the terminal it was started from, if any
+        GUCEF_DELETE logger;
+        kind = runningInTerminal ? CPlatformNativeConsoleLogger::CONSOLEKIND_TERMINAL : CPlatformNativeConsoleLogger::CONSOLEKIND_NONE;
     }
-    if ( useXTerm )
+    if ( CPlatformNativeConsoleLogger::CONSOLEKIND_TERMINAL == kind )
+        return GUCEF_NEW CTerminalConsoleLogger();
+    if ( CPlatformNativeConsoleLogger::CONSOLEKIND_XTERM == kind )
         return GUCEF_NEW CXTermConsoleLogger();
     return GUCEF_NULL;
 }
@@ -172,9 +173,9 @@ CPlatformNativeConsoleLogger::GetLogger( void )
     if ( GUCEF_NULL == m_nativeConsoleLogger )
     {
         #if GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN
-        m_nativeConsoleLogger = GUCEF_NEW CMSWinConsoleLogger();
+        m_nativeConsoleLogger = GUCEF_NEW CMSWinConsoleLogger( m_ownWindow );
         #elif GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX
-        m_nativeConsoleLogger = CreateLinuxConsoleLogger();
+        m_nativeConsoleLogger = CreateLinuxConsoleLogger( m_ownWindow );
         #endif
     }
     return m_nativeConsoleLogger;

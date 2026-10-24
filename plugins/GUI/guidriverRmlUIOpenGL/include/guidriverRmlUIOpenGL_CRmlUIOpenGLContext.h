@@ -43,6 +43,16 @@
 
 class RenderInterface_GL3;
 
+#ifndef GUCEF_GUIDRIVERRMLUIGL_CGLPRESENTER_H
+#include "guidriverRmlUIOpenGL_CGLPresenter.h"
+#define GUCEF_GUIDRIVERRMLUIGL_CGLPRESENTER_H
+#endif /* GUCEF_GUIDRIVERRMLUIGL_CGLPRESENTER_H ? */
+
+#ifndef GUCEF_GUIDRIVERRMLUIGL_CGLHOOKSHADER_H
+#include "guidriverRmlUIOpenGL_CGLHookShader.h"
+#define GUCEF_GUIDRIVERRMLUIGL_CGLHOOKSHADER_H
+#endif /* GUCEF_GUIDRIVERRMLUIGL_CGLHOOKSHADER_H ? */
+
 namespace GUCEF {
 namespace GUIDRIVERRMLUIGL {
 
@@ -55,10 +65,11 @@ namespace GUIDRIVERRMLUIGL {
 /**
  *  An RmlUi context drawn with OpenGL in a window's GL context.
  *
- *  A frame is drawn at the logical resolution into a framebuffer of its own, then shown in the window
- *  at the present rectangle with the present mode (nearest or linear scaling, black around it). The
- *  window's picture is framebuffer 0, or the one its GL_FRAMEBUFFER property names (offscreen windows).
- *  CaptureFrame() reads the picture at the logical resolution back.
+ *  A frame is drawn at the logical resolution into a framebuffer (with a texture) of its own, then shown in the
+ *  window at the present rectangle with the present mode by the present pass (CGLPresenter: nearest or linear
+ *  scaling, black around it). The window's picture is framebuffer 0, or the one its GL_FRAMEBUFFER property names
+ *  (offscreen windows). CaptureFrame() reads the picture at the logical resolution back, CapturePresentedFrame()
+ *  the window's picture.
  */
 class GUIDRIVERRMLUIGL_PUBLIC_CPP CRmlUIOpenGLContext : public guidriverRmlUI::CRmlUIContext
 {
@@ -72,6 +83,16 @@ class GUIDRIVERRMLUIGL_PUBLIC_CPP CRmlUIOpenGLContext : public guidriverRmlUI::C
     virtual ~CRmlUIOpenGLContext();
 
     virtual bool CaptureFrame( IMAGE::TPixelMapPtr& pixels ) GUCEF_VIRTUAL_OVERRIDE;
+
+    virtual bool CapturePresentedFrame( IMAGE::TPixelMapPtr& pixels ) GUCEF_VIRTUAL_OVERRIDE;
+
+    /**
+     *  The present filters of the driver, shader files in the data of the plugin (mounted in the VFS as
+     *  "guidriverRmlUIOpenGL"): "mmpx" (pixel art), "fsr" (AMD FidelityFX Super Resolution 1, parameter
+     *  "sharpness" 0 .. 1) and, where the GL renders to half float textures, "anime4k" (Anime4K CNN x2 M).
+     *  They work on the lowest layer of a window; the GL context of the window has to be current.
+     */
+    virtual TPresentFilterNames GetAvailablePresentFilters( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
     virtual const CORE::CString& GetClassTypeName( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
@@ -93,12 +114,19 @@ class GUIDRIVERRMLUIGL_PUBLIC_CPP CRmlUIOpenGLContext : public guidriverRmlUI::C
 
     UInt32 GetWindowFramebuffer( void ) const;
 
+    /** The filter for the present filter of the context; false when there is none or it cannot be loaded */
+    bool PrepareFilter( void );
+
     CRmlUIOpenGLContext( const CRmlUIOpenGLContext& src );
     CRmlUIOpenGLContext& operator=( const CRmlUIOpenGLContext& src );
 
     private:
 
     RenderInterface_GL3* m_renderer;
+    CGLPresenter m_presenter;
+    CGLHookShader m_filter;
+    CORE::CString m_filterName;
+    bool m_filterFailed;
     UInt32 m_framebuffer;
     UInt32 m_colourBuffer;
     UInt32 m_width;

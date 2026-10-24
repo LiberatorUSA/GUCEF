@@ -129,6 +129,7 @@ LOCAL_SRC_FILES := \
   src/gucefCORE_CAbstractFactoryBase.cpp \
   src/gucefCORE_CAsciiString.cpp \
   src/gucefCORE_CAsciiStringView.cpp \
+  src/gucefCORE_CAsyncFileSystemAccessOperation.cpp \
   src/gucefCORE_CAsyncUriResourceRetriever.cpp \
   src/gucefCORE_CAsyncUriRetrievalTask.cpp \
   src/gucefCORE_CBackoffPolicy.cpp \
@@ -161,6 +162,7 @@ LOCAL_SRC_FILES := \
   src/gucefCORE_CEventAggregateTrigger.cpp \
   src/gucefCORE_CExternalThreadScope.cpp \
   src/gucefCORE_CFileSystemDirectoryWatcher.cpp \
+  src/gucefCORE_CFileSystemEntryListIterator.cpp \
   src/gucefCORE_CFileSystemUriResourceAccessor.cpp \
   src/gucefCORE_CForwardingNotifier.cpp \
   src/gucefCORE_CFunctionMeta.cpp \
@@ -171,6 +173,7 @@ LOCAL_SRC_FILES := \
   src/gucefCORE_CGenericCallbackTaskConsumer.cpp \
   src/gucefCORE_CGenericValueToDataNodeSerializer.cpp \
   src/gucefCORE_CGeoLocation.cpp \
+  src/gucefCORE_CGlobPattern.cpp \
   src/gucefCORE_CGlobalConfigValueList.cpp \
   src/gucefCORE_CGlobalDataDrivenDStoreCodecFactory.cpp \
   src/gucefCORE_CGloballyConfigurable.cpp \
@@ -206,6 +209,7 @@ LOCAL_SRC_FILES := \
   src/gucefCORE_CLoggingTask.cpp \
   src/gucefCORE_CMetricsClientManager.cpp \
   src/gucefCORE_CMultiLogger.cpp \
+  src/gucefCORE_CNativeFileSystemAccess.cpp \
   src/gucefCORE_COSWindow.cpp \
   src/gucefCORE_CObserverSwitch.cpp \
   src/gucefCORE_CPlatformNativeConsoleLogger.cpp \
@@ -258,6 +262,7 @@ LOCAL_SRC_FILES := \
   src/gucefCORE_CUriResourceAccessor.cpp \
   src/gucefCORE_CUriResourceAccessorFactory.cpp \
   src/gucefCORE_CUrlEncoder.cpp \
+  src/gucefCORE_CUserActionLogger.cpp \
   src/gucefCORE_CUtf16String.cpp \
   src/gucefCORE_CUtf16StringView.cpp \
   src/gucefCORE_CUtf32String.cpp \
@@ -275,6 +280,9 @@ LOCAL_SRC_FILES := \
   src/gucefCORE_CVersion.cpp \
   src/gucefCORE_CVersionRange.cpp \
   src/gucefCORE_CoreCodecTypes.cpp \
+  src/gucefCORE_EFileSystemAccessResult.cpp \
+  src/gucefCORE_IFileSystemAccess.cpp \
+  src/gucefCORE_IFileSystemIterator.cpp \
   src/gucefCORE_LogLevels.cpp \
   src/gucefCORE_TaskStatus.cpp \
   src/gucefCORE_ThreadStatus.cpp \

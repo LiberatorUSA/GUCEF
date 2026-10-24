@@ -23,6 +23,8 @@ LOCAL_MODULE_FILENAME := libguidriverRmlUIOpenGL
 
 LOCAL_SRC_FILES := \
   src/RmlUi_Renderer_GL3.cpp \
+  src/guidriverRmlUIOpenGL_CGLHookShader.cpp \
+  src/guidriverRmlUIOpenGL_CGLPresenter.cpp \
   src/guidriverRmlUIOpenGL_CRmlUIGuiDriver.cpp \
   src/guidriverRmlUIOpenGL_CRmlUIOpenGLContext.cpp \
   src/guidriverRmlUIOpenGL_pluginAPI.cpp
@@ -75,6 +77,7 @@ LOCAL_SHARED_LIBRARIES := \
   gucefIMAGE \
   gucefINPUT \
   gucefMT \
+  gucefVFS \
   guidriverRmlUI
 
 include $(BUILD_SHARED_LIBRARY)

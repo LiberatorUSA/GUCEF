@@ -308,13 +308,7 @@ CImageFrame::GetNaturalSize( Int32& width, Int32& height ) const
         return true;
     }
     CGUIContext* context = GetContext();
-    IMAGE::TPixelMapPtr pixels;
-    UInt32 revision = 0;
-    if ( GUCEF_NULL == context || !context->ResolveImage( GetProperty( "Image" ), pixels, revision ) )
-        return false;
-    width = (Int32) pixels->GetWidthInPixels();
-    height = (Int32) pixels->GetHeightInPixels();
-    return true;
+    return GUCEF_NULL != context && context->GetImageLogicalSize( GetProperty( "Image" ), width, height );
 }
 
 /*-------------------------------------------------------------------------*/

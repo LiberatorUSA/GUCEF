@@ -103,6 +103,46 @@ CIVideoCodec::OpenSource( const TIOAccessPtr& encodedInput, TVideoSourcePtr& sou
 /*-------------------------------------------------------------------------*/
 
 bool
+CIVideoCodec::CanEncode( void ) const
+{GUCEF_TRACE;
+
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CIVideoCodec::OpenSink( CORE::CIOAccess& encodedOutput, const CVideoFormat& format, const TAudioFormatVector& audioTrackFormats, TVideoSinkPtr& sink, const CORE::CValueList& options )
+{GUCEF_TRACE;
+
+    return OpenSinkImpl( &encodedOutput, TIOAccessPtr(), format, audioTrackFormats, options, sink );
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CIVideoCodec::OpenSink( const TIOAccessPtr& encodedOutput, const CVideoFormat& format, const TAudioFormatVector& audioTrackFormats, TVideoSinkPtr& sink, const CORE::CValueList& options )
+{GUCEF_TRACE;
+
+    if ( encodedOutput.IsNULL() )
+        return false;
+
+    TIOAccessPtr output( encodedOutput );
+    return OpenSinkImpl( output.GetPointerAlways(), output, format, audioTrackFormats, options, sink );
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CIVideoCodec::OpenSinkImpl( CORE::CIOAccess*, const TIOAccessPtr&, const CVideoFormat&, const TAudioFormatVector&, const CORE::CValueList&, TVideoSinkPtr& )
+{GUCEF_TRACE;
+
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
 CIVideoCodec::Decode( CORE::CIOAccess&, CORE::CIOAccess& )
 {GUCEF_TRACE;
 

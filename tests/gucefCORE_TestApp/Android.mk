@@ -25,6 +25,7 @@ LOCAL_SRC_FILES := \
   src/TestAbstractFactory.cpp \
   src/TestAsyncUriResourceRetriever.cpp \
   src/TestCodecPlugins.cpp \
+  src/TestConfigStore.cpp \
   src/TestCronSchedule.cpp \
   src/TestCyclicDynamicBuffer.cpp \
   src/TestDStoreStreaming.cpp \
@@ -40,6 +41,8 @@ LOCAL_SRC_FILES := \
   src/TestDynamicBufferSwap.cpp \
   src/TestExternalThreads.cpp \
   src/TestFileAccess.cpp \
+  src/TestFileSystemAccess.cpp \
+  src/TestFileSystemAccessResultC.c \
   src/TestFileUtils.cpp \
   src/TestFraction.cpp \
   src/TestFrameworkSkip.cpp \
@@ -57,6 +60,7 @@ LOCAL_SRC_FILES := \
   src/TestSharedPtr.cpp \
   src/TestStopwatch.cpp \
   src/TestString.cpp \
+  src/TestSysConsole.cpp \
   src/TestThreadPoolCancellation.cpp \
   src/TestTimestamp.cpp \
   src/TestTokenizer.cpp \

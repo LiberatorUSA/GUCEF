@@ -84,6 +84,16 @@
 #define GUCEF_VFS_TESTAPP_TESTLIBARCHIVE_H
 #endif /* GUCEF_VFS_TESTAPP_TESTLIBARCHIVE_H ? */
 
+#ifndef GUCEF_VFS_TESTAPP_TESTFILESYSTEMACCESS_H
+#include "TestFileSystemAccess.h"
+#define GUCEF_VFS_TESTAPP_TESTFILESYSTEMACCESS_H
+#endif /* GUCEF_VFS_TESTAPP_TESTFILESYSTEMACCESS_H ? */
+
+#ifndef GUCEF_VFS_TESTAPP_TESTVFSCONFIG_H
+#include "TestVfsConfig.h"
+#define GUCEF_VFS_TESTAPP_TESTVFSCONFIG_H
+#endif /* GUCEF_VFS_TESTAPP_TESTVFSCONFIG_H ? */
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //
@@ -372,6 +382,8 @@ GUCEF_OSMAIN_BEGIN
         PerformItvArchiveTests();
         PerformIso9660ArchiveTests();
         PerformCueBinArchiveTests();
+        PerformFileSystemAccessTests();
+        PerformVfsConfigTests();
 
         CORE::CLogStreamScope::FlushLogs();
 

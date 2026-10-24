@@ -14,6 +14,7 @@
 set( HEADER_FILES 
   include/CGUCEFVIDEOModule.h
   include/gucefVIDEO.h
+  include/gucefVIDEO_CAsyncVideoTranscode.h
   include/gucefVIDEO_CIVideoCodec.h
   include/gucefVIDEO_CVideoCodecCPlugin.h
   include/gucefVIDEO_CVideoCodecCPluginCodec.h
@@ -24,7 +25,9 @@ set( HEADER_FILES
   include/gucefVIDEO_CVideoFrame.h
   include/gucefVIDEO_CVideoGlobal.h
   include/gucefVIDEO_CVideoPlayer.h
+  include/gucefVIDEO_CVideoTranscoder.h
   include/gucefVIDEO_ETypes.h
+  include/gucefVIDEO_IVideoSink.h
   include/gucefVIDEO_IVideoSource.h
   include/gucefVIDEO_config.h
   include/gucefVIDEO_macros.h
@@ -43,6 +46,8 @@ set( SOURCE_FILES
   src/gucefVIDEO_CVideoFrame.cpp
   src/gucefVIDEO_CVideoGlobal.cpp
   src/gucefVIDEO_CVideoPlayer.cpp
+  src/gucefVIDEO_CVideoTranscoder.cpp
+  src/gucefVIDEO_IVideoSink.cpp
   src/gucefVIDEO_IVideoSource.cpp
 )
 

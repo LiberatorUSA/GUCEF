@@ -96,6 +96,7 @@ GUCEFPlugin_Load( CORE::UInt32 argc, const char** argv ) GUCEF_PLUGIN_CALLSPEC_S
     // The file system of the data track is read through the "iso9660" archive type, which the ISO 9660 plugin provides
     archiveFactory = GUCEF_NEW TCueBinArchiveFactory();
     VFS::CVfsGlobal::Instance()->GetVfs().RegisterArchiveFactory( "cue", *archiveFactory );
+    VFS::CVfsGlobal::Instance()->GetVfs().SetArchiveTypeFileExtensions( "cue", CORE::CString( "cue" ).ParseUniqueElements( ';', false ) );
 
     return 1;
 }

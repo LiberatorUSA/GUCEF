@@ -39,21 +39,29 @@ filter "ANDROID"
   include( "tests/gucefVIDEO_TestApp" )
 
 filter "ANDROID32"
+  include( "dependencies/libvpx" )
+  include( "dependencies/libwebm" )
+  include( "dependencies/opus" )
   include( "platform/gucefAUDIO" )
   include( "platform/gucefCORE" )
   include( "platform/gucefIMAGE" )
   include( "platform/gucefMT" )
   include( "platform/gucefVIDEO" )
   include( "plugins/VIDEO/videocodecpluginSMK" )
+  include( "plugins/VIDEO/videocodecpluginWEBM" )
   include( "tests/gucefVIDEO_TestApp" )
 
 filter "ANDROID64"
+  include( "dependencies/libvpx" )
+  include( "dependencies/libwebm" )
+  include( "dependencies/opus" )
   include( "platform/gucefAUDIO" )
   include( "platform/gucefCORE" )
   include( "platform/gucefIMAGE" )
   include( "platform/gucefMT" )
   include( "platform/gucefVIDEO" )
   include( "plugins/VIDEO/videocodecpluginSMK" )
+  include( "plugins/VIDEO/videocodecpluginWEBM" )
   include( "tests/gucefVIDEO_TestApp" )
 
 filter "ARDUINO"
@@ -129,21 +137,29 @@ filter "LINUX"
   include( "tests/gucefVIDEO_TestApp" )
 
 filter "LINUX32"
+  include( "dependencies/libvpx" )
+  include( "dependencies/libwebm" )
+  include( "dependencies/opus" )
   include( "platform/gucefAUDIO" )
   include( "platform/gucefCORE" )
   include( "platform/gucefIMAGE" )
   include( "platform/gucefMT" )
   include( "platform/gucefVIDEO" )
   include( "plugins/VIDEO/videocodecpluginSMK" )
+  include( "plugins/VIDEO/videocodecpluginWEBM" )
   include( "tests/gucefVIDEO_TestApp" )
 
 filter "LINUX64"
+  include( "dependencies/libvpx" )
+  include( "dependencies/libwebm" )
+  include( "dependencies/opus" )
   include( "platform/gucefAUDIO" )
   include( "platform/gucefCORE" )
   include( "platform/gucefIMAGE" )
   include( "platform/gucefMT" )
   include( "platform/gucefVIDEO" )
   include( "plugins/VIDEO/videocodecpluginSMK" )
+  include( "plugins/VIDEO/videocodecpluginWEBM" )
   include( "tests/gucefVIDEO_TestApp" )
 
 filter "MAC"
@@ -192,21 +208,29 @@ filter "OSX"
   include( "tests/gucefVIDEO_TestApp" )
 
 filter "WIN32"
+  include( "dependencies/libvpx" )
+  include( "dependencies/libwebm" )
+  include( "dependencies/opus" )
   include( "platform/gucefAUDIO" )
   include( "platform/gucefCORE" )
   include( "platform/gucefIMAGE" )
   include( "platform/gucefMT" )
   include( "platform/gucefVIDEO" )
   include( "plugins/VIDEO/videocodecpluginSMK" )
+  include( "plugins/VIDEO/videocodecpluginWEBM" )
   include( "tests/gucefVIDEO_TestApp" )
 
 filter "WIN64"
+  include( "dependencies/libvpx" )
+  include( "dependencies/libwebm" )
+  include( "dependencies/opus" )
   include( "platform/gucefAUDIO" )
   include( "platform/gucefCORE" )
   include( "platform/gucefIMAGE" )
   include( "platform/gucefMT" )
   include( "platform/gucefVIDEO" )
   include( "plugins/VIDEO/videocodecpluginSMK" )
+  include( "plugins/VIDEO/videocodecpluginWEBM" )
   include( "tests/gucefVIDEO_TestApp" )
 
 filter "WINDOWS"

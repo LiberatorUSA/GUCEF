@@ -48,11 +48,17 @@ GUCEF::GUI::TGuiContextPtr CreateNullContext( void );
 /** A context of the RmlUi driver drawing with OpenGL in an offscreen EGL window of 640 x 480, NULL when either is missing */
 GUCEF::GUI::TGuiContextPtr CreateRmlUiContext( void );
 
+/** An RmlUi context with a logical resolution of 640 x 480 in a window of the given size */
+GUCEF::GUI::TGuiContextPtr CreateRmlUiContextInWindow( GUCEF::UInt32 windowWidth, GUCEF::UInt32 windowHeight );
+
 /** A pixel map of the given size filled with one colour */
 GUCEF::IMAGE::TPixelMapPtr MakeSolidImage( GUCEF::UInt32 width, GUCEF::UInt32 height, GUCEF::UInt8 r, GUCEF::UInt8 g, GUCEF::UInt8 b, GUCEF::UInt8 a );
 
 /** A bitmap font with fixed width glyphs for ASCII 32..126: each glyph is 'width' x 'height' */
 GUCEF::GUI::TBitmapFontPtr MakeTestFont( GUCEF::Int32 width, GUCEF::Int32 height );
+
+/** Loads the FreeType font plugin; true when its font rasterizer is registered */
+bool LoadFreeTypeFontPlugin( void );
 
 /** Loads the XML and JSON DStore codecs; false when they are not there */
 bool LoadLayoutCodecs( void );
@@ -65,6 +71,10 @@ void PerformGuiRenderTests( void );
 void PerformGuiInputTests( void );
 
 void PerformGuiBrowserTests( void );
+void PerformGuiFontTests( void );
+void PerformGuiSettingsTests( void );
+
+void PerformGuiFileDialogTests( void );
 
 /*-------------------------------------------------------------------------*/
 

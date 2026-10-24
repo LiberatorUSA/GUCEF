@@ -79,19 +79,27 @@ namespace CORE {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-CMSWinConsoleLogger::CMSWinConsoleLogger( void )
-    : CIConsoleLogger()
+CMSWinConsoleLogger::CMSWinConsoleLogger( bool ownWindow )
+    : CIConsoleLogger()
     , m_minimalLogLevel( LOGLEVEL_BELOW_NORMAL )
     , m_formatForUiPurpose( false )
     , m_consoleHandle( NULL )
-    , m_ownedConsole( false )
+    , m_ownedConsole( false )
+    , m_leftParentConsole( false )
     , m_originalConsoleAttribs( FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE )
     , m_logFormatter( CCoreGlobal::Instance()->GetLogManager().CreateDefaultLoggingFormatter() )
 {GUCEF_TRACE;
 
-    HWND consoleWindow = ::GetConsoleWindow();
-    if ( NULL == consoleWindow )
-    {
+    HWND consoleWindow = ::GetConsoleWindow();
+    if ( NULL != consoleWindow && ownWindow )
+    {
+        // a process has one console: the one it was started from is let go for a window of its own
+        ::FreeConsole();
+        m_leftParentConsole = true;
+        consoleWindow = NULL;
+    }
+    if ( NULL == consoleWindow )
+    {
         ::AllocConsole();
         m_ownedConsole = true;
     }
@@ -116,8 +124,10 @@ CMSWinConsoleLogger::~CMSWinConsoleLogger()
     CCoreGlobal::Instance()->GetLogManager().RemoveLogger( this );
     FlushLog();
 
-    if ( m_ownedConsole )
-        ::FreeConsole();
+    if ( m_ownedConsole )
+        ::FreeConsole();
+    if ( m_leftParentConsole )
+        ::AttachConsole( ATTACH_PARENT_PROCESS );
 }
 
 /*-------------------------------------------------------------------------*/

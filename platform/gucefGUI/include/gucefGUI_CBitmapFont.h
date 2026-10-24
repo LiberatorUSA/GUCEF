@@ -101,6 +101,15 @@ class GUCEF_GUI_PUBLIC_CPP CBitmapFont
     void SetBaseline( Int32 baseline );
     Int32 GetBaseline( void ) const;
 
+    /**
+     *  Atlas pixels per logical pixel in each direction, 1 by default. The source rectangles of the glyphs
+     *  are in atlas pixels, everything else (offsets, advance, line height, spacing, baseline) in logical
+     *  pixels: a glyph covers its source size divided by the density. A font for a render scale (see
+     *  CGUIContext::SetRenderScale()) has its atlas at that density.
+     */
+    void SetDensity( UInt32 density );
+    UInt32 GetDensity( void ) const;
+
     /** The glyph for the code point, the fallback glyph when the font lacks it, NULL when neither exists */
     const TGlyph* ResolveGlyph( UInt32 codePoint ) const;
 
@@ -124,6 +133,7 @@ class GUCEF_GUI_PUBLIC_CPP CBitmapFont
     Int32 m_lineHeight;
     Int32 m_spacing;
     Int32 m_baseline;
+    UInt32 m_density;
 };
 
 typedef CORE::CTSharedPtr< CBitmapFont, MT::CMutex > TBitmapFontPtr;

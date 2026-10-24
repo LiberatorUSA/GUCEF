@@ -141,6 +141,7 @@ CRmlUIGuiDriver::GetCapabilities( void )
     TStringSet capabilities = guidriverRmlUI::CRmlUIDriver::GetCapabilities();
     capabilities.insert( "CaptureFrame" );
     capabilities.insert( "PresentScaling" );
+    capabilities.insert( "PresentFilters" );
     return capabilities;
 }
 

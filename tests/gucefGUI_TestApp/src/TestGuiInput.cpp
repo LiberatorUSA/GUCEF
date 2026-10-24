@@ -146,6 +146,43 @@ const Int32 TestKeyboardId = 9102;
 
 /*-------------------------------------------------------------------------*/
 
+/** A window without a screen that remembers whether the pointer of the system is shown */
+class CTestWindow : public GUI::CWindowContext
+{
+    public:
+
+    Int32 systemCursorShown;        /**< -1 when never told */
+    UInt32 systemCursorChanges;
+
+    CTestWindow( void ) : GUI::CWindowContext(), systemCursorShown( -1 ), systemCursorChanges( 0 ) {}
+
+    virtual UInt32 GetWidth( void ) const GUCEF_VIRTUAL_OVERRIDE { return 640; }
+    virtual UInt32 GetHeight( void ) const GUCEF_VIRTUAL_OVERRIDE { return 480; }
+    virtual UInt32 GetID( void ) const GUCEF_VIRTUAL_OVERRIDE { return 1; }
+    virtual bool IsActive( void ) const GUCEF_VIRTUAL_OVERRIDE { return true; }
+    virtual CORE::CString GetName( void ) const GUCEF_VIRTUAL_OVERRIDE { return "TestWindow"; }
+    virtual void SetGuiContext( GUI::TGuiContextPtr& context ) GUCEF_VIRTUAL_OVERRIDE {}
+    virtual GUI::TGuiContextPtr GetGuiContext( void ) GUCEF_VIRTUAL_OVERRIDE { return GUI::TGuiContextPtr(); }
+    virtual CORE::CString GetProperty( const CORE::CString& propertyName ) const GUCEF_VIRTUAL_OVERRIDE { return CORE::CString::Empty; }
+
+    virtual bool SetSystemCursorVisible( bool visible ) GUCEF_VIRTUAL_OVERRIDE
+    {
+        systemCursorShown = visible ? 1 : 0;
+        ++systemCursorChanges;
+        return true;
+    }
+};
+
+/** Whether the pixel of a frame is red, the colour of the cursor picture of the test */
+bool
+IsRed( const IMAGE::TPixelMapPtr& frame, UInt32 x, UInt32 y )
+{
+    const UInt8* pixel = static_cast< const UInt8* >( frame->GetDataPtr() ) + ( (size_t) y * frame->GetWidthInPixels() + x ) * 4;
+    return 255 == pixel[ 0 ] && 0 == pixel[ 1 ] && 0 == pixel[ 2 ];
+}
+
+/*-------------------------------------------------------------------------*/
+
 }
 
 /*-------------------------------------------------------------------------//
@@ -230,6 +267,208 @@ PerformGuiInputTests( void )
         ASSERT_TRUE( "Ab" == edit->GetText() );
 
         driver.NoMouse( TestMouseId );
+        driver.NoKeyboard( TestKeyboardId );
+    }
+    catch ( ... )
+    {
+        ERRORHERE;
+    }
+    GUCEF_TESTFW_TESTCASE_END
+
+    GUCEF_TESTFW_TESTCASE( "Input: The highest layer of a window that shows something takes the input" )
+    #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_WASM_EMSCRIPTEN )
+    if ( !IsInBrowser() )
+        GUCEF_TESTFW_SKIP( "layers need a window, there is no web page outside a browser" );
+    #endif
+    try
+    {
+        GUI::TGuiContextPtr bottomPtr = CreateRmlUiContext();
+        GUI::CGUIContext* bottom = static_cast< GUI::CGUIContext* >( bottomPtr.GetPointerAlways() );
+        ASSERT_TRUE( GUCEF_NULL != bottom );
+        if ( GUCEF_NULL != bottom )
+        {
+            GUI::TGuiContextPtr topPtr = GUI::CGuiGlobal::Instance()->GetGuiManager().CreateGUIContext( "RmlUi", bottom->GetWindowContext() );
+            GUI::CGUIContext* top = static_cast< GUI::CGUIContext* >( topPtr.GetPointerAlways() );
+            top->SetLogicalResolution( 640, 480 );
+            top->SetLayer( 1 );
+
+            GUI::CWidget* bottomButton = bottom->CreateWidget( "Button", "Below", GUCEF_NULL );
+            bottomButton->SetProperty( "Size", "1,0 1,0" );
+            bottom->ShowRoot( bottomButton, false );
+            GUI::CWidget* topButton = top->CreateWidget( "Button", "Above", GUCEF_NULL );
+            topButton->SetProperty( "Size", "1,0 1,0" );
+            CTargetCount belowClicks( bottomButton, GUI::CWidget::MouseClickEvent );
+            CTargetCount aboveClicks( topButton, GUI::CWidget::MouseClickEvent );
+
+            CScriptedInputDriver driver;
+            driver.Mouse( TestMouseId );
+            GUI::CGUIInputAdapter bottomAdapter( *bottom );
+            GUI::CGUIInputAdapter topAdapter( *top );
+            bottomAdapter.Attach();
+            topAdapter.Attach();
+
+            // the higher layer shows nothing: the lower one gets the click
+            driver.Click( 1, TestMouseId, 20, 20 );
+            ASSERT_TRUE( 1 == belowClicks.count && 0 == aboveClicks.count );
+
+            // it shows something: it takes the click, the lower one gets none
+            top->ShowRoot( topButton, false );
+            ASSERT_TRUE( bottom->HasHigherLayerTakingInput() && !top->HasHigherLayerTakingInput() );
+            driver.Click( 1, TestMouseId, 20, 20 );
+            ASSERT_TRUE( 1 == belowClicks.count && 1 == aboveClicks.count );
+
+            top->HideRoot( topButton );
+            driver.Click( 1, TestMouseId, 20, 20 );
+            ASSERT_TRUE( 2 == belowClicks.count && 1 == aboveClicks.count );
+
+            bottomAdapter.Detach();
+            topAdapter.Detach();
+            driver.NoMouse( TestMouseId );
+        }
+    }
+    catch ( ... )
+    {
+        ERRORHERE;
+    }
+    GUCEF_TESTFW_TESTCASE_END
+
+    GUCEF_TESTFW_TESTCASE( "Input: The pointer is the one of the layer that takes the input: a picture of its own or the system's" )
+    try
+    {
+        // the driver
+        GUI::TGuiContextPtr loader = CreateNullContext();
+        ASSERT_TRUE( !loader.IsNULL() );
+
+        CORE::CTSharedPtr< CTestWindow, MT::CMutex > testWindow( GUCEF_NEW CTestWindow() );
+        GUI::TWindowContextPtr window( testWindow );
+        GUI::CGUIManager& manager = GUI::CGuiGlobal::Instance()->GetGuiManager();
+        GUI::TGuiContextPtr bottomPtr = manager.CreateGUIContext( "Null", window );
+        GUI::TGuiContextPtr topPtr = manager.CreateGUIContext( "Null", window );
+        GUI::CGUIContext* bottom = dynamic_cast< GUI::CGUIContext* >( bottomPtr.GetPointerAlways() );
+        GUI::CGUIContext* top = dynamic_cast< GUI::CGUIContext* >( topPtr.GetPointerAlways() );
+        ASSERT_TRUE( GUCEF_NULL != bottom && GUCEF_NULL != top );
+        if ( GUCEF_NULL != bottom && GUCEF_NULL != top )
+        {
+            bottom->SetLogicalResolution( 640, 480 );
+            top->SetLogicalResolution( 640, 480 );
+            top->SetLayer( 1 );
+
+            // the lower layer draws a picture as the pointer: no pointer of the system
+            ASSERT_TRUE( bottom->RegisterImage( "Arrow", MakeSolidImage( 8, 8, 255, 0, 0, 255 ) ) );
+            bottom->SetCursor( "Arrow", 0, 0 );
+            bottom->InjectMouseMove( 100, 100 );
+            ASSERT_TRUE( 0 == testWindow->systemCursorShown );
+            IMAGE::TPixelMapPtr frame;
+            ASSERT_TRUE( bottom->CaptureFrame( frame ) && !frame.IsNULL() && IsRed( frame, 102, 102 ) );
+
+            // the higher layer shows something and takes the input: the pointer of the system, no picture below it
+            GUI::CWidget* panel = top->CreateWidget( "Panel", "Settings", GUCEF_NULL );
+            panel->SetProperty( "Size", "1,0 1,0" );
+            top->ShowRoot( panel, false );
+            window->UpdateSystemCursor();
+            ASSERT_TRUE( 1 == testWindow->systemCursorShown );
+            ASSERT_TRUE( bottom->CaptureFrame( frame ) && !frame.IsNULL() && !IsRed( frame, 102, 102 ) );
+
+            // the window is only told when that changes
+            const UInt32 changes = testWindow->systemCursorChanges;
+            window->UpdateSystemCursor();
+            ASSERT_TRUE( changes == testWindow->systemCursorChanges );
+
+            // gone again: the picture of the lower layer
+            top->HideRoot( panel );
+            window->UpdateSystemCursor();
+            ASSERT_TRUE( 0 == testWindow->systemCursorShown );
+            ASSERT_TRUE( bottom->CaptureFrame( frame ) && !frame.IsNULL() && IsRed( frame, 102, 102 ) );
+        }
+    }
+    catch ( ... )
+    {
+        ERRORHERE;
+    }
+    GUCEF_TESTFW_TESTCASE_END
+
+    GUCEF_TESTFW_TESTCASE( "Input: The developer console drops down on its key and goes back up on it, when it is switched on" )
+    try
+    {
+        GUI::TGuiContextPtr contextPtr = CreateNullContext();
+        GUI::CGUIContext* context = static_cast< GUI::CGUIContext* >( contextPtr.GetPointerAlways() );
+        context->RegisterFont( "Test", MakeTestFont( 8, 10 ) );
+        CORE::CDataNode theme;
+        GUI::BuildDarkTheme( theme, "Test" );
+        context->SetTheme( theme );
+
+        GUI::CDeveloperConsoleForm console( context );
+        console.SetSlideTimeInMs( 100 );
+        ASSERT_TRUE( console.Build() );
+        ASSERT_FALSE( console.IsVisible() || console.IsOpen() || context->HasVisibleRoots() );
+        CTargetCount opened( &console, GUI::CDeveloperConsoleForm::OpenedEvent );
+        CTargetCount closed( &console, GUI::CDeveloperConsoleForm::ClosedEvent );
+        CTargetCount entered( &console, GUI::CDeveloperConsoleForm::CommandEnteredEvent );
+
+        CScriptedInputDriver driver;
+        driver.Keyboard( TestKeyboardId );
+        GUI::CGUIInputAdapter adapter( *context );
+        adapter.Attach();
+
+        // switched off the key does nothing
+        driver.Key( 1, TestKeyboardId, INPUT::KEYCODE_GRAVE, true );
+        driver.Key( 1, TestKeyboardId, INPUT::KEYCODE_GRAVE, false );
+        ASSERT_FALSE( console.IsOpen() );
+
+        // switched on it drops down from above the top, in the slide time, frame by frame
+        console.SetEnabled( true );
+        driver.Key( 1, TestKeyboardId, INPUT::KEYCODE_GRAVE, true );
+        driver.Text( 1, TestKeyboardId, "`" );
+        driver.Key( 1, TestKeyboardId, INPUT::KEYCODE_GRAVE, false );
+        ASSERT_TRUE( console.IsOpen() && console.IsVisible() && 1 == opened.count );
+        context->FlushChanges();
+        ASSERT_TRUE( console.GetRootWidget()->GetRect().Bottom() <= 0 );
+        context->RenderFrame( 50 );
+        ASSERT_TRUE( console.GetSlidePosition() > 0.4f && console.GetSlidePosition() < 0.6f );
+        context->RenderFrame( 60 );
+        context->FlushChanges();
+        ASSERT_TRUE( 1.0f == console.GetSlidePosition() && 0 == console.GetRootWidget()->GetRect().top );
+
+        // the character of the key is not typed, what is typed after it is; Enter gives the command
+        GUI::CEditbox* commandLine = console.GetWidgetAs< GUI::CEditbox >( "CommandLine" );
+        ASSERT_TRUE( GUCEF_NULL != commandLine && commandLine->HasFocus() && commandLine->GetText().IsNULLOrEmpty() );
+        driver.Text( 1, TestKeyboardId, "help" );
+        ASSERT_TRUE( "help" == commandLine->GetText() );
+        driver.Key( 1, TestKeyboardId, INPUT::KEYCODE_RETURN, true );
+        driver.Key( 1, TestKeyboardId, INPUT::KEYCODE_RETURN, false );
+        ASSERT_TRUE( 1 == entered.count && commandLine->GetText().IsNULLOrEmpty() );
+        GUI::CTextbox* output = console.GetWidgetAs< GUI::CTextbox >( "Output" );
+        ASSERT_TRUE( GUCEF_NULL != output && output->GetTextAsString().HasSubstr( "> help" ) >= 0 );
+
+        // the key again: it goes back up and is gone when the slide is done
+        driver.Key( 1, TestKeyboardId, INPUT::KEYCODE_GRAVE, true );
+        driver.Text( 1, TestKeyboardId, "`" );
+        driver.Key( 1, TestKeyboardId, INPUT::KEYCODE_GRAVE, false );
+        ASSERT_FALSE( console.IsOpen() );
+        ASSERT_TRUE( console.IsVisible() && 0 == closed.count );
+        context->RenderFrame( 120 );
+        ASSERT_FALSE( console.IsVisible() || context->HasVisibleRoots() );
+        ASSERT_TRUE( 1 == closed.count && commandLine->GetText().IsNULLOrEmpty() );
+
+        // only keys of its input context, when it is told one
+        console.SetInputContextId( 2 );
+        driver.Key( 1, TestKeyboardId, INPUT::KEYCODE_GRAVE, true );
+        driver.Key( 1, TestKeyboardId, INPUT::KEYCODE_GRAVE, false );
+        ASSERT_FALSE( console.IsOpen() );
+        driver.Key( 2, TestKeyboardId, INPUT::KEYCODE_GRAVE, true );
+        driver.Key( 2, TestKeyboardId, INPUT::KEYCODE_GRAVE, false );
+        ASSERT_TRUE( console.IsOpen() );
+
+        // switched off it closes, and the key does nothing anymore
+        console.SetEnabled( false );
+        ASSERT_FALSE( console.IsOpen() );
+        context->RenderFrame( 200 );
+        ASSERT_FALSE( console.IsVisible() );
+        driver.Key( 2, TestKeyboardId, INPUT::KEYCODE_GRAVE, true );
+        driver.Key( 2, TestKeyboardId, INPUT::KEYCODE_GRAVE, false );
+        ASSERT_FALSE( console.IsOpen() );
+
+        adapter.Detach();
         driver.NoKeyboard( TestKeyboardId );
     }
     catch ( ... )

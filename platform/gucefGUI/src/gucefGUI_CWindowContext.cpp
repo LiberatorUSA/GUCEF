@@ -23,6 +23,13 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+#include <algorithm>
+
+#ifndef GUCEF_GUI_CGUICONTEXT_H
+#include "gucefGUI_CGUIContext.h"
+#define GUCEF_GUI_CGUICONTEXT_H
+#endif /* GUCEF_GUI_CGUICONTEXT_H ? */
+
 #include "gucefGUI_CWindowContext.h"
 
 /*-------------------------------------------------------------------------//
@@ -52,6 +59,9 @@ const CORE::CEvent CWindowContext::WindowContextCloseRequestEvent = "GUCEF::GUI:
 //-------------------------------------------------------------------------*/
 
 CWindowContext::CWindowContext( void )
+    : CORE::CObservingNotifier()
+    , m_guiLayers()
+    , m_systemCursorShown( -1 )
 {GUCEF_TRACE;
                        
     RegisterEvents();
@@ -83,6 +93,82 @@ CWindowContext::SetSystemCursorVisible( bool visible )
 {GUCEF_TRACE;
 
     return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CWindowContext::UpdateSystemCursor( void )
+{GUCEF_TRACE;
+
+    if ( m_guiLayers.empty() )
+        return;
+    CGUIContext* inputLayer = m_guiLayers.front();
+    for ( TGuiContextLayers::const_reverse_iterator i=m_guiLayers.rbegin(); i!=m_guiLayers.rend(); ++i )
+    {
+        if ( (*i)->HasVisibleRoots() )
+        {
+            inputLayer = (*i);
+            break;
+        }
+    }
+    const bool visible = inputLayer->GetCursorImage().IsNULLOrEmpty();
+    if ( m_systemCursorShown != ( visible ? 1 : 0 ) && SetSystemCursorVisible( visible ) )
+        m_systemCursorShown = visible ? 1 : 0;
+}
+
+/*-------------------------------------------------------------------------*/
+
+namespace {
+
+bool
+LowerLayer( const CGUIContext* a, const CGUIContext* b )
+{
+    return a->GetLayer() < b->GetLayer();
+}
+
+}
+
+/*-------------------------------------------------------------------------*/
+
+const CWindowContext::TGuiContextLayers&
+CWindowContext::GetGuiLayers( void ) const
+{GUCEF_TRACE;
+
+    return m_guiLayers;
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CWindowContext::RegisterGuiLayer( CGUIContext* context )
+{GUCEF_TRACE;
+
+    if ( GUCEF_NULL == context || std::find( m_guiLayers.begin(), m_guiLayers.end(), context ) != m_guiLayers.end() )
+        return;
+    m_guiLayers.push_back( context );
+    SortGuiLayers();
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CWindowContext::UnregisterGuiLayer( CGUIContext* context )
+{GUCEF_TRACE;
+
+    TGuiContextLayers::iterator i = std::find( m_guiLayers.begin(), m_guiLayers.end(), context );
+    if ( i != m_guiLayers.end() )
+        m_guiLayers.erase( i );
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CWindowContext::SortGuiLayers( void )
+{GUCEF_TRACE;
+
+    // equal layer numbers keep the order the contexts came in
+    std::stable_sort( m_guiLayers.begin(), m_guiLayers.end(), &LowerLayer );
 }
 
 /*-------------------------------------------------------------------------//

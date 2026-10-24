@@ -135,6 +135,7 @@ set( HEADER_FILES
   include/gucefCORE_CAbstractFactoryBase.h
   include/gucefCORE_CAsciiString.h
   include/gucefCORE_CAsciiStringView.h
+  include/gucefCORE_CAsyncFileSystemAccessOperation.h
   include/gucefCORE_CAsyncUriResourceRetriever.h
   include/gucefCORE_CAsyncUriRetrievalTask.h
   include/gucefCORE_CBackoffPolicy.h
@@ -169,6 +170,7 @@ set( HEADER_FILES
   include/gucefCORE_CEventBasedTaskConsumer.h
   include/gucefCORE_CExternalThreadScope.h
   include/gucefCORE_CFileSystemDirectoryWatcher.h
+  include/gucefCORE_CFileSystemEntryListIterator.h
   include/gucefCORE_CFileSystemUriResourceAccessor.h
   include/gucefCORE_CForwardingNotifier.h
   include/gucefCORE_CFunctionMeta.h
@@ -179,6 +181,7 @@ set( HEADER_FILES
   include/gucefCORE_CGenericCallbackTaskConsumer.h
   include/gucefCORE_CGenericValueToDataNodeSerializer.h
   include/gucefCORE_CGeoLocation.h
+  include/gucefCORE_CGlobPattern.h
   include/gucefCORE_CGlobalConfigValueList.h
   include/gucefCORE_CGlobalDataDrivenDStoreCodecFactory.h
   include/gucefCORE_CGloballyConfigurable.h
@@ -215,6 +218,7 @@ set( HEADER_FILES
   include/gucefCORE_CLoggingTask.h
   include/gucefCORE_CMetricsClientManager.h
   include/gucefCORE_CMultiLogger.h
+  include/gucefCORE_CNativeFileSystemAccess.h
   include/gucefCORE_COSWindow.h
   include/gucefCORE_CObserverSwitch.h
   include/gucefCORE_CPlatformNativeConsoleLogger.h
@@ -272,6 +276,7 @@ set( HEADER_FILES
   include/gucefCORE_CUriResourceAccessor.h
   include/gucefCORE_CUriResourceAccessorFactory.h
   include/gucefCORE_CUrlEncoder.h
+  include/gucefCORE_CUserActionLogger.h
   include/gucefCORE_CUtf16String.h
   include/gucefCORE_CUtf16StringView.h
   include/gucefCORE_CUtf32String.h
@@ -289,9 +294,12 @@ set( HEADER_FILES
   include/gucefCORE_CVersion.h
   include/gucefCORE_CVersionRange.h
   include/gucefCORE_CoreCodecTypes.h
+  include/gucefCORE_EFileSystemAccessResult.h
   include/gucefCORE_ETypes.h
   include/gucefCORE_ExecutionOperation.h
   include/gucefCORE_GenericPluginAPI.h
+  include/gucefCORE_IFileSystemAccess.h
+  include/gucefCORE_IFileSystemIterator.h
   include/gucefCORE_LogLevels.h
   include/gucefCORE_LogTypes.h
   include/gucefCORE_Logging.h
@@ -443,6 +451,7 @@ set( SOURCE_FILES
   src/gucefCORE_CAbstractFactoryBase.cpp
   src/gucefCORE_CAsciiString.cpp
   src/gucefCORE_CAsciiStringView.cpp
+  src/gucefCORE_CAsyncFileSystemAccessOperation.cpp
   src/gucefCORE_CAsyncUriResourceRetriever.cpp
   src/gucefCORE_CAsyncUriRetrievalTask.cpp
   src/gucefCORE_CBackoffPolicy.cpp
@@ -475,6 +484,7 @@ set( SOURCE_FILES
   src/gucefCORE_CEventAggregateTrigger.cpp
   src/gucefCORE_CExternalThreadScope.cpp
   src/gucefCORE_CFileSystemDirectoryWatcher.cpp
+  src/gucefCORE_CFileSystemEntryListIterator.cpp
   src/gucefCORE_CFileSystemUriResourceAccessor.cpp
   src/gucefCORE_CForwardingNotifier.cpp
   src/gucefCORE_CFunctionMeta.cpp
@@ -485,6 +495,7 @@ set( SOURCE_FILES
   src/gucefCORE_CGenericCallbackTaskConsumer.cpp
   src/gucefCORE_CGenericValueToDataNodeSerializer.cpp
   src/gucefCORE_CGeoLocation.cpp
+  src/gucefCORE_CGlobPattern.cpp
   src/gucefCORE_CGlobalConfigValueList.cpp
   src/gucefCORE_CGlobalDataDrivenDStoreCodecFactory.cpp
   src/gucefCORE_CGloballyConfigurable.cpp
@@ -520,6 +531,7 @@ set( SOURCE_FILES
   src/gucefCORE_CLoggingTask.cpp
   src/gucefCORE_CMetricsClientManager.cpp
   src/gucefCORE_CMultiLogger.cpp
+  src/gucefCORE_CNativeFileSystemAccess.cpp
   src/gucefCORE_COSWindow.cpp
   src/gucefCORE_CObserverSwitch.cpp
   src/gucefCORE_CPlatformNativeConsoleLogger.cpp
@@ -572,6 +584,7 @@ set( SOURCE_FILES
   src/gucefCORE_CUriResourceAccessor.cpp
   src/gucefCORE_CUriResourceAccessorFactory.cpp
   src/gucefCORE_CUrlEncoder.cpp
+  src/gucefCORE_CUserActionLogger.cpp
   src/gucefCORE_CUtf16String.cpp
   src/gucefCORE_CUtf16StringView.cpp
   src/gucefCORE_CUtf32String.cpp
@@ -589,6 +602,9 @@ set( SOURCE_FILES
   src/gucefCORE_CVersion.cpp
   src/gucefCORE_CVersionRange.cpp
   src/gucefCORE_CoreCodecTypes.cpp
+  src/gucefCORE_EFileSystemAccessResult.cpp
+  src/gucefCORE_IFileSystemAccess.cpp
+  src/gucefCORE_IFileSystemIterator.cpp
   src/gucefCORE_LogLevels.cpp
   src/gucefCORE_TaskStatus.cpp
   src/gucefCORE_ThreadStatus.cpp

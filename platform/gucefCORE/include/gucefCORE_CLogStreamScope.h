@@ -60,6 +60,9 @@ namespace CORE {
  *  RAII scope guard for log stream segments.
  *  On destruction, writes a VOID marker to end the segment.
  *  This allows natural C++ scoping to delineate log entries.
+ *
+ *  When there is no logging to be had, as when logging is shut down while something still logs, the scope still
+ *  has a stream: one that is thrown away with the scope. Logging is never a reason for an exception
  */
 class GUCEF_CORE_PUBLIC_CPP CLogStreamScope
 {
@@ -94,6 +97,7 @@ class GUCEF_CORE_PUBLIC_CPP CLogStreamScope
     CLogStreamScope& operator=( const CLogStreamScope& src );   /**< not implemented, don't use */
 
     CLogStreamPtr m_stream;
+    bool m_discard;     /**< no logging to be had (as during the shutdown of logging): m_stream is ours and goes nowhere */
 };
 
 /*-------------------------------------------------------------------------//

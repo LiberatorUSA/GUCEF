@@ -129,37 +129,35 @@ CFileSystemArchive::LoadArchive( const CArchiveSettings& settings )
     if ( settings.GetAutoMountSubArchives() )
     {
         CVFS& vfs = CVfsGlobal::Instance()->GetVfs();
-        
-        // Get a list of all constructable archive types
-        CVFS::TAbstractArchiveFactory::TKeySet keySet;
-        vfs.GetListOfSupportedArchiveTypes( keySet );
 
-        // Get a list of all files from the root onward
+        // Get a list of all files from the root onward, as paths in this archive
         TStringVector files;
-        GetFileList( files, settings.GetMountPath(), CString::Empty, true, true, CString::EmptyStringSet );
+        GetFileList( files, CString::Empty, CString::Empty, true, true, CString::EmptyStringSet );
 
         // Find mountable types
         TStringVector::iterator i = files.begin();
         while ( i != files.end() )
         {
-            // Mount based on archive file extention type
-            CString fileExtention = CORE::ExtractFileExtention( (*i) );
-            if ( !fileExtention.IsNULLOrEmpty() )
+            // Mount based on archive file extention type: the type that declared the extension, or one named like it
+            CString archiveType;
+            if ( vfs.TryGetArchiveTypeForFile( (*i), archiveType ) )
             {
-                CVFS::TAbstractArchiveFactory::TKeySet::iterator n = keySet.find( fileExtention );
-                if ( n != keySet.end() )
+                // Found a compatible type,.. create an archive for the type: mounted at its VFS path, read from its file
+                const CString vfsPath = CORE::CombinePath( settings.GetMountPath(), (*i) ).ReplaceChar( '\\', '/' );
+                const CString fsPath = CORE::CombinePath( m_rootDir, (*i).ReplaceChar( GUCEF_DIRSEPCHAROPPOSITE, GUCEF_DIRSEPCHAR ) );
+                CArchiveSettings subArchiveSettings;
+                subArchiveSettings.SetActualArchivePath( fsPath );
+                subArchiveSettings.SetArchiveName( vfsPath );
+                subArchiveSettings.SetArchivePath( vfsPath );
+                subArchiveSettings.SetArchiveType( archiveType );
+                subArchiveSettings.SetAutoMountSubArchives( settings.GetAutoMountSubArchives() && settings.GetAutoMountSubArchivesIsRecursive() );
+                subArchiveSettings.SetAutoMountSubArchivesIsRecursive( settings.GetAutoMountSubArchivesIsRecursive() );
+                subArchiveSettings.SetMountPath( vfsPath );
+                subArchiveSettings.SetWriteableRequested( settings.GetWriteableRequested() );
+                subArchiveSettings.SetParentArchiveName( settings.GetArchiveName() );
+                if ( vfs.MountArchive( subArchiveSettings ) )
                 {
-                    // Found a compatible type,.. create an archive for the type
-                    if ( vfs.MountArchive( (*i)                                                                                , 
-                                           (*i)                                                                                , 
-                                           (*n)                                                                                , 
-                                           (*i)                                                                                , 
-                                           settings.GetWriteableRequested()                                                    , 
-                                           settings.GetAutoMountSubArchives() && settings.GetAutoMountSubArchivesIsRecursive() , 
-                                           (*i)                                                                                ) )
-                    {
-                        GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "FileSystemArchive: Auto mounted sub archive with name " + (*i) );
-                    }
+                    GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "FileSystemArchive: Auto mounted sub archive with name " << vfsPath );
                 }
             }
             ++i;
@@ -908,6 +906,49 @@ CFileSystemArchive::TryResolveSpecialDir( CORE::TSpecialDirs dir, CString& resol
         return true;
     }
     return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CFileSystemArchive::CreateDir( const CString& dirPath )
+{GUCEF_TRACE;
+
+    if ( !m_writable )
+        return false;
+    CString path = CORE::CombinePath( m_rootDir, dirPath.ReplaceChar( GUCEF_DIRSEPCHAROPPOSITE, GUCEF_DIRSEPCHAR ) );
+    return CORE::CreateDirs( path ) && CORE::DirExists( path );
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CFileSystemArchive::DeleteDir( const CString& dirPath, bool deleteContents )
+{GUCEF_TRACE;
+
+    if ( !m_writable )
+        return false;
+    CString path = CORE::CombinePath( m_rootDir, dirPath.ReplaceChar( GUCEF_DIRSEPCHAROPPOSITE, GUCEF_DIRSEPCHAR ) );
+    if ( !CORE::DirExists( path ) )
+        return false;
+    return CORE::DeleteDir( path, deleteContents ) && !CORE::DirExists( path );
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CFileSystemArchive::MoveDir( const CString& oldDirPath, const CString& newDirPath )
+{GUCEF_TRACE;
+
+    if ( !m_writable )
+        return false;
+    CString oldPath = CORE::CombinePath( m_rootDir, oldDirPath.ReplaceChar( GUCEF_DIRSEPCHAROPPOSITE, GUCEF_DIRSEPCHAR ) );
+    CString newPath = CORE::CombinePath( m_rootDir, newDirPath.ReplaceChar( GUCEF_DIRSEPCHAROPPOSITE, GUCEF_DIRSEPCHAR ) );
+    if ( !CORE::DirExists( oldPath ) || CORE::DirExists( newPath ) || CORE::FileExists( newPath ) )
+        return false;
+
+    // the rename of MoveFile() also moves a directory
+    return CORE::MoveFile( oldPath, newPath, false ) && CORE::DirExists( newPath );
 }
 
 /*-------------------------------------------------------------------------//

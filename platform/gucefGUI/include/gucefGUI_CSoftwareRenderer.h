@@ -67,10 +67,10 @@ class GUCEF_GUI_PUBLIC_CPP CSoftwareRenderer
 
     typedef CDrawSurface::TCommandVector TCommandVector;
 
-    /** The whole context at its logical resolution on black; 'target' is made or resized as needed */
+    /** The whole context on black, at its render size (the logical resolution times the render scale); 'target' is made or resized as needed */
     static bool RenderContext( CGUIContext& context, IMAGE::TPixelMapPtr& target );
 
-    /** Executes drawing commands moved by an offset, cut off at 'clip' (in target coordinates) */
+    /** Executes drawing commands moved by an offset, cut off at 'clip'; all in logical pixels, drawn at the render scale of the context */
     static void Execute( CGUIContext& context          ,
                          const TCommandVector& commands ,
                          Int32 offsetX                  ,

@@ -174,13 +174,18 @@ CMultiLogger::ClearLoggers( void )
                                  const Int32 logLevel         ) const
 {GUCEF_TRACE;
 
-    bool retValue = false;
-    if ( logLevel < m_minLogLevel )
-    {
-        retValue = (*m_msgTypeEnablers.find( logMsgType )).second;
-    }
+    // the same test as Log() makes
+    return logLevel >= m_minLogLevel && IsLogMsgTypeEnabled( logMsgType );
+}
 
-    return retValue;
+/*-------------------------------------------------------------------------*/
+
+bool
+CMultiLogger::IsLogMsgTypeEnabled( const TLogMsgType logMsgType ) const
+{GUCEF_TRACE;
+
+    GUCEF::map< TLogMsgType, bool >::const_iterator i = m_msgTypeEnablers.find( logMsgType );
+    return i != m_msgTypeEnablers.end() && (*i).second;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -245,7 +250,7 @@ CMultiLogger::Log( const TLogMsgType logMsgType ,
     // activity itself.
     if ( logLevel >= m_minLogLevel )
     {
-        if ( (*m_msgTypeEnablers.find( logMsgType )).second )
+        if ( IsLogMsgTypeEnabled( logMsgType ) )
         {
             TLoggerList::const_iterator i = m_loggers.begin();
             while ( i != m_loggers.end() )
@@ -292,7 +297,7 @@ CMultiLogger::LogWithoutFormatting( const TLogMsgType logMsgType ,
     // activity itself.
     if ( logLevel >= m_minLogLevel )
     {
-        if ( (*m_msgTypeEnablers.find( logMsgType )).second )
+        if ( IsLogMsgTypeEnabled( logMsgType ) )
         {
             TLoggerList::const_iterator i = m_loggers.begin();
             while ( i != m_loggers.end() )
@@ -332,7 +337,7 @@ CMultiLogger::Log( const TLogMsgType logMsgType     ,
 
     if ( logLevel >= m_minLogLevel )
     {
-        if ( (*m_msgTypeEnablers.find( logMsgType )).second )
+        if ( IsLogMsgTypeEnabled( logMsgType ) )
         {
             TLoggerList::const_iterator i = m_loggers.begin();
             while ( i != m_loggers.end() )
@@ -369,7 +374,7 @@ CMultiLogger::LogWithoutFormatting( const TLogMsgType logMsgType     ,
 
     if ( logLevel >= m_minLogLevel )
     {
-        if ( (*m_msgTypeEnablers.find( logMsgType )).second )
+        if ( IsLogMsgTypeEnabled( logMsgType ) )
         {
             TLoggerList::const_iterator i = m_loggers.begin();
             while ( i != m_loggers.end() )

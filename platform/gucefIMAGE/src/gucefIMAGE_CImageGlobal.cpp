@@ -54,6 +54,26 @@
 
 #include "gucefIMAGE_CImageGlobal.h"
 
+#ifndef GUCEF_IMAGE_CIMAGEUPSCALERREGISTRY_H
+#include "gucefIMAGE_CImageUpscalerRegistry.h"
+#define GUCEF_IMAGE_CIMAGEUPSCALERREGISTRY_H
+#endif /* GUCEF_IMAGE_CIMAGEUPSCALERREGISTRY_H ? */
+
+#ifndef GUCEF_IMAGE_CMMPXIMAGEUPSCALER_H
+#include "gucefIMAGE_CMmpxImageUpscaler.h"
+#define GUCEF_IMAGE_CMMPXIMAGEUPSCALER_H
+#endif /* GUCEF_IMAGE_CMMPXIMAGEUPSCALER_H ? */
+
+#ifndef GUCEF_IMAGE_CASYNCIMAGEUPSCALE_H
+#include "gucefIMAGE_CAsyncImageUpscale.h"
+#define GUCEF_IMAGE_CASYNCIMAGEUPSCALE_H
+#endif /* GUCEF_IMAGE_CASYNCIMAGEUPSCALE_H ? */
+
+#ifndef GUCEF_CORE_CTASKMANAGER_H
+#include "gucefCORE_CTaskManager.h"
+#define GUCEF_CORE_CTASKMANAGER_H
+#endif /* GUCEF_CORE_CTASKMANAGER_H ? */
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //
@@ -70,6 +90,8 @@ namespace IMAGE {
 //-------------------------------------------------------------------------*/
 
 CImageGlobal* CImageGlobal::g_instance = NULL;
+
+TAsyncImageUpscaleTaskFactory g_asyncImageUpscaleTaskFactory;
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -127,6 +149,10 @@ CImageGlobal::Initialize( void )
     registry->Register( "gui", CORE::CCodecRegistry::TICodecTypedPtr( new CGUIImageCodec() ) );
 
     m_imageCodecRegistry = new CImageCodecRegistry();
+    m_imageUpscalerRegistry = new CImageUpscalerRegistry();
+    m_mmpxUpscaler = new CMmpxImageUpscaler();
+    m_imageUpscalerRegistry->Register( m_mmpxUpscaler );
+    CORE::CCoreGlobal::Instance()->GetTaskManager().RegisterTaskConsumerFactory( CAsyncImageUpscale::TaskType, &g_asyncImageUpscaleTaskFactory );
     m_imageCodecPluginManager = new CImageCodecPluginManager();
 
     GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "gucefIMAGE Global systems initialized" );
@@ -137,7 +163,9 @@ CImageGlobal::Initialize( void )
 
 CImageGlobal::CImageGlobal( void )
     : m_imageCodecPluginManager( NULL ) ,
-      m_imageCodecRegistry( NULL )
+      m_imageCodecRegistry( NULL )      ,
+      m_imageUpscalerRegistry( NULL )   ,
+      m_mmpxUpscaler( NULL )
 {GUCEF_TRACE;
 
 }
@@ -161,10 +189,16 @@ CImageGlobal::~CImageGlobal()
         registry->Unregister( "gui" );
     }
 
+    CORE::CCoreGlobal::Instance()->GetTaskManager().UnregisterTaskConsumerFactory( CAsyncImageUpscale::TaskType );
+
     delete m_imageCodecPluginManager;
     m_imageCodecPluginManager = NULL;
     delete m_imageCodecRegistry;
     m_imageCodecRegistry = NULL;
+    delete m_imageUpscalerRegistry;
+    m_imageUpscalerRegistry = NULL;
+    delete m_mmpxUpscaler;
+    m_mmpxUpscaler = NULL;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -183,6 +217,15 @@ CImageGlobal::GetImageCodecRegistry( void )
 {GUCEF_TRACE;
 
     return *m_imageCodecRegistry;
+}
+
+/*-------------------------------------------------------------------------*/
+
+CImageUpscalerRegistry&
+CImageGlobal::GetImageUpscalerRegistry( void )
+{GUCEF_TRACE;
+
+    return *m_imageUpscalerRegistry;
 }
 
 /*-------------------------------------------------------------------------//

@@ -48,9 +48,15 @@ defines( { "GUCEF_VFSPLUGIN_ZIP_BUILD_MODULE", "MODULE_CONSENSUS_NAME=vfspluginZ
   links( { "z" } )
   links( { "z" } )
   
+configuration( { EMSCRIPTEN32 } )
+links( { "zlib" } )
+  
 
 configuration( { EMSCRIPTEN32 } )
 defines( { "MODULE_API_PREFIX=vfspluginZIP" } )
+  
+configuration( { EMSCRIPTEN64 } )
+links( { "zlib" } )
   
 
 configuration( { EMSCRIPTEN64 } )
@@ -104,6 +110,12 @@ includedirs( { "../../../platform/gucefCORE/include/android" } )
 
 configuration( { "ANDROID64" } )
 includedirs( { "../../../platform/gucefCORE/include/android" } )
+
+configuration( { "EMSCRIPTEN32" } )
+includedirs( { "../../../dependencies/zlib" } )
+
+configuration( { "EMSCRIPTEN64" } )
+includedirs( { "../../../dependencies/zlib" } )
 
 configuration( { "LINUX32" } )
 includedirs( { "../../../dependencies/zlib", "../../../platform/gucefCORE/include/linux" } )

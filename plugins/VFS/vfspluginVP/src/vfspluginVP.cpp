@@ -82,6 +82,7 @@ GUCEFPlugin_Load( CORE::UInt32 argc, const char** argv ) GUCEF_PLUGIN_CALLSPEC_S
 {GUCEF_TRACE;
 
     VFS::CVfsGlobal::Instance()->GetVfs().RegisterArchiveFactory( CVPArchive::VPArchiveTypeName, vpArchiveFactory );
+    VFS::CVfsGlobal::Instance()->GetVfs().SetArchiveTypeFileExtensions( CVPArchive::VPArchiveTypeName, CORE::CString( "vp" ).ParseUniqueElements( ';', false ) );
     return 1;
 }
 

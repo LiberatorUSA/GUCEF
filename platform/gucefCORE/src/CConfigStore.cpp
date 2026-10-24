@@ -73,6 +73,11 @@
 #define GUCEF_CORE_DVSTRUTILS_H
 #endif /* GUCEF_CORE_DVSTRUTILS_H ? */
 
+#ifndef GUCEF_CORE_CINIPARSER_H
+#include "gucefCORE_CIniParser.h"
+#define GUCEF_CORE_CINIPARSER_H
+#endif /* GUCEF_CORE_CINIPARSER_H ? */
+
 #include "CConfigStore.h"       /* definition of the class implemented here */
 
 /*-------------------------------------------------------------------------//
@@ -128,6 +133,10 @@ CConfigStore::CConfigStore( void )
     , m_isBusyLoadingConfig( false )
     , m_globalConfigIsLoaded( false )
     , m_globalBootstrapConfigIsLoaded( false )
+    , m_configLocation()
+    , m_configFileName()
+    , m_defaultConfigFile()
+    , m_usingManagedConfig( false )
 {GUCEF_TRACE;
 
 }
@@ -166,11 +175,12 @@ CConfigStore::SetConfigFile( const CString& filepath ,
                              bool isAddative         )
 {GUCEF_TRACE;
 
-    MT::CObjectScopeLock lock( this );
-    m_consolidatedConfigFile = filepath;
-    if ( !isAddative )
-        m_configfiles.clear();
-    m_configfiles.push_back( RelativePath( filepath ) );
+    MT::CObjectScopeLock lock( this );
+    m_consolidatedConfigFile = filepath;
+    m_usingManagedConfig = false;       // the application says which config it uses
+    if ( !isAddative )
+        m_configfiles.clear();
+    m_configfiles.push_back( RelativePath( filepath ) );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -217,10 +227,11 @@ CConfigStore::SetConfigFiles( const CString::StringVector& filepaths ,
                               bool isAddative                        )
 {GUCEF_TRACE;
 
-    MT::CObjectScopeLock lock( this );
-    if ( !isAddative )
-        m_configfiles.clear();
-
+    MT::CObjectScopeLock lock( this );
+    m_usingManagedConfig = false;       // the application says which config it uses
+    if ( !isAddative )
+        m_configfiles.clear();
+
     CString::StringVector::const_iterator i = filepaths.begin();
     while ( i != filepaths.end() )
     {
@@ -292,50 +303,44 @@ CConfigStore::SaveConsolidatedConfig( const CString& name ,
         *      This basically allows you to add and/or modify data
         *      but not remove items from the tree unless you do so on purpose.
         */
+    CDStoreCodecRegistry::TDStoreCodecPtr codec;
+    if ( !CCoreGlobal::Instance()->GetDStoreCodecRegistry().TryLookup( codecType, codec, false ) || codec.IsNULL() )
+    {
+        GUCEF_ERROR_LOG( LOGLEVEL_NORMAL, "ConfigStore:SaveConsolidatedConfig: No codec \"" + codecType + "\" to write the config with" );
+        return false;
+    }
+
+    /*
+     *      If the preserve flag is set then the config as it is in the file is the starting point,
+     *      so what the configurables do not write themselves is kept.
+     *      This basically allows you to add and/or modify data
+     *      but not remove items from the tree unless you do so on purpose.
+     */
     CDataNode rootnode( name );
-    CDataNode oldtree;
     if ( preserve )
     {
-        try
-        {
-            CDStoreCodecRegistry::TDStoreCodecPtr codec = CCoreGlobal::Instance()->GetDStoreCodecRegistry().Lookup( codecType );
-            if ( codec->BuildDataTree( &oldtree                  ,
-                                       m_consolidatedConfigFile  ) )
-            {
-                    rootnode.CopySubTree( oldtree );
-            }
-        }
-        catch ( CDStoreCodecRegistry::EUnregisteredName& )
-        {
-            return false;
-        }
+        CDataNode oldtree;
+        if ( codec->BuildDataTree( &oldtree, m_consolidatedConfigFile ) )
+            rootnode = oldtree;
     }
 
     TConfigurableSet::iterator i = m_configureables.begin();
     while ( i != m_configureables.end() )
     {
+        // a configurable that cannot save (or has nothing to save) does not stop the others from being saved
         if ( !(*i)->SaveConfig( rootnode ) )
         {
-            return false;
+            GUCEF_WARNING_LOG( LOGLEVEL_NORMAL, "ConfigStore:SaveConsolidatedConfig: A configurable of type \"" + (*i)->GetClassTypeName() + "\" did not save its config" );
         }
         ++i;
     }
 
-    try
+    if ( codec->StoreDataTree( &rootnode, m_consolidatedConfigFile ) )
     {
-        CDStoreCodecRegistry::TDStoreCodecPtr codec = CCoreGlobal::Instance()->GetDStoreCodecRegistry().Lookup( codecType );
-        if ( codec->BuildDataTree( &rootnode                 ,
-                                   m_consolidatedConfigFile  ) )
-        {
-            rootnode.CopySubTree( oldtree );
-            return true;
-        }
+        GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "ConfigStore:SaveConsolidatedConfig: Wrote the config using codec \"" + codecType + "\" to: " + m_consolidatedConfigFile );
+        return true;
     }
-    catch ( CDStoreCodecRegistry::EUnregisteredName& )
-    {
-        return false;
-    }
-
+    GUCEF_ERROR_LOG( LOGLEVEL_NORMAL, "ConfigStore:SaveConsolidatedConfig: Failed to write the config using codec \"" + codecType + "\" to: " + m_consolidatedConfigFile );
     return false;
 }
 
@@ -434,10 +439,15 @@ CConfigStore::LoadConfig( CDataNode* loadedConfig )
     CDataNode& config = GUCEF_NULL == loadedConfig ? configTmp : *loadedConfig; 
     bool totalSuccess = true;
 
-    {
-        MT::CObjectScopeLock lock( this );
-        
-        // Do we have a bootstrap log? If so apply that first
+    {
+        MT::CObjectScopeLock lock( this );
+
+        // the config location is what this bootstrap config says, if anything
+        m_configLocation.Clear();
+        m_configFileName.Clear();
+        m_defaultConfigFile.Clear();
+        
+        // Do we have a bootstrap log? If so apply that first
         if ( !m_bootstrapConfigFile.IsNULLOrEmpty() )
         {
             m_globalConfigIsLoaded = false;
@@ -455,10 +465,11 @@ CConfigStore::LoadConfig( CDataNode* loadedConfig )
                 return false;
             }
 
-            totalSuccess = ApplyConfigData( config, true, true );
-
-            if ( totalSuccess )
-            {
+            totalSuccess = ApplyConfigData( config, true, true );
+            ReadConfigLocation( config );
+
+            if ( totalSuccess )
+            {
                 m_globalBootstrapConfigIsLoaded = true;
                 NotifyObservers( GlobalBootstrapConfigLoadCompletedEvent );
             }
@@ -475,16 +486,34 @@ CConfigStore::LoadConfig( CDataNode* loadedConfig )
     {
         MT::CObjectScopeLock lock( this );
     
-        if ( !NotifyObservers( GlobalConfigLoadStartingEvent ) ) 
-            return false;
-
-        // Load and overlay configs in the order given
-        CString::StringVector::const_iterator i = m_configfiles.begin();
-        while ( i != m_configfiles.end() )
-        {
-            totalSuccess = LoadConfigData( (*i), config ) && totalSuccess;
-            ++i;
-        }
+        if ( !NotifyObservers( GlobalConfigLoadStartingEvent ) ) 
+            return false;
+
+        // the config of the user in the config location, when the bootstrap config names one and the application gave none
+        if ( !m_configLocation.IsNULLOrEmpty() && ( m_configfiles.empty() || m_usingManagedConfig ) )
+        {
+            m_usingManagedConfig = true;
+            m_configfiles.clear();
+            m_configfiles.push_back( GetManagedConfigFile() );
+            m_consolidatedConfigFile = GetManagedConfigFile();
+            PrepareManagedConfigFile();
+        }
+        const CDataNode bootstrapPart( config );
+
+        // Load and overlay configs in the order given
+        CString::StringVector::const_iterator i = m_configfiles.begin();
+        while ( i != m_configfiles.end() )
+        {
+            totalSuccess = LoadConfigData( (*i), config ) && totalSuccess;
+            ++i;
+        }
+
+        // a config of the user that cannot be read is made again from the default config
+        if ( !totalSuccess && m_usingManagedConfig && RestoreManagedConfigFile() )
+        {
+            config = bootstrapPart;
+            totalSuccess = LoadConfigData( GetManagedConfigFile(), config );
+        }
     
         // If multiple config files are given they MUST all load successfully
         if ( !totalSuccess )
@@ -505,6 +534,172 @@ CConfigStore::LoadConfig( CDataNode* loadedConfig )
             NotifyObservers( GlobalConfigLoadFailedEvent );
     }
     return totalSuccess;
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CConfigStore::ReadConfigLocation( const CDataNode& bootstrapConfig )
+{GUCEF_TRACE;
+
+    const CDataNode* section = bootstrapConfig.FindChild( "ConfigStore", false );
+    if ( GUCEF_NULL == section )
+        return;
+
+    // with their variables: they are resolved when used, and written back as they were
+    m_configLocation = section->GetAttributeValueOrChildValueByName( "ConfigLocation" ).AsString( CString::Empty, false );
+    m_configFileName = section->GetAttributeValueOrChildValueByName( "ConfigFileName" ).AsString( CString::Empty, false );
+    m_defaultConfigFile = section->GetAttributeValueOrChildValueByName( "DefaultConfigFile" ).AsString( CString::Empty, false );
+    if ( m_configFileName.IsNULLOrEmpty() && !m_defaultConfigFile.IsNULLOrEmpty() )
+        m_configFileName = ExtractFilename( m_defaultConfigFile.ReplaceChar( '\\', '/' ) );
+    if ( m_configFileName.IsNULLOrEmpty() )
+        m_configLocation.Clear();      // without a file name there is nothing to manage
+
+    if ( !m_configLocation.IsNULLOrEmpty() )
+        GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "ConfigStore: The config of the application is " << m_configFileName << " in " << m_configLocation
+            << " (" << GetResolvedConfigLocation() << "), made from " << m_defaultConfigFile << " when it is not there" );
+}
+
+/*-------------------------------------------------------------------------*/
+
+CString
+CConfigStore::GetManagedConfigFile( void ) const
+{GUCEF_TRACE;
+
+    return CombinePath( GetResolvedConfigLocation(), m_configFileName );
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CConfigStore::PrepareManagedConfigFile( void )
+{GUCEF_TRACE;
+
+    const CString configFile = GetManagedConfigFile();
+    if ( FileExists( configFile ) )
+        return true;
+
+    // the first start: the user gets a config of their own, made from the default config of the application
+    const CString defaultConfigFile = RelativePath( m_defaultConfigFile );
+    if ( defaultConfigFile.IsNULLOrEmpty() || !FileExists( defaultConfigFile ) )
+    {
+        GUCEF_WARNING_LOG( LOGLEVEL_IMPORTANT, "ConfigStore: There is no config in " << configFile << " and no default config to make it from ("
+            << defaultConfigFile << ")" );
+        return false;
+    }
+    if ( !CreateDirs( GetResolvedConfigLocation() ) || !CopyFile( defaultConfigFile, configFile, false ) )
+    {
+        GUCEF_ERROR_LOG( LOGLEVEL_IMPORTANT, "ConfigStore: The config " << configFile << " could not be made from the default config " << defaultConfigFile );
+        return false;
+    }
+    GUCEF_SYSTEM_LOG( LOGLEVEL_IMPORTANT, "ConfigStore: Made the config " << configFile << " from the default config " << defaultConfigFile );
+    return true;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CConfigStore::RestoreManagedConfigFile( void )
+{GUCEF_TRACE;
+
+    const CString configFile = GetManagedConfigFile();
+    const CString defaultConfigFile = RelativePath( m_defaultConfigFile );
+    if ( defaultConfigFile.IsNULLOrEmpty() || !FileExists( defaultConfigFile ) )
+        return false;
+
+    // the one that cannot be read is kept for whoever wants to see what was wrong with it
+    if ( FileExists( configFile ) && !MoveFile( configFile, configFile + ".corrupt", true ) )
+    {
+        GUCEF_ERROR_LOG( LOGLEVEL_IMPORTANT, "ConfigStore: The config " << configFile << " cannot be read and cannot be moved aside" );
+        return false;
+    }
+    if ( !CopyFile( defaultConfigFile, configFile, true ) )
+        return false;
+    GUCEF_ERROR_LOG( LOGLEVEL_IMPORTANT, "ConfigStore: The config " << configFile << " could not be read: it is kept as " << configFile
+        << ".corrupt and made again from the default config " << defaultConfigFile );
+    return true;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CConfigStore::IsConfigLocationManaged( void ) const
+{GUCEF_TRACE;
+
+    MT::CObjectScopeLock lock( this );
+    return !m_configLocation.IsNULLOrEmpty();
+}
+
+/*-------------------------------------------------------------------------*/
+
+CString
+CConfigStore::GetConfigLocation( void ) const
+{GUCEF_TRACE;
+
+    MT::CObjectScopeLock lock( this );
+    return m_configLocation;
+}
+
+/*-------------------------------------------------------------------------*/
+
+CString
+CConfigStore::GetResolvedConfigLocation( void ) const
+{GUCEF_TRACE;
+
+    MT::CObjectScopeLock lock( this );
+    if ( m_configLocation.IsNULLOrEmpty() )
+        return CString::Empty;
+    return RelativePath( m_configLocation );
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CConfigStore::SetConfigLocation( const CString& location )
+{GUCEF_TRACE;
+
+    MT::CObjectScopeLock lock( this );
+
+    if ( m_configLocation.IsNULLOrEmpty() || location.IsNULLOrEmpty() || m_bootstrapConfigFile.IsNULLOrEmpty() )
+        return false;
+    CString resolved = RelativePath( location ).ReplaceChar( '\\', '/' );
+    while ( resolved.Length() > 1 && '/' == resolved[ resolved.Length()-1 ] )
+        resolved = resolved.CutChars( 1, false );
+    if ( resolved == GetResolvedConfigLocation().ReplaceChar( '\\', '/' ) )
+        return true;
+
+    // the config as it is now goes along, one that is there already is kept aside
+    const CString oldConfigFile = GetManagedConfigFile();
+    const CString newConfigFile = CombinePath( resolved, m_configFileName );
+    if ( !CreateDirs( resolved ) )
+    {
+        GUCEF_ERROR_LOG( LOGLEVEL_IMPORTANT, "ConfigStore: The config location " << resolved << " cannot be made" );
+        return false;
+    }
+    if ( FileExists( newConfigFile ) )
+        MoveFile( newConfigFile, newConfigFile + ".previous", true );
+    if ( FileExists( oldConfigFile ) && !CopyFile( oldConfigFile, newConfigFile, true ) )
+    {
+        GUCEF_ERROR_LOG( LOGLEVEL_IMPORTANT, "ConfigStore: The config " << oldConfigFile << " cannot be copied to " << newConfigFile );
+        return false;
+    }
+
+    // the bootstrap config remembers it, with a variable when the folder is in a directory that has one
+    const CString stored = UnresolveVars( resolved );
+    if ( !CIniParser::UpdateValueInIniFile( RelativePath( m_bootstrapConfigFile ), "ConfigStore", "ConfigLocation", stored ) )
+    {
+        GUCEF_ERROR_LOG( LOGLEVEL_IMPORTANT, "ConfigStore: The config location could not be written to the bootstrap config " << m_bootstrapConfigFile );
+        return false;
+    }
+    m_configLocation = stored;
+    if ( m_usingManagedConfig )
+    {
+        m_configfiles.clear();
+        m_configfiles.push_back( newConfigFile );
+        m_consolidatedConfigFile = newConfigFile;
+    }
+    GUCEF_SYSTEM_LOG( LOGLEVEL_IMPORTANT, "ConfigStore: The config is now kept in " << stored << " (" << resolved << ")" );
+    return true;
 }
 
 /*-------------------------------------------------------------------------*/

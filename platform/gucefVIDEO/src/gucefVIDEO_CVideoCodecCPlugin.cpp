@@ -127,6 +127,10 @@ CVideoCodecCPlugin::Link( void* modulePtr, CORE::TPluginMetaDataPtr pluginMetaDa
     GUCEF_VIDEOCODECPLUG_RESOLVE( Src_Seek_Frame, 3*sizeof(void*)+8 )
     GUCEF_VIDEOCODECPLUG_RESOLVE( Src_Close, 3*sizeof(void*) )
     GUCEF_VIDEOCODECPLUG_RESOLVE( Decode_Meta_Data, 4*sizeof(void*) )
+    GUCEF_VIDEOCODECPLUG_RESOLVE( Snk_Open, 7*sizeof(void*)+4 )
+    GUCEF_VIDEOCODECPLUG_RESOLVE( Snk_Write_Frame, 4*sizeof(void*) )
+    GUCEF_VIDEOCODECPLUG_RESOLVE( Snk_Write_Audio, 4*sizeof(void*)+8 )
+    GUCEF_VIDEOCODECPLUG_RESOLVE( Snk_Close, 3*sizeof(void*)+4 )
 
     #undef GUCEF_VIDEOCODECPLUG_RESOLVE
 
@@ -140,6 +144,15 @@ CVideoCodecCPlugin::Link( void* modulePtr, CORE::TPluginMetaDataPtr pluginMetaDa
         GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "VideoCodecCPlugin: Module " << CORE::PointerToString( modulePtr ) << " does not have the functions of an video codec plugin" );
         memset( &m_api, 0, sizeof( m_api ) );
         return false;
+    }
+
+    // encoding takes all four sink functions; with one missing the plugin only decodes
+    if ( GUCEF_NULL == m_api.Snk_Open || GUCEF_NULL == m_api.Snk_Write_Frame || GUCEF_NULL == m_api.Snk_Write_Audio || GUCEF_NULL == m_api.Snk_Close )
+    {
+        m_api.Snk_Open = GUCEF_NULL;
+        m_api.Snk_Write_Frame = GUCEF_NULL;
+        m_api.Snk_Write_Audio = GUCEF_NULL;
+        m_api.Snk_Close = GUCEF_NULL;
     }
 
     TGucefCoreCApi libraryCApi;

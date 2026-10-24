@@ -122,6 +122,8 @@
 #ifndef GUCEF_CORE_TESTAPP_TESTDATANODE_H
 #include "TestDataNode.h"
 #include "TestWeakPtr.h"
+#include "TestSysConsole.h"
+#include "TestConfigStore.h"
 #define GUCEF_CORE_TESTAPP_TESTDATANODE_H
 #endif /* GUCEF_CORE_TESTAPP_TESTDATANODE_H ? */
 
@@ -168,6 +170,7 @@
 #ifndef GUCEF_CORE_TESTAPP_TESTTHREADPOOLCANCELLATION_H
 #include "TestThreadPoolCancellation.h"
 #include "TestFutureResultSource.h"
+#include "TestFileSystemAccess.h"
 #include "TestVariantMapAdapter.h"
 #include "TestPluginUnload.h"
 #include "TestSfinaeUtils.h"
@@ -262,6 +265,10 @@ GUCEF_OSMAIN_BEGIN
 
     try
     {
+        // started by a test as the application whose exit it looks at
+        if ( argc > 1 && 0 == strcmp( argv[ 1 ], GUCEF_CORE_TESTAPP_EXIT_WITH_CONSOLE_LOG_WINDOW_ARG ) )
+            return RunExitWithConsoleLogWindow();
+
         GUCEF::CORE::CString logFilename = GUCEF::CORE::RelativePath( "$CURWORKDIR$" );
         GUCEF::CORE::AppendToPath( logFilename, "gucefCORE_TestApp_Log.txt" );
         GUCEF::CORE::CFileAccess logFileAccess( logFilename, "w" );
@@ -298,6 +305,8 @@ GUCEF_OSMAIN_BEGIN
         PerformDataNodeBinarySerializerTests();
         PerformDataNodeTests();
         PerformWeakPtrTests();
+        PerformSysConsoleTests();
+        PerformConfigStoreTests();
         PerformIniParserTests();        
         PerformSharedPtrTests();
         PerformTokenizerTests();
@@ -314,6 +323,7 @@ GUCEF_OSMAIN_BEGIN
         PerformASyncTests();
         PerformThreadPoolCancellationTests();
         PerformFutureResultSourceTests();
+        PerformFileSystemAccessTests();
         PerformVariantMapAdapterTests();
         PerformExternalThreadTests();
         PerformDedicatedTaskTests();

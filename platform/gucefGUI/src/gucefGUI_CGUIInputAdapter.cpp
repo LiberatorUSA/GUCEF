@@ -183,7 +183,10 @@ bool
 CGUIInputAdapter::IsForUs( Int32 inputContextId ) const
 {GUCEF_TRACE;
 
-    return AnyInputContext == m_inputContextId || inputContextId == m_inputContextId;
+    // input of our window, unless a GUI layer above ours in the window shows something and takes it
+    if ( AnyInputContext != m_inputContextId && inputContextId != m_inputContextId )
+        return false;
+    return !m_guiContext->HasHigherLayerTakingInput();
 }
 
 /*-------------------------------------------------------------------------*/

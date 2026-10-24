@@ -17,7 +17,11 @@ dependencies/libjpeg/*
 dependencies/libmng/*
 dependencies/libpng/*
 dependencies/libsquish/*
+dependencies/libvpx/*
+dependencies/libwebm/*
+dependencies/ncnn/*
 dependencies/openexr/*
+dependencies/opus/*
 dependencies/tiff/libtiff/*
 dependencies/zlib/*
 platform/gucefAUDIO/include/*
@@ -36,7 +40,9 @@ plugins/AUDIO/audiodriverWASAPI/*
 plugins/GUI/guidriverWin32/*
 plugins/IMAGE/imgpluginDEVIL/*
 plugins/IMAGE/imgpluginFreeImage/*
+plugins/IMAGE/imgupscalepluginNCNN/*
 plugins/INPUT/inputdriverDIRECTINPUT8/*
 plugins/INPUT/inputdriverMSWINMSG/*
 plugins/INPUT/inputdriverOIS/*
 plugins/PUBSUB/pubsubpluginMSMQ/*
+plugins/VIDEO/videocodecpluginWEBM/*

@@ -99,6 +99,7 @@ class GUCEF_guidriverRmlUI_PUBLIC_CPP CRmlUIWidgetElement : public Rml::Element
         bool isFont;
         Int32 textureWidth;
         Int32 textureHeight;
+        UInt32 density;         /**< of the image or font when the batch was made */
     };
     typedef struct SBatch TBatch;
     typedef GUCEF::vector< TBatch > TBatchVector;
@@ -121,6 +122,7 @@ class GUCEF_guidriverRmlUI_PUBLIC_CPP CRmlUIWidgetElement : public Rml::Element
     GUI::CDrawSurface::TCommandVector m_commands;
     GUI::CRect m_clip;
     Float32 m_opacity;
+    UInt32 m_renderScale;       /**< of the context when the batches were made */
     TBatchVector m_batches;
     UInt32 m_buildCount;
 };

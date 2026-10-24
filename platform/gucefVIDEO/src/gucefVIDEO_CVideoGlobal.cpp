@@ -57,6 +57,12 @@
 #define GUCEF_VIDEO_CVIDEOPLAYER_H
 #endif /* GUCEF_VIDEO_CVIDEOPLAYER_H ? */
 
+#ifndef GUCEF_CORE_CTASKMANAGER_H
+#include "gucefCORE_CTaskManager.h"
+#define GUCEF_CORE_CTASKMANAGER_H
+#endif /* GUCEF_CORE_CTASKMANAGER_H ? */
+
+#include "gucefVIDEO_CAsyncVideoTranscode.h"
 #include "gucefVIDEO_CVideoGlobal.h"
 
 /*-------------------------------------------------------------------------//
@@ -75,6 +81,9 @@ namespace VIDEO {
 //-------------------------------------------------------------------------*/
 
 CVideoGlobal* CVideoGlobal::g_instance = GUCEF_NULL;
+
+/** Makes the tasks of CVideoTranscoder::TranscodeAsync() */
+static TAsyncVideoTranscodeTaskFactory g_asyncVideoTranscodeTaskFactory;
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -119,6 +128,7 @@ CVideoGlobal::~CVideoGlobal()
 {GUCEF_TRACE;
 
     GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "Shutting down gucefVIDEO global systems" );
+    CORE::CCoreGlobal::Instance()->GetTaskManager().UnregisterTaskConsumerFactory( CAsyncVideoTranscode::TaskType );
     CORE::CCoreGlobal::Instance()->GetPluginControl().UnlistModuleForLinkBack( "gucefVIDEO" );
 
     // Codec plugins first: their codecs are in the registry and their videos may still be open
@@ -165,6 +175,7 @@ CVideoGlobal::Initialize( void )
 
     m_videoCodecRegistry = GUCEF_NEW CVideoCodecRegistry();
     m_videoCodecPluginManager = GUCEF_NEW CVideoCodecPluginManager();
+    CORE::CCoreGlobal::Instance()->GetTaskManager().RegisterTaskConsumerFactory( CAsyncVideoTranscode::TaskType, &g_asyncVideoTranscodeTaskFactory );
 
     GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "gucefVIDEO Global systems initialized" );
     CORE::CCoreGlobal::Instance()->GetPluginControl().ListModuleForLinkBack( "gucefVIDEO" );

@@ -92,7 +92,7 @@ class GUIDRIVERXWINGL_PUBLIC_CPP CXWinGLWindowContext : public GUI::CWindowConte
 
     virtual bool SetSystemCursorVisible( bool visible ) GUCEF_VIRTUAL_OVERRIDE;
 
-    /** Full screen or a window of the size of the settings */
+    /** Full screen or a window of the size of the settings, waiting for the vertical blank or not */
     bool ApplyVideoSettings( const GUI::CVideoSettings& videoSettings );
 
     bool Initialize( const GUI::CString& title                ,
@@ -112,6 +112,9 @@ class GUIDRIVERXWINGL_PUBLIC_CPP CXWinGLWindowContext : public GUI::CWindowConte
 
     CXWinGLWindowContext( const CXWinGLWindowContext& src );            /**< private because: must be unique */
     CXWinGLWindowContext& operator=( const CXWinGLWindowContext& src ); /**< private because: must be unique */
+
+    /** Swaps wait for the vertical blank or not; the GL context must be current. False when the driver cannot set it */
+    bool ApplySwapInterval( bool vsync );
 
     private:
 

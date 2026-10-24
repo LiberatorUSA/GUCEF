@@ -33,6 +33,8 @@ LOCAL_SRC_FILES := \
   src/gucefVIDEO_CVideoFrame.cpp \
   src/gucefVIDEO_CVideoGlobal.cpp \
   src/gucefVIDEO_CVideoPlayer.cpp \
+  src/gucefVIDEO_CVideoTranscoder.cpp \
+  src/gucefVIDEO_IVideoSink.cpp \
   src/gucefVIDEO_IVideoSource.cpp
 
 LOCAL_C_INCLUDES := \

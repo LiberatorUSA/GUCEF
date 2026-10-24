@@ -43,6 +43,7 @@ set( HEADER_FILES
   ../gucefCORE/include/gucefCORE_CUtf32String.h
   ../gucefCORE/include/gucefCORE_CUtf8String.h
   ../gucefCORE/include/gucefCORE_CVariant.h
+  ../gucefCORE/include/gucefCORE_IFileSystemIterator.h
   ../gucefCORE/include/md5.h
   ../gucefCORE/include/c_api/gucefCORE_c_ioaccess.h
   ../gucefCORE/include/c_api/gucefCORE_c_variantdata.h
@@ -95,6 +96,7 @@ set( SOURCE_FILES
   ../gucefCORE/src/gucefCORE_CUtf32String.cpp
   ../gucefCORE/src/gucefCORE_CUtf8String.cpp
   ../gucefCORE/src/gucefCORE_CVariant.cpp
+  ../gucefCORE/src/gucefCORE_IFileSystemIterator.cpp
   ../gucefCORE/src/md5.c
   ../gucefCORE/src/c_api/gucefCORE_c_variantdata.c
   ../gucefMT/src/gucefMT_CICloneable.cpp
@@ -146,6 +148,7 @@ if (ANDROID)
     ../gucefCORE/include/gucefCORE_CUtf32String.h
     ../gucefCORE/include/gucefCORE_CUtf8String.h
     ../gucefCORE/include/gucefCORE_CVariant.h
+    ../gucefCORE/include/gucefCORE_IFileSystemIterator.h
     ../gucefCORE/include/md5.h
     ../gucefCORE/include/c_api/gucefCORE_c_ioaccess.h
     ../gucefCORE/include/c_api/gucefCORE_c_variantdata.h
@@ -197,6 +200,7 @@ if (ANDROID)
     ../gucefCORE/src/gucefCORE_CUtf32String.cpp
     ../gucefCORE/src/gucefCORE_CUtf8String.cpp
     ../gucefCORE/src/gucefCORE_CVariant.cpp
+    ../gucefCORE/src/gucefCORE_IFileSystemIterator.cpp
     ../gucefCORE/src/md5.c
     ../gucefCORE/src/c_api/gucefCORE_c_variantdata.c
     ../gucefMT/src/gucefMT_CICloneable.cpp
@@ -248,6 +252,7 @@ elseif (ANDROID32)
     ../gucefCORE/include/gucefCORE_CUtf32String.h
     ../gucefCORE/include/gucefCORE_CUtf8String.h
     ../gucefCORE/include/gucefCORE_CVariant.h
+    ../gucefCORE/include/gucefCORE_IFileSystemIterator.h
     ../gucefCORE/include/md5.h
     ../gucefCORE/include/android/gucefCORE_CAndroidSystemLogger.h
     ../gucefCORE/include/c_api/gucefCORE_c_ioaccess.h
@@ -300,6 +305,7 @@ elseif (ANDROID32)
     ../gucefCORE/src/gucefCORE_CUtf32String.cpp
     ../gucefCORE/src/gucefCORE_CUtf8String.cpp
     ../gucefCORE/src/gucefCORE_CVariant.cpp
+    ../gucefCORE/src/gucefCORE_IFileSystemIterator.cpp
     ../gucefCORE/src/md5.c
     ../gucefCORE/src/android/gucefCORE_CAndroidSystemLogger.cpp
     ../gucefCORE/src/c_api/gucefCORE_c_variantdata.c
@@ -352,6 +358,7 @@ elseif (ANDROID64)
     ../gucefCORE/include/gucefCORE_CUtf32String.h
     ../gucefCORE/include/gucefCORE_CUtf8String.h
     ../gucefCORE/include/gucefCORE_CVariant.h
+    ../gucefCORE/include/gucefCORE_IFileSystemIterator.h
     ../gucefCORE/include/md5.h
     ../gucefCORE/include/android/gucefCORE_CAndroidSystemLogger.h
     ../gucefCORE/include/c_api/gucefCORE_c_ioaccess.h
@@ -404,6 +411,7 @@ elseif (ANDROID64)
     ../gucefCORE/src/gucefCORE_CUtf32String.cpp
     ../gucefCORE/src/gucefCORE_CUtf8String.cpp
     ../gucefCORE/src/gucefCORE_CVariant.cpp
+    ../gucefCORE/src/gucefCORE_IFileSystemIterator.cpp
     ../gucefCORE/src/md5.c
     ../gucefCORE/src/android/gucefCORE_CAndroidSystemLogger.cpp
     ../gucefCORE/src/c_api/gucefCORE_c_variantdata.c
@@ -456,6 +464,7 @@ elseif (ARDUINO)
     ../gucefCORE/include/gucefCORE_CUtf32String.h
     ../gucefCORE/include/gucefCORE_CUtf8String.h
     ../gucefCORE/include/gucefCORE_CVariant.h
+    ../gucefCORE/include/gucefCORE_IFileSystemIterator.h
     ../gucefCORE/include/md5.h
     ../gucefCORE/include/c_api/gucefCORE_c_ioaccess.h
     ../gucefCORE/include/c_api/gucefCORE_c_variantdata.h
@@ -507,6 +516,7 @@ elseif (ARDUINO)
     ../gucefCORE/src/gucefCORE_CUtf32String.cpp
     ../gucefCORE/src/gucefCORE_CUtf8String.cpp
     ../gucefCORE/src/gucefCORE_CVariant.cpp
+    ../gucefCORE/src/gucefCORE_IFileSystemIterator.cpp
     ../gucefCORE/src/md5.c
     ../gucefCORE/src/c_api/gucefCORE_c_variantdata.c
     ../gucefMT/src/gucefMT_CICloneable.cpp
@@ -558,6 +568,7 @@ elseif (EMSCRIPTEN)
     ../gucefCORE/include/gucefCORE_CUtf32String.h
     ../gucefCORE/include/gucefCORE_CUtf8String.h
     ../gucefCORE/include/gucefCORE_CVariant.h
+    ../gucefCORE/include/gucefCORE_IFileSystemIterator.h
     ../gucefCORE/include/md5.h
     ../gucefCORE/include/c_api/gucefCORE_c_ioaccess.h
     ../gucefCORE/include/c_api/gucefCORE_c_variantdata.h
@@ -609,6 +620,7 @@ elseif (EMSCRIPTEN)
     ../gucefCORE/src/gucefCORE_CUtf32String.cpp
     ../gucefCORE/src/gucefCORE_CUtf8String.cpp
     ../gucefCORE/src/gucefCORE_CVariant.cpp
+    ../gucefCORE/src/gucefCORE_IFileSystemIterator.cpp
     ../gucefCORE/src/md5.c
     ../gucefCORE/src/c_api/gucefCORE_c_variantdata.c
     ../gucefMT/src/gucefMT_CICloneable.cpp
@@ -660,6 +672,7 @@ elseif (EMSCRIPTEN32)
     ../gucefCORE/include/gucefCORE_CUtf32String.h
     ../gucefCORE/include/gucefCORE_CUtf8String.h
     ../gucefCORE/include/gucefCORE_CVariant.h
+    ../gucefCORE/include/gucefCORE_IFileSystemIterator.h
     ../gucefCORE/include/md5.h
     ../gucefCORE/include/c_api/gucefCORE_c_ioaccess.h
     ../gucefCORE/include/c_api/gucefCORE_c_variantdata.h
@@ -711,6 +724,7 @@ elseif (EMSCRIPTEN32)
     ../gucefCORE/src/gucefCORE_CUtf32String.cpp
     ../gucefCORE/src/gucefCORE_CUtf8String.cpp
     ../gucefCORE/src/gucefCORE_CVariant.cpp
+    ../gucefCORE/src/gucefCORE_IFileSystemIterator.cpp
     ../gucefCORE/src/md5.c
     ../gucefCORE/src/c_api/gucefCORE_c_variantdata.c
     ../gucefMT/src/gucefMT_CICloneable.cpp
@@ -762,6 +776,7 @@ elseif (EMSCRIPTEN64)
     ../gucefCORE/include/gucefCORE_CUtf32String.h
     ../gucefCORE/include/gucefCORE_CUtf8String.h
     ../gucefCORE/include/gucefCORE_CVariant.h
+    ../gucefCORE/include/gucefCORE_IFileSystemIterator.h
     ../gucefCORE/include/md5.h
     ../gucefCORE/include/c_api/gucefCORE_c_ioaccess.h
     ../gucefCORE/include/c_api/gucefCORE_c_variantdata.h
@@ -813,6 +828,7 @@ elseif (EMSCRIPTEN64)
     ../gucefCORE/src/gucefCORE_CUtf32String.cpp
     ../gucefCORE/src/gucefCORE_CUtf8String.cpp
     ../gucefCORE/src/gucefCORE_CVariant.cpp
+    ../gucefCORE/src/gucefCORE_IFileSystemIterator.cpp
     ../gucefCORE/src/md5.c
     ../gucefCORE/src/c_api/gucefCORE_c_variantdata.c
     ../gucefMT/src/gucefMT_CICloneable.cpp
@@ -864,6 +880,7 @@ elseif (GLX)
     ../gucefCORE/include/gucefCORE_CUtf32String.h
     ../gucefCORE/include/gucefCORE_CUtf8String.h
     ../gucefCORE/include/gucefCORE_CVariant.h
+    ../gucefCORE/include/gucefCORE_IFileSystemIterator.h
     ../gucefCORE/include/md5.h
     ../gucefCORE/include/c_api/gucefCORE_c_ioaccess.h
     ../gucefCORE/include/c_api/gucefCORE_c_variantdata.h
@@ -915,6 +932,7 @@ elseif (GLX)
     ../gucefCORE/src/gucefCORE_CUtf32String.cpp
     ../gucefCORE/src/gucefCORE_CUtf8String.cpp
     ../gucefCORE/src/gucefCORE_CVariant.cpp
+    ../gucefCORE/src/gucefCORE_IFileSystemIterator.cpp
     ../gucefCORE/src/md5.c
     ../gucefCORE/src/c_api/gucefCORE_c_variantdata.c
     ../gucefMT/src/gucefMT_CICloneable.cpp
@@ -966,6 +984,7 @@ elseif (GTK)
     ../gucefCORE/include/gucefCORE_CUtf32String.h
     ../gucefCORE/include/gucefCORE_CUtf8String.h
     ../gucefCORE/include/gucefCORE_CVariant.h
+    ../gucefCORE/include/gucefCORE_IFileSystemIterator.h
     ../gucefCORE/include/md5.h
     ../gucefCORE/include/c_api/gucefCORE_c_ioaccess.h
     ../gucefCORE/include/c_api/gucefCORE_c_variantdata.h
@@ -1017,6 +1036,7 @@ elseif (GTK)
     ../gucefCORE/src/gucefCORE_CUtf32String.cpp
     ../gucefCORE/src/gucefCORE_CUtf8String.cpp
     ../gucefCORE/src/gucefCORE_CVariant.cpp
+    ../gucefCORE/src/gucefCORE_IFileSystemIterator.cpp
     ../gucefCORE/src/md5.c
     ../gucefCORE/src/c_api/gucefCORE_c_variantdata.c
     ../gucefMT/src/gucefMT_CICloneable.cpp
@@ -1068,6 +1088,7 @@ elseif (IOS)
     ../gucefCORE/include/gucefCORE_CUtf32String.h
     ../gucefCORE/include/gucefCORE_CUtf8String.h
     ../gucefCORE/include/gucefCORE_CVariant.h
+    ../gucefCORE/include/gucefCORE_IFileSystemIterator.h
     ../gucefCORE/include/md5.h
     ../gucefCORE/include/c_api/gucefCORE_c_ioaccess.h
     ../gucefCORE/include/c_api/gucefCORE_c_variantdata.h
@@ -1119,6 +1140,7 @@ elseif (IOS)
     ../gucefCORE/src/gucefCORE_CUtf32String.cpp
     ../gucefCORE/src/gucefCORE_CUtf8String.cpp
     ../gucefCORE/src/gucefCORE_CVariant.cpp
+    ../gucefCORE/src/gucefCORE_IFileSystemIterator.cpp
     ../gucefCORE/src/md5.c
     ../gucefCORE/src/c_api/gucefCORE_c_variantdata.c
     ../gucefMT/src/gucefMT_CICloneable.cpp
@@ -1170,6 +1192,7 @@ elseif (IPHONE)
     ../gucefCORE/include/gucefCORE_CUtf32String.h
     ../gucefCORE/include/gucefCORE_CUtf8String.h
     ../gucefCORE/include/gucefCORE_CVariant.h
+    ../gucefCORE/include/gucefCORE_IFileSystemIterator.h
     ../gucefCORE/include/md5.h
     ../gucefCORE/include/c_api/gucefCORE_c_ioaccess.h
     ../gucefCORE/include/c_api/gucefCORE_c_variantdata.h
@@ -1221,6 +1244,7 @@ elseif (IPHONE)
     ../gucefCORE/src/gucefCORE_CUtf32String.cpp
     ../gucefCORE/src/gucefCORE_CUtf8String.cpp
     ../gucefCORE/src/gucefCORE_CVariant.cpp
+    ../gucefCORE/src/gucefCORE_IFileSystemIterator.cpp
     ../gucefCORE/src/md5.c
     ../gucefCORE/src/c_api/gucefCORE_c_variantdata.c
     ../gucefMT/src/gucefMT_CICloneable.cpp
@@ -1272,6 +1296,7 @@ elseif (IPHONEOS)
     ../gucefCORE/include/gucefCORE_CUtf32String.h
     ../gucefCORE/include/gucefCORE_CUtf8String.h
     ../gucefCORE/include/gucefCORE_CVariant.h
+    ../gucefCORE/include/gucefCORE_IFileSystemIterator.h
     ../gucefCORE/include/md5.h
     ../gucefCORE/include/c_api/gucefCORE_c_ioaccess.h
     ../gucefCORE/include/c_api/gucefCORE_c_variantdata.h
@@ -1323,6 +1348,7 @@ elseif (IPHONEOS)
     ../gucefCORE/src/gucefCORE_CUtf32String.cpp
     ../gucefCORE/src/gucefCORE_CUtf8String.cpp
     ../gucefCORE/src/gucefCORE_CVariant.cpp
+    ../gucefCORE/src/gucefCORE_IFileSystemIterator.cpp
     ../gucefCORE/src/md5.c
     ../gucefCORE/src/c_api/gucefCORE_c_variantdata.c
     ../gucefMT/src/gucefMT_CICloneable.cpp
@@ -1374,6 +1400,7 @@ elseif (LINUX)
     ../gucefCORE/include/gucefCORE_CUtf32String.h
     ../gucefCORE/include/gucefCORE_CUtf8String.h
     ../gucefCORE/include/gucefCORE_CVariant.h
+    ../gucefCORE/include/gucefCORE_IFileSystemIterator.h
     ../gucefCORE/include/md5.h
     ../gucefCORE/include/c_api/gucefCORE_c_ioaccess.h
     ../gucefCORE/include/c_api/gucefCORE_c_variantdata.h
@@ -1425,6 +1452,7 @@ elseif (LINUX)
     ../gucefCORE/src/gucefCORE_CUtf32String.cpp
     ../gucefCORE/src/gucefCORE_CUtf8String.cpp
     ../gucefCORE/src/gucefCORE_CVariant.cpp
+    ../gucefCORE/src/gucefCORE_IFileSystemIterator.cpp
     ../gucefCORE/src/md5.c
     ../gucefCORE/src/c_api/gucefCORE_c_variantdata.c
     ../gucefMT/src/gucefMT_CICloneable.cpp
@@ -1476,6 +1504,7 @@ elseif (LINUX32)
     ../gucefCORE/include/gucefCORE_CUtf32String.h
     ../gucefCORE/include/gucefCORE_CUtf8String.h
     ../gucefCORE/include/gucefCORE_CVariant.h
+    ../gucefCORE/include/gucefCORE_IFileSystemIterator.h
     ../gucefCORE/include/md5.h
     ../gucefCORE/include/c_api/gucefCORE_c_ioaccess.h
     ../gucefCORE/include/c_api/gucefCORE_c_variantdata.h
@@ -1527,6 +1556,7 @@ elseif (LINUX32)
     ../gucefCORE/src/gucefCORE_CUtf32String.cpp
     ../gucefCORE/src/gucefCORE_CUtf8String.cpp
     ../gucefCORE/src/gucefCORE_CVariant.cpp
+    ../gucefCORE/src/gucefCORE_IFileSystemIterator.cpp
     ../gucefCORE/src/md5.c
     ../gucefCORE/src/c_api/gucefCORE_c_variantdata.c
     ../gucefMT/src/gucefMT_CICloneable.cpp
@@ -1578,6 +1608,7 @@ elseif (LINUX64)
     ../gucefCORE/include/gucefCORE_CUtf32String.h
     ../gucefCORE/include/gucefCORE_CUtf8String.h
     ../gucefCORE/include/gucefCORE_CVariant.h
+    ../gucefCORE/include/gucefCORE_IFileSystemIterator.h
     ../gucefCORE/include/md5.h
     ../gucefCORE/include/c_api/gucefCORE_c_ioaccess.h
     ../gucefCORE/include/c_api/gucefCORE_c_variantdata.h
@@ -1629,6 +1660,7 @@ elseif (LINUX64)
     ../gucefCORE/src/gucefCORE_CUtf32String.cpp
     ../gucefCORE/src/gucefCORE_CUtf8String.cpp
     ../gucefCORE/src/gucefCORE_CVariant.cpp
+    ../gucefCORE/src/gucefCORE_IFileSystemIterator.cpp
     ../gucefCORE/src/md5.c
     ../gucefCORE/src/c_api/gucefCORE_c_variantdata.c
     ../gucefMT/src/gucefMT_CICloneable.cpp
@@ -1680,6 +1712,7 @@ elseif (MAC)
     ../gucefCORE/include/gucefCORE_CUtf32String.h
     ../gucefCORE/include/gucefCORE_CUtf8String.h
     ../gucefCORE/include/gucefCORE_CVariant.h
+    ../gucefCORE/include/gucefCORE_IFileSystemIterator.h
     ../gucefCORE/include/md5.h
     ../gucefCORE/include/c_api/gucefCORE_c_ioaccess.h
     ../gucefCORE/include/c_api/gucefCORE_c_variantdata.h
@@ -1731,6 +1764,7 @@ elseif (MAC)
     ../gucefCORE/src/gucefCORE_CUtf32String.cpp
     ../gucefCORE/src/gucefCORE_CUtf8String.cpp
     ../gucefCORE/src/gucefCORE_CVariant.cpp
+    ../gucefCORE/src/gucefCORE_IFileSystemIterator.cpp
     ../gucefCORE/src/md5.c
     ../gucefCORE/src/c_api/gucefCORE_c_variantdata.c
     ../gucefMT/src/gucefMT_CICloneable.cpp
@@ -1782,6 +1816,7 @@ elseif (MACOS)
     ../gucefCORE/include/gucefCORE_CUtf32String.h
     ../gucefCORE/include/gucefCORE_CUtf8String.h
     ../gucefCORE/include/gucefCORE_CVariant.h
+    ../gucefCORE/include/gucefCORE_IFileSystemIterator.h
     ../gucefCORE/include/md5.h
     ../gucefCORE/include/c_api/gucefCORE_c_ioaccess.h
     ../gucefCORE/include/c_api/gucefCORE_c_variantdata.h
@@ -1833,6 +1868,7 @@ elseif (MACOS)
     ../gucefCORE/src/gucefCORE_CUtf32String.cpp
     ../gucefCORE/src/gucefCORE_CUtf8String.cpp
     ../gucefCORE/src/gucefCORE_CVariant.cpp
+    ../gucefCORE/src/gucefCORE_IFileSystemIterator.cpp
     ../gucefCORE/src/md5.c
     ../gucefCORE/src/c_api/gucefCORE_c_variantdata.c
     ../gucefMT/src/gucefMT_CICloneable.cpp
@@ -1884,6 +1920,7 @@ elseif (MACOSX)
     ../gucefCORE/include/gucefCORE_CUtf32String.h
     ../gucefCORE/include/gucefCORE_CUtf8String.h
     ../gucefCORE/include/gucefCORE_CVariant.h
+    ../gucefCORE/include/gucefCORE_IFileSystemIterator.h
     ../gucefCORE/include/md5.h
     ../gucefCORE/include/c_api/gucefCORE_c_ioaccess.h
     ../gucefCORE/include/c_api/gucefCORE_c_variantdata.h
@@ -1935,6 +1972,7 @@ elseif (MACOSX)
     ../gucefCORE/src/gucefCORE_CUtf32String.cpp
     ../gucefCORE/src/gucefCORE_CUtf8String.cpp
     ../gucefCORE/src/gucefCORE_CVariant.cpp
+    ../gucefCORE/src/gucefCORE_IFileSystemIterator.cpp
     ../gucefCORE/src/md5.c
     ../gucefCORE/src/c_api/gucefCORE_c_variantdata.c
     ../gucefMT/src/gucefMT_CICloneable.cpp
@@ -1986,6 +2024,7 @@ elseif (MSWIN)
     ../gucefCORE/include/gucefCORE_CUtf32String.h
     ../gucefCORE/include/gucefCORE_CUtf8String.h
     ../gucefCORE/include/gucefCORE_CVariant.h
+    ../gucefCORE/include/gucefCORE_IFileSystemIterator.h
     ../gucefCORE/include/md5.h
     ../gucefCORE/include/c_api/gucefCORE_c_ioaccess.h
     ../gucefCORE/include/c_api/gucefCORE_c_variantdata.h
@@ -2037,6 +2076,7 @@ elseif (MSWIN)
     ../gucefCORE/src/gucefCORE_CUtf32String.cpp
     ../gucefCORE/src/gucefCORE_CUtf8String.cpp
     ../gucefCORE/src/gucefCORE_CVariant.cpp
+    ../gucefCORE/src/gucefCORE_IFileSystemIterator.cpp
     ../gucefCORE/src/md5.c
     ../gucefCORE/src/c_api/gucefCORE_c_variantdata.c
     ../gucefMT/src/gucefMT_CICloneable.cpp
@@ -2088,6 +2128,7 @@ elseif (NACL)
     ../gucefCORE/include/gucefCORE_CUtf32String.h
     ../gucefCORE/include/gucefCORE_CUtf8String.h
     ../gucefCORE/include/gucefCORE_CVariant.h
+    ../gucefCORE/include/gucefCORE_IFileSystemIterator.h
     ../gucefCORE/include/md5.h
     ../gucefCORE/include/c_api/gucefCORE_c_ioaccess.h
     ../gucefCORE/include/c_api/gucefCORE_c_variantdata.h
@@ -2139,6 +2180,7 @@ elseif (NACL)
     ../gucefCORE/src/gucefCORE_CUtf32String.cpp
     ../gucefCORE/src/gucefCORE_CUtf8String.cpp
     ../gucefCORE/src/gucefCORE_CVariant.cpp
+    ../gucefCORE/src/gucefCORE_IFileSystemIterator.cpp
     ../gucefCORE/src/md5.c
     ../gucefCORE/src/c_api/gucefCORE_c_variantdata.c
     ../gucefMT/src/gucefMT_CICloneable.cpp
@@ -2190,6 +2232,7 @@ elseif (OSX)
     ../gucefCORE/include/gucefCORE_CUtf32String.h
     ../gucefCORE/include/gucefCORE_CUtf8String.h
     ../gucefCORE/include/gucefCORE_CVariant.h
+    ../gucefCORE/include/gucefCORE_IFileSystemIterator.h
     ../gucefCORE/include/md5.h
     ../gucefCORE/include/c_api/gucefCORE_c_ioaccess.h
     ../gucefCORE/include/c_api/gucefCORE_c_variantdata.h
@@ -2241,6 +2284,7 @@ elseif (OSX)
     ../gucefCORE/src/gucefCORE_CUtf32String.cpp
     ../gucefCORE/src/gucefCORE_CUtf8String.cpp
     ../gucefCORE/src/gucefCORE_CVariant.cpp
+    ../gucefCORE/src/gucefCORE_IFileSystemIterator.cpp
     ../gucefCORE/src/md5.c
     ../gucefCORE/src/c_api/gucefCORE_c_variantdata.c
     ../gucefMT/src/gucefMT_CICloneable.cpp
@@ -2292,6 +2336,7 @@ elseif (POSIX)
     ../gucefCORE/include/gucefCORE_CUtf32String.h
     ../gucefCORE/include/gucefCORE_CUtf8String.h
     ../gucefCORE/include/gucefCORE_CVariant.h
+    ../gucefCORE/include/gucefCORE_IFileSystemIterator.h
     ../gucefCORE/include/md5.h
     ../gucefCORE/include/c_api/gucefCORE_c_ioaccess.h
     ../gucefCORE/include/c_api/gucefCORE_c_variantdata.h
@@ -2343,6 +2388,7 @@ elseif (POSIX)
     ../gucefCORE/src/gucefCORE_CUtf32String.cpp
     ../gucefCORE/src/gucefCORE_CUtf8String.cpp
     ../gucefCORE/src/gucefCORE_CVariant.cpp
+    ../gucefCORE/src/gucefCORE_IFileSystemIterator.cpp
     ../gucefCORE/src/md5.c
     ../gucefCORE/src/c_api/gucefCORE_c_variantdata.c
     ../gucefMT/src/gucefMT_CICloneable.cpp
@@ -2394,6 +2440,7 @@ elseif (SDL)
     ../gucefCORE/include/gucefCORE_CUtf32String.h
     ../gucefCORE/include/gucefCORE_CUtf8String.h
     ../gucefCORE/include/gucefCORE_CVariant.h
+    ../gucefCORE/include/gucefCORE_IFileSystemIterator.h
     ../gucefCORE/include/md5.h
     ../gucefCORE/include/c_api/gucefCORE_c_ioaccess.h
     ../gucefCORE/include/c_api/gucefCORE_c_variantdata.h
@@ -2445,6 +2492,7 @@ elseif (SDL)
     ../gucefCORE/src/gucefCORE_CUtf32String.cpp
     ../gucefCORE/src/gucefCORE_CUtf8String.cpp
     ../gucefCORE/src/gucefCORE_CVariant.cpp
+    ../gucefCORE/src/gucefCORE_IFileSystemIterator.cpp
     ../gucefCORE/src/md5.c
     ../gucefCORE/src/c_api/gucefCORE_c_variantdata.c
     ../gucefMT/src/gucefMT_CICloneable.cpp
@@ -2496,6 +2544,7 @@ elseif (SYMBIAN)
     ../gucefCORE/include/gucefCORE_CUtf32String.h
     ../gucefCORE/include/gucefCORE_CUtf8String.h
     ../gucefCORE/include/gucefCORE_CVariant.h
+    ../gucefCORE/include/gucefCORE_IFileSystemIterator.h
     ../gucefCORE/include/md5.h
     ../gucefCORE/include/c_api/gucefCORE_c_ioaccess.h
     ../gucefCORE/include/c_api/gucefCORE_c_variantdata.h
@@ -2547,6 +2596,7 @@ elseif (SYMBIAN)
     ../gucefCORE/src/gucefCORE_CUtf32String.cpp
     ../gucefCORE/src/gucefCORE_CUtf8String.cpp
     ../gucefCORE/src/gucefCORE_CVariant.cpp
+    ../gucefCORE/src/gucefCORE_IFileSystemIterator.cpp
     ../gucefCORE/src/md5.c
     ../gucefCORE/src/c_api/gucefCORE_c_variantdata.c
     ../gucefMT/src/gucefMT_CICloneable.cpp
@@ -2598,6 +2648,7 @@ elseif (UNIX)
     ../gucefCORE/include/gucefCORE_CUtf32String.h
     ../gucefCORE/include/gucefCORE_CUtf8String.h
     ../gucefCORE/include/gucefCORE_CVariant.h
+    ../gucefCORE/include/gucefCORE_IFileSystemIterator.h
     ../gucefCORE/include/md5.h
     ../gucefCORE/include/c_api/gucefCORE_c_ioaccess.h
     ../gucefCORE/include/c_api/gucefCORE_c_variantdata.h
@@ -2649,6 +2700,7 @@ elseif (UNIX)
     ../gucefCORE/src/gucefCORE_CUtf32String.cpp
     ../gucefCORE/src/gucefCORE_CUtf8String.cpp
     ../gucefCORE/src/gucefCORE_CVariant.cpp
+    ../gucefCORE/src/gucefCORE_IFileSystemIterator.cpp
     ../gucefCORE/src/md5.c
     ../gucefCORE/src/c_api/gucefCORE_c_variantdata.c
     ../gucefMT/src/gucefMT_CICloneable.cpp
@@ -2700,6 +2752,7 @@ elseif (WIN32)
     ../gucefCORE/include/gucefCORE_CUtf32String.h
     ../gucefCORE/include/gucefCORE_CUtf8String.h
     ../gucefCORE/include/gucefCORE_CVariant.h
+    ../gucefCORE/include/gucefCORE_IFileSystemIterator.h
     ../gucefCORE/include/md5.h
     ../gucefCORE/include/c_api/gucefCORE_c_ioaccess.h
     ../gucefCORE/include/c_api/gucefCORE_c_variantdata.h
@@ -2754,6 +2807,7 @@ elseif (WIN32)
     ../gucefCORE/src/gucefCORE_CUtf32String.cpp
     ../gucefCORE/src/gucefCORE_CUtf8String.cpp
     ../gucefCORE/src/gucefCORE_CVariant.cpp
+    ../gucefCORE/src/gucefCORE_IFileSystemIterator.cpp
     ../gucefCORE/src/md5.c
     ../gucefCORE/src/c_api/gucefCORE_c_variantdata.c
     ../gucefCORE/src/mswin/gucefCORE_cppmswinutils.cpp
@@ -2808,6 +2862,7 @@ elseif (WIN64)
     ../gucefCORE/include/gucefCORE_CUtf32String.h
     ../gucefCORE/include/gucefCORE_CUtf8String.h
     ../gucefCORE/include/gucefCORE_CVariant.h
+    ../gucefCORE/include/gucefCORE_IFileSystemIterator.h
     ../gucefCORE/include/md5.h
     ../gucefCORE/include/c_api/gucefCORE_c_ioaccess.h
     ../gucefCORE/include/c_api/gucefCORE_c_variantdata.h
@@ -2862,6 +2917,7 @@ elseif (WIN64)
     ../gucefCORE/src/gucefCORE_CUtf32String.cpp
     ../gucefCORE/src/gucefCORE_CUtf8String.cpp
     ../gucefCORE/src/gucefCORE_CVariant.cpp
+    ../gucefCORE/src/gucefCORE_IFileSystemIterator.cpp
     ../gucefCORE/src/md5.c
     ../gucefCORE/src/c_api/gucefCORE_c_variantdata.c
     ../gucefCORE/src/mswin/gucefCORE_cppmswinutils.cpp
@@ -2916,6 +2972,7 @@ elseif (WINDOWS)
     ../gucefCORE/include/gucefCORE_CUtf32String.h
     ../gucefCORE/include/gucefCORE_CUtf8String.h
     ../gucefCORE/include/gucefCORE_CVariant.h
+    ../gucefCORE/include/gucefCORE_IFileSystemIterator.h
     ../gucefCORE/include/md5.h
     ../gucefCORE/include/c_api/gucefCORE_c_ioaccess.h
     ../gucefCORE/include/c_api/gucefCORE_c_variantdata.h
@@ -2967,6 +3024,7 @@ elseif (WINDOWS)
     ../gucefCORE/src/gucefCORE_CUtf32String.cpp
     ../gucefCORE/src/gucefCORE_CUtf8String.cpp
     ../gucefCORE/src/gucefCORE_CVariant.cpp
+    ../gucefCORE/src/gucefCORE_IFileSystemIterator.cpp
     ../gucefCORE/src/md5.c
     ../gucefCORE/src/c_api/gucefCORE_c_variantdata.c
     ../gucefMT/src/gucefMT_CICloneable.cpp

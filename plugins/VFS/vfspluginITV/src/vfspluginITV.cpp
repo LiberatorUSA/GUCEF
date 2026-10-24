@@ -87,6 +87,8 @@ GUCEFPlugin_Load( CORE::UInt32 argc, const char** argv ) GUCEF_PLUGIN_CALLSPEC_S
     resArchiveFactory = GUCEF_NEW TResArchiveFactory();
     VFS::CVfsGlobal::Instance()->GetVfs().RegisterArchiveFactory( "res", *resArchiveFactory );
     VFS::CVfsGlobal::Instance()->GetVfs().RegisterArchiveFactory( "idx", *resArchiveFactory );
+    VFS::CVfsGlobal::Instance()->GetVfs().SetArchiveTypeFileExtensions( "res", CORE::CString( "res" ).ParseUniqueElements( ';', false ) );
+    VFS::CVfsGlobal::Instance()->GetVfs().SetArchiveTypeFileExtensions( "idx", CORE::CString( "idx" ).ParseUniqueElements( ';', false ) );
 
     return 1;
 }

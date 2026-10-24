@@ -48,7 +48,8 @@ vpaths { ["Headers"] = { "**.h", "**.hpp", "**.hxx" } }
 files( {
   "include/TestVideoFormat.h",
   "include/TestVideoPlayback.h",
-  "include/TestVideoSmacker.h"
+  "include/TestVideoSmacker.h",
+  "include/TestVideoWebm.h"
  } )
 
 
@@ -59,6 +60,7 @@ files( {
   "src/TestVideoFormat.cpp",
   "src/TestVideoPlayback.cpp",
   "src/TestVideoSmacker.cpp",
+  "src/TestVideoWebm.cpp",
   "src/gucefVIDEO_TestApp.cpp"
  } )
 

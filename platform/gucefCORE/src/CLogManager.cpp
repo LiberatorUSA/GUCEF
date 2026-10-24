@@ -90,6 +90,16 @@
 #define GUCEF_CORE_CTHREADLOGBUFFERS_H
 #endif /* GUCEF_CORE_CTHREADLOGBUFFERS_H ? */
 
+#ifndef GUCEF_CORE_CPLATFORMNATIVECONSOLELOGGER_H
+#include "gucefCORE_CPlatformNativeConsoleLogger.h"
+#define GUCEF_CORE_CPLATFORMNATIVECONSOLELOGGER_H
+#endif /* GUCEF_CORE_CPLATFORMNATIVECONSOLELOGGER_H ? */
+
+#ifndef GUCEF_CORE_CUSERACTIONLOGGER_H
+#include "gucefCORE_CUserActionLogger.h"
+#define GUCEF_CORE_CUSERACTIONLOGGER_H
+#endif /* GUCEF_CORE_CUSERACTIONLOGGER_H ? */
+
 #include "CLogManager.h"
 
 #ifndef GUCEF_CORE_ESSENTIALS_H
@@ -148,6 +158,10 @@ static CharSepLoggingFormatterFactory g_charSepLoggingFormatterFactory;
 CLogManager::CLogManager( void )
     : CORE::CObserver()
     , m_loggers( GUCEF_NEW CMultiLogger() )
+    , m_nativeConsoleLogger( GUCEF_NULL )
+    , m_nativeConsoleLoggerInOwnWindow( false )
+    , m_nativeConsoleLoggerFormatAsConsoleUI( false )
+    , m_userActionLogger( GUCEF_NULL )
     , m_loggingTask()
     , m_useLogThread( false )
     , m_bootstrapLog()
@@ -176,8 +190,15 @@ CLogManager::CLogManager( void )
 CLogManager::~CLogManager()
 {GUCEF_TRACE;
 
+    // normally gone already, see CLoggingGlobal
+    GUCEF_DELETE m_userActionLogger;
+    m_userActionLogger = GUCEF_NULL;
+
     ClearLoggers();
     ClearLoggingFormatters();
+
+    GUCEF_DELETE m_nativeConsoleLogger;
+    m_nativeConsoleLogger = GUCEF_NULL;
 
     m_loggingTask.Unlink();
 
@@ -305,6 +326,149 @@ CLogManager::RemoveLogger( CILogger* loggerImp )
     {
         CCoreGlobal::Instance()->GetTaskManager().GetThreadPool()->ResumeTask( m_loggingTask->GetCurrentTaskId() );
     }
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CLogManager::SetNativeConsoleLoggerEnabled( bool enabled )
+{GUCEF_TRACE;
+
+    if ( enabled == ( GUCEF_NULL != m_nativeConsoleLogger ) )
+        return;
+
+    if ( enabled )
+    {
+        m_nativeConsoleLogger = GUCEF_NEW CPlatformNativeConsoleLogger( m_nativeConsoleLoggerInOwnWindow );
+        if ( GUCEF_NULL != m_nativeConsoleLogger->GetLogger() )
+        {
+            m_nativeConsoleLogger->GetLogger()->SetFormatAsConsoleUI( m_nativeConsoleLoggerFormatAsConsoleUI );
+            AddLogger( m_nativeConsoleLogger->GetLogger() );
+        }
+    }
+    else
+    {
+        if ( GUCEF_NULL != m_nativeConsoleLogger->GetLogger() )
+            RemoveLogger( m_nativeConsoleLogger->GetLogger() );
+        GUCEF_DELETE m_nativeConsoleLogger;
+        m_nativeConsoleLogger = GUCEF_NULL;
+    }
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CLogManager::IsNativeConsoleLoggerEnabled( void ) const
+{GUCEF_TRACE;
+
+    return GUCEF_NULL != m_nativeConsoleLogger;
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CLogManager::SetNativeConsoleLoggerInOwnWindow( bool ownWindow )
+{GUCEF_TRACE;
+
+    if ( ownWindow == m_nativeConsoleLoggerInOwnWindow )
+        return;
+    m_nativeConsoleLoggerInOwnWindow = ownWindow;
+
+    // an enabled logger is made again in the console asked for
+    if ( IsNativeConsoleLoggerEnabled() )
+    {
+        SetNativeConsoleLoggerEnabled( false );
+        SetNativeConsoleLoggerEnabled( true );
+    }
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CLogManager::IsNativeConsoleLoggerInOwnWindow( void ) const
+{GUCEF_TRACE;
+
+    return m_nativeConsoleLoggerInOwnWindow;
+}
+
+/*-------------------------------------------------------------------------*/
+
+CIConsoleLogger*
+CLogManager::GetNativeConsoleLogger( void ) const
+{GUCEF_TRACE;
+
+    return GUCEF_NULL != m_nativeConsoleLogger ? m_nativeConsoleLogger->GetLogger() : GUCEF_NULL;
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CLogManager::SetNativeConsoleLoggerFormatAsConsoleUI( bool formatAsConsoleUI )
+{GUCEF_TRACE;
+
+    m_nativeConsoleLoggerFormatAsConsoleUI = formatAsConsoleUI;
+    CIConsoleLogger* logger = GetNativeConsoleLogger();
+    if ( GUCEF_NULL != logger )
+        logger->SetFormatAsConsoleUI( formatAsConsoleUI );
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CLogManager::IsNativeConsoleLoggerFormatAsConsoleUI( void ) const
+{GUCEF_TRACE;
+
+    return m_nativeConsoleLoggerFormatAsConsoleUI;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CLogManager::SetUserActionLogEnabled( bool enabled, const CString& filePath )
+{GUCEF_TRACE;
+
+    if ( GUCEF_NULL != m_userActionLogger )
+    {
+        if ( enabled && m_userActionLogger->GetFilePath() == RelativePath( filePath ) )
+            return true;
+
+        // what was logged so far goes to the file before the logger goes
+        FlushLogs();
+        RemoveLogger( m_userActionLogger );
+        GUCEF_DELETE m_userActionLogger;
+        m_userActionLogger = GUCEF_NULL;
+    }
+    if ( !enabled )
+        return true;
+
+    CUserActionLogger* logger = GUCEF_NEW CUserActionLogger( filePath );
+    if ( !logger->IsOpen() )
+    {
+        GUCEF_DELETE logger;
+        GUCEF_ERROR_LOG( LOGLEVEL_NORMAL, "LogManager: The user action log cannot be written to " << filePath );
+        return false;
+    }
+    m_userActionLogger = logger;
+    AddLogger( m_userActionLogger );
+    return true;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CLogManager::IsUserActionLogEnabled( void ) const
+{GUCEF_TRACE;
+
+    return GUCEF_NULL != m_userActionLogger;
+}
+
+/*-------------------------------------------------------------------------*/
+
+CString
+CLogManager::GetUserActionLogFile( void ) const
+{GUCEF_TRACE;
+
+    return GUCEF_NULL != m_userActionLogger ? m_userActionLogger->GetFilePath() : CString::Empty;
 }
 
 /*-------------------------------------------------------------------------*/

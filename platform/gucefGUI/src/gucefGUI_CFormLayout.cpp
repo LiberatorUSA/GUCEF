@@ -307,6 +307,59 @@ CFormLayout::WritePropertyValue( CORE::CDataNode& propertyNode, const CString& n
 
 /*-------------------------------------------------------------------------*/
 
+void
+CFormLayout::InitLayout( CORE::CDataNode& tree )
+{GUCEF_TRACE;
+
+    tree.Clear();
+    tree.SetName( "GUILayout" );
+    tree.SetAttribute( "format", "GUILayout" );
+    tree.SetAttribute( "version", CORE::UInt32ToString( CurrentVersion ) );
+}
+
+/*-------------------------------------------------------------------------*/
+
+CORE::CDataNode*
+CFormLayout::AddWidgetNode( CORE::CDataNode& parentNode ,
+                            const CString& type         ,
+                            const CString& name         ,
+                            const CString& position     ,
+                            const CString& size         )
+{GUCEF_TRACE;
+
+    CORE::CDataNode* node = parentNode.AddChild( "Widget" );
+    node->SetAttribute( "type", type );
+    node->SetAttribute( "name", name );
+    if ( !position.IsNULLOrEmpty() )
+        node->SetAttribute( "position", position );
+    if ( !size.IsNULLOrEmpty() )
+        node->SetAttribute( "size", size );
+    return node;
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CFormLayout::SetWidgetNodeProperty( CORE::CDataNode& widgetNode, const CString& name, const CString& value )
+{GUCEF_TRACE;
+
+    CORE::CDataNode::iterator i = widgetNode.Begin();
+    while ( i != widgetNode.End() )
+    {
+        CORE::CDataNode* child = (*i);
+        ++i;
+        if ( child->GetName() == "Property" && child->GetAttributeValue( "name" ).AsString() == name )
+        {
+            WritePropertyValue( *child, name, value );
+            return;
+        }
+    }
+    CORE::CDataNode* propertyNode = widgetNode.AddChild( "Property" );
+    WritePropertyValue( *propertyNode, name, value );
+}
+
+/*-------------------------------------------------------------------------*/
+
 CWidget*
 CFormLayout::Build( CGUIContext& context, CORE::CDataNode& widgetNode, CWidget* parent, TWidgetSourceMap& sources )
 {GUCEF_TRACE;

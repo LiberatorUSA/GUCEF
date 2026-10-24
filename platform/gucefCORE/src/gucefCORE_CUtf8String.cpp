@@ -2293,37 +2293,41 @@ CUtf8String::ParseUniqueElements( const UInt8* bufferPtr ,
         char* lastSepCpPtr = cpPos;
         UInt32 i=0;
         UInt64 bytesRead = 0;
+        UInt32 codePoint = 0;
         do
         {
-            UInt32 codePoint=0;
+            // the null terminator ends the text, it is not part of the last element (as in ParseElements)
             char* newCpPos = (char*) utf8codepoint( cpPos, &codePoint );
-            if ( cpPos != newCpPos )
-                ++bufferCps;
-
-            if ( codePoint == seperator )
+            if ( codePoint != '\0' || seperator == '\0' )
             {
-                UInt32 stringLength = i-lastSepCpIndex;
-                if ( ( 0 == stringLength && addEmptyElements ) ||
-                     ( stringLength > 0 ) )
+                if ( cpPos != newCpPos )
+                    ++bufferCps;
+
+                if ( codePoint == seperator )
                 {
-                    entry.Set( lastSepCpPtr, (UInt32)(cpPos-lastSepCpPtr), stringLength );
-                    list.insert( entry );
+                    UInt32 stringLength = i-lastSepCpIndex;
+                    if ( ( 0 == stringLength && addEmptyElements ) ||
+                         ( stringLength > 0 ) )
+                    {
+                        entry.Set( lastSepCpPtr, (UInt32)(cpPos-lastSepCpPtr), stringLength );
+                        list.insert( entry );
+                    }
+
+                    lastSepCpIndex = i+1;
+                    lastSepCpPtr = newCpPos;
                 }
 
-                lastSepCpIndex = i+1;
-                lastSepCpPtr = newCpPos;
+                cpPos = newCpPos;
+                bytesRead = (UInt64) ( (const UInt8*)newCpPos - (const UInt8*)bufferPtr );
+                ++i;
             }
-
-            cpPos = newCpPos;
-            bytesRead = (UInt64) ( (const UInt8*)newCpPos - (const UInt8*)bufferPtr );
-            ++i;
         }
-        while ( GUCEF_NULL != cpPos && bytesRead < bufferSize );
+        while ( GUCEF_NULL != cpPos && ( codePoint != '\0' || seperator == '\0' ) && bytesRead < bufferSize );
 
         // add last item
         UInt32 stringLength = bufferCps-lastSepCpIndex;
         if ( ( 0 == stringLength && addEmptyElements ) ||
-             ( stringLength > 0 && ( GUCEF_NULL != lastSepCpPtr && ( *lastSepCpPtr != '\0' || addEmptyElements ) ) ) )
+             ( stringLength > 0 ) )
         {
             entry.Set( lastSepCpPtr, (UInt32)(cpPos-lastSepCpPtr), stringLength );
             list.insert( entry );
@@ -2730,6 +2734,9 @@ bool
 CUtf8String::EndsWith( const CUtf8String& substr ) const
 {GUCEF_TRACE;
 
+    // a longer suffix cannot be the end, and "not found" (-1) must not equal a negative difference of the lengths
+    if ( substr.m_length > m_length )
+        return false;
     if ( m_length > 0 )
         return ((Int32)m_length)-substr.m_length == HasSubstr( substr, m_length, false, false );
     return substr.IsNULLOrEmpty();

@@ -133,7 +133,10 @@ CLoggingGlobal::~CLoggingGlobal()
     CLogManager* logManager = m_logManager;
 
     m_logManager->FlushLogs();
-    
+
+    // the user action log goes while logging still works: taking its file logger out of the log manager logs
+    m_logManager->SetUserActionLogEnabled( false, CString::Empty );
+
     // wipe out log manager access first to disable a logging loop back during destruction of the log manager
     m_logManager = GUCEF_NULL;
     GUCEF_DELETE logManager;

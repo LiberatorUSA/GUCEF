@@ -28,9 +28,16 @@ LOCAL_SRC_FILES := \
   src/gucefGUI_CButton.cpp \
   src/gucefGUI_CCheckbox.cpp \
   src/gucefGUI_CCombobox.cpp \
+  src/gucefGUI_CDeveloperConsoleForm.cpp \
+  src/gucefGUI_CDirectoryOpenDialogForm.cpp \
+  src/gucefGUI_CDirectorySaveDialogForm.cpp \
   src/gucefGUI_CDrawSurface.cpp \
   src/gucefGUI_CEditbox.cpp \
-  src/gucefGUI_CFileSystemDialog.cpp \
+  src/gucefGUI_CFileOpenDialogForm.cpp \
+  src/gucefGUI_CFileSaveDialogForm.cpp \
+  src/gucefGUI_CFileSystemDialogForm.cpp \
+  src/gucefGUI_CFontRasterizer.cpp \
+  src/gucefGUI_CFontRasterizerRegistry.cpp \
   src/gucefGUI_CForm.cpp \
   src/gucefGUI_CFormBackend.cpp \
   src/gucefGUI_CFormEx.cpp \
@@ -40,21 +47,27 @@ LOCAL_SRC_FILES := \
   src/gucefGUI_CGUIDriver.cpp \
   src/gucefGUI_CGUIInputAdapter.cpp \
   src/gucefGUI_CGUIManager.cpp \
+  src/gucefGUI_CGeneralSettings.cpp \
+  src/gucefGUI_CGeneralSettingsForm.cpp \
   src/gucefGUI_CGridView.cpp \
+  src/gucefGUI_CGroupBox.cpp \
   src/gucefGUI_CGuiGlobal.cpp \
-  src/gucefGUI_CIFileSystemInfoProvider.cpp \
   src/gucefGUI_CIGUIContext.cpp \
   src/gucefGUI_CImageFrame.cpp \
   src/gucefGUI_CLabel.cpp \
   src/gucefGUI_CListbox.cpp \
   src/gucefGUI_CMenuBar.cpp \
+  src/gucefGUI_CMessageBoxForm.cpp \
   src/gucefGUI_CModule.cpp \
   src/gucefGUI_CPanel.cpp \
+  src/gucefGUI_CPathFieldForm.cpp \
   src/gucefGUI_CPopupMenu.cpp \
   src/gucefGUI_CProgressBar.cpp \
   src/gucefGUI_CPushButton.cpp \
   src/gucefGUI_CRenderContext.cpp \
   src/gucefGUI_CRoutedEventData.cpp \
+  src/gucefGUI_CSettingsForm.cpp \
+  src/gucefGUI_CSettingsPageForm.cpp \
   src/gucefGUI_CSlider.cpp \
   src/gucefGUI_CSoftwareRenderer.cpp \
   src/gucefGUI_CSpinner.cpp \
@@ -66,6 +79,7 @@ LOCAL_SRC_FILES := \
   src/gucefGUI_CUVector.cpp \
   src/gucefGUI_CVideoOptions.cpp \
   src/gucefGUI_CVideoSettings.cpp \
+  src/gucefGUI_CVideoSettingsForm.cpp \
   src/gucefGUI_CVideoView.cpp \
   src/gucefGUI_CWidget.cpp \
   src/gucefGUI_CWidgetFactory.cpp \
@@ -76,6 +90,7 @@ LOCAL_SRC_FILES := \
   src/gucefGUI_CWindowContext.cpp \
   src/gucefGUI_CWindowManager.cpp \
   src/gucefGUI_CWindowManagerBackend.cpp \
+  src/gucefGUI_StandardThemes.cpp \
   src/gucefGUI_StandardWidgetTypes.cpp \
   src/gucefGUI_Types.cpp \
   src/gucefGUI_Utils.cpp

@@ -109,7 +109,10 @@ GUCEFPlugin_Load( CORE::UInt32 argc, const char** argv ) GUCEF_PLUGIN_CALLSPEC_S
 
     VFS::CVFS& vfs = VFS::CVfsGlobal::Instance()->GetVfs();
     for ( UInt32 i=0; i<sizeof( ReadableArchiveTypes ) / sizeof( ReadableArchiveTypes[ 0 ] ); ++i )
+    {
         vfs.RegisterArchiveFactory( ReadableArchiveTypes[ i ], *archiveFactory );
+        vfs.SetArchiveTypeFileExtensions( ReadableArchiveTypes[ i ], CORE::CString( ReadableArchiveTypes[ i ] ).ParseUniqueElements( ';', false ) );
+    }
 
     vfs.RegisterArchiveWriterFactory( "tar", *tarWriterFactory );
     vfs.RegisterArchiveWriterFactory( "tgz", *tarGzipWriterFactory );

@@ -23,6 +23,8 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+#include <vector>
+
 #ifndef GUCEF_CORE_CDATANODE_H
 #include "CDataNode.h"
 #define GUCEF_CORE_CDATANODE_H
@@ -132,6 +134,44 @@ PerformDataNodeTests( void )
             ++kept;
         }
         ASSERT_TRUE( 3 == kept );
+    }
+    catch ( ... )
+    {
+        ERRORHERE;
+    }
+    GUCEF_TESTFW_TESTCASE_END
+
+    GUCEF_TESTFW_TESTCASE( "DataNode: A copy of a child is a node of its own, not in the tree of the original, and outlives that tree" )
+    try
+    {
+        CORE::CDataNode* tree = GUCEF_NEW CORE::CDataNode( "root" );
+        CORE::CDataNode* list = tree->AddChild( "list" );
+        list->AddChild( "first" )->SetAttribute( "a", "1" );
+        CORE::CDataNode* second = list->AddChild( "second" );
+        second->SetAttribute( "b", "2" );
+        second->AddChild( "inner" );
+        list->AddChild( "third" );
+
+        CORE::CDataNode copy( *second );
+        ASSERT_TRUE( GUCEF_NULL == copy.GetParent() && "second" == copy.GetName() && "2" == copy.GetAttributeValue( "b" ).AsString() );
+        ASSERT_TRUE( GUCEF_NULL != copy.FindChild( "inner" ) && copy.FindChild( "inner" )->GetParent() == &copy );
+        ASSERT_TRUE( second == list->FindChild( "second" ) && 4 == list->GetNrOfChildNodes() );   // the original stays in its tree
+
+        // the copies kept by value, as a list of settings keeps them, live on after the tree is gone
+        std::vector< CORE::CDataNode > kept;
+        kept.push_back( *second );
+        kept.push_back( *list->FindChild( "third" ) );
+        GUCEF_DELETE tree;
+        ASSERT_TRUE( 2 == kept.size() && "second" == kept[ 0 ].GetName() && GUCEF_NULL == kept[ 1 ].GetParent() );
+
+        #ifdef GUCEF_RVALUE_REFERENCES_SUPPORTED
+        // a moved node takes its children along: they have it as their parent
+        CORE::CDataNode* source = GUCEF_NEW CORE::CDataNode( "source" );
+        source->AddChild( "child" );
+        CORE::CDataNode moved( GUCEF_MOVE( *source ) );
+        GUCEF_DELETE source;
+        ASSERT_TRUE( GUCEF_NULL != moved.FindChild( "child" ) && &moved == moved.FindChild( "child" )->GetParent() );
+        #endif
     }
     catch ( ... )
     {

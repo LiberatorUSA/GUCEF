@@ -168,6 +168,33 @@ CArchive::TryResolveSpecialDir( CORE::TSpecialDirs dir, CString& resolvedPath ) 
     return false;
 }
 
+/*-------------------------------------------------------------------------*/
+
+bool
+CArchive::CreateDir( const CString& dirPath )
+{GUCEF_TRACE;
+
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CArchive::DeleteDir( const CString& dirPath, bool deleteContents )
+{GUCEF_TRACE;
+
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CArchive::MoveDir( const CString& oldDirPath, const CString& newDirPath )
+{GUCEF_TRACE;
+
+    return false;
+}
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //

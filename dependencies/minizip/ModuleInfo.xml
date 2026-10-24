@@ -9,9 +9,14 @@
             <Dependency Name="zlib" />
         </Dependencies>
     </Module>
-    <Module Platform="android">
-        <Linker>
-            <Dependency Name="z" />
-        </Linker>
-    </Module>
+    <Module Platform="android">
+        <Linker>
+            <Dependency Name="z" />
+        </Linker>
+    </Module>
+    <Module Platform="emscripten" >
+        <Dependencies>
+            <Dependency Name="zlib" />
+        </Dependencies>
+    </Module>
 </ModuleInfoEntry>

@@ -64,6 +64,11 @@
 #define GUCEF_GUI_CGUIGLOBAL_H
 #endif /* GUCEF_GUI_CGUIGLOBAL_H ? */
 
+#ifndef GUCEF_GUI_CFONTRASTERIZERREGISTRY_H
+#include "gucefGUI_CFontRasterizerRegistry.h"
+#define GUCEF_GUI_CFONTRASTERIZERREGISTRY_H
+#endif /* GUCEF_GUI_CFONTRASTERIZERREGISTRY_H ? */
+
 #ifndef GUCEF_GUI_CWIDGETTYPEREGISTRY_H
 #include "gucefGUI_CWidgetTypeRegistry.h"
 #define GUCEF_GUI_CWIDGETTYPEREGISTRY_H
@@ -78,6 +83,11 @@
 #include "gucefGUI_CFormEx.h"
 #define GUCEF_GUI_CFORMEX_H
 #endif /* GUCEF_GUI_CFORMEX_H ? */
+
+#ifndef GUCEF_GUI_CGROUPBOX_H
+#include "gucefGUI_CGroupBox.h"
+#define GUCEF_GUI_CGROUPBOX_H
+#endif /* GUCEF_GUI_CGROUPBOX_H ? */
 
 #include "gucefGUI_CGUIContext.h"
 
@@ -167,6 +177,7 @@ IsDescendantOf( const CWidget* widget, const CWidget* ancestor )
 CGUIContext::SImageEntry::SImageEntry( void )
     : pixels()
     , revision( 0 )
+    , density( 1 )
 {
 }
 
@@ -201,7 +212,11 @@ CGUIContext::CGUIContext( CGUIDriver* driver, TWindowContextPtr windowContext )
     , m_theme()
     , m_logicalWidth( 0 )
     , m_logicalHeight( 0 )
+    , m_renderScale( 1 )
+    , m_layer( 0 )
     , m_presentMode( PRESENTMODE_NEAREST )
+    , m_presentFilter()
+    , m_presentFilterParameters()
     , m_cursorImage()
     , m_cursorHotspotX( 0 )
     , m_cursorHotspotY( 0 )
@@ -236,6 +251,7 @@ CGUIContext::CGUIContext( CGUIDriver* driver, TWindowContextPtr windowContext )
     {
         SubscribeTo( m_windowContext.GetPointerAlways(), CWindowContext::WindowContextRedrawEvent );
         SubscribeTo( m_windowContext.GetPointerAlways(), CWindowContext::WindowContextSizeEvent );
+        m_windowContext->RegisterGuiLayer( this );
     }
 }
 
@@ -244,6 +260,8 @@ CGUIContext::CGUIContext( CGUIDriver* driver, TWindowContextPtr windowContext )
 CGUIContext::~CGUIContext()
 {GUCEF_TRACE;
 
+    if ( !m_windowContext.IsNULL() )
+        m_windowContext->UnregisterGuiLayer( this );
     UnsubscribeAllFromNotifier();
     DestroyAllWidgets();
 }
@@ -318,6 +336,9 @@ CGUIContext::CreateWidget( const CString& widgetType, const CString& widgetName,
     widget->m_rectDirty = true;
     m_dirtyWidgets.insert( widget );
     m_layoutDirty = true;
+
+    if ( GUCEF_NULL != parent )
+        parent->OnChildrenChanged();
     return widget;
 }
 
@@ -670,7 +691,16 @@ bool
 CGUIContext::RegisterImage( const CString& alias, const IMAGE::TPixelMapPtr& pixels )
 {GUCEF_TRACE;
 
-    if ( alias.IsNULLOrEmpty() || pixels.IsNULL() )
+    return RegisterImage( alias, pixels, 1 );
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CGUIContext::RegisterImage( const CString& alias, const IMAGE::TPixelMapPtr& pixels, UInt32 density )
+{GUCEF_TRACE;
+
+    if ( alias.IsNULLOrEmpty() || pixels.IsNULL() || 0 == density )
         return false;
 
     IMAGE::TPixelMapPtr shared( pixels );
@@ -686,8 +716,36 @@ CGUIContext::RegisterImage( const CString& alias, const IMAGE::TPixelMapPtr& pix
 
     TImageEntry& entry = m_images[ alias ];
     entry.pixels = pixels;
+    entry.density = density;
     ++entry.revision;
+    m_layoutDirty = true;
     OnImageChanged( alias );
+    return true;
+}
+
+/*-------------------------------------------------------------------------*/
+
+UInt32
+CGUIContext::GetImageDensity( const CString& alias ) const
+{GUCEF_TRACE;
+
+    TImageMap::const_iterator i = m_images.find( alias );
+    return i == m_images.end() ? 1 : (*i).second.density;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CGUIContext::GetImageLogicalSize( const CString& reference, Int32& width, Int32& height )
+{GUCEF_TRACE;
+
+    IMAGE::TPixelMapPtr pixels;
+    UInt32 revision = 0;
+    if ( !ResolveImage( reference, pixels, revision ) || pixels.IsNULL() )
+        return false;
+    UInt32 density = GetImageDensity( reference );
+    width = (Int32) ( pixels->GetWidthInPixels() / density );
+    height = (Int32) ( pixels->GetHeightInPixels() / density );
     return true;
 }
 
@@ -791,6 +849,16 @@ CGUIContext::RegisterFont( const CString& name, const TBitmapFontPtr& font )
     m_fonts[ name ] = font;
     m_layoutDirty = true;
     return true;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CGUIContext::RegisterFont( const CString& name, const CString& fontPath, UInt32 pixelSize )
+{GUCEF_TRACE;
+
+    TBitmapFontPtr font = CGuiGlobal::Instance()->GetFontRasterizerRegistry().RasterizeFont( fontPath, pixelSize, CFontRasterizer::GetLatin1Ranges() );
+    return RegisterFont( name, font );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -1044,6 +1112,89 @@ CGUIContext::GetPresentMode( void ) const
 
 /*-------------------------------------------------------------------------*/
 
+void
+CGUIContext::SetRenderScale( UInt32 scale )
+{GUCEF_TRACE;
+
+    m_renderScale = scale > 0 ? scale : 1;
+}
+
+/*-------------------------------------------------------------------------*/
+
+UInt32
+CGUIContext::GetRenderScale( void ) const
+{GUCEF_TRACE;
+
+    return m_renderScale;
+}
+
+/*-------------------------------------------------------------------------*/
+
+UInt32
+CGUIContext::GetRenderWidth( void ) const
+{GUCEF_TRACE;
+
+    return GetLogicalWidth() * m_renderScale;
+}
+
+/*-------------------------------------------------------------------------*/
+
+UInt32
+CGUIContext::GetRenderHeight( void ) const
+{GUCEF_TRACE;
+
+    return GetLogicalHeight() * m_renderScale;
+}
+
+/*-------------------------------------------------------------------------*/
+
+CGUIContext::TPresentFilterNames
+CGUIContext::GetAvailablePresentFilters( void ) const
+{GUCEF_TRACE;
+
+    return TPresentFilterNames();
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CGUIContext::SetPresentFilter( const CString& filterName, const TPresentFilterParameters& parameters )
+{GUCEF_TRACE;
+
+    if ( !filterName.IsNULLOrEmpty() )
+    {
+        TPresentFilterNames available = GetAvailablePresentFilters();
+        bool known = false;
+        for ( UInt32 i=0; i<(UInt32)available.size() && !known; ++i )
+            known = available[ i ] == filterName;
+        if ( !known )
+            return false;
+    }
+    m_presentFilter = filterName;
+    m_presentFilterParameters = parameters;
+    return true;
+}
+
+/*-------------------------------------------------------------------------*/
+
+const CString&
+CGUIContext::GetPresentFilter( void ) const
+{GUCEF_TRACE;
+
+    return m_presentFilter;
+}
+
+/*-------------------------------------------------------------------------*/
+
+const CGUIContext::TPresentFilterParameters&
+CGUIContext::GetPresentFilterParameters( void ) const
+{GUCEF_TRACE;
+
+    return m_presentFilterParameters;
+}
+
+/*-------------------------------------------------------------------------*/
+
 CRect
 CGUIContext::GetPresentRect( void ) const
 {GUCEF_TRACE;
@@ -1081,9 +1232,9 @@ CGUIContext::SetCursor( const CString& imageAlias, Int32 hotspotX, Int32 hotspot
     m_cursorHotspotX = hotspotX;
     m_cursorHotspotY = hotspotY;
 
-    // a picture of our own replaces the pointer of the system
+    // a picture of our own replaces the pointer of the system, while this layer takes the input
     if ( !m_windowContext.IsNULL() )
-        m_windowContext->SetSystemCursorVisible( m_cursorImage.IsNULLOrEmpty() );
+        m_windowContext->UpdateSystemCursor();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -1932,6 +2083,10 @@ CGUIContext::ResolveSize( const CWidget& widget, const CRect& area, Int32& width
     CUVector::FromString( sizeValue, size );
     width = size.GetX().Resolve( area.width );
     height = size.GetY().Resolve( area.height );
+
+    // a widget that sizes its height to its content (a group box) keeps the width of its Size
+    if ( widget.GetBoolProperty( "AutoHeight" ) && widget.GetNaturalSize( naturalWidth, naturalHeight ) )
+        height = naturalHeight;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -2031,6 +2186,14 @@ CGUIContext::LayoutChildren( CWidget& widget )
     Int32 padding = widget.GetIntProperty( "Padding" );
     Int32 spacing = widget.GetIntProperty( "Spacing" );
     CRect content( widget.m_rect.left + padding, widget.m_rect.top + padding, widget.m_rect.width - 2*padding, widget.m_rect.height - 2*padding );
+    if ( registry.IsA( type, "GroupBox" ) )
+    {
+        // the caption is in the top line of the frame: the children start below it
+        CGroupBox* groupBox = dynamic_cast< CGroupBox* >( &widget );
+        Int32 caption = GUCEF_NULL != groupBox ? groupBox->GetCaptionHeight() : 0;
+        content.top += caption;
+        content.height -= caption;
+    }
     if ( content.width < 0 ) content.width = 0;
     if ( content.height < 0 ) content.height = 0;
 
@@ -2115,6 +2278,105 @@ CGUIContext::CaptureFrame( IMAGE::TPixelMapPtr& pixels )
 
 /*-------------------------------------------------------------------------*/
 
+bool
+CGUIContext::CapturePresentedFrame( IMAGE::TPixelMapPtr& pixels )
+{GUCEF_TRACE;
+
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CGUIContext::SetLayer( Int32 layer )
+{GUCEF_TRACE;
+
+    m_layer = layer;
+    if ( !m_windowContext.IsNULL() )
+        m_windowContext->SortGuiLayers();
+}
+
+/*-------------------------------------------------------------------------*/
+
+Int32
+CGUIContext::GetLayer( void ) const
+{GUCEF_TRACE;
+
+    return m_layer;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CGUIContext::IsBottomLayer( void ) const
+{GUCEF_TRACE;
+
+    if ( m_windowContext.IsNULL() )
+        return true;
+    const CWindowContext::TGuiContextLayers& layers = m_windowContext->GetGuiLayers();
+    return layers.empty() || layers.front() == this;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CGUIContext::HasVisibleRoots( void ) const
+{GUCEF_TRACE;
+
+    for ( TWidgetVector::const_iterator i=m_roots.begin(); i!=m_roots.end(); ++i )
+        if ( GUCEF_NULL != (*i) && (*i)->IsVisible() )
+            return true;
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CGUIContext::HasHigherLayerTakingInput( void ) const
+{GUCEF_TRACE;
+
+    if ( m_windowContext.IsNULL() )
+        return false;
+    const CWindowContext::TGuiContextLayers& layers = m_windowContext->GetGuiLayers();
+    bool above = false;
+    for ( CWindowContext::TGuiContextLayers::const_iterator i=layers.begin(); i!=layers.end(); ++i )
+    {
+        if ( (*i) == this )
+            above = true;
+        else
+        if ( above && (*i)->HasVisibleRoots() )
+            return true;
+    }
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CGUIContext::RenderWindowLayers( UInt32 deltaInMs )
+{GUCEF_TRACE;
+
+    if ( m_windowContext.IsNULL() )
+    {
+        RenderFrame( deltaInMs );
+        return;
+    }
+
+    // the layer that takes the input can be another one than last frame
+    m_windowContext->UpdateSystemCursor();
+
+    // a copy: a frame may make or take away contexts
+    CWindowContext::TGuiContextLayers layers = m_windowContext->GetGuiLayers();
+    for ( CWindowContext::TGuiContextLayers::iterator i=layers.begin(); i!=layers.end(); ++i )
+    {
+        const CWindowContext::TGuiContextLayers& current = m_windowContext->GetGuiLayers();
+        if ( std::find( current.begin(), current.end(), (*i) ) != current.end() )
+            (*i)->RenderFrame( deltaInMs );
+    }
+}
+
+/*-------------------------------------------------------------------------*/
+
 void
 CGUIContext::OnRender( void )
 {GUCEF_TRACE;
@@ -2168,13 +2430,16 @@ CGUIContext::OnNotify( CORE::CNotifier* notifier                 ,
 
     if ( CWindowContext::WindowContextRedrawEvent == eventId )
     {
+        // the lowest layer draws all layers of the window, in their order
+        if ( !IsBottomLayer() )
+            return;
         UInt64 tick = MT::PrecisionTickCount();
         UInt64 resolution = MT::PrecisionTimerResolution();
         UInt32 delta = 0;
         if ( 0 != m_lastRealTick && 0 != resolution )
             delta = (UInt32) ( ( tick - m_lastRealTick ) * 1000 / resolution );
         m_lastRealTick = tick;
-        RenderFrame( delta );
+        RenderWindowLayers( delta );
     }
     else
     if ( CWindowContext::WindowContextSizeEvent == eventId )

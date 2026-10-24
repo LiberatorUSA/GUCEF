@@ -45,6 +45,11 @@
 #define GUCEF_VIDEO_IVIDEOSOURCE_H
 #endif /* GUCEF_VIDEO_IVIDEOSOURCE_H ? */
 
+#ifndef GUCEF_VIDEO_IVIDEOSINK_H
+#include "gucefVIDEO_IVideoSink.h"
+#define GUCEF_VIDEO_IVIDEOSINK_H
+#endif /* GUCEF_VIDEO_IVIDEOSINK_H ? */
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //
@@ -73,6 +78,7 @@ class GUCEF_VIDEO_PUBLIC_CPP CIVideoCodec : public CORE::CICodec
     public:
 
     typedef CORE::CIOAccess::IOAccessPtr    TIOAccessPtr;
+    typedef GUCEF::vector< AUDIO::CAudioFormat > TAudioFormatVector;
 
     static const CString VideoCodecFamilyName;
 
@@ -100,6 +106,21 @@ class GUCEF_VIDEO_PUBLIC_CPP CIVideoCodec : public CORE::CICodec
      */
     virtual bool DecodeMetaData( CORE::CIOAccess& encodedInput, CORE::CValueList& metaData ) = 0;
 
+    /** True when the codec can encode: OpenSink() works. The default is false */
+    virtual bool CanEncode( void ) const;
+
+    /**
+     *  Starts encoding a video of the given size and frame rate (the pixel format of 'format' is not used: the
+     *  sink takes pictures of any format) with the given audio tracks into the output. The output must be
+     *  writable and seekable, and stay valid and not be used by anyone else for as long as the sink exists.
+     *  Options: "quality" 0..100, "speed" 0..10, "threads", "keyFrameInterval", "audioBitrate"; codecs ignore
+     *  what they do not know.
+     */
+    bool OpenSink( CORE::CIOAccess& encodedOutput, const CVideoFormat& format, const TAudioFormatVector& audioTrackFormats, TVideoSinkPtr& sink, const CORE::CValueList& options = CORE::CValueList() );
+
+    /** Same, but the sink keeps the output alive itself */
+    bool OpenSink( const TIOAccessPtr& encodedOutput, const CVideoFormat& format, const TAudioFormatVector& audioTrackFormats, TVideoSinkPtr& sink, const CORE::CValueList& options = CORE::CValueList() );
+
     /** Generic codec interface: not used by video codecs, a video has no plain byte form. Use OpenSource() */
     virtual bool Decode( CORE::CIOAccess& source, CORE::CIOAccess& dest ) GUCEF_VIRTUAL_OVERRIDE;
 
@@ -115,6 +136,9 @@ class GUCEF_VIDEO_PUBLIC_CPP CIVideoCodec : public CORE::CICodec
      *  'input' is the access to read from in both cases.
      */
     virtual bool OpenSourceImpl( CORE::CIOAccess* input, const TIOAccessPtr& owner, const CORE::CValueList& options, TVideoSourcePtr& source ) = 0;
+
+    /** What an encoding codec implements to open a sink, as OpenSourceImpl() for the output. The default fails */
+    virtual bool OpenSinkImpl( CORE::CIOAccess* output, const TIOAccessPtr& owner, const CVideoFormat& format, const TAudioFormatVector& audioTrackFormats, const CORE::CValueList& options, TVideoSinkPtr& sink );
 };
 
 typedef CORE::CTSharedPtr< CIVideoCodec, MT::CMutex > TVideoCodecPtr;

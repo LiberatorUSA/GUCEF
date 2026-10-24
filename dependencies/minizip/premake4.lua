@@ -34,6 +34,12 @@ defines( { "MODULE_CONSENSUS_NAME=minizip", "MODULE_NAME=minizip" } )
   links( { "z" } )
   links( { "z" } )
   
+configuration( { EMSCRIPTEN32 } )
+links( { "zlib" } )
+  
+configuration( { EMSCRIPTEN64 } )
+links( { "zlib" } )
+  
 configuration( { LINUX32 } )
 links( { "zlib" } )
   links( { "zlib" } )
@@ -74,6 +80,12 @@ files( {
 
 
 configuration( {} )
+
+configuration( { "EMSCRIPTEN32" } )
+includedirs( { "../zlib" } )
+
+configuration( { "EMSCRIPTEN64" } )
+includedirs( { "../zlib" } )
 
 configuration( { "LINUX32" } )
 includedirs( { "../zlib" } )

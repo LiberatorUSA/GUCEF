@@ -165,6 +165,12 @@ class GUCEF_VFS_PUBLIC_CPP CFileSystemArchive : public CArchive
      *  Redirects to O/S filesystem implementation.
      */
     virtual bool TryResolveSpecialDir( CORE::TSpecialDirs dir, CString& resolvedPath ) const GUCEF_VIRTUAL_OVERRIDE;
+
+    virtual bool CreateDir( const CString& dirPath ) GUCEF_VIRTUAL_OVERRIDE;
+
+    virtual bool DeleteDir( const CString& dirPath, bool deleteContents ) GUCEF_VIRTUAL_OVERRIDE;
+
+    virtual bool MoveDir( const CString& oldDirPath, const CString& newDirPath ) GUCEF_VIRTUAL_OVERRIDE;
     
     const CString& GetRootDir( void ) const;
 

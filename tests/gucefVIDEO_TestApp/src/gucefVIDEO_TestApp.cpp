@@ -53,6 +53,7 @@
 #include "TestVideoFormat.h"
 #include "TestVideoPlayback.h"
 #include "TestVideoSmacker.h"
+#include "TestVideoWebm.h"
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -90,6 +91,7 @@ GUCEF_OSMAIN_BEGIN
         PerformVideoFormatTests();
         PerformVideoPlaybackTests();
         PerformVideoSmackerTests();
+        PerformVideoWebmTests();
 
         GUCEF_TESTFW_WRITE_RESULTS( xmlPath.C_String() );
         return GUCEF_TESTFW_EXITCODE;

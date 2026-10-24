@@ -53,6 +53,7 @@ LOCAL_SRC_FILES := \
   ../gucefCORE/src/gucefCORE_CUtf32String.cpp \
   ../gucefCORE/src/gucefCORE_CUtf8String.cpp \
   ../gucefCORE/src/gucefCORE_CVariant.cpp \
+  ../gucefCORE/src/gucefCORE_IFileSystemIterator.cpp \
   ../gucefCORE/src/md5.c \
   ../gucefCORE/src/c_api/gucefCORE_c_variantdata.c \
   ../gucefMT/src/gucefMT_CICloneable.cpp \

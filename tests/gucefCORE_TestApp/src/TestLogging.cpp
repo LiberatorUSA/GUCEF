@@ -38,10 +38,20 @@
 #define GUCEF_CORE_CLOGMANAGER_H
 #endif /* GUCEF_CORE_CLOGMANAGER_H ? */
 
+#ifndef GUCEF_CORE_CUSERACTIONLOGGER_H
+#include "gucefCORE_CUserActionLogger.h"
+#define GUCEF_CORE_CUSERACTIONLOGGER_H
+#endif /* GUCEF_CORE_CUSERACTIONLOGGER_H ? */
+
 #ifndef GUCEF_CORE_CSTDLOGGER_H
 #include "CStdLogger.h"
 #define GUCEF_CORE_CSTDLOGGER_H
 #endif /* GUCEF_CORE_CSTDLOGGER_H ? */
+
+#ifndef GUCEF_CORE_CMULTILOGGER_H
+#include "gucefCORE_CMultiLogger.h"
+#define GUCEF_CORE_CMULTILOGGER_H
+#endif /* GUCEF_CORE_CMULTILOGGER_H ? */
 
 #ifndef GUCEF_CORE_CDYNAMICBUFFER_H
 #include "CDynamicBuffer.h"
@@ -765,6 +775,61 @@ PerformLoggingTests( void )
 
         logMgr.RemoveLogger( &captureLogger1 );
         logMgr.RemoveLogger( &captureLogger2 );
+    GUCEF_TESTFW_TESTCASE_END
+
+    // Test 17b: CMultiLogger says a message is logged exactly when it logs it
+    GUCEF_TESTFW_TESTCASE( "Test 17b: CMultiLogger tells which messages it logs as it logs them" )
+        CTestCaptureLogger capture;
+        CORE::CMultiLogger multi;
+        multi.AddLogger( &capture );
+        multi.SetMinimalLogLevel( CORE::LOGLEVEL_NORMAL );
+
+        multi.Log( CORE::LOG_USER, CORE::LOGLEVEL_CRITICAL, "AboveTheMinimum" );
+        multi.Log( CORE::LOG_USER, CORE::LOGLEVEL_BELOW_NORMAL, "BelowTheMinimum" );
+        ASSERT_TRUE( capture.HasEntryWith( "AboveTheMinimum" ) );
+        ASSERT_FALSE( capture.HasEntryWith( "BelowTheMinimum" ) );
+        ASSERT_TRUE( multi.IsLoggingEnabled( CORE::LOG_USER, CORE::LOGLEVEL_CRITICAL ) );
+        ASSERT_FALSE( multi.IsLoggingEnabled( CORE::LOG_USER, CORE::LOGLEVEL_BELOW_NORMAL ) );
+        multi.ClearLoggers();
+    GUCEF_TESTFW_TESTCASE_END
+
+    // Test 17c: the user action log has what the user did and nothing else, in a file of its own
+    GUCEF_TESTFW_TESTCASE( "Test 17c: The user action log keeps only user actions, in its own file" )
+        PreDrainThreadBuffer();
+        CORE::CLogManager& logMgr = CORE::CCoreGlobal::Instance()->GetLogManager();
+        const CORE::CString logFile = CORE::RelativePath( "$TEMPDIR$/gucefCORE_TestApp/UserActions.log" );
+        CORE::DeleteFile( logFile );
+        ASSERT_TRUE( logMgr.SetUserActionLogEnabled( true, logFile ) );
+        ASSERT_TRUE( logMgr.IsUserActionLogEnabled() && logFile == logMgr.GetUserActionLogFile() );
+
+        GUCEF_USER_LOG( CORE::LOGLEVEL_CRITICAL, "UserClickedOk" );
+        GUCEF_LOG( CORE::LOGLEVEL_CRITICAL, "NotAUserAction" );
+        CORE::CLogStreamScope::FlushLogs();
+        ASSERT_TRUE( logMgr.SetUserActionLogEnabled( false, CORE::CString::Empty ) );
+        ASSERT_FALSE( logMgr.IsUserActionLogEnabled() );
+        GUCEF_USER_LOG( CORE::LOGLEVEL_CRITICAL, "AfterTheLogWasSwitchedOff" );
+        CORE::CLogStreamScope::FlushLogs();
+
+        CORE::CString content;
+        ASSERT_TRUE( CORE::LoadTextFileAsString( logFile, content ) );
+        ASSERT_TRUE( content.HasSubstr( "a new session" ) >= 0 && content.HasSubstr( "UserClickedOk" ) >= 0 );
+        ASSERT_TRUE( content.HasSubstr( "NotAUserAction" ) < 0 && content.HasSubstr( "AfterTheLogWasSwitchedOff" ) < 0 );
+
+        // each action is in the file as soon as it is logged: a program that ends without its shutdown (a crash, killed) keeps them
+        CORE::DeleteFile( logFile );
+        {
+            CORE::CUserActionLogger direct( logFile );
+            ASSERT_TRUE( direct.IsOpen() );
+            direct.Log( CORE::LOG_USER, CORE::LOGLEVEL_NORMAL, "ClickedBeforeTheCrash", MT::GetCurrentTaskID(), CORE::CTimestamp::NowUTCTime() );
+            CORE::CString unflushed;
+            ASSERT_TRUE( CORE::LoadTextFileAsString( logFile, unflushed ) );
+            ASSERT_TRUE( unflushed.HasSubstr( "a new session" ) >= 0 && unflushed.HasSubstr( "ClickedBeforeTheCrash" ) >= 0 );
+        }
+
+        // a file that cannot be written: not switched on
+        ASSERT_FALSE( logMgr.SetUserActionLogEnabled( true, "/proc/no/such/dir/UserActions.log" ) );
+        ASSERT_FALSE( logMgr.IsUserActionLogEnabled() );
+        CORE::DeleteFile( logFile );
     GUCEF_TESTFW_TESTCASE_END
 
     // Test 18: Thread ID is correctly captured in the segment metadata

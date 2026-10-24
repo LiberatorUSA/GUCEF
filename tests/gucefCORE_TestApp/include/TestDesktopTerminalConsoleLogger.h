@@ -35,4 +35,17 @@ PerformDesktopTerminalConsoleLoggerTests( void );
 
 /*-------------------------------------------------------------------------*/
 
+/** The argument that starts the test app as the child process of a test that the console log window must not crash the exit of */
+#define GUCEF_CORE_TESTAPP_EXIT_WITH_CONSOLE_LOG_WINDOW_ARG    "--exit-with-console-log-window"
+
+/**
+ *  What the test app does when started with GUCEF_CORE_TESTAPP_EXIT_WITH_CONSOLE_LOG_WINDOW_ARG: switches the console
+ *  log window on, the way an application does from its settings, and returns the exit code of main.
+ *  0 when it is on; the exit itself is what the test looks at
+ */
+int
+RunExitWithConsoleLogWindow( void );
+
+/*-------------------------------------------------------------------------*/
+
 #endif /* GUCEF_CORE_TESTAPP_TESTDESKTOPTERMINALCONSOLELOGGER_H ? */

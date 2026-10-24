@@ -130,7 +130,10 @@ CAndroidWindowManagerImp::ApplyVideoSettings( GUI::TWindowContextPtr& windowCont
                                               const GUI::CVideoSettings& settings   )
 {GUCEF_TRACE;
 
-    return false;
+    CAndroidGLESWindowContext* glesContext = static_cast< CAndroidGLESWindowContext* >( windowContext.GetPointerAlways() );
+    if ( GUCEF_NULL == glesContext )
+        return false;
+    return glesContext->ApplyVideoSettings( settings );
 }
 
 /*-------------------------------------------------------------------------//

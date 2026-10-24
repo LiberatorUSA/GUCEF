@@ -98,6 +98,11 @@ GUCEFPlugin_Load( CORE::UInt32 argc, const char** argv ) GUCEF_PLUGIN_CALLSPEC_S
     VFS::CVfsGlobal::Instance()->GetVfs().RegisterArchiveFactory( CZIPArchive::ZipArchiveTypeName, *zipArchiveFactory );
     VFS::CVfsGlobal::Instance()->GetVfs().RegisterArchiveFactory( "pk3", *zipArchiveFactory );
     VFS::CVfsGlobal::Instance()->GetVfs().RegisterArchiveFactory( "jar", *zipArchiveFactory );
+
+    // the files each type opens, for applications that offer every archive the VFS can open
+    VFS::CVfsGlobal::Instance()->GetVfs().SetArchiveTypeFileExtensions( CZIPArchive::ZipArchiveTypeName, CORE::CString( "zip" ).ParseUniqueElements( ';', false ) );
+    VFS::CVfsGlobal::Instance()->GetVfs().SetArchiveTypeFileExtensions( "pk3", CORE::CString( "pk3" ).ParseUniqueElements( ';', false ) );
+    VFS::CVfsGlobal::Instance()->GetVfs().SetArchiveTypeFileExtensions( "jar", CORE::CString( "jar" ).ParseUniqueElements( ';', false ) );
     VFS::CVfsGlobal::Instance()->GetVfs().RegisterArchiveWriterFactory( CZIPArchive::ZipArchiveTypeName, *zipArchiveWriterFactory );
     VFS::CVfsGlobal::Instance()->GetVfs().RegisterArchiveWriterFactory( "pk3", *zipArchiveWriterFactory );
     VFS::CVfsGlobal::Instance()->GetVfs().RegisterArchiveWriterFactory( "jar", *zipArchiveWriterFactory );

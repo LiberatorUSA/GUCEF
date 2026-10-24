@@ -79,6 +79,9 @@ GUCEF_OSMAIN_BEGIN
         PerformGuiRenderTests();
         PerformGuiInputTests();
         PerformGuiBrowserTests();
+        PerformGuiFontTests();
+        PerformGuiSettingsTests();
+        PerformGuiFileDialogTests();
 
         GUCEF_TESTFW_WRITE_RESULTS( xmlPath.C_String() );
         return GUCEF_TESTFW_EXITCODE;

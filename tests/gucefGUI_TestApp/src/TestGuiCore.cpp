@@ -45,6 +45,7 @@
 #include "guidriverRmlUIOpenGL_pluginAPI.h"
 #include "guidriverEmscripten_pluginAPI.h"
 #include "inputdriverEMSCRIPTEN_pluginAPI.h"
+#include "fontpluginFREETYPE_pluginAPI.h"
 #endif
 
 #include "gucefGUI_TestCommon.h"
@@ -123,6 +124,14 @@ CreateNullContext( void )
 GUI::TGuiContextPtr
 CreateRmlUiContext( void )
 {
+    return CreateRmlUiContextInWindow( 640, 480 );
+}
+
+/*-------------------------------------------------------------------------*/
+
+GUI::TGuiContextPtr
+CreateRmlUiContextInWindow( UInt32 windowWidth, UInt32 windowHeight )
+{
     GUI::CGUIManager& manager = GUI::CGuiGlobal::Instance()->GetGuiManager();
     GUI::CWindowManager& windows = GUI::CGuiGlobal::Instance()->GetWindowManager();
 
@@ -151,7 +160,7 @@ CreateRmlUiContext( void )
     GUI::TWindowManagerBackendPtr backend = windows.GetBackend( backendName );
     if ( backend.IsNULL() || GUCEF_NULL == manager.GetGuiDriver( "RmlUi" ) )
         return GUI::TGuiContextPtr();
-    GUI::TWindowContextPtr window = backend->CreateWindowContext( "Test", 640, 480, false );
+    GUI::TWindowContextPtr window = backend->CreateWindowContext( "Test", windowWidth, windowHeight, false );
     if ( window.IsNULL() )
         return GUI::TGuiContextPtr();
     GUI::TGuiContextPtr context = manager.CreateGUIContext( "RmlUi", window );
@@ -198,6 +207,23 @@ MakeTestFont( Int32 width, Int32 height )
     font->SetBaseline( height );
     font->SetFallbackCodePoint( '?' );
     return font;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+LoadFreeTypeFontPlugin( void )
+{
+    GUI::CFontRasterizerRegistry& registry = GUI::CGuiGlobal::Instance()->GetFontRasterizerRegistry();
+    if ( GUCEF_NULL == registry.Get( "FreeType" ) )
+    {
+        #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_WASM_EMSCRIPTEN )
+        FONTPLUGINFREETYPE::fontpluginFREETYPE_GUCEFPlugin_Load( 0, GUCEF_NULL );
+        #else
+        LoadTestPlugin( "fontpluginFREETYPE", "fontplugin" );
+        #endif
+    }
+    return GUCEF_NULL != registry.Get( "FreeType" );
 }
 
 /*-------------------------------------------------------------------------*/

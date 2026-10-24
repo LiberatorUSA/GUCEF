@@ -269,6 +269,76 @@ ParseFakeUUID( const CString& fakeUuid ,
 
 /*--------------------------------------------------------------------------*/
 
+#if ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_WASM_EMSCRIPTEN ) )
+
+/**
+ *  An XDG user directory (desktop, documents, downloads, ...): the environment variable when it is set, else the line of the
+ *  user's user-dirs.dirs file (as desktops write it, e.g. XDG_DOWNLOAD_DIR="$HOME/Downloads"), else the home directory, which
+ *  is what the XDG user directories specification falls back to
+ */
+static bool
+TryResolveXdgUserDir( const char* key, CString& resolvedPath )
+{GUCEF_TRACE;
+
+    const char* fromEnv = getenv( key );
+    if ( GUCEF_NULL != fromEnv && '\0' != *fromEnv )
+    {
+        resolvedPath = fromEnv;
+        return true;
+    }
+
+    const char* home = getenv( "HOME" );
+    const char* configHome = getenv( "XDG_CONFIG_HOME" );
+    CString configFile;
+    if ( GUCEF_NULL != configHome && '\0' != *configHome )
+        configFile = CombinePath( configHome, "user-dirs.dirs" );
+    else
+    if ( GUCEF_NULL != home && '\0' != *home )
+        configFile = CombinePath( home, ".config/user-dirs.dirs" );
+
+    CString content;
+    if ( !configFile.IsNULLOrEmpty() && FileExists( configFile ) && LoadTextFileAsString( configFile, content ) )
+    {
+        CString::StringVector lines = content.RemoveChar( '\r' ).ParseElements( '\n', false );
+        CString::StringVector::iterator i = lines.begin();
+        while ( i != lines.end() )
+        {
+            const CString line = (*i).Trim( true ).Trim( false );
+            ++i;
+            if ( line.IsNULLOrEmpty() || '#' == line[ 0 ] )
+                continue;
+            const Int32 equals = line.HasChar( '=' );
+            if ( equals <= 0 || line.SubstrFromRange( 0, (UInt32) equals ).Trim( false ) != key )
+                continue;
+
+            CString value = line.SubstrFromRange( (UInt32) equals + 1, line.Length() ).Trim( true ).RemoveChar( '"' );
+            if ( value.StartsWith( "$HOME" ) )
+            {
+                if ( GUCEF_NULL == home )
+                    break;
+                value = CString( home ) + value.CutChars( 5, true );
+            }
+            if ( !value.IsNULLOrEmpty() )
+            {
+                resolvedPath = value;
+                return true;
+            }
+            break;
+        }
+    }
+
+    if ( GUCEF_NULL != home && '\0' != *home )
+    {
+        resolvedPath = home;
+        return true;
+    }
+    return false;
+}
+
+#endif
+
+/*--------------------------------------------------------------------------*/
+
 bool
 TryResolveSpecialDir( TSpecialDirs dir, CString& resolvedPath )
 {GUCEF_TRACE;
@@ -305,9 +375,11 @@ TryResolveSpecialDir( TSpecialDirs dir, CString& resolvedPath )
             folderId = ::FOLDERID_Profile;
             break;
         case SPECIALDIR_LOCAL_APPDATA_DIR:
+        case SPECIALDIR_CACHE_DIR:
             folderId = ::FOLDERID_LocalAppData;
             break;
         case SPECIALDIR_APPDATA_DIR:
+        case SPECIALDIR_APP_CONFIG_DIR:
             folderId = FOLDERID_RoamingAppData;
             break;
         case SPECIALDIR_INTERNET_CACHE_DIR:
@@ -385,45 +457,54 @@ TryResolveSpecialDir( TSpecialDirs dir, CString& resolvedPath )
                 path = getenv( "TEMP" );
             break;
         case SPECIALDIR_APPDATA_DIR:
+        case SPECIALDIR_LOCAL_APPDATA_DIR:
+        {
+            // the XDG base directory default when it is not set
             path = getenv( "XDG_DATA_HOME" );
-            if ( GUCEF_NULL == path )
-                path = getenv( "HOME" );
+            if ( GUCEF_NULL == path && GUCEF_NULL != getenv( "HOME" ) )
+            {
+                resolvedPath = CombinePath( getenv( "HOME" ), ".local/share" );
+                return true;
+            }
             break;
-//        case SPECIALDIR_CONFIG_DIR:
-//            path = getenv( "XDG_CONFIG_HOME" );
-//            if ( GUCEF_NULL == path )
-//                path = getenv( "HOME" );
-//            break;
+        }
+        case SPECIALDIR_APP_CONFIG_DIR:
+        {
+            // the XDG base directory for settings, its default when it is not set
+            path = getenv( "XDG_CONFIG_HOME" );
+            if ( GUCEF_NULL == path && GUCEF_NULL != getenv( "HOME" ) )
+            {
+                resolvedPath = CombinePath( getenv( "HOME" ), ".config" );
+                return true;
+            }
+            break;
+        }
         case SPECIALDIR_INTERNET_CACHE_DIR:
+        case SPECIALDIR_CACHE_DIR:
+        {
+            // the XDG base directory default when it is not set
             path = getenv( "XDG_CACHE_HOME" );
-            if ( GUCEF_NULL == path )
-                path = getenv( "HOME" );
+            if ( GUCEF_NULL == path && GUCEF_NULL != getenv( "HOME" ) )
+            {
+                resolvedPath = CombinePath( getenv( "HOME" ), ".cache" );
+                return true;
+            }
             break;
+        }
         case SPECIALDIR_DESKTOP_DIR:
-            path = getenv( "XDG_DESKTOP_DIR" );
-            if ( GUCEF_NULL == path )
-                path = getenv( "HOME" );
-            break;
+            return TryResolveXdgUserDir( "XDG_DESKTOP_DIR", resolvedPath );
         case SPECIALDIR_MY_DOCUMENTS_DIR:
-            path = getenv( "XDG_DOCUMENTS_DIR" );
-            if ( GUCEF_NULL == path )
-                path = getenv( "HOME" );
-            break;
+            return TryResolveXdgUserDir( "XDG_DOCUMENTS_DIR", resolvedPath );
         case SPECIALDIR_MY_DOWNLOADS_DIR:
-            path = getenv( "XDG_DOWNLOAD_DIR" );
-            if ( GUCEF_NULL == path )
-                path = getenv( "HOME" );
-            break;
+            return TryResolveXdgUserDir( "XDG_DOWNLOAD_DIR", resolvedPath );
         case SPECIALDIR_MY_MUSIC_DIR:
-            path = getenv( "XDG_MUSIC_DIR" );
-            if ( GUCEF_NULL == path )
-                path = getenv( "HOME" );
-            break;
+            return TryResolveXdgUserDir( "XDG_MUSIC_DIR", resolvedPath );
         case SPECIALDIR_MY_PICTURES_DIR:
-            path = getenv( "XDG_PICTURES_DIR" );
-            if ( GUCEF_NULL == path )
-                path = getenv( "HOME" );
-            break;
+            return TryResolveXdgUserDir( "XDG_PICTURES_DIR", resolvedPath );
+        case SPECIALDIR_MY_VIDEO_DIR:
+            return TryResolveXdgUserDir( "XDG_VIDEOS_DIR", resolvedPath );
+        case SPECIALDIR_TEMPLATES_DIR:
+            return TryResolveXdgUserDir( "XDG_TEMPLATES_DIR", resolvedPath );
         default:
             GUCEF_DEBUG_LOG( LOGLEVEL_NORMAL, "TryResolveSpecialDir: Unsupported special directory" );
             return false;
@@ -468,6 +549,97 @@ TryResolveSpecialDir( TSpecialDirs dir, CString& resolvedPath )
     return false;
 
     #endif
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+ListAvailableSpecialDirs( TSpecialDirSet& specialDirs )
+{GUCEF_TRACE;
+
+    // The ids TryResolveSpecialDir() handles on this platform: keep this table in step with its switch statements
+    specialDirs.clear();
+
+    // the ones resolved through dedicated functions on every platform
+    specialDirs.insert( SPECIALDIR_CURRENT_WORK_DIR );
+    specialDirs.insert( SPECIALDIR_UP_DIR );
+    specialDirs.insert( SPECIALDIR_MODULE_DIR );
+    specialDirs.insert( SPECIALDIR_TEMP_DIR );
+
+    #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
+
+    static const TSpecialDirs platformDirs[] = { SPECIALDIR_HOME_DIR, SPECIALDIR_LOCAL_APPDATA_DIR, SPECIALDIR_CACHE_DIR, SPECIALDIR_APPDATA_DIR, SPECIALDIR_APP_CONFIG_DIR,
+                                                 SPECIALDIR_INTERNET_CACHE_DIR, SPECIALDIR_DESKTOP_DIR, SPECIALDIR_MY_DOCUMENTS_DIR,
+                                                 SPECIALDIR_MY_DOWNLOADS_DIR, SPECIALDIR_MY_MUSIC_DIR, SPECIALDIR_MY_PICTURES_DIR,
+                                                 SPECIALDIR_MY_VIDEO_DIR, SPECIALDIR_MY_GAMES_DIR, SPECIALDIR_PROGRAMS_DIR,
+                                                 SPECIALDIR_X86_PROGRAMS_DIR, SPECIALDIR_X64_PROGRAMS_DIR, SPECIALDIR_RECENT_DIR,
+                                                 SPECIALDIR_SYSTEM_DIR, SPECIALDIR_USER_DIR };
+
+    #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_WASM_EMSCRIPTEN ) )
+
+    static const TSpecialDirs platformDirs[] = { SPECIALDIR_HOME_DIR, SPECIALDIR_APPDATA_DIR, SPECIALDIR_LOCAL_APPDATA_DIR, SPECIALDIR_APP_CONFIG_DIR,
+                                                 SPECIALDIR_INTERNET_CACHE_DIR, SPECIALDIR_CACHE_DIR, SPECIALDIR_DESKTOP_DIR,
+                                                 SPECIALDIR_MY_DOCUMENTS_DIR, SPECIALDIR_MY_DOWNLOADS_DIR, SPECIALDIR_MY_MUSIC_DIR,
+                                                 SPECIALDIR_MY_PICTURES_DIR, SPECIALDIR_MY_VIDEO_DIR, SPECIALDIR_TEMPLATES_DIR };
+
+    #endif
+
+    #if ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_WASM_EMSCRIPTEN ) )
+    for ( size_t i=0; i<sizeof( platformDirs ) / sizeof( platformDirs[ 0 ] ); ++i )
+        specialDirs.insert( platformDirs[ i ] );
+    #endif
+
+    return true;
+}
+
+/*-------------------------------------------------------------------------*/
+
+const char*
+SpecialDirToString( TSpecialDirs dir )
+{GUCEF_TRACE;
+
+    switch ( dir )
+    {
+        case SPECIALDIR_UNSPECIFIED:            return "SPECIALDIR_UNSPECIFIED";
+        case SPECIALDIR_CURRENT_WORK_DIR:       return "SPECIALDIR_CURRENT_WORK_DIR";
+        case SPECIALDIR_UP_DIR:                 return "SPECIALDIR_UP_DIR";
+        case SPECIALDIR_MODULE_DIR:             return "SPECIALDIR_MODULE_DIR";
+        case SPECIALDIR_TEMP_DIR:               return "SPECIALDIR_TEMP_DIR";
+        case SPECIALDIR_HOME_DIR:               return "SPECIALDIR_HOME_DIR";
+        case SPECIALDIR_SYSTEM_DIR:             return "SPECIALDIR_SYSTEM_DIR";
+        case SPECIALDIR_USER_DIR:               return "SPECIALDIR_USER_DIR";
+        case SPECIALDIR_APPDATA_DIR:            return "SPECIALDIR_APPDATA_DIR";
+        case SPECIALDIR_COMMON_APPDATA_DIR:     return "SPECIALDIR_COMMON_APPDATA_DIR";
+        case SPECIALDIR_DESKTOP_DIR:            return "SPECIALDIR_DESKTOP_DIR";
+        case SPECIALDIR_FAVORITES_DIR:          return "SPECIALDIR_FAVORITES_DIR";
+        case SPECIALDIR_STARTMENU_DIR:          return "SPECIALDIR_STARTMENU_DIR";
+        case SPECIALDIR_PROGRAMS_DIR:           return "SPECIALDIR_PROGRAMS_DIR";
+        case SPECIALDIR_X86_PROGRAMS_DIR:       return "SPECIALDIR_X86_PROGRAMS_DIR";
+        case SPECIALDIR_X64_PROGRAMS_DIR:       return "SPECIALDIR_X64_PROGRAMS_DIR";
+        case SPECIALDIR_RECENT_DIR:             return "SPECIALDIR_RECENT_DIR";
+        case SPECIALDIR_TEMPLATES_DIR:          return "SPECIALDIR_TEMPLATES_DIR";
+        case SPECIALDIR_LOCAL_APPDATA_DIR:      return "SPECIALDIR_LOCAL_APPDATA_DIR";
+        case SPECIALDIR_INTERNET_CACHE_DIR:     return "SPECIALDIR_INTERNET_CACHE_DIR";
+        case SPECIALDIR_COOKIES_DIR:            return "SPECIALDIR_COOKIES_DIR";
+        case SPECIALDIR_HISTORY_DIR:            return "SPECIALDIR_HISTORY_DIR";
+        case SPECIALDIR_PROFILE_DIR:            return "SPECIALDIR_PROFILE_DIR";
+        case SPECIALDIR_WINDOWS_DIR:            return "SPECIALDIR_WINDOWS_DIR";
+        case SPECIALDIR_SYSTEM32_DIR:           return "SPECIALDIR_SYSTEM32_DIR";
+        case SPECIALDIR_PROGRAM_FILES_DIR:      return "SPECIALDIR_PROGRAM_FILES_DIR";
+        case SPECIALDIR_COMMON_FILES_DIR:       return "SPECIALDIR_COMMON_FILES_DIR";
+        case SPECIALDIR_MY_DOCUMENTS_DIR:       return "SPECIALDIR_MY_DOCUMENTS_DIR";
+        case SPECIALDIR_MY_PICTURES_DIR:        return "SPECIALDIR_MY_PICTURES_DIR";
+        case SPECIALDIR_MY_MUSIC_DIR:           return "SPECIALDIR_MY_MUSIC_DIR";
+        case SPECIALDIR_MY_VIDEO_DIR:           return "SPECIALDIR_MY_VIDEO_DIR";
+        case SPECIALDIR_MY_GAMES_DIR:           return "SPECIALDIR_MY_GAMES_DIR";
+        case SPECIALDIR_MY_RECENT_DIR:          return "SPECIALDIR_MY_RECENT_DIR";
+        case SPECIALDIR_MY_SEARCHES_DIR:        return "SPECIALDIR_MY_SEARCHES_DIR";
+        case SPECIALDIR_MY_FAVORITES_DIR:       return "SPECIALDIR_MY_FAVORITES_DIR";
+        case SPECIALDIR_MY_DOWNLOADS_DIR:       return "SPECIALDIR_MY_DOWNLOADS_DIR";
+        case SPECIALDIR_CACHE_DIR:              return "SPECIALDIR_CACHE_DIR";
+        case SPECIALDIR_APP_CONFIG_DIR:         return "SPECIALDIR_APP_CONFIG_DIR";
+        default:                                return "SPECIALDIR_UNKNOWN";
+    }
 }
 
 /*-------------------------------------------------------------------------*/
@@ -928,6 +1100,33 @@ DeleteFile( const CString& path )
     return 0 != Delete_File( actualPath.C_String() );
 
     #endif
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CopyFile( const CString& sourcePath      ,
+          const CString& destinationPath ,
+          const bool overwrite           )
+{GUCEF_TRACE;
+
+    if ( !overwrite && FileExists( destinationPath ) )
+        return false;
+    CFileAccess source( sourcePath, "rb" );
+    if ( !source.IsValid() )
+        return false;
+    CFileAccess destination( destinationPath, "wb" );
+    if ( !destination.IsValid() )
+        return false;
+
+    char buffer[ 65536 ];
+    UInt32 read = 0;
+    while ( 0 < ( read = source.Read( buffer, 1, sizeof( buffer ) ) ) )
+    {
+        if ( read != destination.Write( buffer, 1, read ) )
+            return false;
+    }
+    return true;
 }
 
 /*-------------------------------------------------------------------------*/

@@ -15,6 +15,8 @@ set( HEADER_FILES
   include/RmlUi_Include_GL3.h
   include/RmlUi_Renderer_GL3.h
   include/guidriverRmlUIOpenGL.h
+  include/guidriverRmlUIOpenGL_CGLHookShader.h
+  include/guidriverRmlUIOpenGL_CGLPresenter.h
   include/guidriverRmlUIOpenGL_CRmlUIGuiDriver.h
   include/guidriverRmlUIOpenGL_CRmlUIOpenGLContext.h
   include/guidriverRmlUIOpenGL_config.h
@@ -24,6 +26,8 @@ set( HEADER_FILES
 
 set( SOURCE_FILES 
   src/RmlUi_Renderer_GL3.cpp
+  src/guidriverRmlUIOpenGL_CGLHookShader.cpp
+  src/guidriverRmlUIOpenGL_CGLPresenter.cpp
   src/guidriverRmlUIOpenGL_CRmlUIGuiDriver.cpp
   src/guidriverRmlUIOpenGL_CRmlUIOpenGLContext.cpp
   src/guidriverRmlUIOpenGL_pluginAPI.cpp
@@ -40,8 +44,8 @@ set( ALL_FILES ${HEADER_FILES} ${SOURCE_FILES} ${PLATFORM_HEADER_FILES} ${PLATFO
 
 set( MODULE_NAME "guidriverRmlUIOpenGL" )
 add_library( ${MODULE_NAME} ${ALL_FILES} )
-add_dependencies( ${MODULE_NAME} RmlUI_Core gucefCORE gucefGUI gucefIMAGE gucefINPUT gucefMT guidriverRmlUI )
-target_link_libraries( ${MODULE_NAME} PUBLIC RmlUI_Core gucefCORE gucefGUI gucefIMAGE gucefINPUT gucefMT guidriverRmlUI )
+add_dependencies( ${MODULE_NAME} RmlUI_Core gucefCORE gucefGUI gucefIMAGE gucefINPUT gucefMT gucefVFS guidriverRmlUI )
+target_link_libraries( ${MODULE_NAME} PUBLIC RmlUI_Core gucefCORE gucefGUI gucefIMAGE gucefINPUT gucefMT gucefVFS guidriverRmlUI )
 set_property( TARGET ${MODULE_NAME} APPEND_STRING PROPERTY COMPILE_DEFINITIONS "GUIDRIVERRMLUIGL_BUILD_MODULE;MODULE_CONSENSUS_NAME=guidriverRmlUIOpenGL;MODULE_IS_PLUGIN=1;MODULE_NAME=guidriverRmlUIOpenGL" )
 
 if ( ANDROID32 )

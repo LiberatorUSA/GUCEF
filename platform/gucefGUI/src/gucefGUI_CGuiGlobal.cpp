@@ -43,6 +43,11 @@
 #define GUCEF_VFS_CVFSGLOBAL_H
 #endif /* GUCEF_VFS_CVFSGLOBAL_H ? */
 
+#ifndef GUCEF_VFS_CVFS_H
+#include "gucefVFS_CVFS.h"
+#define GUCEF_VFS_CVFS_H
+#endif /* GUCEF_VFS_CVFS_H ? */
+
 #ifndef GUCEF_GUI_H
 #include "gucefGUI.h"
 #define GUCEF_GUI_H
@@ -56,7 +61,12 @@
 #include "gucefGUI_CGuiGlobal.h"
 
 #include "gucefGUI_CWidgetTypeRegistry.h"
+#include "gucefGUI_CFontRasterizerRegistry.h"
 #include "gucefGUI_StandardWidgetTypes.h"
+#include "gucefGUI_CSettingsForm.h"
+#include "gucefGUI_CVideoSettingsForm.h"
+#include "gucefGUI_CDeveloperConsoleForm.h"
+#include "gucefGUI_CFileSystemDialogForm.h"
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -134,7 +144,9 @@ CGuiGlobal::Initialize( void )
     CCheckbox::RegisterEvents();
     CCombobox::RegisterEvents();
     CEditbox::RegisterEvents();
-    CFileSystemDialog::RegisterEvents();
+    CMessageBoxForm::RegisterEvents();
+    CPathFieldForm::RegisterEvents();
+    CFileSystemDialogForm::RegisterEvents();
     CGridView::RegisterEvents();
     CLabel::RegisterEvents();
     CListbox::RegisterEvents();
@@ -142,6 +154,10 @@ CGuiGlobal::Initialize( void )
     CSpinner::RegisterEvents();
     CTabControl::RegisterEvents();
     CTextbox::RegisterEvents();
+    CSettingsPageForm::RegisterEvents();
+    CSettingsForm::RegisterEvents();
+    CVideoSettingsForm::RegisterEvents();
+    CDeveloperConsoleForm::RegisterEvents();
     CGUIManager::RegisterEvents();
 
     /*
@@ -149,6 +165,8 @@ CGuiGlobal::Initialize( void )
      */
     m_widgetTypeRegistry = new CWidgetTypeRegistry();
     RegisterStandardWidgetTypes( *m_widgetTypeRegistry );
+    m_fontRasterizerRegistry = new CFontRasterizerRegistry();
+    CSettingsForm::RegisterStandardPages();
 
     m_windowManager = new CWindowManager();
     m_guiManager = new CGUIManager();
@@ -159,10 +177,16 @@ CGuiGlobal::Initialize( void )
 
 /*-------------------------------------------------------------------------*/
 
+const CString CGuiGlobal::DataMountPoint = "gucefGUI";
+const CString CGuiGlobal::DefaultUiFontPath = "gucefGUI/fonts/NotoSans-Regular.ttf";
+
+/*-------------------------------------------------------------------------*/
+
 CGuiGlobal::CGuiGlobal( void )
     : m_windowManager( NULL ) ,
       m_guiManager( NULL )    ,
-      m_widgetTypeRegistry( NULL )
+      m_widgetTypeRegistry( NULL ) ,
+      m_fontRasterizerRegistry( NULL )
 {GUCEF_TRACE;
 
 }
@@ -183,6 +207,9 @@ CGuiGlobal::~CGuiGlobal()
     m_guiManager = NULL;
     delete m_windowManager;
     m_windowManager = NULL;
+    CSettingsForm::UnregisterStandardPages();
+    delete m_fontRasterizerRegistry;
+    m_fontRasterizerRegistry = NULL;
     delete m_widgetTypeRegistry;
     m_widgetTypeRegistry = NULL;
 }
@@ -212,6 +239,33 @@ CGuiGlobal::GetWidgetTypeRegistry( void )
 {GUCEF_TRACE;
 
     return *m_widgetTypeRegistry;
+}
+
+/*-------------------------------------------------------------------------*/
+
+CFontRasterizerRegistry&
+CGuiGlobal::GetFontRasterizerRegistry( void )
+{GUCEF_TRACE;
+
+    return *m_fontRasterizerRegistry;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CGuiGlobal::MountData( void )
+{GUCEF_TRACE;
+
+    return MountModuleData( DataMountPoint );
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CGuiGlobal::MountModuleData( const CString& moduleName )
+{GUCEF_TRACE;
+
+    return VFS::CVfsGlobal::Instance()->GetVfs().MountModuleData( moduleName );
 }
 
 /*-------------------------------------------------------------------------//

@@ -62,6 +62,11 @@
 #define GUCEF_VIDEO_IVIDEOSOURCE_H
 #endif /* GUCEF_VIDEO_IVIDEOSOURCE_H ? */
 
+#ifndef GUCEF_VIDEO_IVIDEOSINK_H
+#include "gucefVIDEO_IVideoSink.h"
+#define GUCEF_VIDEO_IVIDEOSINK_H
+#endif /* GUCEF_VIDEO_IVIDEOSINK_H ? */
+
 #ifndef GUCEF_VIDEO_CIVIDEOCODEC_H
 #include "gucefVIDEO_CIVideoCodec.h"
 #define GUCEF_VIDEO_CIVIDEOCODEC_H
@@ -96,6 +101,11 @@
 #include "gucefVIDEO_CVideoPlayer.h"
 #define GUCEF_VIDEO_CVIDEOPLAYER_H
 #endif /* GUCEF_VIDEO_CVIDEOPLAYER_H ? */
+
+#ifndef GUCEF_VIDEO_CVIDEOTRANSCODER_H
+#include "gucefVIDEO_CVideoTranscoder.h"
+#define GUCEF_VIDEO_CVIDEOTRANSCODER_H
+#endif /* GUCEF_VIDEO_CVIDEOTRANSCODER_H ? */
 
 #ifndef GUCEF_VIDEO_CVIDEOGLOBAL_H
 #include "gucefVIDEO_CVideoGlobal.h"

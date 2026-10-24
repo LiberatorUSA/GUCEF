@@ -16,6 +16,7 @@ set( HEADER_FILES
   include/TestAbstractFactory.h
   include/TestAsyncUriResourceRetriever.h
   include/TestCodecPlugins.h
+  include/TestConfigStore.h
   include/TestCronSchedule.h
   include/TestCyclicDynamicBuffer.h
   include/TestDStoreStreaming.h
@@ -31,6 +32,7 @@ set( HEADER_FILES
   include/TestDynamicBufferSwap.h
   include/TestExternalThreads.h
   include/TestFileAccess.h
+  include/TestFileSystemAccess.h
   include/TestFileUtils.h
   include/TestFraction.h
   include/TestFrameworkSkip.h
@@ -47,6 +49,7 @@ set( HEADER_FILES
   include/TestSharedPtr.h
   include/TestStopwatch.h
   include/TestString.h
+  include/TestSysConsole.h
   include/TestThreadPoolCancellation.h
   include/TestTimestamp.h
   include/TestTokenizer.h
@@ -67,6 +70,7 @@ set( SOURCE_FILES
   src/TestAbstractFactory.cpp
   src/TestAsyncUriResourceRetriever.cpp
   src/TestCodecPlugins.cpp
+  src/TestConfigStore.cpp
   src/TestCronSchedule.cpp
   src/TestCyclicDynamicBuffer.cpp
   src/TestDStoreStreaming.cpp
@@ -82,6 +86,8 @@ set( SOURCE_FILES
   src/TestDynamicBufferSwap.cpp
   src/TestExternalThreads.cpp
   src/TestFileAccess.cpp
+  src/TestFileSystemAccess.cpp
+  src/TestFileSystemAccessResultC.c
   src/TestFileUtils.cpp
   src/TestFraction.cpp
   src/TestFrameworkSkip.cpp
@@ -99,6 +105,7 @@ set( SOURCE_FILES
   src/TestSharedPtr.cpp
   src/TestStopwatch.cpp
   src/TestString.cpp
+  src/TestSysConsole.cpp
   src/TestThreadPoolCancellation.cpp
   src/TestTimestamp.cpp
   src/TestTokenizer.cpp

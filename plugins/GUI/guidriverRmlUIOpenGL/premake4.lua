@@ -29,8 +29,8 @@ configuration( {} )
 kind( "SharedLib" )
 
 configuration( {} )
-links( { "RmlUI_Core", "gucefCORE", "gucefGUI", "gucefIMAGE", "gucefINPUT", "gucefMT", "guidriverRmlUI" } )
-links( { "RmlUI_Core", "gucefCORE", "gucefGUI", "gucefIMAGE", "gucefINPUT", "gucefMT", "guidriverRmlUI" } )
+links( { "RmlUI_Core", "gucefCORE", "gucefGUI", "gucefIMAGE", "gucefINPUT", "gucefMT", "gucefVFS", "guidriverRmlUI" } )
+links( { "RmlUI_Core", "gucefCORE", "gucefGUI", "gucefIMAGE", "gucefINPUT", "gucefMT", "gucefVFS", "guidriverRmlUI" } )
 
 
 configuration( {} )
@@ -51,6 +51,8 @@ files( {
   "include/RmlUi_Include_GL3.h",
   "include/RmlUi_Renderer_GL3.h",
   "include/guidriverRmlUIOpenGL.h",
+  "include/guidriverRmlUIOpenGL_CGLHookShader.h",
+  "include/guidriverRmlUIOpenGL_CGLPresenter.h",
   "include/guidriverRmlUIOpenGL_CRmlUIGuiDriver.h",
   "include/guidriverRmlUIOpenGL_CRmlUIOpenGLContext.h",
   "include/guidriverRmlUIOpenGL_config.h",
@@ -64,6 +66,8 @@ configuration( {} )
 vpaths { ["Source"] = { "**.c", "**.cpp", "**.cs", "**.asm" } }
 files( {
   "src/RmlUi_Renderer_GL3.cpp",
+  "src/guidriverRmlUIOpenGL_CGLHookShader.cpp",
+  "src/guidriverRmlUIOpenGL_CGLPresenter.cpp",
   "src/guidriverRmlUIOpenGL_CRmlUIGuiDriver.cpp",
   "src/guidriverRmlUIOpenGL_CRmlUIOpenGLContext.cpp",
   "src/guidriverRmlUIOpenGL_pluginAPI.cpp"

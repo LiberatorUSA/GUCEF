@@ -80,6 +80,7 @@ struct SDestFileData
     json_value* jsonDoc;
     json_value* currentJsonNode;
     char activeNodeIsValueNode;
+    const char* pendingObjectName;  /* an object with one attribute: a value of the parent, or an object with one member */
     char* processingBuffer;
     size_t processingBufferSize;
 };
@@ -330,6 +331,7 @@ DSTOREPLUG_Begin_Node_Store( void** plugdata      ,
 {
     TDestFileData* fd = (TDestFileData*)*filedata;
     fd->activeNodeIsValueNode = 0;
+    fd->pendingObjectName = GUCEF_NULL;
 
     if ( GUCEF_NULL == fd->currentJsonNode )
     {
@@ -353,9 +355,16 @@ DSTOREPLUG_Begin_Node_Store( void** plugdata      ,
         if ( nodeType == GUCEF_DATATYPE_OBJECT )
         {
             if ( 1 != attscount || 0 != haschildren )
+            {
                 childNode = json_object_new( attscount + haschildren );
+            }
             else
+            {
+                /* the one attribute decides: without a name it is the value of the node, a member of the parent;
+                   with a name the node is an object with that one member */
                 fd->activeNodeIsValueNode = 1;
+                fd->pendingObjectName = GUCEF_NULL != nodename ? nodename : "noname";
+            }
         }
 
         if ( GUCEF_NULL != childNode )
@@ -403,6 +412,7 @@ DSTOREPLUG_End_Node_Store( void** plugdata      ,
     if ( ( GUCEF_NULL != fd->currentJsonNode ) && ( 0 == fd->activeNodeIsValueNode ) )
         fd->currentJsonNode = fd->currentJsonNode->parent;
     fd->activeNodeIsValueNode = 0;
+    fd->pendingObjectName = GUCEF_NULL;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -433,6 +443,20 @@ DSTOREPLUG_Store_Node_Att( void** plugdata              ,
     {
         nodename = "noname";
     }
+
+    /* an object with one named attribute is an object after all: make it and put the attribute in it */
+    if ( GUCEF_NULL != fd->pendingObjectName && GUCEF_NULL != attname )
+    {
+        json_value* objectNode = json_object_new( 1 );
+        if ( fd->currentJsonNode->type == json_object )
+            json_object_push( fd->currentJsonNode, fd->pendingObjectName, objectNode );
+        else
+        if ( fd->currentJsonNode->type == json_array )
+            json_array_push( fd->currentJsonNode, objectNode );
+        fd->currentJsonNode = objectNode;
+        fd->activeNodeIsValueNode = 0;
+    }
+    fd->pendingObjectName = GUCEF_NULL;
 
     switch ( attvalue->containedType )
     {

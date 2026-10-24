@@ -20,6 +20,7 @@
         </Preprocessor>
         <RuntimeDependencies>
             <RuntimeDependency Name="videocodecpluginSMK" />
+            <RuntimeDependency Name="videocodecpluginWEBM" />
         </RuntimeDependencies>
     </Module>
 </ModuleInfoEntry>

@@ -336,28 +336,32 @@ CTaskManager::GetOrCreateThreadPool( const CString& threadPoolName            ,
                                      bool createIfNotExists                   )
 {GUCEF_TRACE;
 
-    MT::CObjectScopeLock lock( this, GUCEF_MT_LONG_LOCK_TIMEOUT );
-
-    ThreadPoolMap::iterator i = m_threadPools.find( threadPoolName );
-    if ( i != m_threadPools.end() )
     {
-        return (*i).second;
+        MT::CObjectScopeLock lock( this, GUCEF_MT_LONG_LOCK_TIMEOUT );
+        ThreadPoolMap::iterator i = m_threadPools.find( threadPoolName );
+        if ( i != m_threadPools.end() )
+            return (*i).second;
     }
-    
-    if ( createIfNotExists )
+    if ( !createIfNotExists )
+        return ThreadPoolPtr();
+
+    // The pool is made without the lock: it subscribes to the pulse generator, whose notification lock the thread that pulses
+    // holds while it notifies. With the lock held here a pool made on another thread would block that thread as soon as it
+    // asks for any pool. Another thread may have made the same pool meanwhile: then that one is used and this one is dropped
+    ThreadPoolPtr newPool = ( GUCEF_NEW CThreadPool( threadPoolPulseContext, threadPoolName ) )->CreateSharedPtr();
     {
-        ThreadPoolPtr newPool = ( GUCEF_NEW CThreadPool( threadPoolPulseContext, threadPoolName ) )->CreateSharedPtr();        
+        MT::CObjectScopeLock lock( this, GUCEF_MT_LONG_LOCK_TIMEOUT );
+        ThreadPoolMap::iterator i = m_threadPools.find( threadPoolName );
+        if ( i != m_threadPools.end() )
+            return (*i).second;
         m_threadPools[ threadPoolName ] = newPool;
-        lock.EarlyUnlock();
-
-        RegisterThreadPoolEventHandlers( newPool.GetPointerAlways() );
-        
-        ThreadPoolCreatedEventData eData( threadPoolName );
-        NotifyObserversFromThread( ThreadPoolCreatedEvent, &eData ); 
-        return newPool; 
     }
 
-    return ThreadPoolPtr();
+    RegisterThreadPoolEventHandlers( newPool.GetPointerAlways() );
+
+    ThreadPoolCreatedEventData eData( threadPoolName );
+    NotifyObserversFromThread( ThreadPoolCreatedEvent, &eData );
+    return newPool;
 }
 
 /*-------------------------------------------------------------------------*/

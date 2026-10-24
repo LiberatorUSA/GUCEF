@@ -139,6 +139,24 @@ class GUCEF_GUI_PUBLIC_CPP CFormLayout
     /** Brings an older layout to the current version; notes say what was changed */
     static bool Migrate( CORE::CDataNode& layoutRoot, TStringVector& notes );
 
+    /*
+     *  Building a layout in code, as the forms gucefGUI comes with do: the tree can be loaded with
+     *  CForm::LoadLayout() and saved to a file like any other layout
+     */
+
+    /** Makes 'tree' an empty layout of the current version */
+    static void InitLayout( CORE::CDataNode& tree );
+
+    /** Adds a Widget node to a layout or to a Widget node; position and size are UDim pairs, empty ones are left out */
+    static CORE::CDataNode* AddWidgetNode( CORE::CDataNode& parentNode                 ,
+                                           const CString& type                         ,
+                                           const CString& name                         ,
+                                           const CString& position = CString::Empty    ,
+                                           const CString& size = CString::Empty        );
+
+    /** Sets a property of a Widget node, replacing the value it had */
+    static void SetWidgetNodeProperty( CORE::CDataNode& widgetNode, const CString& name, const CString& value );
+
     private:
 
     static void ValidateWidget( const CORE::CDataNode& widgetNode, const CString& path, TStringVector& problems );

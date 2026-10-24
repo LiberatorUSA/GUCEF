@@ -343,23 +343,6 @@ CXWinGLWindowContext::Initialize( const GUI::CString& title                ,
 
     glXMakeCurrent( display, glwin, cx );
 
-    // frames are paced by the pulse generator; waiting for the vertical blank is what the settings ask.
-    // (A window the compositor does not show never gets its vertical blank under XWayland: the swap would wait forever)
-    const int swapInterval = videoSettings.GetVSyncState() ? 1 : 0;
-    typedef void ( *TSwapIntervalEXT )( ::Display*, GLXDrawable, int );
-    typedef int ( *TSwapInterval )( int );
-    TSwapIntervalEXT swapIntervalEXT = (TSwapIntervalEXT) glXGetProcAddressARB( (const GLubyte*) "glXSwapIntervalEXT" );
-    TSwapInterval swapIntervalMESA = (TSwapInterval) glXGetProcAddressARB( (const GLubyte*) "glXSwapIntervalMESA" );
-    TSwapInterval swapIntervalSGI = (TSwapInterval) glXGetProcAddressARB( (const GLubyte*) "glXSwapIntervalSGI" );
-    if ( NULL != swapIntervalEXT )
-        swapIntervalEXT( display, glwin, swapInterval );
-    else
-    if ( NULL != swapIntervalMESA )
-        swapIntervalMESA( swapInterval );
-    else
-    if ( NULL != swapIntervalSGI && swapInterval > 0 )
-        swapIntervalSGI( swapInterval );
-
     // Set up the default GL state.
     glViewport( 0, 0, (GLsizei) videoSettings.GetResolutionWidthInPixels(), (GLsizei) videoSettings.GetResolutionHeightInPixels() );
     glClearColor(0, 0, 0, 1);
@@ -378,6 +361,10 @@ CXWinGLWindowContext::Initialize( const GUI::CString& title                ,
     m_window.SetScreen( vi->screen );
     m_window.SetWindow( glwin );
     m_window.SetText( title );
+
+    // frames are paced by the pulse generator; waiting for the vertical blank is what the settings ask.
+    // (A window the compositor does not show never gets its vertical blank under XWayland: the swap would wait forever)
+    ApplySwapInterval( videoSettings.GetVSyncState() );
 
     // cleanup
     ::XFree( vi );
@@ -415,11 +402,37 @@ CXWinGLWindowContext::SetSystemCursorVisible( bool visible )
 /*-------------------------------------------------------------------------*/
 
 bool
+CXWinGLWindowContext::ApplySwapInterval( bool vsync )
+{GUCEF_TRACE;
+
+    const int swapInterval = vsync ? 1 : 0;
+    typedef void ( *TSwapIntervalEXT )( ::Display*, GLXDrawable, int );
+    typedef int ( *TSwapInterval )( int );
+    TSwapIntervalEXT swapIntervalEXT = (TSwapIntervalEXT) glXGetProcAddressARB( (const GLubyte*) "glXSwapIntervalEXT" );
+    TSwapInterval swapIntervalMESA = (TSwapInterval) glXGetProcAddressARB( (const GLubyte*) "glXSwapIntervalMESA" );
+    TSwapInterval swapIntervalSGI = (TSwapInterval) glXGetProcAddressARB( (const GLubyte*) "glXSwapIntervalSGI" );
+    if ( NULL != swapIntervalEXT )
+        swapIntervalEXT( m_window.GetDisplay(), m_window.GetWindow(), swapInterval );
+    else
+    if ( NULL != swapIntervalMESA )
+        swapIntervalMESA( swapInterval );
+    else
+    if ( NULL != swapIntervalSGI && swapInterval > 0 )
+        swapIntervalSGI( swapInterval );
+    else
+        return false;
+    return true;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
 CXWinGLWindowContext::ApplyVideoSettings( const GUI::CVideoSettings& videoSettings )
 {GUCEF_TRACE;
 
     if ( 0 == m_window.GetWindow() )
         return false;
+    ApplySwapInterval( videoSettings.GetVSyncState() );
     m_window.SetFullscreenStatus( videoSettings.GetFullscreenState() );
     if ( !videoSettings.GetFullscreenState() && videoSettings.GetResolutionWidthInPixels() > 0 && videoSettings.GetResolutionHeightInPixels() > 0 )
         m_window.ClientAreaResize( (int) videoSettings.GetResolutionWidthInPixels(), (int) videoSettings.GetResolutionHeightInPixels() );

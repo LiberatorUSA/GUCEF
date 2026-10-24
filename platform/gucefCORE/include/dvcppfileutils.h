@@ -66,6 +66,11 @@
 #define GUCEF_CORE_CTSHAREDPTR_H
 #endif /* GUCEF_CORE_CTSHAREDPTR_H ? */
 
+#ifndef GUCEF_CORE_IFILESYSTEMITERATOR_H
+#include "gucefCORE_IFileSystemIterator.h"
+#define GUCEF_CORE_IFILESYSTEMITERATOR_H
+#endif /* GUCEF_CORE_IFILESYSTEMITERATOR_H ? */
+
 #undef MoveFile
 #undef CopyFile
 #undef DeleteFile
@@ -93,6 +98,23 @@ class CDynamicBuffer;
  */
 GUCEF_CORE_PUBLIC_CPP bool
 TryResolveSpecialDir( TSpecialDirs dir, CString& resolvedPath );
+
+/*-------------------------------------------------------------------------*/
+
+typedef GUCEF::set< TSpecialDirs > TSpecialDirSet;
+
+/**
+ *  The special directories TryResolveSpecialDir() can resolve on this platform, so callers do not have to try every id.
+ *  Whether a directory exists is not checked.
+ */
+GUCEF_CORE_PUBLIC_CPP bool
+ListAvailableSpecialDirs( TSpecialDirSet& specialDirs );
+
+/*-------------------------------------------------------------------------*/
+
+/** A stable name of a special directory id, for example "SPECIALDIR_HOME_DIR", for logs and configuration */
+GUCEF_CORE_PUBLIC_CPP const char*
+SpecialDirToString( TSpecialDirs dir );
 
 /*-------------------------------------------------------------------------*/
 
@@ -146,6 +168,14 @@ GUCEF_CORE_PUBLIC_CPP bool
 MoveFile( const CString& oldPath ,
           const CString& newPath ,
           const bool overwrite   );
+
+/*-------------------------------------------------------------------------*/
+
+/** Copies a file; an existing destination is only replaced with 'overwrite'. False when the source cannot be read */
+GUCEF_CORE_PUBLIC_CPP bool
+CopyFile( const CString& sourcePath      ,
+          const CString& destinationPath ,
+          const bool overwrite           );
 
 /*-------------------------------------------------------------------------*/
 
@@ -475,24 +505,24 @@ GetAllFileSystemMountPointsForVolume( const CString& volumeId         ,
  *  The class is not thread safe, keep the iterator object private to the thread
  *  Also note that the interface intentionally mimics the C API style for easy mapping
  */
-class GUCEF_CORE_PUBLIC_CPP CFileSystemIterator
+class GUCEF_CORE_PUBLIC_CPP CFileSystemIterator : public IFileSystemIterator
 {
     public:
 
     CFileSystemIterator( void );
-    ~CFileSystemIterator();
+    virtual ~CFileSystemIterator() GUCEF_VIRTUAL_OVERRIDE;
 
-    bool FindFirst( const CString& path );
-    bool FindNext( void );
-    bool FindClose( void );
+    virtual bool FindFirst( const CString& path ) GUCEF_VIRTUAL_OVERRIDE;
+    virtual bool FindNext( void ) GUCEF_VIRTUAL_OVERRIDE;
+    virtual bool FindClose( void ) GUCEF_VIRTUAL_OVERRIDE;
 
-    bool IsADirectory( void ) const;
-    bool IsAFile( void ) const;
-    bool IsSymlink( void ) const;
+    virtual bool IsADirectory( void ) const GUCEF_VIRTUAL_OVERRIDE;
+    virtual bool IsAFile( void ) const GUCEF_VIRTUAL_OVERRIDE;
+    virtual bool IsSymlink( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
-    bool TryReadMetaData( CResourceMetaData& metaData );
-    CString GetResourceName( void ) const;
-    CString GetResourcePath( void ) const;
+    virtual bool TryReadMetaData( CResourceMetaData& metaData ) GUCEF_VIRTUAL_OVERRIDE;
+    virtual CString GetResourceName( void ) const GUCEF_VIRTUAL_OVERRIDE;
+    virtual CString GetResourcePath( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
     bool TryReadSymlinkedMetaData( CResourceMetaData& metaData );
     CString GetSymlinkedResourceName( void ) const;

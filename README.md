@@ -96,10 +96,10 @@ If you get into trouble for whatever reason with stale/bad output files (disk is
 - imgpluginDEVIL: gucefIMAGE plugin: Adds digital image management functionality sourced from the DEVIL image dependency library. Supports various image codecs.
 - imgpluginFLIC: gucefIMAGE plugin: Adds image codec support for the FLIC format
 - imgpluginFreeImage: gucefIMAGE plugin: Adds digital image management functionality sourced from the FreeImage image dependency library. Supports various image codecs.
-- imgpluginITV: gucefIMAGE plugin: Adds image codec support for the reverse engineered ITV format
+- imgpluginITV: gucefIMAGE plugin: Adds image codec support for the ITV image format
 - vfspluginAWSS3: gucefVFS plugin: Adds VFS backend for mounting and using AWS S3 as part of the virtual filesystem
 - vfspluginDVP: gucefVFS plugin: Obsolete VFS backend for mounting and using DVP archive files as part of the virtual filesystem
-- vfspluginITV: gucefVFS plugin: VFS backend for mounting and using reverse engineered ITV archive files as part of the virtual filesystem
+- vfspluginITV: gucefVFS plugin: VFS backend for mounting and using ITV archive files as part of the virtual filesystem
 - vfspluginVP: gucefVFS plugin: VFS backend for mounting and using 'Violation Pack' archive files as part of the virtual filesystem such as used by the games Decent and FreeSpace
 - vfspluginZIP: gucefVFS plugin: VFS backend for mounting and using zlib compatible archive files as part of the virtual filesystem such as .gz and .zip
 - inputdriverDIRECTINPUT8: gucefINPUT plugin: Adds an input driver for input device interaction via Microsoft DirectInput 8
@@ -117,7 +117,7 @@ If you get into trouble for whatever reason with stale/bad output files (disk is
 - pubsubpluginWEB: gucefPUBSUB plugin: Adds a pub-sub concept compatible backend for Web concepts like HTTP/REST/WebSockets
 - ProjectGenDependsFilter: ProjectGen plugin: Allows filtering of libraries in a repo based on a depends.exe tool output report
 - ProjectGenVSImporter: ProjectGen plugin: Imports Visual Studio project files to generate a ModuleInfo.xml starting point for a new repo
-- comcorepluginDBL: gucefCOMCORE plugin which attempts to provide information from the reverse engineered Myricom DBL network driver
+- comcorepluginDBL: gucefCOMCORE plugin which attempts to provide information from the Myricom DBL network driver
 - comcorepluginGEOOSM: gucefCOMCORE plugin which adds Open Street Maps based geo location lookup capabilities
 
 ## Contained Services
@@ -139,7 +139,7 @@ If you get into trouble for whatever reason with stale/bad output files (disk is
 ## Contained Tools
 - ProjectGenerator: Tool to auto generate various project/module files and different logical views of the same mono-repo
 - DCSBruteInstaller: Tool to leverage a combo of some hardware and this software to brute force crack the codes in a DCS home alarm panel
-- itvExporter: Reverse engineered export tool for assets contained in a classic game
+- itvExporter: export tool for assets in the ITV data formats
 - GucefArchiver: Basic archiver tool that leverages the VFS and its plugins
 - HDFiller: As the name suggests, it fills your hard drive. Intended for test scenarios.
 - PubSubStorageTool: Tool to manipulate storage files produced by the pubsub storage plugin

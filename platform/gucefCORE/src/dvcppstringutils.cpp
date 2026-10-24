@@ -574,8 +574,62 @@ ResolveVars( const CString& strWithVars )
     resultStr = resultStr.ReplaceSubstr( "$TEMPDIR$", TempDir() );
     resultStr = resultStr.ReplaceSubstr( "$MODULEDIR$", ModuleDir() );
     resultStr = resultStr.ReplaceSubstr( "$CURWORKDIR$", CurrentWorkingDir() );
+    if ( resultStr.HasSubstr( "$CACHEDIR$", true ) >= 0 )
+    {
+        CString cacheDir;
+        if ( !TryResolveSpecialDir( SPECIALDIR_CACHE_DIR, cacheDir ) )
+            cacheDir = TempDir();
+        resultStr = resultStr.ReplaceSubstr( "$CACHEDIR$", cacheDir );
+    }
+    if ( resultStr.HasSubstr( "$APPCONFIGDIR$", true ) >= 0 )
+    {
+        // the settings of applications of the user
+        CString appConfigDir;
+        if ( !TryResolveSpecialDir( SPECIALDIR_APP_CONFIG_DIR, appConfigDir ) && !TryResolveSpecialDir( SPECIALDIR_LOCAL_APPDATA_DIR, appConfigDir ) )
+            appConfigDir = TempDir();
+        resultStr = resultStr.ReplaceSubstr( "$APPCONFIGDIR$", appConfigDir );
+    }
+    if ( resultStr.HasSubstr( "$APPDATADIR$", true ) >= 0 )
+    {
+        // the data of the user for this machine: saves, settings and such that should stay
+        CString appDataDir;
+        if ( !TryResolveSpecialDir( SPECIALDIR_LOCAL_APPDATA_DIR, appDataDir ) )
+            appDataDir = TempDir();
+        resultStr = resultStr.ReplaceSubstr( "$APPDATADIR$", appDataDir );
+    }
 
     return resultStr;
+}
+
+/*-------------------------------------------------------------------------*/
+
+CString
+UnresolveVars( const CString& path )
+{GUCEF_TRACE;
+
+    static const char* const variables[] = { "$APPCONFIGDIR$", "$APPDATADIR$", "$CACHEDIR$", "$MODULEDIR$", "$TEMPDIR$" };
+
+    CString normalized = path.ReplaceChar( '\\', '/' );
+    CString bestVariable;
+    UInt32 bestLength = 0;
+    for ( UInt32 i=0; i<sizeof( variables ) / sizeof( variables[ 0 ] ); ++i )
+    {
+        CString directory = ResolveVars( variables[ i ] ).ReplaceChar( '\\', '/' );
+        while ( directory.Length() > 1 && '/' == directory[ directory.Length()-1 ] )
+            directory = directory.CutChars( 1, false );
+        if ( directory.IsNULLOrEmpty() || directory.Length() <= bestLength )
+            continue;
+
+        // the directory itself or something in it, not a directory whose name only starts the same
+        if ( normalized == directory || ( normalized.StartsWith( directory ) && '/' == normalized[ directory.Length() ] ) )
+        {
+            bestVariable = variables[ i ];
+            bestLength = directory.Length();
+        }
+    }
+    if ( bestVariable.IsNULLOrEmpty() )
+        return path;
+    return bestVariable + normalized.CutChars( bestLength, true );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -678,15 +732,17 @@ RelativePath( const CString& relpath ,
             }
         }
 
-        // Join the segments back into a single path
+        // Join the segments back into a single path, an absolute path keeps its leading separator
         CString result;
+        bool first = true;
         for ( CString::StringVector::iterator it = resolvedSegments.begin(); it != resolvedSegments.end(); ++it )
         {
-            if ( !result.IsNULLOrEmpty() )
+            if ( !first )
             {
                 result += GUCEF_DIRSEPCHAR;
             }
             result += *it;
+            first = false;
         }
 
         resultStr = result;

@@ -81,9 +81,26 @@ RelativePath( const CString& relpath  ,
  *      - $ENVVAR:FOO$ -> Resolves to the environment variable FOO's content
  *      - $HOSTNAME$   -> Is resolved to the hostname of the system
  *      - $PID$        -> Is resolved to the process ID of the current process
- */
-GUCEF_CORE_PUBLIC_CPP CString
-ResolveVars( const CString& strWithVars );
+ *      - $CACHEDIR$   -> Is resolved to the per user directory for data that can be made again (SPECIALDIR_CACHE_DIR),
+ *                        the temp dir when the platform has none
+ *      - $APPDATADIR$ -> Is resolved to the per user directory for data of the user on this machine that should stay
+ *                        (SPECIALDIR_LOCAL_APPDATA_DIR), the temp dir when the platform has none
+ *      - $APPCONFIGDIR$ -> Is resolved to the per user directory for the settings of applications (SPECIALDIR_APP_CONFIG_DIR),
+ *                        else as $APPDATADIR$
+ */
+GUCEF_CORE_PUBLIC_CPP CString
+ResolveVars( const CString& strWithVars );
+
+/*-------------------------------------------------------------------------*/
+
+/**
+ *  The other way round: a path in the form with the variable of the directory it is in, for example
+ *  "$APPCONFIGDIR$/MyApp" for the settings directory of the user, so that it stays right on another machine or for
+ *  another user. The variable whose directory is the longest start of the path is used, of $APPCONFIGDIR$,
+ *  $APPDATADIR$, $CACHEDIR$, $MODULEDIR$ and $TEMPDIR$; a path in none of them is given back as it is
+ */
+GUCEF_CORE_PUBLIC_CPP CString
+UnresolveVars( const CString& path );
 
 /*-------------------------------------------------------------------------*/
 

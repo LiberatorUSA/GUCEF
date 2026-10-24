@@ -310,6 +310,69 @@ PerformGuiWidgetTests( void )
     }
     GUCEF_TESTFW_TESTCASE_END
 
+    GUCEF_TESTFW_TESTCASE( "Widgets: A group box places its children below its caption and is as high as they need; an option follows the check box it depends on" )
+    try
+    {
+        GUI::TGuiContextPtr contextPtr = CreateNullContext();
+        GUI::CGUIContext* context = static_cast< GUI::CGUIContext* >( contextPtr.GetPointerAlways() );
+        GUI::CWidget* screen = MakeScreen( context );
+
+        GUI::CGroupBox* group = dynamic_cast< GUI::CGroupBox* >( context->CreateWidget( "GroupBox", "Options", screen ) );
+        ASSERT_TRUE( GUCEF_NULL != group );
+        if ( GUCEF_NULL == group )
+            return;
+        group->SetProperty( "Position", "0,10 0,10" );
+        group->SetProperty( "Size", "0,200 0,0" );
+        ASSERT_TRUE( group->SetCaption( "Options" ) && "Options" == group->GetCaption() );
+        GUI::CWidget* parent = context->CreateWidget( "Checkbox", "Parent", group );
+        parent->SetProperty( "Size", "1,0 0,20" );
+        GUI::CWidget* child = context->CreateWidget( "Checkbox", "Child", group );
+        child->SetProperty( "Size", "1,-20 0,20" );
+        child->SetProperty( "HAlign", "Right" );
+        child->SetProperty( "EnabledBy", "Parent" );
+        context->FlushChanges();
+
+        // below the caption, inside the padding (10), 4 apart; the group is as high as that, as wide as its Size
+        const Int32 caption = group->GetCaptionHeight();
+        ASSERT_TRUE( caption > 0 );
+        const GUI::CRect& area = group->GetRect();
+        ASSERT_TRUE( 200 == area.width && caption + 10 + 20 + 4 + 20 + 10 == area.height );
+        ASSERT_TRUE( parent->GetRect().left == area.left + 10 && parent->GetRect().top == area.top + 10 + caption && 180 == parent->GetRect().width );
+        // the dependent option is indented: as wide as the content less 20, on the right
+        ASSERT_TRUE( child->GetRect().left == area.left + 10 + 20 && child->GetRect().top == parent->GetRect().top + 24 );
+
+        // the option is enabled while its check box is checked, also when the box is clicked
+        ASSERT_FALSE( child->IsEffectivelyEnabled() );
+        parent->SetBoolProperty( "Checked", true );
+        ASSERT_TRUE( child->IsEffectivelyEnabled() );
+        context->FlushChanges();
+        Click( context, parent->GetRect().left + 5, parent->GetRect().top + 5 );
+        ASSERT_FALSE( parent->GetBoolProperty( "Checked" ) || child->IsEffectivelyEnabled() );
+
+        // an option made later finds its check box; a check box made later finds the options that wait for it
+        GUI::CWidget* late = context->CreateWidget( "Checkbox", "Late", group );
+        late->SetProperty( "Size", "1,0 0,20" );
+        late->SetProperty( "EnabledBy", "Parent" );
+        ASSERT_FALSE( late->IsEffectivelyEnabled() );
+        GUI::CWidget* waiting = context->CreateWidget( "Label", "Waiting", group );
+        waiting->SetProperty( "Size", "1,0 0,20" );
+        waiting->SetProperty( "EnabledBy", "Switch" );
+        ASSERT_TRUE( waiting->IsEffectivelyEnabled() );     // nothing called Switch yet
+        GUI::CWidget* switchBox = context->CreateWidget( "Checkbox", "Switch", GUCEF_NULL );
+        switchBox->SetProperty( "Size", "1,0 0,20" );
+        switchBox->SetParentWidget( group );
+        ASSERT_FALSE( waiting->IsEffectivelyEnabled() );
+        switchBox->SetBoolProperty( "Checked", true );
+        ASSERT_TRUE( waiting->IsEffectivelyEnabled() );
+        context->FlushChanges();
+        ASSERT_TRUE( caption + 10 + 5 * 20 + 4 * 4 + 10 == group->GetRect().height );
+    }
+    catch ( ... )
+    {
+        ERRORHERE;
+    }
+    GUCEF_TESTFW_TESTCASE_END
+
     GUCEF_TESTFW_TESTCASE( "Widgets: Picture buttons show the picture of their state" )
     try
     {
@@ -459,6 +522,15 @@ PerformGuiWidgetTests( void )
         tabs->SetProperty( "Tabs", "One\nTwo" );
         GUI::CWidget* pageOne = context->CreateWidget( "TabContentPane", "PageOne", tabs );
         GUI::CWidget* pageTwo = context->CreateWidget( "TabContentPane", "PageTwo", tabs );
+
+        // pages added (as a layout does) show the active one only, also before the active tab is ever set
+        ASSERT_TRUE( pageOne->IsVisible() && !pageTwo->IsVisible() );
+        GUI::CWidget* pageThree = context->CreateWidget( "TabContentPane", "PageThree", screen );
+        ASSERT_TRUE( pageThree->IsVisible() && pageThree->SetParentWidget( tabs ) );
+        ASSERT_FALSE( pageThree->IsVisible() );
+        ASSERT_TRUE( pageThree->SetParentWidget( screen ) );
+        context->DestroyWidget( pageThree );
+
         tabs->SetActiveTab( 1 );
         tabs->SetActiveTab( 0 );
         context->FlushChanges();

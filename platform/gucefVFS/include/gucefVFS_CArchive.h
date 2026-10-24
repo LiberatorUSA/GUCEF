@@ -230,6 +230,17 @@ class GUCEF_VFS_PUBLIC_CPP CArchive : public CORE::CObservingNotifier           
      *  The default implementation always fails.
      */
     virtual bool TryResolveSpecialDir( CORE::TSpecialDirs dir, CString& resolvedPath ) const;
+
+    /**
+     *  Optional directory operations, with paths in the archive like the other operations.
+     *  The default implementations fail: an archive that cannot change its directories need not implement them.
+     *  CreateDir() makes the parent directories too; MoveDir() moves a directory with its contents within the archive.
+     */
+    virtual bool CreateDir( const CString& dirPath );
+
+    virtual bool DeleteDir( const CString& dirPath, bool deleteContents );
+
+    virtual bool MoveDir( const CString& oldDirPath, const CString& newDirPath );
 };
 
 /*-------------------------------------------------------------------------//

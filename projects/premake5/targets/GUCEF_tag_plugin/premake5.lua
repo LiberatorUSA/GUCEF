@@ -80,6 +80,7 @@ filter "ALL"
   include( "plugins/CORE/dstorepluginPARSIFALXML" )
   include( "plugins/CORE/dstorepluginPROTOBUF" )
   include( "plugins/CORE/dstorepluginYAML" )
+  include( "plugins/GUI/fontpluginFREETYPE" )
   include( "plugins/GUI/guidriverCEGUI" )
   include( "plugins/GUI/guidriverCEGUIOgre" )
   include( "plugins/GUI/guidriverCEGUIOpenGL" )
@@ -120,17 +121,25 @@ filter "ANDROID"
 
 filter "ANDROID32"
   include( "dependencies/cegui/cegui/src/RendererModules/OpenGLES" )
+  include( "dependencies/libvpx" )
+  include( "dependencies/libwebm" )
+  include( "dependencies/opus" )
   include( "plugins/AUDIO/audiodriverAAUDIO" )
   include( "plugins/GUI/guidriverAndroidGLES" )
   include( "plugins/GUI/guidriverMyGUIOpenGL/OpenGLESPlatform" )
   include( "plugins/INPUT/inputdriverNANDROID" )
+  include( "plugins/VIDEO/videocodecpluginWEBM" )
 
 filter "ANDROID64"
   include( "dependencies/cegui/cegui/src/RendererModules/OpenGLES" )
+  include( "dependencies/libvpx" )
+  include( "dependencies/libwebm" )
+  include( "dependencies/opus" )
   include( "plugins/AUDIO/audiodriverAAUDIO" )
   include( "plugins/GUI/guidriverAndroidGLES" )
   include( "plugins/GUI/guidriverMyGUIOpenGL/OpenGLESPlatform" )
   include( "plugins/INPUT/inputdriverNANDROID" )
+  include( "plugins/VIDEO/videocodecpluginWEBM" )
 
 filter "ARDUINO"
 
@@ -170,7 +179,11 @@ filter "LINUX32"
   include( "dependencies/libmng" )
   include( "dependencies/libpng" )
   include( "dependencies/libsquish" )
+  include( "dependencies/libvpx" )
+  include( "dependencies/libwebm" )
+  include( "dependencies/ncnn" )
   include( "dependencies/openexr" )
+  include( "dependencies/opus" )
   include( "dependencies/tiff/libtiff" )
   include( "dependencies/zlib" )
   include( "plugins/AUDIO/audiodriverALSA" )
@@ -178,8 +191,10 @@ filter "LINUX32"
   include( "plugins/GUI/guidriverXWinGL" )
   include( "plugins/IMAGE/imgpluginDEVIL" )
   include( "plugins/IMAGE/imgpluginFreeImage" )
+  include( "plugins/IMAGE/imgupscalepluginNCNN" )
   include( "plugins/INPUT/inputdriverOIS" )
   include( "plugins/INPUT/inputdriverXWINMSG" )
+  include( "plugins/VIDEO/videocodecpluginWEBM" )
 
 filter "LINUX64"
   include( "dependencies/DevIL/DevIL" )
@@ -195,7 +210,11 @@ filter "LINUX64"
   include( "dependencies/libmng" )
   include( "dependencies/libpng" )
   include( "dependencies/libsquish" )
+  include( "dependencies/libvpx" )
+  include( "dependencies/libwebm" )
+  include( "dependencies/ncnn" )
   include( "dependencies/openexr" )
+  include( "dependencies/opus" )
   include( "dependencies/tiff/libtiff" )
   include( "dependencies/zlib" )
   include( "plugins/AUDIO/audiodriverALSA" )
@@ -203,8 +222,10 @@ filter "LINUX64"
   include( "plugins/GUI/guidriverXWinGL" )
   include( "plugins/IMAGE/imgpluginDEVIL" )
   include( "plugins/IMAGE/imgpluginFreeImage" )
+  include( "plugins/IMAGE/imgupscalepluginNCNN" )
   include( "plugins/INPUT/inputdriverOIS" )
   include( "plugins/INPUT/inputdriverXWINMSG" )
+  include( "plugins/VIDEO/videocodecpluginWEBM" )
 
 filter "MAC"
 
@@ -230,7 +251,11 @@ filter "WIN32"
   include( "dependencies/libmng" )
   include( "dependencies/libpng" )
   include( "dependencies/libsquish" )
+  include( "dependencies/libvpx" )
+  include( "dependencies/libwebm" )
+  include( "dependencies/ncnn" )
   include( "dependencies/openexr" )
+  include( "dependencies/opus" )
   include( "dependencies/tiff/libtiff" )
   include( "dependencies/zlib" )
   include( "plugins/AUDIO/audiodriverWASAPI" )
@@ -239,10 +264,12 @@ filter "WIN32"
   include( "plugins/GUI/guidriverWin32GL" )
   include( "plugins/IMAGE/imgpluginDEVIL" )
   include( "plugins/IMAGE/imgpluginFreeImage" )
+  include( "plugins/IMAGE/imgupscalepluginNCNN" )
   include( "plugins/INPUT/inputdriverDIRECTINPUT8" )
   include( "plugins/INPUT/inputdriverMSWINMSG" )
   include( "plugins/INPUT/inputdriverOIS" )
   include( "plugins/PUBSUB/pubsubpluginMSMQ" )
+  include( "plugins/VIDEO/videocodecpluginWEBM" )
 
 filter "WIN64"
   include( "dependencies/DevIL/DevIL" )
@@ -257,7 +284,11 @@ filter "WIN64"
   include( "dependencies/libmng" )
   include( "dependencies/libpng" )
   include( "dependencies/libsquish" )
+  include( "dependencies/libvpx" )
+  include( "dependencies/libwebm" )
+  include( "dependencies/ncnn" )
   include( "dependencies/openexr" )
+  include( "dependencies/opus" )
   include( "dependencies/tiff/libtiff" )
   include( "dependencies/zlib" )
   include( "plugins/AUDIO/audiodriverWASAPI" )
@@ -266,9 +297,11 @@ filter "WIN64"
   include( "plugins/GUI/guidriverWin32GL" )
   include( "plugins/IMAGE/imgpluginDEVIL" )
   include( "plugins/IMAGE/imgpluginFreeImage" )
+  include( "plugins/IMAGE/imgupscalepluginNCNN" )
   include( "plugins/INPUT/inputdriverDIRECTINPUT8" )
   include( "plugins/INPUT/inputdriverMSWINMSG" )
   include( "plugins/INPUT/inputdriverOIS" )
   include( "plugins/PUBSUB/pubsubpluginMSMQ" )
+  include( "plugins/VIDEO/videocodecpluginWEBM" )
 
 filter "WINDOWS"

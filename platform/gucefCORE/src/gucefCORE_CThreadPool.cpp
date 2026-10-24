@@ -234,8 +234,11 @@ CThreadPool::CarryOutQueuedTasksIfAny( UInt32 maxTasks )
         CTaskPtr task;
         if ( GetQueuedTask( task ) )
         {
-            CSingleTaskDelegator singleTaskExecutor( CreateSharedPtr(), task );
-            singleTaskExecutor.ExecuteTaskFromCallingThread();
+            // The delegator hands out shared pointers to itself while it runs the task (the consumer links back to it),
+            // so it has to be shared pointer owned like the other delegators: one on the stack would be deleted by them
+            CSingleTaskDelegator* rawExecutor = GUCEF_NEW CSingleTaskDelegator( CreateSharedPtr(), task );
+            CTaskDelegatorPtr singleTaskExecutor( rawExecutor->CreateSharedPtr() );
+            rawExecutor->ExecuteTaskFromCallingThread();
         }
         else
         {

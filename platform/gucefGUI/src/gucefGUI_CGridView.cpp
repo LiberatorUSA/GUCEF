@@ -62,6 +62,8 @@ const CORE::CEvent CGridView::GridRowAddedEvent = "GUCEF::GUI::CGridView::GridRo
 const CORE::CEvent CGridView::GridRowDeletedEvent = "GUCEF::GUI::CGridView::GridRowDeletedEvent";
 const CORE::CEvent CGridView::GridColumnAddedEvent = "GUCEF::GUI::CGridView::GridColumnAddedEvent";
 const CORE::CEvent CGridView::GridColumnDeletedEvent = "GUCEF::GUI::CGridView::GridColumnDeletedEvent";
+const CORE::CEvent CGridView::ColumnClickedEvent = "GUCEF::GUI::CGridView::ColumnClickedEvent";
+const CORE::CEvent CGridView::SelectionChangedEvent = "GUCEF::GUI::CGridView::SelectionChangedEvent";
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -85,6 +87,63 @@ JoinCells( const GUCEF::vector< CString >& cells )
     return row;
 }
 
+/*-------------------------------------------------------------------------*/
+
+/** Whether a cell is a number (digits with at most one '.' and an optional sign), and its value */
+bool
+TryReadNumber( const CString& cell, Float64& value )
+{
+    if ( cell.IsNULLOrEmpty() )
+        return false;
+    const char* text = cell.C_String();
+    bool digits = false;
+    bool dot = false;
+    for ( UInt32 i=0; '\0' != text[ i ]; ++i )
+    {
+        const char c = text[ i ];
+        if ( c >= '0' && c <= '9' )
+            digits = true;
+        else
+        if ( '.' == c && !dot )
+            dot = true;
+        else
+        if ( ( '-' == c || '+' == c ) && 0 == i )
+            continue;
+        else
+            return false;
+    }
+    if ( !digits )
+        return false;
+    value = CORE::StringToDouble( cell );
+    return true;
+}
+
+/*-------------------------------------------------------------------------*/
+
+/** -1, 0 or 1: numbers by their value, other text without regard to case */
+Int32
+CompareCells( const CString& a, const CString& b )
+{
+    Float64 numberA = 0, numberB = 0;
+    if ( TryReadNumber( a, numberA ) && TryReadNumber( b, numberB ) )
+        return numberA < numberB ? -1 : ( numberA > numberB ? 1 : 0 );
+    const CString lowerA = a.Lowercase();
+    const CString lowerB = b.Lowercase();
+    return lowerA < lowerB ? -1 : ( lowerB < lowerA ? 1 : 0 );
+}
+
+/*-------------------------------------------------------------------------*/
+
+GUCEF::vector< Int32 >
+SortedUnique( const GUCEF::vector< Int32 >& rows, Int32 rowCount )
+{
+    GUCEF::set< Int32 > unique;
+    for ( size_t i=0; i<rows.size(); ++i )
+        if ( rows[ i ] >= 0 && rows[ i ] < rowCount )
+            unique.insert( rows[ i ] );
+    return GUCEF::vector< Int32 >( unique.begin(), unique.end() );
+}
+
 }
 
 void
@@ -98,6 +157,8 @@ CGridView::RegisterEvents( void )
     GridRowDeletedEvent.Initialize();
     GridColumnAddedEvent.Initialize();
     GridColumnDeletedEvent.Initialize();
+    ColumnClickedEvent.Initialize();
+    SelectionChangedEvent.Initialize();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -233,8 +294,259 @@ CGridView::Clear( void )
 {GUCEF_TRACE;
 
     SetIntProperty( "SelectedRow", -1 );
+    SetProperty( "SelectedRows", CString::Empty );
+    SetIntProperty( "AnchorRow", -1 );
     SetIntProperty( "ScrollPosition", 0 );
     SetProperty( "Rows", CString::Empty );
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CGridView::SetRows( const TRowVector& rows )
+{GUCEF_TRACE;
+
+    TStringVector joined;
+    for ( size_t i=0; i<rows.size(); ++i )
+        joined.push_back( JoinCells( rows[ i ] ) );
+    SetIntProperty( "SelectedRow", -1 );
+    SetProperty( "SelectedRows", CString::Empty );
+    SetIntProperty( "AnchorRow", -1 );
+    SetIntProperty( "ScrollPosition", 0 );
+    SetStringListProperty( "Rows", joined );
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CGridView::SetAllowMultiSelect( bool allowMultiSelect )
+{GUCEF_TRACE;
+
+    SetBoolProperty( "MultiSelect", allowMultiSelect );
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CGridView::GetAllowMultiSelect( void ) const
+{GUCEF_TRACE;
+
+    return GetBoolProperty( "MultiSelect" );
+}
+
+/*-------------------------------------------------------------------------*/
+
+Int32
+CGridView::GetSelectedRow( void ) const
+{GUCEF_TRACE;
+
+    Int32 row = GetIntProperty( "SelectedRow" );
+    return row >= 0 && row < (Int32) GetRowCount() ? row : -1;
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CGridView::SetSelectedRow( Int32 row )
+{GUCEF_TRACE;
+
+    TInt32Vector rows;
+    if ( row >= 0 && row < (Int32) GetRowCount() )
+        rows.push_back( row );
+    SetSelectedRows( rows );
+}
+
+/*-------------------------------------------------------------------------*/
+
+CGridView::TInt32Vector
+CGridView::GetSelectedRows( void ) const
+{GUCEF_TRACE;
+
+    if ( !GetAllowMultiSelect() )
+    {
+        TInt32Vector rows;
+        Int32 row = GetSelectedRow();
+        if ( row >= 0 )
+            rows.push_back( row );
+        return rows;
+    }
+    return SortedUnique( GetIntListProperty( "SelectedRows" ), (Int32) GetRowCount() );
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CGridView::SetSelectedRows( const TInt32Vector& rows )
+{GUCEF_TRACE;
+
+    TInt32Vector valid = SortedUnique( rows, (Int32) GetRowCount() );
+    if ( !GetAllowMultiSelect() && valid.size() > 1 )
+        valid.resize( 1 );
+    SetIntListProperty( "SelectedRows", valid );
+    SetIntProperty( "AnchorRow", valid.empty() ? -1 : valid.front() );
+    SetIntProperty( "SelectedRow", valid.empty() ? -1 : valid.front() );
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CGridView::IsRowSelected( Int32 row ) const
+{GUCEF_TRACE;
+
+    TInt32Vector rows = GetSelectedRows();
+    for ( size_t i=0; i<rows.size(); ++i )
+        if ( rows[ i ] == row )
+            return true;
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
+Int32
+CGridView::GetVisibleRowCount( void ) const
+{GUCEF_TRACE;
+
+    Int32 rowHeight = GetRowHeight();
+    if ( rowHeight <= 0 )
+        return 0;
+    Int32 visible = GetRect().height / rowHeight - 1;
+    return visible > 0 ? visible : 0;
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CGridView::ScrollToRow( Int32 row )
+{GUCEF_TRACE;
+
+    if ( row < 0 )
+        return;
+    Int32 scroll = GetIntProperty( "ScrollPosition" );
+    Int32 visible = GetVisibleRowCount();
+    if ( row < scroll )
+        scroll = row;
+    else
+    if ( visible > 0 && row >= scroll + visible )
+        scroll = row - visible + 1;
+    if ( scroll != GetIntProperty( "ScrollPosition" ) )
+        SetIntProperty( "ScrollPosition", scroll );
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CGridView::SortRows( UInt32 column, bool ascending )
+{GUCEF_TRACE;
+
+    TStringVector rows = GetStringListProperty( "Rows" );
+    TInt32Vector selected = GetSelectedRows();
+    Int32 cursor = GetSelectedRow();
+
+    // a stable insertion sort of the row indices: the grids of a GUI are not large
+    TInt32Vector order;
+    for ( Int32 i=0; i<(Int32)rows.size(); ++i )
+        order.push_back( i );
+    for ( size_t i=1; i<order.size(); ++i )
+    {
+        Int32 current = order[ i ];
+        const CString key = GetText( column, (UInt32) current );
+        size_t j = i;
+        while ( j > 0 )
+        {
+            Int32 compared = CompareCells( GetText( column, (UInt32) order[ j-1 ] ), key );
+            if ( ascending ? compared <= 0 : compared >= 0 )
+                break;
+            order[ j ] = order[ j-1 ];
+            --j;
+        }
+        order[ j ] = current;
+    }
+
+    TStringVector sorted;
+    TInt32Vector newIndexOf( rows.size(), -1 );
+    for ( size_t i=0; i<order.size(); ++i )
+    {
+        sorted.push_back( rows[ order[ i ] ] );
+        newIndexOf[ order[ i ] ] = (Int32) i;
+    }
+    SetStringListProperty( "Rows", sorted );
+    SetIntProperty( "SortColumn", (Int32) column );
+    SetBoolProperty( "SortAscending", ascending );
+
+    // the selection stays with its rows
+    TInt32Vector moved;
+    for ( size_t i=0; i<selected.size(); ++i )
+        moved.push_back( newIndexOf[ selected[ i ] ] );
+    SetIntListProperty( "SelectedRows", SortedUnique( moved, (Int32) sorted.size() ) );
+    SetIntProperty( "SelectedRow", cursor >= 0 ? newIndexOf[ cursor ] : -1 );
+    Int32 anchor = GetIntProperty( "AnchorRow" );
+    SetIntProperty( "AnchorRow", anchor >= 0 && anchor < (Int32) newIndexOf.size() ? newIndexOf[ anchor ] : -1 );
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CGridView::SelectByUser( const TInt32Vector& rows, Int32 cursorRow )
+{GUCEF_TRACE;
+
+    if ( !GetAllowMultiSelect() )
+    {
+        // one row: only SelectedRow changes, as it always did
+        ChangeValueByUser( "SelectedRow", CORE::Int32ToString( cursorRow ) );
+        return;
+    }
+    TInt32Vector valid = SortedUnique( rows, (Int32) GetRowCount() );
+    CString oldValue = GetProperty( "SelectedRows" );
+    SetIntListProperty( "SelectedRows", valid );
+    CString newValue = GetProperty( "SelectedRows" );
+    if ( oldValue != newValue )
+    {
+        CValueChangedEventData eventData;
+        eventData.propertyName = "SelectedRows";
+        eventData.oldValue = oldValue;
+        eventData.newValue = newValue;
+        DispatchEvent( ValueChangedEvent, eventData );
+    }
+    ChangeValueByUser( "SelectedRow", CORE::Int32ToString( cursorRow ) );
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CGridView::MoveCursorByUser( Int32 row, bool extend )
+{GUCEF_TRACE;
+
+    Int32 count = (Int32) GetRowCount();
+    if ( 0 == count )
+        return;
+    if ( row < 0 ) row = 0;
+    if ( row >= count ) row = count - 1;
+
+    TInt32Vector rows;
+    Int32 anchor = GetIntProperty( "AnchorRow" );
+    if ( extend && GetAllowMultiSelect() && anchor >= 0 && anchor < count )
+    {
+        for ( Int32 r = ( anchor < row ? anchor : row ); r <= ( anchor < row ? row : anchor ); ++r )
+            rows.push_back( r );
+    }
+    else
+    {
+        rows.push_back( row );
+        SetIntProperty( "AnchorRow", row );
+    }
+    SelectByUser( rows, row );
+    ScrollToRow( row );
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CGridView::OnPropertyChanged( const CString& name, const CString& oldValue, const CString& newValue )
+{GUCEF_TRACE;
+
+    CWidget::OnPropertyChanged( name, oldValue, newValue );
+    if ( name == "SelectedRow" || name == "SelectedRows" )
+        NotifyObservers( SelectionChangedEvent );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -336,8 +648,26 @@ CGridView::OnDefaultAction( const CORE::CEvent& eventId, CRoutedEventData& event
     if ( MouseClickEvent == eventId && MOUSEBUTTON_LEFT == static_cast< CPointerEventData* >( &eventData )->button )
     {
         CPointerEventData* pointer = static_cast< CPointerEventData* >( &eventData );
-        Int32 row = GetRowAt( pointer->localY );
         Int32 column = GetColumnAt( pointer->localX );
+
+        // the header: the column was clicked, a sortable grid sorts by it
+        if ( pointer->localY >= 0 && pointer->localY < GetRowHeight() )
+        {
+            if ( column < 0 )
+                return false;
+            TColumnClickedEventData clickedColumn;
+            clickedColumn.GetData().column = (UInt32) column;
+            clickedColumn.GetData().row = 0;
+            NotifyObservers( ColumnClickedEvent, &clickedColumn );
+            if ( GetBoolProperty( "Sortable" ) )
+            {
+                bool ascending = column == GetIntProperty( "SortColumn" ) ? !GetBoolProperty( "SortAscending" ) : true;
+                SortRows( (UInt32) column, ascending );
+            }
+            return true;
+        }
+
+        Int32 row = GetRowAt( pointer->localY );
         if ( row < 0 )
             return false;
         TGridItemClickedEventData clicked;
@@ -345,10 +675,80 @@ CGridView::OnDefaultAction( const CORE::CEvent& eventId, CRoutedEventData& event
         clicked.GetData().row = (UInt32) row;
         NotifyObservers( GridItemClickedEvent, &clicked );
         if ( 2 == pointer->clickCount )
+        {
             ActivateItem( row, GetStringListProperty( "Rows" )[ row ] );
+            return true;
+        }
+
+        const bool ctrl = 0 != ( pointer->modifiers & INPUT::KEYMOD_CTRL );
+        const bool shift = 0 != ( pointer->modifiers & INPUT::KEYMOD_SHIFT );
+        if ( GetAllowMultiSelect() && ctrl )
+        {
+            // one row in or out of the selection
+            TInt32Vector rows = GetSelectedRows();
+            TInt32Vector toggled;
+            bool wasSelected = false;
+            for ( size_t i=0; i<rows.size(); ++i )
+            {
+                if ( rows[ i ] == row )
+                    wasSelected = true;
+                else
+                    toggled.push_back( rows[ i ] );
+            }
+            if ( !wasSelected )
+                toggled.push_back( row );
+            SetIntProperty( "AnchorRow", row );
+            SelectByUser( toggled, row );
+        }
         else
-            ChangeValueByUser( "SelectedRow", CORE::Int32ToString( row ) );
+            MoveCursorByUser( row, shift );
         return true;
+    }
+    if ( KeyDownEvent == eventId )
+    {
+        CKeyEventData* key = static_cast< CKeyEventData* >( &eventData );
+        Int32 count = (Int32) GetRowCount();
+        Int32 current = GetSelectedRow();
+        Int32 page = GetVisibleRowCount() > 1 ? GetVisibleRowCount() - 1 : 1;
+        const bool shift = 0 != ( key->modifiers & INPUT::KEYMOD_SHIFT );
+        switch ( key->keyCode )
+        {
+            case INPUT::KEYCODE_UP:     if ( count > 0 ) MoveCursorByUser( current < 0 ? 0 : current - 1, shift ); return true;
+            case INPUT::KEYCODE_DOWN:   if ( count > 0 ) MoveCursorByUser( current < 0 ? 0 : current + 1, shift ); return true;
+            case INPUT::KEYCODE_HOME:   if ( count > 0 ) MoveCursorByUser( 0, shift ); return true;
+            case INPUT::KEYCODE_END:    if ( count > 0 ) MoveCursorByUser( count - 1, shift ); return true;
+            case INPUT::KEYCODE_PGUP:   if ( count > 0 ) MoveCursorByUser( current < 0 ? 0 : current - page, shift ); return true;
+            case INPUT::KEYCODE_PGDOWN: if ( count > 0 ) MoveCursorByUser( current < 0 ? 0 : current + page, shift ); return true;
+            case INPUT::KEYCODE_RETURN:
+            case INPUT::KEYCODE_NUMPADENTER:
+            {
+                if ( current < 0 )
+                    return false;
+                ActivateItem( current, GetStringListProperty( "Rows" )[ current ] );
+                return true;
+            }
+            default:
+                return false;
+        }
+    }
+    if ( TextInputEvent == eventId )
+    {
+        // type to find: the next row whose first cell starts with the text
+        const CString typed = static_cast< CTextEventData* >( &eventData )->text.Lowercase();
+        Int32 count = (Int32) GetRowCount();
+        if ( typed.IsNULLOrEmpty() || 0 == count )
+            return false;
+        Int32 start = GetSelectedRow();
+        for ( Int32 step=1; step<=count; ++step )
+        {
+            Int32 row = ( start + step + count ) % count;
+            if ( GetText( 0, (UInt32) row ).Lowercase().StartsWith( typed ) )
+            {
+                MoveCursorByUser( row, false );
+                return true;
+            }
+        }
+        return false;
     }
     if ( MouseWheelEvent == eventId )
     {

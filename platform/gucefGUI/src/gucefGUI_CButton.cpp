@@ -153,14 +153,8 @@ CButton::GetNaturalSize( Int32& width, Int32& height ) const
 
     // the picture decides the size, else the text with a small margin
     CString normal = GetProperty( "NormalImage" );
-    IMAGE::TPixelMapPtr pixels;
-    UInt32 revision = 0;
-    if ( !normal.IsNULLOrEmpty() && context->ResolveImage( normal, pixels, revision ) )
-    {
-        width = (Int32) pixels->GetWidthInPixels();
-        height = (Int32) pixels->GetHeightInPixels();
+    if ( !normal.IsNULLOrEmpty() && context->GetImageLogicalSize( normal, width, height ) )
         return true;
-    }
     CString text = GetProperty( "Text" );
     if ( !text.IsNULLOrEmpty() && context->MeasureText( GetProperty( "Font" ), text, 0, width, height ) )
     {

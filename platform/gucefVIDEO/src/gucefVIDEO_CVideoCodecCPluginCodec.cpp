@@ -39,6 +39,16 @@
 #define GUCEF_CORE_LOGGING_H
 #endif /* GUCEF_CORE_LOGGING_H ? */
 
+#ifndef GUCEF_AUDIO_CAUDIOCONVERTER_H
+#include "gucefAUDIO_CAudioConverter.h"
+#define GUCEF_AUDIO_CAUDIOCONVERTER_H
+#endif /* GUCEF_AUDIO_CAUDIOCONVERTER_H ? */
+
+#ifndef GUCEF_AUDIO_CLINEARRESAMPLER_H
+#include "gucefAUDIO_CLinearResampler.h"
+#define GUCEF_AUDIO_CLINEARRESAMPLER_H
+#endif /* GUCEF_AUDIO_CLINEARRESAMPLER_H ? */
+
 #include "gucefVIDEO_CVideoCodecCPluginCodec.h"
 
 /*-------------------------------------------------------------------------//
@@ -419,6 +429,385 @@ class CVideoCodecCPluginSource : public IVideoSource ,
 
 /*-------------------------------------------------------------------------*/
 
+UInt32
+PixelFormatToInfo( IMAGE::TPixelStorageFormat pixelFormat )
+{GUCEF_TRACE;
+
+    switch ( pixelFormat )
+    {
+        case IMAGE::PSF_PALETTE_INDICES: return GUCEF_VIDEOCODEC_PIXELFORMAT_PALETTE8;
+        case IMAGE::PSF_RGB: return GUCEF_VIDEOCODEC_PIXELFORMAT_RGB24;
+        case IMAGE::PSF_RGBA: return GUCEF_VIDEOCODEC_PIXELFORMAT_RGBA32;
+        case IMAGE::PSF_BGRA: return GUCEF_VIDEOCODEC_PIXELFORMAT_BGRA32;
+        default: return GUCEF_VIDEOCODEC_PIXELFORMAT_UNKNOWN;
+    }
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+AudioFormatToInfo( const AUDIO::CAudioFormat& format, TAudioFormatInfo& info )
+{GUCEF_TRACE;
+
+    memset( &info, 0, sizeof( info ) );
+    info.sampleRate = format.GetSampleRate();
+    info.channelCount = format.GetChannelCount();
+    info.sampleType = (UInt32) format.GetSampleType();
+    info.channelLayout = format.GetChannelLayout();
+}
+
+/*-------------------------------------------------------------------------*/
+
+/**
+ *  The sound of a track on its way to the plugin: from the format the sink was opened with to the one the plugin
+ *  takes, as a stream, so the resampler keeps its place from one piece to the next
+ */
+class CSinkAudioTrack
+{
+    public:
+
+    AUDIO::CAudioFormat input;
+    AUDIO::CAudioFormat output;
+    GUCEF::vector< Float32 > matrix;            /**< the channel mix when the channels differ, else empty */
+    AUDIO::CLinearResampler resampler;
+    bool resample;
+    GUCEF::vector< Float32 > pending;           /**< input frames (in the output channels) the resampler did not take yet */
+
+    CSinkAudioTrack( void ) : input(), output(), matrix(), resampler(), resample( false ), pending() {}
+
+    bool Setup( const AUDIO::CAudioFormat& in, const AUDIO::CAudioFormat& out )
+    {GUCEF_TRACE;
+
+        input = in;
+        output = out;
+        matrix.clear();
+        if ( in.GetChannelCount() != out.GetChannelCount() || in.GetChannelLayout() != out.GetChannelLayout() )
+        {
+            if ( !AUDIO::CAudioConverter::BuildChannelMatrix( in, out, matrix ) )
+                return false;
+        }
+        resample = in.GetSampleRate() != out.GetSampleRate();
+        if ( resample && !resampler.Configure( out.GetChannelCount(), (Float64) in.GetSampleRate(), (Float64) out.GetSampleRate() ) )
+            return false;
+        return true;
+    }
+
+    /** The sound converted to the output format, as far as the resampler gives it now */
+    void Convert( const void* frames, UInt32 frameCount, GUCEF::vector< UInt8 >& converted, UInt32& convertedFrames )
+    {GUCEF_TRACE;
+
+        const UInt32 inChannels = input.GetChannelCount(), outChannels = output.GetChannelCount();
+        GUCEF::vector< Float32 > work( (size_t) frameCount * inChannels );
+        if ( frameCount > 0 )
+            AUDIO::CAudioConverter::ConvertToFloat32( frames, input.GetSampleType(), &work[ 0 ], (UInt64) frameCount * inChannels );
+        if ( !matrix.empty() )
+        {
+            GUCEF::vector< Float32 > remixed( (size_t) frameCount * outChannels );
+            if ( frameCount > 0 )
+                AUDIO::CAudioConverter::RemixChannels( &work[ 0 ], inChannels, &remixed[ 0 ], outChannels, frameCount, matrix );
+            work.swap( remixed );
+        }
+        Output( work, converted, convertedFrames );
+    }
+
+    /** What the resampler still holds, pushed out with silence after the last sound */
+    void Flush( GUCEF::vector< UInt8 >& converted, UInt32& convertedFrames )
+    {GUCEF_TRACE;
+
+        convertedFrames = 0;
+        if ( !resample )
+            return;
+        GUCEF::vector< Float32 > silence( (size_t) ( resampler.GetLatencyInFrames() + 1 ) * output.GetChannelCount(), 0.0f );
+        Output( silence, converted, convertedFrames );
+    }
+
+    private:
+
+    void Output( GUCEF::vector< Float32 >& work, GUCEF::vector< UInt8 >& converted, UInt32& convertedFrames )
+    {GUCEF_TRACE;
+
+        const UInt32 outChannels = output.GetChannelCount();
+        if ( resample )
+        {
+            pending.insert( pending.end(), work.begin(), work.end() );
+            const UInt32 pendingFrames = (UInt32) ( pending.size() / outChannels );
+            const Float64 ratio = (Float64) output.GetSampleRate() / (Float64) input.GetSampleRate();
+            GUCEF::vector< Float32 > resampled( (size_t) ( pendingFrames * ratio + 16 ) * outChannels );
+            UInt32 consumed = 0, produced = 0;
+            if ( pendingFrames > 0 )
+                resampler.Process( &pending[ 0 ], pendingFrames, consumed, &resampled[ 0 ], (UInt32) ( resampled.size() / outChannels ), produced );
+            pending.erase( pending.begin(), pending.begin() + (size_t) consumed * outChannels );
+            resampled.resize( (size_t) produced * outChannels );
+            work.swap( resampled );
+        }
+        convertedFrames = (UInt32) ( work.size() / outChannels );
+        converted.resize( (size_t) convertedFrames * output.GetBytesPerFrame() );
+        if ( convertedFrames > 0 )
+            AUDIO::CAudioConverter::ConvertFromFloat32( &work[ 0 ], &converted[ 0 ], output.GetSampleType(), (UInt64) convertedFrames * outChannels );
+    }
+};
+
+/*-------------------------------------------------------------------------*/
+
+/** A video the plugin encodes ('sinkdata') */
+class CVideoCodecCPluginSink : public IVideoSink ,
+                               public CIVideoCodecCPluginClient
+{
+    public:
+
+    typedef CVideoCodecCPluginCodec::TCodecInstancePtr TCodecInstancePtr;
+    typedef CIVideoCodec::TIOAccessPtr TIOAccessPtr;
+    typedef CIVideoCodec::TAudioFormatVector TAudioFormatVector;
+
+    CVideoCodecCPluginSink( const TCodecInstancePtr& instance, CORE::CIOAccess* output, const TIOAccessPtr& owner )
+        : IVideoSink()
+        , CIVideoCodecCPluginClient()
+        , m_instance( instance )
+        , m_output( output )
+        , m_outputOwner( owner )
+        , m_sinkdata( GUCEF_NULL )
+        , m_isOpen( false )
+        , m_hasFailed( false )
+        , m_isFinished( false )
+        , m_format()
+        , m_pluginPixelFormat( GUCEF_VIDEOCODEC_PIXELFORMAT_UNKNOWN )
+        , m_audioFormats()
+        , m_audioTracks()
+        , m_picture()
+        , m_audio()
+        , m_framesWritten( 0 )
+    {GUCEF_TRACE;
+    }
+
+    virtual ~CVideoCodecCPluginSink() GUCEF_VIRTUAL_OVERRIDE
+    {GUCEF_TRACE;
+
+        CVideoCodecCPlugin& plugin = m_instance->Plugin();
+        MT::CScopeMutex lock( plugin.GetCallLock() );
+        plugin.UnregisterClient( this );
+        if ( m_isOpen && m_instance->IsUsable() )
+            plugin.GetLinkedApi()->Snk_Close( plugin.GetPlugData(), m_instance->GetCodecData(), &m_sinkdata, 0 );
+        m_isOpen = false;
+        for ( size_t t=0; t<m_audioTracks.size(); ++t )
+            GUCEF_DELETE m_audioTracks[ t ];
+    }
+
+    bool Open( const CVideoFormat& format, const TAudioFormatVector& audioTrackFormats, const CORE::CValueList& options )
+    {GUCEF_TRACE;
+
+        CVideoCodecCPlugin& plugin = m_instance->Plugin();
+        MT::CScopeMutex lock( plugin.GetCallLock() );
+        const TGucefVideoCodecPluginApi* api = plugin.GetLinkedApi();
+        if ( !m_instance->IsUsable() || GUCEF_NULL == api->Snk_Open || 0 == format.GetWidth() || 0 == format.GetHeight() ||
+             0 == format.GetFrameRateNumerator() || 0 == format.GetFrameRateDenominator() )
+            return false;
+
+        TStringMap optionMap;
+        OptionsToStringMap( options, optionMap );
+        TStringMapAdapter optionAdapter;
+        optionAdapter.SetMapAccessPtr( (const TStringMap*) &optionMap );
+
+        TVideoFormatInfo info;
+        memset( &info, 0, sizeof( info ) );
+        info.width = format.GetWidth();
+        info.height = format.GetHeight();
+        info.pixelFormat = GUCEF_VIDEOCODEC_PIXELFORMAT_RGBA32;
+        info.frameRateNumerator = format.GetFrameRateNumerator();
+        info.frameRateDenominator = format.GetFrameRateDenominator();
+        info.audioTrackCount = (UInt32) audioTrackFormats.size();
+
+        GUCEF::vector< TAudioFormatInfo > audioInfo( audioTrackFormats.size() );
+        for ( size_t t=0; t<audioTrackFormats.size(); ++t )
+        {
+            if ( !audioTrackFormats[ t ].IsValid() )
+                return false;
+            AudioFormatToInfo( audioTrackFormats[ t ], audioInfo[ t ] );
+        }
+
+        if ( 0 == api->Snk_Open( plugin.GetPlugData(), m_instance->GetCodecData(), &m_sinkdata, m_output->CStyleAccess(), optionAdapter.GetCStyleAccess(),
+                                 &info, (UInt32) audioInfo.size(), audioInfo.empty() ? GUCEF_NULL : &audioInfo[ 0 ] ) )
+            return false;
+        m_isOpen = true;
+
+        // what the plugin takes: pictures of 32 bits the frames are converted to, sound the host converts to
+        bool valid = GUCEF_VIDEOCODEC_PIXELFORMAT_RGBA32 == info.pixelFormat || GUCEF_VIDEOCODEC_PIXELFORMAT_BGRA32 == info.pixelFormat;
+        m_pluginPixelFormat = info.pixelFormat;
+        m_format = CVideoFormat( format.GetWidth(), format.GetHeight(), PixelFormatFromInfo( info.pixelFormat ), format.GetFrameRateNumerator(), format.GetFrameRateDenominator(), format.GetFrameCount() );
+        for ( size_t t=0; valid && t<audioTrackFormats.size(); ++t )
+        {
+            AUDIO::CAudioFormat pluginFormat;
+            CSinkAudioTrack* track = GUCEF_NEW CSinkAudioTrack();
+            m_audioTracks.push_back( track );
+            valid = AudioFormatFromInfo( audioInfo[ t ], pluginFormat ) && track->Setup( audioTrackFormats[ t ], pluginFormat );
+        }
+        if ( !valid )
+        {
+            GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "VideoCodecCPluginSink: The plugin \"" << plugin.GetName() << "\" asked for a picture or sound format the host cannot give" );
+            api->Snk_Close( plugin.GetPlugData(), m_instance->GetCodecData(), &m_sinkdata, 0 );
+            m_isOpen = false;
+            return false;
+        }
+        m_audioFormats = audioTrackFormats;
+        plugin.RegisterClient( this, true );
+        return true;
+    }
+
+    virtual const CVideoFormat& GetFormat( void ) const GUCEF_VIRTUAL_OVERRIDE
+    {GUCEF_TRACE;
+
+        return m_format;
+    }
+
+    virtual UInt32 GetAudioTrackCount( void ) const GUCEF_VIRTUAL_OVERRIDE
+    {GUCEF_TRACE;
+
+        return (UInt32) m_audioFormats.size();
+    }
+
+    virtual bool GetAudioTrackFormat( UInt32 track, AUDIO::CAudioFormat& format ) const GUCEF_VIRTUAL_OVERRIDE
+    {GUCEF_TRACE;
+
+        if ( track >= m_audioFormats.size() )
+            return false;
+        format = m_audioFormats[ track ];
+        return true;
+    }
+
+    virtual bool WriteFrame( const CVideoFrame& frame ) GUCEF_VIRTUAL_OVERRIDE
+    {GUCEF_TRACE;
+
+        if ( m_hasFailed || m_isFinished || !frame.HasPicture() || frame.GetWidth() != m_format.GetWidth() || frame.GetHeight() != m_format.GetHeight() )
+            return Fail( "a picture that does not fit the sink" );
+
+        const IMAGE::TPixelStorageFormat wanted = m_format.GetPixelFormat();
+        TVideoPictureBuffer picture;
+        memset( &picture, 0, sizeof( picture ) );
+        if ( frame.GetPixelFormat() == wanted )
+        {
+            picture.pixels = const_cast< void* >( frame.GetPicture().GetDataPtr() );
+            picture.pitch = frame.GetPitch();
+        }
+        else
+        {
+            m_picture.resize( (size_t) m_format.GetWidth() * m_format.GetHeight() * 4 );
+            if ( !frame.ConvertTo32Bit( wanted, &m_picture[ 0 ], m_format.GetWidth() * 4 ) )
+                return Fail( "a picture that cannot be converted" );
+            picture.pixels = &m_picture[ 0 ];
+            picture.pitch = m_format.GetWidth() * 4;
+        }
+
+        CVideoCodecCPlugin& plugin = m_instance->Plugin();
+        MT::CScopeMutex lock( plugin.GetCallLock() );
+        if ( !m_isOpen || !m_instance->IsUsable() )
+            return Fail( "the plugin is gone" );
+        if ( 0 == plugin.GetLinkedApi()->Snk_Write_Frame( plugin.GetPlugData(), m_instance->GetCodecData(), &m_sinkdata, &picture ) )
+            return Fail( "the plugin failed to encode a picture" );
+        ++m_framesWritten;
+        return true;
+    }
+
+    virtual bool WriteAudio( UInt32 track, const void* frames, UInt32 frameCount ) GUCEF_VIRTUAL_OVERRIDE
+    {GUCEF_TRACE;
+
+        if ( m_hasFailed || m_isFinished || track >= m_audioTracks.size() )
+            return Fail( "sound for a track the sink does not have" );
+        if ( GUCEF_NULL == frames || 0 == frameCount )
+            return true;
+
+        UInt32 convertedFrames = 0;
+        m_audioTracks[ track ]->Convert( frames, frameCount, m_audio, convertedFrames );
+        return SendAudio( track, convertedFrames );
+    }
+
+    virtual bool Finish( void ) GUCEF_VIRTUAL_OVERRIDE
+    {GUCEF_TRACE;
+
+        if ( m_hasFailed || m_isFinished )
+            return false;
+
+        for ( UInt32 track=0; track<(UInt32)m_audioTracks.size(); ++track )
+        {
+            UInt32 convertedFrames = 0;
+            m_audioTracks[ track ]->Flush( m_audio, convertedFrames );
+            if ( !SendAudio( track, convertedFrames ) )
+                return false;
+        }
+
+        CVideoCodecCPlugin& plugin = m_instance->Plugin();
+        MT::CScopeMutex lock( plugin.GetCallLock() );
+        if ( !m_isOpen || !m_instance->IsUsable() )
+            return Fail( "the plugin is gone" );
+        m_isFinished = true;
+        m_isOpen = false;
+        if ( 0 == plugin.GetLinkedApi()->Snk_Close( plugin.GetPlugData(), m_instance->GetCodecData(), &m_sinkdata, 1 ) )
+            return Fail( "the plugin failed to complete the output" );
+        return true;
+    }
+
+    virtual bool HasFailed( void ) const GUCEF_VIRTUAL_OVERRIDE
+    {GUCEF_TRACE;
+
+        return m_hasFailed;
+    }
+
+    virtual UInt64 GetFramesWritten( void ) const GUCEF_VIRTUAL_OVERRIDE
+    {GUCEF_TRACE;
+
+        return m_framesWritten;
+    }
+
+    virtual void OnPluginUnlink( const TGucefVideoCodecPluginApi& api, void** plugdata ) GUCEF_VIRTUAL_OVERRIDE
+    {GUCEF_TRACE;
+
+        if ( m_isOpen )
+            api.Snk_Close( plugdata, m_instance->GetCodecData(), &m_sinkdata, 0 );
+        m_isOpen = false;
+        m_hasFailed = true;
+    }
+
+    private:
+
+    bool SendAudio( UInt32 track, UInt32 convertedFrames )
+    {GUCEF_TRACE;
+
+        if ( 0 == convertedFrames )
+            return true;
+        CVideoCodecCPlugin& plugin = m_instance->Plugin();
+        MT::CScopeMutex lock( plugin.GetCallLock() );
+        if ( !m_isOpen || !m_instance->IsUsable() )
+            return Fail( "the plugin is gone" );
+        if ( 0 == plugin.GetLinkedApi()->Snk_Write_Audio( plugin.GetPlugData(), m_instance->GetCodecData(), &m_sinkdata, track, &m_audio[ 0 ], convertedFrames ) )
+            return Fail( "the plugin failed to encode sound" );
+        return true;
+    }
+
+    bool Fail( const char* what )
+    {GUCEF_TRACE;
+
+        if ( !m_hasFailed )
+            GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "VideoCodecCPluginSink: Encoding stopped: " << what << ", after " << m_framesWritten << " pictures" );
+        m_hasFailed = true;
+        return false;
+    }
+
+    TCodecInstancePtr m_instance;
+    CORE::CIOAccess* m_output;
+    TIOAccessPtr m_outputOwner;
+    void* m_sinkdata;
+    bool m_isOpen;
+    bool m_hasFailed;
+    bool m_isFinished;
+    CVideoFormat m_format;
+    UInt32 m_pluginPixelFormat;
+    TAudioFormatVector m_audioFormats;
+    GUCEF::vector< CSinkAudioTrack* > m_audioTracks;
+    GUCEF::vector< UInt8 > m_picture;
+    GUCEF::vector< UInt8 > m_audio;
+    UInt64 m_framesWritten;
+};
+
+/*-------------------------------------------------------------------------*/
+
 }; /* anonymous namespace */
 
 /*-------------------------------------------------------------------------//
@@ -493,6 +882,36 @@ CVideoCodecCPluginCodec::OpenSourceImpl( CORE::CIOAccess* input, const TIOAccess
         return false;
     }
     source = TVideoSourcePtr( pluginSource );
+    return true;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CVideoCodecCPluginCodec::CanEncode( void ) const
+{GUCEF_TRACE;
+
+    MT::CScopeMutex lock( m_plugin->GetCallLock() );
+    const TGucefVideoCodecPluginApi* api = m_plugin->GetLinkedApi();
+    return GUCEF_NULL != api && GUCEF_NULL != api->Snk_Open && m_instance->IsUsable();
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CVideoCodecCPluginCodec::OpenSinkImpl( CORE::CIOAccess* output, const TIOAccessPtr& owner, const CVideoFormat& format, const TAudioFormatVector& audioTrackFormats, const CORE::CValueList& options, TVideoSinkPtr& sink )
+{GUCEF_TRACE;
+
+    if ( GUCEF_NULL == output )
+        return false;
+
+    CVideoCodecCPluginSink* pluginSink = GUCEF_NEW CVideoCodecCPluginSink( m_instance, output, owner );
+    if ( !pluginSink->Open( format, audioTrackFormats, options ) )
+    {
+        GUCEF_DELETE pluginSink;
+        return false;
+    }
+    sink = TVideoSinkPtr( pluginSink );
     return true;
 }
 

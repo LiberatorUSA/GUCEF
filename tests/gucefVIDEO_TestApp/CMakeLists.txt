@@ -15,12 +15,14 @@ set( HEADER_FILES
   include/TestVideoFormat.h
   include/TestVideoPlayback.h
   include/TestVideoSmacker.h
+  include/TestVideoWebm.h
 )
 
 set( SOURCE_FILES 
   src/TestVideoFormat.cpp
   src/TestVideoPlayback.cpp
   src/TestVideoSmacker.cpp
+  src/TestVideoWebm.cpp
   src/gucefVIDEO_TestApp.cpp
 )
 

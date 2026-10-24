@@ -24,6 +24,7 @@ LOCAL_MODULE_FILENAME := libgucefIMAGE
 LOCAL_SRC_FILES := \
   src/CGUCEFIMAGEModule.cpp \
   src/gucefIMAGE.cpp \
+  src/gucefIMAGE_CAsyncImageUpscale.cpp \
   src/gucefIMAGE_CCPluginImageCodecItem.cpp \
   src/gucefIMAGE_CGUIImageCodec.cpp \
   src/gucefIMAGE_CIImageCodec.cpp \
@@ -33,6 +34,9 @@ LOCAL_SRC_FILES := \
   src/gucefIMAGE_CImageCodecPluginManager.cpp \
   src/gucefIMAGE_CImageCodecRegistry.cpp \
   src/gucefIMAGE_CImageGlobal.cpp \
+  src/gucefIMAGE_CImageUpscaler.cpp \
+  src/gucefIMAGE_CImageUpscalerRegistry.cpp \
+  src/gucefIMAGE_CMmpxImageUpscaler.cpp \
   src/gucefIMAGE_CPixel.cpp \
   src/gucefIMAGE_CPixelMap.cpp
 
